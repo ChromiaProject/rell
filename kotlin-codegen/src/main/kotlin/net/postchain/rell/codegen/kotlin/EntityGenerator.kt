@@ -6,7 +6,7 @@ import java.util.*
 
 class EntityGenerator {
 
-    fun generate(app: R_App, targetFolder: File) {
+    fun generate(app: R_App, targetFolder: File, packageName: String) {
         if (targetFolder.exists() && !targetFolder.isDirectory) throw IllegalArgumentException("Target folder invalid")
         targetFolder.mkdirs()
         app.modules.forEach { module ->
@@ -14,9 +14,12 @@ class EntityGenerator {
             val target = File(targetFolder, "${module.name.str()}.kt")
             target.createNewFile()
             module.entities.forEach { (name, kdef) ->
+                val packageStr = "package $packageName"
                 val imports = listOf("net.postchain.gtv.mapper.Name")
                 val c =
                     """
+                        |$packageStr
+                        |
                         |${imports.joinToString("\n") { "import $it" }}
                     
                         |class ${name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}(
