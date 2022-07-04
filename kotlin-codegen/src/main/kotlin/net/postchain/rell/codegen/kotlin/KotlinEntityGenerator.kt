@@ -3,7 +3,6 @@ package net.postchain.rell.codegen.kotlin
 import net.postchain.rell.codegen.EntityGenerator
 import net.postchain.rell.model.R_App
 import java.io.File
-import java.util.*
 
 class KotlinEntityGenerator(val packageName: String): EntityGenerator {
 
