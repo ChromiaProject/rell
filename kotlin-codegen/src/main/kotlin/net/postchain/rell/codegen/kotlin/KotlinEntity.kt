@@ -38,7 +38,7 @@ class KotlinEntity(val entity: R_EntityDefinition) : Entity {
             is R_TextType -> addImport(String::class)
             is R_IntegerType -> addImport(Integer::class)
             is R_BooleanType -> addImport(Boolean::class)
-            else -> throw IllegalArgumentException("Type not implemented")
+            else -> type.name.split(":").last().snakeToUpperCamelCase() // Entity types
         }
     }
 }
