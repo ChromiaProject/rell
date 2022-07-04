@@ -3,12 +3,11 @@
  */
 package net.postchain.rell.codegen.app
 
-import net.postchain.rell.codegen.utilities.StringUtils
+import com.github.ajalt.clikt.core.NoOpCliktCommand
+import com.github.ajalt.clikt.core.subcommands
 
-import org.apache.commons.text.WordUtils
+class RellCodegen : NoOpCliktCommand("Rell code generator")
 
-fun main() {
-    val tokens = StringUtils.split(MessageUtils.getMessage())
-    val result = StringUtils.join(tokens)
-    println(WordUtils.capitalize(result))
-}
+fun main(args: Array<String>) = RellCodegen().subcommands(
+    KotlinCommand()
+).main(args)

@@ -12,6 +12,10 @@ plugins {
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
+    maven("https://gitlab.com/api/v4/projects/32294340/packages/maven")
+    maven("https://gitlab.com/api/v4/projects/32802097/packages/maven")
+    maven("https://jcenter.bintray.com")
+    maven("https://maven.emrld.io")
 }
 
 dependencies {
@@ -30,6 +34,19 @@ dependencies {
 
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
+
+
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "11"
+    }
 }
 
 testing {

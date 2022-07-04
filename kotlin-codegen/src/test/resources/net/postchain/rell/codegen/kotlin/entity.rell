@@ -1,0 +1,10 @@
+module;
+
+entity test {
+    name: text;
+    num: integer;
+}
+
+query get_test(): list<text> {
+    return test@* {} .name;
+}
