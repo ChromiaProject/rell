@@ -3,11 +3,6 @@
  */
 package net.postchain.rell.codegen.app
 
-import com.github.ajalt.clikt.core.NoOpCliktCommand
-import com.github.ajalt.clikt.core.subcommands
-
-class RellCodegen : NoOpCliktCommand("Rell code generator")
-
-fun main(args: Array<String>) = RellCodegen().subcommands(
-    KotlinCommand()
-).main(args)
+fun main(args: Array<String>) =
+    CodeGenCommand()
+        .main(args)

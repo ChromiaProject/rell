@@ -11,7 +11,7 @@ import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.app.util.LanguageSupport
 import net.postchain.rell.codegen.kotlin.KotlinDocumentFactory
 
-class KotlinCommand : CliktCommand("Generates kotlin files") {
+class CodeGenCommand : CliktCommand("Generates files based on rell sources") {
 
     private val source by argument("source", "Source folder").file(true)
     private val target by argument("target", "Target folder").file(canBeFile = false, canBeDir = true)
