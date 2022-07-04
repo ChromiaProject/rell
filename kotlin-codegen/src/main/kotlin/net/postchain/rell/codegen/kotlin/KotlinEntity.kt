@@ -18,13 +18,13 @@ class KotlinEntity(val entity: R_EntityDefinition) : Entity {
     }
 
     override fun format() = """
-        class ${name.snakeToUpperCamelCase()}(
-        ${formatAttributes()}
-        )
-    """.trimIndent()
+        |class ${name.snakeToUpperCamelCase()}(
+        |${formatAttributes()}
+        |)
+    """.trimMargin()
 
     private fun formatAttributes(): String {
-        return attributes.joinToString("\n\t") { formatAttribute(it) }
+        return "\t${attributes.joinToString("\n\t") { formatAttribute(it) }}"
     }
 
     private fun formatAttribute(attribute: R_Attribute): String {

@@ -15,14 +15,15 @@ class CodeGenerator(val factory: DocumentFactory, val singleFile: Boolean = fals
         app.modules.forEach { module ->
             val moduleFileName = module.name.str().let { if (singleFile) "$it.kt" else it }
             val moduleFile = File(targetFolder, moduleFileName)
-            if (singleFile) createdFiles.add(moduleFile)
+            moduleFile.mkdirs()
 
             module.entities.forEach { (name, kdef) ->
                 val entityFile = File(moduleFile, "$name.kt").also { createdFiles.add(it) }
                 val entityDocument = factory.createDocument("package $packageName")
                 val entity = factory.createEntity(kdef)
                 entityDocument.addEntity(entity)
-                entityFile.appendText(entityDocument.format())
+                entityFile.createNewFile()
+                entityFile.writeText(entityDocument.format())
             }
         }
         return createdFiles

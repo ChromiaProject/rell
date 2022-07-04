@@ -13,7 +13,6 @@ dependencies {
     implementation(project(":codegen"))
     implementation(project(":kotlin-codegen"))
     implementation("com.github.ajalt.clikt:clikt:3.4.0")
-    implementation("net.postchain.rell:rell:0.10.11-SNAPSHOT")
 }
 
 application {

@@ -16,7 +16,7 @@ class CodeGenCommand : CliktCommand("Generates files based on rell sources") {
     private val source by argument("source", "Source folder").file(true)
     private val target by argument("target", "Target folder").file(canBeFile = false, canBeDir = true)
 
-    private val moduleName by option("--module", help =  "Module name").required()
+    private val moduleName by option("--module", help = "Module name").required()
     private val packageName by option("--package", help = "Name of kotlin package").required()
 
     private val language by option("--language", "-l", help = "Language to generate for")
@@ -24,12 +24,11 @@ class CodeGenCommand : CliktCommand("Generates files based on rell sources") {
         .default(LanguageSupport.Kotlin)
 
     override fun run() {
-        val factory = when(language) {
+        val factory = when (language) {
             LanguageSupport.Kotlin -> KotlinDocumentFactory()
         }
         val generator = CodeGenerator(factory, false)
         val out = generator.generateFiles(source, target, moduleName, packageName)
-        out.forEach { it.createNewFile() }
         println("Created files: ${out.map { it.name }}")
     }
 }
