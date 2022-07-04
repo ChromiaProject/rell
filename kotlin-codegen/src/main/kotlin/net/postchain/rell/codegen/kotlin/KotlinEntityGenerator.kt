@@ -7,12 +7,13 @@ import java.util.*
 
 class KotlinEntityGenerator(val packageName: String): EntityGenerator {
 
-    override fun generate(app: R_App, targetFolder: File) {
+    override fun generate(app: R_App, targetFolder: File): List<File> {
         if (targetFolder.exists() && !targetFolder.isDirectory) throw IllegalArgumentException("Target folder invalid")
         targetFolder.mkdirs()
+        val createdFiles = mutableListOf<File>()
         app.modules.forEach { module ->
 
-            val target = File(targetFolder, "${module.name.str()}.kt")
+            val target = File(targetFolder, "${module.name.str()}.kt").also { createdFiles.add(it) }
             target.createNewFile()
             module.entities.forEach { (name, kdef) ->
                 val packageStr = "package $packageName"
@@ -30,6 +31,7 @@ class KotlinEntityGenerator(val packageName: String): EntityGenerator {
                 target.writeText(c)
             }
         }
+        return createdFiles
     }
 }
 
