@@ -5,7 +5,7 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
-import net.postchain.rell.codegen.kotlin.EntityGenerator
+import net.postchain.rell.codegen.kotlin.KotlinEntityGenerator
 import net.postchain.rell.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.compiler.base.utils.C_SourceDir
@@ -33,7 +33,7 @@ class KotlinCommand : CliktCommand("Generates kotlin files") {
             true,
             C_CompilerOptions.DEFAULT
         )
-        EntityGenerator().generate(a, target, packageName)
+        KotlinEntityGenerator(packageName).generate(a, target)
 
     }
 }

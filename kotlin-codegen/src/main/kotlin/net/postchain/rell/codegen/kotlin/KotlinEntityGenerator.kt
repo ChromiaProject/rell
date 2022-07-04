@@ -1,12 +1,13 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.rell.codegen.EntityGenerator
 import net.postchain.rell.model.R_App
 import java.io.File
 import java.util.*
 
-class EntityGenerator {
+class KotlinEntityGenerator(val packageName: String): EntityGenerator {
 
-    fun generate(app: R_App, targetFolder: File, packageName: String) {
+    override fun generate(app: R_App, targetFolder: File) {
         if (targetFolder.exists() && !targetFolder.isDirectory) throw IllegalArgumentException("Target folder invalid")
         targetFolder.mkdirs()
         app.modules.forEach { module ->

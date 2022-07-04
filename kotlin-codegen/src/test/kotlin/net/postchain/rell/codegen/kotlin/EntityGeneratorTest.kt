@@ -23,7 +23,7 @@ internal class EntityGeneratorTest {
         )
         val tempDirectory = createTempDirectory("test").toFile()
         println(tempDirectory.absoluteFile)
-        EntityGenerator().generate(a, tempDirectory, "com.example")
+        KotlinEntityGenerator("com.example").generate(a, tempDirectory)
         tempDirectory.listFiles().asList().forEach {
             println(it.name)
             println(it.readText())
