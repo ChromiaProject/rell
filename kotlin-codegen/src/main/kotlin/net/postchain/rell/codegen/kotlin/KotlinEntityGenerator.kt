@@ -12,10 +12,12 @@ class KotlinEntityGenerator(val packageName: String): EntityGenerator {
         targetFolder.mkdirs()
         val createdFiles = mutableListOf<File>()
         app.modules.forEach { module ->
+            val moduleFile = File(targetFolder, module.name.str())
+            moduleFile.mkdir()
 
-            val target = File(targetFolder, "${module.name.str()}.kt").also { createdFiles.add(it) }
-            target.createNewFile()
             module.entities.forEach { (name, kdef) ->
+                val entityFile = File(moduleFile, "$name.kt").also { createdFiles.add(it) }
+                entityFile.createNewFile()
                 val packageStr = "package $packageName"
                 val imports = listOf("net.postchain.gtv.mapper.Name")
                 val c =
@@ -24,21 +26,26 @@ class KotlinEntityGenerator(val packageName: String): EntityGenerator {
                         |
                         |${imports.joinToString("\n") { "import $it" }}
                     
-                        |class ${name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}(
+                        |class ${capitalize(name)}(
                         |    ${ kdef.attributes.map { "@Name(\"${it.key}\") val ${it.key}: ${mapType(it.value.type.name)}," } .joinToString("\n\t") }
                         |)
                 """.trimMargin()
-                target.writeText(c)
+                entityFile.writeText(c)
             }
         }
         return createdFiles
     }
+
 }
 
+private fun capitalize(name: String) =
+    name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 fun mapType(t: String): String {
     return when (t) {
         "text" -> "String"
         "integer" -> "Integer"
-        else -> throw IllegalArgumentException("")
+        "boolean" -> "Boolean"
+        "byte_array" -> "ByteArray"
+        else -> capitalize(t)
     }
 }
