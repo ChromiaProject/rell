@@ -2,11 +2,14 @@ package net.postchain.rell.codegen.app
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
-import net.postchain.rell.codegen.app.util.compile
-import net.postchain.rell.codegen.kotlin.KotlinEntityGenerator
+import net.postchain.rell.codegen.CodeGenerator
+import net.postchain.rell.codegen.app.util.LanguageSupport
+import net.postchain.rell.codegen.kotlin.KotlinDocumentFactory
 
 class KotlinCommand : CliktCommand("Generates kotlin files") {
 
@@ -16,9 +19,17 @@ class KotlinCommand : CliktCommand("Generates kotlin files") {
     private val moduleName by option("--module", help =  "Module name").required()
     private val packageName by option("--package", help = "Name of kotlin package").required()
 
+    private val language by option("--language", "-l", help = "Language to generate for")
+        .enum<LanguageSupport>(ignoreCase = true)
+        .default(LanguageSupport.Kotlin)
+
     override fun run() {
-        val app = compile(source, moduleName)
-        val out = KotlinEntityGenerator(packageName).generate(app, target)
+        val factory = when(language) {
+            LanguageSupport.Kotlin -> KotlinDocumentFactory()
+        }
+        val generator = CodeGenerator(factory, false)
+        val out = generator.generateFiles(source, target, moduleName, packageName)
+        out.forEach { it.createNewFile() }
         println("Created files: ${out.map { it.name }}")
     }
 }
