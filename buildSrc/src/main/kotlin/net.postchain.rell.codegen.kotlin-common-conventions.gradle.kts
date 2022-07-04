@@ -35,6 +35,8 @@ dependencies {
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
 
+    testImplementation("com.willowtreeapps.assertk:assertk:0.10")
+
 
 }
 
