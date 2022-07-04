@@ -1,10 +1,11 @@
 module;
 
-entity test {
+entity test_entity {
     name: text;
     num: integer;
+    b_Type: boolean;
 }
 
 query get_test(): list<text> {
-    return test@* {} .name;
+    return test_entity@* {} .name;
 }

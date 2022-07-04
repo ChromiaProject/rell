@@ -4,7 +4,6 @@ import assertk.all
 import assertk.assertions.startsWith
 import org.junit.jupiter.api.Test
 import assertk.assert
-import assertk.assertAll
 import assertk.assertions.contains
 import assertk.assertions.hasSize
 
