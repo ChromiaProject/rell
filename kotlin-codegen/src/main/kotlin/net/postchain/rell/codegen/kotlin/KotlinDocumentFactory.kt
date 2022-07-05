@@ -10,27 +10,15 @@ import net.postchain.rell.model.R_StructDefinition
 
 class KotlinDocumentFactory : DocumentFactory {
 
-    override fun createDocument(packageString: String): Document {
-        return KotlinDocument(packageString)
-    }
+    override fun createDocument(packageString: String) = KotlinDocument(packageString)
 
-    override fun createEntity(rellEntity: R_EntityDefinition): Entity {
-        return KotlinEntity(rellEntity)
-    }
+    override fun createEntity(rellEntity: R_EntityDefinition) = KotlinEntity(rellEntity)
 
-    override fun createBuiltins(): List<Entity> {
-        return listOf(BlockEntity(), TransactionEntity())
-    }
+    override fun createBuiltins() = listOf(BlockEntity(), TransactionEntity())
 
-    override fun createStruct(rellStruct: R_StructDefinition): Struct {
-        return KotlinStruct(rellStruct)
-    }
+    override fun createStruct(rellStruct: R_StructDefinition) = KotlinStruct(rellStruct)
 
-    override fun createEnum(rellEnum: R_EnumDefinition): Enumeration {
-        return KotlinEnumeration(rellEnum)
-    }
+    override fun createEnum(rellEnum: R_EnumDefinition) = KotlinEnumeration(rellEnum)
 
-    override fun createQuery(rellQuery: R_QueryDefinition): Query {
-        return KotlinQuery(rellQuery)
-    }
+    override fun createQuery(rellQuery: R_QueryDefinition) = KotlinQuery(rellQuery)
 }
