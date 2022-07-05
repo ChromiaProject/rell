@@ -43,3 +43,5 @@ query g_boolean(b: boolean) = 1;
 query g_entity(e: test_entity) = 1;
 query g_struct(s: test_struct) = 1;
 
+query get_list_integer() = test_entity @* {};
+

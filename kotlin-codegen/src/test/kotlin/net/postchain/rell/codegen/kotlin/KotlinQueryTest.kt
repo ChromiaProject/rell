@@ -46,7 +46,8 @@ internal class KotlinQueryTest {
         "byte_array,asByteArray()",
         "entity,asInteger()",
         "decimal,asString()",
-        "map,'asDict().mapValues { (k, v) -> v.asString() }'"
+        "map,'asDict().mapValues { (k, v) -> v.asString() }'",
+        "list_integer,toList<Long>()"
     )
     fun returnTypeTest(type: String, returnType: String) {
         val query = kotlin.test.assertNotNull(testModule.queries["get_$type"])
