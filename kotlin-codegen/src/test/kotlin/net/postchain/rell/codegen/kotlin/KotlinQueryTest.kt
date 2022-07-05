@@ -70,6 +70,8 @@ internal class KotlinQueryTest {
         "g_boolean,b: Boolean,\"b\" to gtv(b)",
         "g_entity,e: Long,\"e\" to gtv(e)",
         "g_struct,s: TestStruct,\"s\" to s.toGtv()",
+        "g_list_input,v: List<ByteArray>,\"v\" to gtv(v.map { gtv(it) })",
+        "g_set_input,v: Set<ByteArray>,\"v\" to gtv(v.map { gtv(it) })",
     )
     fun parameterTypeTest(queryName: String, params: String, gtvParam: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[queryName])

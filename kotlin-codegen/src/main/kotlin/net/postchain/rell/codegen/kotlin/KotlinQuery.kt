@@ -39,6 +39,8 @@ class KotlinQuery(queryDef: R_QueryDefinition) : Query {
             is R_JsonType -> throw IllegalArgumentException("JSON not supported")
             is R_MapType -> formatMapType(type)
             is R_EntityType -> Long::class.simpleName!!         // Note that entities are encoded as GtvInteger
+            is R_ListType -> "List<${formatParameter(type.elementType)}>"
+            is R_SetType -> "Set<${formatParameter(type.elementType)}>"
             else -> type.name.split(":").last().snakeToUpperCamelCase() // Struct types
         }
     }
@@ -54,6 +56,8 @@ class KotlinQuery(queryDef: R_QueryDefinition) : Query {
     private fun parameterToGtv(param: R_Param): String {
         return when (param.type) {
             is R_StructType -> "${param.name}.toGtv()"
+            is R_ListType -> "gtv(${param.name}.map { gtv(it) })"
+            is R_SetType -> "gtv(${param.name}.map { gtv(it) })"
             else -> "gtv(${param.name})"
         }
     }
