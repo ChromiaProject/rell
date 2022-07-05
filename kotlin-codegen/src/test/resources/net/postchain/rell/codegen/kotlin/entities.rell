@@ -48,6 +48,12 @@ entity builtin_pubkey {
     pubkey;
 }
 
+entity builtin_timestamp {
+    timestamp;
+}
+
 entity nested_entity {
     a: text_entity;
 }
+
+entity transaction_entity { key transaction; }

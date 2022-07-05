@@ -1,6 +1,8 @@
 package net.postchain.rell.codegen
 
-interface Entity : DocumentSection
+interface Entity : DocumentSection {
+    val name: String
+}
 
 interface Struct : DocumentSection
 

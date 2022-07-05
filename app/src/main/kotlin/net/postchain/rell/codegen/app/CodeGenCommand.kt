@@ -17,7 +17,7 @@ class CodeGenCommand : CliktCommand("Generates files based on rell sources") {
     private val target by argument("target", "Target folder").file(canBeFile = false, canBeDir = true)
 
     private val moduleName by option("--module", help = "Module name").required()
-    private val packageName by option("--package", help = "Name of kotlin package").required()
+    private val packageName by option("--package", help = "Name of package").required()
 
     private val language by option("--language", "-l", help = "Language to generate for")
         .enum<LanguageSupport>(ignoreCase = true)

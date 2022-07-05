@@ -97,6 +97,7 @@ internal class SimpleKotlinEntityTest {
     @CsvSource(
         "name,String",
         "pubkey,ByteArray",
+        "timestamp,Long",
     )
     fun builtinTypes(keyword: String, kotlinType: String) {
         val entity = assertNotNull(testModule.entities["builtin_${keyword}"], "entity does not exist")

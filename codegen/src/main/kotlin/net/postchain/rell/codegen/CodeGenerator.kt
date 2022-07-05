@@ -12,6 +12,16 @@ class CodeGenerator(val factory: DocumentFactory, val singleFile: Boolean = fals
     fun generateFiles(source: File, targetFolder: File, moduleName: String, packageName: String): Set<File> {
         val app = compile(source, moduleName)
         val createdFiles = mutableSetOf<File>()
+
+        factory.createBuiltins().forEach { entity ->
+            val f = File(targetFolder, "${entity.name}.kt").also { createdFiles.add(it) }
+            f.parentFile.mkdirs()
+            f.createNewFile()
+            val doc = factory.createDocument("package $packageName")
+            doc.addSection(entity)
+            f.writeText(doc.format())
+        }
+
         app.modules.forEach { module ->
             val moduleFileName = module.name.str().let { if (singleFile) "$it.kt" else it }
             val moduleFile = File(targetFolder, moduleFileName)

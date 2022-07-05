@@ -8,7 +8,7 @@ import java.math.BigDecimal
 import kotlin.reflect.KClass
 
 class KotlinEntity(entity: R_EntityDefinition) : Entity {
-    private val name = entity.simpleName
+    override val name = entity.simpleName
     private val attributes = entity.attributes.values
 
     override val imports = mutableListOf("import net.postchain.gtv.mapper.Name")
