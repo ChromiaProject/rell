@@ -11,7 +11,10 @@ class KotlinStruct(struct: R_StructDefinition) : Struct {
     val name = struct.simpleName
     val attributes = struct.struct.attributes.values
 
-    override val imports = mutableListOf("import net.postchain.gtv.mapper.Name")
+    override val imports = mutableListOf(
+        "import net.postchain.gtv.mapper.Name",
+        "import net.postchain.gtv.GtvFactory.gtv"
+    )
 
     private fun addImport(import: KClass<*>): String {
         imports.add("import ${import.qualifiedName}")
@@ -21,7 +24,11 @@ class KotlinStruct(struct: R_StructDefinition) : Struct {
     override fun format() = """
         |class ${name.snakeToUpperCamelCase()}(
         |${formatAttributes()}
-        |)
+        |) {
+        |   fun toGtv(): Gtv {
+        |       return ${formatGtv()}
+        |   }
+        |}
     """.trimMargin()
 
     private fun formatAttributes(): String {
@@ -32,6 +39,10 @@ class KotlinStruct(struct: R_StructDefinition) : Struct {
         return attribute.run {
             "@Name(\"$name\") val ${name.snakeToLowerCamelCase()}: ${rTypeToString(type)}"
         }
+    }
+
+    private fun formatGtv(): String {
+        return "gtv(${attributes.joinToString(",\n") { "gtv(${it.name.snakeToLowerCamelCase()})" }})"
     }
 
     private fun rTypeToString(type: R_Type): String {
