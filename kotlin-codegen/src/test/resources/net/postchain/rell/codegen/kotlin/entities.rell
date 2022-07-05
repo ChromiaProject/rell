@@ -45,3 +45,11 @@ entity multi_text_entity {
     a: text;
     b: text;
 }
+
+entity builtin_name {
+    name;
+}
+
+entity builtin_pubkey {
+    pubkey;
+}

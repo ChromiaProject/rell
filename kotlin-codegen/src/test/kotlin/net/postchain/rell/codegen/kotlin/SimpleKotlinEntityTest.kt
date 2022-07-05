@@ -92,4 +92,18 @@ internal class SimpleKotlinEntityTest {
         }
     }
 
+
+    @ParameterizedTest(name = "builtin {0} becomes {1}")
+    @CsvSource(
+        "name,String",
+        "pubkey,ByteArray",
+    )
+    fun builtinTypes(keyword: String, kotlinType: String) {
+        val entity = assertNotNull(testModule.entities["builtin_${keyword}"], "entity does not exist")
+        val formatted = KotlinEntity(entity).format()
+        assert(formatted).all {
+            contains("@Name(\"$keyword\") val $keyword: $kotlinType")
+        }
+    }
+
 }
