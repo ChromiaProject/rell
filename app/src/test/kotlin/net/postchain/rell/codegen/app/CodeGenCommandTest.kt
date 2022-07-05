@@ -1,5 +1,6 @@
 package net.postchain.rell.codegen.app
 
+import assertk.assertions.contains
 import assertk.assertions.containsAll
 import assertk.assertions.hasSize
 import org.junit.jupiter.api.Test

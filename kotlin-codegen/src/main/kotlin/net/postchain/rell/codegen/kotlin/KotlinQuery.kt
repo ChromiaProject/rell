@@ -7,15 +7,16 @@ import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
 import java.math.BigDecimal
 
-class KotlinQuery(val queryDef: R_QueryDefinition) : Query {
+class KotlinQuery(queryDef: R_QueryDefinition) : Query {
     val name = queryDef.simpleName
-    val params = queryDef.params()
-    val returnType = queryDef.type()
+    private val params = queryDef.params()
 
     override val imports = mutableListOf(
             "import net.postchain.client.core.PostchainClient",
             "import net.postchain.gtv.GtvFactory.gtv",
         )
+
+    private val returnType = queryDef.type().also { if (it is R_ListType) imports.add("import net.postchain.gtv.mapper.toList") }
 
     override fun format() = """
         |fun PostchainClient.${name.snakeToLowerCamelCase()}(${formatParameters()}) = 
@@ -62,7 +63,6 @@ class KotlinQuery(val queryDef: R_QueryDefinition) : Query {
         if (returnType is R_TupleType) return ""
         if (returnType is R_ListType) {
             if (returnType.elementType is R_TupleType) return ""
-            imports.add("import net.postchain.gtv.mapper.toList")
             return ".toList<${formatParameter(returnType.elementType)}>()"
         }
         return formatReturnType(returnType)

@@ -13,6 +13,7 @@ import net.postchain.rell.model.R_Module
 import net.postchain.rell.model.R_ModuleName
 import net.postchain.rell.utils.RellCliUtils
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import java.io.File
@@ -78,5 +79,12 @@ internal class KotlinQueryTest {
             contains("($params) =")
             contains("\"$queryName\", gtv(mapOf($gtvParam")
         }
+    }
+
+    @Test
+    fun listTypesHasExtraImport() {
+        val query = kotlin.test.assertNotNull(testModule.queries["get_list_integer"])
+        val k = KotlinQuery(query)
+        assertk.assert(k.imports).contains("import net.postchain.gtv.mapper.toList")
     }
 }
