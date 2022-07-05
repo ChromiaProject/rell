@@ -64,7 +64,9 @@ internal class KotlinQueryTest {
         "g_nargs,'',''",
         "g_text,t: String,\"t\" to gtv(t)",
         "g_integer,i: Long,\"i\" to gtv(i)",
-        "g_boolean,b: Boolean,\"b\" to gtv(b)"
+        "g_boolean,b: Boolean,\"b\" to gtv(b)",
+        "g_entity,e: Long,\"e\" to gtv(e)",
+        "g_struct,s: TestStruct,\"s\" to s.toGtv()",
     )
     fun parameterTypeTest(queryName: String, params: String, gtvParam: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[queryName])
@@ -73,7 +75,6 @@ internal class KotlinQueryTest {
         assertk.assert(formatted).all {
             contains("($params) =")
             contains("\"$queryName\", gtv(mapOf($gtvParam")
-
         }
     }
 }

@@ -3,7 +3,9 @@ package net.postchain.rell.codegen.kotlin
 import net.postchain.rell.codegen.Query
 import net.postchain.rell.codegen.kotlin.util.rTypeToString
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
+import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
+import java.math.BigDecimal
 
 class KotlinQuery(val queryDef: R_QueryDefinition) : Query {
     val name = queryDef.simpleName
@@ -22,13 +24,39 @@ class KotlinQuery(val queryDef: R_QueryDefinition) : Query {
 
     private fun formatParameters() : String {
         if (params.isEmpty()) return ""
-        return params.joinToString(", ") { "${it.name}: ${rTypeToString(it.type)}" }
+        return params.joinToString(", ") { "${it.name}: ${formatParameter(it.type)}" }
+    }
+
+    private fun formatParameter(type: R_Type): String {
+        return when (type) {
+            is R_BooleanType -> Boolean::class.simpleName!!
+            is R_IntegerType -> Long::class.simpleName!!
+            is R_DecimalType -> BigDecimal::class.simpleName!!
+            is R_TextType -> String::class.simpleName!!
+            is R_ByteArrayType -> ByteArray::class.simpleName!!
+            is R_RowidType -> Long::class.simpleName!!
+            is R_JsonType -> throw IllegalArgumentException("JSON not supported")
+            is R_MapType -> formatMapType(type)
+            is R_EntityType -> Long::class.simpleName!!         // Note that entities are encoded as GtvInteger
+            else -> type.name.split(":").last().snakeToUpperCamelCase() // Struct types
+        }
+    }
+    private fun formatMapType(type: R_MapType): String {
+        return "Map<${rTypeToString(type.keyType)}, ${formatParameter(type.valueType)}>"
     }
 
     private fun formatQuery(): String {
         if (params.isEmpty()) return ""
-        return params.joinToString(", ") { "\"${it.name}\" to gtv(${it.name})" }
+        return params.joinToString(", ") { "\"${it.name}\" to ${parameterToGtv(it)}" }
     }
+
+    private fun parameterToGtv(param: R_Param): String {
+        return when (param.type) {
+            is R_StructType -> "${param.name}.toGtv()"
+            else -> "gtv(${param.name})"
+        }
+    }
+
 
     private fun formatReturnStatement() : String {
         if (returnType is R_ListType) {

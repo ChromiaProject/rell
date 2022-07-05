@@ -40,4 +40,6 @@ query g_nargs() = 1;
 query g_text(t: text) = 1;
 query g_integer(i: integer) = 1;
 query g_boolean(b: boolean) = 1;
+query g_entity(e: test_entity) = 1;
+query g_struct(s: test_struct) = 1;
 
