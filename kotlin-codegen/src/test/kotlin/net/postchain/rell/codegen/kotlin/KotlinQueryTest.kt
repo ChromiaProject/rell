@@ -38,7 +38,7 @@ internal class KotlinQueryTest {
         }
     }
 
-    @ParameterizedTest(name = "query for return type {0} shoulc convert to {1}")
+    @ParameterizedTest(name = "query for return type {0} should convert to {1}")
     @CsvSource(
         "boolean,asBoolean()",
         "integer,asInteger()",

@@ -19,7 +19,7 @@ class KotlinQuery(val queryDef: R_QueryDefinition) : Query {
 
     override fun format() = """
         |fun PostchainClient.${name.snakeToLowerCamelCase()}(${formatParameters()}) = 
-        |   querySync("$name", gtv(mapOf(${formatQuery()}))).${formatReturnStatement()}
+        |   querySync("$name", gtv(mapOf(${formatQuery()})))${formatReturnStatement()}
     """.trimMargin()
 
     private fun formatParameters() : String {
@@ -61,25 +61,25 @@ class KotlinQuery(val queryDef: R_QueryDefinition) : Query {
     private fun formatReturnStatement() : String {
         if (returnType is R_ListType) {
             imports.add("import net.postchain.gtv.mapper.toList")
-            return "toList<${rTypeToString(returnType.elementType)}>()"
+            return ".toList<${rTypeToString(returnType.elementType)}>()"
         }
         return formatReturnType(returnType)
     }
 
     private fun formatReturnType(type: R_Type): String {
         return when (type) {
-            is R_BooleanType -> "asBoolean()"
-            is R_TextType -> "asString()"
-            is R_IntegerType -> "asInteger()"
-            is R_ByteArrayType -> "asByteArray()"
-            is R_EntityType -> "asInteger()"            // Note that entities are encoded as GtvInteger
-            is R_DecimalType -> "asString()"            // Note that decimals are encoded as GtvString(?)
-            is R_RowidType -> "asInteger()"             // Same as EntityType
+            is R_BooleanType -> ".asBoolean()"
+            is R_TextType -> ".asString()"
+            is R_IntegerType -> ".asInteger()"
+            is R_ByteArrayType -> ".asByteArray()"
+            is R_EntityType -> ".asInteger()"            // Note that entities are encoded as GtvInteger
+            is R_DecimalType -> ".asString()"            // Note that decimals are encoded as GtvString(?)
+            is R_RowidType -> ".asInteger()"             // Same as EntityType
             is R_MapType -> formatMapReturnType(type)
-            else -> throw IllegalArgumentException("Not supported return type")
+            else -> ""                                  // All structs (should be "unknown structs"
         }
     }
 
     private fun formatMapReturnType(type: R_MapType) = if (type.keyType !is R_TextType) "" else
-        "asDict().mapValues { (k, v) -> v.${formatReturnType(type.valueType)} }"
+        ".asDict().mapValues { (k, v) -> v${formatReturnType(type.valueType)} }"
 }
