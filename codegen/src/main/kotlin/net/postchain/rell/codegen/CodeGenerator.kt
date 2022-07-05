@@ -28,9 +28,9 @@ class CodeGenerator(val factory: DocumentFactory, val singleFile: Boolean = fals
             moduleFile.mkdirs()
 
             module.entities.forEach { (name, kDef) ->
-                val entityFile = File(moduleFile, "$name.kt").also { createdFiles.add(it) }
-                val entityDocument = factory.createDocument("package $packageName")
                 val entity = factory.createEntity(kDef)
+                val entityFile = File(moduleFile, "${entity.name}.kt").also { createdFiles.add(it) }
+                val entityDocument = factory.createDocument("package $packageName")
                 entityDocument.addSection(entity)
                 entityFile.createNewFile()
                 entityFile.writeText(entityDocument.format())

@@ -38,8 +38,6 @@ internal class SimpleKotlinEntityTest {
                 assertNotNull(it.moduleMap[R_ModuleName.of("entities")])
             }
         }
-
-
     }
 
     @Test

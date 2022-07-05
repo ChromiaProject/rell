@@ -1,0 +1,43 @@
+module;
+
+entity test_entity {
+    a: boolean;
+}
+
+struct test_struct {
+    a: boolean;
+}
+
+query get_entities_nargs() = test_entity @ { true };
+
+query get_entities_args(name) = test_entity @ { true };
+
+query get_struct_nargs() = test_struct(true);
+
+query get_boolean() = true;
+
+query get_integer() = 1;
+
+query get_text() = "";
+
+query get_decimal() = 1.0;
+
+query get_byte_array() = x"";
+
+query get_entity() = test_entity @ { true };
+
+query get_struct() = test_struct(true);
+
+query get_rowid() = test_entity @ { true } (.rowid);
+
+query get_map() {
+var dictionary = map<text, text>();
+dictionary["Mordor"] = "A place where one does not simply walk into";
+return dictionary;
+}
+
+query g_nargs() = 1;
+query g_text(t: text) = 1;
+query g_integer(i: integer) = 1;
+query g_boolean(b: boolean) = 1;
+
