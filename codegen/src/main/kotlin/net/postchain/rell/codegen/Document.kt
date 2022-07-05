@@ -1,12 +1,8 @@
 package net.postchain.rell.codegen
 
-interface Document : Formattable {
+interface Document : StringSerializable {
     val intro: String
     val packageString: String
 
-    fun addEntity(entity: Entity)
-
-    fun addQuery(query: Query)
-
-    fun addTransaction(tx: Transaction)
+    fun addSection(section: DocumentSection)
 }

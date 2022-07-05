@@ -1,5 +1,4 @@
 package net.postchain.rell.codegen
 
-interface Transaction : Formattable {
-
+interface Transaction : DocumentSection {
 }

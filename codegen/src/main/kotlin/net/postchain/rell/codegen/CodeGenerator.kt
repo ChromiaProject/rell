@@ -21,7 +21,7 @@ class CodeGenerator(val factory: DocumentFactory, val singleFile: Boolean = fals
                 val entityFile = File(moduleFile, "$name.kt").also { createdFiles.add(it) }
                 val entityDocument = factory.createDocument("package $packageName")
                 val entity = factory.createEntity(kdef)
-                entityDocument.addEntity(entity)
+                entityDocument.addSection(entity)
                 entityFile.createNewFile()
                 entityFile.writeText(entityDocument.format())
             }

@@ -12,8 +12,8 @@ internal class AbstractDocumentTest{
     @Test
     fun `Dummy objects are formatted properly`() {
         val doc = TestDocument()
-        doc.addEntity(TestEntity("MyEntity", listOf("import1", "import2")))
-        doc.addEntity(TestEntity("YourEntity", listOf("import1")))
+        doc.addSection(TestEntity("MyEntity", listOf("import1", "import2")))
+        doc.addSection(TestEntity("YourEntity", listOf("import1")))
 
         val formatted = doc.format()
         println(formatted)
