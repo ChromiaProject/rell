@@ -4,6 +4,7 @@ import net.postchain.rell.codegen.Entity
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
+import java.math.BigDecimal
 import kotlin.reflect.KClass
 
 class KotlinEntity(val entity: R_EntityDefinition) : Entity {
@@ -35,9 +36,13 @@ class KotlinEntity(val entity: R_EntityDefinition) : Entity {
 
     private fun rTypeToString(type: R_Type): String {
         return when (type) {
-            is R_TextType -> addImport(String::class)
-            is R_IntegerType -> addImport(Integer::class)
             is R_BooleanType -> addImport(Boolean::class)
+            is R_IntegerType -> addImport(Long::class)
+            is R_DecimalType -> addImport(BigDecimal::class)
+            is R_TextType -> addImport(String::class)
+            is R_ByteArrayType -> addImport(ByteArray::class)
+            is R_RowidType -> addImport(Long::class)
+            is R_JsonType -> throw IllegalArgumentException("JSON not supported")
             else -> type.name.split(":").last().snakeToUpperCamelCase() // Entity types
         }
     }

@@ -1,0 +1,47 @@
+module;
+
+entity test_entity {
+    name: text;
+    num: integer;
+    b_Type: boolean;
+}
+
+
+entity boolean_entity {
+    a: boolean;
+}
+
+
+entity integer_entity {
+    a: integer;
+}
+
+
+entity decimal_entity {
+    a: decimal;
+}
+
+
+entity text_entity {
+    a: text;
+}
+
+
+entity byte_array_entity {
+    a: byte_array;
+}
+
+
+entity rowid_entity {
+    a: rowid;
+}
+
+entity json_entity {
+    a: json;
+}
+
+entity multi_text_entity {
+    name;
+    a: text;
+    b: text;
+}
