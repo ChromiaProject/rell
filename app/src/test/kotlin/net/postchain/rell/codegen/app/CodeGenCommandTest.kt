@@ -23,6 +23,7 @@ internal class CodeGenCommandTest {
         CodeGenCommand().parse(listOf(dir.pathString, "${dir.pathString}/target", "--module", "test", "--package", "com.example"))
         assertk.assert(dir.toFile().listFiles()).hasSize(2)
         assertk.assert(File(dir.toFile(), "target/test").list()).containsAll(
+            "my_enum.kt",
             "my_entity.kt",
             "my_struct.kt"
         )

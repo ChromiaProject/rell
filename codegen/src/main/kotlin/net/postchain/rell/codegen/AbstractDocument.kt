@@ -14,6 +14,7 @@ abstract class AbstractDocument(override val intro: String = "",
             |${imports.joinToString("\n")}
             |
             |${sections.joinToString("\n") { it.format() }}
+            |
         """.trimMargin()
     }
 

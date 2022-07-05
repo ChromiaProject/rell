@@ -1,5 +1,9 @@
 module;
 
+enum my_enum {
+    a, b
+}
+
 entity my_entity {
     name;
 }

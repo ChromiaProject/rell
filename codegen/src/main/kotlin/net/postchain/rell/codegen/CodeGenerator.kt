@@ -34,6 +34,15 @@ class CodeGenerator(val factory: DocumentFactory, val singleFile: Boolean = fals
                 structFile.createNewFile()
                 structFile.writeText(structDocument.format())
             }
+
+            module.enums.forEach { (name, eDef) ->
+                val enumFile = File(moduleFile, "$name.kt").also { createdFiles.add(it) }
+                val enumDocument = factory.createDocument("package $packageName")
+                val enum = factory.createEnum(eDef)
+                enumDocument.addSection(enum)
+                enumFile.createNewFile()
+                enumFile.writeText(enumDocument.format())
+            }
         }
         return createdFiles
     }
