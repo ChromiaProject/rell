@@ -50,6 +50,7 @@ internal class SimpleKotlinStructTest {
         "text,String",
         "byte_array,ByteArray",
         "rowid,Long",
+        "map,Map<String, Long>"
     )
     fun simpleStructures(rellType: String, kotlinType: String) {
         val struct = assertNotNull(testModule.structs["${rellType}_struct"], "struct does not exist")

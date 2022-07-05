@@ -12,8 +12,9 @@ class KotlinStruct(struct: R_StructDefinition) : Struct {
     private val attributes = struct.struct.attributes.values
 
     override val imports = mutableListOf(
+        "import net.postchain.gtv.Gtv",
+        "import net.postchain.gtv.GtvFactory.gtv",
         "import net.postchain.gtv.mapper.Name",
-        "import net.postchain.gtv.GtvFactory.gtv"
     )
 
     private fun addImport(import: KClass<*>): String {
@@ -32,7 +33,7 @@ class KotlinStruct(struct: R_StructDefinition) : Struct {
     """.trimMargin()
 
     private fun formatAttributes(): String {
-        return "\t${attributes.joinToString("\n\t") { formatAttribute(it) }}"
+        return "\t${attributes.joinToString(",\n\t") { formatAttribute(it) }}"
     }
 
     private fun formatAttribute(attribute: R_Attribute): String {
@@ -54,7 +55,13 @@ class KotlinStruct(struct: R_StructDefinition) : Struct {
             is R_ByteArrayType -> addImport(ByteArray::class)
             is R_RowidType -> addImport(Long::class)
             is R_JsonType -> throw IllegalArgumentException("JSON not supported")
+            is R_MapType -> formatMapType(type)
             else -> type.name.split(":").last().snakeToUpperCamelCase() // Entity types
         }
+    }
+
+    private fun formatMapType(type: R_MapType): String {
+        addImport(Map::class)
+        return "Map<${rTypeToString(type.keyType)}, ${rTypeToString(type.valueType)}>"
     }
 }

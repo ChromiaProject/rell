@@ -25,7 +25,7 @@ class KotlinEntity(entity: R_EntityDefinition) : Entity {
     """.trimMargin()
 
     private fun formatAttributes(): String {
-        return "\t${attributes.joinToString("\n\t") { formatAttribute(it) }}"
+        return "\t${attributes.joinToString(",\n\t") { formatAttribute(it) }}"
     }
 
     private fun formatAttribute(attribute: R_Attribute): String {

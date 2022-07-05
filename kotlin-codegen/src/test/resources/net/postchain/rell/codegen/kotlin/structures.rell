@@ -28,6 +28,10 @@ struct json_struct {
     a: json;
 }
 
+struct map_struct {
+    a: map<text,integer>;
+}
+
 struct builtin_name {
     name;
 }
