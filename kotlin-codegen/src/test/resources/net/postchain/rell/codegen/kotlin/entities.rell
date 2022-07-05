@@ -6,31 +6,25 @@ entity test_entity {
     b_Type: boolean;
 }
 
-
 entity boolean_entity {
     a: boolean;
 }
-
 
 entity integer_entity {
     a: integer;
 }
 
-
 entity decimal_entity {
     a: decimal;
 }
-
 
 entity text_entity {
     a: text;
 }
 
-
 entity byte_array_entity {
     a: byte_array;
 }
-
 
 entity rowid_entity {
     a: rowid;

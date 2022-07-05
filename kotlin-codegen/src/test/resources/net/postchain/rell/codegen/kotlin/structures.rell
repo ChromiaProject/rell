@@ -1,0 +1,37 @@
+module;
+
+struct boolean_struct {
+    a: boolean;
+}
+
+struct integer_struct {
+    a: integer;
+}
+
+struct decimal_struct {
+    a: decimal;
+}
+
+struct text_struct {
+    a: text;
+}
+
+struct byte_array_struct {
+    a: byte_array;
+}
+
+struct rowid_struct {
+    a: rowid;
+}
+
+struct json_struct {
+    a: json;
+}
+
+struct builtin_name {
+    name;
+}
+
+struct builtin_pubkey {
+    pubkey;
+}
