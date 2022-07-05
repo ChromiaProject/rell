@@ -17,13 +17,22 @@ class CodeGenerator(val factory: DocumentFactory, val singleFile: Boolean = fals
             val moduleFile = File(targetFolder, moduleFileName)
             moduleFile.mkdirs()
 
-            module.entities.forEach { (name, kdef) ->
+            module.entities.forEach { (name, kDef) ->
                 val entityFile = File(moduleFile, "$name.kt").also { createdFiles.add(it) }
                 val entityDocument = factory.createDocument("package $packageName")
-                val entity = factory.createEntity(kdef)
+                val entity = factory.createEntity(kDef)
                 entityDocument.addSection(entity)
                 entityFile.createNewFile()
                 entityFile.writeText(entityDocument.format())
+            }
+
+            module.structs.forEach { (name, sDef) ->
+                val structFile = File(moduleFile, "$name.kt").also { createdFiles.add(it) }
+                val structDocument = factory.createDocument("package $packageName")
+                val struct = factory.createStruct(sDef)
+                structDocument.addSection(struct)
+                structFile.createNewFile()
+                structFile.writeText(structDocument.format())
             }
         }
         return createdFiles

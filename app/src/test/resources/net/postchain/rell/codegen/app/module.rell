@@ -1,0 +1,9 @@
+module;
+
+entity my_entity {
+    name;
+}
+
+struct my_struct {
+    name;
+}
