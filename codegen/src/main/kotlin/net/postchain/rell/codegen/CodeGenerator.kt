@@ -27,35 +27,39 @@ class CodeGenerator(val factory: DocumentFactory, val singleFile: Boolean = fals
             val moduleFile = File(targetFolder, moduleFileName)
             moduleFile.mkdirs()
 
-            module.entities.forEach { (name, kDef) ->
-                val entity = factory.createEntity(kDef)
-                val entityFile = File(moduleFile, "${entity.name}.kt").also { createdFiles.add(it) }
-                val entityDocument = factory.createDocument("package $packageName")
-                entityDocument.addSection(entity)
-                entityFile.createNewFile()
-                entityFile.writeText(entityDocument.format())
+            module.entities.forEach { (name, eDef) ->
+                saveDocument(moduleFile, name, createdFiles, packageName) { factory.createEntity(eDef) }
             }
 
             module.structs.forEach { (name, sDef) ->
-                val structFile = File(moduleFile, "$name.kt").also { createdFiles.add(it) }
-                val structDocument = factory.createDocument("package $packageName")
-                val struct = factory.createStruct(sDef)
-                structDocument.addSection(struct)
-                structFile.createNewFile()
-                structFile.writeText(structDocument.format())
+                saveDocument(moduleFile, name, createdFiles, packageName) { factory.createStruct(sDef) }
             }
 
             module.enums.forEach { (name, eDef) ->
-                val enumFile = File(moduleFile, "$name.kt").also { createdFiles.add(it) }
-                val enumDocument = factory.createDocument("package $packageName")
-                val enum = factory.createEnum(eDef)
-                enumDocument.addSection(enum)
-                enumFile.createNewFile()
-                enumFile.writeText(enumDocument.format())
+                saveDocument(moduleFile, name, createdFiles, packageName) { factory.createEnum(eDef) }
+            }
+
+            module.queries.forEach { (name,qDef) ->
+                saveDocument(moduleFile, name, createdFiles, packageName) { factory.createQuery(qDef) }
             }
         }
         return createdFiles
     }
+
+    private fun saveDocument(
+        moduleFile: File,
+        name: String,
+        createdFiles: MutableSet<File>,
+        packageName: String,
+        sectionCreator: () -> DocumentSection
+    ) {
+        val file = File(moduleFile, "$name.kt").also { createdFiles.add(it) }
+        val document = factory.createDocument("package $packageName")
+        document.addSection(sectionCreator())
+        file.createNewFile()
+        file.writeText(document.format())
+    }
+
 
 }
 

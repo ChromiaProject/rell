@@ -5,6 +5,7 @@ import net.postchain.rell.codegen.kotlin.util.BlockEntity
 import net.postchain.rell.codegen.kotlin.util.TransactionEntity
 import net.postchain.rell.model.R_EntityDefinition
 import net.postchain.rell.model.R_EnumDefinition
+import net.postchain.rell.model.R_QueryDefinition
 import net.postchain.rell.model.R_StructDefinition
 
 class KotlinDocumentFactory : DocumentFactory {
@@ -27,5 +28,9 @@ class KotlinDocumentFactory : DocumentFactory {
 
     override fun createEnum(rellEnum: R_EnumDefinition): Enumeration {
         return KotlinEnumeration(rellEnum)
+    }
+
+    override fun createQuery(rellQuery: R_QueryDefinition): Query {
+        return KotlinQuery(rellQuery)
     }
 }
