@@ -59,7 +59,9 @@ class KotlinQuery(val queryDef: R_QueryDefinition) : Query {
 
 
     private fun formatReturnStatement() : String {
+        if (returnType is R_TupleType) return ""
         if (returnType is R_ListType) {
+            if (returnType.elementType is R_TupleType) return ""
             imports.add("import net.postchain.gtv.mapper.toList")
             return ".toList<${formatParameter(returnType.elementType)}>()"
         }

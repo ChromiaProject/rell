@@ -47,7 +47,8 @@ internal class KotlinQueryTest {
         "entity,asInteger()",
         "decimal,asString()",
         "map,'asDict().mapValues { (k, v) -> v.asString() }'",
-        "list_integer,toList<Long>()"
+        "list_integer,toList<Long>()",
+        "proposals_since,gtv(since))))"
     )
     fun returnTypeTest(type: String, returnType: String) {
         val query = kotlin.test.assertNotNull(testModule.queries["get_$type"])
@@ -56,7 +57,7 @@ internal class KotlinQueryTest {
         assertk.assert(formatted).all {
             startsWith("fun PostchainClient.")
             contains("get${type.snakeToUpperCamelCase()}")
-            endsWith(".$returnType")
+            endsWith(returnType)
         }
     }
 
