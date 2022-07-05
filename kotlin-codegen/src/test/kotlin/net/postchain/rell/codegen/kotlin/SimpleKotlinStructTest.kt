@@ -81,4 +81,13 @@ internal class SimpleKotlinStructTest {
         }
     }
 
+    @Test
+    fun nested() {
+        val struct = assertNotNull(testModule.structs["nested_struct"])
+        val k = KotlinStruct(struct)
+        val formatted = k.format()
+        assert(formatted).all {
+            contains("@Name(\"a\") val a: TextStruct")
+        }
+    }
 }

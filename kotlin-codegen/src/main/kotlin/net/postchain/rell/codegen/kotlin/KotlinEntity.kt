@@ -43,7 +43,7 @@ class KotlinEntity(entity: R_EntityDefinition) : Entity {
             is R_ByteArrayType -> addImport(ByteArray::class)
             is R_RowidType -> addImport(Long::class)
             is R_JsonType -> throw IllegalArgumentException("JSON not supported")
-            else -> type.name.split(":").last().snakeToUpperCamelCase() // Entity types
+            else -> type.name.split(":").last().snakeToUpperCamelCase() // Entity types <module>:<name>
         }
     }
 }

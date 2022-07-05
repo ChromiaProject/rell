@@ -47,3 +47,7 @@ entity builtin_name {
 entity builtin_pubkey {
     pubkey;
 }
+
+entity nested_entity {
+    a: text_entity;
+}

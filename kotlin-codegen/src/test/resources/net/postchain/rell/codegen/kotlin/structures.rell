@@ -35,3 +35,7 @@ struct builtin_name {
 struct builtin_pubkey {
     pubkey;
 }
+
+struct nested_struct {
+    a: text_struct;
+}

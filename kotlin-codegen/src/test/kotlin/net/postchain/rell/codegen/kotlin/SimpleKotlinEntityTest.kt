@@ -106,4 +106,14 @@ internal class SimpleKotlinEntityTest {
         }
     }
 
+    @Test
+    fun nested() {
+        val entity = assertNotNull(testModule.entities["nested_entity"])
+        val k = KotlinEntity(entity)
+        val formatted = k.format()
+        assert(formatted).all {
+            contains("@Name(\"a\") val a: TextEntity")
+        }
+    }
+
 }
