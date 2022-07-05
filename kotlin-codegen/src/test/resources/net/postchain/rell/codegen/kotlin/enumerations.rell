@@ -1,0 +1,6 @@
+module;
+
+enum test {
+    a,
+    b_value
+}

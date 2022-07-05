@@ -1,10 +1,8 @@
 package net.postchain.rell.codegen.kotlin
 
-import net.postchain.rell.codegen.Document
-import net.postchain.rell.codegen.DocumentFactory
-import net.postchain.rell.codegen.Entity
-import net.postchain.rell.codegen.Struct
+import net.postchain.rell.codegen.*
 import net.postchain.rell.model.R_EntityDefinition
+import net.postchain.rell.model.R_EnumDefinition
 import net.postchain.rell.model.R_StructDefinition
 
 class KotlinDocumentFactory : DocumentFactory {
@@ -19,5 +17,9 @@ class KotlinDocumentFactory : DocumentFactory {
 
     override fun createStruct(rellStruct: R_StructDefinition): Struct {
         return KotlinStruct(rellStruct)
+    }
+
+    override fun createEnum(rellEnum: R_EnumDefinition): Enumeration {
+        return KotlinEnumeration(rellEnum)
     }
 }

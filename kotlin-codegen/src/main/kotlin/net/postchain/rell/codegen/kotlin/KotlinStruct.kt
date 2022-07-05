@@ -8,8 +8,8 @@ import java.math.BigDecimal
 import kotlin.reflect.KClass
 
 class KotlinStruct(struct: R_StructDefinition) : Struct {
-    val name = struct.simpleName
-    val attributes = struct.struct.attributes.values
+    private val name = struct.simpleName
+    private val attributes = struct.struct.attributes.values
 
     override val imports = mutableListOf(
         "import net.postchain.gtv.mapper.Name",
