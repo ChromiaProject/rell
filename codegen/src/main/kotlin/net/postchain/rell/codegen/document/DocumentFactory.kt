@@ -1,5 +1,9 @@
-package net.postchain.rell.codegen
+package net.postchain.rell.codegen.document
 
+import net.postchain.rell.codegen.section.Entity
+import net.postchain.rell.codegen.section.Enumeration
+import net.postchain.rell.codegen.section.Query
+import net.postchain.rell.codegen.section.Struct
 import net.postchain.rell.model.R_EntityDefinition
 import net.postchain.rell.model.R_EnumDefinition
 import net.postchain.rell.model.R_QueryDefinition

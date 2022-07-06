@@ -1,6 +1,6 @@
 package net.postchain.rell.codegen.kotlin
 
-import net.postchain.rell.codegen.Struct
+import net.postchain.rell.codegen.section.Struct
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*

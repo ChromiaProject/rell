@@ -1,6 +1,6 @@
 package net.postchain.rell.codegen.kotlin
 
-import net.postchain.rell.codegen.Enumeration
+import net.postchain.rell.codegen.section.Enumeration
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
 

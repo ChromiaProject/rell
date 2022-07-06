@@ -1,6 +1,6 @@
 package net.postchain.rell.codegen.kotlin.util
 
-import net.postchain.rell.codegen.Entity
+import net.postchain.rell.codegen.section.Entity
 
 class BlockEntity() : Entity {
     override val name = "Block"

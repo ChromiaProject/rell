@@ -1,6 +1,6 @@
 package net.postchain.rell.codegen.kotlin
 
-import net.postchain.rell.codegen.*
+import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.kotlin.util.BlockEntity
 import net.postchain.rell.codegen.kotlin.util.TransactionEntity
 import net.postchain.rell.model.R_EntityDefinition

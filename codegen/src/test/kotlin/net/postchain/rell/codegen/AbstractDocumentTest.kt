@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test
 import assertk.assert
 import assertk.assertions.contains
 import assertk.assertions.hasSize
+import net.postchain.rell.codegen.document.AbstractDocument
+import net.postchain.rell.codegen.section.Entity
 
 internal class AbstractDocumentTest{
 

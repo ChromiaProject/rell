@@ -1,5 +1,7 @@
 package net.postchain.rell.codegen
 
+import net.postchain.rell.codegen.document.DocumentFactory
+import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.compiler.base.utils.C_SourceDir

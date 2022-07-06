@@ -1,6 +1,6 @@
 package net.postchain.rell.codegen.kotlin
 
-import net.postchain.rell.codegen.Query
+import net.postchain.rell.codegen.section.Query
 import net.postchain.rell.codegen.kotlin.util.rTypeToString
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase

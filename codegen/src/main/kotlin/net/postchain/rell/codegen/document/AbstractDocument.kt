@@ -1,4 +1,7 @@
-package net.postchain.rell.codegen
+package net.postchain.rell.codegen.document
+
+import net.postchain.rell.codegen.StringSerializable
+import net.postchain.rell.codegen.section.DocumentSection
 
 abstract class AbstractDocument(override val intro: String = "",
                                 override val packageString: String) : Document {
