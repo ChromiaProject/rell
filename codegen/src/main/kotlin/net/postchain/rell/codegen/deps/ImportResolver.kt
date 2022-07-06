@@ -1,11 +1,23 @@
 package net.postchain.rell.codegen.deps
 
 import mu.KLogging
+import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
 
 class ImportResolver {
 
     companion object : KLogging()
+
+    fun resolveQueryImports(query: R_QueryDefinition): List<String> {
+        return resolveQueryDependencies(query).map {appLevelNameToModuleName(it)
+        }
+    }
+
+    private fun appLevelNameToModuleName(str: String): String {
+        val (module, obj) = str.split(":", limit = 2)
+        return "${module.substringBefore("[")}.${obj.snakeToUpperCamelCase()}"
+
+    }
 
     fun resolveQueryDependencies(query: R_QueryDefinition): Set<String> {
         val dependencies = mutableSetOf<String>()

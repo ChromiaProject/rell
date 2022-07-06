@@ -20,7 +20,7 @@ class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : Query {
     private val returnType = queryDef.type()
 
     init {
-        val moduleImports = ImportResolver().resolveQueryDependencies(queryDef)
+        val moduleImports = ImportResolver().resolveQueryImports(queryDef)
             .filterNot { it.startsWith("$moduleName:") }
             .map { "import $basePackage.${applicationNameToPackageName(it)}" }
         imports = moduleImports + listOf(
