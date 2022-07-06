@@ -111,7 +111,7 @@ internal class SimpleKotlinEntityTest {
         val k = KotlinEntity(entity)
         val formatted = k.format()
         assert(formatted).all {
-            contains("@Name(\"a\") val a: TextEntity")
+            contains("@Name(\"a\") val a: Long")
         }
     }
 

@@ -32,15 +32,16 @@ internal class CodeGeneratorTest {
 
     @Test
     fun sections() {
-        assertk.assert(sections).hasSize(2 + 1 + 2 + 2)
+        assertk.assert(sections).hasSize( 14 ) // 5 queries and 9 needed
     }
 
     @Test
     fun documents() {
         val documents = generator.constructDocuments(sections, true)
-        assertk.assert(documents).hasSize(3)
+        assertk.assert(documents).hasSize(4)
         assertk.assert(documents[0].document.format()).contains("import com.example.b.BStruct")
         assertk.assert(documents[0].document.format()).contains("import com.example.c.CEntity")
+        assertk.assert(documents[0].document.format()).contains("import com.example.e.EEntity")
     }
 
 }

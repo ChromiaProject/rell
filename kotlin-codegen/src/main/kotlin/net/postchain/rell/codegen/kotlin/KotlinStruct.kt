@@ -58,6 +58,8 @@ class KotlinStruct(struct: R_StructDefinition) : Struct {
             is R_RowidType -> addImport(Long::class)
             is R_JsonType -> throw IllegalArgumentException("JSON not supported")
             is R_MapType -> formatMapType(type)
+            is R_EntityType -> addImport(Long::class)
+            //is R_StructType -> type.name.substringAfter("<").replace(">","")
             else -> type.name.split(":").last().snakeToUpperCamelCase() // Entity types
         }
     }

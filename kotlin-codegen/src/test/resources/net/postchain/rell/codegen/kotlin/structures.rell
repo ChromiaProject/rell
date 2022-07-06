@@ -43,3 +43,9 @@ struct builtin_pubkey {
 struct nested_struct {
     a: text_struct;
 }
+
+entity a { name; }
+
+struct nested_struct2 {
+    a: struct<a>;
+}

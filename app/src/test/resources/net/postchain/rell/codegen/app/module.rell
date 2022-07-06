@@ -11,3 +11,5 @@ entity my_entity {
 struct my_struct {
     name;
 }
+
+query get_enum() = my_enum.a;

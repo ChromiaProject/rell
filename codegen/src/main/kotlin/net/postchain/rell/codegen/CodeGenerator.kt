@@ -29,10 +29,12 @@ class CodeGenerator(val factory: DocumentFactory, val singleFile: Boolean = fals
         val rellStructures = app.modules.flatMap { it.structs.values }.associateBy { it.appLevelName }
         val rellQueries = app.modules.flatMap { it.queries.values }.associateBy { it.appLevelName }
 
-        val neededObjects = rellQueries.values.flatMap { importResolver.resolveQueryImports(it) }.toSet()
+        val neededObjects = rellQueries.values.flatMap { importResolver.resolveQueryDependencies(it) }.toSet()
 
-        val enums = rellEnums.values.map { factory.createEnum(it) }
         val queries = rellQueries.values.map { factory.createQuery(it) }
+
+        val enums = rellEnums.filterKeys { it in neededObjects }
+            .map { factory.createEnum(it.value) }
 
         val entities = rellEntities.filterKeys { it in neededObjects }
             .map { factory.createEntity(it.value) }

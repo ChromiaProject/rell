@@ -1,27 +1,29 @@
 package net.postchain.rell.codegen.deps
 
 import mu.KLogging
-import net.postchain.rell.model.R_EnumType
-import net.postchain.rell.model.R_QueryDefinition
-import net.postchain.rell.model.R_Struct
-import net.postchain.rell.model.R_StructType
+import net.postchain.rell.model.*
 
 class ImportResolver {
 
     companion object : KLogging()
 
-    fun resolveQueryImports(query: R_QueryDefinition): Set<String> {
+    fun resolveQueryDependencies(query: R_QueryDefinition): Set<String> {
         val dependencies = mutableSetOf<String>()
         val ret = query.type()
         if (ret is R_StructType) {
-            resolveImports(ret, dependencies)
+            dependencies.add(extractStructureName(ret).first)
+            resolveStructureDependencies(ret.struct, dependencies)
+        } else if (ret is R_CollectionType && ret.elementType is R_StructType) {
+            dependencies.add(extractStructureName(ret.elementType as R_StructType).first)
+            resolveStructureDependencies((ret.elementType as R_StructType).struct, dependencies)
         } else if (ret is R_EnumType) {
             dependencies.add(ret.name)
         }
         query.params().forEach {
             val t = it.type
             if (t is R_StructType) {
-                resolveImports(t, dependencies)
+                dependencies.add(extractStructureName(t).first)
+                resolveStructureDependencies(t.struct, dependencies)
             } else if (t is R_EnumType) {
                 dependencies.add(t.name)
             }
@@ -29,35 +31,32 @@ class ImportResolver {
         return dependencies
     }
 
-    private fun resolveImports(
+    private fun extractStructureName(
         struct: R_StructType,
-        dependencies: MutableSet<String>
-    ) {
-        if (struct.name.contains("struct<")) { // Ad-hoc structs
+    ): Pair<String, R_StructType> {
+        return if (struct.name.contains("struct<")) { // Ad-hoc structs
+            // entities foo:bar and external entities foo[foo]:bar
             if (struct.name.contains(":")) { // Entities
                 val element = struct.name.substringAfter("<").replace(">", "")
-                dependencies.add(element.substringBefore("["))
+                element to struct
             } else {
                 // Custom struct
-                dependencies
+                throw IllegalArgumentException("Could not resolve name")
             }
         } else {
-            dependencies.add(struct.name)
-            dependencies.addAll(resolveImports(struct.struct, dependencies))
+            struct.name to struct
         }
     }
 
-    private fun resolveImports(struct: R_Struct, dependencies: MutableSet<String>): Set<String> {
+    private fun resolveStructureDependencies(struct: R_Struct, dependencies: MutableSet<String>) {
         val r = mutableSetOf<String>()
-        val s = struct.attributes.filterValues { it.type is R_StructType }.values
-        s.forEach { resolveImports((it.type as R_StructType), dependencies) }
-        s.forEach {
-            val t = it.type
-            if (t is R_StructType) {
-                r.addAll(resolveImports(t.struct, dependencies))
+        struct.attributes.values
+            .filter { it.type is R_StructType }
+            .map { it.type as R_StructType }
+            .forEach {
+                dependencies.add(extractStructureName((it)).first)
+                resolveStructureDependencies((it).struct, dependencies)
             }
-        }
-        r.addAll(struct.attributes.values.filter{ it.type is R_EnumType }.map { it.type.name })
-        return r
+        dependencies.addAll(struct.attributes.values.filter { it.type is R_EnumType }.map { it.type.name })
     }
 }
