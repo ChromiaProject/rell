@@ -5,7 +5,7 @@ import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
 
-open class GtvContertible(
+open class GtvConvertibleSection(
     val name: String,
     override val externalName: String,
     override val moduleName: String, private val attributes: Collection<R_Attribute>

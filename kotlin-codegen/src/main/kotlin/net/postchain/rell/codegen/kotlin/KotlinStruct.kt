@@ -5,7 +5,7 @@ import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.R_StructDefinition
 
 
-class KotlinStruct(struct: R_StructDefinition) : GtvContertible(
+class KotlinStruct(struct: R_StructDefinition) : GtvConvertibleSection(
     struct.appLevelName,
     struct.simpleName.snakeToUpperCamelCase(),
     struct.defId.module.substringBefore("["),

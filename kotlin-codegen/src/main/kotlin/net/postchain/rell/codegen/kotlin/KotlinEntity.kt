@@ -1,13 +1,10 @@
 package net.postchain.rell.codegen.kotlin
 
 import net.postchain.rell.codegen.section.Entity
-import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
-import java.math.BigDecimal
-import kotlin.reflect.KClass
 
-class KotlinEntity(entity: R_EntityDefinition) : GtvContertible(
+class KotlinEntity(entity: R_EntityDefinition) : GtvConvertibleSection(
     entity.appLevelName,
     entity.simpleName.snakeToUpperCamelCase(),
     entity.defId.module.substringBefore("["),
