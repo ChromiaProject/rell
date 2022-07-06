@@ -48,7 +48,7 @@ internal class KotlinQueryTest {
         "entity,asInteger()",
         "decimal,asString()",
         "map,'asDict().mapValues { (k, v) -> v.asString() }'",
-        "list_integer,toList<Long>()",
+        "list_integer,map{ it.asInteger() }",
         "proposals_since,gtv(since))))"
     )
     fun returnTypeTest(type: String, returnType: String) {
@@ -81,12 +81,5 @@ internal class KotlinQueryTest {
             contains("($params) =")
             contains("\"$queryName\", gtv(mapOf($gtvParam")
         }
-    }
-
-    @Test
-    fun listTypesHasExtraImport() {
-        val query = kotlin.test.assertNotNull(testModule.queries["get_list_integer"])
-        val k = KotlinQuery(query)
-        assertk.assert(k.imports).contains("import net.postchain.gtv.mapper.toList")
     }
 }

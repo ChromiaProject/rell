@@ -18,8 +18,7 @@ class KotlinQuery(queryDef: R_QueryDefinition) : Query {
         "import net.postchain.gtv.GtvFactory.gtv",
     )
 
-    private val returnType =
-        queryDef.type().also { if (it is R_ListType) imports.add("import net.postchain.gtv.mapper.toList") }
+    private val returnType = queryDef.type()
 
     override fun format() = """
         |fun PostchainClient.$externalName(${formatParameters()}) = 
@@ -71,7 +70,7 @@ class KotlinQuery(queryDef: R_QueryDefinition) : Query {
         if (returnType is R_TupleType) return ""
         if (returnType is R_ListType) {
             if (returnType.elementType is R_TupleType) return ""
-            return ".toList<${formatParameter(returnType.elementType)}>()"
+            return ".toArray().map{ it${formatReturnType(returnType.elementType)} }"
         }
         return formatReturnType(returnType)
     }
