@@ -5,14 +5,17 @@ import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
 
 class KotlinEnumeration(enum: R_EnumDefinition) : Enumeration {
-    private val name = enum.simpleName
-    override val externalName = name.snakeToUpperCamelCase()
+    private val name = enum.appLevelName
+    override val externalName = enum.simpleName.snakeToUpperCamelCase()
     override val moduleName = enum.defId.module.substringBefore("[")
     private val enumValues = enum.values()
 
     override val imports = listOf<String>()
 
     override fun format() = """
+        |/*
+        |* Enum $name
+        |*/
         |enum class $externalName {
         |${formatEnumValues()}
         |}

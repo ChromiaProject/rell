@@ -8,8 +8,11 @@ import net.postchain.rell.model.*
 import java.math.BigDecimal
 import kotlin.reflect.KClass
 
-open class GtvContertible(val name: String, override val moduleName: String,private  val attributes: Collection<R_Attribute>): DocumentSection {
-    override val externalName = name.snakeToUpperCamelCase()
+open class GtvContertible(
+    val name: String,
+    override val externalName: String,
+    override val moduleName: String, private val attributes: Collection<R_Attribute>
+) : DocumentSection {
 
     override val imports = mutableListOf(
         "import net.postchain.gtv.Gtv",
@@ -23,12 +26,12 @@ open class GtvContertible(val name: String, override val moduleName: String,priv
     }
 
     override fun format() = """
-        |class $externalName(
+        |data class $externalName(
         |${formatAttributes()}
         |) {
-        |   fun toGtv(): Gtv {
-        |       return ${formatGtv()}
-        |   }
+        |    fun toGtv(): Gtv {
+        |        return ${formatGtv()}
+        |    }
         |}
     """.trimMargin()
 
@@ -43,7 +46,14 @@ open class GtvContertible(val name: String, override val moduleName: String,priv
     }
 
     private fun formatGtv(): String {
-        return "gtv(${attributes.joinToString(",\n\t\t\t") { attributeToGtv(it.name.snakeToLowerCamelCase(), it.type) }}\n\t)"
+        return "gtv(\n\t\t\t${
+            attributes.joinToString(",\n\t\t\t") {
+                attributeToGtv(
+                    it.name.snakeToLowerCamelCase(),
+                    it.type
+                )
+            }
+        }\n\t\t)"
     }
 
     private fun attributeToGtv(attributeName: String, attributeType: R_Type): String {
