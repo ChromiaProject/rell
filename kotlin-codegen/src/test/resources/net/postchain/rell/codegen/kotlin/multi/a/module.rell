@@ -15,4 +15,6 @@ enum a_enum {
     a, b
 }
 
-query get_b() = b.b_enum.b;
+query get_a(a: a_struct) = struct<a_entity>(a = a_enum.a);
+
+query get_b() = a_struct(name = "Alpha", b = b.b_struct(b = b.b_enum.b));

@@ -31,7 +31,7 @@ internal class CodeGeneratorTest {
 
     @Test
     fun sections() {
-        assertk.assert(sections).hasSize(2 + 1 + 2 + 1)
+        assertk.assert(sections).hasSize(2 + 1 + 2 + 2)
     }
 
     @Test

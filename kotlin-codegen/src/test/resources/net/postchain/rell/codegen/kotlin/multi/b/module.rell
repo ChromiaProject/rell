@@ -1,9 +1,13 @@
 module;
 
 struct b_struct {
-    name;
+    b: b_enum;
 }
 
 enum b_enum {
     a, b
+}
+
+entity not_used {
+    name;
 }

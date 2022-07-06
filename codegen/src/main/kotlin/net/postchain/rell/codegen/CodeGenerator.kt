@@ -1,5 +1,6 @@
 package net.postchain.rell.codegen
 
+import net.postchain.rell.codegen.deps.ImportResolver
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.document.DocumentFile
 import net.postchain.rell.codegen.section.DocumentSection
@@ -18,24 +19,28 @@ data class QueryFile(val rellModule: String, val v: R_QueryDefinition)
 
 class CodeGenerator(val factory: DocumentFactory, val singleFile: Boolean = false) {
 
+    val importResolver = ImportResolver()
 
     fun createSections(source: File, baseModule: String): List<DocumentSection> {
         val app = compile(source, baseModule)
 
-        val enums =
-            app.modules.flatMap { rellModule -> rellModule.enums.map { it.value.appLevelName to factory.createEnum(it.value) } }
-                .groupBy({ it.first }, { it.second })
+        val rellEnums = app.modules.flatMap { it.enums.values }.associateBy { it.appLevelName }
+        val rellEntities = app.modules.flatMap { it.entities.values }.associateBy { it.appLevelName }
+        val rellStructures = app.modules.flatMap { it.structs.values }.associateBy { it.appLevelName }
+        val rellQueries = app.modules.flatMap { it.queries.values }.associateBy { it.appLevelName }
 
-        val entities = app.modules.flatMap { rellmodule -> rellmodule.entities.values.map { it.appLevelName to factory.createEntity(it) } }
-            .groupBy({ it.first }, { it.second })
+        val neededObjects = rellQueries.values.flatMap { importResolver.resolveQueryImports(it) }.toSet()
 
-        val structures = app.modules.flatMap { rellmodule -> rellmodule.structs.values.map { it.appLevelName to factory.createStruct(it) } }
-            .groupBy({ it.first }, { it.second })
+        val enums = rellEnums.values.map { factory.createEnum(it) }
+        val queries = rellQueries.values.map { factory.createQuery(it) }
 
-        val queries = app.modules.flatMap { rellmodule -> rellmodule.queries.values.map { it.appLevelName to factory.createQuery(it) } }
-            .groupBy({ it.first }, { it.second })
+        val entities = rellEntities.filterKeys { it in neededObjects }
+            .map { factory.createEntity(it.value) }
 
-        return enums.flatMap { it.value } + entities.flatMap { it.value } + structures.flatMap { it.value } + queries.flatMap { it.value }
+        val structures = rellStructures.filterKeys { it in neededObjects }
+            .map { factory.createStruct(it.value) }
+
+        return enums + entities + structures + queries
     }
 
     fun constructDocuments(sections: List<DocumentSection>, basePackage: String, singleFile: Boolean = true): List<DocumentFile> {

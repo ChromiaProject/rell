@@ -14,18 +14,19 @@ class KotlinQuery(queryDef: R_QueryDefinition) : Query {
     private val params = queryDef.params()
 
     override val imports = mutableListOf(
-            "import net.postchain.client.core.PostchainClient",
-            "import net.postchain.gtv.GtvFactory.gtv",
-        )
+        "import net.postchain.client.core.PostchainClient",
+        "import net.postchain.gtv.GtvFactory.gtv",
+    )
 
-    private val returnType = queryDef.type().also { if (it is R_ListType) imports.add("import net.postchain.gtv.mapper.toList") }
+    private val returnType =
+        queryDef.type().also { if (it is R_ListType) imports.add("import net.postchain.gtv.mapper.toList") }
 
     override fun format() = """
         |fun PostchainClient.$externalName(${formatParameters()}) = 
         |   querySync("$name", gtv(mapOf(${formatQuery()})))${formatReturnStatement()}
     """.trimMargin()
 
-    private fun formatParameters() : String {
+    private fun formatParameters(): String {
         if (params.isEmpty()) return ""
         return params.joinToString(", ") { "${it.name}: ${formatParameter(it.type)}" }
     }
@@ -46,6 +47,7 @@ class KotlinQuery(queryDef: R_QueryDefinition) : Query {
             else -> type.name.split(":").last().snakeToUpperCamelCase() // Struct types
         }
     }
+
     private fun formatMapType(type: R_MapType): String {
         return "Map<${rTypeToString(type.keyType)}, ${formatParameter(type.valueType)}>"
     }
@@ -65,7 +67,7 @@ class KotlinQuery(queryDef: R_QueryDefinition) : Query {
     }
 
 
-    private fun formatReturnStatement() : String {
+    private fun formatReturnStatement(): String {
         if (returnType is R_TupleType) return ""
         if (returnType is R_ListType) {
             if (returnType.elementType is R_TupleType) return ""
