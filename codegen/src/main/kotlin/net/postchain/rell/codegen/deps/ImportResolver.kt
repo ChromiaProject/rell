@@ -63,8 +63,17 @@ class ImportResolver {
     private fun resolveStructureDependencies(struct: R_Struct, dependencies: MutableSet<String>) {
         val r = mutableSetOf<String>()
         struct.attributes.values
-            .filter { it.type is R_StructType }
-            .map { it.type as R_StructType }
+            .map { it.type }
+            .filterIsInstance<R_CollectionType>()
+            .map { it.elementType }
+            .filterIsInstance<R_StructType>()
+            .forEach {
+                dependencies.add(extractStructureName((it)).first)
+                resolveStructureDependencies((it).struct, dependencies)
+            }
+        struct.attributes.values
+            .map { it.type }
+            .filterIsInstance<R_StructType>()
             .forEach {
                 dependencies.add(extractStructureName((it)).first)
                 resolveStructureDependencies((it).struct, dependencies)

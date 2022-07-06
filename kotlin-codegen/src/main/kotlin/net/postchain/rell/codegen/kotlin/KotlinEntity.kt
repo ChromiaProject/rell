@@ -46,6 +46,9 @@ class KotlinEntity(entity: R_EntityDefinition) : Entity {
             is R_RowidType -> addImport(Long::class)
             is R_JsonType -> throw IllegalArgumentException("JSON not supported")
             is R_EntityType -> addImport(Long::class)
+            is R_SetType -> "Set<${rTypeToString(type.elementType)}>"
+            is R_ListType -> "List<${rTypeToString(type.elementType)}>"
+            is R_MapType -> "Map<${rTypeToString(type.keyType)}, ${rTypeToString(type.valueType)}>"
             else -> type.name.split(":").last().snakeToUpperCamelCase() // Entity types <module>:<name>
         }
     }

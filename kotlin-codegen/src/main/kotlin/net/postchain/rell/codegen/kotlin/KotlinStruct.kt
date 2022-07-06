@@ -57,15 +57,11 @@ class KotlinStruct(struct: R_StructDefinition) : Struct {
             is R_ByteArrayType -> addImport(ByteArray::class)
             is R_RowidType -> addImport(Long::class)
             is R_JsonType -> throw IllegalArgumentException("JSON not supported")
-            is R_MapType -> formatMapType(type)
             is R_EntityType -> addImport(Long::class)
-            //is R_StructType -> type.name.substringAfter("<").replace(">","")
-            else -> type.name.split(":").last().snakeToUpperCamelCase() // Entity types
+            is R_SetType -> "Set<${rTypeToString(type.elementType)}>"
+            is R_ListType -> "Set<${rTypeToString(type.elementType)}>"
+            is R_MapType -> "Map<${rTypeToString(type.keyType)}, ${rTypeToString(type.valueType)}>"
+            else -> type.name.split(":").last().snakeToUpperCamelCase() // Struct types
         }
-    }
-
-    private fun formatMapType(type: R_MapType): String {
-        addImport(Map::class)
-        return "Map<${rTypeToString(type.keyType)}, ${rTypeToString(type.valueType)}>"
     }
 }

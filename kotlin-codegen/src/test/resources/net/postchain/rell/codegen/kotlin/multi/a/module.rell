@@ -25,6 +25,12 @@ struct a3_struct {
     e: struct<e.e_entity>;
 }
 
+struct a4_struct {
+    l: list<b.not_used>; // will be list<integer>;
+}
+
+query get_nested_structure() = list<a4_struct>();
+
 query get_externals() = list<a3_struct>();
 query get_a(a: a_struct) = struct<a_entity>(a = a_enum.a);
 
@@ -33,4 +39,5 @@ query get_b() = a_struct(name = "Alpha", b = b.b_struct(b = b.b_enum.b));
 query get_a_c() = a2_entity(c = struct<c.c_entity>(name = ""));
 
 query get_external() = a3_struct(e = struct<e.e_entity>(name = "", transaction = e.transaction @ {} limit 1));
+
 
