@@ -1,5 +1,7 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.rell.codegen.deps.ImportResolver
+import net.postchain.rell.codegen.kotlin.util.applicationNameToPackageName
 import net.postchain.rell.codegen.section.Query
 import net.postchain.rell.codegen.kotlin.util.rTypeToString
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
@@ -7,18 +9,25 @@ import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
 import java.math.BigDecimal
 
-class KotlinQuery(queryDef: R_QueryDefinition) : Query {
+class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : Query {
     val name = queryDef.simpleName
     override val externalName = name.snakeToLowerCamelCase()
     override val moduleName = queryDef.defId.module
     private val params = queryDef.params()
 
-    override val imports = mutableListOf(
-        "import net.postchain.client.core.PostchainClient",
-        "import net.postchain.gtv.GtvFactory.gtv",
-    )
+    override val imports: List<String>
 
     private val returnType = queryDef.type()
+
+    init {
+        val moduleImports = ImportResolver().resolveQueryImports(queryDef)
+            .filterNot { it.startsWith("$moduleName:") }
+            .map { "import $basePackage.${applicationNameToPackageName(it)}" }
+        imports = moduleImports + listOf(
+            "import net.postchain.client.core.PostchainClient",
+            "import net.postchain.gtv.GtvFactory.gtv",
+        )
+    }
 
     override fun format() = """
         |fun PostchainClient.$externalName(${formatParameters()}) = 

@@ -1,5 +1,6 @@
 package net.postchain.rell.codegen.kotlin
 
+import assertk.assertions.contains
 import assertk.assertions.hasSize
 import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.document.Document
@@ -18,7 +19,7 @@ import java.io.File
 
 internal class CodeGeneratorTest {
 
-    val generator = CodeGenerator(KotlinDocumentFactory())
+    val generator = CodeGenerator(KotlinDocumentFactory("com.example"))
     lateinit var sections: List<DocumentSection>
 
     @BeforeEach
@@ -36,8 +37,9 @@ internal class CodeGeneratorTest {
 
     @Test
     fun documents() {
-        val documents = generator.constructDocuments(sections, "com.example", true)
+        val documents = generator.constructDocuments(sections, true)
         assertk.assert(documents).hasSize(2)
+        assertk.assert(documents[0].document.format()).contains("import com.example.b.BStruct")
     }
 
 }

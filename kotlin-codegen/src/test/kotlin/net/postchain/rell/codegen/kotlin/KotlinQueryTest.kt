@@ -53,7 +53,7 @@ internal class KotlinQueryTest {
     )
     fun returnTypeTest(type: String, returnType: String) {
         val query = kotlin.test.assertNotNull(testModule.queries["get_$type"])
-        val k = KotlinQuery(query)
+        val k = KotlinQuery(query, "")
         val formatted = k.format()
         assertk.assert(formatted).all {
             startsWith("fun PostchainClient.")
@@ -75,7 +75,7 @@ internal class KotlinQueryTest {
     )
     fun parameterTypeTest(queryName: String, params: String, gtvParam: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[queryName])
-        val k = KotlinQuery(query)
+        val k = KotlinQuery(query, "")
         val formatted = k.format()
         assertk.assert(formatted).all {
             contains("($params) =")

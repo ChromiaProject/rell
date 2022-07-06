@@ -43,14 +43,14 @@ class CodeGenerator(val factory: DocumentFactory, val singleFile: Boolean = fals
         return enums + entities + structures + queries
     }
 
-    fun constructDocuments(sections: List<DocumentSection>, basePackage: String, singleFile: Boolean = true): List<DocumentFile> {
+    fun constructDocuments(sections: List<DocumentSection>, singleFile: Boolean = true): List<DocumentFile> {
         if (singleFile) {
             return sections
                 .groupBy { it.moduleName }
                 .map { (module, sections) ->
-                val document = factory.createDocument(basePackage, module)
+                val document = factory.createDocument(module)
                 sections.forEach { document.addSection(it) }
-                DocumentFile("$module.${factory.fileExtension}", document)
+                DocumentFile("$module/$module.${factory.fileExtension}", document)
             }
         }
         return listOf()
@@ -64,7 +64,7 @@ class CodeGenerator(val factory: DocumentFactory, val singleFile: Boolean = fals
             val f = File(targetFolder, "${entity.name}.${factory.fileExtension}").also { createdFiles.add(it) }
             f.parentFile.mkdirs()
             f.createNewFile()
-            val doc = factory.createDocument(packageName, "")
+            val doc = factory.createDocument("")
             doc.addSection(entity)
             f.writeText(doc.format())
         }
@@ -101,7 +101,7 @@ class CodeGenerator(val factory: DocumentFactory, val singleFile: Boolean = fals
         sectionCreator: () -> DocumentSection
     ) {
         val file = File(moduleFile, "$name.${factory.fileExtension}").also { createdFiles.add(it) }
-        val document = factory.createDocument(packageName, "")
+        val document = factory.createDocument("")
         document.addSection(sectionCreator())
         file.createNewFile()
         file.writeText(document.format())

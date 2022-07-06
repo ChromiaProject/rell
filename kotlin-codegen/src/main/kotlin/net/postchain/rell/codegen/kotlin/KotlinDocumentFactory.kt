@@ -8,11 +8,11 @@ import net.postchain.rell.model.R_EnumDefinition
 import net.postchain.rell.model.R_QueryDefinition
 import net.postchain.rell.model.R_StructDefinition
 
-class KotlinDocumentFactory : DocumentFactory {
+class KotlinDocumentFactory(private val basePackage: String) : DocumentFactory {
     override val fileExtension: String
         get() = "kt"
 
-    override fun createDocument(basePackage: String, moduleName: String) = KotlinDocument(basePackage, moduleName)
+    override fun createDocument(moduleName: String) = KotlinDocument(basePackage, moduleName)
 
     override fun createEntity(rellEntity: R_EntityDefinition) = KotlinEntity(rellEntity)
 
@@ -22,5 +22,5 @@ class KotlinDocumentFactory : DocumentFactory {
 
     override fun createEnum(rellEnum: R_EnumDefinition) = KotlinEnumeration(rellEnum)
 
-    override fun createQuery(rellQuery: R_QueryDefinition) = KotlinQuery(rellQuery)
+    override fun createQuery(rellQuery: R_QueryDefinition) = KotlinQuery(rellQuery, basePackage)
 }

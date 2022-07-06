@@ -25,7 +25,7 @@ class CodeGenCommand : CliktCommand("Generates files based on rell sources") {
 
     override fun run() {
         val factory = when (language) {
-            LanguageSupport.Kotlin -> KotlinDocumentFactory()
+            LanguageSupport.Kotlin -> KotlinDocumentFactory(packageName)
         }
         val generator = CodeGenerator(factory, false)
         val out = generator.generateFiles(source, target, moduleName, packageName)

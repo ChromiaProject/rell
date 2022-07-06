@@ -4,6 +4,10 @@ import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
 import java.math.BigDecimal
 
+fun applicationNameToPackageName(str: String) = "${str.split(":").first()}.${str.split(":").last().toObjectName()}"
+
+private fun String.toObjectName() = nameToObjectName(this)
+fun nameToObjectName(str: String) = str.snakeToUpperCamelCase()
 fun rTypeToString(type: R_Type): String {
     return when (type) {
         is R_BooleanType -> Boolean::class.simpleName!!
