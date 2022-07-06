@@ -1,0 +1,18 @@
+module;
+
+import ^.b;
+
+entity a_entity {
+    a: a_enum;
+}
+
+struct a_struct {
+    name;
+    b: b.b_struct;
+}
+
+enum a_enum {
+    a, b
+}
+
+query get_b() = b.b_enum.b;

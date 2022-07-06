@@ -9,6 +9,7 @@ import kotlin.reflect.KClass
 
 class KotlinStruct(struct: R_StructDefinition) : Struct {
     private val name = struct.simpleName
+    override val externalName = name.snakeToUpperCamelCase()
     private val attributes = struct.struct.attributes.values
 
     override val imports = mutableListOf(
@@ -23,7 +24,7 @@ class KotlinStruct(struct: R_StructDefinition) : Struct {
     }
 
     override fun format() = """
-        |class ${name.snakeToUpperCamelCase()}(
+        |class $externalName(
         |${formatAttributes()}
         |) {
         |   fun toGtv(): Gtv {

@@ -1,0 +1,9 @@
+module;
+
+struct b_struct {
+    name;
+}
+
+enum b_enum {
+    a, b
+}

@@ -19,7 +19,6 @@ import kotlin.test.assertNotNull
 internal class KotlinEnumTest {
 
     companion object {
-
         lateinit var testModule: R_Module
         @JvmStatic
         @BeforeAll
@@ -35,8 +34,6 @@ internal class KotlinEnumTest {
                 assertNotNull(it.moduleMap[R_ModuleName.of("enumerations")])
             }
         }
-
-
     }
 
     @Test

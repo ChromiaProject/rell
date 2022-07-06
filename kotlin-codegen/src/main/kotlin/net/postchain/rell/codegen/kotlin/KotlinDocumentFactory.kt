@@ -12,7 +12,7 @@ class KotlinDocumentFactory : DocumentFactory {
     override val fileExtension: String
         get() = "kt"
 
-    override fun createDocument(packageName: String) = KotlinDocument(packageName)
+    override fun createDocument(packageName: String) = KotlinDocument(packageName, "")
 
     override fun createEntity(rellEntity: R_EntityDefinition) = KotlinEntity(rellEntity)
 

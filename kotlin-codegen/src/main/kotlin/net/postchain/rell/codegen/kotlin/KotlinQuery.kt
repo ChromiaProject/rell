@@ -9,6 +9,7 @@ import java.math.BigDecimal
 
 class KotlinQuery(queryDef: R_QueryDefinition) : Query {
     val name = queryDef.simpleName
+    override val externalName = name.snakeToLowerCamelCase()
     private val params = queryDef.params()
 
     override val imports = mutableListOf(
@@ -19,7 +20,7 @@ class KotlinQuery(queryDef: R_QueryDefinition) : Query {
     private val returnType = queryDef.type().also { if (it is R_ListType) imports.add("import net.postchain.gtv.mapper.toList") }
 
     override fun format() = """
-        |fun PostchainClient.${name.snakeToLowerCamelCase()}(${formatParameters()}) = 
+        |fun PostchainClient.$externalName(${formatParameters()}) = 
         |   querySync("$name", gtv(mapOf(${formatQuery()})))${formatReturnStatement()}
     """.trimMargin()
 
