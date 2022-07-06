@@ -57,7 +57,7 @@ internal class SimpleKotlinStructTest {
         val struct = assertNotNull(testModule.structs["${rellType}_struct"], "struct does not exist")
         val formatted = KotlinStruct(struct).format()
         assert(formatted).all {
-            contains("@Name(\"a\") val a: $kotlinType")
+            contains("val a: $kotlinType")
         }
     }
 
@@ -79,7 +79,7 @@ internal class SimpleKotlinStructTest {
         val struct = assertNotNull(testModule.structs["builtin_${keyword}"], "struct does not exist")
         val formatted = KotlinStruct(struct).format()
         assert(formatted).all {
-            contains("@Name(\"$keyword\") val $keyword: $kotlinType")
+            contains("val $keyword: $kotlinType")
         }
     }
 
@@ -89,7 +89,7 @@ internal class SimpleKotlinStructTest {
         val k = KotlinStruct(struct)
         val formatted = k.format()
         assert(formatted).all {
-            contains("@Name(\"a\") val a: TextStruct")
+            contains("val a: TextStruct")
         }
     }
 }

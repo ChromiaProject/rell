@@ -1,7 +1,6 @@
 package net.postchain.rell.codegen.kotlin
 
 import net.postchain.rell.codegen.deps.ImportResolver
-import net.postchain.rell.codegen.kotlin.util.applicationNameToPackageName
 import net.postchain.rell.codegen.section.Query
 import net.postchain.rell.codegen.kotlin.util.rTypeToString
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
@@ -10,7 +9,8 @@ import net.postchain.rell.model.*
 import java.math.BigDecimal
 
 class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : Query {
-    val name = queryDef.appLevelName
+    val appLevelName = queryDef.appLevelName
+    val name = queryDef.simpleName
     override val externalName = queryDef.simpleName.snakeToLowerCamelCase()
     override val moduleName = queryDef.defId.module.substringBefore("[")
     private val params = queryDef.params()
@@ -31,7 +31,7 @@ class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : Query {
 
     override fun format() = """
         |/**
-        | * Query $name 
+        | * Query $appLevelName 
         | */
         |fun PostchainClient.$externalName(${formatParameters()}) = 
         |   querySync("$name", gtv(mapOf(${formatQuery()})))${formatReturnStatement()}

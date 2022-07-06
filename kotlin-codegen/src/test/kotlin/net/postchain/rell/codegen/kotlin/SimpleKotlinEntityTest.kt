@@ -47,7 +47,7 @@ internal class SimpleKotlinEntityTest {
         val formatted = k.format()
         assert(formatted).all {
             contains("TestEntity")
-            contains("@Name(\"name\") val name: String")
+            contains("val name: String")
             contains("num: Long")
             contains("bType: Boolean")
         }
@@ -59,9 +59,9 @@ internal class SimpleKotlinEntityTest {
         val k = KotlinEntity(entity)
         val formatted = k.format()
         assert(formatted).all {
-            contains("@Name(\"name\") val name: String")
-            contains("@Name(\"a\") val a: String")
-            contains("@Name(\"b\") val b: String")
+            contains("val name: String")
+            contains("val a: String")
+            contains("val b: String")
         }
     }
 
@@ -78,7 +78,7 @@ internal class SimpleKotlinEntityTest {
         val entity = assertNotNull(testModule.entities["${rellType}_entity"], "entity does not exist")
         val formatted = KotlinEntity(entity).format()
         assert(formatted).all {
-            contains("@Name(\"a\") val a: $kotlinType")
+            contains("val a: $kotlinType")
         }
     }
 
@@ -101,7 +101,7 @@ internal class SimpleKotlinEntityTest {
         val entity = assertNotNull(testModule.entities["builtin_${keyword}"], "entity does not exist")
         val formatted = KotlinEntity(entity).format()
         assert(formatted).all {
-            contains("@Name(\"$keyword\") val $keyword: $kotlinType")
+            contains("val $keyword: $kotlinType")
         }
     }
 
@@ -111,8 +111,7 @@ internal class SimpleKotlinEntityTest {
         val k = KotlinEntity(entity)
         val formatted = k.format()
         assert(formatted).all {
-            contains("@Name(\"a\") val a: Long")
+            contains("val a: Long")
         }
     }
-
 }

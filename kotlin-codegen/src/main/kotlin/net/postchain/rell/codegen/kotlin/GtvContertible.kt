@@ -1,12 +1,9 @@
 package net.postchain.rell.codegen.kotlin
 
-import net.postchain.rell.codegen.kotlin.util.rTypeToString
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
-import java.math.BigDecimal
-import kotlin.reflect.KClass
 
 open class GtvContertible(
     val name: String,
@@ -14,36 +11,31 @@ open class GtvContertible(
     override val moduleName: String, private val attributes: Collection<R_Attribute>
 ) : DocumentSection {
 
-    override val imports = mutableListOf(
+    private val globalImports = listOf(
         "import net.postchain.gtv.Gtv",
         "import net.postchain.gtv.GtvFactory.gtv",
-        "import net.postchain.gtv.mapper.Name",
     )
+    private val attributeImports = mutableSetOf<String>()
 
-    private fun addImport(import: KClass<*>): String {
-        imports.add("import ${import.qualifiedName}")
-        return import.simpleName!!
+    override val imports: List<String>
+        get() = globalImports + attributeImports
+
+    private val classFields = attributes.map { formatAttribute(it) }.sorted()
+
+    private fun formatAttribute(attribute: R_Attribute): String {
+        return attribute.run {
+            "val ${name.snakeToLowerCamelCase()}: ${rTypeToString(type)}"
+        }
     }
-
     override fun format() = """
         |data class $externalName(
-        |${formatAttributes()}
+        |   ${classFields.joinToString(",\n\t")}
         |) {
         |    fun toGtv(): Gtv {
         |        return ${formatGtv()}
         |    }
         |}
     """.trimMargin()
-
-    private fun formatAttributes(): String {
-        return "\t${attributes.joinToString(",\n\t") { formatAttribute(it) }}"
-    }
-
-    private fun formatAttribute(attribute: R_Attribute): String {
-        return attribute.run {
-            "@Name(\"$name\") val ${name.snakeToLowerCamelCase()}: ${rTypeToString(type)}"
-        }
-    }
 
     private fun formatGtv(): String {
         return "gtv(\n\t\t\t${
@@ -70,15 +62,15 @@ open class GtvContertible(
 
     private fun rTypeToString(type: R_Type): String {
         return when (type) {
-            is R_NullableType -> "${rTypeToString(type.valueType)}?".also { imports.add("import net.postchain.gtv.GtvNull") }
-            is R_BooleanType -> addImport(Boolean::class)
-            is R_IntegerType -> addImport(Long::class)
-            is R_DecimalType -> addImport(BigDecimal::class)
-            is R_TextType -> addImport(String::class)
-            is R_ByteArrayType -> addImport(ByteArray::class)
-            is R_RowidType -> addImport(Long::class)
+            is R_NullableType -> "${rTypeToString(type.valueType)}?".also { attributeImports.add("import net.postchain.gtv.GtvNull") }
+            is R_BooleanType -> "Boolean"
+            is R_IntegerType -> "Long"
+            is R_DecimalType -> "BigDecimal".also { attributeImports.add("import java.math.BigDecimal") }
+            is R_TextType -> "String"
+            is R_ByteArrayType -> "ByteArray"
+            is R_RowidType -> "Long"
             is R_JsonType -> throw IllegalArgumentException("JSON not supported")
-            is R_EntityType -> addImport(Long::class)
+            is R_EntityType -> "Long"
             is R_SetType -> "Set<${rTypeToString(type.elementType)}>"
             is R_ListType -> "Set<${rTypeToString(type.elementType)}>"
             is R_MapType -> "Map<${rTypeToString(type.keyType)}, ${rTypeToString(type.valueType)}>"

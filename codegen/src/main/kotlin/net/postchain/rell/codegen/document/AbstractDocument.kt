@@ -6,15 +6,14 @@ import net.postchain.rell.codegen.section.DocumentSection
 abstract class AbstractDocument(override val intro: String = "",
                                 override val packageString: String) : Document {
 
-    private val imports = mutableSetOf<String>()
-    private val sections = mutableSetOf<StringSerializable>()
+    private val sections = mutableSetOf<DocumentSection>()
 
     override fun format(): String {
         return """
             |$intro
             |$packageString
             |
-            |${imports.joinToString("\n")}
+            |${sections.flatMap { it.imports }.toSet().joinToString("\n")}
             |
             |${sections.joinToString("\n\n") { it.format() }}
             |
@@ -22,7 +21,6 @@ abstract class AbstractDocument(override val intro: String = "",
     }
 
     override fun addSection(section: DocumentSection) {
-        imports.addAll(section.imports)
         sections.add(section)
     }
 }

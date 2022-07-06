@@ -56,7 +56,7 @@ internal class KotlinQueryTest {
         val k = KotlinQuery(query, "")
         val formatted = k.format()
         assertk.assert(formatted).all {
-            startsWith("fun PostchainClient.")
+            contains("fun PostchainClient.")
             contains("get${type.snakeToUpperCamelCase()}")
             endsWith(returnType)
         }
