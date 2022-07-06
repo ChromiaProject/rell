@@ -9,8 +9,10 @@ import net.postchain.rell.model.R_QueryDefinition
 import net.postchain.rell.model.R_StructDefinition
 
 class KotlinDocumentFactory : DocumentFactory {
+    override val fileExtension: String
+        get() = "kt"
 
-    override fun createDocument(packageString: String) = KotlinDocument(packageString)
+    override fun createDocument(packageName: String) = KotlinDocument(packageName)
 
     override fun createEntity(rellEntity: R_EntityDefinition) = KotlinEntity(rellEntity)
 

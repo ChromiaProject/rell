@@ -16,16 +16,16 @@ class CodeGenerator(val factory: DocumentFactory, val singleFile: Boolean = fals
         val createdFiles = mutableSetOf<File>()
 
         factory.createBuiltins().forEach { entity ->
-            val f = File(targetFolder, "${entity.name}.kt").also { createdFiles.add(it) }
+            val f = File(targetFolder, "${entity.name}.${factory.fileExtension}").also { createdFiles.add(it) }
             f.parentFile.mkdirs()
             f.createNewFile()
-            val doc = factory.createDocument("package $packageName")
+            val doc = factory.createDocument(packageName)
             doc.addSection(entity)
             f.writeText(doc.format())
         }
 
         app.modules.forEach { module ->
-            val moduleFileName = module.name.str().let { if (singleFile) "$it.kt" else it }
+            val moduleFileName = module.name.str().let { if (singleFile) "$it.${factory.fileExtension}" else it }
             val moduleFile = File(targetFolder, moduleFileName)
             moduleFile.mkdirs()
 
@@ -55,8 +55,8 @@ class CodeGenerator(val factory: DocumentFactory, val singleFile: Boolean = fals
         packageName: String,
         sectionCreator: () -> DocumentSection
     ) {
-        val file = File(moduleFile, "$name.kt").also { createdFiles.add(it) }
-        val document = factory.createDocument("package $packageName")
+        val file = File(moduleFile, "$name.${factory.fileExtension}").also { createdFiles.add(it) }
+        val document = factory.createDocument(packageName)
         document.addSection(sectionCreator())
         file.createNewFile()
         file.writeText(document.format())
