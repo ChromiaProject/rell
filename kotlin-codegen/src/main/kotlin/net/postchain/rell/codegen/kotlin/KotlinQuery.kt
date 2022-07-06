@@ -12,7 +12,7 @@ import java.math.BigDecimal
 class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : Query {
     val name = queryDef.simpleName
     override val externalName = name.snakeToLowerCamelCase()
-    override val moduleName = queryDef.defId.module
+    override val moduleName = queryDef.defId.module.substringBefore("[")
     private val params = queryDef.params()
 
     override val imports: List<String>
@@ -22,7 +22,7 @@ class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : Query {
     init {
         val moduleImports = ImportResolver().resolveQueryImports(queryDef)
             .filterNot { it.startsWith("$moduleName:") }
-            .map { "import $basePackage.${applicationNameToPackageName(it)}" }
+            .map { "import $basePackage.$it" }
         imports = moduleImports + listOf(
             "import net.postchain.client.core.PostchainClient",
             "import net.postchain.gtv.GtvFactory.gtv",

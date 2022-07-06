@@ -7,7 +7,7 @@ import net.postchain.rell.model.*
 class KotlinEnumeration(enum: R_EnumDefinition) : Enumeration {
     private val name = enum.simpleName
     override val externalName = name.snakeToUpperCamelCase()
-    override val moduleName = enum.defId.module
+    override val moduleName = enum.defId.module.substringBefore("[")
     private val enumValues = enum.values()
 
     override val imports = listOf<String>()

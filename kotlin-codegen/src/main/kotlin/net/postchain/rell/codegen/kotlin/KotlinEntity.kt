@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 class KotlinEntity(entity: R_EntityDefinition) : Entity {
     override val name = entity.simpleName
     override val externalName = name.snakeToUpperCamelCase()
-    override val moduleName = entity.defId.module
+    override val moduleName = entity.defId.module.substringBefore("[")
     private val attributes = entity.attributes.values
 
     override val imports = mutableListOf("import net.postchain.gtv.mapper.Name")
