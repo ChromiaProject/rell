@@ -9,5 +9,6 @@
  */
 
 rootProject.name = "rell-codegen"
-include("app", "kotlin-codegen")
+include("app")
 include("codegen")
+include("codegen-kotlin")
