@@ -79,7 +79,7 @@ class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : Query {
         if (returnType is R_TupleType) return ""
         if (returnType is R_ListType) {
             if (returnType.elementType is R_TupleType) return ""
-            return ".toArray().map{ it${formatReturnType(returnType.elementType)} }"
+            return ".asArray().map{ it${formatReturnType(returnType.elementType)} }"
         }
         return formatReturnType(returnType)
     }

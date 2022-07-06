@@ -48,7 +48,7 @@ internal class KotlinQueryTest {
         "entity,asInteger()",
         "decimal,asString()",
         "map,'asDict().mapValues { (k, v) -> v.asString() }'",
-        "list_integer,map{ it.asInteger() }",
+        "list_integer,asArray().map{ it.asInteger() }",
         "proposals_since,gtv(since))))"
     )
     fun returnTypeTest(type: String, returnType: String) {

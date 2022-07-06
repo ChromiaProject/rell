@@ -9,6 +9,7 @@ import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.app.util.LanguageSupport
+import net.postchain.rell.codegen.document.DocumentSaver
 import net.postchain.rell.codegen.kotlin.KotlinDocumentFactory
 
 class CodeGenCommand : CliktCommand("Generates files based on rell sources") {
@@ -28,7 +29,9 @@ class CodeGenCommand : CliktCommand("Generates files based on rell sources") {
             LanguageSupport.Kotlin -> KotlinDocumentFactory(packageName)
         }
         val generator = CodeGenerator(factory, false)
-        val out = generator.generateFiles(source, target, moduleName, packageName)
-        println("Created files: ${out.map { it.name }}")
+        val sections = generator.createSections(source, moduleName)
+        val documents = generator.constructDocuments(sections, true)
+        DocumentSaver(target).saveDocuments(documents)
+        println("Created files: ${documents.map { it.path }}")
     }
 }
