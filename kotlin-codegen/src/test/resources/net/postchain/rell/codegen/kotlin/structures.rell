@@ -49,3 +49,7 @@ entity a { name; }
 struct nested_struct2 {
     a: struct<a>;
 }
+
+struct nullable_struct {
+    a: text?;
+}

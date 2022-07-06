@@ -45,11 +45,24 @@ class KotlinStruct(struct: R_StructDefinition) : Struct {
     }
 
     private fun formatGtv(): String {
-        return "gtv(${attributes.joinToString(",\n") { "gtv(${it.name.snakeToLowerCamelCase()})" }})"
+        return "gtv(${attributes.joinToString(",\n") { attributeToGtv(it.name.snakeToLowerCamelCase(), it.type) }})"
+    }
+
+    private fun attributeToGtv(attributeName: String, attributeType: R_Type): String {
+        return when (attributeType) {
+            is R_EnumType -> "gtv($attributeName.ordinal.toLong())"
+            is R_StructType -> "$attributeName.toGtv()"
+            is R_SetType -> "gtv($attributeName.toList().map { ${attributeToGtv("it", attributeType.elementType)} })"
+            is R_DecimalType -> "gtv($attributeName.longValueExact())"
+            is R_NullableType -> "$attributeName.let { if (it == null) GtvNull else gtv(it) }"
+            is R_ListType -> "gtv($attributeName.map { ${attributeToGtv("it", attributeType.elementType)} })"
+            else -> "gtv($attributeName)"
+        }
     }
 
     private fun rTypeToString(type: R_Type): String {
         return when (type) {
+            is R_NullableType -> "${rTypeToString(type.valueType)}?".also { imports.add("import net.postchain.gtv.GtvNull") }
             is R_BooleanType -> addImport(Boolean::class)
             is R_IntegerType -> addImport(Long::class)
             is R_DecimalType -> addImport(BigDecimal::class)
@@ -61,7 +74,7 @@ class KotlinStruct(struct: R_StructDefinition) : Struct {
             is R_SetType -> "Set<${rTypeToString(type.elementType)}>"
             is R_ListType -> "Set<${rTypeToString(type.elementType)}>"
             is R_MapType -> "Map<${rTypeToString(type.keyType)}, ${rTypeToString(type.valueType)}>"
-            else -> type.name.split(":").last().snakeToUpperCamelCase() // Struct types
+            else -> type.name.split(":").last().snakeToUpperCamelCase().replace(">", "") // Struct types
         }
     }
 }
