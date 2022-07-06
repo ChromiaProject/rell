@@ -7,49 +7,19 @@ import net.postchain.rell.model.*
 import java.math.BigDecimal
 import kotlin.reflect.KClass
 
-class KotlinEntity(entity: R_EntityDefinition) : Entity {
-    override val name = entity.simpleName
-    override val externalName = name.snakeToUpperCamelCase()
-    override val moduleName = entity.defId.module.substringBefore("[")
-    private val attributes = entity.attributes.values
-
-    override val imports = mutableListOf("import net.postchain.gtv.mapper.Name")
-
-    private fun addImport(import: KClass<*>): String {
-        imports.add("import ${import.qualifiedName}")
-        return import.simpleName!!
-    }
-
-    override fun format() = """
-        |class $externalName(
-        |${formatAttributes()}
-        |)
-    """.trimMargin()
-
-    private fun formatAttributes(): String {
-        return "\t${attributes.joinToString(",\n\t") { formatAttribute(it) }}"
-    }
-
-    private fun formatAttribute(attribute: R_Attribute): String {
-        return attribute.run {
-            "@Name(\"$name\") val ${name.snakeToLowerCamelCase()}: ${rTypeToString(type)}"
-        }
-    }
-
-    private fun rTypeToString(type: R_Type): String {
-        return when (type) {
-            is R_BooleanType -> addImport(Boolean::class)
-            is R_IntegerType -> addImport(Long::class)
-            is R_DecimalType -> addImport(BigDecimal::class)
-            is R_TextType -> addImport(String::class)
-            is R_ByteArrayType -> addImport(ByteArray::class)
-            is R_RowidType -> addImport(Long::class)
-            is R_JsonType -> throw IllegalArgumentException("JSON not supported")
-            is R_EntityType -> addImport(Long::class)
-            is R_SetType -> "Set<${rTypeToString(type.elementType)}>"
-            is R_ListType -> "List<${rTypeToString(type.elementType)}>"
-            is R_MapType -> "Map<${rTypeToString(type.keyType)}, ${rTypeToString(type.valueType)}>"
-            else -> type.name.split(":").last().snakeToUpperCamelCase() // Entity types <module>:<name>
-        }
+class KotlinEntity(entity: R_EntityDefinition) : GtvContertible(
+    entity.simpleName,
+    entity.defId.module.substringBefore("["),
+    entity.attributes.values
+), Entity {
+    override fun format(): String {
+        return """
+            |/*
+            |* $name Entity
+            |*
+            |* Rell entity is typically encoded as a GtvInteger. If used as struct<$name>, then toGtv() is used for encoding.
+            |*/
+            |${super.format()}
+        """.trimMargin()
     }
 }
