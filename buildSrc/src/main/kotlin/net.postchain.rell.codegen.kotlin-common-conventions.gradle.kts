@@ -37,6 +37,8 @@ dependencies {
 
     testImplementation("com.willowtreeapps.assertk:assertk:0.10")
 
+    implementation("io.github.microutils:kotlin-logging-jvm:2.1.23")
+
 
 }
 

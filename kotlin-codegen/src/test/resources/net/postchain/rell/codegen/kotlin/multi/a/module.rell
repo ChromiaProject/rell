@@ -1,6 +1,7 @@
 module;
 
 import ^.b;
+import ^.c;
 
 entity a_entity {
     a: a_enum;
@@ -15,6 +16,12 @@ enum a_enum {
     a, b
 }
 
+struct a2_entity {
+    c: struct<c.c_entity>;
+}
+
 query get_a(a: a_struct) = struct<a_entity>(a = a_enum.a);
 
 query get_b() = a_struct(name = "Alpha", b = b.b_struct(b = b.b_enum.b));
+
+query get_a_c() = a2_entity(c = struct<c.c_entity>(name = ""));

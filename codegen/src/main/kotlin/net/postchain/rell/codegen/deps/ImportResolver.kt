@@ -1,11 +1,14 @@
 package net.postchain.rell.codegen.deps
 
+import mu.KLogging
 import net.postchain.rell.model.R_EnumType
 import net.postchain.rell.model.R_QueryDefinition
 import net.postchain.rell.model.R_Struct
 import net.postchain.rell.model.R_StructType
 
 class ImportResolver {
+
+    companion object : KLogging()
 
     fun resolveQueryImports(query: R_QueryDefinition): Set<String> {
         val dependencies = mutableSetOf<String>()
@@ -32,24 +35,26 @@ class ImportResolver {
     ) {
         if (struct.name.contains("struct<")) { // Ad-hoc structs
             if (struct.name.contains(":")) { // Entities
-                dependencies.add(struct.name.substringAfter("<").replace(">", ""))
+                val element = struct.name.substringAfter("<").replace(">", "")
+                dependencies.add(element.substringBefore("["))
             } else {
                 // Custom struct
+                dependencies
             }
         } else {
             dependencies.add(struct.name)
-            dependencies.addAll(resolveImports(struct.struct))
+            dependencies.addAll(resolveImports(struct.struct, dependencies))
         }
     }
 
-    private fun resolveImports(struct: R_Struct): Set<String> {
+    private fun resolveImports(struct: R_Struct, dependencies: MutableSet<String>): Set<String> {
         val r = mutableSetOf<String>()
         val s = struct.attributes.filterValues { it.type is R_StructType }.values
-        r.addAll(s.map { it.type.name })
+        s.forEach { resolveImports((it.type as R_StructType), dependencies) }
         s.forEach {
             val t = it.type
             if (t is R_StructType) {
-                r.addAll(resolveImports(t.struct))
+                r.addAll(resolveImports(t.struct, dependencies))
             }
         }
         r.addAll(struct.attributes.values.filter{ it.type is R_EnumType }.map { it.type.name })

@@ -38,8 +38,9 @@ internal class CodeGeneratorTest {
     @Test
     fun documents() {
         val documents = generator.constructDocuments(sections, true)
-        assertk.assert(documents).hasSize(2)
+        assertk.assert(documents).hasSize(3)
         assertk.assert(documents[0].document.format()).contains("import com.example.b.BStruct")
+        assertk.assert(documents[0].document.format()).contains("import com.example.c.CEntity")
     }
 
 }

@@ -11,3 +11,7 @@ plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
 }
+
+dependencies {
+    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.17.1")
+}
