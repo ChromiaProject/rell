@@ -12,18 +12,32 @@ import net.postchain.rell.model.*
 import net.postchain.rell.utils.RellCliUtils
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
 
 internal class CodeGeneratorTest {
 
-    @Test
-    fun sections() {
-        val sections = CodeGenerator(KotlinDocumentFactory(), false).createSections(
+    val generator = CodeGenerator(KotlinDocumentFactory())
+    lateinit var sections: List<DocumentSection>
+
+    @BeforeEach
+    fun setup() {
+        sections = generator.createSections(
             File(this::class.java.getResource("multi/a/module.rell")!!.toURI()).parentFile.parentFile,
             "a",
         )
+    }
+
+    @Test
+    fun sections() {
         assertk.assert(sections).hasSize(2 + 1 + 2 + 1)
+    }
+
+    @Test
+    fun documents() {
+        val documents = generator.constructDocuments(sections, "com.example", true)
+        assertk.assert(documents).hasSize(2)
     }
 
 }

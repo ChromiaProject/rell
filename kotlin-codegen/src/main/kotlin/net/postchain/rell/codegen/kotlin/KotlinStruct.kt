@@ -10,6 +10,7 @@ import kotlin.reflect.KClass
 class KotlinStruct(struct: R_StructDefinition) : Struct {
     private val name = struct.simpleName
     override val externalName = name.snakeToUpperCamelCase()
+    override val moduleName = struct.defId.module
     private val attributes = struct.struct.attributes.values
 
     override val imports = mutableListOf(

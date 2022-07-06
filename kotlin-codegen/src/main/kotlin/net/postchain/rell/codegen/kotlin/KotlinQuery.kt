@@ -10,6 +10,7 @@ import java.math.BigDecimal
 class KotlinQuery(queryDef: R_QueryDefinition) : Query {
     val name = queryDef.simpleName
     override val externalName = name.snakeToLowerCamelCase()
+    override val moduleName = queryDef.defId.module
     private val params = queryDef.params()
 
     override val imports = mutableListOf(

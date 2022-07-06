@@ -11,7 +11,7 @@ import net.postchain.rell.model.R_StructDefinition
 
 interface DocumentFactory {
     val fileExtension: String
-    fun createDocument(packageName: String): Document
+    fun createDocument(basePackage: String, moduleName: String): Document
     fun createEntity(rellEntity: R_EntityDefinition): Entity
     fun createBuiltins(): List<Entity>
     fun createStruct(rellStruct: R_StructDefinition): Struct
