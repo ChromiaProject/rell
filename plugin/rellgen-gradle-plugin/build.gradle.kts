@@ -6,7 +6,7 @@ plugins {
 
 dependencies {
     compileOnly(gradleApi())
-    implementation(project(":rellgen"))
+    implementation(project(":rellgen")) { isTransitive = false }
     implementation(project(":codegen"))
     implementation(project(":codegen-kotlin"))
 }
