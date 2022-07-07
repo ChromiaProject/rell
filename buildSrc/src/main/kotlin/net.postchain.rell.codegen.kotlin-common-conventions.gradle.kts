@@ -27,7 +27,7 @@ publishing {
     repositories {
         maven {
             name = ("GitLab")
-            url = uri("https://gitlab.my-company.com/api/v4/projects/37660703/packages/maven")
+            url = uri("https://gitlab.com/api/v4/projects/37660703/packages/maven")
             credentials(HttpHeaderCredentials::class.java) {
                 name = "Job-Token"
                 value = System.getenv("CI_JOB_TOKEN")
