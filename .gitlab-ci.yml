@@ -5,7 +5,7 @@ image: gradle:7.4.2-jdk11-alpine
 # runtime for each build is more reliable since the runtime is completely
 # isolated from any previous builds.
 variables:
-  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true"
 
 before_script:
   - GRADLE_USER_HOME="$(pwd)/.gradle"
