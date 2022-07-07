@@ -8,45 +8,31 @@ struct test_struct {
     a: boolean;
 }
 
-query get_entities_nargs() = test_entity @ { true };
-
-query get_entities_args(name) = test_entity @ { true };
-
-query get_struct_nargs() = test_struct(true);
-
-query get_boolean() = true;
-
-query get_integer() = 1;
-
-query get_text() = "";
-
-query get_decimal() = 1.0;
-
-query get_byte_array() = x"";
-
-query get_entity() = test_entity @ { true };
-
-query get_struct() = test_struct(true);
-
-query get_rowid() = test_entity @ { true } (.rowid);
-
-query get_map() {
+query return_type_boolean() = true;
+query return_type_integer() = 1;
+query return_type_text() = "";
+query return_type_decimal() = 1.0;
+query return_type_byte_array() = x"";
+query return_type_entity() = test_entity @ { true };
+query return_type_struct() = test_struct(true);
+query return_type_rowid() = test_entity @ { true } (.rowid);
+query return_type_list_integer() = test_entity @* { .a };
+query return_type_map() {
 var dictionary = map<text, text>();
 dictionary["Mordor"] = "A place where one does not simply walk into";
 return dictionary;
 }
-
-query g_nargs() = 1;
-query g_text(t: text) = 1;
-query g_integer(i: integer) = 1;
-query g_boolean(b: boolean) = 1;
-query g_entity(e: test_entity) = 1;
-query g_struct(s: test_struct) = 1;
-query g_list_input(v: list<byte_array>) = 1;
-query g_set_input(v: set<byte_array>) = 1;
-
-query get_list_integer() = test_entity @* { .a };
-
-query get_proposals_since(since: rowid) {
+query return_type_proposals_since(since: rowid) {
   return test_entity @* { .rowid >= since } (.rowid, .a) limit 10;
 }
+
+query input_parameter_nargs() = 1;
+query input_parameter_text(t: text) = 1;
+query input_parameter_integer(i: integer) = 1;
+query input_parameter_boolean(b: boolean) = 1;
+query input_parameter_entity(e: test_entity) = 1;
+query input_parameter_struct(s: test_struct) = 1;
+query input_parameter_list_input(v: list<byte_array>) = 1;
+query input_parameter_set_input(v: set<byte_array>) = 1;
+
+

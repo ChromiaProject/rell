@@ -21,22 +21,12 @@ import kotlin.test.assertNotNull
 
 internal class SimpleKotlinEntityTest {
 
-    companion object {
+    companion object : SingleFileRellApp("entities") {
 
-        lateinit var testModule: R_Module
         @JvmStatic
         @BeforeAll
         fun compileTestApp() {
-            testModule = RellCliUtils.compileApp(
-                C_SourceDir.diskDir(File(this::class.java.getResource("entities.rell")!!.toURI()).parentFile),
-                C_CompilerModuleSelection(
-                    listOf(R_ModuleName.of("entities"))
-                ),
-                true,
-                C_CompilerOptions.DEFAULT
-            ).let {
-                assertNotNull(it.moduleMap[R_ModuleName.of("entities")])
-            }
+           compileApp()
         }
     }
 

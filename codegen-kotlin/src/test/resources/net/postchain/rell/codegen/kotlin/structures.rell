@@ -1,55 +1,19 @@
 module;
 
-struct boolean_struct {
-    a: boolean;
-}
+struct boolean_struct { a: boolean; }
+struct integer_struct { a: integer; }
+struct decimal_struct { a: decimal; }
+struct text_struct { a: text; }
+struct byte_array_struct { a: byte_array; }
+struct rowid_struct { a: rowid; }
+struct json_struct { a: json; }
+struct map_struct { a: map<text,integer>; }
 
-struct integer_struct {
-    a: integer;
-}
-
-struct decimal_struct {
-    a: decimal;
-}
-
-struct text_struct {
-    a: text;
-}
-
-struct byte_array_struct {
-    a: byte_array;
-}
-
-struct rowid_struct {
-    a: rowid;
-}
-
-struct json_struct {
-    a: json;
-}
-
-struct map_struct {
-    a: map<text,integer>;
-}
-
-struct builtin_name {
-    name;
-}
-
-struct builtin_pubkey {
-    pubkey;
-}
-
-struct nested_struct {
-    a: text_struct;
-}
+struct builtin_name { name; }
+struct builtin_pubkey { pubkey; }
 
 entity a { name; }
+struct nested_struct { a: text_struct; }
+struct nested_struct2 { a: struct<a>; }
 
-struct nested_struct2 {
-    a: struct<a>;
-}
-
-struct nullable_struct {
-    a: text?;
-}
+struct nullable_struct { a: text?; }

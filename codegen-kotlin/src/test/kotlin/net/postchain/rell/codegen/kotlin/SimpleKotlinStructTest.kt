@@ -21,25 +21,13 @@ import kotlin.test.assertNotNull
 
 internal class SimpleKotlinStructTest {
 
-    companion object {
+    companion object : SingleFileRellApp("structures") {
 
-        lateinit var testModule: R_Module
         @JvmStatic
         @BeforeAll
         fun compileTestApp() {
-            testModule = RellCliUtils.compileApp(
-                C_SourceDir.diskDir(File(this::class.java.getResource("structures.rell")!!.toURI()).parentFile),
-                C_CompilerModuleSelection(
-                    listOf(R_ModuleName.of("structures"))
-                ),
-                true,
-                C_CompilerOptions.DEFAULT
-            ).let {
-                assertNotNull(it.moduleMap[R_ModuleName.of("structures")])
-            }
+            compileApp()
         }
-
-
     }
 
     @ParameterizedTest(name = "rell type {0} becomes {1}")

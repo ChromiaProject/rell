@@ -6,33 +6,17 @@ entity test_entity {
     b_Type: boolean;
 }
 
-entity boolean_entity {
-    a: boolean;
-}
+entity boolean_entity { a: boolean; }
+entity integer_entity { a: integer; }
+entity decimal_entity { a: decimal; }
+entity text_entity { a: text; }
+entity byte_array_entity { a: byte_array; }
+entity rowid_entity { a: rowid; }
+entity json_entity { a: json; }
 
-entity integer_entity {
-    a: integer;
-}
-
-entity decimal_entity {
-    a: decimal;
-}
-
-entity text_entity {
-    a: text;
-}
-
-entity byte_array_entity {
-    a: byte_array;
-}
-
-entity rowid_entity {
-    a: rowid;
-}
-
-entity json_entity {
-    a: json;
-}
+entity builtin_name { name; }
+entity builtin_pubkey { pubkey; }
+entity builtin_timestamp { timestamp; }
 
 entity multi_text_entity {
     name;
@@ -40,20 +24,6 @@ entity multi_text_entity {
     b: text;
 }
 
-entity builtin_name {
-    name;
-}
-
-entity builtin_pubkey {
-    pubkey;
-}
-
-entity builtin_timestamp {
-    timestamp;
-}
-
-entity nested_entity {
-    a: text_entity;
-}
+entity nested_entity { a: text_entity; }
 
 entity transaction_entity { key transaction; }

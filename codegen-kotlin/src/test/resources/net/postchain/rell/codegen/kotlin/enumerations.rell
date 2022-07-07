@@ -1,6 +1,6 @@
 module;
 
-enum test {
+enum test_enum {
     a,
     b_value
 }
