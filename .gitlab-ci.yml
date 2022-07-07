@@ -23,7 +23,7 @@ build:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
     paths:
-      - build
+      - "**/build"
       - .gradle
 
 test:
@@ -36,7 +36,7 @@ test:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
     paths:
-      - build
+      - "**/build"
       - .gradle
 
 publish:
@@ -49,5 +49,5 @@ publish:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
     paths:
-      - build
+      - "**/build"
       - .gradle
