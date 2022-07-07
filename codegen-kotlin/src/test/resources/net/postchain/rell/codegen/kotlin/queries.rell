@@ -8,6 +8,9 @@ struct test_struct {
     a: boolean;
 }
 
+enum test_enum { a }
+
+query return_type_enum() = test_enum.a;
 query return_type_boolean() = true;
 query return_type_integer() = 1;
 query return_type_text() = "";

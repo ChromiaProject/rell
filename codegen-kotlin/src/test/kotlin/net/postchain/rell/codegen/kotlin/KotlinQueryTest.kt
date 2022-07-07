@@ -32,10 +32,11 @@ internal class KotlinQueryTest {
 
     @ParameterizedTest(name = "query for return type {0} should convert to {1}")
     @CsvSource(
+        "return_type_enum,.let { TestEnum.valueOf(it.asString()) }",
         "return_type_boolean,asBoolean()",
         "return_type_integer,asInteger()",
         "return_type_text,asString()",
-        "return_type_decimal,asString()",
+        "return_type_decimal,.let { BigDecimal(it.asString()) }",
         "return_type_byte_array,asByteArray()",
         "return_type_entity,asInteger()",
         "return_type_struct,.let { TestStruct.fromGtv(it as GtvArray) }",

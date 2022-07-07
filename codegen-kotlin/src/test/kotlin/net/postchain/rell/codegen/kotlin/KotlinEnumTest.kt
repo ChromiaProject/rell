@@ -24,8 +24,8 @@ internal class KotlinEnumTest {
         val formatted = KotlinEnumeration(struct).format()
         assert(formatted).all {
             contains("enum class TestEnum")
-            contains("A,")
-            contains("BValue")
+            contains("a,")
+            contains("b_value")
         }
     }
 }

@@ -1,5 +1,6 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.rell.codegen.kotlin.util.rTypeToString
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
@@ -59,10 +60,10 @@ open class GtvConvertibleSection(
 
     private fun attributeToGtv(attributeName: String, attributeType: R_Type): String {
         return when (attributeType) {
-            is R_EnumType -> "gtv($attributeName.ordinal.toLong())"
+            is R_EnumType -> "gtv(${attributeName}.toString())"
             is R_StructType -> "$attributeName.toGtv()"
             is R_SetType -> "gtv($attributeName.toList().map { ${attributeToGtv("it", attributeType.elementType)} })"
-            is R_DecimalType -> "gtv($attributeName.longValueExact())"
+            is R_DecimalType -> "gtv($attributeName.toString())"
             is R_NullableType -> "$attributeName.let { if (it == null) GtvNull else gtv(it) }"
             is R_ListType -> "gtv($attributeName.map { ${attributeToGtv("it", attributeType.elementType)} })"
             else -> "gtv($attributeName)"

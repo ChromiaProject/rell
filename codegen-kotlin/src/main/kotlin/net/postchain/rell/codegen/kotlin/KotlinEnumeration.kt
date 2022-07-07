@@ -22,6 +22,6 @@ class KotlinEnumeration(enum: R_EnumDefinition) : Enumeration {
     """.trimMargin()
 
     private fun formatEnumValues() : String {
-        return "\t${enumValues.joinToString(",\n\t") { it.asEnum().name.snakeToUpperCamelCase() } }"
+        return "\t${enumValues.joinToString(",\n\t") { it.asEnum().name } }"
     }
 }
