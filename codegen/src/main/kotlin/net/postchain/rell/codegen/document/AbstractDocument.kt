@@ -13,7 +13,7 @@ abstract class AbstractDocument(override val intro: String = "",
             |$intro
             |$packageString
             |
-            |${sections.flatMap { it.imports }.toSet().joinToString("\n")}
+            |${sections.flatMap { it.imports }.toSet().sorted().joinToString("\n")}
             |
             |${sections.joinToString("\n\n") { it.format() }}
             |

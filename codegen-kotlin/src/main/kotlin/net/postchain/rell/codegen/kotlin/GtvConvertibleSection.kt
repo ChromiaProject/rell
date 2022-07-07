@@ -13,6 +13,7 @@ open class GtvConvertibleSection(
 
     private val globalImports = listOf(
         "import net.postchain.gtv.Gtv",
+        "import net.postchain.gtv.GtvArray",
         "import net.postchain.gtv.GtvFactory.gtv",
     )
     private val attributeImports = mutableSetOf<String>()
@@ -20,7 +21,7 @@ open class GtvConvertibleSection(
     override val imports: List<String>
         get() = globalImports + attributeImports
 
-    private val classFields = attributes.map { formatAttribute(it) }.sorted()
+    private val classFields = attributes.map { formatAttribute(it) }
 
     private fun formatAttribute(attribute: R_Attribute): String {
         return attribute.run {
@@ -29,10 +30,18 @@ open class GtvConvertibleSection(
     }
     override fun format() = """
         |data class $externalName(
-        |   ${classFields.joinToString(",\n\t")}
+        |    ${classFields.joinToString(",\n\t")}
         |) {
         |    fun toGtv(): Gtv {
         |        return ${formatGtv()}
+        |    }
+        |    
+        |    companion object {
+        |       fun fromGtv(gtv: GtvArray): $externalName {
+        |            return $externalName(
+        |                ${attributes.mapIndexed { i, attribute -> "gtv[$i]${KotlinQuery.formatReturnType(attribute.type)}" }.joinToString(",\n\t\t\t\t")}
+        |            )
+        |        }
         |    }
         |}
     """.trimMargin()

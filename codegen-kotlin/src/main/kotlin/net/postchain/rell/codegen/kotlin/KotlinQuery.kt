@@ -21,11 +21,12 @@ class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : Query {
 
     init {
         val moduleImports = ImportResolver().resolveQueryImports(queryDef)
-            .filterNot { it.startsWith("$moduleName:") }
+            .filterNot { it.startsWith("$moduleName.") }
             .map { "import $basePackage.$it" }
         imports = moduleImports + listOf(
             "import net.postchain.client.core.PostchainClient",
             "import net.postchain.gtv.GtvFactory.gtv",
+            "import net.postchain.gtv.GtvArray",
         )
     }
 
@@ -87,20 +88,23 @@ class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : Query {
         return formatReturnType(returnType)
     }
 
-    private fun formatReturnType(type: R_Type): String {
-        return when (type) {
-            is R_BooleanType -> ".asBoolean()"
-            is R_TextType -> ".asString()"
-            is R_IntegerType -> ".asInteger()"
-            is R_ByteArrayType -> ".asByteArray()"
-            is R_EntityType -> ".asInteger()"            // Note that entities are encoded as GtvInteger
-            is R_DecimalType -> ".asString()"            // Note that decimals are encoded as GtvString(?)
-            is R_RowidType -> ".asInteger()"             // Same as EntityType
-            is R_MapType -> formatMapReturnType(type)
-            else -> ""                                  // All structs (should be "unknown structs"
+    companion object {
+        fun formatReturnType(type: R_Type): String {
+            return when (type) {
+                is R_BooleanType -> ".asBoolean()"
+                is R_TextType -> ".asString()"
+                is R_IntegerType -> ".asInteger()"
+                is R_ByteArrayType -> ".asByteArray()"
+                is R_EntityType -> ".asInteger()"            // Note that entities are encoded as GtvInteger
+                is R_DecimalType -> ".asString()"            // Note that decimals are encoded as GtvString(?)
+                is R_RowidType -> ".asInteger()"             // Same as EntityType
+                is R_MapType -> formatMapReturnType(type)
+                is R_StructType -> ".let { ${ImportResolver.extractStructureName(type).first.substringAfter(":").snakeToUpperCamelCase()}.fromGtv(it as GtvArray) }"
+                else -> ""                                  // All structs (should be "unknown structs"
+            }
         }
-    }
 
-    private fun formatMapReturnType(type: R_MapType) = if (type.keyType !is R_TextType) "" else
-        ".asDict().mapValues { (k, v) -> v${formatReturnType(type.valueType)} }"
+        private fun formatMapReturnType(type: R_MapType) = if (type.keyType !is R_TextType) "" else
+            ".asDict().mapValues { (k, v) -> v${formatReturnType(type.valueType)} }"
+    }
 }

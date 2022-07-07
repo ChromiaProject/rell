@@ -6,7 +6,25 @@ import net.postchain.rell.model.*
 
 class ImportResolver {
 
-    companion object : KLogging()
+    companion object : KLogging() {
+        fun extractStructureName(
+            struct: R_StructType,
+        ): Pair<String, R_StructType> {
+            return if (struct.name.contains("struct<")) { // Ad-hoc structs
+                // entities foo:bar and external entities foo[foo]:bar
+                if (struct.name.contains(":")) { // Entities
+                    val element = struct.name.substringAfter("<").replace(">", "")
+                    element to struct
+                } else {
+                    // Custom struct
+                    throw IllegalArgumentException("Could not resolve name")
+                }
+            } else {
+                struct.name to struct
+            }
+        }
+
+    }
 
     fun resolveQueryImports(query: R_QueryDefinition): List<String> {
         return resolveQueryDependencies(query).map {appLevelNameToModuleName(it)
@@ -41,23 +59,6 @@ class ImportResolver {
             }
         }
         return dependencies
-    }
-
-    private fun extractStructureName(
-        struct: R_StructType,
-    ): Pair<String, R_StructType> {
-        return if (struct.name.contains("struct<")) { // Ad-hoc structs
-            // entities foo:bar and external entities foo[foo]:bar
-            if (struct.name.contains(":")) { // Entities
-                val element = struct.name.substringAfter("<").replace(">", "")
-                element to struct
-            } else {
-                // Custom struct
-                throw IllegalArgumentException("Could not resolve name")
-            }
-        } else {
-            struct.name to struct
-        }
     }
 
     private fun resolveStructureDependencies(struct: R_Struct, dependencies: MutableSet<String>) {
