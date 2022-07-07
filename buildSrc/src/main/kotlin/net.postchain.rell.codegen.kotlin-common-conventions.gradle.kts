@@ -7,6 +7,7 @@
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
     id("org.jetbrains.kotlin.jvm")
+    id("maven-publish")
 }
 
 repositories {
@@ -16,6 +17,17 @@ repositories {
     maven("https://gitlab.com/api/v4/projects/32802097/packages/maven")
     maven("https://jcenter.bintray.com")
     maven("https://maven.emrld.io")
+}
+
+version = rootProject.version
+group = rootProject.group
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+        }
+    }
 }
 
 dependencies {

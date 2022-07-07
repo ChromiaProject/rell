@@ -12,7 +12,7 @@ dependencies {
     implementation("org.apache.commons:commons-text")
     implementation(project(":codegen"))
     implementation(project(":codegen-kotlin"))
-    implementation("com.github.ajalt.clikt:clikt:3.4.0")
+    implementation("com.github.ajalt.clikt:clikt:3.5.0")
 }
 
 application {

@@ -17,6 +17,6 @@ repositories {
 
 dependencies {
     implementation(project(":codegen"))
-    implementation("net.postchain.rell:rell:0.10.11-SNAPSHOT")
+    implementation("net.postchain.rell:rell:0.10.10")
 }
 
