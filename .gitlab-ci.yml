@@ -34,7 +34,7 @@ test:
       - master
   cache:
     key: "$CI_COMMIT_REF_NAME"
-    policy: push
+    policy: pull
     paths:
       - "**/build"
       - .gradle
@@ -47,7 +47,7 @@ publish:
       - master
   cache:
     key: "$CI_COMMIT_REF_NAME"
-    policy: push
+    policy: pull
     paths:
       - "**/build"
       - .gradle
