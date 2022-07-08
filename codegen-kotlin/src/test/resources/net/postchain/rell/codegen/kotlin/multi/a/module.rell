@@ -3,6 +3,7 @@ module;
 import ^.b;
 import ^.c;
 @external('e') import ^.e;
+import root: ^;
 
 entity a_entity {
     a: a_enum;
@@ -40,4 +41,6 @@ query get_a_c() = a2_entity(c = struct<c.c_entity>(name = ""));
 
 query get_external() = a3_struct(e = struct<e.e_entity>(name = "", transaction = e.transaction @ {} limit 1));
 
+query get_root_struct() = root.root_struct("Whatever");
 
+query get_root_enum() = root.root_enum.a;

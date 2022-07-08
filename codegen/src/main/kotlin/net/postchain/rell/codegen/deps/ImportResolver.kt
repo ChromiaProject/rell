@@ -32,6 +32,7 @@ class ImportResolver {
     }
 
     private fun appLevelNameToModuleName(str: String): String {
+        if (!str.contains(":")) return str.snakeToUpperCamelCase()
         val (module, obj) = str.split(":", limit = 2)
         return "${module.substringBefore("[")}.${obj.snakeToUpperCamelCase()}"
 
@@ -46,6 +47,11 @@ class ImportResolver {
         } else if (ret is R_CollectionType && ret.elementType is R_StructType) {
             dependencies.add(extractStructureName(ret.elementType as R_StructType).first)
             resolveStructureDependencies((ret.elementType as R_StructType).struct, dependencies)
+        } else if (ret is R_NullableType && ret.valueType is R_StructType) {
+            dependencies.add(extractStructureName(ret.valueType as R_StructType).first)
+            resolveStructureDependencies((ret.valueType as R_StructType).struct, dependencies)
+        } else if (ret is R_NullableType && ret.valueType is R_EnumType) {
+            dependencies.add(ret.name.replace("?", ""))
         } else if (ret is R_EnumType) {
             dependencies.add(ret.name)
         }

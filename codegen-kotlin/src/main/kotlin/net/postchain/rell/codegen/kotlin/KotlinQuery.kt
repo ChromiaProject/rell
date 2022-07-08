@@ -1,11 +1,15 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.client.core.PostchainClient
+import net.postchain.gtv.GtvArray
+import net.postchain.gtv.GtvNull
 import net.postchain.rell.codegen.deps.ImportResolver
 import net.postchain.rell.codegen.section.Query
 import net.postchain.rell.codegen.kotlin.util.rTypeToString
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
+import org.apache.http.message.BasicHeaderValueFormatter.formatParameters
 import java.math.BigDecimal
 
 class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : Query {
@@ -21,15 +25,14 @@ class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : Query {
 
     init {
         val alwaysImports = listOf(
-            "import net.postchain.client.core.PostchainClient",
+            "import ${PostchainClient::class.qualifiedName}",
             "import net.postchain.gtv.GtvFactory.gtv",
         )
         val additionalImports = listOf(
-            "import net.postchain.gtv.GtvArray",
-            "import net.postchain.gtv.GtvNull",
+            "import ${GtvArray::class.qualifiedName}",
+            "import ${GtvNull::class.qualifiedName}",
         )
         val moduleImports = ImportResolver().resolveQueryImports(queryDef)
-            .filterNot { it.startsWith("$moduleName.") }
             .map { "import $basePackage.$it" }
         imports = moduleImports + alwaysImports + additionalImports
     }
