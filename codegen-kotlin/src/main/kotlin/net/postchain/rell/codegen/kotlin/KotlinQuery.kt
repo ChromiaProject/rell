@@ -20,14 +20,18 @@ class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : Query {
     private val returnType = queryDef.type()
 
     init {
+        val alwaysImports = listOf(
+            "import net.postchain.client.core.PostchainClient",
+            "import net.postchain.gtv.GtvFactory.gtv",
+        )
+        val additionalImports = listOf(
+            "import net.postchain.gtv.GtvArray",
+            "import net.postchain.gtv.GtvNull",
+        )
         val moduleImports = ImportResolver().resolveQueryImports(queryDef)
             .filterNot { it.startsWith("$moduleName.") }
             .map { "import $basePackage.$it" }
-        imports = moduleImports + listOf(
-            "import net.postchain.client.core.PostchainClient",
-            "import net.postchain.gtv.GtvFactory.gtv",
-            "import net.postchain.gtv.GtvArray",
-        )
+        imports = moduleImports + alwaysImports + additionalImports
     }
 
     override fun format() = """

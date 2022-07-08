@@ -17,6 +17,7 @@ query return_type_text() = "";
 query return_type_decimal() = 1.0;
 query return_type_byte_array() = x"";
 query return_type_entity() = test_entity @ { true };
+query return_type_nullable() = test_entity @? { true };
 query return_type_struct() = test_struct(true);
 query return_type_rowid() = test_entity @ { true } (.rowid);
 query return_type_list_integer() = test_entity @* { .a };

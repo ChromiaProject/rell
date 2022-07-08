@@ -3,21 +3,11 @@ package net.postchain.rell.codegen.kotlin
 import assertk.all
 import assertk.assertions.contains
 import assertk.assertions.endsWith
-import assertk.assertions.startsWith
-import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.gtv.GtvNull
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
-import net.postchain.rell.codegen.util.snakeToUpperCamelCase
-import net.postchain.rell.compiler.base.core.C_CompilerModuleSelection
-import net.postchain.rell.compiler.base.core.C_CompilerOptions
-import net.postchain.rell.compiler.base.utils.C_SourceDir
-import net.postchain.rell.model.R_Module
-import net.postchain.rell.model.R_ModuleName
-import net.postchain.rell.utils.RellCliUtils
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import java.io.File
 
 internal class KotlinQueryTest {
 
@@ -39,6 +29,7 @@ internal class KotlinQueryTest {
         "return_type_decimal,.let { BigDecimal(it.asString()) }",
         "return_type_byte_array,asByteArray()",
         "return_type_entity,asInteger()",
+        "return_type_nullable,.let { if (it is GtvNull) null else it.asInteger() }",
         "return_type_struct,.let { TestStruct.fromGtv(it as GtvArray) }",
         "return_type_rowid,asInteger()",
         "return_type_list_integer,asArray().map{ it.asInteger() }",
@@ -75,5 +66,15 @@ internal class KotlinQueryTest {
             contains("($params) =")
             contains("\"$queryName\", gtv(mapOf($gtvParam")
         }
+    }
+
+    @ParameterizedTest(name = "query has imported")
+    @CsvSource(
+        "return_type_nullable",
+    )
+    fun nullable(s: String) {
+        val query = kotlin.test.assertNotNull(testModule.queries[s])
+        val k = KotlinQuery(query, "")
+        assertk.assert(k.imports).contains("import ${GtvNull::class.qualifiedName}")
     }
 }
