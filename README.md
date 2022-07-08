@@ -23,9 +23,3 @@ Build and run unit tests:
 ```commandline
 ./gradlew build
 ```
-
-Build maven plugin:
-```commandline
-./gradlew publishToMavenLocal publishMavenPluginToMavenLocal
-```
-or build the maven project from `plugins/rellgen-maven-plugin`. Note though that you first must push the gradle jars to maven local..
