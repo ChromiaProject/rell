@@ -1,5 +1,6 @@
 package net.postchain.rell.codegen.util
 
+import net.postchain.rell.codegen.CodeGenerator
 import java.util.*
 
 fun capitalize(name: String) =
@@ -24,4 +25,10 @@ fun String.snakeToLowerCamelCase(): String {
 
 fun String.snakeToUpperCamelCase(): String {
     return capitalize(this.snakeToLowerCamelCase())
+}
+
+object GeneratedAnnotation {
+    private val now = Date(System.currentTimeMillis())
+
+    fun createAnnotation(comment: String) = "@Generated(\"${CodeGenerator::class.qualifiedName}\", comments = \"$comment\", date = \"$now\")"
 }

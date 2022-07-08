@@ -6,10 +6,10 @@ import net.postchain.gtv.GtvNull
 import net.postchain.rell.codegen.deps.ImportResolver
 import net.postchain.rell.codegen.section.Query
 import net.postchain.rell.codegen.kotlin.util.rTypeToString
+import net.postchain.rell.codegen.util.GeneratedAnnotation
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
-import org.apache.http.message.BasicHeaderValueFormatter.formatParameters
 import java.math.BigDecimal
 
 class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : Query {
@@ -27,6 +27,7 @@ class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : Query {
         val alwaysImports = listOf(
             "import ${PostchainClient::class.qualifiedName}",
             "import net.postchain.gtv.GtvFactory.gtv",
+            "import javax.annotation.processing.Generated"
         )
         val additionalImports = listOf(
             "import ${GtvArray::class.qualifiedName}",
@@ -41,6 +42,7 @@ class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : Query {
         |/**
         | * Query $appLevelName 
         | */
+        |${GeneratedAnnotation.createAnnotation(appLevelName)}
         |fun PostchainClient.$externalName(${formatParameters()}) = 
         |   querySync("$name", gtv(mapOf(${formatQuery()})))${formatReturnStatement()}
     """.trimMargin()
