@@ -28,6 +28,7 @@ abstract class KotlinExtensionSection(
         get() = className.module
 
     final override val imports: List<String>
+    override val deps: Set<ClassName>
 
     init {
         val alwaysImports = listOf(
@@ -40,10 +41,10 @@ abstract class KotlinExtensionSection(
             "import ${GtvArray::class.qualifiedName}",
             "import ${GtvNull::class.qualifiedName}",
         )
-        val moduleImports = ImportResolver().resolveQueryOp(params, returnType)
-            .map { it.toPackageName(basePackage) }
-            .map { "import $it" }
-        imports = alwaysImports + additionalImports + moduleImports
+        imports = alwaysImports + additionalImports
+        val returnDeps = ImportResolver().findDependencies(returnType, false)
+        val paramDeps = ImportResolver().findDependencies(params.map { it.type }, false)
+        deps = paramDeps + returnDeps
     }
 
     override fun format() = """

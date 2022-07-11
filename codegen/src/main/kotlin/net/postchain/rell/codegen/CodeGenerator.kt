@@ -22,24 +22,24 @@ class CodeGenerator(val factory: DocumentFactory) {
         val rellEnums = app.modules.flatMap { module -> module.enums.values.map { CamelCaseClassName.fromRellDefinition(it) to it } }.toMap()
         val rellEntities = app.modules.flatMap { module -> module.entities.values.map { CamelCaseClassName.fromRellDefinition(it) to it } }.toMap()
         val rellStructures = app.modules.flatMap { module -> module.structs.values.map { CamelCaseClassName.fromRellDefinition(it) to it } }.toMap()
-        val rellClasses = rellEnums.keys + rellEntities.keys + rellStructures
         val rellQueries = app.modules.flatMap { it.queries.values }.associateBy { it.appLevelName }
         val rellOperations = app.modules.flatMap { it.operations.values }.associateBy { it.appLevelName }
-
-        val neededObjects = (rellQueries.values.flatMap { importResolver.resolveQueryDependencies(it) } +
-                rellOperations.values.flatMap { importResolver.resolveOperationDependencies(it) })
-            .associateBy { it.rellName }
 
         val queries = rellQueries.values.map { factory.createQuery(it) }
         val operations = rellOperations.values.map { factory.createOperation(it) }
 
-        val enums = rellEnums.filterKeys { it.rellName in neededObjects }
+        val neededObjects = (operations + queries).flatMap { it.deps }.toSet()
+
+        val enums = rellEnums
+            .filterKeys { it in neededObjects }
             .map { factory.createEnum(it.key, it.value) }
 
-        val entities = rellEntities.filterKeys { it.rellName in neededObjects }
+        val entities = rellEntities
+            .filterKeys { it in neededObjects }
             .map { factory.createEntity(it.key, it.value) }
 
-        val structures = rellStructures.filterKeys { it.rellName in neededObjects }
+        val structures = rellStructures
+            .filterKeys { it in neededObjects }
             .map { factory.createStruct(it.key, it.value) }
 
         return enums + entities + structures + queries + operations

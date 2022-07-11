@@ -1,11 +1,12 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.deps.ClassName
+import net.postchain.rell.codegen.deps.ImportResolver
 import net.postchain.rell.codegen.kotlin.util.attributeToGtv
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.GeneratedAnnotation
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
-import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
 
 open class GtvConvertibleSection(
@@ -26,6 +27,8 @@ open class GtvConvertibleSection(
 
     override val imports: List<String>
         get() = globalImports + attributeImports
+
+    override val deps = ImportResolver().findDependencies(attributes.values, false)
 
     private val classFields = attributes.map { formatAttribute(it.key, it.value) }
 
@@ -63,7 +66,10 @@ open class GtvConvertibleSection(
             is R_SetType -> "Set<${rTypeToString(type.elementType)}>"
             is R_ListType -> "Set<${rTypeToString(type.elementType)}>"
             is R_MapType -> "Map<${rTypeToString(type.keyType)}, ${rTypeToString(type.valueType)}>"
-            else -> type.name.split(":").last().snakeToUpperCamelCase().replace(">", "") // Struct types
+            is R_StructType -> CamelCaseClassName.fromString(type.name).name
+            is R_EnumType -> CamelCaseClassName.fromString(type.name).name
+            is R_GtvType -> "Gtv"
+            else -> throw IllegalArgumentException("Type ${type.name} not supported as field on struct/entity ${className.rellName}")
         }
     }
 }
