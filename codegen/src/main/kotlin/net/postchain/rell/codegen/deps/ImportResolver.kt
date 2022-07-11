@@ -7,33 +7,13 @@ import net.postchain.rell.model.*
 class ImportResolver {
 
     companion object : KLogging() {
-        fun extractStructureName(
-            struct: R_StructType,
-        ): Pair<String, R_StructType> {
-            return if (struct.name.contains("struct<")) { // Ad-hoc structs
-                // entities foo:bar and external entities foo[foo]:bar
-                if (struct.name.contains(":")) { // Entities
-                    val element = struct.name.substringAfter("<").replace(">", "")
-                    element to struct
-                } else {
-                    // Custom struct
-                    throw IllegalArgumentException("Could not resolve name")
-                }
-            } else {
-                struct.name to struct
-            }
+        fun extractStructureName( struct: R_StructType, ): String {
+            return CamelCaseClassName.fromString(struct.name).rellName
         }
 
         fun appLevelNameToModuleName(str: String): String {
-            if (!str.contains(":")) return str.snakeToUpperCamelCase()
-            val (module, obj) = str.split(":", limit = 2)
-            return "${module.substringBefore("[")}.${obj.snakeToUpperCamelCase()}"
-
+            return CamelCaseClassName.fromString(str).toPackageName()
         }
-    }
-
-    fun resolveQueryImports(query: R_QueryDefinition): List<String> {
-        return resolveQueryDependencies(query).map {appLevelNameToModuleName(it) }
     }
 
     fun resolveOperationDependencies(op: R_OperationDefinition): Set<String> {
@@ -46,22 +26,22 @@ class ImportResolver {
     fun resolveQueryOp(params: List<R_Param>, ret: R_Type?): Set<String> {
         val dependencies = mutableSetOf<String>()
         if (ret is R_StructType) {
-            dependencies.add(extractStructureName(ret).first)
+            dependencies.add(extractStructureName(ret))
             resolveStructureDependencies(ret.struct, dependencies)
         } else if (ret is R_TupleType) {
             val tupleTypes = ret.fields.map { it.type }
             tupleTypes.filterIsInstance<R_StructType>()
                 .forEach {
-                    dependencies.add(extractStructureName(it).first)
+                    dependencies.add(extractStructureName(it))
                     resolveStructureDependencies((it).struct, dependencies)
                 }
             tupleTypes.filterIsInstance<R_EnumType>()
                 .forEach { dependencies.add(it.name) }
         } else if (ret is R_CollectionType && ret.elementType is R_StructType) {
-            dependencies.add(extractStructureName(ret.elementType as R_StructType).first)
+            dependencies.add(extractStructureName(ret.elementType as R_StructType))
             resolveStructureDependencies((ret.elementType as R_StructType).struct, dependencies)
         } else if (ret is R_NullableType && ret.valueType is R_StructType) {
-            dependencies.add(extractStructureName(ret.valueType as R_StructType).first)
+            dependencies.add(extractStructureName(ret.valueType as R_StructType))
             resolveStructureDependencies((ret.valueType as R_StructType).struct, dependencies)
         } else if (ret is R_NullableType && ret.valueType is R_EnumType) {
             dependencies.add(ret.name.replace("?", ""))
@@ -71,7 +51,7 @@ class ImportResolver {
         params.forEach {
             val t = it.type
             if (t is R_StructType) {
-                dependencies.add(extractStructureName(t).first)
+                dependencies.add(extractStructureName(t))
                 resolveStructureDependencies(t.struct, dependencies)
             } else if (t is R_EnumType) {
                 dependencies.add(t.name)
@@ -81,21 +61,20 @@ class ImportResolver {
     }
 
     private fun resolveStructureDependencies(struct: R_Struct, dependencies: MutableSet<String>) {
-        val r = mutableSetOf<String>()
         struct.attributes.values
             .map { it.type }
             .filterIsInstance<R_CollectionType>()
             .map { it.elementType }
             .filterIsInstance<R_StructType>()
             .forEach {
-                dependencies.add(extractStructureName((it)).first)
+                dependencies.add(extractStructureName((it)))
                 resolveStructureDependencies((it).struct, dependencies)
             }
         struct.attributes.values
             .map { it.type }
             .filterIsInstance<R_StructType>()
             .forEach {
-                dependencies.add(extractStructureName((it)).first)
+                dependencies.add(extractStructureName((it)))
                 resolveStructureDependencies((it).struct, dependencies)
             }
         dependencies.addAll(struct.attributes.values.filter { it.type is R_EnumType }.map { it.type.name })

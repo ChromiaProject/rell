@@ -28,11 +28,25 @@ data class CamelCaseClassName(
                 op.defId.module.substringBefore("[")
             )
         }
+
         fun fromRellQuery(q: R_QueryDefinition): ClassName {
             return CamelCaseClassName(
                 q.appLevelName,
                 q.simpleName.snakeToLowerCamelCase(),
                 q.defId.module.substringBefore("[")
+            )
+        }
+
+        fun fromString(str: String): ClassName {
+            if (str.contains("struct<")) return fromString(str.substringAfter("struct<").replace(">", "")) // struct<entity>
+            if (!str.contains(":")) {
+                return CamelCaseClassName(str, str.snakeToUpperCamelCase(), "")
+            }
+            val (module, obj) = str.split(":", limit = 2)
+            return CamelCaseClassName(
+                str,
+                obj.snakeToUpperCamelCase(),
+                module.substringBefore("[")
             )
         }
     }

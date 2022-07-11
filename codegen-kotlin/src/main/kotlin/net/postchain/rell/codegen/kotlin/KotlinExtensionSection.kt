@@ -116,7 +116,7 @@ abstract class KotlinExtensionSection(
             is R_RowidType -> ".asInteger()"             // Same as EntityType
             is R_MapType -> formatMapReturnType(type)
             is R_StructType -> ".toObject<${
-                ImportResolver.extractStructureName(type).first.substringAfter(":").snakeToUpperCamelCase()
+                ImportResolver.extractStructureName(type).substringAfter(":").snakeToUpperCamelCase()
             }>()"
             is R_ListType -> ".asArray().map { it${formatReturnType(type.elementType)} }"
             is R_SetType -> ".asArray().map { it${formatReturnType(type.elementType)} }.toSet()"
