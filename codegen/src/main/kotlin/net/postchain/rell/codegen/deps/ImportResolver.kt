@@ -1,6 +1,7 @@
 package net.postchain.rell.codegen.deps
 
 import mu.KLogging
+import net.postchain.rell.codegen.deps.ImportResolver.Companion.extractStructureName
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
 
@@ -24,23 +25,23 @@ class ImportResolver {
             }
         }
 
-    }
+        fun appLevelNameToModuleName(str: String): String {
+            if (!str.contains(":")) return str.snakeToUpperCamelCase()
+            val (module, obj) = str.split(":", limit = 2)
+            return "${module.substringBefore("[")}.${obj.snakeToUpperCamelCase()}"
 
-    fun resolveQueryImports(query: R_QueryDefinition): List<String> {
-        return resolveQueryDependencies(query).map {appLevelNameToModuleName(it)
         }
     }
 
-    private fun appLevelNameToModuleName(str: String): String {
-        if (!str.contains(":")) return str.snakeToUpperCamelCase()
-        val (module, obj) = str.split(":", limit = 2)
-        return "${module.substringBefore("[")}.${obj.snakeToUpperCamelCase()}"
-
+    fun resolveQueryImports(query: R_QueryDefinition): List<String> {
+        return resolveQueryDependencies(query).map {appLevelNameToModuleName(it) }
     }
 
     fun resolveQueryDependencies(query: R_QueryDefinition): Set<String> {
+        return resolveQueryOp(query.params(), query.type())
+    }
+    fun resolveQueryOp(params: List<R_Param>, ret: R_Type?): Set<String> {
         val dependencies = mutableSetOf<String>()
-        val ret = query.type()
         if (ret is R_StructType) {
             dependencies.add(extractStructureName(ret).first)
             resolveStructureDependencies(ret.struct, dependencies)
@@ -55,7 +56,7 @@ class ImportResolver {
         } else if (ret is R_EnumType) {
             dependencies.add(ret.name)
         }
-        query.params().forEach {
+        params.forEach {
             val t = it.type
             if (t is R_StructType) {
                 dependencies.add(extractStructureName(t).first)
