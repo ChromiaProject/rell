@@ -1,7 +1,7 @@
 package net.postchain.rell.codegen
 
 import net.postchain.rell.codegen.deps.CamelCaseClassName
-import net.postchain.rell.codegen.deps.ImportResolver
+import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.document.DocumentFile
 import net.postchain.rell.codegen.section.DocumentSection
@@ -13,8 +13,6 @@ import net.postchain.rell.utils.RellCliUtils
 import java.io.File
 
 class CodeGenerator(val factory: DocumentFactory) {
-
-    private val importResolver = ImportResolver()
 
     fun createSections(source: File, baseModule: String): List<DocumentSection> {
         val app = compile(source, baseModule)

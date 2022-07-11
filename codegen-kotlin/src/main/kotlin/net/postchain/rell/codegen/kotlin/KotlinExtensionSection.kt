@@ -4,7 +4,7 @@ import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvNull
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.deps.ClassName
-import net.postchain.rell.codegen.deps.ImportResolver
+import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.kotlin.util.attributeToGtv
 import net.postchain.rell.codegen.kotlin.util.rTypeToString
 import net.postchain.rell.codegen.section.DocumentSection
@@ -42,8 +42,8 @@ abstract class KotlinExtensionSection(
             "import ${GtvNull::class.qualifiedName}",
         )
         imports = alwaysImports + additionalImports
-        val returnDeps = ImportResolver().findDependencies(returnType, false)
-        val paramDeps = ImportResolver().findDependencies(params.map { it.type }, false)
+        val returnDeps = DependencyFinder.findDependencies(returnType, false)
+        val paramDeps = DependencyFinder.findDependencies(params.map { it.type }, false)
         deps = paramDeps + returnDeps
     }
 

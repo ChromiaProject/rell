@@ -2,7 +2,7 @@ package net.postchain.rell.codegen.deps
 
 import net.postchain.rell.model.*
 
-class ImportResolver {
+object DependencyFinder {
 
     fun findDependencies(types: Collection<R_Type>, includeEntities: Boolean = true): Set<ClassName> {
         return types.flatMap { findDependencies(it, includeEntities) }.toSet()

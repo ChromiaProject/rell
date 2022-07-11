@@ -2,7 +2,7 @@ package net.postchain.rell.codegen.kotlin
 
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.deps.ClassName
-import net.postchain.rell.codegen.deps.ImportResolver
+import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.kotlin.util.attributeToGtv
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.GeneratedAnnotation
@@ -28,7 +28,7 @@ open class GtvConvertibleSection(
     override val imports: List<String>
         get() = globalImports + attributeImports
 
-    override val deps = ImportResolver().findDependencies(attributes.values, false)
+    override val deps = DependencyFinder.findDependencies(attributes.values, false)
 
     private val classFields = attributes.map { formatAttribute(it.key, it.value) }
 
