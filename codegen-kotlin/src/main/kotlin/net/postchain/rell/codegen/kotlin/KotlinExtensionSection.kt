@@ -2,7 +2,6 @@ package net.postchain.rell.codegen.kotlin
 
 import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvNull
-import net.postchain.gtv.mapper.toObject
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.ImportResolver
@@ -42,8 +41,8 @@ abstract class KotlinExtensionSection(
             "import ${GtvNull::class.qualifiedName}",
         )
         val moduleImports = ImportResolver().resolveQueryOp(params, returnType)
-            .map { ImportResolver.appLevelNameToModuleName(it) }
-            .map { "import $basePackage.$it" }
+            .map { it.toPackageName(basePackage) }
+            .map { "import $it" }
         imports = alwaysImports + additionalImports + moduleImports
     }
 
@@ -115,9 +114,7 @@ abstract class KotlinExtensionSection(
             is R_DecimalType -> ".let { BigDecimal(it.asString()) }"            // Note that decimals are encoded as GtvString(?)
             is R_RowidType -> ".asInteger()"             // Same as EntityType
             is R_MapType -> formatMapReturnType(type)
-            is R_StructType -> ".toObject<${
-                ImportResolver.extractStructureName(type).substringAfter(":").snakeToUpperCamelCase()
-            }>()"
+            is R_StructType -> ".toObject<${CamelCaseClassName.fromString(type.name).name}>()"
             is R_ListType -> ".asArray().map { it${formatReturnType(type.elementType)} }"
             is R_SetType -> ".asArray().map { it${formatReturnType(type.elementType)} }.toSet()"
             is R_TupleType -> formatTupleType(type)

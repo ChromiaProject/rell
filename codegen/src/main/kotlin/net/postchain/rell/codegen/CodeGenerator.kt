@@ -26,8 +26,9 @@ class CodeGenerator(val factory: DocumentFactory) {
         val rellQueries = app.modules.flatMap { it.queries.values }.associateBy { it.appLevelName }
         val rellOperations = app.modules.flatMap { it.operations.values }.associateBy { it.appLevelName }
 
-        val neededObjects = rellQueries.values.flatMap { importResolver.resolveQueryDependencies(it) } +
-                rellOperations.values.flatMap { importResolver.resolveOperationDependencies(it) }
+        val neededObjects = (rellQueries.values.flatMap { importResolver.resolveQueryDependencies(it) } +
+                rellOperations.values.flatMap { importResolver.resolveOperationDependencies(it) })
+            .associateBy { it.rellName }
 
         val queries = rellQueries.values.map { factory.createQuery(it) }
         val operations = rellOperations.values.map { factory.createOperation(it) }

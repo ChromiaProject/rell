@@ -5,8 +5,8 @@ interface ClassName {
     val name: String
     val module: String
 
-    fun toPackageName() : String {
-        if (module == "") return name
-        return "$module.$name"
+    fun toPackageName(basePackage: String) : String {
+        if (module == "") return "$basePackage.$name"
+        return "$basePackage.$module.$name"
     }
 }
