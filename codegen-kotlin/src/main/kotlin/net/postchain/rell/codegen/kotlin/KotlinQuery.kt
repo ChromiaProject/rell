@@ -29,13 +29,4 @@ class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : KotlinExte
         if (params.isEmpty()) return ", gtv(mapOf())"
         return ", gtv(mapOf(" + params.joinToString(", ") { "\"${it.name}\" to ${parameterToGtv(it)}" } + "))"
     }
-
-    private fun parameterToGtv(param: R_Param): String {
-        return when (param.type) {
-            is R_StructType -> "${param.name}.toGtv()"
-            is R_ListType -> "gtv(${param.name}.map { gtv(it) })"
-            is R_SetType -> "gtv(${param.name}.map { gtv(it) })"
-            else -> "gtv(${param.name})"
-        }
-    }
 }

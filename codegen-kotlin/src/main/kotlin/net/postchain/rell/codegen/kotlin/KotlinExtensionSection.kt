@@ -42,7 +42,7 @@ abstract class KotlinExtensionSection(
 
     override fun format() = """
         |${GeneratedAnnotation.createAnnotation(appLevelName)}
-        |fun ${extendedClass.simpleName}.add${externalName}Operation(${formatInputParameters()}) = 
+        |fun ${extendedClass.simpleName}.${externalName}(${formatInputParameters()}) = 
         |   $extendenMethod("$simpleName"${formatGtvParameters()})${formatReturn()}
     """.trimMargin()
 
@@ -79,6 +79,15 @@ abstract class KotlinExtensionSection(
             return ".asArray().map{ it${formatReturnType(returnType.elementType)} }"
         }
         return formatReturnType(returnType)
+    }
+
+    internal fun parameterToGtv(param: R_Param): String {
+        return when (param.type) {
+            is R_StructType -> "${param.name}.toGtv()"
+            is R_ListType -> "gtv(${param.name}.map { gtv(it) })"
+            is R_SetType -> "gtv(${param.name}.map { gtv(it) })"
+            else -> "gtv(${param.name})"
+        }
     }
 
     companion object {

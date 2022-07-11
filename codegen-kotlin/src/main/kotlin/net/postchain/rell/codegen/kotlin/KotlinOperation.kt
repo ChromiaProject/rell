@@ -18,6 +18,7 @@ class KotlinOperation(queryDef: R_OperationDefinition, basePackage: String) : Ko
     override val moduleName = queryDef.defId.module.substringBefore("[")
 
     override fun formatGtvParameters(): String {
-        return ""
+        if (params.isEmpty()) return ""
+        return ", gtv(${params.joinToString(", ") { parameterToGtv(it) }})"
     }
 }
