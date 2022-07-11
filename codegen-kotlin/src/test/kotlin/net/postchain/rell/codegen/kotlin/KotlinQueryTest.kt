@@ -31,11 +31,13 @@ internal class KotlinQueryTest {
         "return_type_byte_array,asByteArray()",
         "return_type_entity,asInteger()",
         "return_type_nullable,.let { if (it is GtvNull) null else it.asInteger() }",
-        "return_type_struct,.let { TestStruct.fromGtv(it as GtvArray) }",
+        "return_type_struct,.toObject<TestStruct>()",
         "return_type_rowid,asInteger()",
-        "return_type_list_integer,asArray().map{ it.asInteger() }",
+        "return_type_list_integer,asArray().map { it.asInteger() }",
+        "return_type_set_integer,asArray().map { it.asInteger() }.toSet()",
+        "return_type_list_struct,.asArray().map { it.toObject<TestStruct>() }",
         "return_type_map,'asDict().mapValues { (k, v) -> v.asString() }'",
-        "return_type_proposals_since,gtv(since))))" // Custom structs not supported!
+        "return_type_proposals_since,.asArray().map { it }" // Custom structs/tuples not supported!
     )
     fun returnTypeTest(type: String, returnType: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[type])

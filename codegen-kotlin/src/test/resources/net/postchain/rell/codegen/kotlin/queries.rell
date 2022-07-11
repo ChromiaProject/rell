@@ -21,6 +21,8 @@ query return_type_nullable() = test_entity @? { true };
 query return_type_struct() = test_struct(true);
 query return_type_rowid() = test_entity @ { true } (.rowid);
 query return_type_list_integer() = test_entity @* { .a };
+query return_type_set_integer() = set<integer>();
+query return_type_list_struct() = list<test_struct>();
 query return_type_map() {
 var dictionary = map<text, text>();
 dictionary["Mordor"] = "A place where one does not simply walk into";
@@ -41,5 +43,3 @@ query input_parameter_struct(s: test_struct) = 1;
 query input_parameter_list_input(v: list<byte_array>) = 1;
 query input_parameter_set_input(v: set<byte_array>) = 1;
 query input_parameter_map_input(v: map<text,byte_array>) = 1;
-
-

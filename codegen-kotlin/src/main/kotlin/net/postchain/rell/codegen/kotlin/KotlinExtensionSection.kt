@@ -2,6 +2,7 @@ package net.postchain.rell.codegen.kotlin
 
 import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvNull
+import net.postchain.gtv.mapper.toObject
 import net.postchain.rell.codegen.deps.ImportResolver
 import net.postchain.rell.codegen.kotlin.util.attributeToGtv
 import net.postchain.rell.codegen.kotlin.util.rTypeToString
@@ -30,6 +31,7 @@ abstract class KotlinExtensionSection(
         val alwaysImports = listOf(
             "import ${extendedClass.qualifiedName}",
             "import net.postchain.gtv.GtvFactory.gtv",
+            "import net.postchain.gtv.mapper.toObject",
             "import javax.annotation.processing.Generated"
         )
         val additionalImports = listOf(
@@ -75,12 +77,7 @@ abstract class KotlinExtensionSection(
     abstract fun formatGtvParameters(): String
 
     private fun formatReturn(): String {
-        if (returnType == null) return ""
-        if (returnType is R_TupleType) return ""
-        if (returnType is R_ListType) {
-            if (returnType.elementType is R_TupleType) return ""
-            return ".asArray().map{ it${formatReturnType(returnType.elementType)} }"
-        }
+
         return formatReturnType(returnType)
     }
 
@@ -90,8 +87,9 @@ abstract class KotlinExtensionSection(
 
     companion object {
 
-        fun formatReturnType(type: R_Type): String {
+        fun formatReturnType(type: R_Type?): String {
             return when (type) {
+                null -> ""
                 is R_NullableType -> ".let { if (it is GtvNull) null else it${formatReturnType(type.valueType)} }"
                 is R_BooleanType -> ".asBoolean()"
                 is R_EnumType -> ".let { ${
@@ -104,11 +102,10 @@ abstract class KotlinExtensionSection(
                 is R_DecimalType -> ".let { BigDecimal(it.asString()) }"            // Note that decimals are encoded as GtvString(?)
                 is R_RowidType -> ".asInteger()"             // Same as EntityType
                 is R_MapType -> formatMapReturnType(type)
-                is R_StructType -> ".let { ${
-                    ImportResolver.extractStructureName(type).first.substringAfter(":").snakeToUpperCamelCase()
-                }.fromGtv(it as GtvArray) }"
+                is R_StructType -> ".toObject<${ImportResolver.extractStructureName(type).first.substringAfter(":").snakeToUpperCamelCase()}>()"
                 is R_ListType -> ".asArray().map { it${formatReturnType(type.elementType)} }"
                 is R_SetType -> ".asArray().map { it${formatReturnType(type.elementType)} }.toSet()"
+                is R_TupleType -> ""
                 else -> ""                                  // All structs (should be "unknown structs"
             }
         }
