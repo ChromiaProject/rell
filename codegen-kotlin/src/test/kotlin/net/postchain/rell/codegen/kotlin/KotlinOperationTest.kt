@@ -21,12 +21,12 @@ internal class KotlinOperationTest {
 
     @Test
     fun basicSyntaxTest() {
-        val op = kotlin.test.assertNotNull(testModule.operations["input_parameter_nargs"])
+        val op = kotlin.test.assertNotNull(testModule.operations["input_parameter_text"])
         val k = KotlinOperation(op, "")
         val formatted = k.format()
         assertk.assert(formatted).all {
-            contains("fun GTXTransactionBuilder.inputParameterNargsOperation() =")
-            contains("addOperation(\"input_parameter_nargs\")")
+            contains("fun GTXTransactionBuilder.inputParameterTextOperation(t: String) =")
+            contains("addOperation(\"input_parameter_text\", gtv(t))")
         }
     }
 

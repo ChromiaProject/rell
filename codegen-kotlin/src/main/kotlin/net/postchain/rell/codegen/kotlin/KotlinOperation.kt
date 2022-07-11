@@ -26,6 +26,6 @@ class KotlinOperation(queryDef: R_OperationDefinition, basePackage: String) : Ko
 
     override fun formatGtvParameters(): String {
         if (params.isEmpty()) return ""
-        return ", gtv(${params.joinToString(",\n\t") { parameterToGtv(it) }})"
+        return ", ${params.joinToString(",\n\t") { parameterToGtv(it) }}"
     }
 }
