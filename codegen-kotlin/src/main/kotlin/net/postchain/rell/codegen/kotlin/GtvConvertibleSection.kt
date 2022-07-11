@@ -1,6 +1,6 @@
 package net.postchain.rell.codegen.kotlin
 
-import net.postchain.rell.codegen.kotlin.util.rTypeToString
+import net.postchain.rell.codegen.kotlin.KotlinExtensionSection.Companion.formatReturnType
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.GeneratedAnnotation
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
@@ -43,7 +43,7 @@ open class GtvConvertibleSection(
         |    companion object {
         |       fun fromGtv(gtv: GtvArray): $externalName {
         |            return $externalName(
-        |                ${attributes.mapIndexed { i, attribute -> "gtv[$i]${KotlinQuery.formatReturnType(attribute.type)}" }.joinToString(",\n\t\t\t\t")}
+        |                ${attributes.mapIndexed { i, attribute -> "gtv[$i]${formatReturnType(attribute.type)}" }.joinToString(",\n\t\t\t\t")}
         |            )
         |        }
         |    }
