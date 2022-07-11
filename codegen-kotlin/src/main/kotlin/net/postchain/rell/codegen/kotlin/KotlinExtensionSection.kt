@@ -28,7 +28,7 @@ abstract class KotlinExtensionSection(
         get() = className.module
 
     final override val imports: List<String>
-    override val deps: Set<ClassName>
+    final override val deps: Set<ClassName>
 
     init {
         val alwaysImports = listOf(

@@ -38,7 +38,7 @@ data class CamelCaseClassName(
         }
 
         fun fromString(str: String): ClassName {
-            if (str.contains("?")) return fromString(str.replace("?", ""))
+            if (str.contains("?")) return fromString(str.replace("?", "")) // nullables
             if (str.contains("struct<")) return fromString(str.substringAfter("struct<").replace(">", "")) // struct<entity>
             if (!str.contains(":")) {
                 return CamelCaseClassName(str, str.snakeToUpperCamelCase(), "")
@@ -47,7 +47,7 @@ data class CamelCaseClassName(
             return CamelCaseClassName(
                 str,
                 obj.snakeToUpperCamelCase(),
-                module.substringBefore("[")
+                module.substringBefore("[") // external entities
             )
         }
     }
