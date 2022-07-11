@@ -2,6 +2,7 @@ package net.postchain.rell.codegen.kotlin
 
 import net.postchain.rell.codegen.kotlin.util.rTypeToString
 import net.postchain.rell.codegen.section.DocumentSection
+import net.postchain.rell.codegen.util.GeneratedAnnotation
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
@@ -16,6 +17,7 @@ open class GtvConvertibleSection(
         "import net.postchain.gtv.Gtv",
         "import net.postchain.gtv.GtvArray",
         "import net.postchain.gtv.GtvFactory.gtv",
+        "import javax.annotation.processing.Generated"
     )
     private val attributeImports = mutableSetOf<String>()
 
@@ -30,6 +32,7 @@ open class GtvConvertibleSection(
         }
     }
     override fun format() = """
+        |${GeneratedAnnotation.createAnnotation(name)}
         |data class $externalName(
         |    ${classFields.joinToString(",\n\t")}
         |) {

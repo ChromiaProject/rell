@@ -1,6 +1,7 @@
 package net.postchain.rell.codegen.kotlin
 
 import net.postchain.rell.codegen.section.Enumeration
+import net.postchain.rell.codegen.util.GeneratedAnnotation
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
 
@@ -10,12 +11,15 @@ class KotlinEnumeration(enum: R_EnumDefinition) : Enumeration {
     override val moduleName = enum.defId.module.substringBefore("[")
     private val enumValues = enum.values()
 
-    override val imports = listOf<String>()
+    override val imports = listOf(
+        "import javax.annotation.processing.Generated"
+    )
 
     override fun format() = """
         |/*
         |* Enum $name
         |*/
+        |${GeneratedAnnotation.createAnnotation(name)}
         |enum class $externalName {
         |${formatEnumValues()}
         |}
