@@ -2,9 +2,9 @@ package net.postchain.rell.codegen.kotlin
 
 import assertk.all
 import assertk.assertions.contains
-import assertk.assertions.endsWith
 import net.postchain.gtv.GtvNull
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
+import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -34,20 +34,20 @@ internal class KotlinQueryTest {
     @ParameterizedTest(name = "query for return type {0} should convert to {1}")
     @CsvSource(
         "return_type_enum,.let { TestEnum.valueOf(it.asString()) }",
-        "return_type_boolean,asBoolean()",
-        "return_type_integer,asInteger()",
-        "return_type_text,asString()",
+        "return_type_boolean,.asBoolean()",
+        "return_type_integer,.asInteger()",
+        "return_type_text,.asString()",
         "return_type_decimal,.let { BigDecimal(it.asString()) }",
         "return_type_byte_array,asByteArray()",
         "return_type_entity,asInteger()",
         "return_type_nullable,.let { if (it is GtvNull) null else it.asInteger() }",
         "return_type_struct,.toObject<TestStruct>()",
-        "return_type_rowid,asInteger()",
-        "return_type_list_integer,asArray().map { it.asInteger() }",
-        "return_type_set_integer,asArray().map { it.asInteger() }.toSet()",
+        "return_type_rowid,.asInteger()",
+        "return_type_list_integer,.asArray().map { it.asInteger() }",
+        "return_type_set_integer,.asArray().map { it.asInteger() }.toSet()",
         "return_type_list_struct,.asArray().map { it.toObject<TestStruct>() }",
         "return_type_map,'asDict().mapValues { (k, v) -> v.asString() }'",
-        "return_type_proposals_since,.asArray().map { it }" // Custom structs/tuples not supported!
+        "return_type_unnamed_tuple,.asArray()", // Unnamed tuples are arrays with unknown entries
     )
     fun returnTypeTest(type: String, returnType: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[type])
@@ -56,7 +56,7 @@ internal class KotlinQueryTest {
         assertk.assert(formatted).all {
             contains("fun PostchainClient.")
             contains(type.snakeToLowerCamelCase())
-            endsWith(returnType)
+            contains(returnType)
         }
     }
 
@@ -92,5 +92,20 @@ internal class KotlinQueryTest {
         val query = kotlin.test.assertNotNull(testModule.queries[s])
         val k = KotlinQuery(query, "")
         assertk.assert(k.imports).contains("import ${GtvNull::class.qualifiedName}")
+    }
+
+    @ParameterizedTest(name = "query has imported")
+    @CsvSource(
+        "return_type_named_tuple",
+        "return_type_named_tuple_list",
+    )
+    fun namedTupleCreatesObject(name: String) {
+        val query = kotlin.test.assertNotNull(testModule.queries[name])
+        val k = KotlinQuery(query, "")
+        val formatted = k.format()
+        assertk.assert(formatted).all {
+            contains(".toObject<${name.snakeToUpperCamelCase()}Result>()")
+            contains("data class ${name.snakeToUpperCamelCase()}Result")
+        }
     }
 }

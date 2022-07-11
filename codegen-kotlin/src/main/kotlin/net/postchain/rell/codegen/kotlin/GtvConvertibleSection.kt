@@ -1,6 +1,5 @@
 package net.postchain.rell.codegen.kotlin
 
-import net.postchain.rell.codegen.kotlin.KotlinExtensionSection.Companion.formatReturnType
 import net.postchain.rell.codegen.kotlin.util.attributeToGtv
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.GeneratedAnnotation
@@ -11,7 +10,8 @@ import net.postchain.rell.model.*
 open class GtvConvertibleSection(
     val name: String,
     override val externalName: String,
-    override val moduleName: String, private val attributes: Collection<R_Attribute>
+    override val moduleName: String,
+    private val attributes: Map<String, R_Type>
 ) : DocumentSection {
 
     private val globalImports = listOf(
@@ -26,12 +26,10 @@ open class GtvConvertibleSection(
     override val imports: List<String>
         get() = globalImports + attributeImports
 
-    private val classFields = attributes.map { formatAttribute(it) }
+    private val classFields = attributes.map { formatAttribute(it.key, it.value) }
 
-    private fun formatAttribute(attribute: R_Attribute): String {
-        return attribute.run {
-            "@Name(\"$name\") val ${name.snakeToLowerCamelCase()}: ${rTypeToString(type)}"
-        }
+    private fun formatAttribute(name: String, type: R_Type): String {
+        return "@Name(\"$name\") val ${name.snakeToLowerCamelCase()}: ${rTypeToString(type)}"
     }
     override fun format() = """
         |${GeneratedAnnotation.createAnnotation(name)}
@@ -41,25 +39,12 @@ open class GtvConvertibleSection(
         |    fun toGtv(): Gtv {
         |        return ${formatGtv()}
         |    }
-        |    
-        |    companion object {
-        |       fun fromGtv(gtv: GtvArray): $externalName {
-        |            return $externalName(
-        |                ${attributes.mapIndexed { i, attribute -> "gtv[$i]${formatReturnType(attribute.type)}" }.joinToString(",\n\t\t\t\t")}
-        |            )
-        |        }
-        |    }
         |}
     """.trimMargin()
 
     private fun formatGtv(): String {
         return "gtv(\n\t\t\t${
-            attributes.joinToString(",\n\t\t\t") {
-                attributeToGtv(
-                    it.name.snakeToLowerCamelCase(),
-                    it.type
-                )
-            }
+            attributes.map { attributeToGtv(it.key.snakeToLowerCamelCase(), it.value)  }.joinToString(",\n\t\t\t")
         }\n\t\t)"
     }
 

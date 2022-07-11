@@ -40,6 +40,7 @@ internal class KotlinOperationTest {
         "input_parameter_entity,e: Long,gtv(e))",
         "input_parameter_struct,s: TestStruct,s.toGtv())",
         "input_parameter_list_input,v: List<ByteArray>,gtv(v.map { gtv(it) }))",
+        "input_parameter_nullable_list_input,v: List<ByteArray>?,gtv(v.let { if (it == null) GtvNull else gtv(it.map { gtv(it) }) })",
         "input_parameter_set_input,v: Set<ByteArray>,gtv(v.map { gtv(it) }))",
         "input_parameter_map_input,'v: Map<String, ByteArray>',gtv(v))",
     )
@@ -51,7 +52,7 @@ internal class KotlinOperationTest {
             contains("fun GTXTransactionBuilder.")
             contains("($params) =")
             contains("addOperation(\"$queryName\"")
-            endsWith("$gtvParam)")
+            endsWith("$gtvParam)\n")
         }
     }
 }

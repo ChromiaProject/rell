@@ -18,5 +18,6 @@ operation input_parameter_boolean(b: boolean) {}
 operation input_parameter_entity(e: test_entity) {}
 operation input_parameter_struct(s: test_struct) {}
 operation input_parameter_list_input(v: list<byte_array>) {}
+operation input_parameter_nullable_list_input(v: list<byte_array>?) {}
 operation input_parameter_set_input(v: set<byte_array>) {}
 operation input_parameter_map_input(v: map<text,byte_array>) {}

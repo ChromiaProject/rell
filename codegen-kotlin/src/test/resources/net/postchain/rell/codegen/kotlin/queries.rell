@@ -24,6 +24,11 @@ query return_type_list_integer() = test_entity @* { .a };
 query return_type_set_integer() = set<integer>();
 query return_type_list_struct() = list<test_struct>();
 query return_type_map() = map<text, text>();
+query return_type_named_tuple() = (foo = 1);
+query return_type_named_tuple_list(since: rowid) {
+  return test_entity @* { .rowid >= since } (rowid = .rowid, a = .a) limit 10;
+}
+query return_type_unnamed_tuple() = (1,);
 query return_type_proposals_since(since: rowid) {
   return test_entity @* { .rowid >= since } (.rowid, .a) limit 10;
 }
@@ -37,5 +42,6 @@ query input_parameter_boolean(b: boolean) = 1;
 query input_parameter_entity(e: test_entity) = 1;
 query input_parameter_struct(s: test_struct) = 1;
 query input_parameter_list_input(v: list<byte_array>) = 1;
+query input_parameter_nullable_list_input(v: list<byte_array>?) = 1;
 query input_parameter_set_input(v: set<byte_array>) = 1;
 query input_parameter_map_input(v: map<text,byte_array>) = 1;

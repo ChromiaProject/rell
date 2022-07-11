@@ -8,7 +8,7 @@ class KotlinEntity(entity: R_EntityDefinition) : GtvConvertibleSection(
     entity.appLevelName,
     entity.simpleName.snakeToUpperCamelCase(),
     entity.defId.module.substringBefore("["),
-    entity.attributes.values
+    entity.attributes.values.associateBy( { it.name }, { it.type })
 ), Entity {
     override fun format(): String {
         return """

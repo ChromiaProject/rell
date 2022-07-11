@@ -48,6 +48,7 @@ abstract class KotlinExtensionSection(
         |${GeneratedAnnotation.createAnnotation(appLevelName)}
         |fun ${extendedClass.simpleName}.${externalName}(${formatInputParameters()}) = 
         |   $extendenMethod("$simpleName"${formatGtvParameters()})${formatReturn()}
+        |${returnStructure(returnType)}
     """.trimMargin()
 
 
@@ -85,32 +86,45 @@ abstract class KotlinExtensionSection(
         return attributeToGtv(param.name.snakeToLowerCamelCase(), param.type)
     }
 
-    companion object {
+    private fun returnStructure(returnType: R_Type?): String {
+        if (returnType == null) return ""
+        if (returnType is R_CollectionType) return returnStructure(returnType.elementType)
+        if (returnType !is R_TupleType || !returnType.name.contains(":")) return "" // Non-tuples and unnamed tuples
+        return GtvConvertibleSection("", "${simpleName.snakeToUpperCamelCase()}Result", moduleName,
+            returnType.fields.associate { it.name!!.str to it.type }).format()
+    }
 
-        fun formatReturnType(type: R_Type?): String {
-            return when (type) {
-                null -> ""
-                is R_NullableType -> ".let { if (it is GtvNull) null else it${formatReturnType(type.valueType)} }"
-                is R_BooleanType -> ".asBoolean()"
-                is R_EnumType -> ".let { ${
-                    type.name.substringAfter(":").snakeToUpperCamelCase()
-                }.valueOf(it.asString()) }"
-                is R_TextType -> ".asString()"
-                is R_IntegerType -> ".asInteger()"
-                is R_ByteArrayType -> ".asByteArray()"
-                is R_EntityType -> ".asInteger()"            // Note that entities are encoded as GtvInteger
-                is R_DecimalType -> ".let { BigDecimal(it.asString()) }"            // Note that decimals are encoded as GtvString(?)
-                is R_RowidType -> ".asInteger()"             // Same as EntityType
-                is R_MapType -> formatMapReturnType(type)
-                is R_StructType -> ".toObject<${ImportResolver.extractStructureName(type).first.substringAfter(":").snakeToUpperCamelCase()}>()"
-                is R_ListType -> ".asArray().map { it${formatReturnType(type.elementType)} }"
-                is R_SetType -> ".asArray().map { it${formatReturnType(type.elementType)} }.toSet()"
-                is R_TupleType -> ""
-                else -> ""                                  // All structs (should be "unknown structs"
-            }
+
+    fun formatReturnType(type: R_Type?): String {
+        return when (type) {
+            null -> ""
+            is R_NullableType -> ".let { if (it is GtvNull) null else it${formatReturnType(type.valueType)} }"
+            is R_BooleanType -> ".asBoolean()"
+            is R_EnumType -> ".let { ${
+                type.name.substringAfter(":").snakeToUpperCamelCase()
+            }.valueOf(it.asString()) }"
+            is R_TextType -> ".asString()"
+            is R_IntegerType -> ".asInteger()"
+            is R_ByteArrayType -> ".asByteArray()"
+            is R_EntityType -> ".asInteger()"            // Note that entities are encoded as GtvInteger
+            is R_DecimalType -> ".let { BigDecimal(it.asString()) }"            // Note that decimals are encoded as GtvString(?)
+            is R_RowidType -> ".asInteger()"             // Same as EntityType
+            is R_MapType -> formatMapReturnType(type)
+            is R_StructType -> ".toObject<${
+                ImportResolver.extractStructureName(type).first.substringAfter(":").snakeToUpperCamelCase()
+            }>()"
+            is R_ListType -> ".asArray().map { it${formatReturnType(type.elementType)} }"
+            is R_SetType -> ".asArray().map { it${formatReturnType(type.elementType)} }.toSet()"
+            is R_TupleType -> formatTupleType(type)
+            else -> ""                                  // All structs (should be "unknown structs"
         }
+    }
 
-        private fun formatMapReturnType(type: R_MapType) = if (type.keyType !is R_TextType) "" else
-            ".asDict().mapValues { (k, v) -> v${formatReturnType(type.valueType)} }"
+    private fun formatMapReturnType(type: R_MapType) = if (type.keyType !is R_TextType) "" else
+        ".asDict().mapValues { (k, v) -> v${formatReturnType(type.valueType)} }"
+
+    private fun formatTupleType(type: R_TupleType): String {
+        if (!type.name.contains(":")) return ".asArray()"
+        return ".toObject<${simpleName.snakeToUpperCamelCase()}Result>()"
     }
 }

@@ -9,7 +9,7 @@ class KotlinStruct(struct: R_StructDefinition) : GtvConvertibleSection(
     struct.appLevelName,
     struct.simpleName.snakeToUpperCamelCase(),
     struct.defId.module.substringBefore("["),
-    struct.struct.attributes.values
+    struct.struct.attributes.values.associateBy( { it.name }, { it.type })
 ), Struct {
     override fun format(): String {
         return """

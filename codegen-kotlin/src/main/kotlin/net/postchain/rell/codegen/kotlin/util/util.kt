@@ -31,7 +31,7 @@ fun attributeToGtv(attributeName: String, attributeType: R_Type): String {
         is R_EnumType -> "gtv(${attributeName}.ordinal.toLong())"
         is R_StructType -> "$attributeName.toGtv()"
         is R_DecimalType -> "gtv($attributeName.toString())"
-        is R_NullableType -> "$attributeName.let { if (it == null) GtvNull else gtv(it) }"
+        is R_NullableType -> "$attributeName.let { if (it == null) GtvNull else ${attributeToGtv("it", attributeType.valueType)} }"
         is R_ListType -> "gtv($attributeName.map { ${attributeToGtv("it", attributeType.elementType)} })"
         is R_SetType -> "gtv($attributeName.map { ${attributeToGtv("it", attributeType.elementType)} })"
         else -> "gtv($attributeName)"
