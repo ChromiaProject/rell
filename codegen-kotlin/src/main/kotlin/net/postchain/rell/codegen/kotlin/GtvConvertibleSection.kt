@@ -13,7 +13,7 @@ open class GtvConvertibleSection(
     private val attributes: Map<String, R_Type>
 ) : DocumentSection {
     override val moduleName: String
-        get() = className.moduleName
+        get() = className.module
 
     private val globalImports = listOf(
         "import net.postchain.gtv.Gtv",
@@ -34,7 +34,7 @@ open class GtvConvertibleSection(
     }
     override fun format() = """
         |${GeneratedAnnotation.createAnnotation(className.rellName)}
-        |data class ${className.className}(
+        |data class ${className.name}(
         |    ${classFields.joinToString(",\n\t")}
         |) {
         |    fun toGtv(): Gtv {

@@ -1,26 +1,24 @@
 package net.postchain.rell.codegen.kotlin
 
 import net.postchain.client.core.PostchainClient
+import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Query
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.model.*
 
 class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : KotlinExtensionSection(
-    queryDef.appLevelName,
+    CamelCaseClassName.fromRellQuery(queryDef),
     queryDef.simpleName,
-    queryDef.simpleName.snakeToLowerCamelCase(),
     PostchainClient::class,
     "querySync",
     queryDef.params(),
     queryDef.type(),
     basePackage
 ), Query {
-    val name = queryDef.simpleName
-    override val moduleName = queryDef.defId.module.substringBefore("[")
 
     override fun format() = """
         |/**
-        | * Query $appLevelName 
+        | * Query ${className.rellName} 
         | */
         |${super.format()}
     """.trimMargin()

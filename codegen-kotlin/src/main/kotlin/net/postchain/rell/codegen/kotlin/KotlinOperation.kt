@@ -1,25 +1,24 @@
 package net.postchain.rell.codegen.kotlin
 
 import net.postchain.client.core.GTXTransactionBuilder
+import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Operation
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.model.*
 
-class KotlinOperation(queryDef: R_OperationDefinition, basePackage: String) : KotlinExtensionSection(
-    queryDef.appLevelName,
-    queryDef.simpleName,
-    "${queryDef.simpleName.snakeToLowerCamelCase()}Operation",
+class KotlinOperation(op: R_OperationDefinition, basePackage: String) : KotlinExtensionSection(
+    CamelCaseClassName.fromRellOperation(op),
+    op.simpleName,
     GTXTransactionBuilder::class,
     "addOperation",
-    queryDef.params(),
+    op.params(),
     null,
     basePackage
 ), Operation {
-    override val moduleName = queryDef.defId.module.substringBefore("[")
 
     override fun format() = """
        |/**
-       | * Operation $appLevelName
+       | * Operation ${className.rellName}
        | */
        |${super.format()}
     """.trimMargin()

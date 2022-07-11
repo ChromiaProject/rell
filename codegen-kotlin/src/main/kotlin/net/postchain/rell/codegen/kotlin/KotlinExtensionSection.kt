@@ -4,6 +4,7 @@ import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvNull
 import net.postchain.gtv.mapper.toObject
 import net.postchain.rell.codegen.deps.CamelCaseClassName
+import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.ImportResolver
 import net.postchain.rell.codegen.kotlin.util.attributeToGtv
 import net.postchain.rell.codegen.kotlin.util.rTypeToString
@@ -16,15 +17,16 @@ import java.math.BigDecimal
 import kotlin.reflect.KClass
 
 abstract class KotlinExtensionSection(
-    val appLevelName: String,
+    val className: ClassName,
     val simpleName: String,
-    val externalName: String,
     val extendedClass: KClass<*>,
     val extendenMethod: String,
     val params: List<R_Param>,
     val returnType: R_Type?,
     val basePackage: String
 ) : DocumentSection {
+    override val moduleName: String
+        get() = className.module
 
     final override val imports: List<String>
 
@@ -46,8 +48,8 @@ abstract class KotlinExtensionSection(
     }
 
     override fun format() = """
-        |${GeneratedAnnotation.createAnnotation(appLevelName)}
-        |fun ${extendedClass.simpleName}.${externalName}(${formatInputParameters()}) = 
+        |${GeneratedAnnotation.createAnnotation(className.rellName)}
+        |fun ${extendedClass.simpleName}.${className.name}(${formatInputParameters()}) = 
         |   $extendenMethod("$simpleName"${formatGtvParameters()})${formatReturn()}
         |${returnStructure(returnType)}
     """.trimMargin()
@@ -92,7 +94,7 @@ abstract class KotlinExtensionSection(
         if (returnType is R_CollectionType) return returnStructure(returnType.elementType)
         if (returnType !is R_TupleType || !returnType.name.contains(":")) return "" // Non-tuples and unnamed tuples
         val resultObject = GtvConvertibleSection(
-            CamelCaseClassName("", simpleName.snakeToUpperCamelCase() + "Result", moduleName),
+            CamelCaseClassName("", simpleName.snakeToUpperCamelCase() + "Result", className.module),
             returnType.fields.associate { it.name!!.str to it.type })
         return "\n${resultObject.format()}"
     }
