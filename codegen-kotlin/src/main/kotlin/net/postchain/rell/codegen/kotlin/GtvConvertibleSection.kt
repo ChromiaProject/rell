@@ -28,7 +28,7 @@ open class GtvConvertibleSection(
     override val imports: List<String>
         get() = globalImports + attributeImports
 
-    override val deps = DependencyFinder.findDependencies(attributes.values, false)
+    override val deps = DependencyFinder.findDependencies(attributes.values)
 
     private val classFields = attributes.map { formatAttribute(it.key, it.value) }
 

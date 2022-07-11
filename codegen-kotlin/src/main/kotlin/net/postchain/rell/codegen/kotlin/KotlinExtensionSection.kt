@@ -42,8 +42,8 @@ abstract class KotlinExtensionSection(
             "import ${GtvNull::class.qualifiedName}",
         )
         imports = alwaysImports + additionalImports
-        val returnDeps = DependencyFinder.findDependencies(returnType, false)
-        val paramDeps = DependencyFinder.findDependencies(params.map { it.type }, false)
+        val returnDeps = DependencyFinder.findDependencies(returnType)
+        val paramDeps = DependencyFinder.findDependencies(params.map { it.type })
         deps = paramDeps + returnDeps
     }
 
