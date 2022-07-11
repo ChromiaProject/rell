@@ -12,6 +12,7 @@ import java.io.File
 
 import assertk.assert
 import assertk.assertions.contains
+import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.model.R_Module
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.assertThrows
@@ -33,7 +34,7 @@ internal class SimpleKotlinEntityTest {
     @Test
     fun format() {
         val entity = assertNotNull(testModule.entities["test_entity"])
-        val k = KotlinEntity(entity)
+        val k = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity)
         val formatted = k.format()
         assert(formatted).all {
             contains("TestEntity")
@@ -46,7 +47,7 @@ internal class SimpleKotlinEntityTest {
     @Test
     fun text() {
         val entity = assertNotNull(testModule.entities["multi_text_entity"])
-        val k = KotlinEntity(entity)
+        val k = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity)
         val formatted = k.format()
         assert(formatted).all {
             contains("val name: String")
@@ -66,7 +67,8 @@ internal class SimpleKotlinEntityTest {
     )
     fun simpleEntities(rellType: String, kotlinType: String) {
         val entity = assertNotNull(testModule.entities["${rellType}_entity"], "entity does not exist")
-        val formatted = KotlinEntity(entity).format()
+        val k = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity)
+        val formatted = k.format()
         assert(formatted).all {
             contains("val a: $kotlinType")
         }
@@ -76,7 +78,7 @@ internal class SimpleKotlinEntityTest {
     fun jsonNotSupported() {
         val entity = assertNotNull(testModule.entities["json_entity"], "entity does not exist")
         assertThrows<IllegalArgumentException> {
-            KotlinEntity(entity).format()
+            KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity).format()
         }
     }
 
@@ -89,7 +91,8 @@ internal class SimpleKotlinEntityTest {
     )
     fun builtinTypes(keyword: String, kotlinType: String) {
         val entity = assertNotNull(testModule.entities["builtin_${keyword}"], "entity does not exist")
-        val formatted = KotlinEntity(entity).format()
+        val k = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity)
+        val formatted = k.format()
         assert(formatted).all {
             contains("val $keyword: $kotlinType")
         }
@@ -98,7 +101,7 @@ internal class SimpleKotlinEntityTest {
     @Test
     fun nested() {
         val entity = assertNotNull(testModule.entities["nested_entity"])
-        val k = KotlinEntity(entity)
+        val k = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity)
         val formatted = k.format()
         assert(formatted).all {
             contains("val a: Long")

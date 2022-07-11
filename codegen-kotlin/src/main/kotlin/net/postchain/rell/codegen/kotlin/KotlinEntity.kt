@@ -1,21 +1,20 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.section.Entity
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
 
-class KotlinEntity(entity: R_EntityDefinition) : GtvConvertibleSection(
-    entity.appLevelName,
-    entity.simpleName.snakeToUpperCamelCase(),
-    entity.defId.module.substringBefore("["),
+class KotlinEntity(className: ClassName, entity: R_EntityDefinition) : GtvConvertibleSection(
+    className,
     entity.attributes.values.associateBy( { it.name }, { it.type })
 ), Entity {
     override fun format(): String {
         return """
             |/*
-            |* Entity $name 
+            |* Entity ${className.rellName} 
             |*
-            |* Rell entity is typically encoded as a GtvInteger. If used as struct<$name>, then toGtv() is used for encoding.
+            |* Rell entity is typically encoded as a GtvInteger. If used as struct<${className.rellName}>, then toGtv() is used for encoding.
             |*/
             |${super.format()}
         """.trimMargin()

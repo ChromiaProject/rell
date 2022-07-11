@@ -1,5 +1,6 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.kotlin.util.attributeToGtv
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.GeneratedAnnotation
@@ -8,11 +9,11 @@ import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
 
 open class GtvConvertibleSection(
-    val name: String,
-    override val externalName: String,
-    override val moduleName: String,
+    val className: ClassName,
     private val attributes: Map<String, R_Type>
 ) : DocumentSection {
+    override val moduleName: String
+        get() = className.moduleName
 
     private val globalImports = listOf(
         "import net.postchain.gtv.Gtv",
@@ -32,8 +33,8 @@ open class GtvConvertibleSection(
         return "@Name(\"$name\") val ${name.snakeToLowerCamelCase()}: ${rTypeToString(type)}"
     }
     override fun format() = """
-        |${GeneratedAnnotation.createAnnotation(name)}
-        |data class $externalName(
+        |${GeneratedAnnotation.createAnnotation(className.rellName)}
+        |data class ${className.className}(
         |    ${classFields.joinToString(",\n\t")}
         |) {
         |    fun toGtv(): Gtv {

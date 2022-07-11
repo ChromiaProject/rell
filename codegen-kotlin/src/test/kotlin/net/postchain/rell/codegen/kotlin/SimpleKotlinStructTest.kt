@@ -12,6 +12,7 @@ import java.io.File
 
 import assertk.assert
 import assertk.assertions.contains
+import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.model.R_Module
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.assertThrows
@@ -43,7 +44,7 @@ internal class SimpleKotlinStructTest {
     )
     fun simpleStructures(rellType: String, kotlinType: String) {
         val struct = assertNotNull(testModule.structs["${rellType}_struct"], "struct does not exist")
-        val formatted = KotlinStruct(struct).format()
+        val formatted = KotlinStruct(CamelCaseClassName.fromRellDefinition(struct), struct).format()
         assert(formatted).all {
             contains("val a: $kotlinType")
         }
@@ -53,7 +54,7 @@ internal class SimpleKotlinStructTest {
     fun jsonNotSupported() {
         val struct = assertNotNull(testModule.structs["json_struct"], "struct does not exist")
         assertThrows<IllegalArgumentException> {
-            KotlinStruct(struct).format()
+            KotlinStruct(CamelCaseClassName.fromRellDefinition(struct), struct).format()
         }
     }
 
@@ -65,7 +66,7 @@ internal class SimpleKotlinStructTest {
     )
     fun builtinTypes(keyword: String, kotlinType: String) {
         val struct = assertNotNull(testModule.structs["builtin_${keyword}"], "struct does not exist")
-        val formatted = KotlinStruct(struct).format()
+        val formatted = KotlinStruct(CamelCaseClassName.fromRellDefinition(struct), struct).format()
         assert(formatted).all {
             contains("val $keyword: $kotlinType")
         }
@@ -74,7 +75,7 @@ internal class SimpleKotlinStructTest {
     @Test
     fun nested() {
         val struct = assertNotNull(testModule.structs["nested_struct"])
-        val k = KotlinStruct(struct)
+        val k = KotlinStruct(CamelCaseClassName.fromRellDefinition(struct), struct)
         val formatted = k.format()
         assert(formatted).all {
             contains("val a: TextStruct")

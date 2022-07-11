@@ -1,9 +1,9 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.kotlin.util.BlockEntity
 import net.postchain.rell.codegen.kotlin.util.TransactionEntity
-import net.postchain.rell.codegen.section.Operation
 import net.postchain.rell.model.*
 
 class KotlinDocumentFactory(private val basePackage: String) : DocumentFactory {
@@ -12,13 +12,13 @@ class KotlinDocumentFactory(private val basePackage: String) : DocumentFactory {
 
     override fun createDocument(moduleName: String) = KotlinDocument(basePackage, moduleName)
 
-    override fun createEntity(rellEntity: R_EntityDefinition) = KotlinEntity(rellEntity)
+    override fun createEntity(className: ClassName, rellEntity: R_EntityDefinition) = KotlinEntity(className, rellEntity)
 
     override fun createBuiltins() = listOf(BlockEntity(), TransactionEntity())
 
-    override fun createStruct(rellStruct: R_StructDefinition) = KotlinStruct(rellStruct)
+    override fun createStruct(className: ClassName, rellStruct: R_StructDefinition) = KotlinStruct(className, rellStruct)
 
-    override fun createEnum(rellEnum: R_EnumDefinition) = KotlinEnumeration(rellEnum)
+    override fun createEnum(className: ClassName, rellEnum: R_EnumDefinition) = KotlinEnumeration(className, rellEnum)
 
     override fun createQuery(rellQuery: R_QueryDefinition) = KotlinQuery(rellQuery, basePackage)
 

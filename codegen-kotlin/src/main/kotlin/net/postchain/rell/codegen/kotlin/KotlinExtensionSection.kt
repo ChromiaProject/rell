@@ -3,6 +3,7 @@ package net.postchain.rell.codegen.kotlin
 import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvNull
 import net.postchain.gtv.mapper.toObject
+import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.deps.ImportResolver
 import net.postchain.rell.codegen.kotlin.util.attributeToGtv
 import net.postchain.rell.codegen.kotlin.util.rTypeToString
@@ -17,7 +18,7 @@ import kotlin.reflect.KClass
 abstract class KotlinExtensionSection(
     val appLevelName: String,
     val simpleName: String,
-    override val externalName: String,
+    val externalName: String,
     val extendedClass: KClass<*>,
     val extendenMethod: String,
     val params: List<R_Param>,
@@ -90,7 +91,8 @@ abstract class KotlinExtensionSection(
         if (returnType == null) return ""
         if (returnType is R_CollectionType) return returnStructure(returnType.elementType)
         if (returnType !is R_TupleType || !returnType.name.contains(":")) return "" // Non-tuples and unnamed tuples
-        val resultObject = GtvConvertibleSection("", "${simpleName.snakeToUpperCamelCase()}Result", moduleName,
+        val resultObject = GtvConvertibleSection(
+            CamelCaseClassName("", simpleName.snakeToUpperCamelCase() + "Result", moduleName),
             returnType.fields.associate { it.name!!.str to it.type })
         return "\n${resultObject.format()}"
     }

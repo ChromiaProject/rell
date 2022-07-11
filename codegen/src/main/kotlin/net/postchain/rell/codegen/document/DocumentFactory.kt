@@ -1,15 +1,16 @@
 package net.postchain.rell.codegen.document
 
+import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.section.*
 import net.postchain.rell.model.*
 
 interface DocumentFactory {
     val fileExtension: String
     fun createDocument(moduleName: String): Document
-    fun createEntity(rellEntity: R_EntityDefinition): Entity
+    fun createEntity(className: ClassName, rellEntity: R_EntityDefinition): Entity
     fun createBuiltins(): List<Entity>
-    fun createStruct(rellStruct: R_StructDefinition): Struct
-    fun createEnum(rellEnum: R_EnumDefinition): Enumeration
+    fun createStruct(className: ClassName, rellStruct: R_StructDefinition): Struct
+    fun createEnum(className: ClassName, rellEnum: R_EnumDefinition): Enumeration
 
     fun createQuery(rellQuery: R_QueryDefinition): Query
 

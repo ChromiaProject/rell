@@ -3,8 +3,7 @@ package net.postchain.rell.codegen.kotlin.util
 import net.postchain.rell.codegen.section.Entity
 
 class BlockEntity() : Entity {
-    override val name = "rell:block"
-    override val externalName = "Block"
+    val name = "rell:block"
     override val moduleName = "rell"
     override val imports: List<String>
         get() = listOf("import net.postchain.gtv.mapper.Name")
@@ -19,8 +18,7 @@ class BlockEntity() : Entity {
 }
 
 class TransactionEntity() : Entity {
-    override val name = "rell:block"
-    override val externalName = "Transaction"
+    val name = "rell:block"
     override val moduleName = "rell"
     override val imports: List<String>
         get() = listOf("import net.postchain.gtv.mapper.Name")
