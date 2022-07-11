@@ -23,11 +23,7 @@ query return_type_rowid() = test_entity @ { true } (.rowid);
 query return_type_list_integer() = test_entity @* { .a };
 query return_type_set_integer() = set<integer>();
 query return_type_list_struct() = list<test_struct>();
-query return_type_map() {
-var dictionary = map<text, text>();
-dictionary["Mordor"] = "A place where one does not simply walk into";
-return dictionary;
-}
+query return_type_map() = map<text, text>();
 query return_type_proposals_since(since: rowid) {
   return test_entity @* { .rowid >= since } (.rowid, .a) limit 10;
 }

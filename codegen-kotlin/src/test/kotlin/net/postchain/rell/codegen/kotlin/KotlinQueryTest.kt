@@ -3,10 +3,10 @@ package net.postchain.rell.codegen.kotlin
 import assertk.all
 import assertk.assertions.contains
 import assertk.assertions.endsWith
-import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.GtvNull
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
@@ -21,6 +21,16 @@ internal class KotlinQueryTest {
         }
     }
 
+    @Test
+    fun basicSyntaxTest() {
+        val q = kotlin.test.assertNotNull(testModule.queries["input_parameter_nargs"])
+        val k = KotlinQuery(q, "")
+        val formatted = k.format()
+        assertk.assert(formatted).all {
+            contains("fun PostchainClient.inputParameterNargs() =")
+            contains("querySync(\"input_parameter_nargs\"")
+        }
+    }
     @ParameterizedTest(name = "query for return type {0} should convert to {1}")
     @CsvSource(
         "return_type_enum,.let { TestEnum.valueOf(it.asString()) }",

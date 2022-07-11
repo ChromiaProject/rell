@@ -4,6 +4,7 @@ import assertk.all
 import assertk.assertions.contains
 import assertk.assertions.endsWith
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
@@ -15,6 +16,17 @@ internal class KotlinOperationTest {
         @BeforeAll
         fun compileTestApp() {
             compileApp()
+        }
+    }
+
+    @Test
+    fun basicSyntaxTest() {
+        val op = kotlin.test.assertNotNull(testModule.operations["input_parameter_nargs"])
+        val k = KotlinOperation(op, "")
+        val formatted = k.format()
+        assertk.assert(formatted).all {
+            contains("fun GTXTransactionBuilder.inputParameterNargsOperation() =")
+            contains("addOperation(\"input_parameter_nargs\")")
         }
     }
 
