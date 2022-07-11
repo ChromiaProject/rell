@@ -33,16 +33,16 @@ internal class KotlinOperationTest {
     @ParameterizedTest(name = "operation {0} should contain params {1} with gtv-conversion {2}")
     @CsvSource(
         "input_parameter_nargs,'',''",
-        "input_parameter_text,t: String,gtv(t))",
-        "input_parameter_integer,i: Long,gtv(i))",
-        "input_parameter_enum,e: TestEnum,gtv(e.ordinal.toLong()))",
-        "input_parameter_boolean,b: Boolean,gtv(b))",
-        "input_parameter_entity,e: Long,gtv(e))",
-        "input_parameter_struct,s: TestStruct,s.toGtv())",
-        "input_parameter_list_input,v: List<ByteArray>,gtv(v.map { gtv(it) }))",
-        "input_parameter_nullable_list_input,v: List<ByteArray>?,gtv(v.let { if (it == null) GtvNull else gtv(it.map { gtv(it) }) })",
-        "input_parameter_set_input,v: Set<ByteArray>,gtv(v.map { gtv(it) }))",
-        "input_parameter_map_input,'v: Map<String, ByteArray>',gtv(v))",
+        "input_parameter_text,t: String,gtv(t)",
+        "input_parameter_integer,i: Long,gtv(i)",
+        "input_parameter_enum,e: TestEnum,gtv(e.ordinal.toLong())",
+        "input_parameter_boolean,b: Boolean,gtv(b)",
+        "input_parameter_entity,e: Long,gtv(e)",
+        "input_parameter_struct,s: TestStruct,s.toGtv()",
+        "input_parameter_list_input,v: List<ByteArray>,gtv(v.map { gtv(it) })",
+        "input_parameter_nullable_list_input,v: List<ByteArray>?,v.let { if (it == null) GtvNull else gtv(it.map { gtv(it) }) }",
+        "input_parameter_set_input,v: Set<ByteArray>,gtv(v.map { gtv(it) })",
+        "input_parameter_map_input,'v: Map<String, ByteArray>',gtv(v)",
     )
     fun parameterTypeTest(queryName: String, params: String, gtvParam: String) {
         val op = kotlin.test.assertNotNull(testModule.operations[queryName])
