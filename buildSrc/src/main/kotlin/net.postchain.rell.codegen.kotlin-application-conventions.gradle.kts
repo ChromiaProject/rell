@@ -20,7 +20,8 @@ val appArtifact = artifacts.add("archives", appFile.get().asFile) {
 
 publishing {
     publications {
-        create<MavenPublication>("app") {
+        this.getByName("maven") {
+            this as MavenPublication
             artifact(appArtifact)
         }
     }
