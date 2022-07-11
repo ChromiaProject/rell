@@ -12,6 +12,20 @@ plugins {
     application
 }
 
+val appFile = layout.buildDirectory.file("distributions/$name-$version.tar")
+val appArtifact = artifacts.add("archives", appFile.get().asFile) {
+    type = "tar"
+    builtBy("distTar")
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("app") {
+            artifact(appArtifact)
+        }
+    }
+}
+
 dependencies {
     runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.17.1")
 }
