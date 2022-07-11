@@ -4,18 +4,12 @@ import net.postchain.rell.codegen.deps.ImportResolver
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.document.DocumentFile
 import net.postchain.rell.codegen.section.DocumentSection
-import net.postchain.rell.codegen.section.Enumeration
 import net.postchain.rell.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.compiler.base.utils.C_SourceDir
 import net.postchain.rell.model.*
 import net.postchain.rell.utils.RellCliUtils
 import java.io.File
-
-data class EnumFiles(val rellModule: String, val v: Enumeration)
-data class EntityFile(val rellModule: String, val v: R_EntityDefinition)
-data class StructFile(val rellModule: String, val v: R_StructDefinition)
-data class QueryFile(val rellModule: String, val v: R_QueryDefinition)
 
 class CodeGenerator(val factory: DocumentFactory, val singleFile: Boolean = false) {
 
@@ -28,10 +22,13 @@ class CodeGenerator(val factory: DocumentFactory, val singleFile: Boolean = fals
         val rellEntities = app.modules.flatMap { it.entities.values }.associateBy { it.appLevelName }
         val rellStructures = app.modules.flatMap { it.structs.values }.associateBy { it.appLevelName }
         val rellQueries = app.modules.flatMap { it.queries.values }.associateBy { it.appLevelName }
+        val rellOperations = app.modules.flatMap { it.operations.values }.associateBy { it.appLevelName }
 
-        val neededObjects = rellQueries.values.flatMap { importResolver.resolveQueryDependencies(it) }.toSet()
+        val neededObjects = rellQueries.values.flatMap { importResolver.resolveQueryDependencies(it) } +
+                rellOperations.values.flatMap { importResolver.resolveOperationDependencies(it) }
 
         val queries = rellQueries.values.map { factory.createQuery(it) }
+        val operations = rellOperations.values.map { factory.createOperation(it) }
 
         val enums = rellEnums.filterKeys { it in neededObjects }
             .map { factory.createEnum(it.value) }
@@ -42,7 +39,7 @@ class CodeGenerator(val factory: DocumentFactory, val singleFile: Boolean = fals
         val structures = rellStructures.filterKeys { it in neededObjects }
             .map { factory.createStruct(it.value) }
 
-        return enums + entities + structures + queries
+        return enums + entities + structures + queries + operations
     }
 
     fun constructDocuments(sections: List<DocumentSection>, singleFile: Boolean = true): List<DocumentFile> {

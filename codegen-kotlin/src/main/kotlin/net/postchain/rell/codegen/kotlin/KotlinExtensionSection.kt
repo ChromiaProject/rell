@@ -26,7 +26,7 @@ abstract class KotlinExtensionSection(
 
     init {
         val alwaysImports = listOf(
-            "import ${extendedClass::class.qualifiedName}",
+            "import ${extendedClass.qualifiedName}",
             "import net.postchain.gtv.GtvFactory.gtv",
             "import javax.annotation.processing.Generated"
         )

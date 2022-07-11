@@ -3,10 +3,8 @@ package net.postchain.rell.codegen.kotlin
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.kotlin.util.BlockEntity
 import net.postchain.rell.codegen.kotlin.util.TransactionEntity
-import net.postchain.rell.model.R_EntityDefinition
-import net.postchain.rell.model.R_EnumDefinition
-import net.postchain.rell.model.R_QueryDefinition
-import net.postchain.rell.model.R_StructDefinition
+import net.postchain.rell.codegen.section.Operation
+import net.postchain.rell.model.*
 
 class KotlinDocumentFactory(private val basePackage: String) : DocumentFactory {
     override val fileExtension: String
@@ -23,4 +21,6 @@ class KotlinDocumentFactory(private val basePackage: String) : DocumentFactory {
     override fun createEnum(rellEnum: R_EnumDefinition) = KotlinEnumeration(rellEnum)
 
     override fun createQuery(rellQuery: R_QueryDefinition) = KotlinQuery(rellQuery, basePackage)
+
+    override fun createOperation(rellOperation: R_OperationDefinition) = KotlinOperation(rellOperation, basePackage)
 }

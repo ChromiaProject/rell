@@ -37,6 +37,10 @@ class ImportResolver {
         return resolveQueryDependencies(query).map {appLevelNameToModuleName(it) }
     }
 
+    fun resolveOperationDependencies(op: R_OperationDefinition): Set<String> {
+        return resolveQueryOp(op.params(), null)
+    }
+
     fun resolveQueryDependencies(query: R_QueryDefinition): Set<String> {
         return resolveQueryOp(query.params(), query.type())
     }

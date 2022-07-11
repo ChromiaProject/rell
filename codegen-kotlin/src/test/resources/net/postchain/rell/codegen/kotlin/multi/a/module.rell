@@ -44,3 +44,5 @@ query get_external() = a3_struct(e = struct<e.e_entity>(name = "", transaction =
 query get_root_struct() = root.root_struct("Whatever");
 
 query get_root_enum() = root.root_enum.a;
+
+operation create_a_entity(type: a_enum) { create a_entity(a = type); }
