@@ -3,6 +3,7 @@ package net.postchain.rell.codegen.kotlin
 import assertk.all
 import assertk.assertions.contains
 import assertk.assertions.endsWith
+import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.GtvNull
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import org.junit.jupiter.api.BeforeAll
@@ -51,7 +52,9 @@ internal class KotlinQueryTest {
     @CsvSource(
         "input_parameter_nargs,'',''",
         "input_parameter_text,t: String,\"t\" to gtv(t)",
+        "input_parameter_nullable,t: String?,\"t\" to t.let { if (it == null) GtvNull else gtv(it) }",
         "input_parameter_integer,i: Long,\"i\" to gtv(i)",
+        "input_parameter_enum,e: TestEnum,\"e\" to gtv(e.ordinal.toLong()))",
         "input_parameter_boolean,b: Boolean,\"b\" to gtv(b)",
         "input_parameter_entity,e: Long,\"e\" to gtv(e)",
         "input_parameter_struct,s: TestStruct,\"s\" to s.toGtv()",

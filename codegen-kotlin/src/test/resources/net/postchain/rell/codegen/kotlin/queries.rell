@@ -32,6 +32,8 @@ query return_type_proposals_since(since: rowid) {
 
 query input_parameter_nargs() = 1;
 query input_parameter_text(t: text) = 1;
+query input_parameter_nullable(t: text?) = 1;
+query input_parameter_enum(e: test_enum) = 1;
 query input_parameter_integer(i: integer) = 1;
 query input_parameter_boolean(b: boolean) = 1;
 query input_parameter_entity(e: test_entity) = 1;

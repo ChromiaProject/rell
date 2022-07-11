@@ -23,6 +23,7 @@ internal class KotlinOperationTest {
         "input_parameter_nargs,'',''",
         "input_parameter_text,t: String,gtv(t))",
         "input_parameter_integer,i: Long,gtv(i))",
+        "input_parameter_enum,e: TestEnum,gtv(e.ordinal.toLong()))",
         "input_parameter_boolean,b: Boolean,gtv(b))",
         "input_parameter_entity,e: Long,gtv(e))",
         "input_parameter_struct,s: TestStruct,s.toGtv())",

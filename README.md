@@ -17,6 +17,30 @@ Find usage instructions using
 rellgen -h
 ```
 
+## Mappings
+
+### Query/Operation
+| type       | input           | output          | remark                             |
+|------------|-----------------|-----------------|------------------------------------|
+| entity     | GtvInteger      | GtvInteger      |                                    |
+| enum       | GtvInteger      | GtvInteger      |                                    |
+| struct     | GtvArray        | GtvDict         | Can be GtvDict as input to query   |
+| decimal    | GtvString       | GtvString       |                                    |
+| boolean    | GtvInteger      | GtvInteger      |                                    |
+| rowid      | GtvInteger      | GtvInteger      |                                    |
+| json       | GtvString       | GtvString       |                                    |
+| nullable   | GtvNull or type | GtvNull or type |                                    |
+| collection | GtvArray        | GtvArray        | Both set and list                  |
+| map        | GtvDict         | GtvDict         | If key is text                     |
+| map        | GtvArray        | GtvArray        | If key is not text [k1,v1,k2,v2..] |
+| tuple      | GtvDict         | GtvDict         | If typed                           |
+| tuple      | GtvArray        | GtvArray        | If not typed                       |
+
+### Structures
+```commandline
+entity -> Long
+```
+
 ## Contribute
 
 Build and run unit tests:

@@ -3,9 +3,11 @@ package net.postchain.rell.codegen.kotlin
 import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvNull
 import net.postchain.rell.codegen.deps.ImportResolver
+import net.postchain.rell.codegen.kotlin.util.attributeToGtv
 import net.postchain.rell.codegen.kotlin.util.rTypeToString
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.GeneratedAnnotation
+import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
 import java.math.BigDecimal
@@ -49,11 +51,12 @@ abstract class KotlinExtensionSection(
 
     private fun formatInputParameters(): String {
         if (params.isEmpty()) return ""
-        return params.joinToString(", ") { "${it.name}: ${formatParameter(it.type)}" }
+        return params.joinToString(",\n\t") { "${it.name.snakeToLowerCamelCase()}: ${formatParameter(it.type)}" }
     }
 
     private fun formatParameter(type: R_Type): String {
         return when (type) {
+            is R_NullableType -> "${formatParameter(type.valueType)}?"
             is R_BooleanType -> Boolean::class.simpleName!!
             is R_IntegerType -> Long::class.simpleName!!
             is R_DecimalType -> BigDecimal::class.simpleName!!
@@ -82,12 +85,7 @@ abstract class KotlinExtensionSection(
     }
 
     internal fun parameterToGtv(param: R_Param): String {
-        return when (param.type) {
-            is R_StructType -> "${param.name}.toGtv()"
-            is R_ListType -> "gtv(${param.name}.map { gtv(it) })"
-            is R_SetType -> "gtv(${param.name}.map { gtv(it) })"
-            else -> "gtv(${param.name})"
-        }
+        return attributeToGtv(param.name.snakeToLowerCamelCase(), param.type)
     }
 
     companion object {
