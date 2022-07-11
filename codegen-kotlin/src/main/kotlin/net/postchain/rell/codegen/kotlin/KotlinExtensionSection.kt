@@ -90,8 +90,9 @@ abstract class KotlinExtensionSection(
         if (returnType == null) return ""
         if (returnType is R_CollectionType) return returnStructure(returnType.elementType)
         if (returnType !is R_TupleType || !returnType.name.contains(":")) return "" // Non-tuples and unnamed tuples
-        return GtvConvertibleSection("", "${simpleName.snakeToUpperCamelCase()}Result", moduleName,
-            returnType.fields.associate { it.name!!.str to it.type }).format()
+        val resultObject = GtvConvertibleSection("", "${simpleName.snakeToUpperCamelCase()}Result", moduleName,
+            returnType.fields.associate { it.name!!.str to it.type })
+        return "\n${resultObject.format()}"
     }
 
 
