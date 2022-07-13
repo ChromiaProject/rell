@@ -40,6 +40,9 @@ open class DataClassSection(
         |data class ${className.name}(
         |    ${classFields.joinToString(",\n\t")}
         |) {
+        |    /**
+        |     * Formats this structure as a [GtvArray]
+        |     */
         |    fun toGtv(): Gtv {
         |        return ${formatGtv()}
         |    }

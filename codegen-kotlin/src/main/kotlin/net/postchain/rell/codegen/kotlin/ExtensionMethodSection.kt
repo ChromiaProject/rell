@@ -59,24 +59,6 @@ abstract class ExtensionMethodSection(
         return params.joinToString(",\n\t") { "${it.name.snakeToLowerCamelCase()}: ${rTypeToString(it.type)}" }
     }
 
-    private fun formatParameter(type: R_Type): String {
-        return when (type) {
-            is R_NullableType -> "${formatParameter(type.valueType)}?"
-            is R_BooleanType -> Boolean::class.simpleName!!
-            is R_IntegerType -> Long::class.simpleName!!
-            is R_DecimalType -> BigDecimal::class.simpleName!!
-            is R_TextType -> String::class.simpleName!!
-            is R_ByteArrayType -> ByteArray::class.simpleName!!
-            is R_RowidType -> Long::class.simpleName!!
-            is R_JsonType -> throw IllegalArgumentException("JSON not supported")
-            is R_EntityType -> Long::class.simpleName!!         // Note that entities are encoded as GtvInteger
-            is R_ListType -> "List<${formatParameter(type.elementType)}>"
-            is R_SetType -> "Set<${formatParameter(type.elementType)}>"
-            is R_MapType -> "Map<${formatParameter(type.keyType)}, ${formatParameter(type.valueType)}>"
-            else -> type.name.split(":").last().snakeToUpperCamelCase() // Struct types
-        }
-    }
-
     abstract fun formatGtvParameters(): String
 
     private fun formatReturn(): String {
