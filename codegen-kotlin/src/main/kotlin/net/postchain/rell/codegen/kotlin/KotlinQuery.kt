@@ -5,14 +5,13 @@ import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Query
 import net.postchain.rell.model.*
 
-class KotlinQuery(queryDef: R_QueryDefinition, basePackage: String) : ExtensionMethodSection(
+class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
     CamelCaseClassName.fromRellQuery(queryDef),
     queryDef.simpleName,
     PostchainClient::class,
     "querySync",
     queryDef.params(),
-    queryDef.type(),
-    basePackage
+    queryDef.type()
 ), Query {
 
     override fun format() = """

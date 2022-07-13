@@ -6,7 +6,6 @@ import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.kotlin.util.attributeToGtv
-import net.postchain.rell.codegen.kotlin.util.rTypeToString
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.GeneratedAnnotation
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
@@ -21,8 +20,7 @@ abstract class ExtensionMethodSection(
     val extendedClass: KClass<*>,
     val extendenMethod: String,
     val params: List<R_Param>,
-    val returnType: R_Type?,
-    val basePackage: String
+    val returnType: R_Type?
 ) : DocumentSection {
     override val moduleName: String
         get() = className.module
@@ -73,7 +71,7 @@ abstract class ExtensionMethodSection(
             is R_EntityType -> Long::class.simpleName!!         // Note that entities are encoded as GtvInteger
             is R_ListType -> "List<${formatParameter(type.elementType)}>"
             is R_SetType -> "Set<${formatParameter(type.elementType)}>"
-            is R_MapType -> "Map<${rTypeToString(type.keyType)}, ${formatParameter(type.valueType)}>"
+            is R_MapType -> "Map<${formatParameter(type.keyType)}, ${formatParameter(type.valueType)}>"
             else -> type.name.split(":").last().snakeToUpperCamelCase() // Struct types
         }
     }
@@ -89,6 +87,7 @@ abstract class ExtensionMethodSection(
         return attributeToGtv(param.name.snakeToLowerCamelCase(), param.type)
     }
 
+    // Creates a Data class if the return-type is a named tuple
     private fun returnStructure(returnType: R_Type?): String {
         if (returnType == null) return ""
         if (returnType is R_CollectionType) return returnStructure(returnType.elementType)
@@ -100,7 +99,7 @@ abstract class ExtensionMethodSection(
     }
 
 
-    fun formatReturnType(type: R_Type?): String {
+    private fun formatReturnType(type: R_Type?): String {
         return when (type) {
             null -> ""
             is R_NullableType -> ".let { if (it is GtvNull) null else it${formatReturnType(type.valueType)} }"

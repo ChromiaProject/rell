@@ -24,7 +24,7 @@ internal class KotlinQueryTest {
     @Test
     fun basicSyntaxTest() {
         val q = kotlin.test.assertNotNull(testModule.queries["input_parameter_nargs"])
-        val k = KotlinQuery(q, "")
+        val k = KotlinQuery(q)
         val formatted = k.format()
         assertk.assert(formatted).all {
             contains("fun PostchainClient.inputParameterNargs() =")
@@ -51,7 +51,7 @@ internal class KotlinQueryTest {
     )
     fun returnTypeTest(type: String, returnType: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[type])
-        val k = KotlinQuery(query, "")
+        val k = KotlinQuery(query)
         val formatted = k.format()
         assertk.assert(formatted).all {
             contains("fun PostchainClient.")
@@ -76,7 +76,7 @@ internal class KotlinQueryTest {
     )
     fun parameterTypeTest(queryName: String, params: String, gtvParam: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[queryName])
-        val k = KotlinQuery(query, "")
+        val k = KotlinQuery(query)
         val formatted = k.format()
         assertk.assert(formatted).all {
             contains("($params) =")
@@ -90,7 +90,7 @@ internal class KotlinQueryTest {
     )
     fun nullable(s: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[s])
-        val k = KotlinQuery(query, "")
+        val k = KotlinQuery(query)
         assertk.assert(k.imports).contains("import ${GtvNull::class.qualifiedName}")
     }
 
@@ -101,7 +101,7 @@ internal class KotlinQueryTest {
     )
     fun namedTupleCreatesObject(name: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[name])
-        val k = KotlinQuery(query, "")
+        val k = KotlinQuery(query)
         val formatted = k.format()
         assertk.assert(formatted).all {
             contains(".toObject<${name.snakeToUpperCamelCase()}Result>()")

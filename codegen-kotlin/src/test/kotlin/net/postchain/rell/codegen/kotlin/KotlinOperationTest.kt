@@ -22,7 +22,7 @@ internal class KotlinOperationTest {
     @Test
     fun basicSyntaxTest() {
         val op = kotlin.test.assertNotNull(testModule.operations["input_parameter_text"])
-        val k = KotlinOperation(op, "")
+        val k = KotlinOperation(op)
         val formatted = k.format()
         assertk.assert(formatted).all {
             contains("fun GTXTransactionBuilder.inputParameterTextOperation(t: String) =")
@@ -46,7 +46,7 @@ internal class KotlinOperationTest {
     )
     fun parameterTypeTest(queryName: String, params: String, gtvParam: String) {
         val op = kotlin.test.assertNotNull(testModule.operations[queryName])
-        val k = KotlinOperation(op, "")
+        val k = KotlinOperation(op)
         val formatted = k.format()
         assertk.assert(formatted).all {
             contains("fun GTXTransactionBuilder.")

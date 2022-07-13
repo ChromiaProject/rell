@@ -5,14 +5,13 @@ import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Operation
 import net.postchain.rell.model.*
 
-class KotlinOperation(op: R_OperationDefinition, basePackage: String) : ExtensionMethodSection(
+class KotlinOperation(op: R_OperationDefinition) : ExtensionMethodSection(
     CamelCaseClassName.fromRellOperation(op),
     op.simpleName,
     GTXTransactionBuilder::class,
     "addOperation",
     op.params(),
-    null,
-    basePackage
+    null
 ), Operation {
 
     override fun format() = """

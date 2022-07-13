@@ -20,7 +20,7 @@ class KotlinDocumentFactory(private val basePackage: String) : DocumentFactory {
 
     override fun createEnum(className: ClassName, rellEnum: R_EnumDefinition) = KotlinEnumeration(className, rellEnum)
 
-    override fun createQuery(rellQuery: R_QueryDefinition) = KotlinQuery(rellQuery, basePackage)
+    override fun createQuery(rellQuery: R_QueryDefinition) = KotlinQuery(rellQuery)
 
-    override fun createOperation(rellOperation: R_OperationDefinition) = KotlinOperation(rellOperation, basePackage)
+    override fun createOperation(rellOperation: R_OperationDefinition) = KotlinOperation(rellOperation)
 }
