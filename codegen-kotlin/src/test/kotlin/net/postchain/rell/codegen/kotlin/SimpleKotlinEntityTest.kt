@@ -64,6 +64,7 @@ internal class SimpleKotlinEntityTest {
         "text,String",
         "byte_array,ByteArray",
         "rowid,Long",
+        "json,String",
     )
     fun simpleEntities(rellType: String, kotlinType: String) {
         val entity = assertNotNull(testModule.entities["${rellType}_entity"], "entity does not exist")
@@ -73,15 +74,6 @@ internal class SimpleKotlinEntityTest {
             contains("val a: $kotlinType")
         }
     }
-
-    @Test
-    fun jsonNotSupported() {
-        val entity = assertNotNull(testModule.entities["json_entity"], "entity does not exist")
-        assertThrows<IllegalArgumentException> {
-            KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity).format()
-        }
-    }
-
 
     @ParameterizedTest(name = "builtin {0} becomes {1}")
     @CsvSource(

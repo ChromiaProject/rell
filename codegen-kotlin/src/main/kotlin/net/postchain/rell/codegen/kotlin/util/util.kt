@@ -23,7 +23,7 @@ fun rTypeToString(type: R_Type): String {
         is R_TextType -> "String"
         is R_ByteArrayType -> "ByteArray"
         is R_RowidType -> "Long"
-        is R_JsonType -> throw IllegalArgumentException("JSON not supported")
+        is R_JsonType -> "String"
         is R_EntityType -> "Long"
         is R_SetType -> "Set<${rTypeToString(type.elementType)}>"
         is R_ListType -> "List<${rTypeToString(type.elementType)}>"

@@ -40,7 +40,8 @@ internal class SimpleKotlinStructTest {
         "byte_array,ByteArray",
         "rowid,Long",
         "map,Map<String, Long>",
-        "nullable,String?"
+        "nullable,String?",
+        "json,String",
     )
     fun simpleStructures(rellType: String, kotlinType: String) {
         val struct = assertNotNull(testModule.structs["${rellType}_struct"], "struct does not exist")
@@ -49,15 +50,6 @@ internal class SimpleKotlinStructTest {
             contains("val a: $kotlinType")
         }
     }
-
-    @Test
-    fun jsonNotSupported() {
-        val struct = assertNotNull(testModule.structs["json_struct"], "struct does not exist")
-        assertThrows<IllegalArgumentException> {
-            KotlinStruct(CamelCaseClassName.fromRellDefinition(struct), struct).format()
-        }
-    }
-
 
     @ParameterizedTest(name = "builtin {0} becomes {1}")
     @CsvSource(
