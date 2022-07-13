@@ -1,5 +1,9 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvArray
+import net.postchain.gtv.GtvNull
+import net.postchain.gtv.mapper.Name
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.kotlin.util.attributeToGtv
@@ -8,22 +12,24 @@ import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.GeneratedAnnotation
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.model.*
+import java.math.BigDecimal
+import javax.annotation.processing.Generated
 
 open class DataClassSection(
-    val className: ClassName,
+    protected val className: ClassName,
     private val attributes: Map<String, R_Type>
 ) : DocumentSection {
     override val moduleName: String
         get() = className.module
 
     override val imports = listOf(
-        "import java.math.BigDecimal",
-        "import javax.annotation.processing.Generated",
-        "import net.postchain.gtv.Gtv",
-        "import net.postchain.gtv.GtvArray",
+        "import ${BigDecimal::class.qualifiedName}",
+        "import ${Gtv::class.qualifiedName}",
+        "import ${GtvArray::class.qualifiedName}",
+        "import ${GtvNull::class.qualifiedName}",
+        "import ${Generated::class.qualifiedName}",
+        "import ${Name::class.qualifiedName}",
         "import net.postchain.gtv.GtvFactory.gtv",
-        "import net.postchain.gtv.GtvNull",
-        "import net.postchain.gtv.mapper.Name",
     )
 
 

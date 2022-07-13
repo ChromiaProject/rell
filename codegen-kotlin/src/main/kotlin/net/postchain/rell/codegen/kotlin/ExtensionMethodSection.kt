@@ -12,35 +12,31 @@ import net.postchain.rell.codegen.util.GeneratedAnnotation
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
-import java.math.BigDecimal
+import javax.annotation.processing.Generated
 import kotlin.reflect.KClass
 
 abstract class ExtensionMethodSection(
-    val className: ClassName,
-    val simpleName: String,
-    val extendedClass: KClass<*>,
-    val extendenMethod: String,
-    val params: List<R_Param>,
-    val returnType: R_Type?
+    protected val className: ClassName,
+    private val simpleName: String,
+    private val extendedClass: KClass<*>,
+    private val extendenMethod: String,
+    protected val params: List<R_Param>,
+    private val returnType: R_Type?
 ) : DocumentSection {
     override val moduleName: String
         get() = className.module
 
-    final override val imports: List<String>
+    final override val imports: List<String> = listOf(
+        "import ${GtvArray::class.qualifiedName}",
+        "import ${GtvNull::class.qualifiedName}",
+        "import ${extendedClass.qualifiedName}",
+        "import ${Generated::class.qualifiedName}",
+        "import net.postchain.gtv.GtvFactory.gtv",
+        "import net.postchain.gtv.mapper.toObject",
+    )
     final override val deps: Set<ClassName>
 
     init {
-        val alwaysImports = listOf(
-            "import ${extendedClass.qualifiedName}",
-            "import net.postchain.gtv.GtvFactory.gtv",
-            "import net.postchain.gtv.mapper.toObject",
-            "import javax.annotation.processing.Generated"
-        )
-        val additionalImports = listOf(
-            "import ${GtvArray::class.qualifiedName}",
-            "import ${GtvNull::class.qualifiedName}",
-        )
-        imports = alwaysImports + additionalImports
         val returnDeps = DependencyFinder.findDependencies(returnType)
         val paramDeps = DependencyFinder.findDependencies(params.map { it.type })
         deps = paramDeps + returnDeps
@@ -49,7 +45,7 @@ abstract class ExtensionMethodSection(
     override fun format() = """
         |${GeneratedAnnotation.createAnnotation(className.rellName)}
         |fun ${extendedClass.simpleName}.${className.name}(${formatInputParameters()}) = 
-        |   $extendenMethod("$simpleName"${formatGtvParameters()})${formatReturn()}
+        |   $extendenMethod("$simpleName"${formatGtvParameters()})${formatReturnType(returnType)}
         |${returnStructure(returnType)}
     """.trimMargin()
 
@@ -61,26 +57,9 @@ abstract class ExtensionMethodSection(
 
     abstract fun formatGtvParameters(): String
 
-    private fun formatReturn(): String {
-
-        return formatReturnType(returnType)
-    }
-
     internal fun parameterToGtv(param: R_Param): String {
         return attributeToGtv(param.name.snakeToLowerCamelCase(), param.type)
     }
-
-    // Creates a Data class if the return-type is a named tuple
-    private fun returnStructure(returnType: R_Type?): String {
-        if (returnType == null) return ""
-        if (returnType is R_CollectionType) return returnStructure(returnType.elementType)
-        if (returnType !is R_TupleType || !returnType.name.contains(":")) return "" // Non-tuples and unnamed tuples
-        val resultObject = DataClassSection(
-            CamelCaseClassName("", simpleName.snakeToUpperCamelCase() + "Result", className.module),
-            returnType.fields.associate { it.name!!.str to it.type })
-        return "\n${resultObject.format()}"
-    }
-
 
     private fun formatReturnType(type: R_Type?): String {
         return when (type) {
@@ -111,5 +90,17 @@ abstract class ExtensionMethodSection(
     private fun formatTupleType(type: R_TupleType): String {
         if (!type.name.contains(":")) return ".asArray()"
         return ".toObject<${simpleName.snakeToUpperCamelCase()}Result>()"
+    }
+
+    // Creates a Data class if the return-type is a named tuple
+    private fun returnStructure(returnType: R_Type?): String {
+        if (returnType == null) return ""
+        if (returnType is R_CollectionType) return returnStructure(returnType.elementType)
+        if (returnType !is R_TupleType || !returnType.name.contains(":")) return "" // Non-tuples and unnamed tuples
+        val resultObject = DataClassSection(
+            CamelCaseClassName("", simpleName.snakeToUpperCamelCase() + "Result", className.module),
+            returnType.fields.associateBy({ it.name!!.str }, { it.type })
+        )
+        return "\n${resultObject.format()}"
     }
 }
