@@ -9,7 +9,7 @@ import net.postchain.rell.codegen.util.GeneratedAnnotation
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.model.*
 
-open class GtvConvertibleSection(
+open class DataClassSection(
     val className: ClassName,
     private val attributes: Map<String, R_Type>
 ) : DocumentSection {

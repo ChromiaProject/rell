@@ -15,7 +15,7 @@ import net.postchain.rell.model.*
 import java.math.BigDecimal
 import kotlin.reflect.KClass
 
-abstract class KotlinExtensionSection(
+abstract class ExtensionMethodSection(
     val className: ClassName,
     val simpleName: String,
     val extendedClass: KClass<*>,
@@ -93,7 +93,7 @@ abstract class KotlinExtensionSection(
         if (returnType == null) return ""
         if (returnType is R_CollectionType) return returnStructure(returnType.elementType)
         if (returnType !is R_TupleType || !returnType.name.contains(":")) return "" // Non-tuples and unnamed tuples
-        val resultObject = GtvConvertibleSection(
+        val resultObject = DataClassSection(
             CamelCaseClassName("", simpleName.snakeToUpperCamelCase() + "Result", className.module),
             returnType.fields.associate { it.name!!.str to it.type })
         return "\n${resultObject.format()}"

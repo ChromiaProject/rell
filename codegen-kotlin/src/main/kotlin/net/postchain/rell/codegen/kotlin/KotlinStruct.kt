@@ -2,11 +2,10 @@ package net.postchain.rell.codegen.kotlin
 
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.section.Struct
-import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.R_StructDefinition
 
 
-class KotlinStruct(className: ClassName, struct: R_StructDefinition) : GtvConvertibleSection(
+class KotlinStruct(className: ClassName, struct: R_StructDefinition) : DataClassSection(
     className,
     struct.struct.attributes.values.associateBy( { it.name }, { it.type })
 ), Struct {
