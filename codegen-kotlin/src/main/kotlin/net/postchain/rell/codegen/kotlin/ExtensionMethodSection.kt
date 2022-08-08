@@ -1,5 +1,6 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvNull
 import net.postchain.gtv.mapper.Name
@@ -30,6 +31,7 @@ abstract class ExtensionMethodSection(
     final override val imports: List<String> = listOf(
         "import ${extendedClass.qualifiedName}",
         "import ${Generated::class.qualifiedName}",
+        "import ${Gtv::class.qualifiedName}",
         "import ${GtvArray::class.qualifiedName}",
         "import ${GtvNull::class.qualifiedName}",
         "import ${Name::class.qualifiedName}",

@@ -103,7 +103,10 @@ internal class KotlinQueryTest {
         val query = kotlin.test.assertNotNull(testModule.queries[name])
         val k = KotlinQuery(query)
         val formatted = k.format()
-        assertk.assert(k.imports).contains("import net.postchain.gtv.mapper.Name")
+        assertk.assert(k.imports).all {
+            contains("import net.postchain.gtv.mapper.Name")
+            contains("import net.postchain.gtv.Gtv")
+        }
         assertk.assert(formatted).all {
             contains(".toObject<${name.snakeToUpperCamelCase()}Result>()")
             contains("data class ${name.snakeToUpperCamelCase()}Result")
