@@ -2,6 +2,7 @@ package net.postchain.rell.codegen.kotlin
 
 import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvNull
+import net.postchain.gtv.mapper.Name
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.DependencyFinder
@@ -27,10 +28,11 @@ abstract class ExtensionMethodSection(
         get() = className.module
 
     final override val imports: List<String> = listOf(
-        "import ${GtvArray::class.qualifiedName}",
-        "import ${GtvNull::class.qualifiedName}",
         "import ${extendedClass.qualifiedName}",
         "import ${Generated::class.qualifiedName}",
+        "import ${GtvArray::class.qualifiedName}",
+        "import ${GtvNull::class.qualifiedName}",
+        "import ${Name::class.qualifiedName}",
         "import net.postchain.gtv.GtvFactory.gtv",
         "import net.postchain.gtv.mapper.toObject",
     )
