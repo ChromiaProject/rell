@@ -94,9 +94,10 @@ internal class KotlinQueryTest {
         assertk.assert(k.imports).contains("import ${GtvNull::class.qualifiedName}")
     }
 
-    @ParameterizedTest(name = "query has imported")
+    @ParameterizedTest(name = "object creation")
     @CsvSource(
         "return_type_named_tuple",
+        "return_type_nullable_named_tuple",
         "return_type_named_tuple_list",
     )
     fun namedTupleCreatesObject(name: String) {

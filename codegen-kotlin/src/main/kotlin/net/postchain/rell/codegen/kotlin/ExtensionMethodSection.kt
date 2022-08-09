@@ -99,6 +99,7 @@ abstract class ExtensionMethodSection(
     // Creates a Data class if the return-type is a named tuple
     private fun returnStructure(returnType: R_Type?): String {
         if (returnType == null) return ""
+        if (returnType is R_NullableType) return returnStructure(returnType.valueType)
         if (returnType is R_CollectionType) return returnStructure(returnType.elementType)
         if (returnType !is R_TupleType || !returnType.name.contains(":")) return "" // Non-tuples and unnamed tuples
         val resultObject = DataClassSection(
