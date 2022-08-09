@@ -14,8 +14,8 @@ import java.io.File
 
 class CodeGenerator(val factory: DocumentFactory) {
 
-    fun createSections(source: File, baseModule: String): List<DocumentSection> {
-        val app = compile(source, baseModule)
+    fun createSections(source: File, vararg baseModule: String): List<DocumentSection> {
+        val app = compile(source, *baseModule)
 
         val rellEnums = app.modules.flatMap { module -> module.enums.values.map { CamelCaseClassName.fromRellDefinition(it) to it } }.toMap()
         val rellEntities = app.modules.flatMap { module -> module.entities.values.map { CamelCaseClassName.fromRellDefinition(it) to it } }.toMap()
@@ -57,10 +57,10 @@ class CodeGenerator(val factory: DocumentFactory) {
     }
 }
 
-fun compile(source: File, moduleName: String) = RellCliUtils.compileApp(
+fun compile(source: File, vararg moduleName: String) = RellCliUtils.compileApp(
     C_SourceDir.diskDir(source),
     C_CompilerModuleSelection(
-        listOf(R_ModuleName.of(moduleName))
+        listOf(*moduleName).map { R_ModuleName.of(it) }
     ),
     true,
     C_CompilerOptions.DEFAULT
