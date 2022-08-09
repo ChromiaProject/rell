@@ -50,7 +50,7 @@ class CodeGenerator(val factory: DocumentFactory) {
                 .map { (module, sections) ->
                 val document = factory.createDocument(module)
                 sections.forEach { document.addSection(it) }
-                DocumentFile("$module/$module.${factory.fileExtension}", document)
+                DocumentFile("${module.replace(".", "/")}/${module.replace(".", "_")}.${factory.fileExtension}", document)
             }
         }
         return listOf()
