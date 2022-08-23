@@ -1,0 +1,9 @@
+module;
+
+import ^.e;
+
+struct f_struct {
+    e: struct<e.e_entity>;
+}
+
+query get_non_external() = f_struct(e = struct<e.e_entity>(name = "", transaction = e.transaction @ {} limit 1));

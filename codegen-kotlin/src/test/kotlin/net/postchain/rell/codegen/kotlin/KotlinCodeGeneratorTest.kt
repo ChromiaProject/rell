@@ -29,7 +29,7 @@ internal class CodeGeneratorTest {
     fun setup() {
         sections = generator.createSections(
             File(this::class.java.getResource("multi/a/module.rell")!!.toURI()).parentFile.parentFile,
-            "a",
+            "a", "f",
         )
         documents = generator.constructDocuments(sections, true)
         val target = Files.createTempDirectory("rell-codegen")
@@ -62,12 +62,12 @@ internal class CodeGeneratorTest {
 
     @Test
     fun sections() {
-        assertk.assert(sections).hasSize( 21 ) // 8 queries, 1 operation and 12 needed
+        assertk.assert(sections).hasSize( 23 ) // 9 queries, 1 operation and 14 needed
     }
 
     @Test
     fun documents() {
-        assertk.assert(documents).hasSize(5)
+        assertk.assert(documents).hasSize(6)
         assertk.assert(documents[1].document.format()).contains("import com.example.RootStruct")
         assertk.assert(documents[1].document.format()).contains("import com.example.b.BStruct")
         assertk.assert(documents[1].document.format()).contains("import com.example.c.CEntity")
