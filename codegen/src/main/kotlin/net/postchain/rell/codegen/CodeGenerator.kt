@@ -26,7 +26,7 @@ class CodeGenerator(val factory: DocumentFactory) {
         val queries = rellQueries.values.map { factory.createQuery(it) }
         val operations = rellOperations.values.map { factory.createOperation(it) }
 
-        val neededObjects = (operations + queries).flatMap { it.deps }.toSet()
+        val neededObjects = (operations + queries).flatMap { it.deps }.distinctBy { it.module + it.name }
 
         val enums = rellEnums
             .filterKeys { it in neededObjects }
