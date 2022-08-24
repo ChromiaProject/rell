@@ -62,7 +62,7 @@ internal class CodeGeneratorTest {
 
     @Test
     fun sections() {
-        assertk.assert(sections).hasSize( 23 ) // 9 queries, 1 operation and 14 needed
+        assertk.assert(sections).hasSize( 9 /* queries */ + 1 /* operations */ + 13 /* needed objects */ )
     }
 
     @Test
