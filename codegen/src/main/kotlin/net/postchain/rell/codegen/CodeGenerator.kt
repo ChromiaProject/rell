@@ -1,7 +1,6 @@
 package net.postchain.rell.codegen
 
 import net.postchain.rell.codegen.deps.CamelCaseClassName
-import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.document.DocumentFile
 import net.postchain.rell.codegen.section.DocumentSection
@@ -14,7 +13,7 @@ import java.io.File
 
 class CodeGenerator(val factory: DocumentFactory) {
 
-    fun createSections(source: File, vararg baseModule: String): List<DocumentSection> {
+    fun createSections(source: File, vararg baseModule: String, generateQueries: Boolean = true, generateOperations: Boolean = true): List<DocumentSection> {
         val app = compile(source, *baseModule)
 
         val rellEnums = app.modules.flatMap { module -> module.enums.values.map { CamelCaseClassName.fromRellDefinition(it) to it } }.toMap()
@@ -23,8 +22,8 @@ class CodeGenerator(val factory: DocumentFactory) {
         val rellQueries = app.modules.flatMap { it.queries.values }.associateBy { it.appLevelName }
         val rellOperations = app.modules.flatMap { it.operations.values }.associateBy { it.appLevelName }
 
-        val queries = rellQueries.values.map { factory.createQuery(it) }
-        val operations = rellOperations.values.map { factory.createOperation(it) }
+        val queries = if (generateQueries) rellQueries.values.map { factory.createQuery(it) } else listOf()
+        val operations = if (generateOperations) rellOperations.values.map { factory.createOperation(it) } else listOf()
 
         val neededObjects = (operations + queries).flatMap { it.deps }.distinctBy { it.module + it.name }
 
