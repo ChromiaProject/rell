@@ -1,2 +1,2 @@
-version = "0.3.0-SNAPSHOT"
+version = "0.2.8"
 group = "net.postchain.rell"
