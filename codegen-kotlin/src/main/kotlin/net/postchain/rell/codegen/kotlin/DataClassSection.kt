@@ -4,6 +4,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvNull
 import net.postchain.gtv.mapper.Name
+import net.postchain.gtv.mapper.Nullable
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.kotlin.util.attributeToGtv
@@ -29,6 +30,7 @@ open class DataClassSection(
         "import ${GtvNull::class.qualifiedName}",
         "import ${Generated::class.qualifiedName}",
         "import ${Name::class.qualifiedName}",
+        "import ${Nullable::class.qualifiedName}",
         "import net.postchain.gtv.GtvFactory.gtv",
     )
 
@@ -38,8 +40,10 @@ open class DataClassSection(
     private val classFields = attributes.map { formatAttribute(it.key, it.value) }
 
     private fun formatAttribute(name: String, type: R_Type): String {
-        return "@Name(\"$name\") val ${name.snakeToLowerCamelCase()}: ${rTypeToString(type)}"
+        return "@Name(\"$name\")${nullableAnnotation(type)} val ${name.snakeToLowerCamelCase()}: ${rTypeToString(type)}"
     }
+
+    private fun nullableAnnotation(type: R_Type) = if (type is R_NullableType) " @Nullable" else ""
 
     override fun format() = """
         |${GeneratedAnnotation.createAnnotation(className.rellName)}

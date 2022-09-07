@@ -43,12 +43,19 @@ internal class SimpleKotlinStructTest {
         "nullable,String?",
         "json,String",
     )
-    fun simpleStructures(rellType: String, kotlinType: String) {
+    fun simpleStructures(rellType: String, kotlinType: String): String {
         val struct = assertNotNull(testModule.structs["${rellType}_struct"], "struct does not exist")
         val formatted = KotlinStruct(CamelCaseClassName.fromRellDefinition(struct), struct).format()
         assert(formatted).all {
             contains("val a: $kotlinType")
         }
+        return formatted
+    }
+
+    @Test
+    fun nullableAnnotation() {
+        val formatted = simpleStructures("nullable", "String?")
+        assert(formatted).contains("@Nullable")
     }
 
     @ParameterizedTest(name = "builtin {0} becomes {1}")
