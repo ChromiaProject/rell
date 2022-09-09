@@ -4,6 +4,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvNull
 import net.postchain.gtv.mapper.Name
+import net.postchain.gtv.mapper.Nullable
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.DependencyFinder
@@ -35,6 +36,7 @@ abstract class ExtensionMethodSection(
         "import ${GtvArray::class.qualifiedName}",
         "import ${GtvNull::class.qualifiedName}",
         "import ${Name::class.qualifiedName}",
+        "import ${Nullable::class.qualifiedName}", // TODO: Propagate imports from [returnStructure]
         "import net.postchain.gtv.GtvFactory.gtv",
         "import net.postchain.gtv.mapper.toObject",
     )
