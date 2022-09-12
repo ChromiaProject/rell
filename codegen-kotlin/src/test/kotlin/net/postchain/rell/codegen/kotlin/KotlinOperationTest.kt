@@ -25,7 +25,7 @@ internal class KotlinOperationTest {
         val k = KotlinOperation(op)
         val formatted = k.format()
         assertk.assert(formatted).all {
-            contains("fun GTXTransactionBuilder.inputParameterTextOperation(t: String) =")
+            contains("fun TransactionBuilder.inputParameterTextOperation(t: String) =")
             contains("addOperation(\"input_parameter_text\", gtv(t))")
         }
     }
@@ -49,7 +49,7 @@ internal class KotlinOperationTest {
         val k = KotlinOperation(op)
         val formatted = k.format()
         assertk.assert(formatted).all {
-            contains("fun GTXTransactionBuilder.")
+            contains("fun TransactionBuilder.")
             contains("($params) =")
             contains("addOperation(\"$queryName\"")
             endsWith("$gtvParam)\n")
