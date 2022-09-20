@@ -30,7 +30,6 @@ fun rTypeToString(type: R_Type): String {
         is R_MapType -> "Map<${rTypeToString(type.keyType)}, ${rTypeToString(type.valueType)}>"
         is R_StructType -> CamelCaseClassName.fromString(type.name).name
         is R_EnumType -> CamelCaseClassName.fromString(type.name).name
-        is R_GtvType -> "Gtv"
-        else -> throw IllegalArgumentException("Type ${type.name} not supported")
+        else -> "Gtv"
     }
 }
