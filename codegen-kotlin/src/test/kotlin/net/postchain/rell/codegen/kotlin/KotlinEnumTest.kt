@@ -3,7 +3,7 @@ package net.postchain.rell.codegen.kotlin
 import assertk.all
 import org.junit.jupiter.api.Test
 
-import assertk.assert
+import assertk.assertThat
 import assertk.assertions.contains
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import org.junit.jupiter.api.BeforeAll
@@ -23,7 +23,7 @@ internal class KotlinEnumTest {
     fun simpleEnumerations() {
         val enum = assertNotNull(testModule.enums["test_enum"], "enum does not exist")
         val formatted = KotlinEnumeration(CamelCaseClassName.fromRellDefinition(enum), enum).format()
-        assert(formatted).all {
+        assertThat(formatted).all {
             contains("enum class TestEnum")
             contains("a,")
             contains("b_value")

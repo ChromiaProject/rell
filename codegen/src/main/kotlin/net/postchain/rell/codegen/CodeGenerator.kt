@@ -1,8 +1,8 @@
 package net.postchain.rell.codegen
 
 import net.postchain.rell.codegen.deps.CamelCaseClassName
+import net.postchain.rell.codegen.document.Document
 import net.postchain.rell.codegen.document.DocumentFactory
-import net.postchain.rell.codegen.document.DocumentFile
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.compiler.base.core.C_CompilerOptions
@@ -42,17 +42,17 @@ class CodeGenerator(val factory: DocumentFactory) {
         return enums + entities + structures + queries + operations
     }
 
-    fun constructDocuments(sections: List<DocumentSection>, singleFile: Boolean = true): List<DocumentFile> {
+    fun constructDocuments(sections: List<DocumentSection>, singleFile: Boolean = true): Map<String, Document> {
         if (singleFile) {
             return sections
                 .groupBy { it.moduleName }
                 .map { (module, sections) ->
                 val document = factory.createDocument(module)
                 sections.forEach { document.addSection(it) }
-                DocumentFile("${module.replace(".", "/")}/${module.replace(".", "_")}.${factory.fileExtension}", document)
-            }
+                "${module.replace(".", "/")}/${module.replace(".", "_")}.${factory.fileExtension}" to document
+            }.toMap()
         }
-        return listOf()
+        return mapOf()
     }
 }
 

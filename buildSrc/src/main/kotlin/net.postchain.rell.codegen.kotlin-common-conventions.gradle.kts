@@ -61,7 +61,7 @@ dependencies {
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
 
-    testImplementation("com.willowtreeapps.assertk:assertk:0.10")
+    testImplementation("com.willowtreeapps.assertk:assertk:0.25")
 
     implementation("io.github.microutils:kotlin-logging-jvm:2.1.23")
 

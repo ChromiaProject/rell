@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 
 import java.io.File
 
-import assertk.assert
+import assertk.assertThat
 import assertk.assertions.contains
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.model.R_Module
@@ -36,7 +36,7 @@ internal class SimpleKotlinEntityTest {
         val entity = assertNotNull(testModule.entities["test_entity"])
         val k = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity)
         val formatted = k.format()
-        assert(formatted).all {
+        assertThat(formatted).all {
             contains("TestEntity")
             contains("val name: String")
             contains("num: Long")
@@ -49,7 +49,7 @@ internal class SimpleKotlinEntityTest {
         val entity = assertNotNull(testModule.entities["multi_text_entity"])
         val k = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity)
         val formatted = k.format()
-        assert(formatted).all {
+        assertThat(formatted).all {
             contains("val name: String")
             contains("val a: String")
             contains("val b: String")
@@ -70,7 +70,7 @@ internal class SimpleKotlinEntityTest {
         val entity = assertNotNull(testModule.entities["${rellType}_entity"], "entity does not exist")
         val k = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity)
         val formatted = k.format()
-        assert(formatted).all {
+        assertThat(formatted).all {
             contains("val a: $kotlinType")
         }
     }
@@ -85,7 +85,7 @@ internal class SimpleKotlinEntityTest {
         val entity = assertNotNull(testModule.entities["builtin_${keyword}"], "entity does not exist")
         val k = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity)
         val formatted = k.format()
-        assert(formatted).all {
+        assertThat(formatted).all {
             contains("val $keyword: $kotlinType")
         }
     }
@@ -95,7 +95,7 @@ internal class SimpleKotlinEntityTest {
         val entity = assertNotNull(testModule.entities["nested_entity"])
         val k = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity)
         val formatted = k.format()
-        assert(formatted).all {
+        assertThat(formatted).all {
             contains("val a: Long")
         }
     }

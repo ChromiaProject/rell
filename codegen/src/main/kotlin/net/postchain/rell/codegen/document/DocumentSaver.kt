@@ -4,14 +4,14 @@ import java.io.File
 
 class DocumentSaver(private val targetFolder: File) {
 
-    fun saveDocuments(documentFiles: Collection<DocumentFile>) {
-        documentFiles.forEach { saveDocument(it) }
+    fun saveDocuments(documentFiles: Map<String, Document>) {
+        documentFiles.forEach { (path, document) -> saveDocument(path, document) }
     }
 
-    fun saveDocument(documentFile: DocumentFile) {
-        val f = File(targetFolder, documentFile.path)
+    fun saveDocument(path: String, document: Document) {
+        val f = File(targetFolder, path)
         f.parentFile.mkdirs()
         f.createNewFile()
-        f.writeText(documentFile.document.format())
+        f.writeText(document.format())
     }
 }
