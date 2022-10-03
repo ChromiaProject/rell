@@ -1,10 +1,11 @@
 package net.postchain.rell.codegen.kotlin
 
+import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import net.postchain.rell.codegen.CodeGenerator
-import net.postchain.rell.codegen.document.DocumentFile
+import net.postchain.rell.codegen.document.Document
 import net.postchain.rell.codegen.document.DocumentSaver
 import net.postchain.rell.codegen.section.DocumentSection
 import org.jetbrains.kotlin.cli.common.ExitCode
@@ -17,13 +18,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.nio.file.Files
-import java.util.stream.Collectors
 
 internal class CodeGeneratorTest {
 
     val generator = CodeGenerator(KotlinDocumentFactory("com.example"))
     lateinit var sections: List<DocumentSection>
-    lateinit var documents: List<DocumentFile>
+    lateinit var documents: Map<String, Document>
 
     @BeforeEach
     fun setup() {
@@ -38,7 +38,7 @@ internal class CodeGeneratorTest {
         val classes = Files.createTempDirectory("rell-codegen-classes")
         K2JVMCompiler().run {
             val args = K2JVMCompilerArguments().apply {
-                freeArgs = documents.stream().map(DocumentFile::path).map { "$target/$it" }.collect(Collectors.toList())
+                freeArgs = documents.keys.map { "$target/$it" }
                 destination = classes.toAbsolutePath().toString()
                 classpath = System.getProperty("java.class.path")
                     .split(System.getProperty("path.separator"))
@@ -56,22 +56,23 @@ internal class CodeGeneratorTest {
                     MessageRenderer.WITHOUT_PATHS, false),
                 Services.EMPTY,
                 args)
-            assertk.assert(exitCode.code).isEqualTo(0)
+            assertThat(exitCode.code).isEqualTo(0)
         }
     }
 
     @Test
     fun sections() {
-        assertk.assert(sections).hasSize( 9 /* queries */ + 1 /* operations */ + 13 /* needed objects */ )
+        assertThat(sections).hasSize( 9 /* queries */ + 1 /* operations */ + 13 /* needed objects */ )
     }
 
     @Test
     fun documents() {
-        assertk.assert(documents).hasSize(6)
-        assertk.assert(documents[1].document.format()).contains("import com.example.RootStruct")
-        assertk.assert(documents[1].document.format()).contains("import com.example.b.BStruct")
-        assertk.assert(documents[1].document.format()).contains("import com.example.c.CEntity")
-        assertk.assert(documents[1].document.format()).contains("import com.example.e.EEntity")
+        assertThat(documents).hasSize(6)
+        val a = documents["a/a.kt"]!!.format()
+        assertThat(a).contains("import com.example.RootStruct")
+        assertThat(a).contains("import com.example.b.BStruct")
+        assertThat(a).contains("import com.example.c.CEntity")
+        assertThat(a).contains("import com.example.e.EEntity")
     }
 
 }

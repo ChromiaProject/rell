@@ -3,7 +3,7 @@ package net.postchain.rell.codegen
 import assertk.all
 import assertk.assertions.startsWith
 import org.junit.jupiter.api.Test
-import assertk.assert
+import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.hasSize
 import net.postchain.rell.codegen.deps.ClassName
@@ -22,13 +22,13 @@ internal class AbstractDocumentTest{
         println(formatted)
 
         //Assert startswith intro and package
-        assert(formatted).all {
+        assertThat(formatted).all {
             startsWith("//")
             contains("import2")
             contains("MyEntity")
         }
         // Assert contains import1 ONCE
-        assert(formatted.split("import1")).hasSize(2)
+        assertThat(formatted.split("import1")).hasSize(2)
     }
 
 }

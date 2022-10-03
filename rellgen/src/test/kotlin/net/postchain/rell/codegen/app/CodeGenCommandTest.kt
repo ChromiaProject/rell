@@ -1,5 +1,6 @@
 package net.postchain.rell.codegen.app
 
+import assertk.assertThat
 import assertk.assertions.containsAll
 import assertk.assertions.hasSize
 import org.junit.jupiter.api.Test
@@ -20,10 +21,10 @@ internal class CodeGenCommandTest {
         val content = File(javaClass.getResource("module.rell")!!.toURI()).readText()
         moduleFile.createNewFile()
         moduleFile.writeText(content)
-        assertk.assert(dir.toFile().listFiles()).hasSize(1)
+        assertThat(dir.toFile().listFiles()).hasSize(1)
         CodeGenCommand().parse(listOf(dir.pathString, "${dir.pathString}/target", "--module", "test", "--package", "com.example"))
-        assertk.assert(dir.toFile().listFiles()).hasSize(2)
-        assertk.assert(File(dir.toFile(), "target/test").list()).containsAll(
+        assertThat(dir.toFile().listFiles()).hasSize(2)
+        assertThat(File(dir.toFile(), "target/test").list()).containsAll(
             "test.kt",
         )
     }

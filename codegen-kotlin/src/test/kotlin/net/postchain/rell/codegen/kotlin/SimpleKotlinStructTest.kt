@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 
 import java.io.File
 
-import assertk.assert
+import assertk.assertThat
 import assertk.assertions.contains
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.model.R_Module
@@ -46,7 +46,7 @@ internal class SimpleKotlinStructTest {
     fun simpleStructures(rellType: String, kotlinType: String): String {
         val struct = assertNotNull(testModule.structs["${rellType}_struct"], "struct does not exist")
         val formatted = KotlinStruct(CamelCaseClassName.fromRellDefinition(struct), struct).format()
-        assert(formatted).all {
+        assertThat(formatted).all {
             contains("val a: $kotlinType")
         }
         return formatted
@@ -55,7 +55,7 @@ internal class SimpleKotlinStructTest {
     @Test
     fun nullableAnnotation() {
         val formatted = simpleStructures("nullable", "String?")
-        assert(formatted).contains("@Nullable")
+        assertThat(formatted).contains("@Nullable")
     }
 
     @ParameterizedTest(name = "builtin {0} becomes {1}")
@@ -66,7 +66,7 @@ internal class SimpleKotlinStructTest {
     fun builtinTypes(keyword: String, kotlinType: String) {
         val struct = assertNotNull(testModule.structs["builtin_${keyword}"], "struct does not exist")
         val formatted = KotlinStruct(CamelCaseClassName.fromRellDefinition(struct), struct).format()
-        assert(formatted).all {
+        assertThat(formatted).all {
             contains("val $keyword: $kotlinType")
         }
     }
@@ -76,7 +76,7 @@ internal class SimpleKotlinStructTest {
         val struct = assertNotNull(testModule.structs["nested_struct"])
         val k = KotlinStruct(CamelCaseClassName.fromRellDefinition(struct), struct)
         val formatted = k.format()
-        assert(formatted).all {
+        assertThat(formatted).all {
             contains("val a: TextStruct")
         }
     }

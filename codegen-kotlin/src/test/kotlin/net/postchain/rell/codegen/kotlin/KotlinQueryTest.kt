@@ -1,5 +1,6 @@
 package net.postchain.rell.codegen.kotlin
 
+import assertk.assertThat
 import assertk.all
 import assertk.assertions.contains
 import net.postchain.gtv.GtvNull
@@ -26,7 +27,7 @@ internal class KotlinQueryTest {
         val q = kotlin.test.assertNotNull(testModule.queries["input_parameter_nargs"])
         val k = KotlinQuery(q)
         val formatted = k.format()
-        assertk.assert(formatted).all {
+        assertThat(formatted).all {
             contains("fun PostchainClient.inputParameterNargs() =")
             contains("querySync(\"input_parameter_nargs\"")
         }
@@ -53,7 +54,7 @@ internal class KotlinQueryTest {
         val query = kotlin.test.assertNotNull(testModule.queries[type])
         val k = KotlinQuery(query)
         val formatted = k.format()
-        assertk.assert(formatted).all {
+        assertThat(formatted).all {
             contains("fun PostchainClient.")
             contains(type.snakeToLowerCamelCase())
             contains(returnType)
@@ -78,7 +79,7 @@ internal class KotlinQueryTest {
         val query = kotlin.test.assertNotNull(testModule.queries[queryName])
         val k = KotlinQuery(query)
         val formatted = k.format()
-        assertk.assert(formatted).all {
+        assertThat(formatted).all {
             contains("($params) =")
             contains("\"$queryName\", gtv(mapOf($gtvParam")
         }
@@ -91,7 +92,7 @@ internal class KotlinQueryTest {
     fun nullable(s: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[s])
         val k = KotlinQuery(query)
-        assertk.assert(k.imports).contains("import ${GtvNull::class.qualifiedName}")
+        assertThat(k.imports).contains("import ${GtvNull::class.qualifiedName}")
     }
 
     @ParameterizedTest(name = "object creation")
@@ -104,11 +105,11 @@ internal class KotlinQueryTest {
         val query = kotlin.test.assertNotNull(testModule.queries[name])
         val k = KotlinQuery(query)
         val formatted = k.format()
-        assertk.assert(k.imports).all {
+        assertThat(k.imports).all {
             contains("import net.postchain.gtv.mapper.Name")
             contains("import net.postchain.gtv.Gtv")
         }
-        assertk.assert(formatted).all {
+        assertThat(formatted).all {
             contains(".toObject<${name.snakeToUpperCamelCase()}Result>()")
             contains("data class ${name.snakeToUpperCamelCase()}Result")
         }

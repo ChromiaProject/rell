@@ -1,5 +1,6 @@
 package net.postchain.rell.codegen.kotlin
 
+import assertk.assertThat
 import assertk.all
 import assertk.assertions.contains
 import assertk.assertions.endsWith
@@ -24,7 +25,7 @@ internal class KotlinOperationTest {
         val op = kotlin.test.assertNotNull(testModule.operations["input_parameter_text"])
         val k = KotlinOperation(op)
         val formatted = k.format()
-        assertk.assert(formatted).all {
+        assertThat(formatted).all {
             contains("fun TransactionBuilder.inputParameterTextOperation(t: String) =")
             contains("addOperation(\"input_parameter_text\", gtv(t))")
         }
@@ -48,7 +49,7 @@ internal class KotlinOperationTest {
         val op = kotlin.test.assertNotNull(testModule.operations[queryName])
         val k = KotlinOperation(op)
         val formatted = k.format()
-        assertk.assert(formatted).all {
+        assertThat(formatted).all {
             contains("fun TransactionBuilder.")
             contains("($params) =")
             contains("addOperation(\"$queryName\"")

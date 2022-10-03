@@ -32,6 +32,6 @@ class CodeGenCommand : CliktCommand("Generates files based on rell sources") {
         val sections = generator.createSections(source, moduleName)
         val documents = generator.constructDocuments(sections, true)
         DocumentSaver(target).saveDocuments(documents)
-        println("Created files: ${documents.map { it.path }}")
+        println("Created files: ${documents.keys}")
     }
 }
