@@ -28,7 +28,7 @@ internal class KotlinQueryTest {
         val k = KotlinQuery(q)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("fun PostchainClient.inputParameterNargs() =")
+            contains("fun PostchainQuery.inputParameterNargs() =")
             contains("querySync(\"input_parameter_nargs\"")
         }
     }
@@ -55,7 +55,7 @@ internal class KotlinQueryTest {
         val k = KotlinQuery(query)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("fun PostchainClient.")
+            contains("fun PostchainQuery.")
             contains(type.snakeToLowerCamelCase())
             contains(returnType)
         }
