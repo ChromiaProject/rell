@@ -1,6 +1,5 @@
 package net.postchain.rell.codegen.kotlin
 
-import net.postchain.client.core.PostchainClient
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Query
 import net.postchain.rell.model.*
@@ -8,7 +7,10 @@ import net.postchain.rell.model.*
 class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
     CamelCaseClassName.fromRellQuery(queryDef),
     queryDef.simpleName,
-    PostchainClient::class,
+    // TODO: This is a temporary fix as Postchain 3.7 has introduced [PostchainQuery] interface.
+    // When postchain version is increased, use `PostchainQuery::class` instead
+    "net.postchain.client.core.PostchainQuery",
+    "PostchainQuery",
     "querySync",
     queryDef.params(),
     queryDef.type()

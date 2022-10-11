@@ -21,16 +21,24 @@ import kotlin.reflect.KClass
 abstract class ExtensionMethodSection(
     protected val className: ClassName,
     private val simpleName: String,
-    private val extendedClass: KClass<*>,
+    extendedClassQualifiedName: String,
+    private val extendedClassSimpleName: String,
     private val extendenMethod: String,
     protected val params: List<R_Param>,
     private val returnType: R_Type?
 ) : DocumentSection {
+    constructor(className: ClassName,
+                simpleName: String,
+                extendedClass: KClass<*>,
+                extendenMethod: String,
+                params: List<R_Param>,
+                returnType: R_Type?): this(className, simpleName, extendedClass.qualifiedName!!, extendedClass.simpleName!!, extendenMethod, params, returnType)
+
     override val moduleName: String
         get() = className.module
 
     final override val imports: List<String> = listOf(
-        "import ${extendedClass.qualifiedName}",
+        "import ${extendedClassQualifiedName}",
         "import ${Generated::class.qualifiedName}",
         "import ${Gtv::class.qualifiedName}",
         "import ${GtvArray::class.qualifiedName}",
@@ -50,7 +58,7 @@ abstract class ExtensionMethodSection(
 
     override fun format() = """
         |${GeneratedAnnotation.createAnnotation(className.rellName)}
-        |fun ${extendedClass.simpleName}.${className.name}(${formatInputParameters()}) = 
+        |fun ${extendedClassSimpleName}.${className.name}(${formatInputParameters()}) = 
         |   $extendenMethod("$simpleName"${formatGtvParameters()})${formatReturnType(returnType)}
         |${returnStructure(returnType)}
     """.trimMargin()
