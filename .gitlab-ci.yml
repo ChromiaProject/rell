@@ -12,29 +12,15 @@ before_script:
   - export GRADLE_USER_HOME
 
 stages:
-  - build
-  - test
+  - build-and-test
   - publish
 
-build:
-  stage: build
-  script: gradle --build-cache assemble
+build-and-test:
+  stage: build-and-test
+  script: gradle --build-cache check
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
-    paths:
-      - "**/build"
-      - .gradle
-
-test:
-  stage: test
-  script: gradle --build-cache check
-  only:
-      - dev
-      - master
-  cache:
-    key: "$CI_COMMIT_REF_NAME"
-    policy: pull
     paths:
       - "**/build"
       - .gradle
