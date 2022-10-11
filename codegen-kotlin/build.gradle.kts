@@ -18,5 +18,7 @@ repositories {
 dependencies {
     implementation(project(":codegen"))
     implementation("net.postchain.rell:rell:0.10.10")
+    implementation("net.postchain:postchain-client:3.6.0")
+    implementation("net.postchain:postchain-gtv:3.6.0")
     testImplementation("org.jetbrains.kotlin:kotlin-compiler-embeddable")
 }
