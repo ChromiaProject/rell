@@ -85,3 +85,18 @@ enum class TestEnum {
 fun GTXTransactionBuilder.inputParameterEnumOperation(e: TestEnum) =
     addOperation("input_parameter_enum", gtv(e.ordinal.toLong()))
 ```
+
+# Release
+
+Performing a release consists of the following sequence on the dev branch
+
+```shell
+vim build.gradle.kts // Update to release version
+git commit --all --message 'Release X.Y.Z'
+git push origin dev // To run the pipeline
+git tag X.Y.Z
+git push --tags 
+vim build.gradle.kts // Update to snapshot version
+git commit --all --message 'Snapshot version'
+git push origin dev
+```
