@@ -1,3 +1,5 @@
+module;
+
 entity ba_entity {
     key name;
     data: byte_array;

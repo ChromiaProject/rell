@@ -1,3 +1,5 @@
+module;
+
 entity decimal_entity {
     key name;
     data: decimal;

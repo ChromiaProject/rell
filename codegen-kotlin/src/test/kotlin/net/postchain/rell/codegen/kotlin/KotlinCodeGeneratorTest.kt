@@ -14,24 +14,20 @@ import org.jetbrains.kotlin.cli.common.messages.MessageRenderer
 import org.jetbrains.kotlin.cli.common.messages.PrintingMessageCollector
 import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
 import org.jetbrains.kotlin.config.Services
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.nio.file.Files
 
 internal class CodeGeneratorTest {
 
-    val generator = CodeGenerator(KotlinDocumentFactory("com.example"))
-    lateinit var sections: List<DocumentSection>
-    lateinit var documents: Map<String, Document>
+    private val generator = CodeGenerator(KotlinDocumentFactory("com.example"))
 
-    @BeforeEach
-    fun setup() {
-        sections = generator.createSections(
-            File(this::class.java.getResource("multi/a/module.rell")!!.toURI()).parentFile.parentFile,
-            "a", "f",
+    fun generateAndCompile(rellPath: String, vararg baseModule: String): Pair<List<DocumentSection>, Map<String, Document>> {
+        val sections = generator.createSections(
+            File(this::class.java.getResource(rellPath)!!.toURI()).parentFile.parentFile,
+            *baseModule,
         )
-        documents = generator.constructDocuments(sections, true)
+        val documents = generator.constructDocuments(sections, true)
         val target = Files.createTempDirectory("rell-codegen")
         DocumentSaver(target.toFile()).saveDocuments(documents)
 
@@ -58,15 +54,13 @@ internal class CodeGeneratorTest {
                 args)
             assertThat(exitCode.code).isEqualTo(0)
         }
+        return sections to documents
     }
 
     @Test
-    fun sections() {
-        assertThat(sections).hasSize( 11 /* queries */ + 4 /* operations */ + 13 /* needed objects */ )
-    }
-
-    @Test
-    fun documents() {
+    fun multiModule() {
+        val (sections, documents) = generateAndCompile("multi/a/module.rell", "a", "f")
+        assertThat(sections).hasSize( 9 /* queries */ + 1 /* operations */ + 13 /* needed objects */ )
         assertThat(documents).hasSize(6)
         val a = documents["a/a.kt"]!!.format()
         assertThat(a).contains("import com.example.RootStruct")
@@ -75,4 +69,24 @@ internal class CodeGeneratorTest {
         assertThat(a).contains("import com.example.e.EEntity")
     }
 
+    @Test
+    fun mapInput() {
+        val (sections, documents) = generateAndCompile("map_input/module.rell", "map_input")
+        assertThat(sections).hasSize(1)
+        assertThat(documents).hasSize(1)
+    }
+
+    @Test
+    fun byteArray() {
+        val (sections, documents) = generateAndCompile("byte_array/module.rell", "byte_array")
+        assertThat(sections).hasSize(2)
+        assertThat(documents).hasSize(1)
+    }
+
+    @Test
+    fun decimal() {
+        val (sections, documents) = generateAndCompile("decimal/module.rell", "decimal")
+        assertThat(sections).hasSize(2)
+        assertThat(documents).hasSize(1)
+    }
 }
