@@ -10,10 +10,10 @@ struct ba_struct {
     data: byte_array;
 }
 
-query ba_query(name): byte_array {
-    return ba_entity @ { name } (.data);
+query ba_query(name): ba_struct {
+    return ba_entity @ { name } (ba_struct(.name, .data));
 }
 
-operation ba_op(name, data: byte_array) {
-    create ba_entity(name, data);
+operation ba_op(ba: ba_struct) {
+    create ba_entity(ba.name, ba.data);
 }

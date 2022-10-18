@@ -4,6 +4,7 @@ import net.postchain.common.types.WrappedByteArray
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvNull
+import net.postchain.gtv.mapper.GtvObjectMapper
 import net.postchain.gtv.mapper.Name
 import net.postchain.gtv.mapper.Nullable
 import net.postchain.rell.codegen.deps.CamelCaseClassName
@@ -40,6 +41,7 @@ abstract class ExtensionMethodSection(
         "import ${Gtv::class.qualifiedName}",
         "import ${GtvArray::class.qualifiedName}",
         "import ${GtvNull::class.qualifiedName}",
+        "import ${GtvObjectMapper::class.qualifiedName}",
         "import ${Name::class.qualifiedName}",
         "import ${Nullable::class.qualifiedName}", // TODO: Propagate imports from [returnStructure]
         "import net.postchain.gtv.GtvFactory.gtv",

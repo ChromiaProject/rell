@@ -39,7 +39,7 @@ internal class KotlinOperationTest {
         "input_parameter_enum,e: TestEnum,gtv(e.ordinal.toLong())",
         "input_parameter_boolean,b: Boolean,gtv(b)",
         "input_parameter_entity,e: Long,gtv(e)",
-        "input_parameter_struct,s: TestStruct,s.toGtv()",
+        "input_parameter_struct,s: TestStruct,GtvObjectMapper.toGtvArray(s)",
         "input_parameter_list_input,v: List<WrappedByteArray>,gtv(v.map { gtv(it) })",
         "input_parameter_nullable_list_input,v: List<WrappedByteArray>?,v.let { if (it == null) GtvNull else gtv(it.map { gtv(it) }) }",
         "input_parameter_set_input,v: Set<WrappedByteArray>,gtv(v.map { gtv(it) })",

@@ -70,7 +70,7 @@ internal class KotlinQueryTest {
         "input_parameter_enum,e: TestEnum,\"e\" to gtv(e.ordinal.toLong()))",
         "input_parameter_boolean,b: Boolean,\"b\" to gtv(b)",
         "input_parameter_entity,e: Long,\"e\" to gtv(e)",
-        "input_parameter_struct,s: TestStruct,\"s\" to s.toGtv()",
+        "input_parameter_struct,s: TestStruct,\"s\" to GtvObjectMapper.toGtvArray(s)",
         "input_parameter_list_input,v: List<WrappedByteArray>,\"v\" to gtv(v.map { gtv(it) })",
         "input_parameter_set_input,v: Set<WrappedByteArray>,\"v\" to gtv(v.map { gtv(it) })",
         "input_parameter_map_input,'v: Map<String, WrappedByteArray>',\"v\" to gtv(v.mapValues { gtv(it.value) })",

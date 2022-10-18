@@ -79,14 +79,14 @@ internal class CodeGeneratorTest {
     @Test
     fun byteArray() {
         val (sections, documents) = generateAndCompile("byte_array/module.rell", "byte_array")
-        assertThat(sections).hasSize(2)
+        assertThat(sections).hasSize(3)
         assertThat(documents).hasSize(1)
     }
 
     @Test
     fun decimal() {
         val (sections, documents) = generateAndCompile("decimal/module.rell", "decimal")
-        assertThat(sections).hasSize(2)
+        assertThat(sections).hasSize(3)
         assertThat(documents).hasSize(1)
     }
 }

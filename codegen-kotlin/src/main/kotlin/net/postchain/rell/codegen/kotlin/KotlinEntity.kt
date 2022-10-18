@@ -13,7 +13,7 @@ class KotlinEntity(className: ClassName, entity: R_EntityDefinition) : DataClass
             |/*
             |* Entity ${className.rellName} 
             |*
-            |* Rell entity is typically encoded as a GtvInteger. If used as struct<${className.rellName}>, then toGtv() is used for encoding.
+            |* Rell entity is typically encoded as a GtvInteger. If used as struct<${className.rellName}>, then GtvObjectMapper.toGtvArray() is used for encoding.
             |*/
             |${super.format()}
         """.trimMargin()
