@@ -1,1 +1,3 @@
+module;
+
 operation input_parameter_map_input(v: map<text,text>) {}

@@ -1,5 +1,6 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.common.types.WrappedByteArray
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvNull
@@ -15,6 +16,7 @@ import net.postchain.rell.codegen.util.GeneratedAnnotation
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
+import java.math.BigDecimal
 import javax.annotation.processing.Generated
 import kotlin.reflect.KClass
 
@@ -30,6 +32,9 @@ abstract class ExtensionMethodSection(
         get() = className.module
 
     final override val imports: List<String> = listOf(
+        "import ${BigDecimal::class.qualifiedName}",
+        "import ${WrappedByteArray::class.qualifiedName}",
+        "import net.postchain.common.wrap",
         "import ${extendedClass.qualifiedName}",
         "import ${Generated::class.qualifiedName}",
         "import ${Gtv::class.qualifiedName}",
