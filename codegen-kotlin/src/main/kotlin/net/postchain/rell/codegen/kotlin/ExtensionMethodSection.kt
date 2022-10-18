@@ -77,7 +77,7 @@ abstract class ExtensionMethodSection(
             }.valueOf(it.asString()) }"
             is R_TextType -> ".asString()"
             is R_IntegerType -> ".asInteger()"
-            is R_ByteArrayType -> ".asByteArray()"
+            is R_ByteArrayType -> ".asByteArray().wrap()"
             is R_EntityType -> ".asInteger()"            // Note that entities are encoded as GtvInteger
             is R_DecimalType -> ".let { BigDecimal(it.asString()) }"            // Note that decimals are encoded as GtvString(?)
             is R_RowidType -> ".asInteger()"             // Same as EntityType
@@ -86,7 +86,7 @@ abstract class ExtensionMethodSection(
             is R_ListType -> ".asArray().map { it${formatReturnType(type.elementType)} }"
             is R_SetType -> ".asArray().map { it${formatReturnType(type.elementType)} }.toSet()"
             is R_TupleType -> formatTupleType(type)
-            else -> ""                                  // All structs (should be "unknown structs"
+            else -> ""                                  // All structs (should be "unknown structs")
         }
     }
 

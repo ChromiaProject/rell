@@ -1,21 +1,11 @@
 package net.postchain.rell.codegen.kotlin
 
 import assertk.all
-import net.postchain.rell.compiler.base.core.C_CompilerModuleSelection
-import net.postchain.rell.compiler.base.core.C_CompilerOptions
-import net.postchain.rell.compiler.base.utils.C_SourceDir
-import net.postchain.rell.model.R_ModuleName
-import net.postchain.rell.utils.RellCliUtils
-import org.junit.jupiter.api.Test
-
-import java.io.File
-
 import assertk.assertThat
 import assertk.assertions.contains
 import net.postchain.rell.codegen.deps.CamelCaseClassName
-import net.postchain.rell.model.R_Module
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import kotlin.test.assertNotNull
@@ -62,7 +52,7 @@ internal class SimpleKotlinEntityTest {
         "integer,Long",
         "decimal,BigDecimal",
         "text,String",
-        "byte_array,ByteArray",
+        "byte_array,WrappedByteArray",
         "rowid,Long",
         "json,String",
     )
@@ -78,7 +68,7 @@ internal class SimpleKotlinEntityTest {
     @ParameterizedTest(name = "builtin {0} becomes {1}")
     @CsvSource(
         "name,String",
-        "pubkey,ByteArray",
+        "pubkey,WrappedByteArray",
         "timestamp,Long",
     )
     fun builtinTypes(keyword: String, kotlinType: String) {

@@ -1,0 +1,17 @@
+entity ba_entity {
+    key name;
+    data: byte_array;
+}
+
+struct ba_struct {
+    name;
+    data: byte_array;
+}
+
+query ba_query(name): byte_array {
+    return ba_entity @ { name } (.data);
+}
+
+operation ba_op(name, data: byte_array) {
+    create ba_entity(name, data);
+}

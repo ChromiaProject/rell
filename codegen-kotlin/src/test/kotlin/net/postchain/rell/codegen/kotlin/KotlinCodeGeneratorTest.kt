@@ -62,7 +62,7 @@ internal class CodeGeneratorTest {
 
     @Test
     fun sections() {
-        assertThat(sections).hasSize( 9 /* queries */ + 2 /* operations */ + 13 /* needed objects */ )
+        assertThat(sections).hasSize( 11 /* queries */ + 4 /* operations */ + 13 /* needed objects */ )
     }
 
     @Test

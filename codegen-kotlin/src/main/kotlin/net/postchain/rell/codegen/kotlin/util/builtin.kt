@@ -11,7 +11,7 @@ class BlockEntity() : Entity {
     override fun format() = """
        |class Block(
        |    @Name("block_height") val blockHeight: Long,
-       |    @Name("block_rid") val blockRid: ByteArray,
+       |    @Name("block_rid") val blockRid: WrappedByteArray,
        |    @Name("timestamp") val timestamp: Long,
        |)
     """.trimMargin()
@@ -25,9 +25,9 @@ class TransactionEntity() : Entity {
 
     override fun format() = """
        |class Transaction(
-       |    @Name("tx_rid") val txRid: ByteArray,
-       |    @Name("tx_hash") val txHash: ByteArray,
-       |    @Name("tx_data") val txData: ByteArray,
+       |    @Name("tx_rid") val txRid: WrappedByteArray,
+       |    @Name("tx_hash") val txHash: WrappedByteArray,
+       |    @Name("tx_data") val txData: WrappedByteArray,
        |    @Name("block") val block: Block,
        |)
     """.trimMargin()
