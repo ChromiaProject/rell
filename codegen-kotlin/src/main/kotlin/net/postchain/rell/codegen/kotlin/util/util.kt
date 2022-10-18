@@ -22,7 +22,7 @@ fun rTypeToString(type: R_Type): String {
         is R_IntegerType -> "Long"
         is R_DecimalType -> "BigDecimal"
         is R_TextType -> "String"
-        is R_ByteArrayType -> "ByteArray"
+        is R_ByteArrayType -> "WrappedByteArray"
         is R_RowidType -> "Long"
         is R_JsonType -> "String"
         is R_EntityType -> "Long"
