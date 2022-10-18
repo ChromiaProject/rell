@@ -11,6 +11,7 @@ fun attributeToGtv(name: String, type: R_Type): String {
         is R_NullableType -> "$name.let { if (it == null) GtvNull else ${attributeToGtv("it", type.valueType)} }"
         is R_ListType -> "gtv($name.map { ${attributeToGtv("it", type.elementType)} })"
         is R_SetType -> "gtv($name.map { ${attributeToGtv("it", type.elementType)} })"
+        is R_MapType -> "gtv($name.mapValues { ${attributeToGtv("it.value", type.valueType)} })"
         else -> "gtv($name)"
     }
 }

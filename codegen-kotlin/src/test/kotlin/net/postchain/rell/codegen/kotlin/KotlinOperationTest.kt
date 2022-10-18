@@ -43,7 +43,7 @@ internal class KotlinOperationTest {
         "input_parameter_list_input,v: List<ByteArray>,gtv(v.map { gtv(it) })",
         "input_parameter_nullable_list_input,v: List<ByteArray>?,v.let { if (it == null) GtvNull else gtv(it.map { gtv(it) }) }",
         "input_parameter_set_input,v: Set<ByteArray>,gtv(v.map { gtv(it) })",
-        "input_parameter_map_input,'v: Map<String, ByteArray>',gtv(v)",
+        "input_parameter_map_input,'v: Map<String, ByteArray>',gtv(v.mapValues { gtv(it.value) })",
     )
     fun parameterTypeTest(queryName: String, params: String, gtvParam: String) {
         val op = kotlin.test.assertNotNull(testModule.operations[queryName])

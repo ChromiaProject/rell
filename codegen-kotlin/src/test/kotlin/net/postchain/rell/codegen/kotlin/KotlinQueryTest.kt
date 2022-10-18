@@ -73,7 +73,7 @@ internal class KotlinQueryTest {
         "input_parameter_struct,s: TestStruct,\"s\" to s.toGtv()",
         "input_parameter_list_input,v: List<ByteArray>,\"v\" to gtv(v.map { gtv(it) })",
         "input_parameter_set_input,v: Set<ByteArray>,\"v\" to gtv(v.map { gtv(it) })",
-        "input_parameter_map_input,'v: Map<String, ByteArray>',\"v\" to gtv(v)",
+        "input_parameter_map_input,'v: Map<String, ByteArray>',\"v\" to gtv(v.mapValues { gtv(it.value) })",
     )
     fun parameterTypeTest(queryName: String, params: String, gtvParam: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[queryName])
