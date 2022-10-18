@@ -53,7 +53,7 @@ internal class SimpleKotlinEntityTest {
         "decimal,BigDecimal",
         "text,String",
         "byte_array,WrappedByteArray",
-        "rowid,Long",
+        "rowid,RowId",
         "json,String",
     )
     fun simpleEntities(rellType: String, kotlinType: String) {

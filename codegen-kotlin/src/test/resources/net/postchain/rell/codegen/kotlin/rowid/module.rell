@@ -1,0 +1,18 @@
+module;
+
+entity rowid_entity {
+    key name;
+    data: byte_array;
+}
+
+struct rowid_struct {
+    name;
+    data: byte_array;
+    rowid;
+}
+
+query rowid_query(name): rowid {
+    return rowid_entity @ { name } (.rowid);
+}
+
+operation rowid_op(name, rowid, rowid_struct) { }

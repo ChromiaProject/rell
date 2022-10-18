@@ -1,5 +1,6 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.common.types.RowId
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvArray
@@ -35,6 +36,7 @@ abstract class ExtensionMethodSection(
     final override val imports: List<String> = listOf(
         "import ${BigDecimal::class.qualifiedName}",
         "import ${WrappedByteArray::class.qualifiedName}",
+        "import ${RowId::class.qualifiedName}",
         "import net.postchain.common.wrap",
         "import ${extendedClass.qualifiedName}",
         "import ${Generated::class.qualifiedName}",
@@ -87,7 +89,7 @@ abstract class ExtensionMethodSection(
             is R_ByteArrayType -> ".asByteArray().wrap()"
             is R_EntityType -> ".asInteger()"            // Note that entities are encoded as GtvInteger
             is R_DecimalType -> ".let { BigDecimal(it.asString()) }"            // Note that decimals are encoded as GtvString(?)
-            is R_RowidType -> ".asInteger()"             // Same as EntityType
+            is R_RowidType -> ".let { RowId(it.asInteger()) }"
             is R_MapType -> formatMapReturnType(type)
             is R_StructType -> ".toObject<${CamelCaseClassName.fromString(type.name).name}>()"
             is R_ListType -> ".asArray().map { it${formatReturnType(type.elementType)} }"
