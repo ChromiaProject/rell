@@ -1,5 +1,6 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.common.types.RowId
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.mapper.Name
@@ -25,6 +26,7 @@ open class DataClassSection(
     override val imports = listOf(
         "import ${BigDecimal::class.qualifiedName}",
         "import ${WrappedByteArray::class.qualifiedName}",
+        "import ${RowId::class.qualifiedName}",
         "import ${Gtv::class.qualifiedName}",
         "import ${Generated::class.qualifiedName}",
         "import ${Name::class.qualifiedName}",

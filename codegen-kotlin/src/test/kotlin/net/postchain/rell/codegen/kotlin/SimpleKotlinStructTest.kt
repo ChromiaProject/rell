@@ -28,7 +28,7 @@ internal class SimpleKotlinStructTest {
         "decimal,BigDecimal",
         "text,String",
         "byte_array,WrappedByteArray",
-        "rowid,Long",
+        "rowid,RowId",
         "map,Map<String, Long>",
         "nullable,String?",
         "json,String",
