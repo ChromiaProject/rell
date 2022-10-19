@@ -8,6 +8,7 @@ struct byte_array_struct { a: byte_array; }
 struct rowid_struct { a: rowid; }
 struct json_struct { a: json; }
 struct map_struct { a: map<text,integer>; }
+struct entity_struct { a: a; }
 
 struct builtin_name { name; }
 struct builtin_pubkey { pubkey; }

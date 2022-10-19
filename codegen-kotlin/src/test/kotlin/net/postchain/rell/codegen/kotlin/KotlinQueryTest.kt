@@ -40,13 +40,15 @@ internal class KotlinQueryTest {
         "return_type_text,.asString()",
         "return_type_decimal,.let { BigDecimal(it.asString()) }",
         "return_type_byte_array,asByteArray()",
-        "return_type_entity,asInteger()",
-        "return_type_nullable,.let { if (it is GtvNull) null else it.asInteger() }",
+        "return_type_entity,.let { RowId(it.asInteger()) }",
+        "return_type_nullable_entity,.let { if (it is GtvNull) null else it.let { RowId(it.asInteger()) } }",
         "return_type_struct,.toObject<TestStruct>()",
-        "return_type_rowid,.asInteger()",
+        "return_type_rowid,.let { RowId(it.asInteger()) }",
+        "return_type_nullable_rowid,.let { if (it is GtvNull) null else it.let { RowId(it.asInteger()) } }",
         "return_type_list_integer,.asArray().map { it.asInteger() }",
         "return_type_set_integer,.asArray().map { it.asInteger() }.toSet()",
         "return_type_list_struct,.asArray().map { it.toObject<TestStruct>() }",
+        "return_type_list_entity,.asArray().map { it.let { RowId(it.asInteger()) } }",
         "return_type_map,'asDict().mapValues { (k, v) -> v.asString() }'",
         "return_type_unnamed_tuple,.asArray()", // Unnamed tuples are arrays with unknown entries
     )
@@ -69,7 +71,8 @@ internal class KotlinQueryTest {
         "input_parameter_integer,i: Long,\"i\" to gtv(i)",
         "input_parameter_enum,e: TestEnum,\"e\" to gtv(e.ordinal.toLong()))",
         "input_parameter_boolean,b: Boolean,\"b\" to gtv(b)",
-        "input_parameter_entity,e: Long,\"e\" to gtv(e)",
+        "input_parameter_rowid,r: RowId,\"r\" to gtv(r.id)",
+        "input_parameter_entity,e: RowId,\"e\" to gtv(e.id)",
         "input_parameter_struct,s: TestStruct,\"s\" to GtvObjectMapper.toGtvArray(s)",
         "input_parameter_list_input,v: List<WrappedByteArray>,\"v\" to gtv(v.map { gtv(it) })",
         "input_parameter_set_input,v: Set<WrappedByteArray>,\"v\" to gtv(v.map { gtv(it) })",
@@ -87,7 +90,7 @@ internal class KotlinQueryTest {
 
     @ParameterizedTest(name = "query has imported")
     @CsvSource(
-        "return_type_nullable",
+        "return_type_nullable_entity",
     )
     fun nullable(s: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[s])

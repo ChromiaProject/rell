@@ -15,6 +15,7 @@ operation input_parameter_text(t: text) {}
 operation input_parameter_enum(e: test_enum) {}
 operation input_parameter_integer(i: integer) {}
 operation input_parameter_boolean(b: boolean) {}
+operation input_parameter_rowid(r: rowid) {}
 operation input_parameter_entity(e: test_entity) {}
 operation input_parameter_struct(s: test_struct) {}
 operation input_parameter_list_input(v: list<byte_array>) {}
