@@ -79,7 +79,7 @@ abstract class ExtensionMethodSection(
     private fun formatReturnType(type: R_Type?): String {
         return when (type) {
             null -> ""
-            is R_NullableType -> ".let { if (it is GtvNull) null else it${formatReturnType(type.valueType)} }"
+            is R_NullableType -> ".let { v -> if (v is GtvNull) null else v${formatReturnType(type.valueType)} }"
             is R_BooleanType -> ".asBoolean()"
             is R_EnumType -> ".let { ${
                 type.name.substringAfter(":").snakeToUpperCamelCase()
@@ -92,8 +92,8 @@ abstract class ExtensionMethodSection(
             is R_EntityType -> ".let { RowId(it.asInteger()) }"            // Note that entities are encoded as GtvInteger
             is R_MapType -> formatMapReturnType(type)
             is R_StructType -> ".toObject<${CamelCaseClassName.fromString(type.name).name}>()"
-            is R_ListType -> ".asArray().map { it${formatReturnType(type.elementType)} }"
-            is R_SetType -> ".asArray().map { it${formatReturnType(type.elementType)} }.toSet()"
+            is R_ListType -> ".asArray().map { v -> v${formatReturnType(type.elementType)} }"
+            is R_SetType -> ".asArray().map { v -> v${formatReturnType(type.elementType)} }.toSet()"
             is R_TupleType -> formatTupleType(type)
             else -> ""                                  // All structs (should be "unknown structs")
         }
