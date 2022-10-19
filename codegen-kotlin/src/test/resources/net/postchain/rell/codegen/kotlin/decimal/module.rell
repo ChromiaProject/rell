@@ -10,10 +10,8 @@ struct decimal_struct {
     data: decimal;
 }
 
-query decimal_query(name): decimal_struct {
-    return decimal_entity @ { name } (decimal_struct(.name, .data));
+query decimal_query(name): decimal {
+    return decimal_entity @ { name } (.data);
 }
 
-operation decimal_op(d: decimal_struct) {
-    create decimal_entity(d.name, d.data);
-}
+operation decimal_op(decimal, decimal_struct) { }

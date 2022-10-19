@@ -15,4 +15,4 @@ query entity_query(name): entity_entity {
     return entity_entity @ { name };
 }
 
-operation entity_op(name, entity_entity, entity_struct) { }
+operation entity_op(entity_entity, entity_struct) { }
