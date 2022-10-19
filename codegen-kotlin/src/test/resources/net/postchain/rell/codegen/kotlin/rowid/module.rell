@@ -15,4 +15,8 @@ query rowid_query(name): rowid {
     return rowid_entity @ { name } (.rowid);
 }
 
+query nullable_rowid_query(name): rowid? {
+    return rowid_entity @? { name } (.rowid);
+}
+
 operation rowid_op(rowid, rowid_struct) { }
