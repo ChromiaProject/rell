@@ -1,0 +1,18 @@
+module;
+
+entity entity_entity {
+    key name;
+    data: byte_array;
+}
+
+struct entity_struct {
+    name;
+    data: byte_array;
+    entity_entity;
+}
+
+query entity_query(name): entity_entity {
+    return entity_entity @ { name };
+}
+
+operation entity_op(name, entity_entity, entity_struct) { }

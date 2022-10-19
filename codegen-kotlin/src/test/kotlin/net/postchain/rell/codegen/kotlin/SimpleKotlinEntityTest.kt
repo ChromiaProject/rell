@@ -86,7 +86,7 @@ internal class SimpleKotlinEntityTest {
         val k = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("val a: Long")
+            contains("val a: RowId")
         }
     }
 }

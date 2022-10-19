@@ -87,9 +87,9 @@ abstract class ExtensionMethodSection(
             is R_TextType -> ".asString()"
             is R_IntegerType -> ".asInteger()"
             is R_ByteArrayType -> ".asByteArray().wrap()"
-            is R_EntityType -> ".asInteger()"            // Note that entities are encoded as GtvInteger
             is R_DecimalType -> ".let { BigDecimal(it.asString()) }"            // Note that decimals are encoded as GtvString(?)
             is R_RowidType -> ".let { RowId(it.asInteger()) }"
+            is R_EntityType -> ".let { RowId(it.asInteger()) }"            // Note that entities are encoded as GtvInteger
             is R_MapType -> formatMapReturnType(type)
             is R_StructType -> ".toObject<${CamelCaseClassName.fromString(type.name).name}>()"
             is R_ListType -> ".asArray().map { it${formatReturnType(type.elementType)} }"

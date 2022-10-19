@@ -29,23 +29,28 @@ internal class SimpleKotlinStructTest {
         "text,String",
         "byte_array,WrappedByteArray",
         "rowid,RowId",
+        "entity,RowId",
         "map,Map<String, Long>",
         "nullable,String?",
         "json,String",
     )
-    fun simpleStructures(rellType: String, kotlinType: String): String {
+    fun simpleStructures(rellType: String, kotlinType: String) {
+        format(rellType, kotlinType)
+    }
+
+    @Test
+    fun nullableAnnotation() {
+        val formatted = format("nullable", "String?")
+        assertThat(formatted).contains("@Nullable")
+    }
+
+    private fun format(rellType: String, kotlinType: String): String {
         val struct = assertNotNull(testModule.structs["${rellType}_struct"], "struct does not exist")
         val formatted = KotlinStruct(CamelCaseClassName.fromRellDefinition(struct), struct).format()
         assertThat(formatted).all {
             contains("val a: $kotlinType")
         }
         return formatted
-    }
-
-    @Test
-    fun nullableAnnotation() {
-        val formatted = simpleStructures("nullable", "String?")
-        assertThat(formatted).contains("@Nullable")
     }
 
     @ParameterizedTest(name = "builtin {0} becomes {1}")

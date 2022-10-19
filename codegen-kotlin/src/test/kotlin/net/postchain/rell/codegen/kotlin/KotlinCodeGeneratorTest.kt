@@ -96,4 +96,11 @@ internal class CodeGeneratorTest {
         assertThat(sections).hasSize(3)
         assertThat(documents).hasSize(1)
     }
+
+    @Test
+    fun entity() {
+        val (sections, documents) = generateAndCompile("entity/module.rell", "entity")
+        assertThat(sections).hasSize(3)
+        assertThat(documents).hasSize(1)
+    }
 }
