@@ -18,4 +18,4 @@ query nullable_ba_query(name): byte_array? {
     return ba_entity @? { name } (.data);
 }
 
-operation ba_op(byte_array, ba_struct) { }
+operation ba_op(byte_array, ba: byte_array?, ba_struct) { }

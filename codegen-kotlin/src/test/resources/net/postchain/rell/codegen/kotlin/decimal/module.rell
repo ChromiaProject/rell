@@ -18,4 +18,4 @@ query nullable_decimal_query(name): decimal? {
     return decimal_entity @? { name } (.data);
 }
 
-operation decimal_op(decimal, decimal_struct) { }
+operation decimal_op(decimal, d: decimal?, decimal_struct) { }
