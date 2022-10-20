@@ -91,12 +91,12 @@ fun GTXTransactionBuilder.inputParameterEnumOperation(e: TestEnum) =
 Performing a release consists of the following sequence on the dev branch
 
 ```shell
-vim build.gradle.kts // Update to release version
+vim VERSION // Update to release version, no end-of-line at end of file
 git commit --all --message 'Release X.Y.Z'
 git push origin dev // To run the pipeline
 git tag X.Y.Z
 git push --tags 
-vim build.gradle.kts // Update to snapshot version
+vim VERSION // Update to snapshot version, no end-of-line at end of file
 git commit --all --message 'Snapshot version'
 git push origin dev
 ```
