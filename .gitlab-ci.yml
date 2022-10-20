@@ -11,9 +11,15 @@ before_script:
   - GRADLE_USER_HOME="$(pwd)/.gradle"
   - export GRADLE_USER_HOME
 
+.git_template: &git_setup |
+  git remote set-url --push origin "https://oauth2:${BUILD_USER_GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+  git config user.name "build-user core-dev"
+  git config user.email build_user@chromaway.com
+
 stages:
   - build-and-test
   - publish
+  - release
 
 build-and-test:
   stage: build-and-test
@@ -31,6 +37,35 @@ publish:
   only:
       - dev
       - master
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - "**/build"
+      - .gradle
+
+release:
+  stage: release
+  script:
+    - *git_setup
+    - SNAPSHOT_VERSION=`cat VERSION`
+    - RELEASE_VERSION=${SNAPSHOT_VERSION/-SNAPSHOT/}
+    - echo -n $RELEASE_VERSION > VERSION
+    - git commit --all --message "Release $RELEASE_VERSION"
+    - git tag $RELEASE_VERSION
+    - gradle --build-cache publish
+    - IFS=. read -a VERSION_COMPONENTS < VERSION
+    - PATCH_VERSION=${VERSION_COMPONENTS[-1]}
+    - NEW_PATCH_VERSION=`expr $PATCH_VERSION + 1`
+    - VERSION_COMPONENTS[-1]=$NEW_PATCH_VERSION
+    - NEW_SNAPSHOT_VERSION=$(IFS=. ; echo "${VERSION_COMPONENTS[*]}-SNAPSHOT")
+    - echo -n $NEW_SNAPSHOT_VERSION > VERSION
+    - git commit --all --message "Snapshot version"
+    - git push origin dev
+    - git push --tags
+  only:
+    - dev
+  when: manual
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: pull

@@ -1,2 +1,2 @@
-version = "0.6.0-SNAPSHOT"
+version = File("VERSION").readText()
 group = "net.postchain.rell"
