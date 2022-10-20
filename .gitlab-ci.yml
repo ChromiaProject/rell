@@ -54,13 +54,11 @@ release:
     - git commit --all --message "Release $RELEASE_VERSION"
     - git tag $RELEASE_VERSION
     - gradle --build-cache publish
-    - IFS=. read -a VERSION_COMPONENTS < VERSION
-    - PATCH_VERSION=${VERSION_COMPONENTS[-1]}
-    - NEW_PATCH_VERSION=`expr $PATCH_VERSION + 1`
-    - VERSION_COMPONENTS[-1]=$NEW_PATCH_VERSION
-    - NEW_SNAPSHOT_VERSION=$(IFS=. ; echo "${VERSION_COMPONENTS[*]}-SNAPSHOT")
+    - IFS=. read MAJOR MINOR PATCH < VERSION
+    - NEW_PATCH=`expr $PATCH + 1`
+    - NEW_SNAPSHOT_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}-SNAPSHOT"
     - echo -n $NEW_SNAPSHOT_VERSION > VERSION
-    - git commit --all --message "Snapshot version"
+    - git commit --all --message "Snapshot version $NEW_SNAPSHOT_VERSION"
     - git push origin dev
     - git push --tags
   only:
