@@ -28,7 +28,5 @@ fun String.snakeToUpperCamelCase(): String {
 }
 
 object GeneratedAnnotation {
-    private val now = Date(System.currentTimeMillis())
-
-    fun createAnnotation(comment: String) = "@Generated(\"${CodeGenerator::class.qualifiedName}\", comments = \"$comment\", date = \"$now\")"
+    fun createAnnotation(comment: String) = "@Generated(\"${CodeGenerator::class.qualifiedName}\", comments = \"$comment\")"
 }
