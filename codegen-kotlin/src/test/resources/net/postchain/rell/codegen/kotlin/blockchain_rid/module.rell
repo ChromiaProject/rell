@@ -1,0 +1,11 @@
+module;
+
+struct blockchain_rid_struct {
+    blockchain_rid: byte_array;
+}
+
+query q(blockchain_rid: byte_array) = blockchain_rid;
+
+query nullable_q(blockchain_rid: byte_array?) = blockchain_rid;
+
+operation op(blockchain_rid: byte_array, blockchain_rid_struct) { }

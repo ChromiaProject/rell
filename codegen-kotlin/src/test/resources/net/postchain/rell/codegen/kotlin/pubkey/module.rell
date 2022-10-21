@@ -1,0 +1,15 @@
+module;
+
+struct pubkey_struct {
+    pubkey;
+}
+
+query pubkey_query(pubkey): pubkey {
+    return pubkey;
+}
+
+query nullable_query(pubkey?): pubkey? {
+    return pubkey;
+}
+
+operation op(pubkey, pubkey_struct) { }
