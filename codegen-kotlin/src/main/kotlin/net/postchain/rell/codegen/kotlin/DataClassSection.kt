@@ -1,5 +1,7 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.common.BlockchainRid
+import net.postchain.common.PubKey
 import net.postchain.common.types.RowId
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.gtv.Gtv
@@ -31,6 +33,8 @@ open class DataClassSection(
         "import ${Generated::class.qualifiedName}",
         "import ${Name::class.qualifiedName}",
         "import ${Nullable::class.qualifiedName}",
+        "import ${BlockchainRid::class.qualifiedName}",
+        "import ${PubKey::class.qualifiedName}",
         "import net.postchain.gtv.GtvFactory.gtv",
     )
 
@@ -39,7 +43,7 @@ open class DataClassSection(
     private val classFields = attributes.map { formatAttribute(it.key, it.value) }
 
     private fun formatAttribute(name: String, type: R_Type) =
-        "@Name(\"$name\")${nullableAnnotation(type)} val ${name.snakeToLowerCamelCase()}: ${rTypeToString(type)}"
+        "@Name(\"$name\")${nullableAnnotation(type)} val ${name.snakeToLowerCamelCase()}: ${rTypeToString(name, type)}"
 
     private fun nullableAnnotation(type: R_Type) = if (type is R_NullableType) " @Nullable" else ""
 

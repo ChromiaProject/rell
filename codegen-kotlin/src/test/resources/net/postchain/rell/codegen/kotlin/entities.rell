@@ -27,3 +27,6 @@ entity multi_text_entity {
 entity nested_entity { a: text_entity; }
 
 entity transaction_entity { key transaction; }
+
+entity pubkey_entity { pubkey; }
+entity blockchain_rid_entity { blockchain_rid: byte_array; }

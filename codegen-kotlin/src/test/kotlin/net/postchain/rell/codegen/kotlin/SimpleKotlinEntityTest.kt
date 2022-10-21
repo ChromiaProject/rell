@@ -48,27 +48,29 @@ internal class SimpleKotlinEntityTest {
 
     @ParameterizedTest(name = "rell type {0} becomes {1}")
     @CsvSource(
-        "boolean,Boolean",
-        "integer,Long",
-        "decimal,BigDecimal",
-        "text,String",
-        "byte_array,WrappedByteArray",
-        "rowid,RowId",
-        "json,String",
+        "a,boolean,Boolean",
+        "a,integer,Long",
+        "a,decimal,BigDecimal",
+        "a,text,String",
+        "a,byte_array,WrappedByteArray",
+        "a,rowid,RowId",
+        "a,json,String",
+        "pubkey,pubkey,PubKey",
+        "blockchainRid,blockchain_rid,BlockchainRid"
     )
-    fun simpleEntities(rellType: String, kotlinType: String) {
+    fun simpleEntities(fieldName: String, rellType: String, kotlinType: String) {
         val entity = assertNotNull(testModule.entities["${rellType}_entity"], "entity does not exist")
         val k = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("val a: $kotlinType")
+            contains("val $fieldName: $kotlinType")
         }
     }
 
     @ParameterizedTest(name = "builtin {0} becomes {1}")
     @CsvSource(
         "name,String",
-        "pubkey,WrappedByteArray",
+        "pubkey,PubKey",
         "timestamp,Long",
     )
     fun builtinTypes(keyword: String, kotlinType: String) {

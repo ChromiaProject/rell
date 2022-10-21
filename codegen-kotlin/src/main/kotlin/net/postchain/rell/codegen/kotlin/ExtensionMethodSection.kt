@@ -1,5 +1,7 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.common.BlockchainRid
+import net.postchain.common.PubKey
 import net.postchain.common.types.RowId
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.gtv.Gtv
@@ -45,6 +47,8 @@ abstract class ExtensionMethodSection(
         "import ${GtvNull::class.qualifiedName}",
         "import ${GtvObjectMapper::class.qualifiedName}",
         "import ${Name::class.qualifiedName}",
+        "import ${BlockchainRid::class.qualifiedName}",
+        "import ${PubKey::class.qualifiedName}",
         "import ${Nullable::class.qualifiedName}", // TODO: Propagate imports from [returnStructure]
         "import net.postchain.gtv.GtvFactory.gtv",
         "import net.postchain.gtv.mapper.toObject",
@@ -67,7 +71,7 @@ abstract class ExtensionMethodSection(
 
     private fun formatInputParameters(): String {
         if (params.isEmpty()) return ""
-        return params.joinToString(",\n\t") { "${it.name.snakeToLowerCamelCase()}: ${rTypeToString(it.type)}" }
+        return params.joinToString(",\n\t") { "${it.name.snakeToLowerCamelCase()}: ${rTypeToString(it.name, it.type)}" }
     }
 
     abstract fun formatGtvParameters(): String

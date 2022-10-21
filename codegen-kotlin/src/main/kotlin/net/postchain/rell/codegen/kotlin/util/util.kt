@@ -4,7 +4,7 @@ import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.model.*
 
 fun attributeToGtv(name: String, type: R_Type): String {
-    return when (type) {
+    return aliasToGtv(name, type) ?: when (type) {
         is R_EnumType -> "gtv(${name}.ordinal.toLong())"
         is R_StructType -> "GtvObjectMapper.toGtvArray($name)"
         is R_DecimalType -> "gtv($name.toString())"
@@ -17,9 +17,10 @@ fun attributeToGtv(name: String, type: R_Type): String {
         else -> "gtv($name)"
     }
 }
-fun rTypeToString(type: R_Type): String {
-    return when (type) {
-        is R_NullableType -> "${rTypeToString(type.valueType)}?"
+
+fun rTypeToString(name: String, type: R_Type): String {
+    return aliasToString(name, type) ?: when (type) {
+        is R_NullableType -> "${rTypeToString(name, type.valueType)}?"
         is R_BooleanType -> "Boolean"
         is R_IntegerType -> "Long"
         is R_DecimalType -> "BigDecimal"
@@ -28,11 +29,27 @@ fun rTypeToString(type: R_Type): String {
         is R_RowidType -> "RowId"
         is R_EntityType -> "RowId"
         is R_JsonType -> "String"
-        is R_SetType -> "Set<${rTypeToString(type.elementType)}>"
-        is R_ListType -> "List<${rTypeToString(type.elementType)}>"
-        is R_MapType -> "Map<${rTypeToString(type.keyType)}, ${rTypeToString(type.valueType)}>"
+        is R_SetType -> "Set<${rTypeToString(name, type.elementType)}>"
+        is R_ListType -> "List<${rTypeToString(name, type.elementType)}>"
+        is R_MapType -> "Map<${rTypeToString(name, type.keyType)}, ${rTypeToString(name, type.valueType)}>"
         is R_StructType -> CamelCaseClassName.fromString(type.name).name
         is R_EnumType -> CamelCaseClassName.fromString(type.name).name
         else -> "Gtv"
+    }
+}
+
+fun aliasToString(name: String, type: R_Type): String? {
+    return when {
+        name == "pubkey" && type is R_ByteArrayType -> "PubKey"
+        name == "blockchain_rid" && type is R_ByteArrayType -> "BlockchainRid"
+        else -> null
+    }
+}
+
+fun aliasToGtv(name: String, type: R_Type): String? {
+    return when {
+        type is R_NullableType && name == "pubkey" && type.valueType is R_ByteArrayType -> "pubkey.let { if (it == null) GtvNull else gtv(it.data) }"
+        name == "pubkey" && type is R_ByteArrayType -> "gtv(pubkey.data)"
+        else -> null
     }
 }
