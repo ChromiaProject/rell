@@ -98,6 +98,20 @@ internal class CodeGeneratorTest {
     }
 
     @Test
+    fun pubkey() {
+        val (sections, documents) = generateAndCompile("pubkey/module.rell", "pubkey")
+        assertThat(sections).hasSize(4)
+        assertThat(documents).hasSize(1)
+    }
+
+    @Test
+    fun blockchainRid() {
+        val (sections, documents) = generateAndCompile("blockchain_rid/module.rell", "blockchain_rid")
+        assertThat(sections).hasSize(4)
+        assertThat(documents).hasSize(1)
+    }
+
+    @Test
     fun entity() {
         val (sections, documents) = generateAndCompile("entity/module.rell", "entity")
         assertThat(sections).hasSize(4)

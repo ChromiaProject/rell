@@ -56,7 +56,7 @@ internal class SimpleKotlinStructTest {
     @ParameterizedTest(name = "builtin {0} becomes {1}")
     @CsvSource(
         "name,String",
-        "pubkey,WrappedByteArray",
+        "pubkey,PubKey",
     )
     fun builtinTypes(keyword: String, kotlinType: String) {
         val struct = assertNotNull(testModule.structs["builtin_${keyword}"], "struct does not exist")
