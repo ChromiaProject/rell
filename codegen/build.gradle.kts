@@ -13,4 +13,3 @@ repositories {
 dependencies {
     implementation("net.postchain.rell:rell:0.10.10")
 }
-
