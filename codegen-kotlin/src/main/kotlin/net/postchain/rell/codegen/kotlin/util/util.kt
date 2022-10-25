@@ -20,8 +20,7 @@ fun attributeToGtv(name: String, type: R_Type): String {
 
 private fun mapTypeToGtv(name: String, type: R_MapType) = when (type.keyType) {
     is R_TextType -> "gtv($name.mapValues { ${attributeToGtv("it.value", type.valueType)} })"
-    is R_EnumType -> "gtv($name.map { (k, v) -> k.name to ${attributeToGtv("v", type.valueType)} }.toMap())"
-    else -> throw IllegalArgumentException("Cannot map type to gtv")
+    else -> "gtv($name.map { (k, v) -> gtv(${attributeToGtv("k", type.keyType)}, ${attributeToGtv("v", type.valueType)}) })"
 }
 
 fun rTypeToString(name: String, type: R_Type): String {
