@@ -34,7 +34,7 @@ internal class KotlinQueryTest {
     }
     @ParameterizedTest(name = "query for return type {0} should convert to {1}")
     @CsvSource(
-        "return_type_enum,.let { TestEnum.valueOf(it.asString()) }",
+        "return_type_enum,.let { TestEnum.values()[it.asInteger().toInt()] }",
         "return_type_boolean,.asBoolean()",
         "return_type_integer,.asInteger()",
         "return_type_text,.asString()",
@@ -50,7 +50,7 @@ internal class KotlinQueryTest {
         "return_type_list_struct,.asArray().map { v -> v.toObject<TestStruct>() }",
         "return_type_list_entity,.asArray().map { v -> v.let { RowId(it.asInteger()) } }",
         "return_type_map,'asDict().mapValues { (k, v) -> v.asString() }'",
-        "return_type_enum_map,'asDict().mapValues { (k, v) -> k.let { TestEnum.valueOf(it.asString()) } to v.asString() }'",
+        "return_type_enum_map,'asArray().map { pair -> pair.asArray().let { it[0].let { TestEnum.values()[it.asInteger().toInt()] } to it[1].asString() }'",
         "return_type_unnamed_tuple,.asArray()", // Unnamed tuples are arrays with unknown entries
     )
     fun returnTypeTest(type: String, returnType: String) {

@@ -72,7 +72,7 @@ internal class CodeGeneratorTest {
     @Test
     fun mapInput() {
         val (sections, documents) = generateAndCompile("map_input/module.rell", "map_input")
-        assertThat(sections).hasSize(3)
+        assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }
 
