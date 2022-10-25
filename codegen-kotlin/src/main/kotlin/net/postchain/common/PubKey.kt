@@ -1,4 +1,4 @@
-package net.postchain.common
+package net.postchain.crypto
 
 import net.postchain.common.types.WrappedByteArray
 
