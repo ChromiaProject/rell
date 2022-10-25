@@ -1,9 +1,9 @@
 package net.postchain.rell.codegen.kotlin
 
 import net.postchain.common.BlockchainRid
-import net.postchain.common.PubKey
 import net.postchain.common.types.RowId
 import net.postchain.common.types.WrappedByteArray
+import net.postchain.crypto.PubKey
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.mapper.Name
 import net.postchain.gtv.mapper.Nullable
