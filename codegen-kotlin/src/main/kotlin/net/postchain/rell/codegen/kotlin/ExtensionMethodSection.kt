@@ -103,8 +103,11 @@ abstract class ExtensionMethodSection(
         }
     }
 
-    private fun formatMapReturnType(type: R_MapType) = if (type.keyType !is R_TextType) "" else
-        ".asDict().mapValues { (k, v) -> v${formatReturnType(type.valueType)} }"
+    private fun formatMapReturnType(type: R_MapType) = when (type.keyType) {
+        is R_TextType -> ".asDict().mapValues { (k, v) -> v${formatReturnType(type.valueType)} }"
+        is R_EnumType -> ".asDict().mapValues { (k, v) -> k${formatReturnType(type.keyType)} to v${formatReturnType(type.valueType)} }"
+        else -> ""
+    }
 
     private fun formatTupleType(type: R_TupleType): String {
         if (!type.name.contains(":")) return ".asArray()"

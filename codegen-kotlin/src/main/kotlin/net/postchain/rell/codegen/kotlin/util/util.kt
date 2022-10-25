@@ -13,9 +13,15 @@ fun attributeToGtv(name: String, type: R_Type): String {
         is R_NullableType -> "$name.let { if (it == null) GtvNull else ${attributeToGtv("it", type.valueType)} }"
         is R_ListType -> "gtv($name.map { ${attributeToGtv("it", type.elementType)} })"
         is R_SetType -> "gtv($name.map { ${attributeToGtv("it", type.elementType)} })"
-        is R_MapType -> "gtv($name.mapValues { ${attributeToGtv("it.value", type.valueType)} })"
+        is R_MapType -> mapTypeToGtv(name, type)
         else -> "gtv($name)"
     }
+}
+
+private fun mapTypeToGtv(name: String, type: R_MapType) = when (type.keyType) {
+    is R_TextType -> "gtv($name.mapValues { ${attributeToGtv("it.value", type.valueType)} })"
+    is R_EnumType -> "gtv($name.map { (k, v) -> k.name to ${attributeToGtv("v", type.valueType)} }.toMap())"
+    else -> throw IllegalArgumentException("Cannot map type to gtv")
 }
 
 fun rTypeToString(name: String, type: R_Type): String {

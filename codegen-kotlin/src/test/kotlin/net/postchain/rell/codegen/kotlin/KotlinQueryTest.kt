@@ -50,6 +50,7 @@ internal class KotlinQueryTest {
         "return_type_list_struct,.asArray().map { v -> v.toObject<TestStruct>() }",
         "return_type_list_entity,.asArray().map { v -> v.let { RowId(it.asInteger()) } }",
         "return_type_map,'asDict().mapValues { (k, v) -> v.asString() }'",
+        "return_type_enum_map,'asDict().mapValues { (k, v) -> k.let { TestEnum.valueOf(it.asString()) } to v.asString() }'",
         "return_type_unnamed_tuple,.asArray()", // Unnamed tuples are arrays with unknown entries
     )
     fun returnTypeTest(type: String, returnType: String) {
@@ -77,6 +78,7 @@ internal class KotlinQueryTest {
         "input_parameter_list_input,v: List<WrappedByteArray>,\"v\" to gtv(v.map { gtv(it) })",
         "input_parameter_set_input,v: Set<WrappedByteArray>,\"v\" to gtv(v.map { gtv(it) })",
         "input_parameter_map_input,'v: Map<String, WrappedByteArray>',\"v\" to gtv(v.mapValues { gtv(it.value) })",
+        "input_parameter_enum_map,'m: Map<TestEnum, WrappedByteArray>','\"m\" to gtv(m.map { (k, v) -> k.name to gtv(v) }.toMap())'",
     )
     fun parameterTypeTest(queryName: String, params: String, gtvParam: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[queryName])

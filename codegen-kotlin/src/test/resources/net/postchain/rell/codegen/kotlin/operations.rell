@@ -26,3 +26,4 @@ operation input_parameter_list_input(v: list<byte_array>) {}
 operation input_parameter_nullable_list_input(v: list<byte_array>?) {}
 operation input_parameter_set_input(v: set<byte_array>) {}
 operation input_parameter_map_input(v: map<text,byte_array>) {}
+operation input_parameter_enum_map(m: map<test_enum,text>) {}

@@ -1,3 +1,6 @@
 module;
 
+enum test_enum { a }
+
 operation input_parameter_map_input(v: map<text,text>) {}
+operation input_parameter_enum_map(v: map<test_enum,text>) {}
