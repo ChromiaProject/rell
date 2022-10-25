@@ -87,7 +87,7 @@ abstract class ExtensionMethodSection(
             is R_BooleanType -> ".asBoolean()"
             is R_EnumType -> ".let { ${
                 type.name.substringAfter(":").snakeToUpperCamelCase()
-            }.valueOf(it.asString()) }"
+            }.values()[it.asInteger().toInt()] }"
             is R_TextType -> ".asString()"
             is R_IntegerType -> ".asInteger()"
             is R_ByteArrayType -> ".asByteArray().wrap()"
@@ -103,8 +103,10 @@ abstract class ExtensionMethodSection(
         }
     }
 
-    private fun formatMapReturnType(type: R_MapType) = if (type.keyType !is R_TextType) "" else
-        ".asDict().mapValues { (k, v) -> v${formatReturnType(type.valueType)} }"
+    private fun formatMapReturnType(type: R_MapType) = when (type.keyType) {
+        is R_TextType -> ".asDict().mapValues { (k, v) -> v${formatReturnType(type.valueType)} }"
+        else -> ".asArray().map { pair -> pair.asArray().let { it[0]${formatReturnType(type.keyType)} to it[1]${formatReturnType(type.valueType)} } }"
+    }
 
     private fun formatTupleType(type: R_TupleType): String {
         if (!type.name.contains(":")) return ".asArray()"

@@ -26,6 +26,8 @@ query return_type_set_integer() = set<integer>();
 query return_type_list_struct() = list<test_struct>();
 query return_type_list_entity() = test_entity @* { .a };
 query return_type_map() = map<text, text>();
+query return_type_enum_map() = map<test_enum, text>();
+query return_type_any_map() = map<test_struct, text>();
 query return_type_named_tuple() = (foo = 1);
 query return_type_nullable_named_tuple(): (foo:integer)? = (foo = 1);
 query return_type_named_tuple_list(since: rowid) {
@@ -49,3 +51,5 @@ query input_parameter_list_input(v: list<byte_array>) = 1;
 query input_parameter_nullable_list_input(v: list<byte_array>?) = 1;
 query input_parameter_set_input(v: set<byte_array>) = 1;
 query input_parameter_map_input(v: map<text,byte_array>) = 1;
+query input_parameter_enum_map(m: map<test_enum,byte_array>) = 1;
+query input_parameter_any_map(m: map<test_struct,byte_array>) = 1;
