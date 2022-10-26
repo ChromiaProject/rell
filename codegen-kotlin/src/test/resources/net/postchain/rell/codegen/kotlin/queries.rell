@@ -22,6 +22,7 @@ query return_type_struct() = test_struct(true);
 query return_type_rowid() = test_entity @ { true } (.rowid);
 query return_type_nullable_rowid() = test_entity @? { true } (.rowid);
 query return_type_list_integer() = list<integer>();
+query return_type_list_byte_array() = list<byte_array>();
 query return_type_set_integer() = set<integer>();
 query return_type_list_struct() = list<test_struct>();
 query return_type_list_entity() = test_entity @* { .a };

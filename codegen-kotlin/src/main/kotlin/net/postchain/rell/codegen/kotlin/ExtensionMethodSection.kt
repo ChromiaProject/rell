@@ -90,7 +90,7 @@ abstract class ExtensionMethodSection(
             }.values()[it.asInteger().toInt()] }"
             is R_TextType -> ".asString()"
             is R_IntegerType -> ".asInteger()"
-            is R_ByteArrayType -> ".asByteArray().wrap()"
+            is R_ByteArrayType -> ".asByteArray()"
             is R_DecimalType -> ".let { BigDecimal(it.asString()) }"            // Note that decimals are encoded as GtvString(?)
             is R_RowidType -> ".let { RowId(it.asInteger()) }"
             is R_EntityType -> ".let { RowId(it.asInteger()) }"            // Note that entities are encoded as GtvInteger
