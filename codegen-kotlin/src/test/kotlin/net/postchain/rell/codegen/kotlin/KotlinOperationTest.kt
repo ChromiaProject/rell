@@ -36,6 +36,7 @@ internal class KotlinOperationTest {
         "input_parameter_nargs,'',''",
         "input_parameter_text,t: String,gtv(t)",
         "input_parameter_integer,i: Long,gtv(i)",
+        "input_parameter_byte_array,b: ByteArray,gtv(b)",
         "input_parameter_enum,e: TestEnum,gtv(e.ordinal.toLong())",
         "input_parameter_boolean,b: Boolean,gtv(b)",
         "input_parameter_rowid,r: RowId,gtv(r.id)",
@@ -45,10 +46,10 @@ internal class KotlinOperationTest {
         "input_parameter_nullable_blockchain_rid,blockchainRid: BlockchainRid?,blockchainRid.let { if (it == null) GtvNull else gtv(it) }",
         "input_parameter_entity,e: RowId,gtv(e.id)",
         "input_parameter_struct,s: TestStruct,GtvObjectMapper.toGtvArray(s)",
-        "input_parameter_list_input,v: List<WrappedByteArray>,gtv(v.map { gtv(it) })",
-        "input_parameter_nullable_list_input,v: List<WrappedByteArray>?,v.let { if (it == null) GtvNull else gtv(it.map { gtv(it) }) }",
-        "input_parameter_set_input,v: Set<WrappedByteArray>,gtv(v.map { gtv(it) })",
-        "input_parameter_map_input,'v: Map<String, WrappedByteArray>',gtv(v.mapValues { gtv(it.value) })",
+        "input_parameter_list_input,v: List<ByteArray>,gtv(v.map { gtv(it) })",
+        "input_parameter_nullable_list_input,v: List<ByteArray>?,v.let { if (it == null) GtvNull else gtv(it.map { gtv(it) }) }",
+        "input_parameter_set_input,v: Set<ByteArray>,gtv(v.map { gtv(it) })",
+        "input_parameter_map_input,'v: Map<String, ByteArray>',gtv(v.mapValues { gtv(it.value) })",
         "input_parameter_enum_map,'m: Map<TestEnum, String>','gtv(m.map { (k, v) -> gtv(gtv(k.ordinal.toLong()), gtv(v)) })'",
     )
     fun parameterTypeTest(queryName: String, params: String, gtvParam: String) {
