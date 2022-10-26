@@ -7,7 +7,8 @@ import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.compiler.base.utils.C_SourceDir
-import net.postchain.rell.model.*
+import net.postchain.rell.model.R_ModuleName
+import net.postchain.rell.utils.RellCliEnv
 import net.postchain.rell.utils.RellCliUtils
 import java.io.File
 
@@ -56,11 +57,20 @@ class CodeGenerator(val factory: DocumentFactory) {
     }
 }
 
-fun compile(source: File, vararg moduleName: String) = RellCliUtils.compileApp(
+fun compile(source: File, vararg moduleName: String) = RellCliUtils.compile(
+    object : RellCliEnv() {
+        override fun print(msg: String, err: Boolean) {
+            println(msg)
+        }
+
+        override fun exit(status: Int): Nothing {
+            throw RuntimeException("Rell compilation failed")
+        }
+    },
     C_SourceDir.diskDir(source),
     C_CompilerModuleSelection(
         listOf(*moduleName).map { R_ModuleName.of(it) }
     ),
     true,
     C_CompilerOptions.DEFAULT
-)
+).app ?: throw RuntimeException("Rell compilation failed")
