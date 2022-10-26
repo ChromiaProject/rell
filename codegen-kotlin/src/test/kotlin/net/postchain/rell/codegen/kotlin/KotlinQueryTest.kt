@@ -76,11 +76,11 @@ internal class KotlinQueryTest {
         "input_parameter_rowid,r: RowId,\"r\" to gtv(r.id)",
         "input_parameter_entity,e: RowId,\"e\" to gtv(e.id)",
         "input_parameter_struct,s: TestStruct,\"s\" to GtvObjectMapper.toGtvArray(s)",
-        "input_parameter_list_input,v: List<WrappedByteArray>,\"v\" to gtv(v.map { gtv(it) })",
-        "input_parameter_set_input,v: Set<WrappedByteArray>,\"v\" to gtv(v.map { gtv(it) })",
-        "input_parameter_map_input,'v: Map<String, WrappedByteArray>',\"v\" to gtv(v.mapValues { gtv(it.value) })",
-        "input_parameter_enum_map,'m: Map<TestEnum, WrappedByteArray>','\"m\" to gtv(m.map { (k, v) -> gtv(gtv(k.ordinal.toLong()), gtv(v)) })'",
-        "input_parameter_any_map,'m: Map<TestStruct, WrappedByteArray>','\"m\" to gtv(m.map { (k, v) -> gtv(GtvObjectMapper.toGtvArray(k), gtv(v)) })'",
+        "input_parameter_list_input,v: List<ByteArray>,\"v\" to gtv(v.map { gtv(it) })",
+        "input_parameter_set_input,v: Set<ByteArray>,\"v\" to gtv(v.map { gtv(it) })",
+        "input_parameter_map_input,'v: Map<String, ByteArray>',\"v\" to gtv(v.mapValues { gtv(it.value) })",
+        "input_parameter_enum_map,'m: Map<TestEnum, ByteArray>','\"m\" to gtv(m.map { (k, v) -> gtv(gtv(k.ordinal.toLong()), gtv(v)) })'",
+        "input_parameter_any_map,'m: Map<TestStruct, ByteArray>','\"m\" to gtv(m.map { (k, v) -> gtv(GtvObjectMapper.toGtvArray(k), gtv(v)) })'",
     )
     fun parameterTypeTest(queryName: String, params: String, gtvParam: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[queryName])

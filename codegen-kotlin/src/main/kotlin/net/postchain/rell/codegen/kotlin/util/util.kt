@@ -23,14 +23,14 @@ private fun mapTypeToGtv(name: String, type: R_MapType) = when (type.keyType) {
     else -> "gtv($name.map { (k, v) -> gtv(${attributeToGtv("k", type.keyType)}, ${attributeToGtv("v", type.valueType)}) })"
 }
 
-fun rTypeToString(name: String, type: R_Type): String {
+fun rTypeToString(name: String, type: R_Type, primitiveTypes: Boolean = true): String {
     return aliasToString(name, type) ?: when (type) {
         is R_NullableType -> "${rTypeToString(name, type.valueType)}?"
         is R_BooleanType -> "Boolean"
         is R_IntegerType -> "Long"
         is R_DecimalType -> "BigDecimal"
         is R_TextType -> "String"
-        is R_ByteArrayType -> "WrappedByteArray"
+        is R_ByteArrayType -> if (primitiveTypes) "ByteArray" else "WrappedByteArray"
         is R_RowidType -> "RowId"
         is R_EntityType -> "RowId"
         is R_JsonType -> "String"
