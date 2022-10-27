@@ -24,7 +24,7 @@ internal class CodeGeneratorTest {
 
     fun generateAndCompile(rellPath: String, vararg baseModule: String): Pair<List<DocumentSection>, Map<String, Document>> {
         val sections = generator.createSections(
-            File(this::class.java.getResource(rellPath)!!.toURI()).parentFile.parentFile,
+            File(this::class.java.getResource(rellPath)!!.toURI()),
             *baseModule,
         )
         val documents = generator.constructDocuments(sections, true)
@@ -59,7 +59,7 @@ internal class CodeGeneratorTest {
 
     @Test
     fun multiModule() {
-        val (sections, documents) = generateAndCompile("multi/a/module.rell", "a", "f")
+        val (sections, documents) = generateAndCompile("multi", "a", "f")
         assertThat(sections).hasSize( 9 /* queries */ + 1 /* operations */ + 13 /* needed objects */ )
         assertThat(documents).hasSize(6)
         val a = documents["a/a.kt"]!!.format()
@@ -71,49 +71,49 @@ internal class CodeGeneratorTest {
 
     @Test
     fun mapInput() {
-        val (sections, documents) = generateAndCompile("map_input/module.rell", "map_input")
+        val (sections, documents) = generateAndCompile("map_input", "map_input")
         assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }
 
     @Test
     fun byteArray() {
-        val (sections, documents) = generateAndCompile("byte_array/module.rell", "byte_array")
+        val (sections, documents) = generateAndCompile("byte_array", "byte_array")
         assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }
 
     @Test
     fun decimal() {
-        val (sections, documents) = generateAndCompile("decimal/module.rell", "decimal")
+        val (sections, documents) = generateAndCompile("decimal", "decimal")
         assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }
 
     @Test
     fun rowId() {
-        val (sections, documents) = generateAndCompile("rowid/module.rell", "rowid")
+        val (sections, documents) = generateAndCompile("rowid", "rowid")
         assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }
 
     @Test
     fun pubkey() {
-        val (sections, documents) = generateAndCompile("pubkey/module.rell", "pubkey")
+        val (sections, documents) = generateAndCompile("pubkey", "pubkey")
         assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }
 
     @Test
     fun blockchainRid() {
-        val (sections, documents) = generateAndCompile("blockchain_rid/module.rell", "blockchain_rid")
+        val (sections, documents) = generateAndCompile("blockchain_rid", "blockchain_rid")
         assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }
 
     @Test
     fun entity() {
-        val (sections, documents) = generateAndCompile("entity/module.rell", "entity")
+        val (sections, documents) = generateAndCompile("entity", "entity")
         assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }
