@@ -3,6 +3,7 @@ package net.postchain.rell.codegen.kotlin
 import assertk.assertThat
 import assertk.all
 import assertk.assertions.contains
+import assertk.assertions.endsWith
 import net.postchain.gtv.GtvNull
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
@@ -32,37 +33,42 @@ internal class KotlinQueryTest {
             contains("querySync(\"input_parameter_nargs\"")
         }
     }
+
     @ParameterizedTest(name = "query for return type {0} should convert to {1}")
     @CsvSource(
-        "return_type_enum,.let { TestEnum.values()[it.asInteger().toInt()] }",
-        "return_type_boolean,.asBoolean()",
-        "return_type_integer,.asInteger()",
-        "return_type_text,.asString()",
-        "return_type_decimal,.let { BigDecimal(it.asString()) }",
-        "return_type_byte_array,asByteArray() ",
-        "return_type_entity,.let { RowId(it.asInteger()) }",
-        "return_type_nullable_entity,.let { v -> if (v is GtvNull) null else v.let { RowId(it.asInteger()) } }",
-        "return_type_struct,.toObject<TestStruct>()",
-        "return_type_rowid,.let { RowId(it.asInteger()) }",
-        "return_type_nullable_rowid,.let { v -> if (v is GtvNull) null else v.let { RowId(it.asInteger()) } }",
-        "return_type_list_integer,.asArray().map { v -> v.asInteger() }",
-        "return_type_list_byte_array,.asArray().map { v -> v.asByteArray() }",
-        "return_type_set_integer,.asArray().map { v -> v.asInteger() }.toSet()",
-        "return_type_list_struct,.asArray().map { v -> v.toObject<TestStruct>() }",
-        "return_type_list_entity,.asArray().map { v -> v.let { RowId(it.asInteger()) } }",
-        "return_type_map,'asDict().mapValues { (k, v) -> v.asString() }'",
-        "return_type_enum_map,'asArray().map { pair -> pair.asArray().let { it[0].let { TestEnum.values()[it.asInteger().toInt()] } to it[1].asString() }'",
-        "return_type_any_map,'asArray().map { pair -> pair.asArray().let { it[0].toObject<TestStruct>() to it[1].asString() }'",
-        "return_type_unnamed_tuple,.asArray()", // Unnamed tuples are arrays with unknown entries
+        "return_type_enum,).let { TestEnum.values()[it.asInteger().toInt()] }",
+        "return_type_boolean,).asBoolean()",
+        "return_type_integer,).asInteger()",
+        "return_type_text,).asString()",
+        "return_type_decimal,).let { BigDecimal(it.asString()) }",
+        "return_type_byte_array,).asByteArray() ",
+        "return_type_entity,).let { RowId(it.asInteger()) }",
+        "return_type_nullable_entity,).let { v -> if (v is GtvNull) null else v.let { RowId(it.asInteger()) } }",
+        "return_type_struct,).toObject<TestStruct>()",
+        "return_type_rowid,).let { RowId(it.asInteger()) }",
+        "return_type_nullable_rowid,).let { v -> if (v is GtvNull) null else v.let { RowId(it.asInteger()) } }",
+        "return_type_gtv,)",
+        "return_type_nullable_gtv,).let { v -> if (v is GtvNull) null else v }",
+        "return_type_list_integer,).asArray().map { v -> v.asInteger() }",
+        "return_type_list_byte_array,).asArray().map { v -> v.asByteArray() }",
+        "return_type_set_integer,).asArray().map { v -> v.asInteger() }.toSet()",
+        "return_type_list_struct,).asArray().map { v -> v.toObject<TestStruct>() }",
+        "return_type_list_entity,).asArray().map { v -> v.let { RowId(it.asInteger()) } }",
+        "return_type_list_gtv,).asArray()",
+        "return_type_set_gtv,).asArray().toSet()",
+        "return_type_map,').asDict().mapValues { (k, v) -> v.asString() }'",
+        "return_type_enum_map,').asArray().map { pair -> pair.asArray().let { it[0].let { TestEnum.values()[it.asInteger().toInt()] } to it[1].asString() } }'",
+        "return_type_any_map,').asArray().map { pair -> pair.asArray().let { it[0].toObject<TestStruct>() to it[1].asString() } }'",
+        "return_type_unnamed_tuple,).asArray()", // Unnamed tuples are arrays with unknown entries
     )
     fun returnTypeTest(type: String, returnType: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[type])
         val k = KotlinQuery(query)
         val formatted = k.format()
-        assertThat(formatted).all {
+        assertThat(formatted.trim()).all {
             contains("fun PostchainQuery.")
             contains(type.snakeToLowerCamelCase())
-            contains(returnType)
+            endsWith(returnType)
         }
     }
 
