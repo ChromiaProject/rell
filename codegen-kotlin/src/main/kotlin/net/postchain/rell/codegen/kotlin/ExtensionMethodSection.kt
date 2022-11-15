@@ -106,7 +106,7 @@ abstract class ExtensionMethodSection(
 
     private fun formatNestedReturnType(type: R_Type): String {
         val returnType = formatReturnType(type)
-        return if (returnType.isEmpty()) "" else ".map { v -> v${formatReturnType(type)} }"
+        return if (returnType.isEmpty()) "" else ".map { v -> v$returnType }"
     }
 
     private fun formatMapReturnType(type: R_MapType) = when (type.keyType) {
