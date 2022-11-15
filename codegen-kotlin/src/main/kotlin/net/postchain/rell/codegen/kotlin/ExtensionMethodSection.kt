@@ -96,11 +96,17 @@ abstract class ExtensionMethodSection(
             is R_EntityType -> ".let { RowId(it.asInteger()) }"            // Note that entities are encoded as GtvInteger
             is R_MapType -> formatMapReturnType(type)
             is R_StructType -> ".toObject<${CamelCaseClassName.fromString(type.name).name}>()"
-            is R_ListType -> ".asArray().map { v -> v${formatReturnType(type.elementType)} }"
-            is R_SetType -> ".asArray().map { v -> v${formatReturnType(type.elementType)} }.toSet()"
+            is R_ListType -> ".asArray()${formatNestedReturnType(type.elementType)}"
+            is R_SetType -> ".asArray()${formatNestedReturnType(type.elementType)}.toSet()"
             is R_TupleType -> formatTupleType(type)
+            is R_GtvType -> ""
             else -> ""                                  // All structs (should be "unknown structs")
         }
+    }
+
+    private fun formatNestedReturnType(type: R_Type): String {
+        val returnType = formatReturnType(type)
+        return if (returnType.isEmpty()) "" else ".map { v -> v$returnType }"
     }
 
     private fun formatMapReturnType(type: R_MapType) = when (type.keyType) {
