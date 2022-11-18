@@ -2,7 +2,9 @@ module;
 
 enum test_enum { a }
 
-operation input_parameter_map_input(v: map<text,text>) {}
+operation input_parameter_map_text_input(v: map<text,text>) {}
+operation input_parameter_map_gtv_input(v: map<text,gtv>) {}
 operation input_parameter_enum_map(v: map<test_enum,text>) {}
 
 query map_return_type() = map<test_enum,text>();
+query map_gtv_return_type() = map<text,gtv>();

@@ -1,0 +1,7 @@
+module;
+
+operation input_parameter_set_text_input(v: set<text>) {}
+operation input_parameter_set_gtv_input(v: set<gtv>) {}
+
+query set_text_return_type() = set<text>();
+query set_gtv_return_type() = set<gtv>();

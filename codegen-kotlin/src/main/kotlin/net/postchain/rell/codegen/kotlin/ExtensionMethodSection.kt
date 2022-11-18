@@ -110,7 +110,7 @@ abstract class ExtensionMethodSection(
     }
 
     private fun formatMapReturnType(type: R_MapType) = when (type.keyType) {
-        is R_TextType -> ".asDict().mapValues { (k, v) -> v${formatReturnType(type.valueType)} }"
+        is R_TextType -> ".asDict().mapValues { (_, v) -> v${formatReturnType(type.valueType)} }"
         else -> ".asArray().map { pair -> pair.asArray().let { it[0]${formatReturnType(type.keyType)} to it[1]${formatReturnType(type.valueType)} } }"
     }
 

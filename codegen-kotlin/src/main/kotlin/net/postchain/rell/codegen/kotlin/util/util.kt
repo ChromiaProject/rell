@@ -11,15 +11,24 @@ fun attributeToGtv(name: String, type: R_Type): String {
         is R_RowidType -> "gtv($name.id)"
         is R_EntityType -> "gtv($name.id)"
         is R_NullableType -> "$name.let { if (it == null) GtvNull else ${attributeToGtv("it", type.valueType)} }"
-        is R_ListType -> "gtv($name.map { ${attributeToGtv("it", type.elementType)} })"
-        is R_SetType -> "gtv($name.map { ${attributeToGtv("it", type.elementType)} })"
+        is R_ListType -> "gtv(${nestedAttributeToGtv(name, type.elementType, false)})"
+        is R_SetType -> "gtv(${nestedAttributeToGtv(name, type.elementType, true)})"
         is R_MapType -> mapTypeToGtv(name, type)
+        is R_GtvType -> name
         else -> "gtv($name)"
     }
 }
 
+private fun nestedAttributeToGtv(name: String, type: R_Type, isSet: Boolean): String {
+    val valueMapping = attributeToGtv("it", type)
+    return if (valueMapping == "it") "$name${if (isSet) ".toList()" else ""}" else "$name.map { $valueMapping }"
+}
+
 private fun mapTypeToGtv(name: String, type: R_MapType) = when (type.keyType) {
-    is R_TextType -> "gtv($name.mapValues { ${attributeToGtv("it.value", type.valueType)} })"
+    is R_TextType -> {
+        val valueMapping = attributeToGtv("it.value", type.valueType)
+        if (valueMapping == "it.value") "gtv($name)" else "gtv($name.mapValues { $valueMapping })"
+    }
     else -> "gtv($name.map { (k, v) -> gtv(${attributeToGtv("k", type.keyType)}, ${attributeToGtv("v", type.valueType)}) })"
 }
 
