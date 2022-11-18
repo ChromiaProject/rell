@@ -25,11 +25,14 @@ operation input_parameter_gtv(g: gtv) {}
 operation input_parameter_nullable_gtv(g: gtv?) {}
 operation input_parameter_list_gtv(g: list<gtv>) {}
 operation input_parameter_set_gtv(g: set<gtv>) {}
-operation input_parameter_map_gtv(g: map<text,gtv>) {}
 operation input_parameter_entity(e: test_entity) {}
 operation input_parameter_struct(s: test_struct) {}
 operation input_parameter_list_input(v: list<byte_array>) {}
 operation input_parameter_nullable_list_input(v: list<byte_array>?) {}
 operation input_parameter_set_input(v: set<byte_array>) {}
-operation input_parameter_map_input(v: map<text,byte_array>) {}
-operation input_parameter_enum_map(m: map<test_enum,text>) {}
+operation input_parameter_map_text_bytearray(m: map<text,byte_array>) {}
+operation input_parameter_map_text_gtv(m: map<text,gtv>) {}
+operation input_parameter_map_integer_text(m: map<integer,text>) {}
+operation input_parameter_map_gtv_text(m: map<gtv,text>) {}
+operation input_parameter_map_gtv_gtv(m: map<gtv,gtv>) {}
+operation input_parameter_map_enum_text(m: map<test_enum,text>) {}

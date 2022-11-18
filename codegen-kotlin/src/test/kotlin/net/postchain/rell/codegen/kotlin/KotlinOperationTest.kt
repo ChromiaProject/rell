@@ -48,14 +48,17 @@ internal class KotlinOperationTest {
         "input_parameter_nullable_gtv,g: Gtv?,g.let { if (it == null) GtvNull else it }",
         "input_parameter_list_gtv,g: List<Gtv>,gtv(g)",
         "input_parameter_set_gtv,g: Set<Gtv>,gtv(g.toList())",
-        "input_parameter_map_gtv,'g: Map<String, Gtv>',gtv(g)",
         "input_parameter_entity,e: RowId,gtv(e.id)",
         "input_parameter_struct,s: TestStruct,GtvObjectMapper.toGtvArray(s)",
         "input_parameter_list_input,v: List<ByteArray>,gtv(v.map { gtv(it) })",
         "input_parameter_nullable_list_input,v: List<ByteArray>?,v.let { if (it == null) GtvNull else gtv(it.map { gtv(it) }) }",
         "input_parameter_set_input,v: Set<ByteArray>,gtv(v.map { gtv(it) })",
-        "input_parameter_map_input,'v: Map<String, ByteArray>',gtv(v.mapValues { gtv(it.value) })",
-        "input_parameter_enum_map,'m: Map<TestEnum, String>','gtv(m.map { (k, v) -> gtv(gtv(k.ordinal.toLong()), gtv(v)) })'",
+        "input_parameter_map_text_bytearray,'m: Map<String, ByteArray>',gtv(m.mapValues { gtv(it.value) })",
+        "input_parameter_map_text_gtv,'m: Map<String, Gtv>',gtv(m)",
+        "input_parameter_map_integer_text,'m: Map<Long, String>','gtv(m.map { (k, v) -> gtv(gtv(k), gtv(v)) })'",
+        "input_parameter_map_gtv_text,'m: Map<Gtv, String>','gtv(m.map { (k, v) -> gtv(k, gtv(v)) })'",
+        "input_parameter_map_gtv_gtv,'m: Map<Gtv, Gtv>','gtv(m.map { (k, v) -> gtv(k, v) })'",
+        "input_parameter_map_enum_text,'m: Map<TestEnum, String>','gtv(m.map { (k, v) -> gtv(gtv(k.ordinal.toLong()), gtv(v)) })'",
     )
     fun parameterTypeTest(queryName: String, params: String, gtvParam: String) {
         val op = kotlin.test.assertNotNull(testModule.operations[queryName])
