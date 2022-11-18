@@ -72,6 +72,13 @@ internal class CodeGeneratorTest {
     @Test
     fun mapInput() {
         val (sections, documents) = generateAndCompile("map_input", "map_input")
+        assertThat(sections).hasSize(6)
+        assertThat(documents).hasSize(1)
+    }
+
+    @Test
+    fun setInput() {
+        val (sections, documents) = generateAndCompile("set_input", "set_input")
         assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }

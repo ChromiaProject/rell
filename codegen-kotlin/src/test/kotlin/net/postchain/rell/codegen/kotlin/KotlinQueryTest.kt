@@ -56,7 +56,7 @@ internal class KotlinQueryTest {
         "return_type_list_entity,).asArray().map { v -> v.let { RowId(it.asInteger()) } }",
         "return_type_list_gtv,).asArray()",
         "return_type_set_gtv,).asArray().toSet()",
-        "return_type_map,').asDict().mapValues { (k, v) -> v.asString() }'",
+        "return_type_map,').asDict().mapValues { (_, v) -> v.asString() }'",
         "return_type_enum_map,').asArray().map { pair -> pair.asArray().let { it[0].let { TestEnum.values()[it.asInteger().toInt()] } to it[1].asString() } }'",
         "return_type_any_map,').asArray().map { pair -> pair.asArray().let { it[0].toObject<TestStruct>() to it[1].asString() } }'",
         "return_type_unnamed_tuple,).asArray()", // Unnamed tuples are arrays with unknown entries
