@@ -7,5 +7,5 @@ import net.postchain.gtv.Gtv
  * When postchain version is increased, remove this class
  */
 class TransactionBuilder {
-    fun addOperation(name: String, vararg args: Gtv) = Unit
+    fun addOperation(name: String, vararg args: Gtv): TransactionBuilder = TransactionBuilder()
 }

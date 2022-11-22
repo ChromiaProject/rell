@@ -30,7 +30,7 @@ internal class KotlinQueryTest {
         val formatted = k.format()
         assertThat(formatted).all {
             contains("fun PostchainQuery.inputParameterNargs() =")
-            contains("querySync(\"input_parameter_nargs\"")
+            contains("query(\"input_parameter_nargs\"")
         }
     }
 

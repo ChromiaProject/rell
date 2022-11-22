@@ -9,7 +9,7 @@ class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
     CamelCaseClassName.fromRellQuery(queryDef),
     queryDef.simpleName,
     PostchainQuery::class,
-    "querySync",
+    "query",
     queryDef.params(),
     queryDef.type()
 ), Query {
