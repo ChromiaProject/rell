@@ -7,5 +7,5 @@ import net.postchain.gtv.Gtv
  * When postchain version is increased, remove this class
  */
 fun interface PostchainQuery {
-    fun query(name: String, gtv: Gtv): Gtv
+    fun query(name: String, args: Gtv): Gtv
 }
