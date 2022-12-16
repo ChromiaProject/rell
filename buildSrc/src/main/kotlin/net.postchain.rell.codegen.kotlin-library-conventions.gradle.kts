@@ -15,3 +15,7 @@ plugins {
 java {
     withSourcesJar()
 }
+
+dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-test:1.6.21")
+}

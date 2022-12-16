@@ -43,7 +43,6 @@ internal class CodeGeneratorTest {
                     }.joinToString(":")
                 noStdlib = true
                 noReflect = true
-                skipRuntimeVersionCheck = true
                 jvmTarget = "11"
             }
             val exitCode: ExitCode = execImpl(
