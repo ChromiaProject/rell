@@ -11,5 +11,5 @@ repositories {
 }
 
 dependencies {
-    implementation("net.postchain.rell:rell:0.10.10")
+    implementation("net.postchain.rell:rell:0.11.0")
 }
