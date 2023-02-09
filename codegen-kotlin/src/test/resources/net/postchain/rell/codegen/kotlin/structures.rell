@@ -12,6 +12,7 @@ struct entity_struct { a: a; }
 
 struct builtin_name { name; }
 struct builtin_pubkey { pubkey; }
+struct builtin_blockchainRid { blockchain_rid: byte_array; }
 
 entity a { name; }
 struct nested_struct { a: text_struct; }

@@ -32,9 +32,9 @@ private fun mapTypeToGtv(name: String, type: R_MapType) = when (type.keyType) {
     else -> "gtv($name.map { (k, v) -> gtv(${attributeToGtv("k", type.keyType)}, ${attributeToGtv("v", type.valueType)}) })"
 }
 
-fun rTypeToString(name: String, type: R_Type, primitiveTypes: Boolean = true): String {
-    return aliasToString(name, type) ?: when (type) {
-        is R_NullableType -> "${rTypeToString(name, type.valueType)}?"
+fun rTypeToString(name: String, type: R_Type, primitiveTypes: Boolean, aliases: Boolean): String {
+    return aliasToString(name, type, aliases) ?: when (type) {
+        is R_NullableType -> "${rTypeToString(name, type.valueType, primitiveTypes, aliases)}?"
         is R_BooleanType -> "Boolean"
         is R_IntegerType -> "Long"
         is R_DecimalType -> "BigDecimal"
@@ -43,19 +43,19 @@ fun rTypeToString(name: String, type: R_Type, primitiveTypes: Boolean = true): S
         is R_RowidType -> "RowId"
         is R_EntityType -> "RowId"
         is R_JsonType -> "String"
-        is R_SetType -> "Set<${rTypeToString(name, type.elementType)}>"
-        is R_ListType -> "List<${rTypeToString(name, type.elementType)}>"
-        is R_MapType -> "Map<${rTypeToString(name, type.keyType)}, ${rTypeToString(name, type.valueType)}>"
+        is R_SetType -> "Set<${rTypeToString(name, type.elementType, primitiveTypes, aliases)}>"
+        is R_ListType -> "List<${rTypeToString(name, type.elementType, primitiveTypes, aliases)}>"
+        is R_MapType -> "Map<${rTypeToString(name, type.keyType, primitiveTypes, aliases)}, ${rTypeToString(name, type.valueType, primitiveTypes, aliases)}>"
         is R_StructType -> CamelCaseClassName.fromRellType(type).name
         is R_EnumType -> CamelCaseClassName.fromRellType(type).name
         else -> "Gtv"
     }
 }
 
-fun aliasToString(name: String, type: R_Type): String? {
+fun aliasToString(name: String, type: R_Type, aliases: Boolean): String? {
     return when {
-        name == "pubkey" && type is R_ByteArrayType -> "PubKey"
-        name == "blockchain_rid" && type is R_ByteArrayType -> "BlockchainRid"
+        aliases && name == "pubkey" && type is R_ByteArrayType -> "PubKey"
+        aliases && name == "blockchain_rid" && type is R_ByteArrayType -> "BlockchainRid"
         else -> null
     }
 }
