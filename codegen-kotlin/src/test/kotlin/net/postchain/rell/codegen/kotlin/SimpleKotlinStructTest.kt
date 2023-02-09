@@ -38,6 +38,20 @@ internal class SimpleKotlinStructTest {
         format(rellType, kotlinType)
     }
 
+    @ParameterizedTest(name = "rell: {0} -> kotlin: {1}")
+    @CsvSource(
+        "my_ns1.ns_struct1,MyNs1NsStruct1",
+        "my_ns1.my_ns2.ns_struct2,MyNs1MyNs2NsStruct2",
+        "my_ns1.my_ns2.ns_struct_3,MyNs1MyNs2NsStruct3"
+    )
+    fun namespaceTest(rellQualifiedName: String, kotlinQualifiedName: String) {
+        val struct = assertNotNull(testModule.structs[rellQualifiedName], "struct does not exist")
+        val formatted = KotlinStruct(CamelCaseClassName.fromRellDefinition(struct), struct).format()
+        assertThat(formatted).all {
+            contains("data class $kotlinQualifiedName")
+        }
+    }
+
     @Test
     fun nullableAnnotation() {
         val formatted = format("nullable", "String?")

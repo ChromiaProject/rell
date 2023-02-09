@@ -30,3 +30,12 @@ entity transaction_entity { key transaction; }
 
 entity pubkey_entity { pubkey; }
 entity blockchain_rid_entity { blockchain_rid: byte_array; }
+
+// namespaceTest()
+namespace my_ns1 {
+    entity ns_entity1 { name; }
+    namespace my_ns2 {
+        entity ns_entity2 { name; }
+        entity ns_entity_3 { name; }
+    }
+}

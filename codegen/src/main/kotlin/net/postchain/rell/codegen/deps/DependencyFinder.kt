@@ -12,10 +12,10 @@ object DependencyFinder {
         return when (type) {
             null -> emptySet()
             is R_TupleType -> findDependencies(type.componentTypes())
-            is R_EnumType -> setOf(CamelCaseClassName.fromString(type.name))
+            is R_EnumType -> setOf(CamelCaseClassName.fromRellType(type))
             is R_NullableType -> findDependencies(type.valueType)
             is R_CollectionType -> findDependencies(type.elementType)
-            is R_StructType -> findDependencies(type.componentTypes()) + setOf(CamelCaseClassName.fromString(type.name)) // Structs and struct<entity>
+            is R_StructType -> findDependencies(type.componentTypes()) + setOf(CamelCaseClassName.fromRellType(type)) // Structs and struct<entity>
             is R_MapType -> findDependencies(type.keyType) + findDependencies(type.valueType)
             else -> setOf() // Entities and primitives
         }

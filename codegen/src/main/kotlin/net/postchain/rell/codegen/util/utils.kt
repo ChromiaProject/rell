@@ -7,7 +7,7 @@ fun capitalize(name: String) =
     name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 
 val camelRegex = "(?<=[a-zA-Z])[A-Z]".toRegex()
-val snakeRegex = "_[a-zA-Z]".toRegex()
+val snakeRegex = "_[a-zA-Z0-9]".toRegex()
 
 // String extensions
 fun String.camelToSnakeCase(): String {

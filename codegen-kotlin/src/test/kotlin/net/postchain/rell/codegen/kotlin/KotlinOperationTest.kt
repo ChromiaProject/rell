@@ -1,7 +1,7 @@
 package net.postchain.rell.codegen.kotlin
 
-import assertk.assertThat
 import assertk.all
+import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.endsWith
 import org.junit.jupiter.api.BeforeAll
@@ -28,6 +28,23 @@ internal class KotlinOperationTest {
         assertThat(formatted).all {
             contains("fun TransactionBuilder.inputParameterTextOperation(t: String) =")
             contains("addOperation(\"input_parameter_text\", gtv(t))")
+        }
+    }
+
+    @ParameterizedTest(name = "rell: {0} -> kotlin: {1}")
+    @CsvSource(
+        "my_ns1.op1_in_namespace,myNs1Op1InNamespaceOperation",
+        "my_ns1.my_ns2.op2_in_namespace,myNs1MyNs2Op2InNamespaceOperation",
+        "my_ns1.my_ns2.op_3_in_namespace,myNs1MyNs2Op3InNamespaceOperation"
+        // see namespaced arg test in [KotlinQueryTest]
+    )
+    fun namespaceTest(rellQualifiedOpName: String, kotlinQualifiedOpName: String) {
+        val op = kotlin.test.assertNotNull(testModule.operations[rellQualifiedOpName])
+        val k = KotlinOperation(op)
+        val formatted = k.format()
+        assertThat(formatted).all {
+            contains("fun TransactionBuilder.$kotlinQualifiedOpName() =")
+            contains("addOperation(\"$rellQualifiedOpName\")")
         }
     }
 
@@ -60,14 +77,14 @@ internal class KotlinOperationTest {
         "input_parameter_map_gtv_gtv,'m: Map<Gtv, Gtv>','gtv(m.map { (k, v) -> gtv(k, v) })'",
         "input_parameter_map_enum_text,'m: Map<TestEnum, String>','gtv(m.map { (k, v) -> gtv(gtv(k.ordinal.toLong()), gtv(v)) })'",
     )
-    fun parameterTypeTest(queryName: String, params: String, gtvParam: String) {
-        val op = kotlin.test.assertNotNull(testModule.operations[queryName])
+    fun parameterTypeTest(opName: String, params: String, gtvParam: String) {
+        val op = kotlin.test.assertNotNull(testModule.operations[opName])
         val k = KotlinOperation(op)
         val formatted = k.format()
         assertThat(formatted).all {
             contains("fun TransactionBuilder.")
             contains("($params) =")
-            contains("addOperation(\"$queryName\"")
+            contains("addOperation(\"$opName\"")
             endsWith("$gtvParam)\n")
         }
     }

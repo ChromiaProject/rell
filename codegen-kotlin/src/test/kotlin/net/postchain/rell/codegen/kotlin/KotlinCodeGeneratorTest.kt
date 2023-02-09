@@ -48,9 +48,11 @@ internal class CodeGeneratorTest {
             val exitCode: ExitCode = execImpl(
                 PrintingMessageCollector(
                     System.out,
-                    MessageRenderer.WITHOUT_PATHS, false),
+                    MessageRenderer.WITHOUT_PATHS, false
+                ),
                 Services.EMPTY,
-                args)
+                args
+            )
             assertThat(exitCode.code).isEqualTo(0)
         }
         return sections to documents
@@ -59,7 +61,7 @@ internal class CodeGeneratorTest {
     @Test
     fun multiModule() {
         val (sections, documents) = generateAndCompile("multi", "a", "f")
-        assertThat(sections).hasSize( 9 /* queries */ + 1 /* operations */ + 13 /* needed objects */ )
+        assertThat(sections).hasSize(9 /* queries */ + 1 /* operations */ + 13 /* needed objects */)
         assertThat(documents).hasSize(6)
         val a = documents["a/a.kt"]!!.format()
         assertThat(a).contains("import com.example.RootStruct")
@@ -121,6 +123,13 @@ internal class CodeGeneratorTest {
     fun entity() {
         val (sections, documents) = generateAndCompile("entity", "entity")
         assertThat(sections).hasSize(4)
+        assertThat(documents).hasSize(1)
+    }
+
+    @Test
+    fun namespace() {
+        val (sections, documents) = generateAndCompile("namespace", "ns_test")
+        assertThat(sections).hasSize(3)
         assertThat(documents).hasSize(1)
     }
 }
