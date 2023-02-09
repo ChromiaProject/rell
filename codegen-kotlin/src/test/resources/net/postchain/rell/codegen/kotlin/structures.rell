@@ -18,3 +18,12 @@ struct nested_struct { a: text_struct; }
 struct nested_struct2 { a: struct<a>; }
 
 struct nullable_struct { a: text?; }
+
+// namespaceTest()
+namespace my_ns1 {
+    struct ns_struct1 { name; }
+    namespace my_ns2 {
+        struct ns_struct2 { name; }
+        struct ns_struct_3 { name; }
+    }
+}

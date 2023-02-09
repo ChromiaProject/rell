@@ -4,3 +4,13 @@ enum test_enum {
     a,
     b_value
 }
+
+// namespaceTest()
+namespace my_ns1 {
+    enum ns_enum1 { a, b }
+    namespace my_ns2 {
+        enum ns_enum1 { a, b }
+        enum ns_enum2 { a, b }
+        enum ns_enum_3 { a, b }
+    }
+}

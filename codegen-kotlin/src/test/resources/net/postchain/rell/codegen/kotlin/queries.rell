@@ -58,3 +58,33 @@ query input_parameter_set_input(v: set<byte_array>) = 1;
 query input_parameter_map_input(v: map<text,byte_array>) = 1;
 query input_parameter_enum_map(m: map<test_enum,byte_array>) = 1;
 query input_parameter_any_map(m: map<test_struct,byte_array>) = 1;
+
+// namespaceTest()
+namespace my_ns1 {
+    query q1_in_namespace(e: test_enum) = test_struct(true);
+    struct test_struct2 { name; }
+    query q2_in_namespace(s: test_struct2) = test_struct2("true");
+
+    enum local_test_enum { a }
+    query q3a_return_type_enum(e: local_test_enum) = test_enum.a;
+    query q3b_return_type_enum(m: map<test_enum,byte_array>) = local_test_enum.a;
+
+    struct local_test_struct { a: boolean; }
+    namespace my_ns1_2 {
+        struct test_struct2 { a: boolean; }
+    }
+    query q4_return_type_list_struct(m: map<byte_array,my_ns1_2.test_struct2>) = list<test_struct>();
+    query q5_return_type_list_struct(v: list<local_test_struct>) = list<local_test_struct>();
+    query q6_return_type_list_struct() = list<my_ns1_2.test_struct2>();
+
+    query q7_return_type_enum_map() = map<test_enum, text>();
+    query q8_return_type_enum_map() = map<local_test_enum, text>();
+
+    query q9_return_type_any_map() = map<test_struct, text>();
+    query q10_return_type_any_map() = map<local_test_struct, text>();
+
+    namespace my_ns2 {
+        query q2_in_namespace() = "";
+        query q_3_in_namespace() = (foo = 1);
+    }
+}

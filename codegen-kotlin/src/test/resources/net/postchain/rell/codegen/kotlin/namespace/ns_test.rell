@@ -1,0 +1,15 @@
+module;
+
+namespace ns_a {
+    entity s { name; }
+    query my_query() = "";
+}
+
+namespace ns_b {
+    entity s { name; }
+    query my_query() = "";
+}
+
+namespace ns_c {
+    operation my_op(a: ns_a.s, b: ns_b.s) {}
+}

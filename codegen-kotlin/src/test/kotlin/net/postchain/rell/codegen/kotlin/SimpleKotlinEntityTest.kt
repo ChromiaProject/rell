@@ -17,7 +17,7 @@ internal class SimpleKotlinEntityTest {
         @JvmStatic
         @BeforeAll
         fun compileTestApp() {
-           compileApp()
+            compileApp()
         }
     }
 
@@ -31,6 +31,21 @@ internal class SimpleKotlinEntityTest {
             contains("val name: String")
             contains("num: Long")
             contains("bType: Boolean")
+        }
+    }
+
+    @ParameterizedTest(name = "rell: {0} -> kotlin: {1}")
+    @CsvSource(
+        "my_ns1.ns_entity1,MyNs1NsEntity1",
+        "my_ns1.my_ns2.ns_entity2,MyNs1MyNs2NsEntity2",
+        "my_ns1.my_ns2.ns_entity_3,MyNs1MyNs2NsEntity3"
+    )
+    fun namespaceTest(rellQualifiedName: String, kotlinQualifiedName: String) {
+        val entity = assertNotNull(testModule.entities[rellQualifiedName])
+        val k = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity)
+        val formatted = k.format()
+        assertThat(formatted).all {
+            contains("data class $kotlinQualifiedName")
         }
     }
 

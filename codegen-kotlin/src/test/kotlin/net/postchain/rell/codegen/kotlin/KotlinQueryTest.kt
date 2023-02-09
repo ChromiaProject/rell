@@ -1,7 +1,7 @@
 package net.postchain.rell.codegen.kotlin
 
-import assertk.assertThat
 import assertk.all
+import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.endsWith
 import net.postchain.gtv.GtvNull
@@ -31,6 +31,33 @@ internal class KotlinQueryTest {
         assertThat(formatted).all {
             contains("fun PostchainQuery.inputParameterNargs() =")
             contains("query(\"input_parameter_nargs\"")
+        }
+    }
+
+    @ParameterizedTest(name = "rell: {0} -> kotlin: {1}")
+    @CsvSource(
+        "my_ns1.q1_in_namespace,myNs1Q1InNamespace,e: TestEnum,).toObject<TestStruct>()",
+        "my_ns1.q2_in_namespace,myNs1Q2InNamespace,s: MyNs1TestStruct2,).toObject<MyNs1TestStruct2>()",
+        "my_ns1.q3a_return_type_enum,myNs1Q3aReturnTypeEnum,e: MyNs1LocalTestEnum,).let { TestEnum.values()[it.asInteger().toInt()] }",
+        "my_ns1.q3b_return_type_enum,myNs1Q3bReturnTypeEnum,'m: Map<TestEnum, ByteArray>',).let { MyNs1LocalTestEnum.values()[it.asInteger().toInt()] }",
+        "my_ns1.q4_return_type_list_struct,myNs1Q4ReturnTypeListStruct,'m: Map<ByteArray, MyNs1MyNs12TestStruct2>',).asArray().map { v -> v.toObject<TestStruct>() }",
+        "my_ns1.q5_return_type_list_struct,myNs1Q5ReturnTypeListStruct,'v: List<MyNs1LocalTestStruct>',).asArray().map { v -> v.toObject<MyNs1LocalTestStruct>() }",
+        "my_ns1.q6_return_type_list_struct,myNs1Q6ReturnTypeListStruct,'',).asArray().map { v -> v.toObject<MyNs1MyNs12TestStruct2>() }",
+        "my_ns1.q7_return_type_enum_map,myNs1Q7ReturnTypeEnumMap,'',).asArray().map { pair -> pair.asArray().let { it[0].let { TestEnum.values()[it.asInteger().toInt()] } to it[1].asString() } }",
+        "my_ns1.q8_return_type_enum_map,myNs1Q8ReturnTypeEnumMap,'',).asArray().map { pair -> pair.asArray().let { it[0].let { MyNs1LocalTestEnum.values()[it.asInteger().toInt()] } to it[1].asString() } }",
+        "my_ns1.q9_return_type_any_map,myNs1Q9ReturnTypeAnyMap,'',).asArray().map { pair -> pair.asArray().let { it[0].toObject<TestStruct>() to it[1].asString() } }",
+        "my_ns1.q10_return_type_any_map,myNs1Q10ReturnTypeAnyMap,'',).asArray().map { pair -> pair.asArray().let { it[0].toObject<MyNs1LocalTestStruct>() to it[1].asString() } }",
+        "my_ns1.my_ns2.q2_in_namespace,myNs1MyNs2Q2InNamespace,'',).asString()",
+        "my_ns1.my_ns2.q_3_in_namespace,myNs1MyNs2Q3InNamespace,'',).toObject<MyNs1MyNs2Q3InNamespaceResult>()"
+    )
+    fun namespaceTest(rellQualifiedName: String, kotlinQualifiedName: String, params: String, retValue: String) {
+        val q = kotlin.test.assertNotNull(testModule.queries[rellQualifiedName])
+        val k = KotlinQuery(q)
+        val formatted = k.format()
+        assertThat(formatted).all {
+            contains("fun PostchainQuery.$kotlinQualifiedName($params) =")
+            contains("query(\"$rellQualifiedName\"")
+            contains(retValue)
         }
     }
 
