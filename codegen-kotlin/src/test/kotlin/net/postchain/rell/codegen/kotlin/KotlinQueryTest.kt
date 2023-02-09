@@ -108,6 +108,8 @@ internal class KotlinQueryTest {
         "input_parameter_enum,e: TestEnum,\"e\" to gtv(e.ordinal.toLong()))",
         "input_parameter_boolean,b: Boolean,\"b\" to gtv(b)",
         "input_parameter_rowid,r: RowId,\"r\" to gtv(r.id)",
+        "input_parameter_pubkey,pubkey: PubKey,\"pubkey\" to gtv(pubkey.data)",
+        "input_parameter_blockchain_rid,blockchainRid: BlockchainRid,\"blockchain_rid\" to gtv(blockchainRid)",
         "input_parameter_entity,e: RowId,\"e\" to gtv(e.id)",
         "input_parameter_struct,s: TestStruct,\"s\" to GtvObjectMapper.toGtvArray(s)",
         "input_parameter_list_input,v: List<ByteArray>,\"v\" to gtv(v.map { gtv(it) })",
