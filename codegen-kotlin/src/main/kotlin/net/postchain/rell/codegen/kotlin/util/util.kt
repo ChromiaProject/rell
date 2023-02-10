@@ -50,8 +50,8 @@ fun rTypeToString(name: String, type: R_Type, primitiveTypes: Boolean, aliases: 
         }
 
 fun aliasToString(name: String, type: R_Type, enabled: Boolean): String? = if (!enabled) null else when {
-    enabled && name == "pubkey" && type is R_ByteArrayType -> "PubKey"
-    enabled && name == "blockchain_rid" && type is R_ByteArrayType -> "BlockchainRid"
+    name == "pubkey" && type is R_ByteArrayType -> "PubKey"
+    name == "blockchain_rid" && type is R_ByteArrayType -> "BlockchainRid"
     else -> null
 }
 
