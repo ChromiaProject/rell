@@ -16,6 +16,7 @@ query return_type_integer() = 1;
 query return_type_text() = "";
 query return_type_decimal() = 1.0;
 query return_type_byte_array() = x"";
+query return_type_pubkey(): pubkey = x"";
 query return_type_entity() = test_entity @ { true };
 query return_type_nullable_entity() = test_entity @? { true };
 query return_type_struct() = test_struct(true);

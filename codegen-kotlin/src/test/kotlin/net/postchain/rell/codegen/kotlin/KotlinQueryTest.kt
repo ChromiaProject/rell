@@ -69,6 +69,7 @@ internal class KotlinQueryTest {
         "return_type_text,).asString()",
         "return_type_decimal,).let { BigDecimal(it.asString()) }",
         "return_type_byte_array,).asByteArray() ",
+        "return_type_pubkey,).asByteArray() ",
         "return_type_entity,).let { RowId(it.asInteger()) }",
         "return_type_nullable_entity,).let { v -> if (v is GtvNull) null else v.let { RowId(it.asInteger()) } }",
         "return_type_struct,).toObject<TestStruct>()",
