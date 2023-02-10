@@ -71,7 +71,7 @@ abstract class ExtensionMethodSection(
 
     private fun formatInputParameters(): String {
         if (params.isEmpty()) return ""
-        return params.joinToString(",\n\t") { "${it.name.str.snakeToLowerCamelCase()}: ${rTypeToString(it.name.str, it.type)}" }
+        return params.joinToString(",\n\t") { "${it.name.str.snakeToLowerCamelCase()}: ${rTypeToString(it.name.str, it.type, primitiveTypes = true, aliases = true)}" }
     }
 
     abstract fun formatGtvParameters(): String

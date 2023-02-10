@@ -70,8 +70,8 @@ internal class SimpleKotlinEntityTest {
         "a,byte_array,WrappedByteArray",
         "a,rowid,RowId",
         "a,json,String",
-        "pubkey,pubkey,PubKey",
-        "blockchainRid,blockchain_rid,BlockchainRid"
+        "pubkey,pubkey,WrappedByteArray",
+        "blockchainRid,blockchain_rid,WrappedByteArray"
     )
     fun simpleEntities(fieldName: String, rellType: String, kotlinType: String) {
         val entity = assertNotNull(testModule.entities["${rellType}_entity"], "entity does not exist")
@@ -85,7 +85,7 @@ internal class SimpleKotlinEntityTest {
     @ParameterizedTest(name = "builtin {0} becomes {1}")
     @CsvSource(
         "name,String",
-        "pubkey,PubKey",
+        "pubkey,WrappedByteArray",
         "timestamp,Long",
     )
     fun builtinTypes(keyword: String, kotlinType: String) {
