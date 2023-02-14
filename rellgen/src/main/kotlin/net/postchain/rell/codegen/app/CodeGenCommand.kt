@@ -11,6 +11,7 @@ import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.app.util.LanguageSupport
 import net.postchain.rell.codegen.document.DocumentSaver
 import net.postchain.rell.codegen.kotlin.KotlinDocumentFactory
+import net.postchain.rell.codegen.typescript.TypescriptDocumentFactory
 
 class CodeGenCommand : CliktCommand("Generates files based on rell sources") {
 
@@ -27,6 +28,7 @@ class CodeGenCommand : CliktCommand("Generates files based on rell sources") {
     override fun run() {
         val factory = when (language) {
             LanguageSupport.Kotlin -> KotlinDocumentFactory(packageName)
+            LanguageSupport.Typescript -> TypescriptDocumentFactory(packageName)
         }
         val generator = CodeGenerator(factory)
         val sections = generator.createSections(source, moduleName)
