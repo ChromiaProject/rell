@@ -22,4 +22,14 @@ dependencies {
     implementation("net.postchain:postchain-client:3.7.0")
     implementation("net.postchain:postchain-gtv:3.7.0")
     testImplementation("org.jetbrains.kotlin:kotlin-compiler-embeddable")
+    testImplementation(project(":codegen", "testConfiguration"))
+}
+
+val copy by tasks.register<Copy>("copy-resources") {
+    from("${rootProject.rootDir}/testResources")
+    into("${project.buildDir}/resources/test")
+}
+
+val test by tasks.getting {
+    dependsOn(copy)
 }

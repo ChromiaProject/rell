@@ -1,6 +1,5 @@
-package net.postchain.rell.codegen.kotlin
+package net.postchain.rell.codegen
 
-import net.postchain.rell.codegen.compile
 import net.postchain.rell.model.R_App
 import net.postchain.rell.model.R_Module
 import net.postchain.rell.model.R_ModuleName
@@ -12,7 +11,7 @@ open class SingleFileRellApp(private val fileName: String) {
     lateinit var testModule: R_Module
 
     fun compileApp() {
-        app = compile(File(this::class.java.getResource("$fileName.rell")!!.toURI()).parentFile, fileName)
+        app = compile(File(this::class.java.getResource("/$fileName.rell")!!.toURI()).parentFile, fileName)
         testModule = assertNotNull(app.moduleMap[R_ModuleName.of(fileName)])
     }
 }

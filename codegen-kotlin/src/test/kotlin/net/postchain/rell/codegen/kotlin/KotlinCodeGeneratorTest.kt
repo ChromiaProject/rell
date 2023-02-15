@@ -60,7 +60,7 @@ internal class CodeGeneratorTest {
 
     @Test
     fun multiModule() {
-        val (sections, documents) = generateAndCompile("multi", "a", "f")
+        val (sections, documents) = generateAndCompile("/multi", "a", "f")
         assertThat(sections).hasSize(9 /* queries */ + 1 /* operations */ + 13 /* needed objects */)
         assertThat(documents).hasSize(6)
         val a = documents["a/a.kt"]!!.format()
@@ -72,63 +72,63 @@ internal class CodeGeneratorTest {
 
     @Test
     fun mapInput() {
-        val (sections, documents) = generateAndCompile("map_input", "map_input")
+        val (sections, documents) = generateAndCompile("/map_input", "map_input")
         assertThat(sections).hasSize(10)
         assertThat(documents).hasSize(1)
     }
 
     @Test
     fun setInput() {
-        val (sections, documents) = generateAndCompile("set_input", "set_input")
+        val (sections, documents) = generateAndCompile("/set_input", "set_input")
         assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }
 
     @Test
     fun byteArray() {
-        val (sections, documents) = generateAndCompile("byte_array", "byte_array")
+        val (sections, documents) = generateAndCompile("/byte_array", "byte_array")
         assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }
 
     @Test
     fun decimal() {
-        val (sections, documents) = generateAndCompile("decimal", "decimal")
+        val (sections, documents) = generateAndCompile("/decimal", "decimal")
         assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }
 
     @Test
     fun rowId() {
-        val (sections, documents) = generateAndCompile("rowid", "rowid")
+        val (sections, documents) = generateAndCompile("/rowid", "rowid")
         assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }
 
     @Test
     fun pubkey() {
-        val (sections, documents) = generateAndCompile("pubkey", "pubkey")
+        val (sections, documents) = generateAndCompile("/pubkey", "pubkey")
         assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }
 
     @Test
     fun blockchainRid() {
-        val (sections, documents) = generateAndCompile("blockchain_rid", "blockchain_rid")
+        val (sections, documents) = generateAndCompile("/blockchain_rid", "blockchain_rid")
         assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }
 
     @Test
     fun entity() {
-        val (sections, documents) = generateAndCompile("entity", "entity")
+        val (sections, documents) = generateAndCompile("/entity", "entity")
         assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }
 
     @Test
     fun namespace() {
-        val (sections, documents) = generateAndCompile("namespace", "ns_test")
+        val (sections, documents) = generateAndCompile("/namespace", "ns_test")
         assertThat(sections).hasSize(3)
         assertThat(documents).hasSize(1)
     }

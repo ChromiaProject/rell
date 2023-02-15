@@ -5,12 +5,14 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.endsWith
 import net.postchain.gtv.GtvNull
+import net.postchain.rell.codegen.SingleFileRellApp
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+
 
 internal class KotlinQueryTest {
 

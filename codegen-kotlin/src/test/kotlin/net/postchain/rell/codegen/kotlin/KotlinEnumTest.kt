@@ -1,12 +1,12 @@
 package net.postchain.rell.codegen.kotlin
 
 import assertk.all
-import org.junit.jupiter.api.Test
-
 import assertk.assertThat
 import assertk.assertions.contains
+import net.postchain.rell.codegen.SingleFileRellApp
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import kotlin.test.assertNotNull

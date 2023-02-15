@@ -13,3 +13,14 @@ repositories {
 dependencies {
     implementation("net.postchain.rell:rell:0.11.0")
 }
+
+val testConfiguration by configurations.creating
+
+val testjar by tasks.register<Jar>("testJar") {
+    from(sourceSets.test.get().output)
+    archiveClassifier.set("test")
+}
+
+artifacts {
+    add(testConfiguration.name, testjar)
+}
