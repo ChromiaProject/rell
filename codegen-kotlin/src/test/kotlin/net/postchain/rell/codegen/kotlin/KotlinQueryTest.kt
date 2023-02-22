@@ -120,6 +120,7 @@ internal class KotlinQueryTest {
         "input_parameter_map_input,'v: Map<String, ByteArray>',\"v\" to gtv(v.mapValues { gtv(it.value) })",
         "input_parameter_enum_map,'m: Map<TestEnum, ByteArray>','\"m\" to gtv(m.map { (k, v) -> gtv(gtv(k.ordinal.toLong()), gtv(v)) })'",
         "input_parameter_any_map,'m: Map<TestStruct, ByteArray>','\"m\" to gtv(m.map { (k, v) -> gtv(GtvObjectMapper.toGtvArray(k), gtv(v)) })'",
+        "input_parameter_nullable_list_input,v: List<ByteArray>?,'\"v\" to v.let { if (it == null) GtvNull else gtv(it.map { gtv(it) }) })'"
     )
     fun parameterTypeTest(queryName: String, params: String, gtvParam: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[queryName])
@@ -146,6 +147,7 @@ internal class KotlinQueryTest {
         "return_type_named_tuple",
         "return_type_nullable_named_tuple",
         "return_type_named_tuple_list",
+        "return_type_proposals_since,"
     )
     fun namedTupleCreatesObject(name: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[name])
