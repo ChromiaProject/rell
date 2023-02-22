@@ -1,0 +1,40 @@
+package net.postchain.rell.codegen.typescript.util
+
+import net.postchain.rell.codegen.deps.CamelCaseClassName
+import net.postchain.rell.model.*
+
+fun rTypeToString(type: R_Type): String {
+        return when (type) {
+            is R_NullableType -> "${rTypeToString(type.valueType)} | null"
+            is R_BooleanType -> "boolean"
+            is R_IntegerType -> "number"
+            is R_DecimalType -> "number"
+            is R_TextType -> "string"
+            is R_ByteArrayType -> "Buffer"
+            is R_RowidType -> "number"
+            is R_EntityType -> "number"
+            is R_JsonType -> "string"
+            is R_SetType -> "${rTypeToString(type.elementType)}[]"
+            is R_ListType -> "${rTypeToString(type.elementType)}[]"
+            is R_MapType -> "{[x: ${rTypeToString(type.keyType)}] : ${rTypeToString(type.valueType)}}"
+            is R_StructType -> CamelCaseClassName.fromRellType(type).name
+            is R_EnumType -> CamelCaseClassName.fromRellType(type).name
+            is R_TupleType -> formatTupleType(type)
+            is R_GtvType -> "any"
+
+            else -> "any"
+        }
+}
+
+private fun formatTupleType(type: R_TupleType): String {
+    if (type.name.contains(":")) return formatNamedTuple(type)
+    val fieldTypes = mutableListOf<String>()
+    type.fields.forEach{ fieldTypes.add(rTypeToString(it.type)) }
+    return "$fieldTypes"
+}
+
+fun formatNamedTuple(type: R_TupleType): String {
+    val fieldTypes = mutableMapOf<String, String>()
+    type.fields.forEach{ fieldTypes[it.name!!.str] = rTypeToString(it.type)  }
+    return fieldTypes.toString().replace("=", ":")
+}
