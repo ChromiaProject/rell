@@ -7,12 +7,12 @@ import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import net.postchain.rell.model.*
 
 class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
-    CamelCaseClassName.fromRellQuery(queryDef),
-    queryDef.mountName,
-    PostchainQuery::class,
-    "query",
-    queryDef.params(),
-    queryDef.type()
+        CamelCaseClassName.fromRellQuery(queryDef),
+        queryDef.mountName,
+        PostchainQuery::class,
+        "query",
+        queryDef.params(),
+        queryDef.type()
 ), Query {
 
     override fun format() = """
@@ -71,8 +71,8 @@ class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
         if (returnType is R_CollectionType) return returnStructure(returnType.elementType)
         if (returnType !is R_TupleType || !returnType.name.contains(":")) return "" // Non-tuples and unnamed tuples
         val resultObject = DataClassSection(
-            CamelCaseClassName("", buildResultType(), className.module),
-            returnType.fields.associateBy({ it.name!!.str }, { it.type })
+                CamelCaseClassName("", buildResultType(), className.module),
+                returnType.fields.associateBy({ it.name!!.str }, { it.type })
         )
         return "\n${resultObject.format()}"
     }

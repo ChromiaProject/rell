@@ -24,7 +24,9 @@ operation input_parameter_nullable_blockchain_rid(blockchain_rid: byte_array?) {
 operation input_parameter_gtv(g: gtv) {}
 operation input_parameter_nullable_gtv(g: gtv?) {}
 operation input_parameter_list_gtv(g: list<gtv>) {}
+operation input_parameter_list_string(l: list<text>) {}
 operation input_parameter_set_gtv(g: set<gtv>) {}
+operation input_parameter_set_string(s: set<text>) {}
 operation input_parameter_entity(e: test_entity) {}
 operation input_parameter_struct(s: test_struct) {}
 operation input_parameter_list_input(v: list<byte_array>) {}
