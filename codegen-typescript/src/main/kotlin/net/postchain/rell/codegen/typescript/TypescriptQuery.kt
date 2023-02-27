@@ -35,19 +35,19 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         if (returnType is R_NullableType) return returnStructure(returnType.valueType)
         if (returnType is R_CollectionType) return returnStructure(returnType.elementType)
         if (returnType !is R_TupleType || !returnType.name.contains(":")) return "" // Non-tuples and unnamed tuples
-        return "\n${formatReturnTupleObject(returnType)}"
+        val resultObject = DataTypeSection(
+            CamelCaseClassName("", buildReturnType(false), className.module),
+            returnType.fields.associateBy({ it.name!!.str }, { it.type })
+        )
+        return "\n${resultObject.format()}"
     }
 
-    private fun formatReturnTupleObject(type: R_TupleType): String {
-        val formattedType = when (returnType) {
-            is R_NullableType -> formatNamedTuple(type) + " | null"
-            is R_CollectionType -> formatNamedTuple(type) + "[]"
-            else -> formatNamedTuple(type)
-        }
-        return """
-        |   type ${buildReturnType()} = $formattedType
-    """.trimMargin()
+    private fun buildReturnType(extendType: Boolean = true): String {
+        val typeName = "${capitalize(className.name)}ReturnType"
+        if (!extendType) return typeName
+        if (returnType is R_NullableType) return "$typeName | null"
+        if (returnType is R_CollectionType) return "$typeName[]"
+        return typeName
     }
 
-    private fun buildReturnType() = "${capitalize(className.name)}ReturnType"
 }

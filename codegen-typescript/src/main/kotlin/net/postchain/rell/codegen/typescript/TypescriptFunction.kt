@@ -17,8 +17,7 @@ abstract class TypescriptFunction(
         protected val returnType: R_Type?,
 
         ) : DocumentSection {
-    override val moduleName: String
-        get() = className.module
+    override val moduleName get() = className.module
 
     override val imports: List<String> = listOf()
     final override val deps: Set<ClassName>

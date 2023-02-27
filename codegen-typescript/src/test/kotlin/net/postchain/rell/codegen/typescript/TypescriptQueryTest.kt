@@ -123,18 +123,19 @@ class TypescriptQueryTest {
 
     @ParameterizedTest(name = "object creation")
     @CsvSource(
-            "return_type_nullable_named_tuple,{foo:number} | null,'ReturnTypeNullableNamedTupleReturnType'",
-            "return_type_named_tuple,'{foo:number}',ReturnTypeNamedTupleReturnType",
-            "return_type_named_tuple_list,'{rowid:number, a:boolean}[]',ReturnTypeNamedTupleListReturnType",
-            "return_type_proposals_since,'{rowid:number, a:boolean}[]',ReturnTypeProposalsSinceReturnType"
+            "return_type_nullable_named_tuple,'foo: number',ReturnTypeNullableNamedTupleReturnType,' | null'",
+            "return_type_named_tuple,'foo: number',ReturnTypeNamedTupleReturnType,''",
+            "return_type_named_tuple_list,'rowid: number;a: boolean',ReturnTypeNamedTupleListReturnType,[]",
+            "return_type_proposals_since,'rowid: number;a: boolean',ReturnTypeProposalsSinceReturnType,[]"
     )
-    fun namedTupleCreatesObject(name: String, returnType: String, returnName: String) {
+    fun namedTupleCreatesObject(name: String, returnType: String, returnName: String, appendedType: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[name])
         val k = TypescriptQuery(query)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("type $returnName = $returnType")
-            contains("Promise<$returnName>")
+            contains("type $returnName = {")
+            returnType.split(";").forEach { contains(it) }
+            contains("Promise<$returnName$appendedType>")
         }
     }
 }
