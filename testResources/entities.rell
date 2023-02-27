@@ -13,8 +13,6 @@ entity text_entity { a: text; }
 entity byte_array_entity { a: byte_array; }
 entity rowid_entity { a: rowid; }
 entity json_entity { a: json; }
-entity pubkey_entity { pubkey; }
-entity blockchain_rid_entity { blockchain_rid: byte_array; }
 
 entity builtin_name { name; }
 entity builtin_pubkey { pubkey; }
@@ -30,7 +28,8 @@ entity nested_entity { a: text_entity; }
 
 entity transaction_entity { key transaction; }
 
-
+entity pubkey_entity { pubkey; }
+entity blockchain_rid_entity { blockchain_rid: byte_array; }
 
 // namespaceTest()
 namespace my_ns1 {
