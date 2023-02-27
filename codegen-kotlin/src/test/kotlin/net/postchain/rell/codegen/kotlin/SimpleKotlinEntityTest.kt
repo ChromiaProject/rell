@@ -107,4 +107,14 @@ internal class SimpleKotlinEntityTest {
             contains("val a: RowId")
         }
     }
+
+    @Test
+    fun transaction(){
+        val entity = assertNotNull(testModule.entities["transaction_entity"])
+        val k = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity)
+        val formatted = k.format()
+        assertThat(formatted).all {
+            contains("val transaction: RowId")
+        }
+    }
 }
