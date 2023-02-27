@@ -37,9 +37,9 @@ internal class SimpleKotlinEntityTest {
 
     @ParameterizedTest(name = "rell: {0} -> kotlin: {1}")
     @CsvSource(
-        "my_ns1.ns_entity1,MyNs1NsEntity1",
-        "my_ns1.my_ns2.ns_entity2,MyNs1MyNs2NsEntity2",
-        "my_ns1.my_ns2.ns_entity_3,MyNs1MyNs2NsEntity3"
+            "my_ns1.ns_entity1,MyNs1NsEntity1",
+            "my_ns1.my_ns2.ns_entity2,MyNs1MyNs2NsEntity2",
+            "my_ns1.my_ns2.ns_entity_3,MyNs1MyNs2NsEntity3"
     )
     fun namespaceTest(rellQualifiedName: String, kotlinQualifiedName: String) {
         val entity = assertNotNull(testModule.entities[rellQualifiedName])
@@ -64,15 +64,15 @@ internal class SimpleKotlinEntityTest {
 
     @ParameterizedTest(name = "rell type {0} becomes {1}")
     @CsvSource(
-        "a,boolean,Boolean",
-        "a,integer,Long",
-        "a,decimal,BigDecimal",
-        "a,text,String",
-        "a,byte_array,WrappedByteArray",
-        "a,rowid,RowId",
-        "a,json,String",
-        "pubkey,pubkey,WrappedByteArray",
-        "blockchainRid,blockchain_rid,WrappedByteArray"
+            "a,boolean,Boolean",
+            "a,integer,Long",
+            "a,decimal,BigDecimal",
+            "a,text,String",
+            "a,byte_array,WrappedByteArray",
+            "a,rowid,RowId",
+            "a,json,String",
+            "pubkey,pubkey,WrappedByteArray",
+            "blockchainRid,blockchain_rid,WrappedByteArray"
     )
     fun simpleEntities(fieldName: String, rellType: String, kotlinType: String) {
         val entity = assertNotNull(testModule.entities["${rellType}_entity"], "entity does not exist")
@@ -85,9 +85,9 @@ internal class SimpleKotlinEntityTest {
 
     @ParameterizedTest(name = "builtin {0} becomes {1}")
     @CsvSource(
-        "name,String",
-        "pubkey,WrappedByteArray",
-        "timestamp,Long",
+            "name,String",
+            "pubkey,WrappedByteArray",
+            "timestamp,Long",
     )
     fun builtinTypes(keyword: String, kotlinType: String) {
         val entity = assertNotNull(testModule.entities["builtin_${keyword}"], "entity does not exist")
@@ -105,6 +105,16 @@ internal class SimpleKotlinEntityTest {
         val formatted = k.format()
         assertThat(formatted).all {
             contains("val a: RowId")
+        }
+    }
+
+    @Test
+    fun transaction() {
+        val entity = assertNotNull(testModule.entities["transaction_entity"])
+        val k = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity)
+        val formatted = k.format()
+        assertThat(formatted).all {
+            contains("val transaction: RowId")
         }
     }
 }
