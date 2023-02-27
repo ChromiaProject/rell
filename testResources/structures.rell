@@ -9,6 +9,9 @@ struct rowid_struct { a: rowid; }
 struct json_struct { a: json; }
 struct map_struct { a: map<text,integer>; }
 struct entity_struct { a: a; }
+struct list_struct { a: list<text>; }
+struct set_struct { a: set<text>; }
+struct multi_struct { a: text; i: integer; }
 
 struct builtin_name { name; }
 struct builtin_pubkey { pubkey; }

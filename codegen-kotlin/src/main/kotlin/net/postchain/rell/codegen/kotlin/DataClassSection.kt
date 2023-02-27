@@ -50,7 +50,7 @@ open class DataClassSection(
     override fun format() = """
         |${GeneratedAnnotation.createAnnotation(className.rellName)}
         |data class ${className.name}(
-        |    ${classFields.joinToString(",\n\t")}
+        |${"\t"}${classFields.joinToString(",\n\t")}
         |)
     """.trimMargin()
 }

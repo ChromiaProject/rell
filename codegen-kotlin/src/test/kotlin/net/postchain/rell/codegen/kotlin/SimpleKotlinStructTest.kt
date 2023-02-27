@@ -24,16 +24,19 @@ internal class SimpleKotlinStructTest {
 
     @ParameterizedTest(name = "rell type {0} becomes {1}")
     @CsvSource(
-        "boolean,Boolean",
-        "integer,Long",
-        "decimal,BigDecimal",
-        "text,String",
-        "byte_array,WrappedByteArray",
-        "rowid,RowId",
-        "entity,RowId",
-        "map,Map<String, Long>",
-        "nullable,String?",
-        "json,String",
+        "boolean,'val a: Boolean'",
+        "integer,'val a: Long'",
+        "decimal,'val a: BigDecimal'",
+        "text,'val a: String'",
+        "byte_array,'val a: WrappedByteArray'",
+        "rowid,'val a: RowId'",
+        "entity,'val a: RowId'",
+        "map,'val a: Map<String, Long>'",
+        "nullable,'val a: String?'",
+        "json,'val a: String'",
+        "list,'val a: List<String>'",
+        "set,'val a: Set<String>'",
+        "multi,'\n\t@Name(\"a\") val a: String,\n\t@Name(\"i\") val i: Long'",
     )
     fun simpleStructures(rellType: String, kotlinType: String) {
         format(rellType, kotlinType)
@@ -63,7 +66,7 @@ internal class SimpleKotlinStructTest {
         val struct = assertNotNull(testModule.structs["${rellType}_struct"], "struct does not exist")
         val formatted = KotlinStruct(CamelCaseClassName.fromRellDefinition(struct), struct).format()
         assertThat(formatted).all {
-            contains("val a: $kotlinType")
+            contains(kotlinType)
         }
         return formatted
     }
