@@ -19,6 +19,6 @@ class TypescriptEnumeration(private val className: ClassName, enum: R_EnumDefini
     """.trimMargin()
 
     private fun formatEnumValues() : String {
-        return "\t${enumValues.joinToString(",\n\t") { capitalize(it.asEnum().name.snakeToLowerCamelCase()) }}"
+        return "\t${enumValues.joinToString(",\n\t") { it.asEnum().name.snakeToUpperCamelCase() }"
     }
 }
