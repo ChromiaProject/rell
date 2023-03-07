@@ -5,7 +5,7 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.endsWith
 import net.postchain.rell.codegen.SingleFileRellApp
-import net.postchain.rell.codegen.deps.CamelCaseClassName
+import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -28,7 +28,7 @@ internal class TypescriptOperationTest {
         val k = TypescriptOperation(op)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("inputParameterTextOperation: function(tx: Itransaction,\n\tt: string): void")
+            contains("export function inputParameterTextOperation(tx: Itransaction,\n\tt: string): void")
             contains("tx.addOperation(\"input_parameter_text\", t)")
         }
     }
@@ -39,12 +39,12 @@ internal class TypescriptOperationTest {
             "my_ns1.my_ns2.op2_in_namespace,myNs1MyNs2Op2InNamespaceOperation",
             "my_ns1.my_ns2.op_3_in_namespace,myNs1MyNs2Op3InNamespaceOperation"
     )
-    fun namespaceTest(rellQualifiedOpName: String, kotlinQualifiedOpName: String) {
+    fun namespaceTest(rellQualifiedOpName: String, typescriptQualifiedOpName: String) {
         val op = kotlin.test.assertNotNull(testModule.operations[rellQualifiedOpName])
         val k = TypescriptOperation(op)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("$kotlinQualifiedOpName: function(tx: Itransaction): void")
+            contains("export function $typescriptQualifiedOpName(tx: Itransaction): void")
             contains("tx.addOperation(\"$rellQualifiedOpName\")")
         }
     }
@@ -73,7 +73,7 @@ internal class TypescriptOperationTest {
         val k = TypescriptOperation(op)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("${CamelCaseClassName.fromRellOperation(op).name}: function(tx: Itransaction,\n\t$params): void {")
+            contains("export function ${opName.snakeToLowerCamelCase()}Operation(tx: Itransaction,\n\t$params): void {")
             contains("addOperation(\"$opName\"")
             endsWith("$gtvParam)\n}")
         }

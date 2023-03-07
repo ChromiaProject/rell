@@ -19,7 +19,6 @@ abstract class TypescriptFunction(
         ) : DocumentSection {
     override val moduleName get() = className.module
 
-    override val imports: List<String> = listOf()
     final override val deps: Set<ClassName>
 
     init {
@@ -30,8 +29,8 @@ abstract class TypescriptFunction(
 
     override fun format() = """
         |${returnStructure(returnType)}
-        |${className.name}: ${asyncAnnotation()}function(${formatInputParameters()}): ${formatReturnType()} {
-        |   ${formatBody()}
+        |export ${asyncAnnotation()}function ${className.name.snakeToLowerCamelCase()}(${formatInputParameters()}): ${formatReturnType()} {
+        |${"\t"}${formatBody()}
         |}
    """.trimMargin()
 

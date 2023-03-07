@@ -8,14 +8,14 @@ abstract class AbstractDocument(
     val module: String
 ) : Document {
 
-    private val sections = mutableSetOf<DocumentSection>()
+    protected val sections = mutableSetOf<DocumentSection>()
 
     override val packageString: String
         get() = formatPackageString()
     abstract fun formatPackageString(): String
     abstract fun formatImportString(className: ClassName): String
 
-    private fun collectImports(): Set<String> {
+    protected fun collectImports(): Set<String> {
         return sections.flatMap { it.imports }.toSet() +
                 sections.flatMap {
                     it.deps
