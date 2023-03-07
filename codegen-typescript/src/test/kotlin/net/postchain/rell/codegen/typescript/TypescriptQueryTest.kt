@@ -24,7 +24,7 @@ class TypescriptQueryTest {
         val k = TypescriptQuery(q)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("inputParameterNargs: async function(): Promise<number>")
+            contains("export async function inputParameterNargs(gtxClient: GtxClient): Promise<number>")
         }
     }
 
@@ -33,9 +33,9 @@ class TypescriptQueryTest {
             "my_ns1.q1_in_namespace,myNs1Q1InNamespace,e: TestEnum",
             "my_ns1.q2_in_namespace,myNs1Q2InNamespace,s: MyNs1TestStruct2",
             "my_ns1.q3a_return_type_enum,myNs1Q3aReturnTypeEnum,e: MyNs1LocalTestEnum",
-            "my_ns1.q3b_return_type_enum,myNs1Q3bReturnTypeEnum,'m: Map<TestEnum, ByteArray>'",
-            "my_ns1.q4_return_type_list_struct,myNs1Q4ReturnTypeListStruct,'m: Map<ByteArray, MyNs1MyNs12TestStruct2>'",
-            "my_ns1.q5_return_type_list_struct,myNs1Q5ReturnTypeListStruct,'v: List<MyNs1LocalTestStruct>'",
+            "my_ns1.q3b_return_type_enum,myNs1Q3bReturnTypeEnum,'m: {[x: TestEnum]: Buffer}'",
+            "my_ns1.q4_return_type_list_struct,myNs1Q4ReturnTypeListStruct,'m: {[x: Buffer]: MyNs1MyNs12TestStruct2}'",
+            "my_ns1.q5_return_type_list_struct,myNs1Q5ReturnTypeListStruct,'v: MyNs1LocalTestStruct[]'",
             "my_ns1.q6_return_type_list_struct,myNs1Q6ReturnTypeListStruct,''",
             "my_ns1.q7_return_type_enum_map,myNs1Q7ReturnTypeEnumMap,''",
             "my_ns1.q8_return_type_enum_map,myNs1Q8ReturnTypeEnumMap,''",
@@ -49,8 +49,10 @@ class TypescriptQueryTest {
         val k = TypescriptQuery(q)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("${typescriptQualifiedName}: async function")
+            contains("export async function ${typescriptQualifiedName}(gtxClient: GtxClient")
+            contains("$params)")
             contains("gtxClient.query(\"$rellQualifiedName\"")
+
         }
     }
 
@@ -116,7 +118,8 @@ class TypescriptQueryTest {
         val k = TypescriptQuery(query)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("async function($funParams)")
+            contains("(gtxClient: GtxClient")
+            contains("$funParams)")
             contains("gtxClient.query(\"$queryName\"$queryParam")
         }
     }

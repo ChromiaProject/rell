@@ -19,8 +19,8 @@ open class DataTypeSection(private val className: ClassName, attributes: Map<Str
     override val deps = DependencyFinder.findDependencies(attributes.values)
 
     override fun format() = """
-        |${"\t"}type ${className.name} = {
+        |type ${className.name} = {
         |${"\t"}${typeFields.joinToString("\n\t")}
-        |${"\t"}};
+        |};
     """.trimMargin()
 }

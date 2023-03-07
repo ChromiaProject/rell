@@ -14,6 +14,7 @@ class TypescriptOperation(op: R_OperationDefinition) : TypescriptFunction(
         false,
         null
 ), Operation {
+    override val imports: List<String> = listOf("import { Itransaction } from \"postchain-client/built/src/gtx/interfaces\";")
 
     override fun formatBody() = "tx.addOperation(\"$mountName\"${formatOperationParameters()})"
 
