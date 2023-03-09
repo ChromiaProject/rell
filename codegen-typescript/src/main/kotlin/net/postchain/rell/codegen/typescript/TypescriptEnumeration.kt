@@ -12,7 +12,7 @@ class TypescriptEnumeration(private val className: ClassName, enum: R_EnumDefini
     override val imports = listOf("")
 
     override fun format() = """
-        |enum ${className.name} {
+        |export enum ${className.name} {
         |${formatEnumValues()}
         |}
     """.trimMargin()

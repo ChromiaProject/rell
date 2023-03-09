@@ -5,17 +5,17 @@ import net.postchain.rell.codegen.section.DocumentSection
 
 abstract class AbstractDocument(
     override val intro: String = "",
-    val module: String
+    protected val module: String
 ) : Document {
 
-    protected val sections = mutableSetOf<DocumentSection>()
+    private val sections = mutableSetOf<DocumentSection>()
 
     override val packageString: String
         get() = formatPackageString()
     abstract fun formatPackageString(): String
     abstract fun formatImportString(className: ClassName): String
 
-    protected fun collectImports(): Set<String> {
+    private fun collectImports(): Set<String> {
         return sections.flatMap { it.imports }.toSet() +
                 sections.flatMap {
                     it.deps
@@ -24,7 +24,7 @@ abstract class AbstractDocument(
                 }.toSet()
     }
 
-    override fun format(): String {
+    final override fun format(): String {
         return """
             |$intro
             |${formatPackageString()}
