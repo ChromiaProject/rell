@@ -3,6 +3,7 @@ package net.postchain.rell.codegen.typescript
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.section.*
+import net.postchain.rell.codegen.util.BuiltinType
 import net.postchain.rell.model.*
 
 class TypescriptDocumentFactory(private val basePackage: String) : DocumentFactory {
@@ -13,7 +14,7 @@ class TypescriptDocumentFactory(private val basePackage: String) : DocumentFacto
 
     override fun createEntity(className: ClassName, rellEntity: R_EntityDefinition) = TypescriptEntity(className, rellEntity)
 
-    override fun createBuiltins(): List<Entity> {
+    override fun createBuiltins(type: BuiltinType): List<Entity> {
         TODO("Not yet implemented")
     }
 

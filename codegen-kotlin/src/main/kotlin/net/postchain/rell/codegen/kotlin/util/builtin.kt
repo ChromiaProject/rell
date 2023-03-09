@@ -1,12 +1,25 @@
 package net.postchain.rell.codegen.kotlin.util
 
+import net.postchain.common.types.WrappedByteArray
 import net.postchain.rell.codegen.section.Entity
+import net.postchain.rell.codegen.util.BuiltinType
 
-class BlockEntity() : Entity {
+
+fun builtin(type: BuiltinType): List<Entity> {
+    if (type == BuiltinType.Block) {
+        return listOf(BlockEntity)
+    }
+    if (type == BuiltinType.Transaction) {
+        return listOf(TransactionEntity, BlockEntity)
+    }
+    return emptyList()
+}
+
+object BlockEntity : Entity {
     val name = "rell:block"
-    override val moduleName = "rell"
+    override val moduleName = ""
     override val imports: List<String>
-        get() = listOf("import net.postchain.gtv.mapper.Name")
+        get() = listOf("import net.postchain.gtv.mapper.Name", "import ${WrappedByteArray::class.qualifiedName}")
 
     override fun format() = """
        |class Block(
@@ -17,11 +30,11 @@ class BlockEntity() : Entity {
     """.trimMargin()
 }
 
-class TransactionEntity() : Entity {
+object TransactionEntity : Entity {
     val name = "rell:block"
-    override val moduleName = "rell"
+    override val moduleName = ""
     override val imports: List<String>
-        get() = listOf("import net.postchain.gtv.mapper.Name")
+        get() = listOf("import net.postchain.gtv.mapper.Name", "import ${WrappedByteArray::class.qualifiedName}")
 
     override fun format() = """
        |class Transaction(
