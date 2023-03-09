@@ -1,0 +1,11 @@
+module;
+import ^^.a;
+import root: ^^;
+
+
+enum nested_enum {
+    value
+}
+
+query get_a_from_c_nested() = a.a_enum.a;
+query get_root_enum_from_c_nested() = root.root_enum.a;

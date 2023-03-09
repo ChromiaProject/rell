@@ -5,6 +5,11 @@ import ^.c;
 @external('e') import ^.e;
 import root: ^;
 
+
+struct a_c_nested {
+    a_c_nested: struct<c.c_nested_entity>;
+}
+
 entity a_entity {
     a: a_enum;
 }
@@ -29,6 +34,9 @@ struct a3_struct {
 struct a4_struct {
     l: list<b.not_used>; // will be list<integer>;
 }
+
+query get_c_nested_enum() = c.nested.nested_enum.value;
+query get_c_nested_struct() = list<a_c_nested>();
 
 query get_nested_structure() = list<a4_struct>();
 

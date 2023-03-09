@@ -9,14 +9,12 @@ class TypescriptDocument(val packageName: String, moduleName: String) : Abstract
 ) {
     override fun formatPackageString() = ""
 
-    override fun formatImportString(className: ClassName) = ""
+    override fun formatImportString(className: ClassName) = "import { ${className.name} } from \"${formatImportPath(className)}\""
 
-    override fun format(): String {
-        return """
-            |$intro
-            |${collectImports().sorted().joinToString("\n")}
-            |
-            |${sections.joinToString("\n") { it.format()}}
-        """.trimMargin()
+    private fun formatImportPath(className: ClassName): String {
+        val relativePath = module.split(".").joinToString(""){ "../" }
+        val modulePath = className.module.replace(".", "/")
+        val typescriptFileName = if (className.module.isBlank()) "root" else "/${className.module.replace(".", "_")}"
+        return "$relativePath$modulePath$typescriptFileName"
     }
 }
