@@ -50,7 +50,9 @@ class CodeGenerator(val factory: DocumentFactory) {
                 .map { (module, sections) ->
                 val document = factory.createDocument(module)
                 sections.forEach { document.addSection(it) }
-                "${module.replace(".", "/")}/${module.replace(".", "_")}.${factory.fileExtension}" to document
+                val directoryName = module.replace(".", "/")
+                val fileName = if (module.isBlank()) "root" else module.replace(".", "_")
+                "$directoryName/$fileName.${factory.fileExtension}" to document
             }.toMap()
         }
         return mapOf()
