@@ -70,12 +70,16 @@ class SimpleTypescriptStructTest {
         }
         return formatted
     }
-
+    
     @ParameterizedTest(name = "builtin {0} becomes {1}")
     @CsvSource(
             "name,string",
             "pubkey,Buffer",
             "blockchainRid,Buffer",
+            "transaction, number",
+            "block, number",
+            "blockStruct, Block",
+            "transactionStruct, Transaction",
     )
     fun builtinTypes(keyword: String, typescriptType: String) {
         val struct = assertNotNull(testModule.structs["builtin_${keyword}"], "struct does not exist")

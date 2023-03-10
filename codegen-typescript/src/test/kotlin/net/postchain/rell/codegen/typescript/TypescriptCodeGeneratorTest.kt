@@ -13,7 +13,7 @@ import java.nio.file.Files
 
 internal class CodeGeneratorTest {
 
-    private val generator = CodeGenerator(TypescriptDocumentFactory(""))
+    private val generator = CodeGenerator(TypescriptDocumentFactory())
 
     private fun generateAndCompile(rellPath: String, vararg baseModule: String): Pair<List<DocumentSection>, Map<String, Document>> {
         val sections = generator.createSections(

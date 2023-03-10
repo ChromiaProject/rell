@@ -40,7 +40,7 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
             CamelCaseClassName("", buildReturnType(false), className.module),
             returnType.fields.associateBy({ it.name!!.str }, { it.type })
         )
-        return "\n${resultObject.format()}"
+        return resultObject.format()
     }
 
     private fun buildReturnType(extendType: Boolean = true): String {
