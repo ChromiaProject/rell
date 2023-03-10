@@ -3,7 +3,6 @@ package net.postchain.rell.codegen.kotlin
 import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
-import assertk.assertions.endsWith
 import net.postchain.rell.codegen.SingleFileRellApp
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -88,7 +87,7 @@ internal class KotlinOperationTest {
             contains("fun TransactionBuilder.")
             contains("($params) =")
             contains("addOperation(\"$opName\"")
-            endsWith("$gtvParam)\n")
+            contains("$gtvParam)")
         }
     }
 }

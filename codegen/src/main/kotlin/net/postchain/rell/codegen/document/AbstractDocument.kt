@@ -4,8 +4,8 @@ import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.section.DocumentSection
 
 abstract class AbstractDocument(
-    override val intro: String = "",
-    protected val module: String
+        override val intro: String = "",
+        protected val module: String
 ) : Document {
 
     private val sections = mutableSetOf<DocumentSection>()
@@ -19,21 +19,23 @@ abstract class AbstractDocument(
         return sections.flatMap { it.imports }.toSet() +
                 sections.flatMap {
                     it.deps
-                        .filter { d -> d.module != module }
-                        .map { c -> formatImportString(c) }
+                            .filter { d -> d.module != module }
+                            .map { c -> formatImportString(c) }
                 }.toSet()
     }
 
     final override fun format(): String {
-        return """
-            |$intro
-            |${formatPackageString()}
-            |
-            |${collectImports().sorted().joinToString("\n")}
-            |
-            |${sections.joinToString("\n\n") { it.format() }}
-            |
-        """.trimMargin()
+        val introSection = "$intro\n\n"
+        val packageSection = "${formatPackageString()}\n\n"
+        val importSection = "${collectImports().sorted().joinToString("\n")}\n\n"
+        val methodSections = "${sections.joinToString("\n\n") { it.format() }}\n"
+
+        return StringBuilder()
+                .append(introSection)
+                .append(packageSection.ifBlank { "" })
+                .append(importSection.ifBlank { "" })
+                .append(methodSections)
+                .toString()
     }
 
     override fun addSection(section: DocumentSection) {

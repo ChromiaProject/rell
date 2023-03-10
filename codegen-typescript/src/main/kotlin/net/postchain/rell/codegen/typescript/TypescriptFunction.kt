@@ -27,12 +27,18 @@ abstract class TypescriptFunction(
         deps = paramDeps + returnDeps
     }
 
-    override fun format() = """
-        |${returnStructure(returnType)}
+    override fun format(): String {
+        val returnTypeString = "${returnStructure(returnType)}\n"
+        val functionString = """
         |export ${asyncAnnotation()}function ${className.name.snakeToLowerCamelCase()}(${formatInputParameters()}): ${formatReturnType()} {
         |${"\t"}${formatBody()}
         |}
    """.trimMargin()
+        return StringBuilder()
+                .append(returnTypeString.ifBlank { "" })
+                .append(functionString)
+                .toString()
+    }
 
     private fun asyncAnnotation() = if (async) "async " else ""
 

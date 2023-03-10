@@ -1,13 +1,13 @@
-package net.postchain.rell.codegen.kotlin
+package net.postchain.rell.codegen.typescript
 
 import assertk.assertThat
-import net.postchain.rell.codegen.kotlin.util.BlockEntity
-import net.postchain.rell.codegen.kotlin.util.TransactionEntity
-import net.postchain.rell.codegen.kotlin.util.builtin
+import net.postchain.rell.codegen.typescript.util.BlockEntity
+import net.postchain.rell.codegen.typescript.util.TransactionEntity
+import net.postchain.rell.codegen.typescript.util.builtin
 import net.postchain.rell.codegen.util.BuiltinType
 import org.junit.jupiter.api.Test
 
-internal class SimpleKotlinBuiltinTest {
+internal class SimpleTypescriptBuiltinTest {
     @Test
     fun builtInTransactionTest() {
         val entity = builtin(BuiltinType.Transaction)

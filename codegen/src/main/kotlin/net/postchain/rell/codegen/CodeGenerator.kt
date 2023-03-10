@@ -42,8 +42,7 @@ class CodeGenerator(val factory: DocumentFactory) {
 
         val builtins = BuiltinType.values()
                 .filter { it.name in neededObjects.map { x -> x.name } }
-                .flatMap { factory.createBuiltins(it) }
-                .toSet()
+                .map { factory.createBuiltins(it) }
 
         return enums + entities + builtins + structures + queries + operations
     }

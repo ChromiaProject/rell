@@ -2,21 +2,19 @@ package net.postchain.rell.codegen.typescript
 
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.document.DocumentFactory
-import net.postchain.rell.codegen.section.*
+import net.postchain.rell.codegen.typescript.util.builtin
 import net.postchain.rell.codegen.util.BuiltinType
 import net.postchain.rell.model.*
 
-class TypescriptDocumentFactory(private val basePackage: String) : DocumentFactory {
+class TypescriptDocumentFactory : DocumentFactory {
     override val fileExtension: String
         get() = "ts"
 
-    override fun createDocument(moduleName: String) = TypescriptDocument(basePackage, moduleName)
+    override fun createDocument(moduleName: String) = TypescriptDocument(moduleName)
 
     override fun createEntity(className: ClassName, rellEntity: R_EntityDefinition) = TypescriptEntity(className, rellEntity)
 
-    override fun createBuiltins(type: BuiltinType): List<Entity> {
-        TODO("Not yet implemented")
-    }
+    override fun createBuiltins(type: BuiltinType) = builtin(type)
 
     override fun createStruct(className: ClassName, rellStruct: R_StructDefinition) = TypescriptStruct(className, rellStruct)
 
