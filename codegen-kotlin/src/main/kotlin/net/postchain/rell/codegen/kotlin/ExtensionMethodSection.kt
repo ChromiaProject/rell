@@ -64,7 +64,7 @@ abstract class ExtensionMethodSection(
     override fun format(): String {
         val functionString = """
         |${GeneratedAnnotation.createAnnotation(className.rellName)}
-        |fun ${extendedClass.simpleName}.${className.name}(${formatInputParameters()}) = 
+        |fun ${extendedClass.simpleName}.${className.className}(${formatInputParameters()}) = 
         |   $extendenMethod("$mountName"${formatGtvParameters()})${formatReturnType(returnType)}
     """.trimMargin()
         val returnTypeString = "\n${returnStructure(returnType)}"

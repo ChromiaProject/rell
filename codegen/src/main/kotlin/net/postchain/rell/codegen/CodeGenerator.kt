@@ -4,7 +4,6 @@ import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.document.Document
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.section.DocumentSection
-import net.postchain.rell.codegen.util.BuiltinType
 import net.postchain.rell.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.compiler.base.utils.C_SourceDir
@@ -27,7 +26,7 @@ class CodeGenerator(val factory: DocumentFactory) {
         val queries = if (generateQueries) rellQueries.values.map { factory.createQuery(it) } else listOf()
         val operations = if (generateOperations) rellOperations.values.map { factory.createOperation(it) } else listOf()
 
-        val neededObjects = (operations + queries).flatMap { it.deps }.distinctBy { it.module + it.name }
+        val neededObjects = (operations + queries).flatMap { it.deps }.distinctBy { it.module + it.className }
         val enums = rellEnums
                 .filterKeys { it in neededObjects }
                 .map { factory.createEnum(it.key, it.value) }
@@ -40,9 +39,7 @@ class CodeGenerator(val factory: DocumentFactory) {
                 .filterKeys { it in neededObjects }
                 .map { factory.createStruct(it.key, it.value) }
 
-        val builtins = BuiltinType.values()
-                .filter { it.name in neededObjects.map { x -> x.name } }
-                .map { factory.createBuiltins(it) }
+        val builtins = factory.getBuiltins(neededObjects)
 
         return enums + entities + builtins + structures + queries + operations
     }

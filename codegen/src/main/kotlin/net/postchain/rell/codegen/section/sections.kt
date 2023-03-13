@@ -10,3 +10,4 @@ interface Query : DocumentSection
 
 interface Operation : DocumentSection
 
+interface Builtin : DocumentSection

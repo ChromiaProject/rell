@@ -2,18 +2,22 @@ package net.postchain.rell.codegen.kotlin.util
 
 import net.postchain.common.types.RowId
 import net.postchain.common.types.WrappedByteArray
-import net.postchain.rell.codegen.section.Entity
+import net.postchain.rell.codegen.section.Builtin
 import net.postchain.rell.codegen.util.BuiltinType
 
 
-fun builtin(type: BuiltinType): Entity {
-    return when (type) {
-        BuiltinType.Block -> BlockEntity
-        BuiltinType.Transaction -> TransactionEntity
+enum class KotlinBuiltinType(override val className: String, override val rellName: String, private val builtin: Builtin) : BuiltinType {
+    Block("Block", BlockEntity.name, BlockEntity),
+    Transaction("Transaction", TransactionEntity.name, TransactionEntity)
+    ;
+
+    override val module = builtin.moduleName
+    override fun createBuiltin(): Builtin {
+        return builtin
     }
 }
 
-object BlockEntity : Entity {
+object BlockEntity : Builtin {
     val name = "rell:block"
     override val moduleName = ""
     override val imports: List<String>
@@ -31,7 +35,7 @@ object BlockEntity : Entity {
     """.trimMargin()
 }
 
-object TransactionEntity : Entity {
+object TransactionEntity : Builtin {
     val name = "rell:block"
     override val moduleName = ""
     override val imports: List<String>

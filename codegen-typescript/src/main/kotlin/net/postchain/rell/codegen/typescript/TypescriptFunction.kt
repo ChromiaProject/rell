@@ -30,7 +30,7 @@ abstract class TypescriptFunction(
     override fun format(): String {
         val returnTypeString = "${returnStructure(returnType)}\n"
         val functionString = """
-        |export ${asyncAnnotation()}function ${className.name.snakeToLowerCamelCase()}(${formatInputParameters()}): ${formatReturnType()} {
+        |export ${asyncAnnotation()}function ${className.className.snakeToLowerCamelCase()}(${formatInputParameters()}): ${formatReturnType()} {
         |${"\t"}${formatBody()}
         |}
    """.trimMargin()

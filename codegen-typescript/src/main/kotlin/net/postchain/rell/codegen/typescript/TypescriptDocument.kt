@@ -9,7 +9,7 @@ class TypescriptDocument(moduleName: String) : AbstractDocument(
 ) {
     override fun formatPackageString() = ""
 
-    override fun formatImportString(className: ClassName) = "import { ${className.name} } from \"${formatImportPath(className)}\";"
+    override fun formatImportString(className: ClassName) = "import { ${className.className} } from \"${formatImportPath(className)}\";"
 
     private fun formatImportPath(className: ClassName): String {
         val relativePath = module.split(".").joinToString(""){ "../" }
