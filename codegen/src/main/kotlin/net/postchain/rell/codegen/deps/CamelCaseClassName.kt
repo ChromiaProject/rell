@@ -8,9 +8,9 @@ import net.postchain.rell.model.R_QueryDefinition
 import net.postchain.rell.model.R_Type
 
 data class CamelCaseClassName(
-    override val rellName: String,
-    override val name: String,
-    override val module: String,
+        override val rellName: String,
+        override val className: String,
+        override val module: String,
 ) : ClassName {
 
     companion object {

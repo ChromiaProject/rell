@@ -2,11 +2,11 @@ package net.postchain.rell.codegen.deps
 
 interface ClassName {
     val rellName: String
-    val name: String
+    val className: String
     val module: String
 
     fun toPackageName(basePackage: String): String {
-        if (module == "") return "$basePackage.$name"
-        return "$basePackage.$module.$name"
+        if (module == "") return "$basePackage.$className"
+        return "$basePackage.$module.$className"
     }
 }

@@ -44,8 +44,8 @@ fun rTypeToString(name: String, type: R_Type, primitiveTypes: Boolean, aliases: 
             is R_SetType -> "Set<${rTypeToString(name, type.elementType, primitiveTypes, aliases)}>"
             is R_ListType -> "List<${rTypeToString(name, type.elementType, primitiveTypes, aliases)}>"
             is R_MapType -> "Map<${rTypeToString(name, type.keyType, primitiveTypes, aliases)}, ${rTypeToString(name, type.valueType, primitiveTypes, aliases)}>"
-            is R_StructType -> CamelCaseClassName.fromRellType(type).name
-            is R_EnumType -> CamelCaseClassName.fromRellType(type).name
+            is R_StructType -> CamelCaseClassName.fromRellType(type).className
+            is R_EnumType -> CamelCaseClassName.fromRellType(type).className
             else -> "Gtv"
         }
 

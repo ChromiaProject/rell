@@ -32,7 +32,7 @@ class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
             null -> ""
             is R_NullableType -> ".let { v -> if (v is GtvNull) null else v${formatReturnType(type.valueType)} }"
             is R_BooleanType -> ".asBoolean()"
-            is R_EnumType -> ".let { ${CamelCaseClassName.fromRellType(type).name}.values()[it.asInteger().toInt()] }"
+            is R_EnumType -> ".let { ${CamelCaseClassName.fromRellType(type).className}.values()[it.asInteger().toInt()] }"
             is R_TextType -> ".asString()"
             is R_IntegerType -> ".asInteger()"
             is R_ByteArrayType -> ".asByteArray()"
@@ -40,7 +40,7 @@ class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
             is R_RowidType -> ".let { RowId(it.asInteger()) }"
             is R_EntityType -> ".let { RowId(it.asInteger()) }"            // Note that entities are encoded as GtvInteger
             is R_MapType -> formatMapReturnType(type)
-            is R_StructType -> ".toObject<${CamelCaseClassName.fromRellType(type).name}>()"
+            is R_StructType -> ".toObject<${CamelCaseClassName.fromRellType(type).className}>()"
             is R_ListType -> ".asArray()${formatNestedReturnType(type.elementType)}"
             is R_SetType -> ".asArray()${formatNestedReturnType(type.elementType)}.toSet()"
             is R_TupleType -> formatTupleType(type)

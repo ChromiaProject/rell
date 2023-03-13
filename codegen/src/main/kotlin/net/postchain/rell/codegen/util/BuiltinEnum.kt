@@ -1,6 +1,8 @@
 package net.postchain.rell.codegen.util
 
-enum class BuiltinType {
-    Block,
-    Transaction
+import net.postchain.rell.codegen.deps.ClassName
+import net.postchain.rell.codegen.section.Builtin
+
+interface BuiltinType: ClassName {
+    fun createBuiltin(): Builtin
 }

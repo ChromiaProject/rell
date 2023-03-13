@@ -22,8 +22,8 @@ fun rTypeToString(type: R_Type): String {
         is R_SetType -> "Set<${rTypeToString(type.elementType)}>"
         is R_ListType -> "${rTypeToString(type.elementType)}[]"
         is R_MapType -> "{[x: ${rTypeToString(type.keyType)}]: ${rTypeToString(type.valueType)}}"
-        is R_StructType -> CamelCaseClassName.fromRellType(type).name
-        is R_EnumType -> CamelCaseClassName.fromRellType(type).name
+        is R_StructType -> CamelCaseClassName.fromRellType(type).className
+        is R_EnumType -> CamelCaseClassName.fromRellType(type).className
         is R_TupleType -> formatTupleType(type)
         is R_GtvType -> "any"
 
