@@ -62,6 +62,8 @@ query input_parameter_map_input(v: map<text,byte_array>) = 1;
 query input_parameter_enum_map(m: map<test_enum,byte_array>) = 1;
 query input_parameter_any_map(m: map<test_struct,byte_array>) = 1;
 query input_parameter_multiple(s: text, s2: text) = 1;
+query input_parameter_gtv(g: gtv) = 1;
+query input_parameter_nullable_gtv(g: gtv?) = 1;
 
 // namespaceTest()
 namespace my_ns1 {

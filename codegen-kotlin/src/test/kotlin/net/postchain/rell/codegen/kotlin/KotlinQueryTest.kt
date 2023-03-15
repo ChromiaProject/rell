@@ -121,7 +121,9 @@ internal class KotlinQueryTest {
             "input_parameter_enum_map,'m: Map<TestEnum, ByteArray>','\"m\" to gtv(m.map { (k, v) -> gtv(gtv(k.ordinal.toLong()), gtv(v)) })'",
             "input_parameter_any_map,'m: Map<TestStruct, ByteArray>','\"m\" to gtv(m.map { (k, v) -> gtv(GtvObjectMapper.toGtvArray(k), gtv(v)) })'",
             "input_parameter_nullable_list_input,v: List<ByteArray>?,'\"v\" to v.let { if (it == null) GtvNull else gtv(it.map { gtv(it) }) })'",
-            "input_parameter_multiple, 's: String,\n\ts2: String', '\"s\" to gtv(s), \"s2\" to gtv(s2)'"
+            "input_parameter_multiple, 's: String,\n\ts2: String', '\"s\" to gtv(s), \"s2\" to gtv(s2)'",
+            "input_parameter_gtv,g: Gtv,'\"g\" to g'",
+            "input_parameter_nullable_gtv,g: Gtv?,'\"g\" to g.let { if (it == null) GtvNull else it })'",
     )
     fun parameterTypeTest(queryName: String, params: String, gtvParam: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[queryName])
