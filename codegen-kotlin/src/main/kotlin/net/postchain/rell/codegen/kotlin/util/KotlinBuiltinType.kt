@@ -6,12 +6,11 @@ import net.postchain.rell.codegen.section.Builtin
 import net.postchain.rell.codegen.util.BuiltinType
 
 
-enum class KotlinBuiltinType(override val className: String, override val rellName: String, private val builtin: Builtin) : BuiltinType {
-    Block("Block", BlockEntity.name, BlockEntity),
-    Transaction("Transaction", TransactionEntity.name, TransactionEntity)
+enum class KotlinBuiltinType(val className: String, private val builtin: Builtin) : BuiltinType {
+    Block("Block", BlockEntity),
+    Transaction("Transaction", TransactionEntity)
     ;
 
-    override val module = builtin.moduleName
     override fun createBuiltin(): Builtin {
         return builtin
     }
