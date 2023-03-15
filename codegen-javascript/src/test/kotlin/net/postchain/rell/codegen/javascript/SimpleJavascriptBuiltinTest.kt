@@ -23,6 +23,20 @@ class SimpleJavascriptBuiltinTest {
         }
     }
 
+    @Test
+    fun unsupportedTypeCheck() {
+        val anyAssertion = JavascriptBuiltinType.AnyAssertion.createBuiltin()
+        val formatted = anyAssertion.format()
+        assertThat(formatted).all {
+            contains("""
+                |/* Unsupported Rell type for JS assertion, defaults to true */
+                |function assertAny(arg) {
+                |${"\t"}return true
+                |}
+            """.trimMargin())
+        }
+    }
+
 
     @ParameterizedTest(name = "Builtin type {0} should get typecheck of {1}")
     @CsvSource(

@@ -13,6 +13,7 @@ enum class JavascriptBuiltinType(val builtin: TypeAssertion) : BuiltinType {
     BufferAssertion(BufferAssertionJs),
     SetAssertion(SetAssertionJs),
     ArrayAssertion(ArrayAssertionJs),
+    AnyAssertion(AnyAssertionJs)
     ;
 
     override fun createBuiltin() = builtin
@@ -29,9 +30,12 @@ object StringAssertionJs : TypeAssertion("assertString", "string")
 object ObjectAssertionJs : TypeAssertion("assertObject", "object")
 
 object BufferAssertionJs : TypeAssertion("assertBuffer", "Buffer", true)
+
 object SetAssertionJs : TypeAssertion("assertSet", "Set", true)
 
 object ArrayAssertionJs : TypeAssertion("assertArray", "Array", true)
+
+object AnyAssertionJs : TypeAssertion("assertAny", "")
 
 abstract class TypeAssertion(val functionName: String, private val jsType: String, private val complex: Boolean = false) : Builtin {
 
@@ -39,11 +43,22 @@ abstract class TypeAssertion(val functionName: String, private val jsType: Strin
     override val imports: List<String>
         get() = listOf("")
 
-    override fun format() = """
-        |function $functionName(arg) {
-        |${"\t"}if(${assertionString()}) throw new Error("Expected input to be $jsType")
-        |}
-    """.trimMargin()
+    override fun format(): String {
+        return if (jsType.isNotBlank()) {
+            """
+            |function $functionName(arg) {
+            |${"\t"}if(${assertionString()}) throw new Error("Expected input to be $jsType")
+            |}
+            """.trimMargin()
+        } else {
+            """
+            |/* Unsupported Rell type for JS assertion, defaults to true */
+            |function $functionName(arg) {
+            |${"\t"}return true
+            |}
+            """.trimMargin()
+        }
+    }
 
     private fun assertionString(): String {
         return if (complex) {

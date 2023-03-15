@@ -112,7 +112,9 @@ class TypescriptQueryTest {
             "input_parameter_enum_map,'m: {[x: TestEnum]: Buffer}',', {m}'",
             "input_parameter_any_map,'m: {[x: TestStruct]: Buffer}',', {m}'",
             "input_parameter_nullable_list_input,v: Buffer[] | null,', {v}'",
-            "input_parameter_multiple, 's: string,\n\ts2: string',', {s, s2}'"
+            "input_parameter_multiple, 's: string,\n\ts2: string',', {s, s2}'",
+            "input_parameter_gtv,g: any,', {g}'",
+            "input_parameter_nullable_gtv,g: any | null,', {g}'",
     )
     fun parameterTypeTest(queryName: String, funParams: String, queryParam: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[queryName])
