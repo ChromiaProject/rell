@@ -4,8 +4,6 @@ import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Query
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.model.R_QueryDefinition
-import net.postchain.rell.model.R_SetType
-import net.postchain.rell.model.R_Type
 
 class JavascriptQuery(queryDef: R_QueryDefinition) : JavascriptFunction(
         CamelCaseClassName.fromRellQuery(queryDef),
@@ -23,11 +21,6 @@ class JavascriptQuery(queryDef: R_QueryDefinition) : JavascriptFunction(
 
     private fun formatQueryParameters(): String {
         if (params.isEmpty()) return ""
-        return ", " + params.joinToString(",\n\t") { "{${parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type)}}" }
-    }
-
-    private fun parameterTransformer(name: String, type: R_Type): String = when (type) {
-        is R_SetType -> "Array.from($name)"
-        else -> name
+        return ", " + params.joinToString(",\n\t") { "{${super.parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type)}}" }
     }
 }
