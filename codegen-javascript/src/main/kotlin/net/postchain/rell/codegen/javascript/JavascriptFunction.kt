@@ -71,6 +71,11 @@ abstract class JavascriptFunction(
         else "${JavascriptBuiltinType.ArrayAssertion.builtin.functionName}($paramName)"
     }
 
+    protected fun parameterTransformer(name: String, type: R_Type): String = when (type) {
+        is R_SetType -> "Array.from($name)"
+        else -> name
+    }
+
     abstract fun formatBody(): String
 
 }
