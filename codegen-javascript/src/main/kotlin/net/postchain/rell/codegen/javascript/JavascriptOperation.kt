@@ -1,6 +1,7 @@
 package net.postchain.rell.codegen.javascript
 
 import net.postchain.rell.codegen.deps.CamelCaseClassName
+import net.postchain.rell.codegen.section.Operation
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.model.R_OperationDefinition
 
@@ -9,7 +10,7 @@ class JavascriptOperation(op: R_OperationDefinition) : JavascriptFunction(
         op.mountName,
         op.params(),
         false,
-) {
+), Operation {
     override val imports = listOf("")
 
     override fun formatBody() = "tx.addOperation(\"$mountName\"${formatOperationParameters()})"

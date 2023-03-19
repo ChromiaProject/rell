@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":codegen"))
     implementation(project(":codegen-kotlin"))
     implementation(project(":codegen-typescript"))
+    implementation(project(":codegen-javascript"))
     implementation("com.github.ajalt.clikt:clikt:3.5.0")
 }
 

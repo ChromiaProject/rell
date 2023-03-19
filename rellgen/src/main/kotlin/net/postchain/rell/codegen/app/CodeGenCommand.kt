@@ -10,6 +10,7 @@ import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.app.util.LanguageSupport
 import net.postchain.rell.codegen.document.DocumentSaver
+import net.postchain.rell.codegen.javascript.JavascriptDocumentFactory
 import net.postchain.rell.codegen.kotlin.KotlinDocumentFactory
 import net.postchain.rell.codegen.typescript.TypescriptDocumentFactory
 
@@ -22,13 +23,14 @@ class CodeGenCommand : CliktCommand("Generates files based on rell sources") {
     private val packageName by option("--package", help = "Name of package").required()
 
     private val language by option("--language", "-l", help = "Language to generate for")
-        .enum<LanguageSupport>(ignoreCase = true)
-        .default(LanguageSupport.Kotlin)
+            .enum<LanguageSupport>(ignoreCase = true)
+            .default(LanguageSupport.Kotlin)
 
     override fun run() {
         val factory = when (language) {
             LanguageSupport.Kotlin -> KotlinDocumentFactory(packageName)
             LanguageSupport.Typescript -> TypescriptDocumentFactory()
+            LanguageSupport.Javascript -> JavascriptDocumentFactory()
         }
         val generator = CodeGenerator(factory)
         val sections = generator.createSections(source, moduleName)

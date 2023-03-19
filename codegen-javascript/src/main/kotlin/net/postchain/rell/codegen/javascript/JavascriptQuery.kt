@@ -21,6 +21,6 @@ class JavascriptQuery(queryDef: R_QueryDefinition) : JavascriptFunction(
 
     private fun formatQueryParameters(): String {
         if (params.isEmpty()) return ""
-        return ", " + params.joinToString(",\n\t") { "{${super.parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type)}}" }
+        return ", {" + params.joinToString(",\n\t") { super.parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type) } + "}"
     }
 }
