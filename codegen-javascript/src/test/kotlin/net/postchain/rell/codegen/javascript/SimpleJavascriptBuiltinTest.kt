@@ -30,7 +30,7 @@ class SimpleJavascriptBuiltinTest {
         assertThat(formatted).all {
             contains("""
                 |/* Unsupported Rell type for JS assertion, defaults to true */
-                |function assertAny(arg) {
+                |export function assertAny(arg) {
                 |${"\t"}return true
                 |}
             """.trimMargin())

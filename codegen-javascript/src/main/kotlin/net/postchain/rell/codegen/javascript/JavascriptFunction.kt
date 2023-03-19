@@ -13,6 +13,8 @@ abstract class JavascriptFunction(
 ) : DocumentSection {
     override val moduleName get() = className.module
 
+    final override val deps: Set<ClassName> = params.map { rTypeToBuiltinType(it.type).builtin.className }.toSet()
+
     override fun format(): String {
         val functionName = className.className.snakeToLowerCamelCase()
         return """|export ${asyncAnnotation()}function $functionName(${formatInputParameters()}) {
@@ -29,30 +31,41 @@ abstract class JavascriptFunction(
 
     private fun formatTypechecks(): String {
         if (params.isEmpty()) return ""
-        return "\t" + params.joinToString(",\n\t")
-        { "${rTypeToTypecheck(it.type, it.name.str.snakeToLowerCamelCase())}\n" }
+        return "\t" + params.joinToString("\n\t")
+        {
+            if (it.type is R_NullableType) {
+                "${formatNullableAssertion((it.type as R_NullableType).valueType, it.name.str.snakeToLowerCamelCase())}"
+            } else {
+                "${rTypeToBuiltinType(it.type).builtin.functionName}(${it.name.str.snakeToLowerCamelCase()})"
+            }
+        } + "\n"
     }
 
-    private fun rTypeToTypecheck(type: R_Type, paramName: String): String {
+    private fun rTypeToBuiltinType(type: R_Type): JavascriptBuiltinType {
         return when (type) {
-            is R_NullableType -> formatNullableAssertion(type.valueType, paramName)
-            is R_BooleanType -> "${JavascriptBuiltinType.BooleanAssertion.builtin.functionName}($paramName)"
-            is R_IntegerType -> "${JavascriptBuiltinType.NumberAssertion.builtin.functionName}($paramName)"
-            is R_DecimalType -> "${JavascriptBuiltinType.NumberAssertion.builtin.functionName}($paramName)"
-            is R_TextType -> "${JavascriptBuiltinType.StringAssertion.builtin.functionName}($paramName)"
-            is R_ByteArrayType -> "${JavascriptBuiltinType.BufferAssertion.builtin.functionName}($paramName)"
-            is R_RowidType -> "${JavascriptBuiltinType.NumberAssertion.builtin.functionName}($paramName)"
-            is R_EntityType -> "${JavascriptBuiltinType.NumberAssertion.builtin.functionName}($paramName)"
-            is R_JsonType -> "${JavascriptBuiltinType.StringAssertion.builtin.functionName}($paramName)"
-            is R_SetType -> "${JavascriptBuiltinType.SetAssertion.builtin.functionName}($paramName)"
-            is R_ListType -> "${JavascriptBuiltinType.ArrayAssertion.builtin.functionName}($paramName)"
-            is R_MapType -> "${JavascriptBuiltinType.ObjectAssertion.builtin.functionName}($paramName)"
-            is R_StructType -> "${JavascriptBuiltinType.ObjectAssertion.builtin.functionName}($paramName)"
-            is R_EnumType -> "${JavascriptBuiltinType.ObjectAssertion.builtin.functionName}($paramName)"
-            is R_TupleType -> formatTupleAssertion(type, paramName)
+            is R_NullableType -> JavascriptBuiltinType.NullAssertion
+            is R_BooleanType -> JavascriptBuiltinType.BooleanAssertion
+            is R_IntegerType -> JavascriptBuiltinType.NumberAssertion
+            is R_DecimalType -> JavascriptBuiltinType.NumberAssertion
+            is R_TextType -> JavascriptBuiltinType.StringAssertion
+            is R_ByteArrayType -> JavascriptBuiltinType.BufferAssertion
+            is R_RowidType -> JavascriptBuiltinType.NumberAssertion
+            is R_EntityType -> JavascriptBuiltinType.NumberAssertion
+            is R_JsonType -> JavascriptBuiltinType.StringAssertion
+            is R_SetType -> JavascriptBuiltinType.SetAssertion
+            is R_ListType -> JavascriptBuiltinType.ArrayAssertion
+            is R_MapType -> JavascriptBuiltinType.ObjectAssertion
+            is R_StructType -> JavascriptBuiltinType.ObjectAssertion
+            is R_EnumType -> JavascriptBuiltinType.ObjectAssertion
+            is R_TupleType -> rTupleToBuiltinType(type)
 
-            else -> "${JavascriptBuiltinType.AnyAssertion.builtin.functionName}($paramName)"
+            else -> JavascriptBuiltinType.AnyAssertion
         }
+    }
+
+    private fun rTupleToBuiltinType(type: R_TupleType): JavascriptBuiltinType {
+        return if (type.name.contains(":")) JavascriptBuiltinType.ObjectAssertion
+        else JavascriptBuiltinType.ArrayAssertion
     }
 
     private fun formatNullableAssertion(valueType: R_Type, paramName: String): String {
@@ -61,14 +74,9 @@ abstract class JavascriptFunction(
                 .append("(")
                 .append("${JavascriptBuiltinType.NullAssertion.builtin.functionName}($paramName)")
                 .append(" || ")
-                .append(rTypeToTypecheck(valueType, paramName))
+                .append("${rTypeToBuiltinType(valueType).builtin.functionName}($paramName)")
                 .append(")")
                 .toString()
-    }
-
-    private fun formatTupleAssertion(type: R_Type, paramName: String): String {
-        return if (type.name.contains(":")) "${JavascriptBuiltinType.ObjectAssertion.builtin.functionName}($paramName)"
-        else "${JavascriptBuiltinType.ArrayAssertion.builtin.functionName}($paramName)"
     }
 
     protected fun parameterTransformer(name: String, type: R_Type): String = when (type) {

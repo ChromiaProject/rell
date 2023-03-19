@@ -1,5 +1,6 @@
 package net.postchain.rell.codegen.javascript
 
+import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Builtin
 import net.postchain.rell.codegen.util.BuiltinType
 
@@ -43,17 +44,19 @@ abstract class TypeAssertion(val functionName: String, private val jsType: Strin
     override val imports: List<String>
         get() = listOf("")
 
+    val className = CamelCaseClassName("", functionName, "")
+
     override fun format(): String {
         return if (jsType.isNotBlank()) {
             """
-            |function $functionName(arg) {
+            |export function $functionName(arg) {
             |${"\t"}if(${assertionString()}) throw new Error("Expected input to be $jsType")
             |}
             """.trimMargin()
         } else {
             """
             |/* Unsupported Rell type for JS assertion, defaults to true */
-            |function $functionName(arg) {
+            |export function $functionName(arg) {
             |${"\t"}return true
             |}
             """.trimMargin()
