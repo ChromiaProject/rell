@@ -52,7 +52,7 @@ class JavascriptQueryTest {
         val q = kotlin.test.assertNotNull(testModule.queries[rellQualifiedName])
         val k = JavascriptQuery(q)
         val formatted = k.format()
-        val queryParams = if (params.isEmpty()) "" else ", {$params}"
+        val queryParams = if (params.isEmpty()) "" else ", {$params: $params}"
         assertThat(formatted).all {
             contains("export async function ${javascriptQualifiedName}(gtxClient")
             contains("$params")
@@ -63,24 +63,25 @@ class JavascriptQueryTest {
     @ParameterizedTest(name = "query {0} should contain params {1} with type-checks {2}")
     @CsvSource(
             "input_parameter_nargs,'','',''",
-            "input_parameter_text,t,', {t}',assertString(t)",
-            "input_parameter_nullable,t,', {t}',assertBoolean(assertNull(t) || assertString(t))",
-            "input_parameter_integer,i,', {i}',assertNumber(i)",
-            "input_parameter_enum,e,', {e}',assertObject(e)",
-            "input_parameter_boolean,b,', {b}',assertBoolean(b)",
-            "input_parameter_rowid,r,', {r}',assertNumber(r)",
-            "input_parameter_pubkey,pubkey,', {pubkey}',assertBuffer(pubkey)",
-            "input_parameter_blockchain_rid,blockchainRid,', {blockchainRid}',assertBuffer(blockchainRid)",
-            "input_parameter_entity,e,', {e}',assertNumber(e)",
-            "input_parameter_struct,s,', {s}',assertObject(s)",
-            "input_parameter_list_input,v,', {v}',assertArray(v)",
-            "input_parameter_set_input,v,', {Array.from(v)}',assertSet(v)",
-            "input_parameter_map_input,v,', {v}',assertObject(v)",
-            "input_parameter_enum_map,m,', {m}',assertObject(m)",
-            "input_parameter_any_map,m,', {m}',assertObject(m)",
-            "input_parameter_nullable_list_input,v,', {v}',assertBoolean(assertNull(v) || assertArray(v))",
-            "input_parameter_gtv,g,', {g}',assertAny(g)",
-            "input_parameter_nullable_gtv,g,', {g}',assertBoolean(assertNull(g) || assertAny(g))",
+            "input_parameter_text,t,', {t: t}',assertString(t)",
+            "input_parameter_nullable,t,', {t: t}',assertBoolean(assertNull(t) || assertString(t))",
+            "input_parameter_integer,i,', {i: i}',assertNumber(i)",
+            "input_parameter_enum,e,', {e: e}',assertObject(e)",
+            "input_parameter_boolean,b,', {b: b}',assertBoolean(b)",
+            "input_parameter_rowid,r,', {r: r}',assertNumber(r)",
+            "input_parameter_pubkey,pubkey,', {pubkey: pubkey}',assertBuffer(pubkey)",
+            "input_parameter_blockchain_rid,blockchainRid,', {blockchain_rid: blockchainRid}',assertBuffer(blockchainRid)",
+            "input_parameter_entity,e,', {e: e}',assertNumber(e)",
+            "input_parameter_struct,s,', {s: s}',assertObject(s)",
+            "input_parameter_list_input,v,', {v: v}',assertArray(v)",
+            "input_parameter_set_input,v,', {v: Array.from(v)}',assertSet(v)",
+            "input_parameter_map_input,v,', {v: v}',assertObject(v)",
+            "input_parameter_enum_map,m,', {m: m}',assertObject(m)",
+            "input_parameter_any_map,m,', {m: m}',assertObject(m)",
+            "input_parameter_nullable_list_input,v,', {v: v}',assertBoolean(assertNull(v) || assertArray(v))",
+            "input_parameter_gtv,g,', {g: g}',assertAny(g)",
+            "input_parameter_nullable_gtv,g,', {g: g}',assertBoolean(assertNull(g) || assertAny(g))",
+            "input_parameter_multiple,'s,\n\ts2',', {s: s,\n\ts2: s2}','assertString(s)\n\tassertString(s2)'"
     )
     fun parameterTypeTest(queryName: String, funParams: String, queryParams: String, assertFun: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[queryName])

@@ -38,6 +38,8 @@ operation input_parameter_map_integer_text(m: map<integer,text>) {}
 operation input_parameter_map_gtv_text(m: map<gtv,text>) {}
 operation input_parameter_map_gtv_gtv(m: map<gtv,gtv>) {}
 operation input_parameter_map_enum_text(m: map<test_enum,text>) {}
+operation input_parameter_multi(s: text, s2: text) {}
+
 
 // namespaceTest()
 namespace my_ns1 {

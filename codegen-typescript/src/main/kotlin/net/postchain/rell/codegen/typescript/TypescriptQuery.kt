@@ -6,11 +6,7 @@ import net.postchain.rell.codegen.typescript.util.parameterTransformer
 import net.postchain.rell.codegen.typescript.util.rTypeToString
 import net.postchain.rell.codegen.util.capitalize
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
-import net.postchain.rell.model.R_CollectionType
-import net.postchain.rell.model.R_NullableType
-import net.postchain.rell.model.R_QueryDefinition
-import net.postchain.rell.model.R_TupleType
-import net.postchain.rell.model.R_Type
+import net.postchain.rell.model.*
 
 class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         CamelCaseClassName.fromRellQuery(queryDef),
@@ -30,7 +26,7 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
 
     private fun formatQueryParameters(): String {
         if (params.isEmpty()) return ""
-        return ", {" + params.joinToString(", ") { parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type) } + "}"
+        return ", {" + params.joinToString(", ") { "${it.name.str}: ${parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type)}" } + "}"
     }
 
     override fun formatReturnType(): String = "Promise<${if (returnStructure.isNotBlank()) buildReturnType() else rTypeToString(returnType!!)}>"
