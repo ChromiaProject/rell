@@ -78,6 +78,8 @@ class JavascriptOperationTest {
             "input_parameter_map_gtv_text,m,m,assertObject(m)",
             "input_parameter_map_gtv_gtv,m,m,assertObject(m)",
             "input_parameter_map_enum_text,m,m,assertObject(m)",
+            "input_parameter_multi,'s,\n\ts2','s,\n\ts2',assertString(s)\n\tassertString(s2)"
+
     )
     fun parameterTypeTest(opName: String, params: String, gtvParam: String, assertFun: String) {
         val op = kotlin.test.assertNotNull(testModule.operations[opName])
