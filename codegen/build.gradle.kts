@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation("net.postchain.rell:rell:0.11.0")
+    implementation("net.postchain.rell:rell:0.12.0")
 }
 
 val testConfiguration by configurations.creating
