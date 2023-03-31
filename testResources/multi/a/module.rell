@@ -54,3 +54,5 @@ query get_root_struct() = root.root_struct("Whatever");
 query get_root_enum() = root.root_enum.a;
 
 operation create_a_entity(type: a_enum) { create a_entity(a = type); }
+
+operation __special_tx_not_generated() {}
