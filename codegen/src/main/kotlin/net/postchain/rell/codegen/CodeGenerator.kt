@@ -21,7 +21,7 @@ class CodeGenerator(val factory: DocumentFactory) {
         val rellEntities = app.modules.flatMap { module -> module.entities.values.map { CamelCaseClassName.fromRellDefinition(it) to it } }.toMap()
         val rellStructures = app.modules.flatMap { module -> module.structs.values.map { CamelCaseClassName.fromRellDefinition(it) to it } }.toMap()
         val rellQueries = app.modules.flatMap { it.queries.values }.associateBy { it.appLevelName }
-        val rellOperations = app.modules.flatMap { it.operations.values }.associateBy { it.appLevelName }
+        val rellOperations = app.modules.flatMap { it.operations.values }.associateBy { it.appLevelName }.filter { !it.value.moduleLevelName.startsWith("__") }
 
         val queries = if (generateQueries) rellQueries.values.map { factory.createQuery(it) } else listOf()
         val operations = if (generateOperations) rellOperations.values.map { factory.createOperation(it) } else listOf()
