@@ -28,7 +28,7 @@ abstract class AbstractDocument(
         val introSection = "$intro\n\n"
         val packageSection = "${formatPackageString()}\n\n"
         val importSection = "${collectImports().sorted().joinToString("\n")}\n\n"
-        val methodSections = "${sections.joinToString("\n\n") { it.format() }}\n"
+        val methodSections = "${sections.map { it.format() }.toSet().joinToString("\n\n")}\n"
 
         return StringBuilder()
                 .append(introSection)
