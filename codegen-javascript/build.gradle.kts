@@ -11,7 +11,7 @@ repositories {
 
 dependencies {
     implementation(project(":codegen"))
-    implementation("net.postchain.rell:rell:0.12.0")
+    implementation("net.postchain.rell:rell:0.12.1")
     implementation("net.postchain:postchain-common:3.7.0")
     implementation("net.postchain:postchain-client:3.7.0")
     implementation("net.postchain:postchain-gtv:3.7.0")
