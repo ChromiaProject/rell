@@ -4,18 +4,28 @@ import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.document.Document
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.section.DocumentSection
-import net.postchain.rell.compiler.base.core.C_CompilerModuleSelection
-import net.postchain.rell.compiler.base.core.C_CompilerOptions
-import net.postchain.rell.compiler.base.utils.C_SourceDir
-import net.postchain.rell.model.R_ModuleName
-import net.postchain.rell.utils.RellCliEnv
-import net.postchain.rell.utils.RellCliUtils
+import net.postchain.rell.model.R_App
+import net.postchain.rell.utils.cli.RellCliApi
+import net.postchain.rell.utils.cli.RellCliCompileConfig
 import java.io.File
 
-class CodeGenerator(val factory: DocumentFactory) {
+class CodeGenerator(private val factory: DocumentFactory) {
 
+    @Deprecated(message = "Compile app explicitly or replace with function that has null-support", replaceWith = ReplaceWith("createSections(source, baseModule.asList(), generateQueries, generateOperations)"))
     fun createSections(source: File, vararg baseModule: String, generateQueries: Boolean = true, generateOperations: Boolean = true): List<DocumentSection> {
-        val app = compile(source, *baseModule)
+        return createSections(source, baseModule.asList(), generateQueries, generateOperations)
+    }
+
+    fun createSections(source: File, modules: List<String>? = null, generateQueries: Boolean = true, generateOperations: Boolean = true): List<DocumentSection> {
+        val conf = RellCliCompileConfig.Builder()
+                .moduleArgsMissingError(false)
+                .mountConflictError(false)
+                .build()
+        val app = RellCliApi.compileApp(conf, source, modules)
+        return createSections(app, generateQueries, generateOperations)
+    }
+
+    fun createSections(app: R_App, generateQueries: Boolean = true, generateOperations: Boolean = true): List<DocumentSection> {
 
         val rellEnums = app.modules.flatMap { module -> module.enums.values.map { CamelCaseClassName.fromRellDefinition(it) to it } }.toMap()
         val rellEntities = app.modules.flatMap { module -> module.entities.values.map { CamelCaseClassName.fromRellDefinition(it) to it } }.toMap()
@@ -59,21 +69,3 @@ class CodeGenerator(val factory: DocumentFactory) {
         return mapOf()
     }
 }
-
-fun compile(source: File, vararg moduleName: String) = RellCliUtils.compile(
-        object : RellCliEnv() {
-            override fun print(msg: String, err: Boolean) {
-                println(msg)
-            }
-
-            override fun exit(status: Int): Nothing {
-                throw RuntimeException("Rell compilation failed")
-            }
-        },
-        C_SourceDir.diskDir(source),
-        C_CompilerModuleSelection(
-                listOf(*moduleName).map { R_ModuleName.of(it) }
-        ),
-        true,
-        C_CompilerOptions.DEFAULT
-).app ?: throw RuntimeException("Rell compilation failed")
