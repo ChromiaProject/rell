@@ -1,20 +1,13 @@
 plugins {
     id("net.postchain.rell.codegen.kotlin-library-conventions")
 }
-repositories {
-    mavenCentral()
-    maven("https://gitlab.com/api/v4/projects/32294340/packages/maven")
-    maven("https://gitlab.com/api/v4/projects/32802097/packages/maven")
-    maven("https://jcenter.bintray.com")
-    maven("https://maven.emrld.io")
-}
 
 dependencies {
     implementation(project(":codegen"))
-    implementation("net.postchain.rell:rell:0.12.1")
-    implementation("net.postchain:postchain-common:3.7.0")
-    implementation("net.postchain:postchain-client:3.7.0")
-    implementation("net.postchain:postchain-gtv:3.7.0")
+    implementation(libs.rell)
+    implementation(libs.postchain.gtv)
+    implementation(libs.postchain.common)
+    implementation(libs.postchain.client)
     testImplementation("org.jetbrains.kotlin:kotlin-compiler-embeddable")
     testImplementation(project(":codegen", "testConfiguration"))
 }

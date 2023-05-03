@@ -1,0 +1,11 @@
+[versions]
+rell = "0.12.1"
+postchain = "3.9.1"
+clikt = "3.5.2"
+
+[libraries]
+clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
+postchain-client = { module = "net.postchain:postchain-client", version.ref = "postchain" }
+postchain-common = { module = "net.postchain:postchain-common", version.ref = "postchain" }
+postchain-gtv = { module = "net.postchain:postchain-gtv", version.ref = "postchain" }
+rell = { module = "net.postchain.rell:rell", version.ref = "rell" }
