@@ -1,4 +1,4 @@
-image: gradle:7.4.2-jdk11-alpine
+image: gradle:8.1.1-jdk11-alpine
 
 # Disable the Gradle daemon for Continuous Integration servers as correctness
 # is usually a priority over speed in CI environments. Using a fresh
