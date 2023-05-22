@@ -75,11 +75,11 @@ class SimpleTypescriptStructTest {
     @CsvSource(
             "name,string",
             "pubkey,Buffer",
-            "blockchainRid,Buffer",
+            "blockchain_rid,Buffer",
             "transaction, number",
             "block, number",
-            "blockStruct, Block",
-            "transactionStruct, Transaction",
+            "block_struct, Block",
+            "transaction_struct, Transaction",
     )
     fun builtinTypes(keyword: String, typescriptType: String) {
         val struct = assertNotNull(testModule.structs["builtin_${keyword}"], "struct does not exist")

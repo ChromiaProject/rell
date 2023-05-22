@@ -14,7 +14,7 @@ open class DataTypeSection(private val className: ClassName, attributes: Map<Str
 
     private val typeFields = attributes.map { formatAttribute(it.key, it.value) }
 
-    private fun formatAttribute(name: String, type: R_Type) = "${name.snakeToLowerCamelCase()}: ${rTypeToString(type)};"
+    private fun formatAttribute(name: String, type: R_Type) = "$name: ${rTypeToString(type)};"
 
     override val deps = DependencyFinder.findDependencies(attributes.values)
 
