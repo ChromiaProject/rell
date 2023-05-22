@@ -11,7 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import kotlin.test.assertNotNull
 
-internal class SimpleKotlinEntityTest {
+internal class SimpleTypescriptEntityTest {
 
     companion object : SingleFileRellApp("entities") {
 
@@ -31,7 +31,7 @@ internal class SimpleKotlinEntityTest {
             contains("type TestEntity = ")
             contains("name: string;")
             contains("num: number;")
-            contains("bType: boolean;")
+            contains("b_type: boolean;")
         }
     }
 
@@ -72,7 +72,7 @@ internal class SimpleKotlinEntityTest {
             "a,rowid,number",
             "a,json,string",
             "pubkey,pubkey,Buffer",
-            "blockchainRid,blockchain_rid,Buffer"
+            "blockchain_rid,blockchain_rid,Buffer"
     )
     fun simpleEntities(fieldName: String, rellType: String, typescriptType: String) {
         val entity = assertNotNull(testModule.entities["${rellType}_entity"], "entity does not exist")

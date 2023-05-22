@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import java.nio.file.Files
 
-internal class CodeGeneratorTest {
+internal class TypescriptCodeGeneratorTest {
 
     private val generator = CodeGenerator(TypescriptDocumentFactory())
 

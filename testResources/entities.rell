@@ -3,7 +3,7 @@ module;
 entity test_entity {
     name: text;
     num: integer;
-    b_Type: boolean;
+    b_type: boolean;
 }
 
 entity boolean_entity { a: boolean; }

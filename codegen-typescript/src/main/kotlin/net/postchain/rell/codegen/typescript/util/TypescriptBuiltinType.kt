@@ -20,8 +20,8 @@ object BlockEntity : Builtin {
 
     override fun format() = """
        |export type Block = {
-       |    blockHeight: number,
-       |    blockRid: Buffer,
+       |    block_height: number,
+       |    block_rid: Buffer,
        |    timestamp: number,
        |}
     """.trimMargin()
@@ -34,9 +34,9 @@ object TransactionEntity : Builtin {
 
     override fun format() = """
        |export type Transaction = {
-       |    txRid: Buffer,
-       |    txHash: Buffer,
-       |    txData: Buffer,
+       |    tx_rid: Buffer,
+       |    tx_hash: Buffer,
+       |    tx_data: Buffer,
        |    block: number,
        |}
     """.trimMargin()

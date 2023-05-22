@@ -5,6 +5,7 @@ import assertk.assertThat
 import assertk.assertions.contains
 import net.postchain.rell.codegen.SingleFileRellApp
 import net.postchain.rell.codegen.deps.CamelCaseClassName
+import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -75,17 +76,17 @@ internal class SimpleKotlinStructTest {
     @CsvSource(
             "name,String",
             "pubkey,WrappedByteArray",
-            "blockchainRid,WrappedByteArray",
+            "blockchain_rid,WrappedByteArray",
             "transaction, RowId",
             "block, RowId",
-            "blockStruct, Block",
-            "transactionStruct, Transaction",
+            "block_struct, Block",
+            "transaction_struct, Transaction",
     )
     fun builtinTypes(keyword: String, kotlinType: String) {
         val struct = assertNotNull(testModule.structs["builtin_${keyword}"], "struct does not exist")
         val formatted = KotlinStruct(CamelCaseClassName.fromRellDefinition(struct), struct).format()
         assertThat(formatted).all {
-            contains("val $keyword: $kotlinType")
+            contains("val ${keyword.snakeToLowerCamelCase()}: $kotlinType")
         }
     }
 

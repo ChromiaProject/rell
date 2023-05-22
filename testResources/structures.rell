@@ -15,11 +15,11 @@ struct multi_struct { a: text; i: integer; }
 
 struct builtin_name { name; }
 struct builtin_pubkey { pubkey; }
-struct builtin_blockchainRid { blockchain_rid: byte_array; }
+struct builtin_blockchain_rid { blockchain_rid: byte_array; }
 struct builtin_transaction { transaction; }
 struct builtin_block { block; }
-struct builtin_blockStruct { block_struct: struct<block>; }
-struct builtin_transactionStruct { transaction_struct: struct<transaction>; }
+struct builtin_block_struct { block_struct: struct<block>; }
+struct builtin_transaction_struct { transaction_struct: struct<transaction>; }
 
 entity a { name; }
 struct nested_struct { a: text_struct; }
