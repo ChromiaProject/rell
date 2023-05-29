@@ -1,10 +1,10 @@
 package net.postchain.rell.codegen.kotlin
 
 import net.postchain.client.core.PostchainQuery
+import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Query
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
-import net.postchain.rell.model.*
 
 class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
         CamelCaseClassName.fromRellQuery(queryDef),

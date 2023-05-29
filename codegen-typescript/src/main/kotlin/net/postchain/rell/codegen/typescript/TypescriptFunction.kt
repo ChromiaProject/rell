@@ -1,13 +1,13 @@
 package net.postchain.rell.codegen.typescript
 
+import net.postchain.rell.base.model.R_MountName
+import net.postchain.rell.base.model.R_Param
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.typescript.util.rTypeToString
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
-import net.postchain.rell.model.R_MountName
-import net.postchain.rell.model.R_Param
-import net.postchain.rell.model.R_Type
 
 abstract class TypescriptFunction(
         protected val className: ClassName,

@@ -1,9 +1,9 @@
 package net.postchain.rell.codegen.javascript
 
+import net.postchain.rell.base.model.R_OperationDefinition
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Operation
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
-import net.postchain.rell.model.R_OperationDefinition
 
 class JavascriptOperation(op: R_OperationDefinition) : JavascriptFunction(
         CamelCaseClassName.fromRellOperation(op),

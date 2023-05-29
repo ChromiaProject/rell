@@ -1,9 +1,9 @@
 package net.postchain.rell.codegen.document
 
+import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.section.*
 import net.postchain.rell.codegen.util.BuiltinType
-import net.postchain.rell.model.*
 
 interface DocumentFactory {
     val fileExtension: String

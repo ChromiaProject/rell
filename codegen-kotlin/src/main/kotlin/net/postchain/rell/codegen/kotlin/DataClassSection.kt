@@ -7,14 +7,14 @@ import net.postchain.crypto.PubKey
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.mapper.Name
 import net.postchain.gtv.mapper.Nullable
+import net.postchain.rell.base.model.R_NullableType
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.kotlin.util.rTypeToString
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.GeneratedAnnotation
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
-import net.postchain.rell.model.R_NullableType
-import net.postchain.rell.model.R_Type
 import java.math.BigDecimal
 import javax.annotation.processing.Generated
 

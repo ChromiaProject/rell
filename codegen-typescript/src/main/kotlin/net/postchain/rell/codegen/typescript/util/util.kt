@@ -1,7 +1,7 @@
 package net.postchain.rell.codegen.typescript.util
 
+import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.deps.CamelCaseClassName
-import net.postchain.rell.model.*
 
 fun parameterTransformer(name: String, type: R_Type): String = when (type) {
     is R_SetType -> "Array.from($name)"

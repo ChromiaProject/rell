@@ -10,6 +10,9 @@ import net.postchain.gtv.GtvNull
 import net.postchain.gtv.mapper.GtvObjectMapper
 import net.postchain.gtv.mapper.Name
 import net.postchain.gtv.mapper.Nullable
+import net.postchain.rell.base.model.R_MountName
+import net.postchain.rell.base.model.R_Param
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.kotlin.util.attributeToGtv
@@ -17,20 +20,17 @@ import net.postchain.rell.codegen.kotlin.util.rTypeToString
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.GeneratedAnnotation
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
-import net.postchain.rell.model.R_MountName
-import net.postchain.rell.model.R_Param
-import net.postchain.rell.model.R_Type
 import java.math.BigDecimal
 import javax.annotation.processing.Generated
 import kotlin.reflect.KClass
 
 abstract class ExtensionMethodSection(
-    protected val className: ClassName,
-    protected val mountName: R_MountName,
-    private val extendedClass: KClass<*>,
-    private val extendenMethod: String,
-    protected val params: List<R_Param>,
-    private val returnType: R_Type?
+        protected val className: ClassName,
+        protected val mountName: R_MountName,
+        private val extendedClass: KClass<*>,
+        private val extendenMethod: String,
+        protected val params: List<R_Param>,
+        private val returnType: R_Type?
 ) : DocumentSection {
     override val moduleName: String
         get() = className.module

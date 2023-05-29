@@ -1,9 +1,9 @@
 package net.postchain.rell.codegen.javascript
 
+import net.postchain.rell.base.model.R_QueryDefinition
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Query
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
-import net.postchain.rell.model.R_QueryDefinition
 
 class JavascriptQuery(queryDef: R_QueryDefinition) : JavascriptFunction(
         CamelCaseClassName.fromRellQuery(queryDef),

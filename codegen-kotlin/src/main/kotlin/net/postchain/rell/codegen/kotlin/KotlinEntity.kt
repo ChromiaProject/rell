@@ -1,8 +1,8 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.section.Entity
-import net.postchain.rell.model.*
 
 class KotlinEntity(className: ClassName, entity: R_EntityDefinition) : DataClassSection(
     className,

@@ -1,11 +1,11 @@
 package net.postchain.rell.codegen.deps
 
+import net.postchain.rell.base.model.R_Definition
+import net.postchain.rell.base.model.R_OperationDefinition
+import net.postchain.rell.base.model.R_QueryDefinition
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
-import net.postchain.rell.model.R_Definition
-import net.postchain.rell.model.R_OperationDefinition
-import net.postchain.rell.model.R_QueryDefinition
-import net.postchain.rell.model.R_Type
 
 data class CamelCaseClassName(
         override val rellName: String,

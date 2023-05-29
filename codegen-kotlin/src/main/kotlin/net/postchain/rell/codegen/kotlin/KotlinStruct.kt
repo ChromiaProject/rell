@@ -1,8 +1,8 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.rell.base.model.R_StructDefinition
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.section.Struct
-import net.postchain.rell.model.R_StructDefinition
 
 
 class KotlinStruct(className: ClassName, struct: R_StructDefinition) : DataClassSection(
