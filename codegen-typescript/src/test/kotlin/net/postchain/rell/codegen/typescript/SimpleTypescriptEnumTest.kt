@@ -27,8 +27,8 @@ internal class SimpleTypescriptEnumTest {
 
         assertThat(formatted).all {
             contains("enum TestEnum")
-            contains("A,")
-            contains("BValue")
+            contains("a,")
+            contains("b_value")
         }
     }
 
