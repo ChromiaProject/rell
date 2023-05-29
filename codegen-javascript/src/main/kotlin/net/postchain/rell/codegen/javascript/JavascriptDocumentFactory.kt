@@ -1,9 +1,9 @@
 package net.postchain.rell.codegen.javascript
 
+import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.util.BuiltinType
-import net.postchain.rell.model.*
 
 class JavascriptDocumentFactory : DocumentFactory {
     override val fileExtension: String

@@ -1,12 +1,12 @@
 package net.postchain.rell.codegen.typescript
 
+import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Query
 import net.postchain.rell.codegen.typescript.util.parameterTransformer
 import net.postchain.rell.codegen.typescript.util.rTypeToString
 import net.postchain.rell.codegen.util.capitalize
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
-import net.postchain.rell.model.*
 
 class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         CamelCaseClassName.fromRellQuery(queryDef),

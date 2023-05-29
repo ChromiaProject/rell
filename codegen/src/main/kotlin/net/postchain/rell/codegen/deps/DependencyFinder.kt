@@ -1,6 +1,7 @@
 package net.postchain.rell.codegen.deps
 
-import net.postchain.rell.model.*
+import net.postchain.rell.base.model.*
+
 
 object DependencyFinder {
 

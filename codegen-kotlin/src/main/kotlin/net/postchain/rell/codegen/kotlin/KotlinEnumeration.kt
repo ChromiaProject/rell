@@ -1,9 +1,9 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.rell.base.model.R_EnumDefinition
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.section.Enumeration
 import net.postchain.rell.codegen.util.GeneratedAnnotation
-import net.postchain.rell.model.R_EnumDefinition
 
 class KotlinEnumeration(val className: ClassName, enum: R_EnumDefinition) : Enumeration {
     private val name = className.rellName

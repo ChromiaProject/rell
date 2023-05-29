@@ -1,9 +1,9 @@
 package net.postchain.rell.codegen.javascript
 
+import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
-import net.postchain.rell.model.*
 
 abstract class JavascriptFunction(
         protected val className: ClassName,

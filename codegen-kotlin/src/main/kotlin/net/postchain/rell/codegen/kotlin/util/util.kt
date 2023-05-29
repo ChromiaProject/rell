@@ -1,22 +1,7 @@
 package net.postchain.rell.codegen.kotlin.util
 
+import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.deps.CamelCaseClassName
-import net.postchain.rell.model.R_BooleanType
-import net.postchain.rell.model.R_ByteArrayType
-import net.postchain.rell.model.R_DecimalType
-import net.postchain.rell.model.R_EntityType
-import net.postchain.rell.model.R_EnumType
-import net.postchain.rell.model.R_GtvType
-import net.postchain.rell.model.R_IntegerType
-import net.postchain.rell.model.R_JsonType
-import net.postchain.rell.model.R_ListType
-import net.postchain.rell.model.R_MapType
-import net.postchain.rell.model.R_NullableType
-import net.postchain.rell.model.R_RowidType
-import net.postchain.rell.model.R_SetType
-import net.postchain.rell.model.R_StructType
-import net.postchain.rell.model.R_TextType
-import net.postchain.rell.model.R_Type
 
 fun attributeToGtv(name: String, type: R_Type): String = aliasToGtv(name, type) ?: when (type) {
     is R_EnumType -> "gtv(${name}.ordinal.toLong())"

@@ -1,10 +1,10 @@
 package net.postchain.rell.codegen.kotlin
 
 import net.postchain.client.transaction.TransactionBuilder
+import net.postchain.rell.base.model.R_OperationDefinition
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Operation
-import net.postchain.rell.model.R_OperationDefinition
-import net.postchain.rell.model.R_Type
 
 class KotlinOperation(op: R_OperationDefinition) : ExtensionMethodSection(
     CamelCaseClassName.fromRellOperation(op),

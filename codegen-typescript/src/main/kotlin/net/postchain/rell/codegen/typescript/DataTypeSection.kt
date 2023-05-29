@@ -1,11 +1,10 @@
 package net.postchain.rell.codegen.typescript
 
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.typescript.util.rTypeToString
-import net.postchain.rell.codegen.util.snakeToLowerCamelCase
-import net.postchain.rell.model.R_Type
 
 open class DataTypeSection(private val className: ClassName, attributes: Map<String, R_Type>) : DocumentSection {
     override val moduleName get() = className.module

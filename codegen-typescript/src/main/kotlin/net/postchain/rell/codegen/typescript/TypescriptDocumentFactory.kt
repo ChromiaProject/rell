@@ -1,10 +1,10 @@
 package net.postchain.rell.codegen.typescript
 
+import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.typescript.util.TypescriptBuiltinType
 import net.postchain.rell.codegen.util.BuiltinType
-import net.postchain.rell.model.*
 
 class TypescriptDocumentFactory : DocumentFactory {
     override val fileExtension: String

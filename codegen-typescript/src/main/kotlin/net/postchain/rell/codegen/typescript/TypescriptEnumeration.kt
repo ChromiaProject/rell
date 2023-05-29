@@ -1,9 +1,9 @@
 package net.postchain.rell.codegen.typescript
 
+import net.postchain.rell.base.model.R_EnumDefinition
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.section.Enumeration
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
-import net.postchain.rell.model.R_EnumDefinition
 
 class TypescriptEnumeration(private val className: ClassName, enum: R_EnumDefinition) : Enumeration {
     override val moduleName = className.module

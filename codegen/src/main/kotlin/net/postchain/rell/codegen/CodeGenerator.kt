@@ -1,12 +1,11 @@
 package net.postchain.rell.codegen
 
+import net.postchain.rell.api.base.RellApiCompile
+import net.postchain.rell.base.model.R_App
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.document.Document
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.section.DocumentSection
-import net.postchain.rell.model.R_App
-import net.postchain.rell.utils.cli.RellCliApi
-import net.postchain.rell.utils.cli.RellCliCompileConfig
 import java.io.File
 
 class CodeGenerator(private val factory: DocumentFactory) {
@@ -17,11 +16,11 @@ class CodeGenerator(private val factory: DocumentFactory) {
     }
 
     fun createSections(source: File, modules: List<String>? = null, generateQueries: Boolean = true, generateOperations: Boolean = true): List<DocumentSection> {
-        val conf = RellCliCompileConfig.Builder()
+        val conf = RellApiCompile.Config.Builder()
                 .moduleArgsMissingError(false)
                 .mountConflictError(false)
                 .build()
-        val app = RellCliApi.compileApp(conf, source, modules)
+        val app = RellApiCompile.compileApp(conf, source, modules)
         return createSections(app, generateQueries, generateOperations)
     }
 
