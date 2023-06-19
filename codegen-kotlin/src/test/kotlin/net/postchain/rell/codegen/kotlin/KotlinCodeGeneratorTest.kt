@@ -42,7 +42,7 @@ internal class CodeGeneratorTest {
                     }.joinToString(":")
                 noStdlib = true
                 noReflect = true
-                jvmTarget = "11"
+                jvmTarget = "17"
             }
             val exitCode: ExitCode = execImpl(
                 PrintingMessageCollector(
