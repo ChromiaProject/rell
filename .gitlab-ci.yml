@@ -1,4 +1,4 @@
-image: gradle:8.1.1-jdk11-alpine
+image: gradle:8.1.1-jdk17-alpine
 
 .git_template: &git_setup |
   git remote set-url --push origin "https://oauth2:${BUILD_USER_GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
@@ -81,4 +81,3 @@ release-patch:
   only:
     - dev
     - /^support\/.*$/
-
