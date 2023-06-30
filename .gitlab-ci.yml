@@ -1,19 +1,8 @@
 image: gradle:8.1.1-jdk17-alpine
-
-.git_template: &git_setup |
-  git remote set-url --push origin "https://oauth2:${BUILD_USER_GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
-  git config user.name "build-user core-dev"
-  git config user.email build_user@chromaway.com
-
-.release:
-  stage: release
-  when: manual
-  before_script:
-    - set -eu
-    - *git_setup
-    - git checkout $CI_COMMIT_REF_NAME
-    - CURRENT_VERSION=$(git describe --tags --abbrev=0)
-    - IFS=. read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+include:
+  - project: chromaway/core-infra/gitlab-automation
+    ref: 1.0.1
+    file: templates/release.yml
 
 # Disable the Gradle daemon for Continuous Integration servers as correctness
 # is usually a priority over speed in CI environments. Using a fresh
@@ -64,20 +53,3 @@ publish:
     paths:
       - "**/build"
       - .gradle
-
-release-minor:
-  extends: .release
-  script:
-    - git tag $MAJOR.$((MINOR + 1)).0
-    - git push --tags
-  only:
-    - dev
-
-release-patch:
-  extends: .release
-  script:
-    - git tag $MAJOR.$MINOR.$((PATCH + 1))
-    - git push --tags
-  only:
-    - dev
-    - /^support\/.*$/
