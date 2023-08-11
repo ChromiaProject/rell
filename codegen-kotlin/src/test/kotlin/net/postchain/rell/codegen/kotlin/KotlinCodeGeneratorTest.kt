@@ -95,6 +95,13 @@ internal class CodeGeneratorTest {
     }
 
     @Test
+    fun enumInput() {
+        val (sections, documents) = generateAndCompile("/enum_input", "enum_input")
+        assertThat(sections).hasSize(2)
+        assertThat(documents).hasSize(1)
+    }
+
+    @Test
     fun byteArray() {
         val (sections, documents) = generateAndCompile("/byte_array", "byte_array")
         assertThat(sections).hasSize(4)

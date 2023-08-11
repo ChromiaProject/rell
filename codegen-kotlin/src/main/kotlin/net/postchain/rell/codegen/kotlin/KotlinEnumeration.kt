@@ -1,5 +1,7 @@
 package net.postchain.rell.codegen.kotlin
 
+import net.postchain.gtv.GtvFactory
+import net.postchain.gtv.mapper.ToGtv
 import net.postchain.rell.base.model.R_EnumDefinition
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.section.Enumeration
@@ -11,7 +13,9 @@ class KotlinEnumeration(val className: ClassName, enum: R_EnumDefinition) : Enum
     private val enumValues = enum.values()
 
     override val imports = listOf(
-        "import javax.annotation.processing.Generated"
+        "import javax.annotation.processing.Generated",
+        "import ${ToGtv::class.qualifiedName}",
+        "import ${GtvFactory::class.qualifiedName}"
     )
 
     override fun format() = """
@@ -19,12 +23,14 @@ class KotlinEnumeration(val className: ClassName, enum: R_EnumDefinition) : Enum
         |* Enum $name
         |*/
         |${GeneratedAnnotation.createAnnotation(name)}
-        |enum class ${className.className} {
-        |${formatEnumValues()}
+        |enum class ${className.className}: ToGtv {
+        |${formatEnumValues()};
+        |
+        |${"\t"}override fun toGtv(): Gtv = GtvFactory.gtv(ordinal.toLong())
         |}
     """.trimMargin()
 
-    private fun formatEnumValues() : String {
-        return "\t${enumValues.joinToString(",\n\t") { it.asEnum().name } }"
+    private fun formatEnumValues(): String {
+        return "\t${enumValues.joinToString(",\n\t") { it.asEnum().name }}"
     }
 }
