@@ -26,9 +26,10 @@ internal class KotlinEnumTest {
         val enum = assertNotNull(testModule.enums["test_enum"], "enum does not exist")
         val formatted = KotlinEnumeration(CamelCaseClassName.fromRellDefinition(enum), enum).format()
         assertThat(formatted).all {
-            contains("enum class TestEnum")
+            contains("enum class TestEnum: ToGtv")
             contains("a,")
             contains("b_value")
+            contains("override fun toGtv(): Gtv = GtvFactory.gtv(ordinal.toLong())")
         }
     }
 

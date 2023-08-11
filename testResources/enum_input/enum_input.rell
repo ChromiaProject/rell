@@ -1,0 +1,5 @@
+module;
+
+enum test_enum { a, b }
+
+operation input_parameter_enum(e: test_enum) {}

@@ -1,6 +1,6 @@
 [versions]
 rell = "0.13.1"
-postchain = "3.11.5"
+postchain = "3.11.9"
 postchain-client = "3.11.2"
 clikt = "3.5.2"
 
