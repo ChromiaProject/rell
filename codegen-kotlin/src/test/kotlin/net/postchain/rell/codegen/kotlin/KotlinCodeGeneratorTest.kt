@@ -18,11 +18,11 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import java.nio.file.Files
 
-internal class CodeGeneratorTest {
+internal class KotlinCodeGeneratorTest {
 
     private val generator = CodeGenerator(KotlinDocumentFactory("com.example"))
 
-    fun generateAndCompile(rellPath: String, vararg baseModule: String): Pair<List<DocumentSection>, Map<String, Document>> {
+    private fun generateAndCompile(rellPath: String, vararg baseModule: String): Pair<List<DocumentSection>, Map<String, Document>> {
         val sections = generator.createSections(
                 File(this::class.java.getResource(rellPath)!!.toURI()),
                 baseModule.asList())
