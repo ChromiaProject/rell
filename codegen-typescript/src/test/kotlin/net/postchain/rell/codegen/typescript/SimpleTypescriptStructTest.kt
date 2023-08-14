@@ -26,6 +26,7 @@ class SimpleTypescriptStructTest {
     @CsvSource(
             "boolean,'a: boolean'",
             "integer,'a: number'",
+            "big_integer,'a: bigint'",
             "decimal,'a: number'",
             "text,'a: string'",
             "byte_array,'a: Buffer'",

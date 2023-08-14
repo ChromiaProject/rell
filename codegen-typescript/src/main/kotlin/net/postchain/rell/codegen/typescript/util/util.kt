@@ -13,6 +13,7 @@ fun rTypeToString(type: R_Type): String {
         is R_NullableType -> "${rTypeToString(type.valueType)} | null"
         is R_BooleanType -> "boolean"
         is R_IntegerType -> "number"
+        is R_BigIntegerType -> "bigint"
         is R_DecimalType -> "number"
         is R_TextType -> "string"
         is R_ByteArrayType -> "Buffer"
