@@ -2,6 +2,7 @@ module;
 
 struct boolean_struct { a: boolean; }
 struct integer_struct { a: integer; }
+struct big_integer_struct { a: big_integer; }
 struct decimal_struct { a: decimal; }
 struct text_struct { a: text; }
 struct byte_array_struct { a: byte_array; }

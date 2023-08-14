@@ -66,6 +66,7 @@ internal class SimpleTypescriptEntityTest {
     @CsvSource(
             "a,boolean,boolean",
             "a,integer,number",
+            "a,big_integer,bigint",
             "a,decimal,number",
             "a,text,string",
             "a,byte_array,Buffer",

@@ -1,0 +1,21 @@
+module;
+
+entity big_integer_entity {
+    key name;
+    data: big_integer;
+}
+
+struct big_integer_struct {
+    name;
+    data: big_integer;
+}
+
+query big_integer_query(name): big_integer {
+    return big_integer_entity @ { name } (.data);
+}
+
+query nullable_big_integer_query(name): big_integer? {
+    return big_integer_entity @? { name } (.data);
+}
+
+operation big_integer_op(big_integer, d: big_integer?, big_integer_struct) { }

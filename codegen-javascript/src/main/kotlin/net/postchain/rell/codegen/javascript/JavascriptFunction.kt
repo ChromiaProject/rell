@@ -46,6 +46,7 @@ abstract class JavascriptFunction(
             is R_NullableType -> JavascriptBuiltinType.NullAssertion
             is R_BooleanType -> JavascriptBuiltinType.BooleanAssertion
             is R_IntegerType -> JavascriptBuiltinType.NumberAssertion
+            is R_BigIntegerType -> JavascriptBuiltinType.BigIntegerAssertion
             is R_DecimalType -> JavascriptBuiltinType.NumberAssertion
             is R_TextType -> JavascriptBuiltinType.StringAssertion
             is R_ByteArrayType -> JavascriptBuiltinType.BufferAssertion

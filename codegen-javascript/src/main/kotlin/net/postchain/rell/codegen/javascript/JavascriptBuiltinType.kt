@@ -9,6 +9,7 @@ enum class JavascriptBuiltinType(val builtin: TypeAssertion) : BuiltinType {
     NullAssertion(NullAssertionJs),
     BooleanAssertion(BooleanAssertionJs),
     NumberAssertion(NumberAssertionJs),
+    BigIntegerAssertion(BigIntegerAssertionJs),
     StringAssertion(StringAssertionJs),
     ObjectAssertion(ObjectAssertionJs),
     BufferAssertion(BufferAssertionJs),
@@ -25,6 +26,7 @@ object NullAssertionJs : TypeAssertion("assertNull", "null")
 object BooleanAssertionJs : TypeAssertion("assertBoolean", "boolean")
 
 object NumberAssertionJs : TypeAssertion("assertNumber", "number")
+object BigIntegerAssertionJs : TypeAssertion("assertBigInteger", "bigint")
 
 object StringAssertionJs : TypeAssertion("assertString", "string")
 

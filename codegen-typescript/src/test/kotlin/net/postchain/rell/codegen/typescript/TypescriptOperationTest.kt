@@ -54,6 +54,7 @@ internal class TypescriptOperationTest {
             "input_parameter_nargs,'',''",
             "input_parameter_text,t: string,t",
             "input_parameter_integer,i: number,i",
+            "input_parameter_big_integer,i: bigint,i",
             "input_parameter_byte_array,b: Buffer,b",
             "input_parameter_enum,e: TestEnum,e",
             "input_parameter_boolean,b: boolean,b",

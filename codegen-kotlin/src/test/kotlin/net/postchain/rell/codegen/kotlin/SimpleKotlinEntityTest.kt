@@ -62,10 +62,11 @@ internal class SimpleKotlinEntityTest {
         }
     }
 
-    @ParameterizedTest(name = "rell type {0} becomes {1}")
+    @ParameterizedTest(name = "rell type {1} becomes {2}")
     @CsvSource(
             "a,boolean,Boolean",
             "a,integer,Long",
+            "a,big_integer,BigInteger",
             "a,decimal,BigDecimal",
             "a,text,String",
             "a,byte_array,WrappedByteArray",

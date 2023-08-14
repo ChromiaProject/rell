@@ -66,6 +66,7 @@ class JavascriptQueryTest {
             "input_parameter_text,t,', {t: t}',assertString(t)",
             "input_parameter_nullable,t,', {t: t}',assertBoolean(assertNull(t) || assertString(t))",
             "input_parameter_integer,i,', {i: i}',assertNumber(i)",
+            "input_parameter_big_integer,i,', {i: i}',assertBigInteger(i)",
             "input_parameter_enum,e,', {e: e}',assertObject(e)",
             "input_parameter_boolean,b,', {b: b}',assertBoolean(b)",
             "input_parameter_rowid,r,', {r: r}',assertNumber(r)",

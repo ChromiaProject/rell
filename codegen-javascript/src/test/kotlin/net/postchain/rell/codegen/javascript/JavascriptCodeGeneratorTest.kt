@@ -71,6 +71,13 @@ class JavascriptCodeGeneratorTest {
     }
 
     @Test
+    fun big_integer() {
+        val (sections, documents) = generateAndCompile("/big_integer", "big_integer")
+        assertThat(sections).hasSize(2 /* queries */ + 1 /* operation */ + 4 /*assertions*/)
+        assertThat(documents).hasSize(1 + 1 /* root */)
+    }
+
+    @Test
     fun rowId() {
         val (sections, documents) = generateAndCompile("/rowid", "rowid")
         assertThat(sections).hasSize(2 /* queries */ + 1 /* operation */ + 4 /*assertions*/)

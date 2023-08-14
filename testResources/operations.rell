@@ -14,6 +14,7 @@ operation input_parameter_nargs() {}
 operation input_parameter_text(t: text) {}
 operation input_parameter_enum(e: test_enum) {}
 operation input_parameter_integer(i: integer) {}
+operation input_parameter_big_integer(i: big_integer) {}
 operation input_parameter_byte_array(b: byte_array) {}
 operation input_parameter_boolean(b: boolean) {}
 operation input_parameter_rowid(r: rowid) {}

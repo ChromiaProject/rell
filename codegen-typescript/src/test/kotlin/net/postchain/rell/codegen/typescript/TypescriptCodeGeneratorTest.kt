@@ -80,6 +80,13 @@ internal class TypescriptCodeGeneratorTest {
     }
 
     @Test
+    fun big_integer() {
+        val (sections, documents) = generateAndCompile("/big_integer", "big_integer")
+        assertThat(sections).hasSize(4)
+        assertThat(documents).hasSize(1)
+    }
+
+    @Test
     fun rowId() {
         val (sections, documents) = generateAndCompile("/rowid", "rowid")
         assertThat(sections).hasSize(4)
