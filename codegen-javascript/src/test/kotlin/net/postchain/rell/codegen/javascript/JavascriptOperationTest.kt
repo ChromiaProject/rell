@@ -53,6 +53,7 @@ class JavascriptOperationTest {
             "input_parameter_nargs,'','',''",
             "input_parameter_text,t,t,assertString(t)",
             "input_parameter_integer,i,i,assertNumber(i)",
+            "input_parameter_big_integer,i,i,assertBigInteger(i)",
             "input_parameter_byte_array,b,b,assertBuffer(b)",
             "input_parameter_enum,e,e,assertObject(e)",
             "input_parameter_boolean,b,b,assertBoolean(b)",
