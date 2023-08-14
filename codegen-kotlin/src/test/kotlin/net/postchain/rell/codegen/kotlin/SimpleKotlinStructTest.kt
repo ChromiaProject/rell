@@ -27,6 +27,7 @@ internal class SimpleKotlinStructTest {
     @CsvSource(
         "boolean,'val a: Boolean'",
         "integer,'val a: Long'",
+        "big_integer,'val a: BigInteger'",
         "decimal,'val a: BigDecimal'",
         "text,'val a: String'",
         "byte_array,'val a: WrappedByteArray'",

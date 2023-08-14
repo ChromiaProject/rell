@@ -13,6 +13,7 @@ enum test_enum { a }
 query return_type_enum() = test_enum.a;
 query return_type_boolean() = true;
 query return_type_integer() = 1;
+query return_type_big_integer() = 1L;
 query return_type_text() = "";
 query return_type_decimal() = 1.0;
 query return_type_byte_array() = x"";
@@ -49,6 +50,7 @@ query input_parameter_text(t: text) = 1;
 query input_parameter_nullable(t: text?) = 1;
 query input_parameter_enum(e: test_enum) = 1;
 query input_parameter_integer(i: integer) = 1;
+query input_parameter_big_integer(i: big_integer) = 1;
 query input_parameter_boolean(b: boolean) = 1;
 query input_parameter_rowid(r: rowid) = 1;
 query input_parameter_pubkey(pubkey) = 1;

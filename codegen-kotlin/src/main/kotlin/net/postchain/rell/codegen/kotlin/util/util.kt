@@ -36,6 +36,7 @@ fun rTypeToString(name: String, type: R_Type, primitiveTypes: Boolean, aliases: 
             is R_NullableType -> "${rTypeToString(name, type.valueType, primitiveTypes, aliases)}?"
             is R_BooleanType -> "Boolean"
             is R_IntegerType -> "Long"
+            is R_BigIntegerType -> "BigInteger"
             is R_DecimalType -> "BigDecimal"
             is R_TextType -> "String"
             is R_ByteArrayType -> if (primitiveTypes) "ByteArray" else "WrappedByteArray"

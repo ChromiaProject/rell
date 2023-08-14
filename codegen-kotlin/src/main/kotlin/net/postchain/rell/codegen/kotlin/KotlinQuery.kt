@@ -35,6 +35,7 @@ class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
             is R_EnumType -> ".let { ${CamelCaseClassName.fromRellType(type).className}.values()[it.asInteger().toInt()] }"
             is R_TextType -> ".asString()"
             is R_IntegerType -> ".asInteger()"
+            is R_BigIntegerType -> ".asBigInteger()"
             is R_ByteArrayType -> ".asByteArray()"
             is R_DecimalType -> ".let { BigDecimal(it.asString()) }"            // Note that decimals are encoded as GtvString(?)
             is R_RowidType -> ".let { RowId(it.asInteger()) }"

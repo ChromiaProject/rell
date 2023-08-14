@@ -21,6 +21,7 @@ import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.GeneratedAnnotation
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import java.math.BigDecimal
+import java.math.BigInteger
 import javax.annotation.processing.Generated
 import kotlin.reflect.KClass
 
@@ -37,6 +38,7 @@ abstract class ExtensionMethodSection(
 
     final override val imports: List<String> = listOf(
         "import ${BigDecimal::class.qualifiedName}",
+        "import ${BigInteger::class.qualifiedName}",
         "import ${WrappedByteArray::class.qualifiedName}",
         "import ${RowId::class.qualifiedName}",
         "import net.postchain.common.wrap",
