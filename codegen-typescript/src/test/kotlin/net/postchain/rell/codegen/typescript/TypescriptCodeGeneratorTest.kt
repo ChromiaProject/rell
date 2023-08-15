@@ -81,7 +81,7 @@ internal class TypescriptCodeGeneratorTest {
     }
 
 
-        @Test
+    @Test
     fun multiModule() {
         val (sections, documents) = generateAndCompile("/multi", "a", "f")
         assertThat(sections).hasSize(13 /* queries */ + 1 /* operations */ + 16 /* needed objects */)
