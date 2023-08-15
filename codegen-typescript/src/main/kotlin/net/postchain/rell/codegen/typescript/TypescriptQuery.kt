@@ -43,6 +43,11 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         return resultObject.format()
     }
 
+    private fun isUnnamedTuple(returnType: R_TupleType) = !returnType.name.contains(":")
+
+    private fun isAllowedMapType(returnType: R_MapType) =
+            listOf(R_TextType::class, R_IntegerType::class).contains(returnType.keyType::class).also { println(returnType.keyType) }
+
     private fun buildReturnType(extendType: Boolean = true): String {
         val typeName = "${capitalize(className.className)}ReturnType"
         if (!extendType) return typeName

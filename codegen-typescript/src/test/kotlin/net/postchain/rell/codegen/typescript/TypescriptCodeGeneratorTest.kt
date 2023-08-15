@@ -73,7 +73,7 @@ internal class TypescriptCodeGeneratorTest {
         val containerPath = "/usr/share/${path.name}"
         compilerContainer.copyFileToContainer(MountableFile.forHostPath(path), containerPath)
         val res = compilerContainer.execInContainer("sh", "-c", "tsc -p $containerPath/tsconfig.json")
-        assertThat(res.exitCode).isZero()
+        assertThat(res.exitCode, displayActual = { "typescript compilation failed: ${res.stderr}" }).isZero()
         println(compilerContainer.execInContainer("sh", "-c", "ls $containerPath/dist"))
         return sections to documents
     }
