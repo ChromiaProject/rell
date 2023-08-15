@@ -11,19 +11,6 @@ import kotlin.test.assertNotNull
 class SimpleJavascriptBuiltinTest {
 
     @Test
-    fun builtInNullAssertionTest() {
-        val nullAssertion = JavascriptBuiltinType.NullAssertion.createBuiltin()
-        val formatted = nullAssertion.format()
-        assertThat(formatted).all {
-            contains("""
-                |function assertNull(arg) {
-                |${"\t"}if(typeof arg !== "null") throw new Error("Expected input to be null")
-                |}
-            """.trimMargin())
-        }
-    }
-
-    @Test
     fun unsupportedTypeCheck() {
         val anyAssertion = JavascriptBuiltinType.AnyAssertion.createBuiltin()
         val formatted = anyAssertion.format()

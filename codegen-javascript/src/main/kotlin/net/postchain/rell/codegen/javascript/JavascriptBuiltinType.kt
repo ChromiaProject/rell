@@ -6,7 +6,6 @@ import net.postchain.rell.codegen.util.BuiltinType
 
 
 enum class JavascriptBuiltinType(val builtin: TypeAssertion) : BuiltinType {
-    NullAssertion(NullAssertionJs),
     BooleanAssertion(BooleanAssertionJs),
     NumberAssertion(NumberAssertionJs),
     BigIntegerAssertion(BigIntegerAssertionJs),
@@ -20,8 +19,6 @@ enum class JavascriptBuiltinType(val builtin: TypeAssertion) : BuiltinType {
 
     override fun createBuiltin() = builtin
 }
-
-object NullAssertionJs : TypeAssertion("assertNull", "null")
 
 object BooleanAssertionJs : TypeAssertion("assertBoolean", "boolean")
 

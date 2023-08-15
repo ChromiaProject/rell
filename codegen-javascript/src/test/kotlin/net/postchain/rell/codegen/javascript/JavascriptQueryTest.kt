@@ -64,7 +64,7 @@ class JavascriptQueryTest {
     @CsvSource(
             "input_parameter_nargs,'','',''",
             "input_parameter_text,t,', {t: t}',assertString(t)",
-            "input_parameter_nullable,t,', {t: t}',assertBoolean(assertNull(t) || assertString(t))",
+            "input_parameter_nullable,t,', {t: t}',if (t != null) assertString(t)",
             "input_parameter_integer,i,', {i: i}',assertNumber(i)",
             "input_parameter_big_integer,i,', {i: i}',assertBigInteger(i)",
             "input_parameter_enum,e,', {e: e}',assertObject(e)",
@@ -79,9 +79,9 @@ class JavascriptQueryTest {
             "input_parameter_map_input,v,', {v: v}',assertObject(v)",
             "input_parameter_enum_map,m,', {m: m}',assertObject(m)",
             "input_parameter_any_map,m,', {m: m}',assertObject(m)",
-            "input_parameter_nullable_list_input,v,', {v: v}',assertBoolean(assertNull(v) || assertArray(v))",
+            "input_parameter_nullable_list_input,v,', {v: v}',if (v != null) assertArray(v)",
             "input_parameter_gtv,g,', {g: g}',assertAny(g)",
-            "input_parameter_nullable_gtv,g,', {g: g}',assertBoolean(assertNull(g) || assertAny(g))",
+            "input_parameter_nullable_gtv,g,', {g: g}',if (g != null) assertAny(g)",
             "input_parameter_multiple,'s,\n\ts2',', {s: s,\n\ts2: s2}','assertString(s)\n\tassertString(s2)'"
     )
     fun parameterTypeTest(queryName: String, funParams: String, queryParams: String, assertFun: String) {

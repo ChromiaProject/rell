@@ -13,7 +13,7 @@ abstract class JavascriptFunction(
 ) : DocumentSection {
     override val moduleName get() = className.module
 
-    final override val deps: Set<ClassName> = params.map { rTypeToBuiltinType(it.type).builtin.className }.toSet()
+    final override val deps: Set<ClassName> = params.map{ it.type } .map { if (it is R_NullableType) it.valueType else it }.map { rTypeToBuiltinType(it).builtin.className }.toSet()
 
     override fun format(): String {
         val functionName = className.className.snakeToLowerCamelCase()
@@ -43,7 +43,6 @@ abstract class JavascriptFunction(
 
     private fun rTypeToBuiltinType(type: R_Type): JavascriptBuiltinType {
         return when (type) {
-            is R_NullableType -> JavascriptBuiltinType.NullAssertion
             is R_BooleanType -> JavascriptBuiltinType.BooleanAssertion
             is R_IntegerType -> JavascriptBuiltinType.NumberAssertion
             is R_BigIntegerType -> JavascriptBuiltinType.BigIntegerAssertion
@@ -70,14 +69,9 @@ abstract class JavascriptFunction(
     }
 
     private fun formatNullableAssertion(valueType: R_Type, paramName: String): String {
-        return StringBuilder()
-                .append(JavascriptBuiltinType.BooleanAssertion.builtin.functionName)
-                .append("(")
-                .append("${JavascriptBuiltinType.NullAssertion.builtin.functionName}($paramName)")
-                .append(" || ")
-                .append("${rTypeToBuiltinType(valueType).builtin.functionName}($paramName)")
-                .append(")")
-                .toString()
+        return """
+            if ($paramName != null) ${rTypeToBuiltinType(valueType).builtin.functionName}($paramName) 
+        """.trimIndent()
     }
 
     protected fun parameterTransformer(name: String, type: R_Type): String = when (type) {
