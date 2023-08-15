@@ -74,12 +74,12 @@ internal class TypescriptOperationTest {
             "input_parameter_nullable_list_input,v: Buffer[] | null,v",
             "input_parameter_set_input,v: Set<Buffer>,Array.from(v)",
             "input_parameter_set_string,s: Set<string>, Array.from(s)",
-            "input_parameter_map_text_bytearray,'m: {[x: string]: Buffer}',m",
-            "input_parameter_map_text_gtv,'m: {[x: string]: any}',m",
-            "input_parameter_map_integer_text,'m: {[x: number]: string}',m",
-            "input_parameter_map_gtv_text,'m: {[x: any]: string}',m",
-            "input_parameter_map_gtv_gtv,'m: {[x: any]: any}',m",
-            "input_parameter_map_enum_text,'m: {[x: TestEnum]: string}',m",
+            "input_parameter_map_text_bytearray,'m: {[x in string]: Buffer}',m",
+            "input_parameter_map_text_gtv,'m: {[x in string]: any}',m",
+            "input_parameter_map_integer_text,'m: {[x in number]: string}',m",
+            "input_parameter_map_gtv_text,'m: {[x in any]: string}',m",
+            "input_parameter_map_gtv_gtv,'m: {[x in any]: any}',m",
+            "input_parameter_map_enum_text,'m: {[x in TestEnum]: string}',m",
             "input_parameter_multi,'s: string,\n\ts2: string','s,\n\ts2'"
     )
     fun parameterTypeTest(opName: String, params: String, gtvParam: String) {

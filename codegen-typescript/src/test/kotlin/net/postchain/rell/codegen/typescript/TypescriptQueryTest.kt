@@ -28,13 +28,13 @@ class TypescriptQueryTest {
         }
     }
 
-    @ParameterizedTest(name = "rell: {0} -> kotlin: {1}")
+    @ParameterizedTest(name = "rell: {0} -> typescript: {1}")
     @CsvSource(
             "my_ns1.q1_in_namespace,myNs1Q1InNamespace,e: TestEnum",
             "my_ns1.q2_in_namespace,myNs1Q2InNamespace,s: MyNs1TestStruct2",
             "my_ns1.q3a_return_type_enum,myNs1Q3aReturnTypeEnum,e: MyNs1LocalTestEnum",
-            "my_ns1.q3b_return_type_enum,myNs1Q3bReturnTypeEnum,'m: {[x: TestEnum]: Buffer}'",
-            "my_ns1.q4_return_type_list_struct,myNs1Q4ReturnTypeListStruct,'m: {[x: Buffer]: MyNs1MyNs12TestStruct2}'",
+            "my_ns1.q3b_return_type_enum,myNs1Q3bReturnTypeEnum,'m: {[x in TestEnum]: Buffer}'",
+            "my_ns1.q4_return_type_list_struct,myNs1Q4ReturnTypeListStruct,'m: {[x in Buffer]: MyNs1MyNs12TestStruct2}'",
             "my_ns1.q5_return_type_list_struct,myNs1Q5ReturnTypeListStruct,'v: MyNs1LocalTestStruct[]'",
             "my_ns1.q6_return_type_list_struct,myNs1Q6ReturnTypeListStruct,''",
             "my_ns1.q7_return_type_enum_map,myNs1Q7ReturnTypeEnumMap,''",
@@ -80,9 +80,9 @@ class TypescriptQueryTest {
             "return_type_list_entity,number[]",
             "return_type_list_gtv,any[]",
             "return_type_set_gtv,Set<any>",
-            "return_type_map,{[x: string]: string}",
-            "return_type_enum_map,{[x: TestEnum]: string}",
-            "return_type_any_map,{[x: TestStruct]: string}",
+            "return_type_map,{[x in string]: string}",
+            "return_type_enum_map,{[x in TestEnum]: string}",
+            "return_type_any_map,{[x in TestStruct]: string}",
             "return_type_unnamed_tuple,[number]", // Unnamed tuples are arrays with unknown entries
     )
     fun returnTypeTest(type: String, returnType: String) {
@@ -110,9 +110,9 @@ class TypescriptQueryTest {
             "input_parameter_struct,s: TestStruct,', {s: s}'",
             "input_parameter_list_input,v: Buffer[],', {v: v}'",
             "input_parameter_set_input,v: Set<Buffer>,', {v: Array.from(v)}'",
-            "input_parameter_map_input,'v: {[x: string]: Buffer}',', {v: v}'",
-            "input_parameter_enum_map,'m: {[x: TestEnum]: Buffer}',', {m: m}'",
-            "input_parameter_any_map,'m: {[x: TestStruct]: Buffer}',', {m: m}'",
+            "input_parameter_map_input,'v: {[x in string]: Buffer}',', {v: v}'",
+            "input_parameter_enum_map,'m: {[x in TestEnum]: Buffer}',', {m: m}'",
+            "input_parameter_any_map,'m: {[x in TestStruct]: Buffer}',', {m: m}'",
             "input_parameter_nullable_list_input,v: Buffer[] | null,', {v: v}'",
             "input_parameter_multiple, 's: string,\n\ts2: string',', {s: s, s2: s2}'",
             "input_parameter_gtv,g: any,', {g: g}'",

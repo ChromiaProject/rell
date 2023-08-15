@@ -6,6 +6,7 @@ dependencies {
     implementation(project(":codegen"))
     implementation(libs.rell)
     testImplementation(project(":codegen", "testConfiguration"))
+    testImplementation(libs.bundles.testcontainers)
 }
 
 val copy by tasks.register<Copy>("copy-resources") {
