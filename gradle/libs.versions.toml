@@ -3,6 +3,7 @@ rell = "0.13.1"
 postchain = "3.11.9"
 postchain-client = "3.11.2"
 clikt = "3.5.2"
+testcontainers = "1.18.3"
 
 [libraries]
 clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
@@ -10,3 +11,8 @@ postchain-client = { module = "net.postchain.client:postchain-client", version.r
 postchain-common = { module = "net.postchain:postchain-common", version.ref = "postchain" }
 postchain-gtv = { module = "net.postchain:postchain-gtv", version.ref = "postchain" }
 rell = { module = "net.postchain.rell:rell-api-base", version.ref = "rell" }
+testcontainers-base = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+testcintainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+
+[bundles]
+testcontainers = [ "testcontainers-base", "testcintainers-junit" ]

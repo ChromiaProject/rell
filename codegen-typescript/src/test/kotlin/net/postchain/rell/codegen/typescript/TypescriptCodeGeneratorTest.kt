@@ -38,7 +38,12 @@ internal class TypescriptCodeGeneratorTest {
         @JvmStatic
         fun setup() {
             val res = compilerContainer.execInContainer("sh", "-c", "npm install -g typescript postchain-client")
-            assertThat(res.exitCode).isZero()
+            assertThat(res).executeSuccessFully()
+        }
+
+        private fun Assert<ExecResult>.executeSuccessFully() = given { actual ->
+            if (actual.exitCode == 0) return
+            expected("to execute successfully but but exit code was ${show(actual.exitCode)}: ${actual.stdout}")
         }
     }
 
@@ -78,10 +83,6 @@ internal class TypescriptCodeGeneratorTest {
         return sections to documents
     }
 
-    private fun Assert<ExecResult>.executeSuccessFully() = given { actual ->
-        if (actual.exitCode == 0) return
-        expected("to execute successfully but but exit code was ${show(actual.exitCode)}: ${actual.stdout}")
-    }
 
         @Test
     fun multiModule(@TempDir dir: Path) {
