@@ -76,10 +76,8 @@ internal class TypescriptCodeGeneratorTest {
         compilerContainer.copyFileToContainer(MountableFile.forHostPath(target), containerPath)
         val res = compilerContainer.execInContainer("sh", "-c", "tsc -p $containerPath/tsconfig.json")
         assertThat(res).executeSuccessFully()
-        println(compilerContainer.execInContainer("sh", "-c", "ls $containerPath/dist"))
         return sections to documents
     }
-
 
     @Test
     fun multiModule() {
