@@ -1,9 +1,12 @@
 package net.postchain.rell.codegen.typescript
 
+import assertk.Assert
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.hasSize
 import assertk.assertions.isZero
+import assertk.assertions.support.expected
+import assertk.assertions.support.show
 import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.document.Document
 import net.postchain.rell.codegen.document.DocumentSaver
@@ -11,17 +14,14 @@ import net.postchain.rell.codegen.section.DocumentSection
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import org.postgresql.core.Oid.PATH
-import org.testcontainers.containers.BindMode
+import org.testcontainers.containers.Container.ExecResult
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
-import org.testcontainers.utility.DockerImageName
 import org.testcontainers.utility.MountableFile
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.absolutePathString
 import kotlin.io.path.name
 
 @Testcontainers
@@ -73,12 +73,17 @@ internal class TypescriptCodeGeneratorTest {
         val containerPath = "/usr/share/${path.name}"
         compilerContainer.copyFileToContainer(MountableFile.forHostPath(path), containerPath)
         val res = compilerContainer.execInContainer("sh", "-c", "tsc -p $containerPath/tsconfig.json")
-        assertThat(res.exitCode, displayActual = { "typescript compilation failed: ${res.stderr}" }).isZero()
+        assertThat(res).executeSuccessFully()
         println(compilerContainer.execInContainer("sh", "-c", "ls $containerPath/dist"))
         return sections to documents
     }
 
-    @Test
+    private fun Assert<ExecResult>.executeSuccessFully() = given { actual ->
+        if (actual.exitCode == 0) return
+        expected("to execute successfully but but exit code was ${show(actual.exitCode)}: ${actual.stdout}")
+    }
+
+        @Test
     fun multiModule(@TempDir dir: Path) {
         val (sections, documents) = generate("/multi", "a", "f", path = dir)
         assertThat(sections).hasSize(13 /* queries */ + 1 /* operations */ + 16 /* needed objects */)
