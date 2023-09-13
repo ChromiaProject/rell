@@ -8,7 +8,7 @@ fun parameterTransformer(name: String, type: R_Type): String = when (type) {
     else -> name
 }
 
-fun rTypeToString(type: R_Type): String {
+fun rTypeToString(type: R_Type, allowSet: Boolean = false): String {
     return when (type) {
         is R_NullableType -> "${rTypeToString(type.valueType)} | null"
         is R_BooleanType -> "boolean"
@@ -20,7 +20,7 @@ fun rTypeToString(type: R_Type): String {
         is R_RowidType -> "number"
         is R_EntityType -> "number"
         is R_JsonType -> "string"
-        is R_SetType -> "Set<${rTypeToString(type.elementType)}>"
+        is R_SetType -> if (allowSet) "Set<${rTypeToString(type.elementType, allowSet)}>" else "${rTypeToString(type.elementType)}[]"
         is R_ListType -> "${rTypeToString(type.elementType)}[]"
         is R_MapType -> "{[x in ${rTypeToString(type.keyType)}]: ${rTypeToString(type.valueType)}}"
         is R_StructType -> CamelCaseClassName.fromRellType(type).className
