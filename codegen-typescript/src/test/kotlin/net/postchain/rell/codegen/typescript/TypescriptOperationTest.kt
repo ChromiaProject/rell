@@ -28,8 +28,8 @@ internal class TypescriptOperationTest {
         val k = TypescriptOperation(op)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("export function inputParameterTextOperation(tx: Itransaction,\n\tt: string): void")
-            contains("tx.addOperation(\"input_parameter_text\", t)")
+            contains("export function inputParameterTextOperation(t: string): Operation")
+            contains("{ name: \"input_parameter_text\", args: [t] }")
         }
     }
 
@@ -44,8 +44,8 @@ internal class TypescriptOperationTest {
         val k = TypescriptOperation(op)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("export function $typescriptQualifiedOpName(tx: Itransaction): void")
-            contains("tx.addOperation(\"$rellQualifiedOpName\")")
+            contains("export function $typescriptQualifiedOpName(): Operation")
+            contains("{ name: \"$rellQualifiedOpName\", args: [] }")
         }
     }
 
@@ -86,11 +86,10 @@ internal class TypescriptOperationTest {
         val op = kotlin.test.assertNotNull(testModule.operations[opName])
         val k = TypescriptOperation(op)
         val formatted = k.format()
-        val functionParams = if (params.isEmpty()) "" else ",\n\t$params"
         assertThat(formatted).all {
-            contains("export function ${opName.snakeToLowerCamelCase()}Operation(tx: Itransaction$functionParams): void {")
-            contains("addOperation(\"$opName\"")
-            endsWith("$gtvParam)\n}")
+            contains("export function ${opName.snakeToLowerCamelCase()}Operation($params): Operation {")
+            contains("{ name: \"$opName\"")
+            endsWith("$gtvParam] }\n}")
         }
     }
 }

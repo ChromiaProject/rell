@@ -44,7 +44,7 @@ abstract class TypescriptFunction(
 
     open fun formatInputParameters(): String {
         if (params.isEmpty()) return ""
-        return params.joinToString(",\n\t") { "${it.name.str.snakeToLowerCamelCase()}: ${rTypeToString(it.type)}" }
+        return params.joinToString(",\n\t") { "${it.name.str.snakeToLowerCamelCase()}: ${rTypeToString(it.type, true)}" }
     }
 
     abstract fun returnStructure(returnType: R_Type?): String

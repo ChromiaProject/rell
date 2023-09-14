@@ -14,18 +14,16 @@ class TypescriptOperation(op: R_OperationDefinition) : TypescriptFunction(
         false,
         null
 ), Operation {
-    override val imports: List<String> = listOf("import { Itransaction } from \"postchain-client/built/src/gtx/interfaces\";")
+    override val imports: List<String> = listOf("import { Operation } from \"postchain-client\";")
 
-    override fun formatBody() = "tx.addOperation(\"$mountName\"${formatOperationParameters()})"
+    override fun formatBody() = "return { name: \"$mountName\", args: [${formatOperationParameters()}] }"
 
     private fun formatOperationParameters(): String {
         if (params.isEmpty()) return ""
-        return ", ${params.joinToString(",\n\t") { parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type) }}"
+        return params.joinToString(",\n\t") { parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type) }
     }
 
-    override fun formatInputParameters() = "tx: Itransaction${super.formatInputParameters().let { if (it.isNotBlank()) ",\n\t$it" else "" }}"
-
-    override fun formatReturnType(): String = "void"
+    override fun formatReturnType(): String = "Operation"
 
     override fun returnStructure(returnType: R_Type?): String = ""
 }

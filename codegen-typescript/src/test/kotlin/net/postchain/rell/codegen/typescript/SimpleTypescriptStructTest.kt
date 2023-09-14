@@ -36,7 +36,7 @@ class SimpleTypescriptStructTest {
             "nullable,'a: string | null'",
             "json,'a: string'",
             "list,'a: string[]'",
-            "set,'a: Set<string>'",
+            "set,'a: string[]'",
             "multi,'\n\ta: string;\n\ti: number;'",
     )
     fun simpleStructures(rellType: String, typescriptType: String) {

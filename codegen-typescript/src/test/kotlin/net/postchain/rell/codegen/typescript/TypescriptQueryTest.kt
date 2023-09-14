@@ -24,7 +24,7 @@ class TypescriptQueryTest {
         val k = TypescriptQuery(q)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("export async function inputParameterNargs(gtxClient: GtxClient): Promise<number>")
+            contains("export async function inputParameterNargs(client: IClient): Promise<number>")
         }
     }
 
@@ -49,9 +49,9 @@ class TypescriptQueryTest {
         val k = TypescriptQuery(q)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("export async function ${typescriptQualifiedName}(gtxClient: GtxClient")
+            contains("export async function ${typescriptQualifiedName}(client: IClient")
             contains("$params)")
-            contains("gtxClient.query(\"$rellQualifiedName\"")
+            contains("client.query(\"$rellQualifiedName\"")
 
         }
     }
@@ -75,11 +75,11 @@ class TypescriptQueryTest {
             "return_type_nullable_gtv,'any | null'",
             "return_type_list_integer,number[]",
             "return_type_list_byte_array,Buffer[]",
-            "return_type_set_integer,Set<number>",
+            "return_type_set_integer,number[]",
             "return_type_list_struct,TestStruct[]",
             "return_type_list_entity,number[]",
             "return_type_list_gtv,any[]",
-            "return_type_set_gtv,Set<any>",
+            "return_type_set_gtv,any[]",
             "return_type_map,{[x in string]: string}",
             "return_type_enum_map,{[x in TestEnum]: string}",
             "return_type_any_map,{[x in TestStruct]: string}",
@@ -123,9 +123,9 @@ class TypescriptQueryTest {
         val k = TypescriptQuery(query)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("(gtxClient: GtxClient")
+            contains("(client: IClient")
             contains("$funParams)")
-            contains("gtxClient.query(\"$queryName\"$queryParam")
+            contains("client.query(\"$queryName\"$queryParam")
         }
     }
 

@@ -15,14 +15,14 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         true,
         queryDef.type(),
 ), Query {
-    override val imports: List<String> = listOf("import { GtxClient } from \"postchain-client/built/src/gtx/interfaces\";")
+    override val imports: List<String> = listOf("import { IClient } from \"postchain-client\";")
     private val returnStructure = returnStructure(returnType)
     override val moduleName: String
         get() = className.module
 
-    override fun formatBody() = "return await gtxClient.query(\"$mountName\"${formatQueryParameters()})"
+    override fun formatBody() = "return await client.query(\"$mountName\"${formatQueryParameters()})"
 
-    override fun formatInputParameters() = "gtxClient: GtxClient${super.formatInputParameters().let { if (it.isNotBlank()) ",\n\t$it" else "" }}"
+    override fun formatInputParameters() = "client: IClient${super.formatInputParameters().let { if (it.isNotBlank()) ",\n\t$it" else "" }}"
 
     private fun formatQueryParameters(): String {
         if (params.isEmpty()) return ""
