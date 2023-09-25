@@ -3,10 +3,12 @@ package net.postchain.rell.codegen.javascript
 import assertk.Assert
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.containsExactly
 import assertk.assertions.hasSize
 import assertk.assertions.support.expected
 import assertk.assertions.support.show
 import net.postchain.rell.codegen.CodeGenerator
+import net.postchain.rell.codegen.SingleFileRellApp
 import net.postchain.rell.codegen.document.Document
 import net.postchain.rell.codegen.document.DocumentSaver
 import net.postchain.rell.codegen.section.DocumentSection
@@ -161,5 +163,19 @@ internal class JavascriptCodeGeneratorTest {
         val (sections, documents) = generateAndLint("/namespace", "ns_test")
         assertThat(sections).hasSize(2 /* queries */ + 1 /* operation */ + 1 /*assertions*/)
         assertThat(documents).hasSize(1 + 1 /* root */)
+    }
+
+    @Test
+    fun queriesWithMixedTupleReturnTypeAreSkipped() {
+        val rellApp = SingleFileRellApp("mixed_tuple_queries")
+        rellApp.compileApp()
+
+        val skippedQueries = mutableListOf<String>()
+        val sections = generator.createSections(rellApp.app, true, true) { skippedQuery, _ ->
+            skippedQueries.add(skippedQuery)
+        }
+
+        assertThat(sections).hasSize(2)
+        assertThat(skippedQueries).containsExactly("mixed_tuple_queries:return_type_unnamed_and_named_tuple")
     }
 }
