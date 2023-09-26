@@ -3,7 +3,6 @@ package net.postchain.rell.codegen.javascript
 import assertk.Assert
 import assertk.assertThat
 import assertk.assertions.contains
-import assertk.assertions.containsExactly
 import assertk.assertions.hasSize
 import assertk.assertions.support.expected
 import assertk.assertions.support.show

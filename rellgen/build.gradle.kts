@@ -15,6 +15,7 @@ dependencies {
     implementation(project(":codegen-typescript"))
     implementation(project(":codegen-javascript"))
     implementation(libs.clikt)
+    implementation(libs.rell)
 }
 
 application {
