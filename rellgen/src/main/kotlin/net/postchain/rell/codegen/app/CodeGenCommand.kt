@@ -34,9 +34,7 @@ class CodeGenCommand : CliktCommand("Generates files based on rell sources") {
             LanguageSupport.Javascript -> JavascriptDocumentFactory()
         }
         val generator = CodeGenerator(factory)
-        val sections = generator.createSections(source, moduleName) { skippedDefinition, reason ->
-            println("Skipping [$skippedDefinition] reason: $reason")
-        }
+        val sections = generator.createSections(source, moduleName)
         val documents = generator.constructDocuments(sections, true)
         DocumentSaver(target).saveDocuments(documents)
         println("Created files: ${documents.keys}")

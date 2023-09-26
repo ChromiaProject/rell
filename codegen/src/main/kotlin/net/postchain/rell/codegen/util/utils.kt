@@ -2,6 +2,7 @@ package net.postchain.rell.codegen.util
 
 import net.postchain.rell.codegen.CodeGenerator
 import java.util.*
+import net.postchain.rell.api.base.RellCliEnv
 
 fun capitalize(name: String) =
     name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
@@ -29,4 +30,15 @@ fun String.snakeToUpperCamelCase(): String {
 
 object GeneratedAnnotation {
     fun createAnnotation(comment: String) = "@Generated(\"${CodeGenerator::class.qualifiedName}\", comments = \"$comment\")"
+}
+
+class CachedRellCliEnv(
+    private val rellCliEnv: RellCliEnv,
+    private val cacheOutput: Boolean = false,
+    private val cacheError: Boolean = false
+) : RellCliEnv {
+    val errorCache = mutableListOf<String>()
+    val outputCache = mutableListOf<String>()
+    override fun error(msg: String) = rellCliEnv.error(msg).also { if (cacheError) errorCache.add(msg) }
+    override fun print(msg: String) = rellCliEnv.print(msg).also { if (cacheOutput) outputCache.add(msg) }
 }

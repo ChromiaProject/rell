@@ -2,14 +2,15 @@ package net.postchain.rell.codegen.kotlin
 
 import assertk.assertThat
 import assertk.assertions.contains
-import assertk.assertions.containsExactly
 import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
+import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.SingleFileRellApp
 import net.postchain.rell.codegen.document.Document
 import net.postchain.rell.codegen.document.DocumentSaver
 import net.postchain.rell.codegen.section.DocumentSection
+import net.postchain.rell.codegen.util.CachedRellCliEnv
 import org.jetbrains.kotlin.cli.common.ExitCode
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.cli.common.messages.MessageRenderer
@@ -22,7 +23,8 @@ import java.nio.file.Files
 
 internal class KotlinCodeGeneratorTest {
 
-    private val generator = CodeGenerator(KotlinDocumentFactory("com.example"))
+    private val rellCliEnv = CachedRellCliEnv(RellCliEnv.DEFAULT, true, true)
+    private val generator = CodeGenerator(KotlinDocumentFactory("com.example"), rellCliEnv)
 
     private fun generateAndCompile(rellPath: String, vararg baseModule: String): Pair<List<DocumentSection>, Map<String, Document>> {
         val sections = generator.createSections(
@@ -164,12 +166,9 @@ internal class KotlinCodeGeneratorTest {
         val rellApp = SingleFileRellApp("mixed_tuple_queries")
         rellApp.compileApp()
 
-        val skippedQueries = mutableListOf<String>()
-        val sections = generator.createSections(rellApp.app, true, true) { skippedQuery, _ ->
-            skippedQueries.add(skippedQuery)
-        }
+        val sections = generator.createSections(rellApp.app, true, true)
 
         assertThat(sections).hasSize(2)
-        assertThat(skippedQueries).containsExactly("mixed_tuple_queries:return_type_unnamed_and_named_tuple")
+        assertThat(rellCliEnv.errorCache).contains("Skipping [mixed_tuple_queries:return_type_unnamed_and_named_tuple] Query has unsupported mixed tuple return type: (integer,foo:integer)")
     }
 }
