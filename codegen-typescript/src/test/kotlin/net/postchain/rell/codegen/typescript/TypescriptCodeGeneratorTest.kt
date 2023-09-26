@@ -6,10 +6,13 @@ import assertk.assertions.contains
 import assertk.assertions.hasSize
 import assertk.assertions.support.expected
 import assertk.assertions.support.show
+import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.codegen.CodeGenerator
+import net.postchain.rell.codegen.SingleFileRellApp
 import net.postchain.rell.codegen.document.Document
 import net.postchain.rell.codegen.document.DocumentSaver
 import net.postchain.rell.codegen.section.DocumentSection
+import net.postchain.rell.codegen.util.CachedRellCliEnv
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.Container.ExecResult
@@ -24,7 +27,8 @@ import kotlin.io.path.name
 @Testcontainers
 internal class TypescriptCodeGeneratorTest {
 
-    private val generator = CodeGenerator(TypescriptDocumentFactory())
+    private val rellCliEnv = CachedRellCliEnv(RellCliEnv.DEFAULT, true, true)
+    private val generator = CodeGenerator(TypescriptDocumentFactory(), rellCliEnv)
 
     companion object {
         @Container
@@ -172,5 +176,16 @@ internal class TypescriptCodeGeneratorTest {
         val (sections, documents) = generateAndCompile("/namespace", "ns_test")
         assertThat(sections).hasSize(3)
         assertThat(documents).hasSize(1)
+    }
+
+    @Test
+    fun queriesWithMixedTupleReturnTypeAreSkipped() {
+        val rellApp = SingleFileRellApp("mixed_tuple_queries")
+        rellApp.compileApp()
+
+        val sections = generator.createSections(rellApp.app, true, true)
+
+        assertThat(sections).hasSize(2)
+        assertThat(rellCliEnv.errorCache).contains("Skipping [mixed_tuple_queries:return_type_unnamed_and_named_tuple] Query has unsupported mixed tuple return type: (integer,foo:integer)")
     }
 }

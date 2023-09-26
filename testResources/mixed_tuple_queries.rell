@@ -1,0 +1,5 @@
+module;
+
+query return_type_unnamed_tuple() = (12, 42);
+query return_type_named_tuple() = (bar=12, foo=42);
+query return_type_unnamed_and_named_tuple() = (12, foo=42);
