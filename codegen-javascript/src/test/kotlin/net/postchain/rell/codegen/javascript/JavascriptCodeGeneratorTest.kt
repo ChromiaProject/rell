@@ -29,7 +29,7 @@ import kotlin.io.path.name
 internal class JavascriptCodeGeneratorTest {
 
     private val rellCliEnv = CachedRellCliEnv(RellCliEnv.DEFAULT, true, true)
-    private val generator = CodeGenerator(JavascriptDocumentFactory())
+    private val generator = CodeGenerator(JavascriptDocumentFactory(), rellCliEnv)
 
     companion object {
         @Container
