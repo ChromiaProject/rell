@@ -38,7 +38,7 @@ internal class TypescriptCodeGeneratorTest {
         @BeforeAll
         @JvmStatic
         fun setup() {
-            val res = compilerContainer.execInContainer("sh", "-c", "npm install -g typescript postchain-client@1.5.9")
+            val res = compilerContainer.execInContainer("sh", "-c", "npm install -g typescript postchain-client@1.7.0")
             assertThat(res).executeSuccessFully()
         }
 

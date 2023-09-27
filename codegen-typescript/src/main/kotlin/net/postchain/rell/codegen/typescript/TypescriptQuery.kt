@@ -12,24 +12,23 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         CamelCaseClassName.fromRellQuery(queryDef),
         queryDef.mountName,
         queryDef.params(),
-        true,
+        false,
         queryDef.type(),
+        "QueryObject"
 ), Query {
-    override val imports: List<String> = listOf("import { IClient } from \"postchain-client\";")
+    override val imports: List<String> = listOf("import { QueryObject } from \"postchain-client\";")
     private val returnStructure = returnStructure(returnType)
     override val moduleName: String
         get() = className.module
 
-    override fun formatBody() = "return await client.query(\"$mountName\"${formatQueryParameters()})"
-
-    override fun formatInputParameters() = "client: IClient${super.formatInputParameters().let { if (it.isNotBlank()) ",\n\t$it" else "" }}"
+    override fun formatBody() = "return { name: \"$mountName\", args: ${formatQueryParameters()} };"
 
     private fun formatQueryParameters(): String {
-        if (params.isEmpty()) return ""
-        return ", {" + params.joinToString(", ") { "${it.name.str}: ${parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type)}" } + "}"
+        if (params.isEmpty()) return "null"
+        return "{ " + params.joinToString(", ") { "${it.name.str}: ${parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type)}" } + " }"
     }
 
-    override fun formatReturnType(): String = "Promise<${if (returnStructure.isNotBlank()) buildReturnType() else rTypeToString(returnType!!)}>"
+    override fun formatReturnType(): String = "QueryObject<${if (returnStructure.isNotBlank()) buildReturnType() else rTypeToString(returnType!!)}>"
 
     override fun returnStructure(returnType: R_Type?): String {
         if (returnType == null) return ""
