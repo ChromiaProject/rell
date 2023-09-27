@@ -15,7 +15,7 @@ abstract class TypescriptFunction(
         protected val params: List<R_Param>,
         private val async: Boolean,
         protected val returnType: R_Type?,
-
+        private val querySuffix: String = "",
         ) : DocumentSection {
     override val moduleName get() = className.module
 
@@ -27,10 +27,10 @@ abstract class TypescriptFunction(
         deps = paramDeps + returnDeps
     }
 
-    override fun format(): String {
+    final override fun format(): String {
         val returnTypeString = "${returnStructure(returnType)}\n"
         val functionString = """
-        |export ${asyncAnnotation()}function ${className.className.snakeToLowerCamelCase()}(${formatInputParameters()}): ${formatReturnType()} {
+        |export ${asyncAnnotation()}function ${className.className.snakeToLowerCamelCase()}$querySuffix(${formatInputParameters()}): ${formatReturnType()} {
         |${"\t"}${formatBody()}
         |}
    """.trimMargin()
@@ -42,7 +42,7 @@ abstract class TypescriptFunction(
 
     private fun asyncAnnotation() = if (async) "async " else ""
 
-    open fun formatInputParameters(): String {
+    private fun formatInputParameters(): String {
         if (params.isEmpty()) return ""
         return params.joinToString(",\n\t") { "${it.name.str.snakeToLowerCamelCase()}: ${rTypeToString(it.type, true)}" }
     }

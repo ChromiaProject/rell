@@ -24,7 +24,7 @@ class TypescriptQueryTest {
         val k = TypescriptQuery(q)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("export async function inputParameterNargs(client: IClient): Promise<number>")
+            contains("export function inputParameterNargsQueryObject(): QueryObject<number>")
         }
     }
 
@@ -49,10 +49,9 @@ class TypescriptQueryTest {
         val k = TypescriptQuery(q)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("export async function ${typescriptQualifiedName}(client: IClient")
-            contains("$params)")
-            contains("client.query(\"$rellQualifiedName\"")
-
+            contains("export function ${typescriptQualifiedName}QueryObject(")
+            contains("$params): QueryObject<")
+            contains("return { name: \"$rellQualifiedName\"")
         }
     }
 
@@ -90,42 +89,41 @@ class TypescriptQueryTest {
         val k = TypescriptQuery(query)
         val formatted = k.format()
         assertThat(formatted.trim()).all {
-            contains("Promise<$returnType>")
+            contains("QueryObject<$returnType>")
         }
     }
 
     @ParameterizedTest(name = "query {0} should contain params {1} with type-conversion {2}")
     @CsvSource(
-            "input_parameter_nargs,'',''",
-            "input_parameter_text,t: string,', {t: t}'",
-            "input_parameter_nullable,t: string | null,', {t: t}'",
-            "input_parameter_integer,i: number,', {i: i}'",
-            "input_parameter_big_integer,i: bigint,', {i: i}'",
-            "input_parameter_enum,e: TestEnum,', {e: e}'",
-            "input_parameter_boolean,b: boolean,', {b: b}'",
-            "input_parameter_rowid,r: number,', {r: r}'",
-            "input_parameter_pubkey,pubkey: Buffer,', {pubkey: pubkey}'",
-            "input_parameter_blockchain_rid,blockchainRid: Buffer,', {blockchain_rid: blockchainRid}'",
-            "input_parameter_entity,e: number,', {e: e}'",
-            "input_parameter_struct,s: TestStruct,', {s: s}'",
-            "input_parameter_list_input,v: Buffer[],', {v: v}'",
-            "input_parameter_set_input,v: Set<Buffer>,', {v: Array.from(v)}'",
-            "input_parameter_map_input,'v: {[x in string]: Buffer}',', {v: v}'",
-            "input_parameter_enum_map,'m: {[x in TestEnum]: Buffer}',', {m: m}'",
-            "input_parameter_any_map,'m: {[x in TestStruct]: Buffer}',', {m: m}'",
-            "input_parameter_nullable_list_input,v: Buffer[] | null,', {v: v}'",
-            "input_parameter_multiple, 's: string,\n\ts2: string',', {s: s, s2: s2}'",
-            "input_parameter_gtv,g: any,', {g: g}'",
-            "input_parameter_nullable_gtv,g: any | null,', {g: g}'",
+            "input_parameter_nargs,'',null",
+            "input_parameter_text,t: string,'{ t: t }'",
+            "input_parameter_nullable,t: string | null,'{ t: t }'",
+            "input_parameter_integer,i: number,'{ i: i }'",
+            "input_parameter_big_integer,i: bigint,'{ i: i }'",
+            "input_parameter_enum,e: TestEnum,'{ e: e }'",
+            "input_parameter_boolean,b: boolean,'{ b: b }'",
+            "input_parameter_rowid,r: number,'{ r: r }'",
+            "input_parameter_pubkey,pubkey: Buffer,'{ pubkey: pubkey }'",
+            "input_parameter_blockchain_rid,blockchainRid: Buffer,'{ blockchain_rid: blockchainRid }'",
+            "input_parameter_entity,e: number,'{ e: e }'",
+            "input_parameter_struct,s: TestStruct,'{ s: s }'",
+            "input_parameter_list_input,v: Buffer[],'{ v: v }'",
+            "input_parameter_set_input,v: Set<Buffer>,'{ v: Array.from(v) }'",
+            "input_parameter_map_input,'v: {[x in string]: Buffer}','{ v: v }'",
+            "input_parameter_enum_map,'m: {[x in TestEnum]: Buffer}','{ m: m }'",
+            "input_parameter_any_map,'m: {[x in TestStruct]: Buffer}','{ m: m }'",
+            "input_parameter_nullable_list_input,v: Buffer[] | null,'{ v: v }'",
+            "input_parameter_multiple, 's: string,\n\ts2: string','{ s: s, s2: s2 }'",
+            "input_parameter_gtv,g: any,'{ g: g }'",
+            "input_parameter_nullable_gtv,g: any | null,'{ g: g }'",
     )
     fun parameterTypeTest(queryName: String, funParams: String, queryParam: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[queryName])
         val k = TypescriptQuery(query)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("(client: IClient")
-            contains("$funParams)")
-            contains("client.query(\"$queryName\"$queryParam")
+            contains("($funParams)")
+            contains("{ name: \"$queryName\", args: $queryParam }")
         }
     }
 
@@ -143,7 +141,7 @@ class TypescriptQueryTest {
         assertThat(formatted).all {
             contains("type $returnName = {")
             returnType.split(";").forEach { contains(it) }
-            contains("Promise<$returnName$appendedType>")
+            contains("QueryObject<$returnName$appendedType>")
         }
     }
 }
