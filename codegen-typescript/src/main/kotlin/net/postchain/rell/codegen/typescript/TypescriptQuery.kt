@@ -24,7 +24,7 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
     override fun formatBody() = "return { name: \"$mountName\", args: ${formatQueryParameters()} };"
 
     private fun formatQueryParameters(): String {
-        if (params.isEmpty()) return "null"
+        if (params.isEmpty()) return "undefined"
         return "{ " + params.joinToString(", ") { "${it.name.str}: ${parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type)}" } + " }"
     }
 
@@ -45,7 +45,7 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
     private fun buildReturnType(extendType: Boolean = true): String {
         val typeName = "${capitalize(className.className)}ReturnType"
         if (!extendType) return typeName
-        if (returnType is R_NullableType) return "$typeName | null"
+        if (returnType is R_NullableType) return "$typeName | undefined"
         if (returnType is R_CollectionType) return "$typeName[]"
         return typeName
     }

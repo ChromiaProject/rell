@@ -95,7 +95,7 @@ class TypescriptQueryTest {
 
     @ParameterizedTest(name = "query {0} should contain params {1} with type-conversion {2}")
     @CsvSource(
-            "input_parameter_nargs,'',null",
+            "input_parameter_nargs,'',undefined",
             "input_parameter_text,t: string,'{ t: t }'",
             "input_parameter_nullable,t: string | null,'{ t: t }'",
             "input_parameter_integer,i: number,'{ i: i }'",
@@ -129,7 +129,7 @@ class TypescriptQueryTest {
 
     @ParameterizedTest(name = "object creation")
     @CsvSource(
-            "return_type_nullable_named_tuple,'foo: number',ReturnTypeNullableNamedTupleReturnType,' | null'",
+            "return_type_nullable_named_tuple,'foo: number',ReturnTypeNullableNamedTupleReturnType,' | undefined'",
             "return_type_named_tuple,'foo: number',ReturnTypeNamedTupleReturnType,''",
             "return_type_named_tuple_list,'rowid: number;a: boolean',ReturnTypeNamedTupleListReturnType,[]",
             "return_type_proposals_since,'rowid: number;a: boolean',ReturnTypeProposalsSinceReturnType,[]"
