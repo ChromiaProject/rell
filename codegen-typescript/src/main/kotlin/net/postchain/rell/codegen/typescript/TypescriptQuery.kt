@@ -24,7 +24,7 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
     override fun formatBody() = "return { name: \"$mountName\", args: ${formatQueryParameters()} };"
 
     private fun formatQueryParameters(): String {
-        if (params.isEmpty()) return "null"
+        if (params.isEmpty()) return "undefined"
         return "{ " + params.joinToString(", ") { "${it.name.str}: ${parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type)}" } + " }"
     }
 

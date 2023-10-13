@@ -95,7 +95,7 @@ class TypescriptQueryTest {
 
     @ParameterizedTest(name = "query {0} should contain params {1} with type-conversion {2}")
     @CsvSource(
-            "input_parameter_nargs,'',null",
+            "input_parameter_nargs,'',undefined",
             "input_parameter_text,t: string,'{ t: t }'",
             "input_parameter_nullable,t: string | null,'{ t: t }'",
             "input_parameter_integer,i: number,'{ i: i }'",
