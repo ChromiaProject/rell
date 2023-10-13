@@ -129,7 +129,7 @@ class TypescriptQueryTest {
 
     @ParameterizedTest(name = "object creation")
     @CsvSource(
-            "return_type_nullable_named_tuple,'foo: number',ReturnTypeNullableNamedTupleReturnType,' | undefined'",
+            "return_type_nullable_named_tuple,'foo: number',ReturnTypeNullableNamedTupleReturnType,' | null'",
             "return_type_named_tuple,'foo: number',ReturnTypeNamedTupleReturnType,''",
             "return_type_named_tuple_list,'rowid: number;a: boolean',ReturnTypeNamedTupleListReturnType,[]",
             "return_type_proposals_since,'rowid: number;a: boolean',ReturnTypeProposalsSinceReturnType,[]"

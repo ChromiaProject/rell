@@ -45,7 +45,7 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
     private fun buildReturnType(extendType: Boolean = true): String {
         val typeName = "${capitalize(className.className)}ReturnType"
         if (!extendType) return typeName
-        if (returnType is R_NullableType) return "$typeName | undefined"
+        if (returnType is R_NullableType) return "$typeName | null"
         if (returnType is R_CollectionType) return "$typeName[]"
         return typeName
     }
