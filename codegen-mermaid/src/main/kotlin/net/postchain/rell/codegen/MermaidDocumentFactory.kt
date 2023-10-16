@@ -12,7 +12,7 @@ import net.postchain.rell.codegen.section.NullSection
 import net.postchain.rell.codegen.util.BuiltinType
 
 class MermaidDocumentFactory(private val config: MermaidCodeGeneratorConfig): DocumentFactory {
-    override val fileExtension = "md"
+    override val fileExtension = if (config.mdx()) "md" else "mmd"
 
     override fun createDocument(moduleName: String) = MermaidDocument(config.mdx())
 
