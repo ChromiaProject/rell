@@ -2,8 +2,9 @@ package net.postchain.rell.codegen
 
 interface MermaidCodeGeneratorConfig: CodeGeneratorConfig {
     fun mdx(): Boolean
-    override fun fileSaveMode() = FileSaveMode.Dapp
-    override fun allEntities() = true
-    override fun includeOperations() = false
-    override fun includeQueries() = false
+    fun flowChart(): Boolean
+    override fun fileSaveMode() = if (flowChart()) FileSaveMode.Separate else FileSaveMode.Dapp
+    override fun allEntities() = !flowChart()
+    override fun includeOperations() = flowChart()
+    override fun includeQueries() = flowChart()
 }

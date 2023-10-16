@@ -28,7 +28,7 @@ import kotlin.io.path.name
 internal class JavascriptCodeGeneratorTest {
 
     private val rellCliEnv = CachedRellCliEnv(RellCliEnv.DEFAULT, true, true)
-    private val generator = CodeGenerator(JavascriptDocumentFactory(), rellCliEnv)
+    private val generator = CodeGenerator(JavascriptDocumentFactory(), object : JavascriptCodeGeneratorConfig {}, rellCliEnv)
 
     companion object {
         @Container
@@ -172,7 +172,7 @@ internal class JavascriptCodeGeneratorTest {
         val rellApp = SingleFileRellApp("mixed_tuple_queries")
         rellApp.compileApp()
 
-        val sections = generator.createSections(rellApp.app, true, true)
+        val sections = generator.createSections(rellApp.app)
 
         assertThat(sections).hasSize(2)
         assertThat(rellCliEnv.errorCache).contains("Skipping [mixed_tuple_queries:return_type_unnamed_and_named_tuple] Query has unsupported mixed tuple return type: (integer,foo:integer)")
