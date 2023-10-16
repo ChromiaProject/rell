@@ -94,9 +94,4 @@ class CodeGenerator(private val factory: DocumentFactory, private val config: Co
         return type.fields.any { it.name == null } && type.fields.any { it.name != null }
     }
 
-    enum class FileSaveMode {
-        Dapp,
-        Module,
-        Separate,
-    }
 }
