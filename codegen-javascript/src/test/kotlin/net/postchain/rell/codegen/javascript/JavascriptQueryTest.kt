@@ -26,8 +26,8 @@ class JavascriptQueryTest {
         val formatted = k.format()
         assertThat(formatted).all {
             contains("""
-                |export async function inputParameterNargs(gtxClient) {
-                |${"\t"}return await gtxClient.query("input_parameter_nargs")
+                |export function inputParameterNargsQueryObject() {
+                |${"\t"}return { name: "input_parameter_nargs", args: undefined };
                 |}""".trimMargin())
         }
     }
@@ -52,47 +52,44 @@ class JavascriptQueryTest {
         val q = kotlin.test.assertNotNull(testModule.queries[rellQualifiedName])
         val k = JavascriptQuery(q)
         val formatted = k.format()
-        val queryParams = if (params.isEmpty()) "" else ", {$params: $params}"
         assertThat(formatted).all {
-            contains("export async function ${javascriptQualifiedName}(gtxClient")
-            contains("$params")
-            contains("gtxClient.query(\"$rellQualifiedName\"$queryParams")
+            contains("export function ${javascriptQualifiedName}QueryObject($params)")
+            contains("return { name: \"$rellQualifiedName\", args: ${if(params == "") "undefined" else params } }")
         }
     }
 
     @ParameterizedTest(name = "query {0} should contain params {1} with type-checks {2}")
     @CsvSource(
-            "input_parameter_nargs,'','',''",
-            "input_parameter_text,t,', {t: t}',assertString(t)",
-            "input_parameter_nullable,t,', {t: t}',if (t != null) assertString(t)",
-            "input_parameter_integer,i,', {i: i}',assertNumber(i)",
-            "input_parameter_big_integer,i,', {i: i}',assertBigInteger(i)",
-            "input_parameter_enum,e,', {e: e}',assertObject(e)",
-            "input_parameter_boolean,b,', {b: b}',assertBoolean(b)",
-            "input_parameter_rowid,r,', {r: r}',assertNumber(r)",
-            "input_parameter_pubkey,pubkey,', {pubkey: pubkey}',assertBuffer(pubkey)",
-            "input_parameter_blockchain_rid,blockchainRid,', {blockchain_rid: blockchainRid}',assertBuffer(blockchainRid)",
-            "input_parameter_entity,e,', {e: e}',assertNumber(e)",
-            "input_parameter_struct,s,', {s: s}',assertObject(s)",
-            "input_parameter_list_input,v,', {v: v}',assertArray(v)",
-            "input_parameter_set_input,v,', {v: Array.from(v)}',assertSet(v)",
-            "input_parameter_map_input,v,', {v: v}',assertObject(v)",
-            "input_parameter_enum_map,m,', {m: m}',assertObject(m)",
-            "input_parameter_any_map,m,', {m: m}',assertObject(m)",
-            "input_parameter_nullable_list_input,v,', {v: v}',if (v != null) assertArray(v)",
-            "input_parameter_gtv,g,', {g: g}',assertAny(g)",
-            "input_parameter_nullable_gtv,g,', {g: g}',if (g != null) assertAny(g)",
-            "input_parameter_multiple,'s,\n\ts2',', {s: s,\n\ts2: s2}','assertString(s)\n\tassertString(s2)'"
+            "input_parameter_nargs,'',''",
+            "input_parameter_text,t,assertString(t)",
+            "input_parameter_nullable,t,if (t != null) assertString(t)",
+            "input_parameter_integer,i,assertNumber(i)",
+            "input_parameter_big_integer,i,assertBigInteger(i)",
+            "input_parameter_enum,e,assertObject(e)",
+            "input_parameter_boolean,b,assertBoolean(b)",
+            "input_parameter_rowid,r,assertNumber(r)",
+            "input_parameter_pubkey,pubkey,assertBuffer(pubkey)",
+            "input_parameter_blockchain_rid,blockchainRid,assertBuffer(blockchainRid)",
+            "input_parameter_entity,e,assertNumber(e)",
+            "input_parameter_struct,s,assertObject(s)",
+            "input_parameter_list_input,v,assertArray(v)",
+            "input_parameter_set_input,v,assertSet(v)",
+            "input_parameter_map_input,v,assertObject(v)",
+            "input_parameter_enum_map,m,assertObject(m)",
+            "input_parameter_any_map,m,assertObject(m)",
+            "input_parameter_nullable_list_input,v,if (v != null) assertArray(v)",
+            "input_parameter_gtv,g,assertAny(g)",
+            "input_parameter_nullable_gtv,g,if (g != null) assertAny(g)",
+            "input_parameter_multiple,'s,\n\ts2','assertString(s)\n\tassertString(s2)'"
     )
-    fun parameterTypeTest(queryName: String, funParams: String, queryParams: String, assertFun: String) {
+    fun parameterTypeTest(queryName: String, queryParams: String, assertFun: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[queryName])
         val k = JavascriptQuery(query)
         val formatted = k.format()
-        val functionParams = if (funParams.isEmpty()) "" else ",${"\n\t"}$funParams"
         assertThat(formatted).all {
-            contains("export async function ${queryName.snakeToLowerCamelCase()}(gtxClient$functionParams) {")
+            contains("export function ${queryName.snakeToLowerCamelCase()}QueryObject($queryParams) {")
             contains(assertFun)
-            contains("return await gtxClient.query(\"$queryName\"$queryParams)")
+            contains("return { name: \"$queryName\"")
         }
     }
 

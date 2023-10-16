@@ -10,14 +10,15 @@ abstract class JavascriptFunction(
         protected val mountName: R_MountName,
         protected val params: List<R_Param>,
         private val async: Boolean,
+        private val querySuffix: String = "",
 ) : DocumentSection {
     override val moduleName get() = className.module
 
     final override val deps: Set<ClassName> = params.map{ it.type } .map { if (it is R_NullableType) it.valueType else it }.map { rTypeToBuiltinType(it).builtin.className }.toSet()
 
-    override fun format(): String {
+    final override fun format(): String {
         val functionName = className.className.snakeToLowerCamelCase()
-        return """|export ${asyncAnnotation()}function $functionName(${formatInputParameters()}) {
+        return """|export ${asyncAnnotation()}function $functionName$querySuffix(${formatInputParameters()}) {
         |${formatTypechecks()}${"\t"}${formatBody()}
         |}""".trimMargin()
     }
