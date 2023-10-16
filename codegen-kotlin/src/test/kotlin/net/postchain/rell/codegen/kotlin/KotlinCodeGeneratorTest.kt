@@ -30,7 +30,7 @@ internal class KotlinCodeGeneratorTest {
         val sections = generator.createSections(
                 File(this::class.java.getResource(rellPath)!!.toURI()),
                 baseModule.asList())
-        val documents = generator.constructDocuments(sections, true)
+        val documents = generator.constructDocuments(sections)
         val target = Files.createTempDirectory("rell-codegen")
         DocumentSaver(target.toFile()).saveDocuments(documents)
 

@@ -11,37 +11,36 @@ import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.section.DocumentSection
 import java.io.File
 
-class CodeGenerator(private val factory: DocumentFactory, private  val rellCliEnv: RellCliEnv = RellCliEnv.DEFAULT) {
+class CodeGenerator(private val factory: DocumentFactory, private val config: CodeGeneratorConfig, private val rellCliEnv: RellCliEnv = RellCliEnv.DEFAULT) {
 
     @Deprecated(message = "Compile app explicitly or replace with function that has null-support", replaceWith = ReplaceWith("createSections(source, baseModule.asList(), generateQueries, generateOperations)"))
-    fun createSections(source: File, vararg baseModule: String, generateQueries: Boolean = true, generateOperations: Boolean = true): List<DocumentSection> {
-        return createSections(source, baseModule.asList(), generateQueries, generateOperations)
+    fun createSections(source: File, vararg baseModule: String): List<DocumentSection> {
+        return createSections(source, baseModule.asList())
     }
 
-    fun createSections(source: File, modules: List<String>? = null, generateQueries: Boolean = true, generateOperations: Boolean = true): List<DocumentSection> {
+    fun createSections(source: File, modules: List<String>? = null): List<DocumentSection> {
         val conf = RellApiCompile.Config.Builder()
                 .moduleArgsMissingError(false)
                 .mountConflictError(false)
                 .build()
         val app = RellApiCompile.compileApp(conf, source, modules)
-        return createSections(app, generateQueries, generateOperations)
+        return createSections(app)
     }
 
-    fun createSections(app: R_App, generateQueries: Boolean = true, generateOperations: Boolean = true): List<DocumentSection> {
-
+    fun createSections(app: R_App): List<DocumentSection> {
         val rellEnums = app.modules.flatMap { module -> module.enums.values.map { CamelCaseClassName.fromRellDefinition(it) to it } }.toMap()
         val rellEntities = app.modules.flatMap { module -> module.entities.values.map { CamelCaseClassName.fromRellDefinition(it) to it } }.toMap()
         val rellStructures = app.modules.flatMap { module -> module.structs.values.map { CamelCaseClassName.fromRellDefinition(it) to it } }.toMap()
         val rellQueries = app.modules.flatMap { it.queries.values }.associateBy { it.appLevelName }
         val rellOperations = app.modules.flatMap { it.operations.values }.associateBy { it.appLevelName }.filter { !it.value.moduleLevelName.startsWith("__") }
 
-        val queries = if (generateQueries)
+        val queries = if (config.includeQueries())
             rellQueries.values
-                .filter { hasSupportedReturnType(it) }
-                .map { factory.createQuery(it) }
+                    .filter { hasSupportedReturnType(it) }
+                    .map { factory.createQuery(it) }
         else
             listOf()
-        val operations = if (generateOperations) rellOperations.values.map { factory.createOperation(it) } else listOf()
+        val operations = if (config.includeOperations()) rellOperations.values.map { factory.createOperation(it) } else listOf()
 
         val neededObjects = (operations + queries).flatMap { it.deps }.distinctBy { it.module + it.className }
         val enums = rellEnums
@@ -49,7 +48,7 @@ class CodeGenerator(private val factory: DocumentFactory, private  val rellCliEn
                 .map { factory.createEnum(it.key, it.value) }
 
         val entities = rellEntities
-                .filterKeys { it in neededObjects }
+                .filterKeys { config.allEntities() || it in neededObjects }
                 .map { factory.createEntity(it.key, it.value) }
 
         val structures = rellStructures
@@ -61,9 +60,9 @@ class CodeGenerator(private val factory: DocumentFactory, private  val rellCliEn
         return enums + entities + builtins + structures + queries + operations
     }
 
-    fun constructDocuments(sections: List<DocumentSection>, singleFile: Boolean = true): Map<String, Document> {
-        if (singleFile) {
-            return sections
+    fun constructDocuments(sections: List<DocumentSection>): Map<String, Document> {
+        return when (config.fileSaveMode()) {
+            FileSaveMode.Module -> sections
                     .groupBy { it.moduleName }
                     .map { (module, sections) ->
                         val document = factory.createDocument(module)
@@ -72,8 +71,13 @@ class CodeGenerator(private val factory: DocumentFactory, private  val rellCliEn
                         val fileName = if (module.isBlank()) "root" else module.replace(".", "_")
                         "$directoryName/$fileName.${factory.fileExtension}" to document
                     }.toMap()
+            FileSaveMode.Dapp -> {
+                val document = factory.createDocument("")
+                sections.forEach { document.addSection(it) }
+                mapOf("root.${factory.fileExtension}" to document)
+            }
+            FileSaveMode.Separate -> mapOf()
         }
-        return mapOf()
     }
 
     private fun hasSupportedReturnType(query: R_QueryDefinition): Boolean {
@@ -88,5 +92,11 @@ class CodeGenerator(private val factory: DocumentFactory, private  val rellCliEn
 
     private fun isMixedTuple(type: R_TupleType): Boolean {
         return type.fields.any { it.name == null } && type.fields.any { it.name != null }
+    }
+
+    enum class FileSaveMode {
+        Dapp,
+        Module,
+        Separate,
     }
 }
