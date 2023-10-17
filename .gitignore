@@ -1,0 +1,62 @@
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# IntelliJ IDEA
+.idea/
+
+# Gradle
+build/
+
+# Compiled Java and Kotlin classes
+out/
+
+# Eclipse project files
+.classpath
+.project
+.settings/
+
+# Logs
+*.log
+
+# IntelliJ IDEA
+*.iml
+*.ipr
+*.iws
+.idea/
+.idea_modules/
+
+# User-specific files
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# Directories for Apple's metadata
+.DS_Store
+.Spotlight-V100
+.Trashes
+
+# Windows Thumbs.db files
+Thumbs.db
+ehthumbs.db
+
+# Folder configuration file on Mac OS X
+.DS_Store
+
+# Windows image file caches
+ehthumbs_vista.db
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
