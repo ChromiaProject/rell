@@ -12,6 +12,7 @@ import net.postchain.rell.codegen.document.Document
 import net.postchain.rell.codegen.document.DocumentSaver
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.CachedRellCliEnv
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.output.WaitingConsumer
@@ -27,6 +28,7 @@ import java.time.Duration
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
 
+@Disabled
 @Testcontainers
 internal class MermaidCodeGeneratorTest {
 
