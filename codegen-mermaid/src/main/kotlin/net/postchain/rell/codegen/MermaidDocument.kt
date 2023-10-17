@@ -15,6 +15,7 @@ class MermaidDocument(private val mdx: Boolean): Document {
     }
 
     override fun format(): String {
+        if (sections.isEmpty()) return ""
         return """
             |${if (mdx) "```mermaid" else ""}
             |classDiagram
