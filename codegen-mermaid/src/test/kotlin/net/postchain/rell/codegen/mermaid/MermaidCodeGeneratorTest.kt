@@ -48,9 +48,8 @@ internal class MermaidCodeGeneratorTest {
         GenericContainer("ghcr.io/mermaid-js/mermaid-cli/mermaid-cli")
                 .withFileSystemBind(target.absolutePathString(), containerPath)
                 .withCommand("-i dapp.mmd -o out.svg")
-                .waitingFor(Wait.forLogMessage(".*Generating single mermaid chart.*", 1))
                 .start()
-        Awaitility.await().atMost(Duration.ofSeconds(20)).until {
+        Awaitility.await().atMost(Duration.ofSeconds(30)).until {
             target.resolve("out.svg").exists()
         }
         return sections to documents
