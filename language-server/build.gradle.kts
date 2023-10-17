@@ -1,19 +1,21 @@
 plugins {
-    id("java")
     kotlin("jvm") version "1.9.10"
     application
 }
 
-group = "net.postchain.rell.toolbox"
-version = "1.0-SNAPSHOT"
+version = rootProject.version
+group = rootProject.group
 
 repositories {
     mavenCentral()
 }
-
+val lsp4jVersion = "0.21.1"
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+    implementation("org.eclipse.lsp4j:org.eclipse.lsp4j:$lsp4jVersion")
+    implementation("org.eclipse.lsp4j:org.eclipse.lsp4j.debug:$lsp4jVersion")
+    implementation("org.eclipse.lsp4j:org.eclipse.lsp4j.websocket:$lsp4jVersion")
+    testImplementation(libs.bundles.testcontainers)
+    implementation(libs.bundles.logging)
 }
 
 tasks.test {

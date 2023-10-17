@@ -6,6 +6,6 @@ pluginManagement {
 
 }
 rootProject.name = "rell-toolbox"
-
 include("core")
 include("language-server")
+

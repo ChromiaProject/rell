@@ -1,17 +1,21 @@
 plugins {
-    id("java")
+    kotlin("jvm") version "1.9.10"
 }
 
-group = "net.postchain.rell.toolbox"
-version = "1.0-SNAPSHOT"
+version = rootProject.version
+group = rootProject.group
 
 repositories {
     mavenCentral()
 }
+val koinVersion = "3.5.0"
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+    implementation("org.antlr:antlr4:4.13.1")
+    implementation("io.insert-koin:koin-core:$koinVersion")
+    implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
+    testImplementation(libs.bundles.testcontainers)
+    implementation(libs.bundles.logging)
 }
 
 tasks.test {
