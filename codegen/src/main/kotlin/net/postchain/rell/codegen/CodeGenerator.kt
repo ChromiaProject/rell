@@ -74,7 +74,7 @@ class CodeGenerator(private val factory: DocumentFactory, private val config: Co
             FileSaveMode.Dapp -> {
                 val document = factory.createDocument("")
                 sections.forEach { document.addSection(it) }
-                mapOf("root.${factory.fileExtension}" to document)
+                mapOf("dapp.${factory.fileExtension}" to document)
             }
             FileSaveMode.Separate -> mapOf()
         }

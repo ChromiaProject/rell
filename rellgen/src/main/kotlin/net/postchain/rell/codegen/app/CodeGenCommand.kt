@@ -32,10 +32,7 @@ class KotlinOptionGroup: KotlinCodeGeneratorConfig, LanguageOption("Kotlin") {
 
 class MermaidOption: MermaidCodeGeneratorConfig, LanguageOption("Mermaid") {
     private val mdx by option(help = "Surround with mdx tags").flag()
-    private val flowChart by option(help = "Generate a chart for each query/operation").flag()
     override fun mdx() = mdx
-    override fun flowChart() = flowChart
-
 }
 
 class TypescriptOption: TypescriptCodeGeneratorConfig, LanguageOption("Typescript")
