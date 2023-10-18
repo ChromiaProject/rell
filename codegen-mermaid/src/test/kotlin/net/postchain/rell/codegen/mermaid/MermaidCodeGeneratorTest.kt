@@ -49,7 +49,7 @@ internal class MermaidCodeGeneratorTest {
         val containerPath = "/data"
         GenericContainer("ghcr.io/mermaid-js/mermaid-cli/mermaid-cli")
                 .withFileSystemBind(target.absolutePathString(), containerPath)
-                .withCommand("-i dapp.mmd -o out.svg")
+                .withCommand("-i rell.mmd -o out.svg")
                 .start()
         Awaitility.await().atMost(Duration.ofSeconds(30)).until {
             target.resolve("out.svg").exists()
