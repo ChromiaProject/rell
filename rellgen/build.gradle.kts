@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":codegen-kotlin"))
     implementation(project(":codegen-typescript"))
     implementation(project(":codegen-javascript"))
+    implementation(project(":codegen-mermaid"))
     implementation(libs.clikt)
     implementation(libs.rell)
 }

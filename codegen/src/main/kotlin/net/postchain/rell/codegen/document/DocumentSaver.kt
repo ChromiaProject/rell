@@ -9,9 +9,11 @@ class DocumentSaver(private val targetFolder: File) {
     }
 
     fun saveDocument(path: String, document: Document) {
+        val formattedDocument = document.format()
+        //if (formattedDocument.isBlank()) return
         val f = File(targetFolder, path)
         f.parentFile.mkdirs()
         f.createNewFile()
-        f.writeText(document.format())
+        f.writeText(formattedDocument)
     }
 }

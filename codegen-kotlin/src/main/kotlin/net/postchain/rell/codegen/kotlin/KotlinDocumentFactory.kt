@@ -6,11 +6,11 @@ import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.kotlin.util.KotlinBuiltinType
 import net.postchain.rell.codegen.util.BuiltinType
 
-class KotlinDocumentFactory(private val basePackage: String) : DocumentFactory {
+class KotlinDocumentFactory(private val config: KotlinCodeGeneratorConfig) : DocumentFactory {
     override val fileExtension: String
         get() = "kt"
 
-    override fun createDocument(moduleName: String) = KotlinDocument(basePackage, moduleName)
+    override fun createDocument(moduleName: String) = KotlinDocument(config.packageName(), moduleName)
 
     override fun createEntity(className: ClassName, rellEntity: R_EntityDefinition) = KotlinEntity(className, rellEntity)
 

@@ -8,7 +8,7 @@ class CodeGeneratorTest {
 
     @Test
     fun `Multiple sections are added only once`() {
-        val generator = CodeGenerator(TestDocumentFactory())
+        val generator = CodeGenerator(TestDocumentFactory(), TestCodegeneratorConfig())
         val docs = generator.constructDocuments(listOf(
                 TestEntity("foo"),
                 TestEntity("foo")

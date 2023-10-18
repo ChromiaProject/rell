@@ -24,13 +24,14 @@ import java.nio.file.Files
 internal class KotlinCodeGeneratorTest {
 
     private val rellCliEnv = CachedRellCliEnv(RellCliEnv.DEFAULT, true, true)
-    private val generator = CodeGenerator(KotlinDocumentFactory("com.example"), rellCliEnv)
+    private val config = object : KotlinCodeGeneratorConfig { override fun packageName() = "com.example" }
+    private val generator = CodeGenerator(KotlinDocumentFactory(config), config, rellCliEnv)
 
     private fun generateAndCompile(rellPath: String, vararg baseModule: String): Pair<List<DocumentSection>, Map<String, Document>> {
         val sections = generator.createSections(
                 File(this::class.java.getResource(rellPath)!!.toURI()),
                 baseModule.asList())
-        val documents = generator.constructDocuments(sections, true)
+        val documents = generator.constructDocuments(sections)
         val target = Files.createTempDirectory("rell-codegen")
         DocumentSaver(target.toFile()).saveDocuments(documents)
 
@@ -166,7 +167,7 @@ internal class KotlinCodeGeneratorTest {
         val rellApp = SingleFileRellApp("mixed_tuple_queries")
         rellApp.compileApp()
 
-        val sections = generator.createSections(rellApp.app, true, true)
+        val sections = generator.createSections(rellApp.app)
 
         assertThat(sections).hasSize(2)
         assertThat(rellCliEnv.errorCache).contains("Skipping [mixed_tuple_queries:return_type_unnamed_and_named_tuple] Query has unsupported mixed tuple return type: (integer,foo:integer)")

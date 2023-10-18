@@ -21,10 +21,10 @@ internal class CodeGenCommandTest {
         val content = File(javaClass.getResource("module.rell")!!.toURI()).readText()
         moduleFile.createNewFile()
         moduleFile.writeText(content)
-        assertThat(dir.toFile().listFiles()).hasSize(1)
-        CodeGenCommand().parse(listOf(dir.pathString, "${dir.pathString}/target", "--module", "test", "--package", "com.example"))
-        assertThat(dir.toFile().listFiles()).hasSize(2)
-        assertThat(File(dir.toFile(), "target/test").list()).containsAll(
+        assertThat(dir.toFile().listFiles()!!).hasSize(1)
+        CodeGenCommand().parse(listOf(dir.pathString, "${dir.pathString}/target", "--module", "test", "--kotlin", "--package", "com.example"))
+        assertThat(dir.toFile().listFiles()!!).hasSize(2)
+        assertThat(File(dir.toFile(), "target/test").list()!!).containsAll(
             "test.kt",
         )
     }
