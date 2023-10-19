@@ -1,0 +1,44 @@
+[
+  {
+    "files" : {
+      "main.rell" : "entity user {}\nentity user {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:8)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:user:ENTITY:main.rell(2:8)",
+        "text" : "Name conflict: entity 'user' defined at main.rell:2"
+      },
+      {
+        "pos" : "main.rell(2:8)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:user:ENTITY:main.rell(1:8)",
+        "text" : "Name conflict: entity 'user' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

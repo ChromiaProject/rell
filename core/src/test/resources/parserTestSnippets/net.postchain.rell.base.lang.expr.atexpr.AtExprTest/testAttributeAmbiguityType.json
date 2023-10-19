@@ -1,0 +1,373 @@
+[
+  {
+    "files" : {
+      "main.rell" : "entity target { name: text; }\nentity single { t: target; }\nentity double { t1: target; t2: target; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity target { name: text; }\nentity single { t: target; }\nentity double { t1: target; t2: target; }\nquery q() { \n            val tgt1 = target @ { .name == 'A' };\n            val tgt2 = target @ { .name == 'B' };\n            val tgt3 = target @ { .name == 'C' };\n         return single @ { tgt1 }; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity target { name: text; }\nentity single { t: target; }\nentity double { t1: target; t2: target; }\nquery q() { \n            val tgt1 = target @ { .name == 'A' };\n            val tgt2 = target @ { .name == 'B' };\n            val tgt3 = target @ { .name == 'C' };\n         return single @ { tgt2 }; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity target { name: text; }\nentity single { t: target; }\nentity double { t1: target; t2: target; }\nquery q() { \n            val tgt1 = target @ { .name == 'A' };\n            val tgt2 = target @ { .name == 'B' };\n            val tgt3 = target @ { .name == 'C' };\n         return double @ { tgt1 }; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:28)",
+        "type" : "ERROR",
+        "code" : "at_where:var_manyattrs_type:0:tgt1:target:[double:double.t1,double:double.t2]",
+        "text" : "Multiple attributes match expression type target: t1, t2"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity target { name: text; }\nentity single { t: target; }\nentity double { t1: target; t2: target; }\nquery q() { \n            val tgt1 = target @ { .name == 'A' };\n            val tgt2 = target @ { .name == 'B' };\n            val tgt3 = target @ { .name == 'C' };\n         return double @ { .t1 == tgt1, tgt2 }; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:41)",
+        "type" : "ERROR",
+        "code" : "at_where:var_manyattrs_type:1:tgt2:target:[double:double.t1,double:double.t2]",
+        "text" : "Multiple attributes match expression type target: t1, t2"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity target { name: text; }\nentity single { t: target; }\nentity double { t1: target; t2: target; }\nquery q() { \n            val tgt1 = target @ { .name == 'A' };\n            val tgt2 = target @ { .name == 'B' };\n            val tgt3 = target @ { .name == 'C' };\n         return double @ { .t1 == tgt1, .t2 == tgt2 }; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity target { name: text; }\nentity single { t: target; }\nentity double { t1: target; t2: target; }\nquery q() { \n            val tgt1 = target @ { .name == 'A' };\n            val tgt2 = target @ { .name == 'B' };\n            val tgt3 = target @ { .name == 'C' };\n         return double @ { .t1 == tgt3, .t2 == tgt1 }; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity target { name: text; }\nentity single { t: target; }\nentity double { t1: target; t2: target; }\nquery q() { \n            val tgt1 = target @ { .name == 'A' };\n            val tgt2 = target @ { .name == 'B' };\n            val tgt3 = target @ { .name == 'C' };\n         return (s1: single, s2: single) @ { tgt1 }; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:46)",
+        "type" : "ERROR",
+        "code" : "at_where:var_manyattrs_type:0:tgt1:target:[s1:single.t,s2:single.t]",
+        "text" : "Multiple attributes match expression type target: t, t"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity target { name: text; }\nentity single { t: target; }\nentity double { t1: target; t2: target; }\nquery q() { \n            val tgt1 = target @ { .name == 'A' };\n            val tgt2 = target @ { .name == 'B' };\n            val tgt3 = target @ { .name == 'C' };\n         return (s1: single, s2: single) @ { tgt1, tgt2 }; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:46)",
+        "type" : "ERROR",
+        "code" : "at_where:var_manyattrs_type:0:tgt1:target:[s1:single.t,s2:single.t]",
+        "text" : "Multiple attributes match expression type target: t, t"
+      },
+      {
+        "pos" : "main.rell(8:52)",
+        "type" : "ERROR",
+        "code" : "at_where:var_manyattrs_type:1:tgt2:target:[s1:single.t,s2:single.t]",
+        "text" : "Multiple attributes match expression type target: t, t"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity target { name: text; }\nentity single { t: target; }\nentity double { t1: target; t2: target; }\nquery q() { \n            val tgt1 = target @ { .name == 'A' };\n            val tgt2 = target @ { .name == 'B' };\n            val tgt3 = target @ { .name == 'C' };\n         return (s1: single, s2: single) @ { s1.t == tgt1, tgt2 }; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:60)",
+        "type" : "ERROR",
+        "code" : "at_where:var_manyattrs_type:1:tgt2:target:[s1:single.t,s2:single.t]",
+        "text" : "Multiple attributes match expression type target: t, t"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity target { name: text; }\nentity single { t: target; }\nentity double { t1: target; t2: target; }\nquery q() { \n            val tgt1 = target @ { .name == 'A' };\n            val tgt2 = target @ { .name == 'B' };\n            val tgt3 = target @ { .name == 'C' };\n         return (s1: single, s2: single) @ { s1.t == tgt1, s2.t == tgt2 }; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

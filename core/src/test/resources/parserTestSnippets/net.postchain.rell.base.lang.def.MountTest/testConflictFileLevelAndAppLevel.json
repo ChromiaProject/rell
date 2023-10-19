@@ -1,0 +1,61 @@
+[
+  {
+    "files" : {
+      "main.rell" : "import foo.a; import bar.b;",
+      "bar/b.rell" : "module; @mount('some') entity department {}",
+      "foo/a.rell" : "module; @mount('some') entity user {} @mount('some') entity company {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "bar/b.rell(1:31)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[bar.b:department]:some:ENTITY:[foo.a:user]:foo/a.rell(1:31)",
+        "text" : "Mount name conflict: entity 'user' has mount name 'some' (defined at foo/a.rell:1)"
+      },
+      {
+        "pos" : "foo/a.rell(1:31)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[foo.a:user]:some:ENTITY:[foo.a:company]:foo/a.rell(1:61)",
+        "text" : "Mount name conflict: entity 'company' has mount name 'some' (defined at foo/a.rell:1)"
+      },
+      {
+        "pos" : "foo/a.rell(1:31)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[foo.a:user]:some:ENTITY:[bar.b:department]:bar/b.rell(1:31)",
+        "text" : "Mount name conflict: entity 'department' has mount name 'some' (defined at bar/b.rell:1)"
+      },
+      {
+        "pos" : "foo/a.rell(1:61)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[foo.a:company]:some:ENTITY:[foo.a:user]:foo/a.rell(1:31)",
+        "text" : "Mount name conflict: entity 'user' has mount name 'some' (defined at foo/a.rell:1)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "bar/b.rell" : [ ],
+      "foo/a.rell" : [ ]
+    }
+  }
+]

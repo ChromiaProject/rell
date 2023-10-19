@@ -1,0 +1,282 @@
+[
+  {
+    "files" : {
+      "a/module.rell" : "module;",
+      "a/b/module.rell" : "@test module; function test_1(){}",
+      "a/b/c/d.rell" : "@test module; function test_3(){}",
+      "a/b/c/module.rell" : "@test module; function test_2(){}"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [
+        "a.b"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/d.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a/module.rell" : "module;",
+      "a/b/module.rell" : "@test module; function test_1(){}",
+      "a/b/c/d.rell" : "@test module; function test_3(){}",
+      "a/b/c/module.rell" : "@test module; function test_2(){}"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [
+        "a.b"
+      ],
+      "test_sub_modules" : false
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/d.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a/module.rell" : "module;",
+      "a/b/module.rell" : "@test module; function test_1(){}",
+      "a/b/c/d.rell" : "@test module; function test_3(){}",
+      "a/b/c/module.rell" : "@test module; function test_2(){}"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [
+        "a.b.c"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/d.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a/module.rell" : "module;",
+      "a/b/module.rell" : "@test module; function test_1(){}",
+      "a/b/c/d.rell" : "@test module; function test_3(){}",
+      "a/b/c/module.rell" : "@test module; function test_2(){}"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [
+        "a.b.c"
+      ],
+      "test_sub_modules" : false
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/d.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a/module.rell" : "module;",
+      "a/b/module.rell" : "@test module; function test_1(){}",
+      "a/b/c/d.rell" : "@test module; function test_3(){}",
+      "a/b/c/module.rell" : "@test module; function test_2(){}"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [
+        "a.b.c.d"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/d.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a/module.rell" : "module;",
+      "a/b/module.rell" : "@test module; function test_1(){}",
+      "a/b/c/d.rell" : "@test module; function test_3(){}",
+      "a/b/c/module.rell" : "@test module; function test_2(){}"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [
+        "a.b.c.d"
+      ],
+      "test_sub_modules" : false
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/d.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a/module.rell" : "module;",
+      "a/b/module.rell" : "@test module; function test_1(){}",
+      "a/b/c/d.rell" : "@test module; function test_3(){}",
+      "a/b/c/module.rell" : "@test module; function test_2(){}"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [
+        "a"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/d.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a/module.rell" : "module;",
+      "a/b/module.rell" : "@test module; function test_1(){}",
+      "a/b/c/d.rell" : "@test module; function test_3(){}",
+      "a/b/c/module.rell" : "@test module; function test_2(){}"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/d.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  }
+]

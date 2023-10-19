@@ -1,0 +1,780 @@
+[
+  {
+    "files" : {
+      "main.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 123l;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "lex:number_end",
+        "text" : "Invalid numeric literal"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:16)",
+          "type" : "ERROR",
+          "code" : "lex:number_end",
+          "text" : "Invalid numeric literal"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 0x123l;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:18)",
+        "type" : "ERROR",
+        "code" : "lex:number_end",
+        "text" : "Invalid numeric literal"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:18)",
+          "type" : "ERROR",
+          "code" : "lex:number_end",
+          "text" : "Invalid numeric literal"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 123L4;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:17)",
+        "type" : "ERROR",
+        "code" : "lex:number_end",
+        "text" : "Invalid numeric literal"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:17)",
+          "type" : "ERROR",
+          "code" : "lex:number_end",
+          "text" : "Invalid numeric literal"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 123LL;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:17)",
+        "type" : "ERROR",
+        "code" : "lex:number_end",
+        "text" : "Invalid numeric literal"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:17)",
+          "type" : "ERROR",
+          "code" : "lex:number_end",
+          "text" : "Invalid numeric literal"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 123La;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:17)",
+        "type" : "ERROR",
+        "code" : "lex:number_end",
+        "text" : "Invalid numeric literal"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:17)",
+          "type" : "ERROR",
+          "code" : "lex:number_end",
+          "text" : "Invalid numeric literal"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 0x123L4;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:19)",
+        "type" : "ERROR",
+        "code" : "lex:number_end",
+        "text" : "Invalid numeric literal"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:19)",
+          "type" : "ERROR",
+          "code" : "lex:number_end",
+          "text" : "Invalid numeric literal"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 0x123LL;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:19)",
+        "type" : "ERROR",
+        "code" : "lex:number_end",
+        "text" : "Invalid numeric literal"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:19)",
+          "type" : "ERROR",
+          "code" : "lex:number_end",
+          "text" : "Invalid numeric literal"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 0x123La;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:19)",
+        "type" : "ERROR",
+        "code" : "lex:number_end",
+        "text" : "Invalid numeric literal"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:19)",
+          "type" : "ERROR",
+          "code" : "lex:number_end",
+          "text" : "Invalid numeric literal"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 1E1L4;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "lex:number_end",
+        "text" : "Invalid numeric literal"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:16)",
+          "type" : "ERROR",
+          "code" : "lex:number_end",
+          "text" : "Invalid numeric literal"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 1E1LL;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "lex:number_end",
+        "text" : "Invalid numeric literal"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:16)",
+          "type" : "ERROR",
+          "code" : "lex:number_end",
+          "text" : "Invalid numeric literal"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 1E1La;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "lex:number_end",
+        "text" : "Invalid numeric literal"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:16)",
+          "type" : "ERROR",
+          "code" : "lex:number_end",
+          "text" : "Invalid numeric literal"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 1EL;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:15)",
+        "type" : "ERROR",
+        "code" : "lex:number:no_digit_after_exp",
+        "text" : "Invalid number: no digit after E"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:15)",
+          "type" : "ERROR",
+          "code" : "lex:number:no_digit_after_exp",
+          "text" : "Invalid number: no digit after E"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 1E+L;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "lex:number:no_digit_after_exp",
+        "text" : "Invalid number: no digit after E"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:16)",
+          "type" : "ERROR",
+          "code" : "lex:number:no_digit_after_exp",
+          "text" : "Invalid number: no digit after E"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 1E-L;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "lex:number:no_digit_after_exp",
+        "text" : "Invalid number: no digit after E"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:16)",
+          "type" : "ERROR",
+          "code" : "lex:number:no_digit_after_exp",
+          "text" : "Invalid number: no digit after E"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 1E-1L;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:17)",
+        "type" : "ERROR",
+        "code" : "lex:number_end",
+        "text" : "Invalid numeric literal"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:17)",
+          "type" : "ERROR",
+          "code" : "lex:number_end",
+          "text" : "Invalid numeric literal"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 10E-1L;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:18)",
+        "type" : "ERROR",
+        "code" : "lex:number_end",
+        "text" : "Invalid numeric literal"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:18)",
+          "type" : "ERROR",
+          "code" : "lex:number_end",
+          "text" : "Invalid numeric literal"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 1000000E-1L;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:23)",
+        "type" : "ERROR",
+        "code" : "lex:number_end",
+        "text" : "Invalid numeric literal"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:23)",
+          "type" : "ERROR",
+          "code" : "lex:number_end",
+          "text" : "Invalid numeric literal"
+        }
+      ]
+    }
+  }
+]

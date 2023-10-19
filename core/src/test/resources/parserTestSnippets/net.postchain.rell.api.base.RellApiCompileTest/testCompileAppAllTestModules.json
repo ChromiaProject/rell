@@ -1,0 +1,45 @@
+[
+  {
+    "files" : {
+      "a.rell" : "module;",
+      "c.rell" : "module;",
+      "d.rell" : "@test module; import c;",
+      "b1/b2.rell" : "module;",
+      "b1/module.rell" : "module;",
+      "e1/module.rell" : "module;",
+      "e1/e2/e3.rell" : "@test module;",
+      "e1/e2/module.rell" : "@test module;"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "b1/b2.rell" : [ ],
+      "b1/module.rell" : [ ],
+      "e1/module.rell" : [ ],
+      "e1/e2/e3.rell" : [ ],
+      "e1/e2/module.rell" : [ ]
+    }
+  }
+]

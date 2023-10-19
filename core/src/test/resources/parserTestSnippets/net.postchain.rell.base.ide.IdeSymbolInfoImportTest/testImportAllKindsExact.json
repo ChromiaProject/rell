@@ -1,0 +1,290 @@
+[
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            struct rec { x: integer; }\n            enum colors { red, green, blue }\n            operation op() {}\n            query q() = 123;\n            function f() = 123;\n            val MAGIC = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "import lib.{data}; function test() = create data('Bob');"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            struct rec { x: integer; }\n            enum colors { red, green, blue }\n            operation op() {}\n            query q() = 123;\n            function f() = 123;\n            val MAGIC = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "import lib.{rec}; function test() = rec(123);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            struct rec { x: integer; }\n            enum colors { red, green, blue }\n            operation op() {}\n            query q() = 123;\n            function f() = 123;\n            val MAGIC = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "import lib.{op}; function test() = op();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            struct rec { x: integer; }\n            enum colors { red, green, blue }\n            operation op() {}\n            query q() = 123;\n            function f() = 123;\n            val MAGIC = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "import lib.{q}; function test() = q();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            struct rec { x: integer; }\n            enum colors { red, green, blue }\n            operation op() {}\n            query q() = 123;\n            function f() = 123;\n            val MAGIC = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "import lib.{f}; function test() = f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            struct rec { x: integer; }\n            enum colors { red, green, blue }\n            operation op() {}\n            query q() = 123;\n            function f() = 123;\n            val MAGIC = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "import lib.{MAGIC}; function test() = MAGIC;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            struct rec { x: integer; }\n            enum colors { red, green, blue }\n            operation op() {}\n            query q() = 123;\n            function f() = 123;\n            val MAGIC = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "import lib.{ns}; function test() = ns.p();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            struct rec { x: integer; }\n            enum colors { red, green, blue }\n            operation op() {}\n            query q() = 123;\n            function f() = 123;\n            val MAGIC = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "import lib.{state}; function test() = state.x;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            struct rec { x: integer; }\n            enum colors { red, green, blue }\n            operation op() {}\n            query q() = 123;\n            function f() = 123;\n            val MAGIC = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "import lib.{colors}; function test() = colors.red;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

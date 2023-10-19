@@ -1,0 +1,431 @@
+[
+  {
+    "files" : {
+      "main.rell" : "entity user { name; rating: integer; }\nentity admin { name; root: boolean; }\nentity company { name; city: text; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity user { name; rating: integer; }\nentity admin { name; root: boolean; }\nentity company { name; city: text; }\nquery q() = user@{} ( .name, @omit user.to_struct() );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity user { name; rating: integer; }\nentity admin { name; root: boolean; }\nentity company { name; city: text; }\nquery q() = user@{} ( @sort user.to_struct() );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:24)",
+        "type" : "ERROR",
+        "code" : "expr:at:sort",
+        "text" : "Cannot sort this expression"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity user { name; rating: integer; }\nentity admin { name; root: boolean; }\nentity company { name; city: text; }\nquery q() = user@{} ( @sort_desc user.to_struct() );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:24)",
+        "type" : "ERROR",
+        "code" : "expr:at:sort",
+        "text" : "Cannot sort this expression"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity user { name; rating: integer; }\nentity admin { name; root: boolean; }\nentity company { name; city: text; }\nquery q() = user@{} ( @group user.to_struct() );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:24)",
+        "type" : "ERROR",
+        "code" : "expr:at:group",
+        "text" : "Cannot group this expression"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity user { name; rating: integer; }\nentity admin { name; root: boolean; }\nentity company { name; city: text; }\nquery q() = user@{} ( @min user.to_struct() );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:24)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      },
+      {
+        "pos" : "main.rell(4:28)",
+        "type" : "ERROR",
+        "code" : "at:what:aggr:bad_type:MIN:struct<user>",
+        "text" : "Invalid type of @min expression: struct<user>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity user { name; rating: integer; }\nentity admin { name; root: boolean; }\nentity company { name; city: text; }\nquery q() = user@{} ( @max user.to_struct() );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:24)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      },
+      {
+        "pos" : "main.rell(4:28)",
+        "type" : "ERROR",
+        "code" : "at:what:aggr:bad_type:MAX:struct<user>",
+        "text" : "Invalid type of @max expression: struct<user>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity user { name; rating: integer; }\nentity admin { name; root: boolean; }\nentity company { name; city: text; }\nquery q() = user@{} ( @sum user.to_struct() );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:24)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      },
+      {
+        "pos" : "main.rell(4:28)",
+        "type" : "ERROR",
+        "code" : "at:what:aggr:bad_type:SUM:struct<user>",
+        "text" : "Invalid type of @sum expression: struct<user>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity user { name; rating: integer; }\nentity admin { name; root: boolean; }\nentity company { name; city: text; }\nquery q() = user@{} ( @group .name, @min user.to_struct() );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:38)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      },
+      {
+        "pos" : "main.rell(4:42)",
+        "type" : "ERROR",
+        "code" : "at:what:aggr:bad_type:MIN:struct<user>",
+        "text" : "Invalid type of @min expression: struct<user>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity user { name; rating: integer; }\nentity admin { name; root: boolean; }\nentity company { name; city: text; }\nquery q() = user@{} ( @group .name, @max user.to_struct() );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:38)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      },
+      {
+        "pos" : "main.rell(4:42)",
+        "type" : "ERROR",
+        "code" : "at:what:aggr:bad_type:MAX:struct<user>",
+        "text" : "Invalid type of @max expression: struct<user>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity user { name; rating: integer; }\nentity admin { name; root: boolean; }\nentity company { name; city: text; }\nquery q() = user@{} ( @group .name, @sum user.to_struct() );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:38)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      },
+      {
+        "pos" : "main.rell(4:42)",
+        "type" : "ERROR",
+        "code" : "at:what:aggr:bad_type:SUM:struct<user>",
+        "text" : "Invalid type of @sum expression: struct<user>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

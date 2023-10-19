@@ -1,0 +1,461 @@
+[
+  {
+    "files" : {
+      "main.rell" : "enum color { red, green, blue }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum color { red, green, blue }\nquery q() = when(abs(x'')) { min() -> 0 };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:13)",
+        "type" : "ERROR",
+        "code" : "when_no_else",
+        "text" : "Else case missing"
+      },
+      {
+        "pos" : "main.rell(2:18)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(2:30)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum color { red, green, blue }\nquery q() = when(abs(x'')) { 0 -> min() };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:13)",
+        "type" : "ERROR",
+        "code" : "when_no_else",
+        "text" : "Else case missing"
+      },
+      {
+        "pos" : "main.rell(2:18)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(2:35)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum color { red, green, blue }\nquery q() = when(abs(x'')) { else -> min() };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:18)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(2:38)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum color { red, green, blue }\nquery q(c: color) = when (c) { red -> abs(x''); green -> min() };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:21)",
+        "type" : "ERROR",
+        "code" : "when_no_else",
+        "text" : "Else case missing"
+      },
+      {
+        "pos" : "main.rell(2:39)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(2:58)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum color { red, green, blue }\nquery q(c: color) = when (c) { abs(x'') -> min() };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:21)",
+        "type" : "ERROR",
+        "code" : "when_no_else",
+        "text" : "Else case missing"
+      },
+      {
+        "pos" : "main.rell(2:32)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(2:44)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum color { red, green, blue }\nquery q(c: color) = when (c) { abs(x'') -> 0; min() -> 1 };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:21)",
+        "type" : "ERROR",
+        "code" : "when_no_else",
+        "text" : "Else case missing"
+      },
+      {
+        "pos" : "main.rell(2:32)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(2:47)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum color { red, green, blue }\nquery q(c: color) = when (c) { abs(x'') -> 0; red -> min() };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:21)",
+        "type" : "ERROR",
+        "code" : "when_no_else",
+        "text" : "Else case missing"
+      },
+      {
+        "pos" : "main.rell(2:32)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(2:54)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum color { red, green, blue }\nquery q(c: color) = when (c) { abs(x'') -> 0; else -> min() };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:32)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(2:55)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum color { red, green, blue }\nquery q(x: boolean) = when (x) { true -> 0; false -> abs(x''); else -> min() };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:54)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(2:64)",
+        "type" : "ERROR",
+        "code" : "when_else_allvalues:boolean",
+        "text" : "No values of type 'boolean' left for the else case"
+      },
+      {
+        "pos" : "main.rell(2:72)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

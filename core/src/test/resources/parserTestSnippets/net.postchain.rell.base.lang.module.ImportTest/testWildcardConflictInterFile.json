@@ -1,0 +1,135 @@
+[
+  {
+    "files" : {
+      "a.rell" : "module; function f(): integer = 123;",
+      "b.rell" : "module; function f(): integer = 456;",
+      "main.rell" : "",
+      "c/c1.rell" : "import a.*;",
+      "c/c2.rell" : "function f(): integer = 789;",
+      "c/c3.rell" : "import b.*;",
+      "c/c4.rell" : "function g(): integer = f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ],
+      "c/c1.rell" : [ ],
+      "c/c2.rell" : [ ],
+      "c/c3.rell" : [ ],
+      "c/c4.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; function f(): integer = 123;",
+      "b.rell" : "module; function f(): integer = 456;",
+      "main.rell" : "import c; function __f() = c.f(); query q() = __f();",
+      "c/c1.rell" : "import a.*;",
+      "c/c2.rell" : "function f(): integer = 789;",
+      "c/c3.rell" : "import b.*;",
+      "c/c4.rell" : "function g(): integer = f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:30)",
+        "type" : "ERROR",
+        "code" : "name:ambig:c.f:[FUNCTION:c:f,FUNCTION:a:f,FUNCTION:b:f]",
+        "text" : "Name 'c.f' is ambiguous: function c:f, function a:f, function b:f"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ],
+      "c/c1.rell" : [ ],
+      "c/c2.rell" : [ ],
+      "c/c3.rell" : [ ],
+      "c/c4.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; function f(): integer = 123;",
+      "b.rell" : "module; function f(): integer = 456;",
+      "main.rell" : "import c; function __f() = c.g(); query q() = __f();",
+      "c/c1.rell" : "import a.*;",
+      "c/c2.rell" : "function f(): integer = 789;",
+      "c/c3.rell" : "import b.*;",
+      "c/c4.rell" : "function g(): integer = f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ],
+      "c/c1.rell" : [ ],
+      "c/c2.rell" : [ ],
+      "c/c3.rell" : [ ],
+      "c/c4.rell" : [ ]
+    }
+  }
+]

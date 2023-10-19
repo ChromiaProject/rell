@@ -1,0 +1,390 @@
+[
+  {
+    "files" : {
+      "main.rell" : "enum foo { A, B, C, }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum foo {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum foo { A, B, C, A }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:21)",
+        "type" : "ERROR",
+        "code" : "enum_dup:A",
+        "text" : "Duplicate enum value: 'A'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum foo {} enum foo {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:6)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:ENUM:main.rell(1:18)",
+        "text" : "Name conflict: enum 'foo' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:18)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:ENUM:main.rell(1:6)",
+        "text" : "Name conflict: enum 'foo' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "object foo {} enum foo {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:8)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:ENUM:main.rell(1:20)",
+        "text" : "Name conflict: enum 'foo' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:20)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:OBJECT:main.rell(1:8)",
+        "text" : "Name conflict: object 'foo' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity foo {} enum foo {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:8)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:ENUM:main.rell(1:20)",
+        "text" : "Name conflict: enum 'foo' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:20)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:ENTITY:main.rell(1:8)",
+        "text" : "Name conflict: entity 'foo' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct foo {} enum foo {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:8)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:ENUM:main.rell(1:20)",
+        "text" : "Name conflict: enum 'foo' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:20)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:STRUCT:main.rell(1:8)",
+        "text" : "Name conflict: struct 'foo' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum foo {} object foo {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:6)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:OBJECT:main.rell(1:20)",
+        "text" : "Name conflict: object 'foo' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:20)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:ENUM:main.rell(1:6)",
+        "text" : "Name conflict: enum 'foo' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum foo {} entity foo {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:6)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:ENTITY:main.rell(1:20)",
+        "text" : "Name conflict: entity 'foo' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:20)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:ENUM:main.rell(1:6)",
+        "text" : "Name conflict: enum 'foo' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum foo {} struct foo {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:6)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:STRUCT:main.rell(1:20)",
+        "text" : "Name conflict: struct 'foo' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:20)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:ENUM:main.rell(1:6)",
+        "text" : "Name conflict: enum 'foo' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

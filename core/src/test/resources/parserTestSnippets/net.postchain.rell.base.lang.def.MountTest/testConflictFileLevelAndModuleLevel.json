@@ -1,0 +1,61 @@
+[
+  {
+    "files" : {
+      "main.rell" : "import foo;",
+      "foo/a.rell" : "@mount('some') entity user {} @mount('some') entity company {}",
+      "foo/b.rell" : "@mount('some') entity department {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "foo/a.rell(1:23)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[foo:user]:some:ENTITY:[foo:company]:foo/a.rell(1:53)",
+        "text" : "Mount name conflict: entity 'company' has mount name 'some' (defined at foo/a.rell:1)"
+      },
+      {
+        "pos" : "foo/a.rell(1:23)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[foo:user]:some:ENTITY:[foo:department]:foo/b.rell(1:23)",
+        "text" : "Mount name conflict: entity 'department' has mount name 'some' (defined at foo/b.rell:1)"
+      },
+      {
+        "pos" : "foo/a.rell(1:53)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[foo:company]:some:ENTITY:[foo:user]:foo/a.rell(1:23)",
+        "text" : "Mount name conflict: entity 'user' has mount name 'some' (defined at foo/a.rell:1)"
+      },
+      {
+        "pos" : "foo/b.rell(1:23)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[foo:department]:some:ENTITY:[foo:user]:foo/a.rell(1:23)",
+        "text" : "Mount name conflict: entity 'user' has mount name 'some' (defined at foo/a.rell:1)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "foo/a.rell" : [ ],
+      "foo/b.rell" : [ ]
+    }
+  }
+]

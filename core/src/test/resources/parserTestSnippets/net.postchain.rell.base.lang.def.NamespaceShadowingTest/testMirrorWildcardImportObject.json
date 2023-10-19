@@ -1,0 +1,345 @@
+[
+  {
+    "files" : {
+      "lib_const.rell" : "module; val foo = 123;",
+      "lib_entity.rell" : "module; @mount('foo1') entity foo {}",
+      "lib_enum.rell" : "module; enum foo {}",
+      "lib_function.rell" : "module; function foo() {}",
+      "lib_object.rell" : "module; @mount('foo2') object foo {}",
+      "lib_operation.rell" : "module; @mount('foo3') operation foo() {}",
+      "lib_struct.rell" : "module; struct foo {}",
+      "main.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib_const.rell" : [ ],
+      "lib_entity.rell" : [ ],
+      "lib_enum.rell" : [ ],
+      "lib_function.rell" : [ ],
+      "lib_object.rell" : [ ],
+      "lib_operation.rell" : [ ],
+      "lib_struct.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib_const.rell" : "module; val foo = 123;",
+      "lib_entity.rell" : "module; @mount('foo1') entity foo {}",
+      "lib_enum.rell" : "module; enum foo {}",
+      "lib_function.rell" : "module; function foo() {}",
+      "lib_object.rell" : "module; @mount('foo2') object foo {}",
+      "lib_operation.rell" : "module; @mount('foo3') operation foo() {}",
+      "lib_struct.rell" : "module; struct foo {}",
+      "main.rell" : "import lib_object.*; import lib_entity.*; query q() = struct<foo>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:62)",
+        "type" : "ERROR",
+        "code" : "name:ambig:foo:[OBJECT:lib_object:foo,ENTITY:lib_entity:foo]",
+        "text" : "Name 'foo' is ambiguous: object lib_object:foo, entity lib_entity:foo"
+      }
+    ],
+    "parsing" : {
+      "lib_const.rell" : [ ],
+      "lib_entity.rell" : [ ],
+      "lib_enum.rell" : [ ],
+      "lib_function.rell" : [ ],
+      "lib_object.rell" : [ ],
+      "lib_operation.rell" : [ ],
+      "lib_struct.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib_const.rell" : "module; val foo = 123;",
+      "lib_entity.rell" : "module; @mount('foo1') entity foo {}",
+      "lib_enum.rell" : "module; enum foo {}",
+      "lib_function.rell" : "module; function foo() {}",
+      "lib_object.rell" : "module; @mount('foo2') object foo {}",
+      "lib_operation.rell" : "module; @mount('foo3') operation foo() {}",
+      "lib_struct.rell" : "module; struct foo {}",
+      "main.rell" : "import lib_object.*; import lib_operation.*; query q() = struct<foo>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:65)",
+        "type" : "ERROR",
+        "code" : "name:ambig:foo:[OBJECT:lib_object:foo,OPERATION:lib_operation:foo]",
+        "text" : "Name 'foo' is ambiguous: object lib_object:foo, operation lib_operation:foo"
+      }
+    ],
+    "parsing" : {
+      "lib_const.rell" : [ ],
+      "lib_entity.rell" : [ ],
+      "lib_enum.rell" : [ ],
+      "lib_function.rell" : [ ],
+      "lib_object.rell" : [ ],
+      "lib_operation.rell" : [ ],
+      "lib_struct.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib_const.rell" : "module; val foo = 123;",
+      "lib_entity.rell" : "module; @mount('foo1') entity foo {}",
+      "lib_enum.rell" : "module; enum foo {}",
+      "lib_function.rell" : "module; function foo() {}",
+      "lib_object.rell" : "module; @mount('foo2') object foo {}",
+      "lib_operation.rell" : "module; @mount('foo3') operation foo() {}",
+      "lib_struct.rell" : "module; struct foo {}",
+      "main.rell" : "import lib_object.*; import lib_struct.*; query q() = struct<foo>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:62)",
+        "type" : "ERROR",
+        "code" : "name:ambig:foo:[OBJECT:lib_object:foo,STRUCT:lib_struct:foo]",
+        "text" : "Name 'foo' is ambiguous: object lib_object:foo, struct lib_struct:foo"
+      }
+    ],
+    "parsing" : {
+      "lib_const.rell" : [ ],
+      "lib_entity.rell" : [ ],
+      "lib_enum.rell" : [ ],
+      "lib_function.rell" : [ ],
+      "lib_object.rell" : [ ],
+      "lib_operation.rell" : [ ],
+      "lib_struct.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib_const.rell" : "module; val foo = 123;",
+      "lib_entity.rell" : "module; @mount('foo1') entity foo {}",
+      "lib_enum.rell" : "module; enum foo {}",
+      "lib_function.rell" : "module; function foo() {}",
+      "lib_object.rell" : "module; @mount('foo2') object foo {}",
+      "lib_operation.rell" : "module; @mount('foo3') operation foo() {}",
+      "lib_struct.rell" : "module; struct foo {}",
+      "main.rell" : "import lib_object.*; import lib_enum.*; query q() = struct<foo>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:60)",
+        "type" : "ERROR",
+        "code" : "name:ambig:foo:[OBJECT:lib_object:foo,ENUM:lib_enum:foo]",
+        "text" : "Name 'foo' is ambiguous: object lib_object:foo, enum lib_enum:foo"
+      }
+    ],
+    "parsing" : {
+      "lib_const.rell" : [ ],
+      "lib_entity.rell" : [ ],
+      "lib_enum.rell" : [ ],
+      "lib_function.rell" : [ ],
+      "lib_object.rell" : [ ],
+      "lib_operation.rell" : [ ],
+      "lib_struct.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib_const.rell" : "module; val foo = 123;",
+      "lib_entity.rell" : "module; @mount('foo1') entity foo {}",
+      "lib_enum.rell" : "module; enum foo {}",
+      "lib_function.rell" : "module; function foo() {}",
+      "lib_object.rell" : "module; @mount('foo2') object foo {}",
+      "lib_operation.rell" : "module; @mount('foo3') operation foo() {}",
+      "lib_struct.rell" : "module; struct foo {}",
+      "main.rell" : "import lib_object.*; import lib_function.*; query q() = struct<foo>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:64)",
+        "type" : "ERROR",
+        "code" : "name:ambig:foo:[OBJECT:lib_object:foo,FUNCTION:lib_function:foo]",
+        "text" : "Name 'foo' is ambiguous: object lib_object:foo, function lib_function:foo"
+      }
+    ],
+    "parsing" : {
+      "lib_const.rell" : [ ],
+      "lib_entity.rell" : [ ],
+      "lib_enum.rell" : [ ],
+      "lib_function.rell" : [ ],
+      "lib_object.rell" : [ ],
+      "lib_operation.rell" : [ ],
+      "lib_struct.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib_const.rell" : "module; val foo = 123;",
+      "lib_entity.rell" : "module; @mount('foo1') entity foo {}",
+      "lib_enum.rell" : "module; enum foo {}",
+      "lib_function.rell" : "module; function foo() {}",
+      "lib_object.rell" : "module; @mount('foo2') object foo {}",
+      "lib_operation.rell" : "module; @mount('foo3') operation foo() {}",
+      "lib_struct.rell" : "module; struct foo {}",
+      "main.rell" : "import lib_object.*; import lib_const.*; query q() = struct<foo>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib_const.rell" : [ ],
+      "lib_entity.rell" : [ ],
+      "lib_enum.rell" : [ ],
+      "lib_function.rell" : [ ],
+      "lib_object.rell" : [ ],
+      "lib_operation.rell" : [ ],
+      "lib_struct.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

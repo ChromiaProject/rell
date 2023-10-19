@@ -1,0 +1,928 @@
+[
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @group (.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:group",
+        "text" : "Cannot group this expression"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @min (.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @max (.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @sum (.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      },
+      {
+        "pos" : "main.rell(6:31)",
+        "type" : "ERROR",
+        "code" : "at:what:aggr:bad_type:SUM:(integer,text)",
+        "text" : "Invalid type of @sum expression: (integer,text)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @sort (.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:sort",
+        "text" : "Cannot sort this expression"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( data, @omit (.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @group [.i, .u.score] );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:group",
+        "text" : "Cannot group this expression"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @min [.i, .u.score] );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @max [.i, .u.score] );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @sum [.i, .u.score] );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      },
+      {
+        "pos" : "main.rell(6:31)",
+        "type" : "ERROR",
+        "code" : "at:what:aggr:bad_type:SUM:list<integer>",
+        "text" : "Invalid type of @sum expression: list<integer>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @sort [.i, .u.score] );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:sort",
+        "text" : "Cannot sort this expression"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( data, @omit [.i, .u.score] );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @group f(.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:group",
+        "text" : "Cannot group this expression"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @min f(.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @max f(.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @sum f(.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      },
+      {
+        "pos" : "main.rell(6:31)",
+        "type" : "ERROR",
+        "code" : "at:what:aggr:bad_type:SUM:(integer,text)",
+        "text" : "Invalid type of @sum expression: (integer,text)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @sort f(.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:sort",
+        "text" : "Cannot sort this expression"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( data, @omit f(.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @group rec(.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:group",
+        "text" : "Cannot group this expression"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @min rec(.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      },
+      {
+        "pos" : "main.rell(6:31)",
+        "type" : "ERROR",
+        "code" : "at:what:aggr:bad_type:MIN:rec",
+        "text" : "Invalid type of @min expression: rec"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @max rec(.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      },
+      {
+        "pos" : "main.rell(6:31)",
+        "type" : "ERROR",
+        "code" : "at:what:aggr:bad_type:MAX:rec",
+        "text" : "Invalid type of @max expression: rec"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @sum rec(.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:aggregate",
+        "text" : "Cannot aggregate this expression"
+      },
+      {
+        "pos" : "main.rell(6:31)",
+        "type" : "ERROR",
+        "code" : "at:what:aggr:bad_type:SUM:rec",
+        "text" : "Invalid type of @sum expression: rec"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( @sort rec(.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(6:27)",
+        "type" : "ERROR",
+        "code" : "expr:at:sort",
+        "text" : "Cannot sort this expression"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text) = (i, t);\nstruct rec { i: integer; t: text; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( data, @omit rec(.i, .t) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

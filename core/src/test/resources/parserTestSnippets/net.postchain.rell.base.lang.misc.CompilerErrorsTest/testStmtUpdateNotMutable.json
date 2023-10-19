@@ -1,0 +1,302 @@
+[
+  {
+    "files" : {
+      "main.rell" : "@external('foo') @log entity ext_data { i: integer; j: integer; }\nentity data { i: integer; j: integer; }\nfunction f() { update data @* { abs(x'') } ( i = min() ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:33)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(3:46)",
+        "type" : "ERROR",
+        "code" : "update_attr_not_mutable:i",
+        "text" : "Attribute is not mutable: 'i'"
+      },
+      {
+        "pos" : "main.rell(3:50)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@external('foo') @log entity ext_data { i: integer; j: integer; }\nentity data { i: integer; j: integer; }\nfunction f() { update data @* {} ( i = abs(x''), j = min() ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:36)",
+        "type" : "ERROR",
+        "code" : "update_attr_not_mutable:i",
+        "text" : "Attribute is not mutable: 'i'"
+      },
+      {
+        "pos" : "main.rell(3:40)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(3:50)",
+        "type" : "ERROR",
+        "code" : "update_attr_not_mutable:j",
+        "text" : "Attribute is not mutable: 'j'"
+      },
+      {
+        "pos" : "main.rell(3:54)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@external('foo') @log entity ext_data { i: integer; j: integer; }\nentity data { i: integer; j: integer; }\nfunction f() { update data @* { abs(x''), min() } ( i = 1 ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:33)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(3:43)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      },
+      {
+        "pos" : "main.rell(3:53)",
+        "type" : "ERROR",
+        "code" : "update_attr_not_mutable:i",
+        "text" : "Attribute is not mutable: 'i'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@external('foo') @log entity ext_data { i: integer; j: integer; }\nentity data { i: integer; j: integer; }\nfunction f() { update ext_data @* { abs(x'') } ( i = min() ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:16)",
+        "type" : "ERROR",
+        "code" : "stmt_update_cant:ext_data",
+        "text" : "Not allowed to update objects of entity 'ext_data'"
+      },
+      {
+        "pos" : "main.rell(3:37)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(3:54)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@external('foo') @log entity ext_data { i: integer; j: integer; }\nentity data { i: integer; j: integer; }\nfunction f() { update ext_data @* { abs(x''), min() } (); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:16)",
+        "type" : "ERROR",
+        "code" : "stmt_update_cant:ext_data",
+        "text" : "Not allowed to update objects of entity 'ext_data'"
+      },
+      {
+        "pos" : "main.rell(3:37)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(3:47)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@external('foo') @log entity ext_data { i: integer; j: integer; }\nentity data { i: integer; j: integer; }\nfunction f() { update ext_data @* {} ( i = abs(x''), j = min() ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:16)",
+        "type" : "ERROR",
+        "code" : "stmt_update_cant:ext_data",
+        "text" : "Not allowed to update objects of entity 'ext_data'"
+      },
+      {
+        "pos" : "main.rell(3:44)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(3:58)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

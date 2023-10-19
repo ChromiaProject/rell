@@ -1,0 +1,653 @@
+[
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; pos:text; employer:company; }\nfunction get_user(): list<user> = list(user @* {});"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; pos:text; employer:company; }\nfunction get_user(): list<user> = list(user @* {});\noperation o() { create company(name = 'Apple'); create company(name = 'Google'); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; pos:text; employer:company; }\nfunction get_user(): list<user> = list(user @* {});\noperation o() { create user(id = 501, name = 'Bob', pos = 'Dev', employer = get_company()@{.name=='Apple'}); create user(id = 502, name = 'Alice', pos = 'Tester', employer = get_company()@{.name=='Google'}); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; pos:text; employer:company; }\nfunction get_user(): list<user> = list(user @* {});\nquery q() { val u = 'Dev'; return get_user() @* { .pos == u } ( .name ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; pos:text; employer:company; }\nfunction get_user(): list<user> = list(user @* {});\nquery q() { val u = 'Dev'; return (u: get_user()) @* { .pos == u } ( .name ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:36)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:u",
+        "text" : "Name conflict: 'u' already exists"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; pos:text; employer:company; }\nfunction get_user(): list<user> = list(user @* {});\nquery q() { val u = 'Dev'; return (u: get_user()) @* { .pos == 'Dev' } ( .name ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:36)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:u",
+        "text" : "Name conflict: 'u' already exists"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; pos:text; employer:company; }\nfunction get_user(): list<user> = list(user @* {});\nquery q() { val u = 'Dev'; return (u: get_user()) @* { u.pos == 'Dev' } ( .name ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:36)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:u",
+        "text" : "Name conflict: 'u' already exists"
+      },
+      {
+        "pos" : "main.rell(5:58)",
+        "type" : "ERROR",
+        "code" : "unknown_member:[text]:pos",
+        "text" : "Type text has no member 'pos'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nentity user { id:integer; name; pos:text; employer:company; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nentity user { id:integer; name; pos:text; employer:company; }\noperation o() { create company(name = 'Apple'); create company(name = 'Google'); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nentity user { id:integer; name; pos:text; employer:company; }\noperation o() { create user(id = 501, name = 'Bob', pos = 'Dev', employer = company@{.name=='Apple'}); create user(id = 502, name = 'Alice', pos = 'Tester', employer = company@{.name=='Google'}); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nentity user { id:integer; name; pos:text; employer:company; }\nquery q() { val u = 'Dev'; return user @* { .pos == u } ( .name ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nentity user { id:integer; name; pos:text; employer:company; }\nquery q() { val u = 'Dev'; return (u: user) @* { .pos == u } ( .name ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:39)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:u",
+        "text" : "Name conflict: 'u' already exists"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nentity user { id:integer; name; pos:text; employer:company; }\nquery q() { val u = 'Dev'; return (u: user) @* { .pos == 'Dev' } ( .name ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:39)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:u",
+        "text" : "Name conflict: 'u' already exists"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nentity user { id:integer; name; pos:text; employer:company; }\nquery q() { val u = 'Dev'; return (u: user) @* { u.pos == 'Dev' } ( .name ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:39)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:u",
+        "text" : "Name conflict: 'u' already exists"
+      },
+      {
+        "pos" : "main.rell(3:52)",
+        "type" : "ERROR",
+        "code" : "unknown_member:[text]:pos",
+        "text" : "Type text has no member 'pos'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct company { name; }\nstruct user { id:integer; name; pos:text; employer:company; }\nfunction get_company(): list<company> = [company(name = 'Apple'), company(name = 'Google')];\nfunction get_user(): list<user> = [user(id = 501, name = 'Bob', pos = 'Dev', employer = get_company()@{.name=='Apple'}), user(id = 502, name = 'Alice', pos = 'Tester', employer = get_company()@{.name=='Google'})];"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct company { name; }\nstruct user { id:integer; name; pos:text; employer:company; }\nfunction get_company(): list<company> = [company(name = 'Apple'), company(name = 'Google')];\nfunction get_user(): list<user> = [user(id = 501, name = 'Bob', pos = 'Dev', employer = get_company()@{.name=='Apple'}), user(id = 502, name = 'Alice', pos = 'Tester', employer = get_company()@{.name=='Google'})];\nquery q() { val u = 'Dev'; return get_user() @* { .pos == u } ( .name ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct company { name; }\nstruct user { id:integer; name; pos:text; employer:company; }\nfunction get_company(): list<company> = [company(name = 'Apple'), company(name = 'Google')];\nfunction get_user(): list<user> = [user(id = 501, name = 'Bob', pos = 'Dev', employer = get_company()@{.name=='Apple'}), user(id = 502, name = 'Alice', pos = 'Tester', employer = get_company()@{.name=='Google'})];\nquery q() { val u = 'Dev'; return (u: get_user()) @* { .pos == u } ( .name ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:36)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:u",
+        "text" : "Name conflict: 'u' already exists"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct company { name; }\nstruct user { id:integer; name; pos:text; employer:company; }\nfunction get_company(): list<company> = [company(name = 'Apple'), company(name = 'Google')];\nfunction get_user(): list<user> = [user(id = 501, name = 'Bob', pos = 'Dev', employer = get_company()@{.name=='Apple'}), user(id = 502, name = 'Alice', pos = 'Tester', employer = get_company()@{.name=='Google'})];\nquery q() { val u = 'Dev'; return (u: get_user()) @* { .pos == 'Dev' } ( .name ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:36)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:u",
+        "text" : "Name conflict: 'u' already exists"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct company { name; }\nstruct user { id:integer; name; pos:text; employer:company; }\nfunction get_company(): list<company> = [company(name = 'Apple'), company(name = 'Google')];\nfunction get_user(): list<user> = [user(id = 501, name = 'Bob', pos = 'Dev', employer = get_company()@{.name=='Apple'}), user(id = 502, name = 'Alice', pos = 'Tester', employer = get_company()@{.name=='Google'})];\nquery q() { val u = 'Dev'; return (u: get_user()) @* { u.pos == 'Dev' } ( .name ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:36)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:u",
+        "text" : "Name conflict: 'u' already exists"
+      },
+      {
+        "pos" : "main.rell(5:58)",
+        "type" : "ERROR",
+        "code" : "unknown_member:[text]:pos",
+        "text" : "Type text has no member 'pos'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

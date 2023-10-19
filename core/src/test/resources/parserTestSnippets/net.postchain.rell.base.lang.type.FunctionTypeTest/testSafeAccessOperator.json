@@ -1,0 +1,598 @@
+[
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;\nquery q() = s().p(5);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;\nquery q() = _type_of(s().p(0));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;\nquery q() = _type_of(make_s(false).p(0));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:36)",
+        "type" : "ERROR",
+        "code" : "expr_mem_null:p",
+        "text" : "Cannot access member 'p' of nullable type s?"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;\nquery q() = _type_of(make_s(false)?.p(0));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;\nquery q() = _type_of(v().u.s.p(0));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;\nquery q() = _type_of(make_v(false).u.s.p(0));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:36)",
+        "type" : "ERROR",
+        "code" : "expr_mem_null:u",
+        "text" : "Cannot access member 'u' of nullable type v?"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;\nquery q() = _type_of(make_v(false)?.u.s.p(0));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:39)",
+        "type" : "ERROR",
+        "code" : "expr_mem_null:s",
+        "text" : "Cannot access member 's' of nullable type u?"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;\nquery q() = _type_of(make_v(false)?.u?.s.p(0));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:42)",
+        "type" : "ERROR",
+        "code" : "expr_mem_null:p",
+        "text" : "Cannot access member 'p' of nullable type s?"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;\nquery q() = _type_of(make_v(false)?.u?.s?.p(0));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;\nquery q() { val t: s? = make_s(false); return t.p(5); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:49)",
+        "type" : "ERROR",
+        "code" : "expr_mem_null:p",
+        "text" : "Cannot access member 'p' of nullable type s?"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;\nquery q() { val t: s? = make_s(false); return t?.p(5); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;\nquery q() { val t: s? = make_s(true); return t?.p(5); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;\nquery q() { val t: v? = make_v(false); return t.u.s.p(5); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:49)",
+        "type" : "ERROR",
+        "code" : "expr_mem_null:u",
+        "text" : "Cannot access member 'u' of nullable type v?"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;\nquery q() { val t: v? = make_v(false); return t?.u.s.p(5); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:52)",
+        "type" : "ERROR",
+        "code" : "expr_mem_null:s",
+        "text" : "Cannot access member 's' of nullable type u?"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;\nquery q() { val t: v? = make_v(false); return t?.u?.s.p(5); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:55)",
+        "type" : "ERROR",
+        "code" : "expr_mem_null:p",
+        "text" : "Cannot access member 'p' of nullable type s?"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;\nquery q() { val t: v? = make_v(false); return t?.u?.s?.p(5); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer) { print('f:'+x); return x * x; }\nstruct s { p: (integer) -> integer = f(*); }\nstruct u { s = s(); }\nstruct v { u = u(); }\nfunction make_s(b: boolean) = if (b) s() else null;\nfunction make_v(b: boolean) = if (b) v() else null;\nquery q() { val t: v? = make_v(true); return t?.u?.s?.p(5); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

@@ -1,0 +1,768 @@
+[
+  {
+    "files" : {
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : false,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @ {} ( if (.b1) 1 else 2 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : false,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @ {} ( if (.b1) 'Yes' else 'No' );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : false,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @ {} ( if (.b1) .i2 else .i3 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : false,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @ {} ( if (.b1) .t2 else .t3 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : false,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @ {} ( if (true) 'Hello' else 123 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : false,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:27)",
+        "type" : "ERROR",
+        "code" : "expr_if_restype:[text]:[integer]",
+        "text" : "Incompatible types of if branches: integer instead of text"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @ {} ( if (true) 'Hello' else decimal(123) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : false,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:27)",
+        "type" : "ERROR",
+        "code" : "expr_if_restype:[text]:[decimal]",
+        "text" : "Incompatible types of if branches: decimal instead of text"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @ {} ( if (123) 'A' else 'B' );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : false,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:31)",
+        "type" : "ERROR",
+        "code" : "expr_if_cond_type:[boolean]:[integer]",
+        "text" : "Wrong type of condition expression: integer instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @ {} ( if (decimal(123)) 'A' else 'B' );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : false,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:31)",
+        "type" : "ERROR",
+        "code" : "expr_if_cond_type:[boolean]:[decimal]",
+        "text" : "Wrong type of condition expression: decimal instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @ {} ( if ('Hello') 'A' else 'B' );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : false,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:31)",
+        "type" : "ERROR",
+        "code" : "expr_if_cond_type:[boolean]:[text]",
+        "text" : "Wrong type of condition expression: text instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @ {} ( if (null) 'A' else 'B' );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : false,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:31)",
+        "type" : "ERROR",
+        "code" : "expr_if_cond_type:[boolean]:[null]",
+        "text" : "Wrong type of condition expression: null instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @ {} ( if (unit()) 'A' else 'B' );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : false,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:31)",
+        "type" : "ERROR",
+        "code" : "expr_if_cond_type:[boolean]:[unit]",
+        "text" : "Wrong type of condition expression: unit instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            entity company { name: text; }\n            entity user { name: text; company; }\n            query q(a: boolean) = if (a) 1 else 2;\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            entity company { name: text; }\n            entity user { name: text; company; }\n            query q(a: boolean) = if (a) 'Yes' else 'No';\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            entity company { name: text; }\n            entity user { name: text; company; }\n            query q(a: boolean, b: integer, c: integer) = if (a) b else c;\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            entity company { name: text; }\n            entity user { name: text; company; }\n            query q(a: boolean, b: text, c: text) = if (a) b else c;\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            entity company { name: text; }\n            entity user { name: text; company; }\n            query q() = if (true) 'Hello' else 123;\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:25)",
+        "type" : "ERROR",
+        "code" : "expr_if_restype:[text]:[integer]",
+        "text" : "Incompatible types of if branches: integer instead of text"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            entity company { name: text; }\n            entity user { name: text; company; }\n            query q() = if (true) 'Hello' else decimal(123);\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:25)",
+        "type" : "ERROR",
+        "code" : "expr_if_restype:[text]:[decimal]",
+        "text" : "Incompatible types of if branches: decimal instead of text"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            entity company { name: text; }\n            entity user { name: text; company; }\n            query q() = if (123) 'A' else 'B';\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:29)",
+        "type" : "ERROR",
+        "code" : "expr_if_cond_type:[boolean]:[integer]",
+        "text" : "Wrong type of condition expression: integer instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            entity company { name: text; }\n            entity user { name: text; company; }\n            query q() = if (decimal(123)) 'A' else 'B';\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:29)",
+        "type" : "ERROR",
+        "code" : "expr_if_cond_type:[boolean]:[decimal]",
+        "text" : "Wrong type of condition expression: decimal instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            entity company { name: text; }\n            entity user { name: text; company; }\n            query q() = if ('Hello') 'A' else 'B';\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:29)",
+        "type" : "ERROR",
+        "code" : "expr_if_cond_type:[boolean]:[text]",
+        "text" : "Wrong type of condition expression: text instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            entity company { name: text; }\n            entity user { name: text; company; }\n            query q() = if (null) 'A' else 'B';\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:29)",
+        "type" : "ERROR",
+        "code" : "expr_if_cond_type:[boolean]:[null]",
+        "text" : "Wrong type of condition expression: null instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            entity company { name: text; }\n            entity user { name: text; company; }\n            query q() = if (unit()) 'A' else 'B';\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:29)",
+        "type" : "ERROR",
+        "code" : "expr_if_cond_type:[boolean]:[unit]",
+        "text" : "Wrong type of condition expression: unit instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

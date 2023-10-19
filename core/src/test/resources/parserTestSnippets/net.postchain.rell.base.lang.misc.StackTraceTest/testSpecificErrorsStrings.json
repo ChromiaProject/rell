@@ -1,0 +1,410 @@
+[
+  {
+    "files" : {
+      "lib.rell" : "module;\n            function f() {\n                val t = ''[5];\n            }\n            enum ee { A, B }\n            entity user { name; }\n        ",
+      "main.rell" : "import mid;",
+      "mid.rell" : "module;\n            import lib;\n            function g() {\n                lib.f();\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            function f() {\n                val t = ''[5];\n            }\n            enum ee { A, B }\n            entity user { name; }\n        ",
+      "main.rell" : "import mid;\nquery q() { mid.g(); return 0; }",
+      "mid.rell" : "module;\n            import lib;\n            function g() {\n                lib.f();\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            function f() {\n                val t = 'Hello'.sub(100);\n            }\n            enum ee { A, B }\n            entity user { name; }\n        ",
+      "main.rell" : "import mid;",
+      "mid.rell" : "module;\n            import lib;\n            function g() {\n                lib.f();\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            function f() {\n                val t = 'Hello'.sub(100);\n            }\n            enum ee { A, B }\n            entity user { name; }\n        ",
+      "main.rell" : "import mid;\nquery q() { mid.g(); return 0; }",
+      "mid.rell" : "module;\n            import lib;\n            function g() {\n                lib.f();\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            function f() {\n                val t = 'Hello'.char_at(100);\n            }\n            enum ee { A, B }\n            entity user { name; }\n        ",
+      "main.rell" : "import mid;",
+      "mid.rell" : "module;\n            import lib;\n            function g() {\n                lib.f();\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            function f() {\n                val t = 'Hello'.char_at(100);\n            }\n            enum ee { A, B }\n            entity user { name; }\n        ",
+      "main.rell" : "import mid;\nquery q() { mid.g(); return 0; }",
+      "mid.rell" : "module;\n            import lib;\n            function g() {\n                lib.f();\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            function f() {\n                val t = x''[5];\n            }\n            enum ee { A, B }\n            entity user { name; }\n        ",
+      "main.rell" : "import mid;",
+      "mid.rell" : "module;\n            import lib;\n            function g() {\n                lib.f();\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            function f() {\n                val t = x''[5];\n            }\n            enum ee { A, B }\n            entity user { name; }\n        ",
+      "main.rell" : "import mid;\nquery q() { mid.g(); return 0; }",
+      "mid.rell" : "module;\n            import lib;\n            function g() {\n                lib.f();\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            function f() {\n                val t = x''.sub(5);\n            }\n            enum ee { A, B }\n            entity user { name; }\n        ",
+      "main.rell" : "import mid;",
+      "mid.rell" : "module;\n            import lib;\n            function g() {\n                lib.f();\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            function f() {\n                val t = x''.sub(5);\n            }\n            enum ee { A, B }\n            entity user { name; }\n        ",
+      "main.rell" : "import mid;\nquery q() { mid.g(); return 0; }",
+      "mid.rell" : "module;\n            import lib;\n            function g() {\n                lib.f();\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            function f() {\n                byte_array.from_hex('hello');\n            }\n            enum ee { A, B }\n            entity user { name; }\n        ",
+      "main.rell" : "import mid;",
+      "mid.rell" : "module;\n            import lib;\n            function g() {\n                lib.f();\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            function f() {\n                byte_array.from_hex('hello');\n            }\n            enum ee { A, B }\n            entity user { name; }\n        ",
+      "main.rell" : "import mid;\nquery q() { mid.g(); return 0; }",
+      "mid.rell" : "module;\n            import lib;\n            function g() {\n                lib.f();\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  }
+]

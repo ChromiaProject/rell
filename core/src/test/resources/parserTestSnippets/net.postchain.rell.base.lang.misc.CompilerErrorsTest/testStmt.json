@@ -1,0 +1,180 @@
+[
+  {
+    "files" : {
+      "main.rell" : "function f() { print(X); print(Y); print(Z); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:22)",
+        "type" : "ERROR",
+        "code" : "unknown_name:X",
+        "text" : "Unknown name: 'X'"
+      },
+      {
+        "pos" : "main.rell(1:32)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Y",
+        "text" : "Unknown name: 'Y'"
+      },
+      {
+        "pos" : "main.rell(1:42)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Z",
+        "text" : "Unknown name: 'Z'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f() { X = Y; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "unknown_name:X",
+        "text" : "Unknown name: 'X'"
+      },
+      {
+        "pos" : "main.rell(1:20)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Y",
+        "text" : "Unknown name: 'Y'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f() { X += Y; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "unknown_name:X",
+        "text" : "Unknown name: 'X'"
+      },
+      {
+        "pos" : "main.rell(1:21)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Y",
+        "text" : "Unknown name: 'Y'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f() { var x: integer; x += true; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:32)",
+        "type" : "ERROR",
+        "code" : "expr_var_uninit:x",
+        "text" : "Variable 'x' may be uninitialized"
+      },
+      {
+        "pos" : "main.rell(1:34)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:+=:[integer]:[boolean]",
+        "text" : "Wrong operand types for '+=': integer, boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

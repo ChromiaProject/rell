@@ -1,0 +1,498 @@
+[
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer, y: text) = x + y;\nfunction g(x: integer) = x != 0;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer, y: text) = x + y;\nfunction g(x: integer) = x != 0;\nquery q() = f(123,'Bob');"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer, y: text) = x + y;\nfunction g(x: integer) = x != 0;\nquery q() = (f)(123,'Bob');"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:14)",
+        "type" : "ERROR",
+        "code" : "expr_novalue:function:[f]",
+        "text" : "Expression cannot be used as a value: function 'f'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer, y: text) = x + y;\nfunction g(x: integer) = x != 0;\nquery q() = f(abs(x''), min());"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:15)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(3:25)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer, y: text) = x + y;\nfunction g(x: integer) = x != 0;\nquery q() = Q(abs(x''), min());"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:13)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Q",
+        "text" : "Unknown name: 'Q'"
+      },
+      {
+        "pos" : "main.rell(3:15)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(3:25)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer, y: text) = x + y;\nfunction g(x: integer) = x != 0;\nquery q() = (abs(x''))(min());"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:14)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(3:24)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer, y: text) = x + y;\nfunction g(x: integer) = x != 0;\nquery q() = g(abs(x''));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:15)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer, y: text) = x + y;\nfunction g(x: integer) = x != 0;\nquery q() = g(abs(x''), min());"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:13)",
+        "type" : "ERROR",
+        "code" : "expr:call:too_many_args:[g]:1:2",
+        "text" : "Too many arguments for function 'g': 2 instead of 1"
+      },
+      {
+        "pos" : "main.rell(3:15)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(3:25)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer, y: text) = x + y;\nfunction g(x: integer) = x != 0;\nquery q() = g(abs(x'')) + 123;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:15)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(3:25)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:+:[boolean]:[integer]",
+        "text" : "Wrong operand types for '+': boolean, integer"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer, y: text) = x + y;\nfunction g(x: integer) = x != 0;\nquery q() = 'hello'.sub(abs(x''), min());"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:25)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(3:35)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer, y: text) = x + y;\nfunction g(x: integer) = x != 0;\nquery q() = 'hello'.Q(abs(x''), min());"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:21)",
+        "type" : "ERROR",
+        "code" : "unknown_member:[text]:Q",
+        "text" : "Type text has no member 'Q'"
+      },
+      {
+        "pos" : "main.rell(3:23)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(3:33)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: integer, y: text) = x + y;\nfunction g(x: integer) = x != 0;\nquery q() = (abs(x'')).q(min());"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:14)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(3:26)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

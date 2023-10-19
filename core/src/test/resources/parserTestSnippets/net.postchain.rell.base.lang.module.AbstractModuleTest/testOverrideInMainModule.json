@@ -1,0 +1,257 @@
+[
+  {
+    "files" : {
+      "client.rell" : "abstract module; import lib; function g(): integer = lib.f() * 456;",
+      "imp.rell" : "module; import lib; override function lib.f(): integer = 123;",
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import mistake;",
+      "mistake.rell" : "module; import lib; function g(): integer = lib.f() * 456;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "mistake.rell(1:9)",
+        "type" : "ERROR",
+        "code" : "override:missing:[lib:f]:[lib.rell:1]",
+        "text" : "No override for abstract function 'lib:f' (defined at lib.rell:1)"
+      }
+    ],
+    "parsing" : {
+      "client.rell" : [ ],
+      "imp.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mistake.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "client.rell" : "abstract module; import lib; function g(): integer = lib.f() * 456;",
+      "imp.rell" : "module; import lib; override function lib.f(): integer = 123;",
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import client;",
+      "mistake.rell" : "module; import lib; function g(): integer = lib.f() * 456;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "override:missing:[lib:f]:[lib.rell:1]",
+        "text" : "No override for abstract function 'lib:f' (defined at lib.rell:1)"
+      }
+    ],
+    "parsing" : {
+      "client.rell" : [ ],
+      "imp.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mistake.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "client.rell" : "abstract module; import lib; function g(): integer = lib.f() * 456;",
+      "imp.rell" : "module; import lib; override function lib.f(): integer = 123;",
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "",
+      "mistake.rell" : "module; import lib; function g(): integer = lib.f() * 456;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "client.rell" : [ ],
+      "imp.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mistake.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "client.rell" : "abstract module; import lib; function g(): integer = lib.f() * 456;",
+      "imp.rell" : "module; import lib; override function lib.f(): integer = 123;",
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import client; import imp; query q() = client.g();",
+      "mistake.rell" : "module; import lib; function g(): integer = lib.f() * 456;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "client.rell" : [ ],
+      "imp.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mistake.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "client.rell" : "abstract module; import lib; function g(): integer = lib.f() * 456;",
+      "imp.rell" : "module; import lib; override function lib.f(): integer = 123;",
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import client; import lib; override function lib.f(): integer = 456; query q() = client.g();",
+      "mistake.rell" : "module; import lib; function g(): integer = lib.f() * 456;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "client.rell" : [ ],
+      "imp.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mistake.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "client.rell" : "abstract module; import lib; function g(): integer = lib.f() * 456;",
+      "imp.rell" : "module; import lib; override function lib.f(): integer = 123;",
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import client; import lib; import imp; override function lib.f(): integer = 456;",
+      "mistake.rell" : "module; import lib; function g(): integer = lib.f() * 456;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:28)",
+        "type" : "ERROR",
+        "code" : "override:conflict:[lib:f]:[import:imp:imp:imp.rell:1]:[direct::main.rell:1]",
+        "text" : "Override conflict: override for function 'lib:f' defined at imp.rell:1 (via import imp at main.rell:1) and at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:58)",
+        "type" : "ERROR",
+        "code" : "override:conflict:[lib:f]:[direct::main.rell:1]:[import:imp:imp:imp.rell:1]",
+        "text" : "Override conflict: override for function 'lib:f' defined at imp.rell:1 (via import imp at main.rell:1)"
+      }
+    ],
+    "parsing" : {
+      "client.rell" : [ ],
+      "imp.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mistake.rell" : [ ]
+    }
+  }
+]

@@ -1,0 +1,35 @@
+[
+  {
+    "files" : {
+      "lib.rell" : "\n                module;\n                struct module_args { x: integer; }\n                operation op() { require(chain_context.args.x > 0); }\n            ",
+      "test.rell" : "\n                @test module;\n                import lib;\n                function test() {\n                    print('begin');\n                    lib.op().run();\n                    print('end');\n                }\n            "
+    },
+    "modules" : {
+      "modules" : [
+        "lib"
+      ],
+      "test_root_modules" : [
+        "test"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "test.rell" : [ ]
+    }
+  }
+]

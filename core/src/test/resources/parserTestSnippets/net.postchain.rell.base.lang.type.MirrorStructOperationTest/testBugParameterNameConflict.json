@@ -1,0 +1,38 @@
+[
+  {
+    "files" : {
+      "main.rell" : "operation op(x: integer, x: text) {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:26)",
+        "type" : "ERROR",
+        "code" : "dup_param_name:x",
+        "text" : "Duplicate parameter: 'x'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

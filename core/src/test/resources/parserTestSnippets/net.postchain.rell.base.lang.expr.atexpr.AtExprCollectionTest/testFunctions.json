@@ -1,0 +1,122 @@
+[
+  {
+    "files" : {
+      "main.rell" : "struct ctr { mutable v: integer = 0; }\nfunction fi(c: ctr) = c.v++;\nfunction ft(c: ctr) = text.from_bytes(byte_array.from_list(['A'.char_at(0) + (c.v++)]));\nfunction fb(c: ctr) = (c.v++) % 3 == 0;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct ctr { mutable v: integer = 0; }\nfunction fi(c: ctr) = c.v++;\nfunction ft(c: ctr) = text.from_bytes(byte_array.from_list(['A'.char_at(0) + (c.v++)]));\nfunction fb(c: ctr) = (c.v++) % 3 == 0;\nquery q() { val c = ctr(); return [9,8,7,6,5] @* {} ( fi(c) ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct ctr { mutable v: integer = 0; }\nfunction fi(c: ctr) = c.v++;\nfunction ft(c: ctr) = text.from_bytes(byte_array.from_list(['A'.char_at(0) + (c.v++)]));\nfunction fb(c: ctr) = (c.v++) % 3 == 0;\nquery q() { val c = ctr(); return [9,8,7,6,5] @* {} ( ft(c) ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct ctr { mutable v: integer = 0; }\nfunction fi(c: ctr) = c.v++;\nfunction ft(c: ctr) = text.from_bytes(byte_array.from_list(['A'.char_at(0) + (c.v++)]));\nfunction fb(c: ctr) = (c.v++) % 3 == 0;\nquery q() { val c = ctr(); return [9,8,7,6,5] @* { fb(c) } ( fi(c) ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

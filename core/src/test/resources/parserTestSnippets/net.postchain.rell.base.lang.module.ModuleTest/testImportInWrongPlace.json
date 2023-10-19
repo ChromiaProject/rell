@@ -1,0 +1,324 @@
+[
+  {
+    "files" : {
+      "main.rell" : "entity user { import a.foo; }",
+      "a/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:15)",
+        "type" : "ERROR",
+        "code" : "syntax",
+        "text" : "Syntax error"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:15)",
+          "type" : "ERROR",
+          "code" : "syntax",
+          "text" : "Syntax error"
+        }
+      ],
+      "a/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "object state { import a.foo; }",
+      "a/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "syntax",
+        "text" : "Syntax error"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:16)",
+          "type" : "ERROR",
+          "code" : "syntax",
+          "text" : "Syntax error"
+        }
+      ],
+      "a/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum e { import a.foo; }",
+      "a/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:10)",
+        "type" : "ERROR",
+        "code" : "syntax",
+        "text" : "Syntax error"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:10)",
+          "type" : "ERROR",
+          "code" : "syntax",
+          "text" : "Syntax error"
+        }
+      ],
+      "a/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { import a.foo; }",
+      "a/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:14)",
+        "type" : "ERROR",
+        "code" : "syntax",
+        "text" : "Syntax error"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:14)",
+          "type" : "ERROR",
+          "code" : "syntax",
+          "text" : "Syntax error"
+        }
+      ],
+      "a/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f() { import a.foo; }",
+      "a/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "syntax",
+        "text" : "Syntax error"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:16)",
+          "type" : "ERROR",
+          "code" : "syntax",
+          "text" : "Syntax error"
+        }
+      ],
+      "a/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "operation o() { import a.foo; }",
+      "a/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:17)",
+        "type" : "ERROR",
+        "code" : "syntax",
+        "text" : "Syntax error"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:17)",
+          "type" : "ERROR",
+          "code" : "syntax",
+          "text" : "Syntax error"
+        }
+      ],
+      "a/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() { import a.foo; }",
+      "a/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:13)",
+        "type" : "ERROR",
+        "code" : "syntax",
+        "text" : "Syntax error"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [
+        {
+          "pos" : "main.rell(1:13)",
+          "type" : "ERROR",
+          "code" : "syntax",
+          "text" : "Syntax error"
+        }
+      ],
+      "a/foo.rell" : [ ]
+    }
+  }
+]

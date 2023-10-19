@@ -1,0 +1,890 @@
+[
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nfunction f(a: virtual<rec>) { a.to_gtv(); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:33)",
+        "type" : "ERROR",
+        "code" : "fn:invalid:virtual<rec>:to_gtv",
+        "text" : "Function 'to_gtv' not available for type 'virtual<rec>'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nfunction f(a: virtual<list<integer>>) { a.to_gtv(); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:43)",
+        "type" : "ERROR",
+        "code" : "fn:invalid:virtual<list<integer>>:to_gtv",
+        "text" : "Function 'to_gtv' not available for type 'virtual<list<integer>>'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nfunction f(a: virtual<map<text,integer>>) { a.to_gtv(); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:47)",
+        "type" : "ERROR",
+        "code" : "fn:invalid:virtual<map<text,integer>>:to_gtv",
+        "text" : "Function 'to_gtv' not available for type 'virtual<map<text,integer>>'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nfunction f(a: virtual<(integer,text)>) { a.to_gtv(); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:44)",
+        "type" : "ERROR",
+        "code" : "fn:invalid:virtual<(integer,text)>:to_gtv",
+        "text" : "Function 'to_gtv' not available for type 'virtual<(integer,text)>'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nfunction f(a: virtual<rec>) { a.to_gtv_pretty(); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:33)",
+        "type" : "ERROR",
+        "code" : "fn:invalid:virtual<rec>:to_gtv_pretty",
+        "text" : "Function 'to_gtv_pretty' not available for type 'virtual<rec>'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nfunction f(a: vir) { a.to_gtv(); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:24)",
+        "type" : "ERROR",
+        "code" : "fn:invalid:vir:to_gtv",
+        "text" : "Function 'to_gtv' not available for type 'vir'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nfunction f(a: ind1) { a.to_gtv(); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:25)",
+        "type" : "ERROR",
+        "code" : "fn:invalid:ind1:to_gtv",
+        "text" : "Function 'to_gtv' not available for type 'ind1'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nfunction f(a: ind2) { a.to_gtv(); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:25)",
+        "type" : "ERROR",
+        "code" : "fn:invalid:ind2:to_gtv",
+        "text" : "Function 'to_gtv' not available for type 'ind2'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nfunction f(a: ind3) { a.to_gtv(); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:25)",
+        "type" : "ERROR",
+        "code" : "fn:invalid:ind3:to_gtv",
+        "text" : "Function 'to_gtv' not available for type 'ind3'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nfunction f(a: (integer,map<text,list<ind3>>)) { a.to_gtv(); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:51)",
+        "type" : "ERROR",
+        "code" : "fn:invalid:(integer,map<text,list<ind3>>):to_gtv",
+        "text" : "Function 'to_gtv' not available for type '(integer,map<text,list<ind3>>)'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nquery q() = list<virtual<rec>>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:7)",
+        "type" : "ERROR",
+        "code" : "result_nogtv:q:list<virtual<rec>>",
+        "text" : "Return type of query 'q' is not Gtv-compatible: list<virtual<rec>>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nquery q() = list<virtual<list<integer>>>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:7)",
+        "type" : "ERROR",
+        "code" : "result_nogtv:q:list<virtual<list<integer>>>",
+        "text" : "Return type of query 'q' is not Gtv-compatible: list<virtual<list<integer>>>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nquery q() = list<virtual<map<text,integer>>>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:7)",
+        "type" : "ERROR",
+        "code" : "result_nogtv:q:list<virtual<map<text,integer>>>",
+        "text" : "Return type of query 'q' is not Gtv-compatible: list<virtual<map<text,integer>>>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nquery q() = list<virtual<(integer,text)>>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:7)",
+        "type" : "ERROR",
+        "code" : "result_nogtv:q:list<virtual<(integer,text)>>",
+        "text" : "Return type of query 'q' is not Gtv-compatible: list<virtual<(integer,text)>>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nquery q() = list<vir>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:7)",
+        "type" : "ERROR",
+        "code" : "result_nogtv:q:list<vir>",
+        "text" : "Return type of query 'q' is not Gtv-compatible: list<vir>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nquery q() = list<ind1>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:7)",
+        "type" : "ERROR",
+        "code" : "result_nogtv:q:list<ind1>",
+        "text" : "Return type of query 'q' is not Gtv-compatible: list<ind1>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nquery q() = list<ind2>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:7)",
+        "type" : "ERROR",
+        "code" : "result_nogtv:q:list<ind2>",
+        "text" : "Return type of query 'q' is not Gtv-compatible: list<ind2>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nquery q() = list<ind3>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:7)",
+        "type" : "ERROR",
+        "code" : "result_nogtv:q:list<ind3>",
+        "text" : "Return type of query 'q' is not Gtv-compatible: list<ind3>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nquery q() = list<(integer,map<text,list<ind3>>)>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:7)",
+        "type" : "ERROR",
+        "code" : "result_nogtv:q:list<(integer,map<text,list<ind3>>)>",
+        "text" : "Return type of query 'q' is not Gtv-compatible: list<(integer,map<text,list<ind3>>)>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nquery q() = list<vir?>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:7)",
+        "type" : "ERROR",
+        "code" : "result_nogtv:q:list<vir?>",
+        "text" : "Return type of query 'q' is not Gtv-compatible: list<vir?>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nquery q() = set<vir>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:7)",
+        "type" : "ERROR",
+        "code" : "result_nogtv:q:set<vir>",
+        "text" : "Return type of query 'q' is not Gtv-compatible: set<vir>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nquery q() = map<text,vir>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:7)",
+        "type" : "ERROR",
+        "code" : "result_nogtv:q:map<text,vir>",
+        "text" : "Return type of query 'q' is not Gtv-compatible: map<text,vir>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nquery q() = map<vir,text>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:7)",
+        "type" : "ERROR",
+        "code" : "result_nogtv:q:map<vir,text>",
+        "text" : "Return type of query 'q' is not Gtv-compatible: map<vir,text>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { v: virtual<rec>; }\nstruct ind1 { r: vir?; }\nstruct ind2 { q: list<ind1>; }\nstruct ind3 { p: map<text,ind2>; }\nstruct cycle { mutable next: cycle?; v: ind3; }\nquery q() = list<cycle>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:7)",
+        "type" : "ERROR",
+        "code" : "result_nogtv:q:list<cycle>",
+        "text" : "Return type of query 'q' is not Gtv-compatible: list<cycle>"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

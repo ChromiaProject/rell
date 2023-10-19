@@ -1,0 +1,561 @@
+[
+  {
+    "files" : {
+      "main.rell" : "function f0(x: integer): integer = x;\nfunction f1(x: integer): integer? = if (x > 0) x else null;\nfunction f2(x: integer?): integer = x ?: 0;\nfunction f3(x: integer?): integer? = x;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f0(x: integer): integer = x;\nfunction f1(x: integer): integer? = if (x > 0) x else null;\nfunction f2(x: integer?): integer = x ?: 0;\nfunction f3(x: integer?): integer? = x;\nquery q() { val p: (integer) -> integer = f0(*); return p(123); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f0(x: integer): integer = x;\nfunction f1(x: integer): integer? = if (x > 0) x else null;\nfunction f2(x: integer?): integer = x ?: 0;\nfunction f3(x: integer?): integer? = x;\nquery q() { val p: (integer) -> integer = f1(*); return p(123); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:17)",
+        "type" : "ERROR",
+        "code" : "stmt_var_type:p:[(integer)->integer]:[(integer)->integer?]",
+        "text" : "Type mismatch for 'p': (integer)->integer? instead of (integer)->integer"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f0(x: integer): integer = x;\nfunction f1(x: integer): integer? = if (x > 0) x else null;\nfunction f2(x: integer?): integer = x ?: 0;\nfunction f3(x: integer?): integer? = x;\nquery q() { val p: (integer) -> integer = f2(*); return p(123); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f0(x: integer): integer = x;\nfunction f1(x: integer): integer? = if (x > 0) x else null;\nfunction f2(x: integer?): integer = x ?: 0;\nfunction f3(x: integer?): integer? = x;\nquery q() { val p: (integer) -> integer = f3(*); return p(123); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:17)",
+        "type" : "ERROR",
+        "code" : "stmt_var_type:p:[(integer)->integer]:[(integer?)->integer?]",
+        "text" : "Type mismatch for 'p': (integer?)->integer? instead of (integer)->integer"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f0(x: integer): integer = x;\nfunction f1(x: integer): integer? = if (x > 0) x else null;\nfunction f2(x: integer?): integer = x ?: 0;\nfunction f3(x: integer?): integer? = x;\nquery q() { val p: (integer) -> integer? = f0(*); return p(123); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f0(x: integer): integer = x;\nfunction f1(x: integer): integer? = if (x > 0) x else null;\nfunction f2(x: integer?): integer = x ?: 0;\nfunction f3(x: integer?): integer? = x;\nquery q() { val p: (integer) -> integer? = f1(*); return p(123); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f0(x: integer): integer = x;\nfunction f1(x: integer): integer? = if (x > 0) x else null;\nfunction f2(x: integer?): integer = x ?: 0;\nfunction f3(x: integer?): integer? = x;\nquery q() { val p: (integer) -> integer? = f2(*); return p(123); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f0(x: integer): integer = x;\nfunction f1(x: integer): integer? = if (x > 0) x else null;\nfunction f2(x: integer?): integer = x ?: 0;\nfunction f3(x: integer?): integer? = x;\nquery q() { val p: (integer) -> integer? = f3(*); return p(123); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f0(x: integer): integer = x;\nfunction f1(x: integer): integer? = if (x > 0) x else null;\nfunction f2(x: integer?): integer = x ?: 0;\nfunction f3(x: integer?): integer? = x;\nquery q() { val p: (integer?) -> integer = f0(*); return p(123); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:17)",
+        "type" : "ERROR",
+        "code" : "stmt_var_type:p:[(integer?)->integer]:[(integer)->integer]",
+        "text" : "Type mismatch for 'p': (integer)->integer instead of (integer?)->integer"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f0(x: integer): integer = x;\nfunction f1(x: integer): integer? = if (x > 0) x else null;\nfunction f2(x: integer?): integer = x ?: 0;\nfunction f3(x: integer?): integer? = x;\nquery q() { val p: (integer?) -> integer = f1(*); return p(123); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:17)",
+        "type" : "ERROR",
+        "code" : "stmt_var_type:p:[(integer?)->integer]:[(integer)->integer?]",
+        "text" : "Type mismatch for 'p': (integer)->integer? instead of (integer?)->integer"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f0(x: integer): integer = x;\nfunction f1(x: integer): integer? = if (x > 0) x else null;\nfunction f2(x: integer?): integer = x ?: 0;\nfunction f3(x: integer?): integer? = x;\nquery q() { val p: (integer?) -> integer = f2(*); return p(123); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f0(x: integer): integer = x;\nfunction f1(x: integer): integer? = if (x > 0) x else null;\nfunction f2(x: integer?): integer = x ?: 0;\nfunction f3(x: integer?): integer? = x;\nquery q() { val p: (integer?) -> integer = f3(*); return p(123); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:17)",
+        "type" : "ERROR",
+        "code" : "stmt_var_type:p:[(integer?)->integer]:[(integer?)->integer?]",
+        "text" : "Type mismatch for 'p': (integer?)->integer? instead of (integer?)->integer"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f0(x: integer): integer = x;\nfunction f1(x: integer): integer? = if (x > 0) x else null;\nfunction f2(x: integer?): integer = x ?: 0;\nfunction f3(x: integer?): integer? = x;\nquery q() { val p: (integer?) -> integer? = f0(*); return p(123); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:17)",
+        "type" : "ERROR",
+        "code" : "stmt_var_type:p:[(integer?)->integer?]:[(integer)->integer]",
+        "text" : "Type mismatch for 'p': (integer)->integer instead of (integer?)->integer?"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f0(x: integer): integer = x;\nfunction f1(x: integer): integer? = if (x > 0) x else null;\nfunction f2(x: integer?): integer = x ?: 0;\nfunction f3(x: integer?): integer? = x;\nquery q() { val p: (integer?) -> integer? = f1(*); return p(123); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:17)",
+        "type" : "ERROR",
+        "code" : "stmt_var_type:p:[(integer?)->integer?]:[(integer)->integer?]",
+        "text" : "Type mismatch for 'p': (integer)->integer? instead of (integer?)->integer?"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f0(x: integer): integer = x;\nfunction f1(x: integer): integer? = if (x > 0) x else null;\nfunction f2(x: integer?): integer = x ?: 0;\nfunction f3(x: integer?): integer? = x;\nquery q() { val p: (integer?) -> integer? = f2(*); return p(123); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f0(x: integer): integer = x;\nfunction f1(x: integer): integer? = if (x > 0) x else null;\nfunction f2(x: integer?): integer = x ?: 0;\nfunction f3(x: integer?): integer? = x;\nquery q() { val p: (integer?) -> integer? = f3(*); return p(123); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

@@ -1,0 +1,40 @@
+[
+  {
+    "files" : {
+      "a.rell" : "object o2 { p: integer = 222; }",
+      "b.rell" : "@mount('.y.') object o3 { p: integer = 333; }",
+      "c.rell" : "module; object o4 { p: integer = 444; }",
+      "main.rell" : "import c;",
+      "module.rell" : "@mount('x') module; object o1 { p: integer = 111; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  }
+]

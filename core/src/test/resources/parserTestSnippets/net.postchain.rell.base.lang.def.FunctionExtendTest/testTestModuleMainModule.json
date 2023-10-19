@@ -1,0 +1,178 @@
+[
+  {
+    "files" : {
+      "app.rell" : "module; import foo;",
+      "bar.rell" : "module; import lib; @extend(lib.f) function h() { print('h'); }",
+      "foo.rell" : "module; import lib; @extend(lib.f) function g() { print('g'); }",
+      "lib.rell" : "module; @extendable function f() { print('f'); }",
+      "main.rell" : "",
+      "test1.rell" : "@test module; import lib; function test_1() { lib.f(); }",
+      "test2.rell" : "@test module; import lib; import bar; function test_2() { lib.f(); }"
+    },
+    "modules" : {
+      "modules" : [
+        "lib"
+      ],
+      "test_root_modules" : [
+        "test1"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "app.rell" : [ ],
+      "bar.rell" : [ ],
+      "foo.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "test1.rell" : [ ],
+      "test2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "app.rell" : "module; import foo;",
+      "bar.rell" : "module; import lib; @extend(lib.f) function h() { print('h'); }",
+      "foo.rell" : "module; import lib; @extend(lib.f) function g() { print('g'); }",
+      "lib.rell" : "module; @extendable function f() { print('f'); }",
+      "main.rell" : "",
+      "test1.rell" : "@test module; import lib; function test_1() { lib.f(); }",
+      "test2.rell" : "@test module; import lib; import bar; function test_2() { lib.f(); }"
+    },
+    "modules" : {
+      "modules" : [
+        "lib"
+      ],
+      "test_root_modules" : [
+        "test2"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "app.rell" : [ ],
+      "bar.rell" : [ ],
+      "foo.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "test1.rell" : [ ],
+      "test2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "app.rell" : "module; import foo;",
+      "bar.rell" : "module; import lib; @extend(lib.f) function h() { print('h'); }",
+      "foo.rell" : "module; import lib; @extend(lib.f) function g() { print('g'); }",
+      "lib.rell" : "module; @extendable function f() { print('f'); }",
+      "main.rell" : "",
+      "test1.rell" : "@test module; import lib; function test_1() { lib.f(); }",
+      "test2.rell" : "@test module; import lib; import bar; function test_2() { lib.f(); }"
+    },
+    "modules" : {
+      "modules" : [
+        "app"
+      ],
+      "test_root_modules" : [
+        "test1"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "app.rell" : [ ],
+      "bar.rell" : [ ],
+      "foo.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "test1.rell" : [ ],
+      "test2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "app.rell" : "module; import foo;",
+      "bar.rell" : "module; import lib; @extend(lib.f) function h() { print('h'); }",
+      "foo.rell" : "module; import lib; @extend(lib.f) function g() { print('g'); }",
+      "lib.rell" : "module; @extendable function f() { print('f'); }",
+      "main.rell" : "",
+      "test1.rell" : "@test module; import lib; function test_1() { lib.f(); }",
+      "test2.rell" : "@test module; import lib; import bar; function test_2() { lib.f(); }"
+    },
+    "modules" : {
+      "modules" : [
+        "app"
+      ],
+      "test_root_modules" : [
+        "test2"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "app.rell" : [ ],
+      "bar.rell" : [ ],
+      "foo.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "test1.rell" : [ ],
+      "test2.rell" : [ ]
+    }
+  }
+]

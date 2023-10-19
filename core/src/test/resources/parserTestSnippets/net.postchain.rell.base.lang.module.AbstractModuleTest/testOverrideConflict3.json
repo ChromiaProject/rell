@@ -1,0 +1,47 @@
+[
+  {
+    "files" : {
+      "lib.rell" : "\n            abstract module;\n            abstract function g(): integer;\n            override function g(): integer = 123;\n            override function g(): integer = 123;\n        ",
+      "main.rell" : "import lib;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "lib.rell(4:31)",
+        "type" : "ERROR",
+        "code" : "override:conflict:[lib:g]:[direct:lib:lib.rell:4]:[direct:lib:lib.rell:5]",
+        "text" : "Override conflict: override for function 'lib:g' defined at lib.rell:5"
+      },
+      {
+        "pos" : "lib.rell(5:31)",
+        "type" : "ERROR",
+        "code" : "override:conflict:[lib:g]:[direct:lib:lib.rell:5]:[direct:lib:lib.rell:4]",
+        "text" : "Override conflict: override for function 'lib:g' defined at lib.rell:4"
+      }
+    ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

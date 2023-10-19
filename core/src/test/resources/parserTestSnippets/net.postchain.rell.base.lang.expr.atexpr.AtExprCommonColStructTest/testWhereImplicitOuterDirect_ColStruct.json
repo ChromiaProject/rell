@@ -1,0 +1,621 @@
+[
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner1()) @ { o.value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner1()) @ { o.foo_value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner1()) @ { o.bar_value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner1()) @ { o.ref.value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner1()) @ { o.ref.foo_value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner1()) @ { o.ref.bar_value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner2()) @ { o.value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(27:58)",
+        "type" : "ERROR",
+        "code" : "at_where:var_manyattrs_type:0:value:value:[i:inner2.foo_value,i:inner2.bar_value]",
+        "text" : "Multiple attributes match expression type value: foo_value, bar_value"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner2()) @ { o.foo_value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner2()) @ { o.bar_value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner2()) @ { o.ref.value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(27:58)",
+        "type" : "ERROR",
+        "code" : "at_attr_type_ambig:0:value:[i:inner2.foo_value,i:inner2.bar_value]",
+        "text" : "Multiple attributes match type of where-expression (value): foo_value, bar_value"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner2()) @ { o.ref.foo_value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(27:58)",
+        "type" : "ERROR",
+        "code" : "at_attr_type_ambig:0:value:[i:inner2.foo_value,i:inner2.bar_value]",
+        "text" : "Multiple attributes match type of where-expression (value): foo_value, bar_value"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner2()) @ { o.ref.bar_value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(27:58)",
+        "type" : "ERROR",
+        "code" : "at_attr_type_ambig:0:value:[i:inner2.foo_value,i:inner2.bar_value]",
+        "text" : "Multiple attributes match type of where-expression (value): foo_value, bar_value"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner3()) @ { o.value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner3()) @ { o.foo_value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner3()) @ { o.bar_value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner3()) @ { o.ref.value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(27:58)",
+        "type" : "ERROR",
+        "code" : "at_attr_type_ambig:0:value:[i:inner3.value,i:inner3.foo_value,i:inner3.bar_value]",
+        "text" : "Multiple attributes match type of where-expression (value): value, foo_value, bar_value"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner3()) @ { o.ref.foo_value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(27:58)",
+        "type" : "ERROR",
+        "code" : "at_attr_type_ambig:0:value:[i:inner3.value,i:inner3.foo_value,i:inner3.bar_value]",
+        "text" : "Multiple attributes match type of where-expression (value): value, foo_value, bar_value"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            struct id { s: text; }\n            struct value { v: text; }\n            struct ref { value; foo_value: value; bar_value: value; }\n            struct outer { value; foo_value: value; bar_value: value; ref; }\n            struct inner1 { id; value; }\n            struct inner2 { id; foo_value: value; bar_value: value; }\n            struct inner3 { id; value; foo_value: value; bar_value: value; }\n\n            function get_ref() = ref(value = value('A'), foo_value = value('B'), bar_value = value('C'));\n            function get_outer() = [outer(value = value('A'), foo_value = value('B'), bar_value = value('C'), ref = get_ref())];\n            function get_inner1() = [\n                inner1(id('I10'), value = value('A')),\n                inner1(id('I11'), value = value('B')),\n                inner1(id('I12'), value = value('C'))\n            ];\n            function get_inner2() = [\n                inner2(id('I20'), foo_value = value('B'), bar_value = value('X')),\n                inner2(id('I21'), foo_value = value('X'), bar_value = value('C'))\n            ];\n            function get_inner3() = [\n                inner3(id('I30'), value = value('A'), foo_value = value('X'), bar_value = value('X')),\n                inner3(id('I31'), value = value('X'), foo_value = value('B'), bar_value = value('X')),\n                inner3(id('I32'), value = value('X'), foo_value = value('X'), bar_value = value('C'))\n            ];\n        \nquery q() = (o:get_outer()) @* {} ( (i:get_inner3()) @ { o.ref.bar_value } ( i.id.s ) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(27:58)",
+        "type" : "ERROR",
+        "code" : "at_attr_type_ambig:0:value:[i:inner3.value,i:inner3.foo_value,i:inner3.bar_value]",
+        "text" : "Multiple attributes match type of where-expression (value): value, foo_value, bar_value"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

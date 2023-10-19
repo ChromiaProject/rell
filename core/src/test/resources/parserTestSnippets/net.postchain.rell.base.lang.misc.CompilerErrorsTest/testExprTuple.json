@@ -1,0 +1,175 @@
+[
+  {
+    "files" : {
+      "main.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = (a = abs(x''), b = min());"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:18)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(1:32)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = (a: abs(x''), b: min());"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:15)",
+        "type" : "ERROR",
+        "code" : "tuple_name_colon_expr:a",
+        "text" : "Syntax error"
+      },
+      {
+        "pos" : "main.rell(1:17)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(1:28)",
+        "type" : "ERROR",
+        "code" : "tuple_name_colon_expr:b",
+        "text" : "Syntax error"
+      },
+      {
+        "pos" : "main.rell(1:30)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = (a = abs(x''), a = min());"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:18)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(1:28)",
+        "type" : "ERROR",
+        "code" : "expr_tuple_dupname:a",
+        "text" : "Duplicate field: 'a'"
+      },
+      {
+        "pos" : "main.rell(1:32)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

@@ -1,0 +1,167 @@
+[
+  {
+    "files" : {
+      "a.rell" : "module; namespace x {}",
+      "b.rell" : "module; namespace y {}",
+      "c.rell" : "module; import a.*; import b.*;",
+      "main.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; namespace x {}",
+      "b.rell" : "module; namespace y {}",
+      "c.rell" : "module; import a.*; import b.*;",
+      "main.rell" : "import c.{z.f}; function __f() = 0; query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:11)",
+        "type" : "ERROR",
+        "code" : "import:name_unknown:z",
+        "text" : "Unknown name: 'z'"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; namespace x {}",
+      "b.rell" : "module; namespace y {}",
+      "c.rell" : "module; import a.*; import b.*;",
+      "main.rell" : "import c.{z.g}; function __f() = 0; query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:11)",
+        "type" : "ERROR",
+        "code" : "import:name_unknown:z",
+        "text" : "Unknown name: 'z'"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; namespace x {}",
+      "b.rell" : "module; namespace y {}",
+      "c.rell" : "module; import a.*; import b.*;",
+      "main.rell" : "import c.{z.*}; function __f() = 0; query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:11)",
+        "type" : "ERROR",
+        "code" : "import:name_unknown:z",
+        "text" : "Unknown name: 'z'"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

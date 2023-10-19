@@ -1,0 +1,41 @@
+[
+  {
+    "files" : {
+      "app.rell" : "abstract module;",
+      "main.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        "app"
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "app.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "module:main_abstract:app",
+        "text" : "Module 'app' is abstract, cannot be used as a main module"
+      }
+    ],
+    "parsing" : {
+      "app.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

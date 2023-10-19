@@ -1,0 +1,162 @@
+[
+  {
+    "files" : {
+      "main.rell" : "import lib.a;\nfunction x(c: a.cls){}",
+      "lib/a.rell" : "\n            module;\n            entity cls {}\n            object state { p: integer = 123; }\n            struct rec {}\n            enum e { A }\n            function f() {}\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "lib/a.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import lib.a;\nfunction x(): integer = a.state.p;",
+      "lib/a.rell" : "\n            module;\n            entity cls {}\n            object state { p: integer = 123; }\n            struct rec {}\n            enum e { A }\n            function f() {}\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "lib/a.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import lib.a;\nfunction x(r: a.rec){}",
+      "lib/a.rell" : "\n            module;\n            entity cls {}\n            object state { p: integer = 123; }\n            struct rec {}\n            enum e { A }\n            function f() {}\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "lib/a.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import lib.a;\nfunction x(e: a.e){}",
+      "lib/a.rell" : "\n            module;\n            entity cls {}\n            object state { p: integer = 123; }\n            struct rec {}\n            enum e { A }\n            function f() {}\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "lib/a.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import lib.a;\nfunction x(){ a.f(); }",
+      "lib/a.rell" : "\n            module;\n            entity cls {}\n            object state { p: integer = 123; }\n            struct rec {}\n            enum e { A }\n            function f() {}\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "lib/a.rell" : [ ]
+    }
+  }
+]

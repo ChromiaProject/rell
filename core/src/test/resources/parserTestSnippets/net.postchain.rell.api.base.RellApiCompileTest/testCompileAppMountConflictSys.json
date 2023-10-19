@@ -1,0 +1,128 @@
+[
+  {
+    "files" : {
+      "sys.rell" : "module; @mount('block') entity user {}"
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [
+      {
+        "pos" : "sys.rell(1:32)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:sys:[sys:user]:block:ENTITY:[block]",
+        "text" : "Mount name conflict: system entity 'block' has mount name 'block'"
+      }
+    ],
+    "parsing" : {
+      "sys.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "sys.rell" : "module; @mount('block') entity user {}"
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : false,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "sys.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "sys.rell" : "module; @mount('block') entity user {}"
+    },
+    "modules" : {
+      "modules" : [
+        "sys"
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [
+      {
+        "pos" : "sys.rell(1:32)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:sys:[sys:user]:block:ENTITY:[block]",
+        "text" : "Mount name conflict: system entity 'block' has mount name 'block'"
+      }
+    ],
+    "parsing" : {
+      "sys.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "sys.rell" : "module; @mount('block') entity user {}"
+    },
+    "modules" : {
+      "modules" : [
+        "sys"
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : false,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "sys.rell" : [ ]
+    }
+  }
+]

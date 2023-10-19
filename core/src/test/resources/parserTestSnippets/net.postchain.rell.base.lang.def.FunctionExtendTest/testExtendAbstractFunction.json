@@ -1,0 +1,47 @@
+[
+  {
+    "files" : {
+      "lib.rell" : "abstract module; abstract function f();",
+      "main.rell" : "import lib; @extend(lib.f) function g() {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "override:missing:[lib:f]:[lib.rell:1]",
+        "text" : "No override for abstract function 'lib:f' (defined at lib.rell:1)"
+      },
+      {
+        "pos" : "main.rell(1:21)",
+        "type" : "ERROR",
+        "code" : "fn:extend:not_extendable:lib.f",
+        "text" : "Function is not extendable: 'lib.f'"
+      }
+    ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

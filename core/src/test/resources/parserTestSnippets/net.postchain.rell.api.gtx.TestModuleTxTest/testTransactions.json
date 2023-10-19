@@ -1,0 +1,38 @@
+[
+  {
+    "files" : {
+      "main.rell" : "",
+      "prod.rell" : "\n            module;\n            entity user { name; }\n            operation add_user(name) { create user(name); }\n            operation remove_user(name) { delete user @* { name }; }\n        ",
+      "tests.rell" : "\n            @test module;\n            import prod;\n\n            function test_add_user() {\n                assert_equals(prod.user@*{}(.name), list<text>());\n                val tx = rell.test.tx(prod.add_user('Bob'));\n                assert_equals(prod.user@*{}(.name), list<text>());\n                tx.run();\n                assert_equals(prod.user@*{}(.name), ['Bob']);\n            }\n\n            function test_remove_user() {\n                rell.test.tx([prod.add_user('Bob'), prod.add_user('Alice')]).run();\n                assert_equals(prod.user@*{}(.name), ['Bob', 'Alice']);\n                val tx = rell.test.tx(prod.remove_user('Bob'));\n                assert_equals(prod.user@*{}(.name), ['Bob', 'Alice']);\n                tx.run();\n                assert_equals(prod.user@*{}(.name), ['Alice']);\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [
+        "tests"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "prod.rell" : [ ],
+      "tests.rell" : [ ]
+    }
+  }
+]

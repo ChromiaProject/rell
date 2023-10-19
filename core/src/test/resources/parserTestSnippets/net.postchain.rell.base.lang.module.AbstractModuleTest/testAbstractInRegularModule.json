@@ -1,0 +1,125 @@
+[
+  {
+    "files" : {
+      "lib1.rell" : "module; abstract function f(): integer;",
+      "lib2.rell" : "module; abstract function f(): integer = 123;",
+      "main.rell" : "import lib1;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "lib1.rell(1:27)",
+        "type" : "ERROR",
+        "code" : "fn:abstract:non_abstract_module:lib1:lib1:f",
+        "text" : "Abstract function can be defined only in abstract module"
+      }
+    ],
+    "parsing" : {
+      "lib1.rell" : [ ],
+      "lib2.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib1.rell" : "module; abstract function f(): integer;",
+      "lib2.rell" : "module; abstract function f(): integer = 123;",
+      "main.rell" : "import lib2;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "lib2.rell(1:27)",
+        "type" : "ERROR",
+        "code" : "fn:abstract:non_abstract_module:lib2:lib2:f",
+        "text" : "Abstract function can be defined only in abstract module"
+      }
+    ],
+    "parsing" : {
+      "lib1.rell" : [ ],
+      "lib2.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib1.rell" : "module; abstract function f(): integer;",
+      "lib2.rell" : "module; abstract function f(): integer = 123;",
+      "main.rell" : "abstract function f(): integer;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:19)",
+        "type" : "ERROR",
+        "code" : "fn:abstract:non_abstract_module::f",
+        "text" : "Abstract function can be defined only in abstract module"
+      }
+    ],
+    "parsing" : {
+      "lib1.rell" : [ ],
+      "lib2.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

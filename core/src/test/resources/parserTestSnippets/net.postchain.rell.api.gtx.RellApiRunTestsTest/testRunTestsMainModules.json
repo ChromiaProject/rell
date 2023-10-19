@@ -1,0 +1,66 @@
+[
+  {
+    "files" : {
+      "lib.rell" : "module; operation op() {}",
+      "test.rell" : "@test module; import lib; function test() { lib.op().run(); }"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [
+        "test"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "test.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; operation op() {}",
+      "test.rell" : "@test module; import lib; function test() { lib.op().run(); }"
+    },
+    "modules" : {
+      "modules" : [
+        "lib"
+      ],
+      "test_root_modules" : [
+        "test"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "test.rell" : [ ]
+    }
+  }
+]

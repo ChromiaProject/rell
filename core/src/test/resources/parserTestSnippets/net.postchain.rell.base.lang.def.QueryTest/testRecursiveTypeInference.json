@@ -1,0 +1,82 @@
+[
+  {
+    "files" : {
+      "main.rell" : "query foo(x: integer) = if (x <= 1) 1 else foo(x - 1);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:44)",
+        "type" : "ERROR",
+        "code" : "fn_type_recursion:QUERY:foo",
+        "text" : "Query 'foo' is recursive, cannot infer the type; specify type explicitly"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function foo(x: integer) = bar(x + 1); query bar(x: integer) = if (x <= 1) 1 else foo(x - 1);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:28)",
+        "type" : "ERROR",
+        "code" : "fn_type_recursion:QUERY:bar",
+        "text" : "Query 'bar' is recursive, cannot infer the type; specify type explicitly"
+      },
+      {
+        "pos" : "main.rell(1:83)",
+        "type" : "ERROR",
+        "code" : "fn_type_recursion:FUNCTION:foo",
+        "text" : "Function 'foo' is recursive, cannot infer the type; specify type explicitly"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

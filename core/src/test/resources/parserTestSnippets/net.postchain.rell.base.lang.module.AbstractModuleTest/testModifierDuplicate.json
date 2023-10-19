@@ -1,0 +1,178 @@
+[
+  {
+    "files" : {
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import wrong;",
+      "wrong.rell" : "abstract abstract module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "wrong.rell(1:10)",
+        "type" : "ERROR",
+        "code" : "modifier:dup:kw:abstract",
+        "text" : "Modifier 'abstract' specified multiple times"
+      }
+    ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "wrong.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import lib; override override function lib.f(): integer = 123;",
+      "wrong.rell" : "abstract abstract module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:22)",
+        "type" : "ERROR",
+        "code" : "modifier:dup:kw:override",
+        "text" : "Modifier 'override' specified multiple times"
+      }
+    ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "wrong.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "abstract override function f(): integer = 123;",
+      "wrong.rell" : "abstract abstract module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:10)",
+        "type" : "ERROR",
+        "code" : "modifier:bad_combination:kw:abstract,kw:override",
+        "text" : "Modifier 'abstract' and modifier 'override' cannot be used at the same time"
+      },
+      {
+        "pos" : "main.rell(1:28)",
+        "type" : "ERROR",
+        "code" : "fn:abstract:non_abstract_module::f",
+        "text" : "Abstract function can be defined only in abstract module"
+      }
+    ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "wrong.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "override abstract function f(): integer = 123;",
+      "wrong.rell" : "abstract abstract module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:10)",
+        "type" : "ERROR",
+        "code" : "modifier:bad_combination:kw:override,kw:abstract",
+        "text" : "Modifier 'override' and modifier 'abstract' cannot be used at the same time"
+      },
+      {
+        "pos" : "main.rell(1:28)",
+        "type" : "ERROR",
+        "code" : "fn:abstract:non_abstract_module::f",
+        "text" : "Abstract function can be defined only in abstract module"
+      }
+    ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "wrong.rell" : [ ]
+    }
+  }
+]

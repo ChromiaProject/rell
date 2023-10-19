@@ -1,0 +1,75 @@
+[
+  {
+    "files" : {
+      "bad.rell" : "module; import lib;",
+      "good.rell" : "module;",
+      "lib.rell" : "module; val x: integer = true;"
+    },
+    "modules" : {
+      "modules" : [
+        "good"
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bad.rell" : [ ],
+      "good.rell" : [ ],
+      "lib.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bad.rell" : "module; import lib;",
+      "good.rell" : "module;",
+      "lib.rell" : "module; val x: integer = true;"
+    },
+    "modules" : {
+      "modules" : [
+        "bad"
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [
+      {
+        "pos" : "lib.rell(1:26)",
+        "type" : "ERROR",
+        "code" : "def:const_expr_type:[integer]:[boolean]",
+        "text" : "Expression type mismatch: boolean instead of integer"
+      }
+    ],
+    "parsing" : {
+      "bad.rell" : [ ],
+      "good.rell" : [ ],
+      "lib.rell" : [ ]
+    }
+  }
+]

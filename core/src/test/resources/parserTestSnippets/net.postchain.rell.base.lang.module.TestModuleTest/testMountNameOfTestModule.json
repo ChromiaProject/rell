@@ -1,0 +1,43 @@
+[
+  {
+    "files" : {
+      "main.rell" : "",
+      "tests.rell" : "@test @mount('foo') module; function test() {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [
+        "tests"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "tests.rell(1:8)",
+        "type" : "ERROR",
+        "code" : "modifier:bad_combination:ann:test,ann:mount",
+        "text" : "Annotation '@test' and annotation '@mount' cannot be used at the same time"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "tests.rell" : [ ]
+    }
+  }
+]

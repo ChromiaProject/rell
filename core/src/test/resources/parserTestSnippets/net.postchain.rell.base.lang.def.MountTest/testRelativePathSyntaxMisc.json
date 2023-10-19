@@ -1,0 +1,190 @@
+[
+  {
+    "files" : {
+      "main.rell" : "import a;",
+      "a/module.rell" : "@mount('foo.') module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "a/module.rell(1:2)",
+        "type" : "ERROR",
+        "code" : "ann:mount:tail:no_name:foo.:MODULE",
+        "text" : "Mount path 'foo.' is invalid for module"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@mount('bar.') @external('something') namespace {}",
+      "a/module.rell" : "@mount('foo.') module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:2)",
+        "type" : "ERROR",
+        "code" : "ann:mount:tail:no_name:bar.:NAMESPACE",
+        "text" : "Mount path 'bar.' is invalid for namespace"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@mount('a.b.c') namespace foo { @mount(' ^^.x') query q()=123; }",
+      "a/module.rell" : "@mount('foo.') module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:34)",
+        "type" : "ERROR",
+        "code" : "ann:mount:invalid: ^^.x",
+        "text" : "Invalid mount name: ' ^^.x'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@mount('a.b.c') namespace foo { @mount('^^ .x') query q()=123; }",
+      "a/module.rell" : "@mount('foo.') module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:34)",
+        "type" : "ERROR",
+        "code" : "ann:mount:invalid:^^ .x",
+        "text" : "Invalid mount name: '^^ .x'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@mount('a.b.c') namespace foo { @mount('^^.x') query q()=123; }",
+      "a/module.rell" : "@mount('foo.') module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ]
+    }
+  }
+]
