@@ -3,9 +3,10 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
-
 }
+
 rootProject.name = "rell-toolbox"
+
 include("core")
 include("language-server")
 

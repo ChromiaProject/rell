@@ -9,22 +9,34 @@ group = rootProject.group
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://jitpack.io") }
+    maven {
+        name = "bintray"
+        url = uri("https://jcenter.bintray.com")
+    }
+    maven {
+        name = "etherjar"
+        url = uri("https://maven.emrld.io")
+    }
+    maven {
+        name = "Rell GitLab Registry"
+        url = uri("https://gitlab.com/api/v4/projects/32802097/packages/maven")
+    }
+    maven {
+        name = "Postchain GitLab Registry"
+        url = uri("https://gitlab.com/api/v4/projects/32294340/packages/maven")
+    }
 }
-val koinVersion = "3.5.0"
 
 dependencies {
-    antlr("org.antlr:antlr4:4.13.1")
+    antlr(libs.antlr)
+    implementation(libs.antlr)
+    implementation(libs.bundles.rell)
+    implementation(libs.bundles.koin)
+    implementation(libs.bundles.rell)
+    implementation(libs.bundles.jackson)
 
-    implementation("org.antlr:antlr4:4.13.1")
-    implementation("io.insert-koin:koin-core:$koinVersion")
-    implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
-    implementation(libs.bundles.logging)
-
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
-    testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.27.0")
-    testImplementation(kotlin("test"))
+    testImplementation(libs.bundles.testing)
     testImplementation(libs.bundles.testcontainers)
 }
 

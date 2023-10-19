@@ -1,10 +1,38 @@
 [versions]
-rell = "0.13.2"
+rell = "0.13.1"
 testcontainers = "1.18.3"
+lsp4j = "0.21.1"
+koin = "3.5.0"
+jackson = "2.15.3"
+antlr = "4.13.1"
+assertk="0.27.0"
+kotlin-test="1.9.10"
+oshai = "5.1.0"
+log4j = "2.20.0"
+
 
 [libraries]
-rell = { module = "net.postchain.rell:rell-api-base", version.ref = "rell" }
+rell = { module = "net.postchain.rell:rell", version.ref = "rell" }
+rell-base = { module = "net.postchain.rell:rell-base", version.ref = "rell" }
+rell-api-base = { module = "net.postchain.rell:rell-api-base", version.ref = "rell" }
 rell-tools = { module = "net.postchain.rell:rell-tools", version.ref = "rell" }
+
+lsp4j = { module = "org.eclipse.lsp4j:org.eclipse.lsp4j", version.ref = "lsp4j" }
+lsp4j-debug = { module = "org.eclipse.lsp4j:org.eclipse.lsp4j.debug", version.ref = "lsp4j" }
+lsp4j-websocket = { module = "org.eclipse.lsp4j:org.eclipse.lsp4j.websocket", version.ref = "lsp4j" }
+
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-logger = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin" }
+
+jackson = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-yml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
+jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+
+antlr = { module = "org.antlr:antlr4", version.ref = "antlr" }
+
+
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin-test" }
+assertk = { module = "com.willowtreeapps.assertk:assertk-jvm", version.ref="assertk" }
 
 #Testing
 testcontainers-base = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
@@ -12,10 +40,15 @@ testcintainers-junit = { module = "org.testcontainers:junit-jupiter", version.re
 
 
 #logging
-oshai = {module = "io.github.oshai:kotlin-logging-jvm", version = "5.1.0"}
-log4j = {module = "org.apache.logging.log4j:log4j-slf4j-impl", version = "2.20.0"}
+oshai = {module = "io.github.oshai:kotlin-logging-jvm", version.ref = "oshai" }
+log4j = {module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
 
 
 [bundles]
 testcontainers = [ "testcontainers-base", "testcintainers-junit" ]
 logging = ["oshai", "log4j"]
+rell = ["rell", "rell-base", "rell-api-base", "rell-tools"]
+lsp4j = ["lsp4j", "lsp4j-debug", "lsp4j-websocket"]
+koin = ["koin-core", "koin-logger"]
+jackson = ["jackson", "jackson-yml", "jackson-kotlin"]
+testing = ["kotlin-test-junit", "assertk"]
