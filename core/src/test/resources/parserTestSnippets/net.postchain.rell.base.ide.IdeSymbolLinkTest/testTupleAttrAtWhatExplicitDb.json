@@ -1,0 +1,104 @@
+[
+  {
+    "files" : {
+      "def.rell" : "function f() { val r = data @{} (a = .x, b = .y, @omit c = .x); return r; }",
+      "main.rell" : "",
+      "rec.rell" : "entity data { x: integer; y: integer; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "def.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "def.rell" : [ ],
+      "main.rell" : [ ],
+      "rec.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "def.rell" : "function f() { val r = data @{} (a = .x, b = .y, @omit c = .x); return r; }",
+      "main.rell" : "query q() = f().a;",
+      "rec.rell" : "entity data { x: integer; y: integer; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "def.rell" : [ ],
+      "main.rell" : [ ],
+      "rec.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "def.rell" : "function f() { val r = data @{} (a = .x, b = .y, @omit c = .x); return r; }",
+      "main.rell" : "query q() = f().b;",
+      "rec.rell" : "entity data { x: integer; y: integer; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "def.rell" : [ ],
+      "main.rell" : [ ],
+      "rec.rell" : [ ]
+    }
+  }
+]

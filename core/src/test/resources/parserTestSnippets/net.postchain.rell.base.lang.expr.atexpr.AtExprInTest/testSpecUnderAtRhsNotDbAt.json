@@ -1,0 +1,390 @@
+[
+  {
+    "files" : {
+      "main.rell" : "\n            function cities() = [\n                (name='London',country='UK'),\n                (name='Paris',country='France'),\n                (name='Berlin',country='Germany'),\n                (name='Madrid',country='Spain')\n            ];\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function cities() = [\n                (name='London',country='UK'),\n                (name='Paris',country='France'),\n                (name='Berlin',country='Germany'),\n                (name='Madrid',country='Spain')\n            ];\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { 'Berlin' in (c:cities()) @* {}(c.name) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function cities() = [\n                (name='London',country='UK'),\n                (name='Paris',country='France'),\n                (name='Berlin',country='Germany'),\n                (name='Madrid',country='Spain')\n            ];\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { 'Zurich' in (c:cities()) @* {}(c.name) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function cities() = [\n                (name='London',country='UK'),\n                (name='Paris',country='France'),\n                (name='Berlin',country='Germany'),\n                (name='Madrid',country='Spain')\n            ];\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { 'Berlin' in (c:cities()) @* {.country=='Italy'}(c.name) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function cities() = [\n                (name='London',country='UK'),\n                (name='Paris',country='France'),\n                (name='Berlin',country='Germany'),\n                (name='Madrid',country='Spain')\n            ];\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { .city.name in (c:cities()) @* {}(c.name) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function cities() = [\n                (name='London',country='UK'),\n                (name='Paris',country='France'),\n                (name='Berlin',country='Germany'),\n                (name='Madrid',country='Spain')\n            ];\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { 'Berlin' in (c:cities()) @+ {}(c.name) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function cities() = [\n                (name='London',country='UK'),\n                (name='Paris',country='France'),\n                (name='Berlin',country='Germany'),\n                (name='Madrid',country='Spain')\n            ];\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { 'Zurich' in (c:cities()) @+ {}(c.name) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function cities() = [\n                (name='London',country='UK'),\n                (name='Paris',country='France'),\n                (name='Berlin',country='Germany'),\n                (name='Madrid',country='Spain')\n            ];\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { 'Berlin' in (c:cities()) @+ {.country=='Italy'}(c.name) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function cities() = [\n                (name='London',country='UK'),\n                (name='Paris',country='France'),\n                (name='Berlin',country='Germany'),\n                (name='Madrid',country='Spain')\n            ];\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { 'Berlin' in (c:cities()) @ {} } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(12:32)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:in:[text]:[(name:text,country:text)]",
+        "text" : "Wrong operand types for 'in': text, (name:text,country:text)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function cities() = [\n                (name='London',country='UK'),\n                (name='Paris',country='France'),\n                (name='Berlin',country='Germany'),\n                (name='Madrid',country='Spain')\n            ];\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { cities()[0] in (c:cities()) @ {} } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(12:35)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:in:[(name:text,country:text)]:[(name:text,country:text)]",
+        "text" : "Wrong operand types for 'in': (name:text,country:text), (name:text,country:text)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function cities() = [\n                (name='London',country='UK'),\n                (name='Paris',country='France'),\n                (name='Berlin',country='Germany'),\n                (name='Madrid',country='Spain')\n            ];\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { 'Berlin' in (c:cities()) @? {} } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(12:32)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:in:[text]:[(name:text,country:text)?]",
+        "text" : "Wrong operand types for 'in': text, (name:text,country:text)?"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function cities() = [\n                (name='London',country='UK'),\n                (name='Paris',country='France'),\n                (name='Berlin',country='Germany'),\n                (name='Madrid',country='Spain')\n            ];\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { cities()[0] in (c:cities()) @? {} } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(12:35)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:in:[(name:text,country:text)]:[(name:text,country:text)?]",
+        "text" : "Wrong operand types for 'in': (name:text,country:text), (name:text,country:text)?"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

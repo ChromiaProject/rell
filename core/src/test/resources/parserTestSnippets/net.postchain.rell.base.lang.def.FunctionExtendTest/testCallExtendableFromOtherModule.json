@@ -1,0 +1,146 @@
+[
+  {
+    "files" : {
+      "ext.rell" : "module; import lib; @extend(lib.f) function h() = [456];",
+      "lib.rell" : "module; @extendable function f() = [123];",
+      "main.rell" : "",
+      "sub.rell" : "module; import lib; function g() = lib.f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "module; import lib; @extend(lib.f) function h() = [456];",
+      "lib.rell" : "module; @extendable function f() = [123];",
+      "main.rell" : "import sub; query q() = sub.g();",
+      "sub.rell" : "module; import lib; function g() = lib.f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "module; import lib; @extend(lib.f) function h() = [456];",
+      "lib.rell" : "module; @extendable function f() = [123];",
+      "main.rell" : "import sub; import ext; query q() = sub.g();",
+      "sub.rell" : "module; import lib; function g() = lib.f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "module; import lib; @extend(lib.f) function h() = [456];",
+      "lib.rell" : "module; @extendable function f() = [123];",
+      "main.rell" : "import ext; import sub; query q() = sub.g();",
+      "sub.rell" : "module; import lib; function g() = lib.f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "sub.rell" : [ ]
+    }
+  }
+]

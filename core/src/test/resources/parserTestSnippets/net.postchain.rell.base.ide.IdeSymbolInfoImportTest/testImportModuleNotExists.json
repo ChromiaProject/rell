@@ -1,0 +1,84 @@
+[
+  {
+    "files" : {
+      "main.rell" : "import a.b.c.d;",
+      "a/module.rell" : "module;",
+      "a/b/c/module.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "import:not_found:a.b.c.d",
+        "text" : "Module 'a.b.c.d' not found"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.b.c.d.e;",
+      "a/module.rell" : "module;",
+      "a/b/c/module.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "import:not_found:a.b.c.d.e",
+        "text" : "Module 'a.b.c.d.e' not found"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  }
+]

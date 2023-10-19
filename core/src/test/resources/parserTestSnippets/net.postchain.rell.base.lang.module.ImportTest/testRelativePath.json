@@ -1,0 +1,110 @@
+[
+  {
+    "files" : {
+      "main.rell" : "",
+      "lib/bar/exact.rell" : "module; import ^^.foo.a.{f}; function g(): integer = -f();",
+      "lib/bar/wildcard.rell" : "module; import ^^.foo.a.*; function g(): integer = -f();",
+      "lib/foo/a.rell" : "module; function f(): integer = 123;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "lib/bar/exact.rell" : [ ],
+      "lib/bar/wildcard.rell" : [ ],
+      "lib/foo/a.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import lib.bar.exact; function __f() = exact.g(); query q() = __f();",
+      "lib/bar/exact.rell" : "module; import ^^.foo.a.{f}; function g(): integer = -f();",
+      "lib/bar/wildcard.rell" : "module; import ^^.foo.a.*; function g(): integer = -f();",
+      "lib/foo/a.rell" : "module; function f(): integer = 123;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "lib/bar/exact.rell" : [ ],
+      "lib/bar/wildcard.rell" : [ ],
+      "lib/foo/a.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import lib.bar.wildcard; function __f() = wildcard.g(); query q() = __f();",
+      "lib/bar/exact.rell" : "module; import ^^.foo.a.{f}; function g(): integer = -f();",
+      "lib/bar/wildcard.rell" : "module; import ^^.foo.a.*; function g(): integer = -f();",
+      "lib/foo/a.rell" : "module; function f(): integer = 123;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "lib/bar/exact.rell" : [ ],
+      "lib/bar/wildcard.rell" : [ ],
+      "lib/foo/a.rell" : [ ]
+    }
+  }
+]

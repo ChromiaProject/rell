@@ -1,0 +1,74 @@
+[
+  {
+    "files" : {
+      "main.rell" : "import multi;",
+      "single.rell" : "module; import multi; function s() { multi.g(); }",
+      "multi/a.rell" : "import single; function f() { single.s(); }",
+      "multi/b.rell" : "function g() { require(false); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "single.rell" : [ ],
+      "multi/a.rell" : [ ],
+      "multi/b.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import multi;\nquery q() { multi.f(); return 0; }",
+      "single.rell" : "module; import multi; function s() { multi.g(); }",
+      "multi/a.rell" : "import single; function f() { single.s(); }",
+      "multi/b.rell" : "function g() { require(false); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "single.rell" : [ ],
+      "multi/a.rell" : [ ],
+      "multi/b.rell" : [ ]
+    }
+  }
+]

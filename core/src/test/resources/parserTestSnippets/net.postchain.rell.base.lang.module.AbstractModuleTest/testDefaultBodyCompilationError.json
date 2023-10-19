@@ -1,0 +1,41 @@
+[
+  {
+    "files" : {
+      "lib.rell" : "abstract module; abstract function f(): integer { val x: integer = 'Hello'; return 123; }",
+      "main.rell" : "import lib; override function lib.f(): integer = 456;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "lib.rell(1:55)",
+        "type" : "ERROR",
+        "code" : "stmt_var_type:x:[integer]:[text]",
+        "text" : "Type mismatch for 'x': text instead of integer"
+      }
+    ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

@@ -1,0 +1,36 @@
+[
+  {
+    "files" : {
+      "app/module.rell" : "module;",
+      "app/test/module.rell" : "@test module; import lib.test;",
+      "lib/module.rell" : "module;",
+      "lib/test/module.rell" : "@test module;"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [
+        "app"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "app/module.rell" : [ ],
+      "app/test/module.rell" : [ ],
+      "lib/module.rell" : [ ],
+      "lib/test/module.rell" : [ ]
+    }
+  }
+]

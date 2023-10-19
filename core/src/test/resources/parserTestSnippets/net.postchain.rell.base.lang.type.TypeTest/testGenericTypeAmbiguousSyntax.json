@@ -1,0 +1,232 @@
+[
+  {
+    "files" : {
+      "main.rell" : "function f(x: boolean, y: boolean) = 123;\nfunction g(x: list<integer>) = 123;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: boolean, y: boolean) = 123;\nfunction g(x: list<integer>) = 123;\nquery q() { val (a, b, c, d) = (1, 2, 3, 4); return f(a < b, c > d); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: boolean, y: boolean) = 123;\nfunction g(x: list<integer>) = 123;\nquery q() { val (a, b, c, d) = (1, 2, 3, 4); return f(a < b, c > ()); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:53)",
+        "type" : "ERROR",
+        "code" : "expr:call:missing_args:[f]:1:y",
+        "text" : "Missing argument(s): y"
+      },
+      {
+        "pos" : "main.rell(3:55)",
+        "type" : "ERROR",
+        "code" : "unknown_name:a",
+        "text" : "Unknown name: 'a'"
+      },
+      {
+        "pos" : "main.rell(3:59)",
+        "type" : "ERROR",
+        "code" : "unknown_name:b",
+        "text" : "Unknown name: 'b'"
+      },
+      {
+        "pos" : "main.rell(3:62)",
+        "type" : "ERROR",
+        "code" : "unknown_name:c",
+        "text" : "Unknown name: 'c'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: boolean, y: boolean) = 123;\nfunction g(x: list<integer>) = 123;\nquery q() { val (a, b, c, d) = (1, 2, 3, 4); return f(a < b, c > . d()); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:53)",
+        "type" : "ERROR",
+        "code" : "expr:call:missing_args:[f]:1:y",
+        "text" : "Missing argument(s): y"
+      },
+      {
+        "pos" : "main.rell(3:55)",
+        "type" : "ERROR",
+        "code" : "unknown_name:a",
+        "text" : "Unknown name: 'a'"
+      },
+      {
+        "pos" : "main.rell(3:59)",
+        "type" : "ERROR",
+        "code" : "unknown_name:b",
+        "text" : "Unknown name: 'b'"
+      },
+      {
+        "pos" : "main.rell(3:62)",
+        "type" : "ERROR",
+        "code" : "unknown_name:c",
+        "text" : "Unknown name: 'c'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: boolean, y: boolean) = 123;\nfunction g(x: list<integer>) = 123;\nquery q() { val (a, b, c, d) = (1, 2, 3, 4); return g(list<integer>()); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(x: boolean, y: boolean) = 123;\nfunction g(x: list<integer>) = 123;\nquery q() { val (a, b, c, d) = (1, 2, 3, 4); return g(list<integer>.from_gtv(gtv.from_json('[]'))); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

@@ -1,0 +1,67 @@
+[
+  {
+    "files" : {
+      "main.rell" : "import lib.a; import lib.b; import lib.c; import lib.d; import lib.e; query q() = ERROR_MAIN;",
+      "lib/a.rell" : "module; function f(): text = ERROR_A;",
+      "lib/b.rell" : "module; function f(): text = 'OK_B';",
+      "lib/c.rell" : "module; function f(): text = ERROR_C;",
+      "lib/d.rell" : "module; function f(): text = 'OK_D';",
+      "lib/e.rell" : "module; function f(): text = ERROR_E;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "lib/a.rell(1:30)",
+        "type" : "ERROR",
+        "code" : "unknown_name:ERROR_A",
+        "text" : "Unknown name: 'ERROR_A'"
+      },
+      {
+        "pos" : "lib/c.rell(1:30)",
+        "type" : "ERROR",
+        "code" : "unknown_name:ERROR_C",
+        "text" : "Unknown name: 'ERROR_C'"
+      },
+      {
+        "pos" : "lib/e.rell(1:30)",
+        "type" : "ERROR",
+        "code" : "unknown_name:ERROR_E",
+        "text" : "Unknown name: 'ERROR_E'"
+      },
+      {
+        "pos" : "main.rell(1:83)",
+        "type" : "ERROR",
+        "code" : "unknown_name:ERROR_MAIN",
+        "text" : "Unknown name: 'ERROR_MAIN'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "lib/a.rell" : [ ],
+      "lib/b.rell" : [ ],
+      "lib/c.rell" : [ ],
+      "lib/d.rell" : [ ],
+      "lib/e.rell" : [ ]
+    }
+  }
+]

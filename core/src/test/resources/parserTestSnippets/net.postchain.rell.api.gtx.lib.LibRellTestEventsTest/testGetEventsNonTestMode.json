@@ -1,0 +1,118 @@
+[
+  {
+    "files" : {
+      "fn.rell" : "module; function foo() { rell.test.get_events(); }",
+      "main.rell" : "",
+      "op.rell" : "module; operation foo() { rell.test.get_events(); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "fn.rell" : [ ],
+      "main.rell" : [ ],
+      "op.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "fn.rell" : "module; function foo() { rell.test.get_events(); }",
+      "main.rell" : "import op;",
+      "op.rell" : "module; operation foo() { rell.test.get_events(); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "op.rell(1:27)",
+        "type" : "ERROR",
+        "code" : "unknown_name:[rell]:test",
+        "text" : "Unknown name: 'rell.test'"
+      }
+    ],
+    "parsing" : {
+      "fn.rell" : [ ],
+      "main.rell" : [ ],
+      "op.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "fn.rell" : "module; function foo() { rell.test.get_events(); }",
+      "main.rell" : "import fn;",
+      "op.rell" : "module; operation foo() { rell.test.get_events(); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "fn.rell(1:26)",
+        "type" : "ERROR",
+        "code" : "unknown_name:[rell]:test",
+        "text" : "Unknown name: 'rell.test'"
+      }
+    ],
+    "parsing" : {
+      "fn.rell" : [ ],
+      "main.rell" : [ ],
+      "op.rell" : [ ]
+    }
+  }
+]

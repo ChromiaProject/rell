@@ -1,0 +1,599 @@
+[
+  {
+    "files" : {
+      "main.rell" : "import a.foo;",
+      "a/foo.rell" : "module;",
+      "a/foo/sub.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "import:file_dir:a.foo",
+        "text" : "Module 'a.foo' is a file and a directory at the same time"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "a/foo/sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.foo;",
+      "a/foo.rell" : "module;",
+      "a/foo/sub.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "import:file_dir:a.foo",
+        "text" : "Module 'a.foo' is a file and a directory at the same time"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "a/foo/sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.foo;",
+      "a/foo.rell" : "",
+      "a/foo/sub.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "import:file_dir:a.foo",
+        "text" : "Module 'a.foo' is a file and a directory at the same time"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "a/foo/sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.foo;",
+      "a/foo.rell" : "",
+      "a/foo/sub.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "import:file_dir:a.foo",
+        "text" : "Module 'a.foo' is a file and a directory at the same time"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "a/foo/sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.foo;",
+      "a/foo.rell" : "syntax error;",
+      "a/foo/sub.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "a/foo.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "syntax",
+        "text" : "Syntax error"
+      },
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "import:file_dir:a.foo",
+        "text" : "Module 'a.foo' is a file and a directory at the same time"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [
+        {
+          "pos" : "a/foo.rell(1:1)",
+          "type" : "ERROR",
+          "code" : "syntax",
+          "text" : "Syntax error"
+        }
+      ],
+      "a/foo/sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.foo;",
+      "a/foo.rell" : "syntax error;",
+      "a/foo/sub.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "a/foo.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "syntax",
+        "text" : "Syntax error"
+      },
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "import:file_dir:a.foo",
+        "text" : "Module 'a.foo' is a file and a directory at the same time"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [
+        {
+          "pos" : "a/foo.rell(1:1)",
+          "type" : "ERROR",
+          "code" : "syntax",
+          "text" : "Syntax error"
+        }
+      ],
+      "a/foo/sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.foo;",
+      "a/foo.rell" : "module;",
+      "a/foo/sub.rell" : "syntax error;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "a/foo/sub.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "syntax",
+        "text" : "Syntax error"
+      },
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "import:file_dir:a.foo",
+        "text" : "Module 'a.foo' is a file and a directory at the same time"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "a/foo/sub.rell" : [
+        {
+          "pos" : "a/foo/sub.rell(1:1)",
+          "type" : "ERROR",
+          "code" : "syntax",
+          "text" : "Syntax error"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.foo;",
+      "a/foo.rell" : "",
+      "a/foo/sub.rell" : "syntax error;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "a/foo/sub.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "syntax",
+        "text" : "Syntax error"
+      },
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "import:file_dir:a.foo",
+        "text" : "Module 'a.foo' is a file and a directory at the same time"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "a/foo/sub.rell" : [
+        {
+          "pos" : "a/foo/sub.rell(1:1)",
+          "type" : "ERROR",
+          "code" : "syntax",
+          "text" : "Syntax error"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.foo;",
+      "a/foo.rell" : "syntax error;",
+      "a/foo/sub.rell" : "syntax error;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "a/foo/sub.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "syntax",
+        "text" : "Syntax error"
+      },
+      {
+        "pos" : "a/foo.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "syntax",
+        "text" : "Syntax error"
+      },
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "import:file_dir:a.foo",
+        "text" : "Module 'a.foo' is a file and a directory at the same time"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [
+        {
+          "pos" : "a/foo.rell(1:1)",
+          "type" : "ERROR",
+          "code" : "syntax",
+          "text" : "Syntax error"
+        }
+      ],
+      "a/foo/sub.rell" : [
+        {
+          "pos" : "a/foo/sub.rell(1:1)",
+          "type" : "ERROR",
+          "code" : "syntax",
+          "text" : "Syntax error"
+        }
+      ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.foo;",
+      "a/foo.rell" : "module;",
+      "a/foo/sub.txt" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "a/foo/sub.txt" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.foo;",
+      "a/foo.rell" : "",
+      "a/foo/sub.txt" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "import:not_found:a.foo",
+        "text" : "Module 'a.foo' not found"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "a/foo/sub.txt" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.foo;",
+      "a/foo.txt" : "",
+      "a/foo/sub.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.txt" : [ ],
+      "a/foo/sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.foo;",
+      "a/foo.txt" : "",
+      "a/foo/sub.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "import:not_found:a.foo",
+        "text" : "Module 'a.foo' not found"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.txt" : [ ],
+      "a/foo/sub.rell" : [ ]
+    }
+  }
+]

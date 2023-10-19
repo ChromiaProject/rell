@@ -1,0 +1,70 @@
+[
+  {
+    "files" : {
+      "m1.rell" : "module; namespace a { import m2.{x.y.*}; namespace b { function f(): integer = 123; } }",
+      "m2.rell" : "module; namespace x { import m1.{y: a.b}; }",
+      "main.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "m1.rell" : [ ],
+      "m2.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "m1.rell" : "module; namespace a { import m2.{x.y.*}; namespace b { function f(): integer = 123; } }",
+      "m2.rell" : "module; namespace x { import m1.{y: a.b}; }",
+      "main.rell" : "import m1; function __f() = m1.a.f(); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "m1.rell" : [ ],
+      "m2.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

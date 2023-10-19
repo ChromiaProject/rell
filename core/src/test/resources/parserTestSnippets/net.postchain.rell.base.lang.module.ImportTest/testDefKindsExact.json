@@ -1,0 +1,342 @@
+[
+  {
+    "files" : {
+      "lib.rell" : "module;\n            entity user { name; }\n            object state { mutable value: integer = 0; }\n            enum lang { EN, DE }\n            struct rec { x: integer; }\n            function f(): integer = 123;\n            namespace ns { function p(): integer = 789; }\n            import sub;\n            import sub.{g};\n            import foo: sub.*;\n        ",
+      "main.rell" : "",
+      "sub.rell" : "module; function g(): integer = 456;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            entity user { name; }\n            object state { mutable value: integer = 0; }\n            enum lang { EN, DE }\n            struct rec { x: integer; }\n            function f(): integer = 123;\n            namespace ns { function p(): integer = 789; }\n            import sub;\n            import sub.{g};\n            import foo: sub.*;\n        ",
+      "main.rell" : "import lib.{user}; function __f() = _type_of(user@{}); query q() = __f();",
+      "sub.rell" : "module; function g(): integer = 456;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            entity user { name; }\n            object state { mutable value: integer = 0; }\n            enum lang { EN, DE }\n            struct rec { x: integer; }\n            function f(): integer = 123;\n            namespace ns { function p(): integer = 789; }\n            import sub;\n            import sub.{g};\n            import foo: sub.*;\n        ",
+      "main.rell" : "import lib.{state}; function __f() = _type_of(state.value); query q() = __f();",
+      "sub.rell" : "module; function g(): integer = 456;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            entity user { name; }\n            object state { mutable value: integer = 0; }\n            enum lang { EN, DE }\n            struct rec { x: integer; }\n            function f(): integer = 123;\n            namespace ns { function p(): integer = 789; }\n            import sub;\n            import sub.{g};\n            import foo: sub.*;\n        ",
+      "main.rell" : "import lib.{lang}; function __f() = lang.EN; query q() = __f();",
+      "sub.rell" : "module; function g(): integer = 456;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            entity user { name; }\n            object state { mutable value: integer = 0; }\n            enum lang { EN, DE }\n            struct rec { x: integer; }\n            function f(): integer = 123;\n            namespace ns { function p(): integer = 789; }\n            import sub;\n            import sub.{g};\n            import foo: sub.*;\n        ",
+      "main.rell" : "import lib.{rec}; function __f() = rec(123); query q() = __f();",
+      "sub.rell" : "module; function g(): integer = 456;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            entity user { name; }\n            object state { mutable value: integer = 0; }\n            enum lang { EN, DE }\n            struct rec { x: integer; }\n            function f(): integer = 123;\n            namespace ns { function p(): integer = 789; }\n            import sub;\n            import sub.{g};\n            import foo: sub.*;\n        ",
+      "main.rell" : "import lib.{f}; function __f() = f(); query q() = __f();",
+      "sub.rell" : "module; function g(): integer = 456;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            entity user { name; }\n            object state { mutable value: integer = 0; }\n            enum lang { EN, DE }\n            struct rec { x: integer; }\n            function f(): integer = 123;\n            namespace ns { function p(): integer = 789; }\n            import sub;\n            import sub.{g};\n            import foo: sub.*;\n        ",
+      "main.rell" : "import lib.{ns}; function __f() = ns.p(); query q() = __f();",
+      "sub.rell" : "module; function g(): integer = 456;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            entity user { name; }\n            object state { mutable value: integer = 0; }\n            enum lang { EN, DE }\n            struct rec { x: integer; }\n            function f(): integer = 123;\n            namespace ns { function p(): integer = 789; }\n            import sub;\n            import sub.{g};\n            import foo: sub.*;\n        ",
+      "main.rell" : "import lib.{sub}; function __f() = sub.g(); query q() = __f();",
+      "sub.rell" : "module; function g(): integer = 456;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            entity user { name; }\n            object state { mutable value: integer = 0; }\n            enum lang { EN, DE }\n            struct rec { x: integer; }\n            function f(): integer = 123;\n            namespace ns { function p(): integer = 789; }\n            import sub;\n            import sub.{g};\n            import foo: sub.*;\n        ",
+      "main.rell" : "import lib.{g}; function __f() = g(); query q() = __f();",
+      "sub.rell" : "module; function g(): integer = 456;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;\n            entity user { name; }\n            object state { mutable value: integer = 0; }\n            enum lang { EN, DE }\n            struct rec { x: integer; }\n            function f(): integer = 123;\n            namespace ns { function p(): integer = 789; }\n            import sub;\n            import sub.{g};\n            import foo: sub.*;\n        ",
+      "main.rell" : "import lib.{foo}; function __f() = foo.g(); query q() = __f();",
+      "sub.rell" : "module; function g(): integer = 456;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "sub.rell" : [ ]
+    }
+  }
+]

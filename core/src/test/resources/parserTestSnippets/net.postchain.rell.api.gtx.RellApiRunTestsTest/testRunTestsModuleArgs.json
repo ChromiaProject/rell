@@ -1,0 +1,33 @@
+[
+  {
+    "files" : {
+      "bar.rell" : "\n                @test module;\n                struct module_args { y: text; }\n                function test_2() { assert_equals(chain_context.args.y, 'Hello'); }\n            ",
+      "foo.rell" : "\n                @test module;\n                struct module_args { x: integer; }\n                function test_1() { assert_equals(chain_context.args.x, 123); }\n            "
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ]
+    }
+  }
+]

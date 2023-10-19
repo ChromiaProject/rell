@@ -1,0 +1,241 @@
+[
+  {
+    "files" : {
+      "imp1.rell" : "module; import lib; override function lib.f(): integer = 123;",
+      "imp2.rell" : "module; import lib; override function lib.f(): integer = 456;",
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import imp1; import foo: imp1;",
+      "mid1.rell" : "module; import imp1;",
+      "mid2.rell" : "module; import imp2;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "imp1.rell" : [ ],
+      "imp2.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid1.rell" : [ ],
+      "mid2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "imp1.rell" : "module; import lib; override function lib.f(): integer = 123;",
+      "imp2.rell" : "module; import lib; override function lib.f(): integer = 456;",
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import imp1; import mid1;",
+      "mid1.rell" : "module; import imp1;",
+      "mid2.rell" : "module; import imp2;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "imp1.rell" : [ ],
+      "imp2.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid1.rell" : [ ],
+      "mid2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "imp1.rell" : "module; import lib; override function lib.f(): integer = 123;",
+      "imp2.rell" : "module; import lib; override function lib.f(): integer = 456;",
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import imp1; import imp2;",
+      "mid1.rell" : "module; import imp1;",
+      "mid2.rell" : "module; import imp2;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "override:conflict:[lib:f]:[import:imp1:imp1:imp1.rell:1]:[import:imp2:imp2:imp2.rell:1]",
+        "text" : "Override conflict: override for function 'lib:f' defined at imp1.rell:1 (via import imp1 at main.rell:1) and at imp2.rell:1 (via import imp2 at main.rell:1)"
+      },
+      {
+        "pos" : "main.rell(1:14)",
+        "type" : "ERROR",
+        "code" : "override:conflict:[lib:f]:[import:imp2:imp2:imp2.rell:1]:[import:imp1:imp1:imp1.rell:1]",
+        "text" : "Override conflict: override for function 'lib:f' defined at imp2.rell:1 (via import imp2 at main.rell:1) and at imp1.rell:1 (via import imp1 at main.rell:1)"
+      }
+    ],
+    "parsing" : {
+      "imp1.rell" : [ ],
+      "imp2.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid1.rell" : [ ],
+      "mid2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "imp1.rell" : "module; import lib; override function lib.f(): integer = 123;",
+      "imp2.rell" : "module; import lib; override function lib.f(): integer = 456;",
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import imp1; import mid2;",
+      "mid1.rell" : "module; import imp1;",
+      "mid2.rell" : "module; import imp2;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "override:conflict:[lib:f]:[import:imp1:imp1:imp1.rell:1]:[import:mid2:imp2:imp2.rell:1]",
+        "text" : "Override conflict: override for function 'lib:f' defined at imp1.rell:1 (via import imp1 at main.rell:1) and at imp2.rell:1 (via import mid2 at main.rell:1)"
+      },
+      {
+        "pos" : "main.rell(1:14)",
+        "type" : "ERROR",
+        "code" : "override:conflict:[lib:f]:[import:mid2:imp2:imp2.rell:1]:[import:imp1:imp1:imp1.rell:1]",
+        "text" : "Override conflict: override for function 'lib:f' defined at imp2.rell:1 (via import mid2 at main.rell:1) and at imp1.rell:1 (via import imp1 at main.rell:1)"
+      }
+    ],
+    "parsing" : {
+      "imp1.rell" : [ ],
+      "imp2.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid1.rell" : [ ],
+      "mid2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "imp1.rell" : "module; import lib; override function lib.f(): integer = 123;",
+      "imp2.rell" : "module; import lib; override function lib.f(): integer = 456;",
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import mid1; import mid2;",
+      "mid1.rell" : "module; import imp1;",
+      "mid2.rell" : "module; import imp2;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "override:conflict:[lib:f]:[import:mid1:imp1:imp1.rell:1]:[import:mid2:imp2:imp2.rell:1]",
+        "text" : "Override conflict: override for function 'lib:f' defined at imp1.rell:1 (via import mid1 at main.rell:1) and at imp2.rell:1 (via import mid2 at main.rell:1)"
+      },
+      {
+        "pos" : "main.rell(1:14)",
+        "type" : "ERROR",
+        "code" : "override:conflict:[lib:f]:[import:mid2:imp2:imp2.rell:1]:[import:mid1:imp1:imp1.rell:1]",
+        "text" : "Override conflict: override for function 'lib:f' defined at imp2.rell:1 (via import mid2 at main.rell:1) and at imp1.rell:1 (via import mid1 at main.rell:1)"
+      }
+    ],
+    "parsing" : {
+      "imp1.rell" : [ ],
+      "imp2.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid1.rell" : [ ],
+      "mid2.rell" : [ ]
+    }
+  }
+]

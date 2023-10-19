@@ -1,0 +1,146 @@
+[
+  {
+    "files" : {
+      "main.rell" : "import x; import y; import z;",
+      "x.rell" : "module; val X = 2;",
+      "y.rell" : "module; import z; val Y = z.Z * 3;",
+      "z.rell" : "module; import x; val Z = x.X * 4;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "x.rell" : [ ],
+      "y.rell" : [ ],
+      "z.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import x; import y; import z;\nquery q() = x.X;",
+      "x.rell" : "module; val X = 2;",
+      "y.rell" : "module; import z; val Y = z.Z * 3;",
+      "z.rell" : "module; import x; val Z = x.X * 4;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "x.rell" : [ ],
+      "y.rell" : [ ],
+      "z.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import x; import y; import z;\nquery q() = y.Y;",
+      "x.rell" : "module; val X = 2;",
+      "y.rell" : "module; import z; val Y = z.Z * 3;",
+      "z.rell" : "module; import x; val Z = x.X * 4;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "x.rell" : [ ],
+      "y.rell" : [ ],
+      "z.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import x; import y; import z;\nquery q() = z.Z;",
+      "x.rell" : "module; val X = 2;",
+      "y.rell" : "module; import z; val Y = z.Z * 3;",
+      "z.rell" : "module; import x; val Z = x.X * 4;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "x.rell" : [ ],
+      "y.rell" : [ ],
+      "z.rell" : [ ]
+    }
+  }
+]

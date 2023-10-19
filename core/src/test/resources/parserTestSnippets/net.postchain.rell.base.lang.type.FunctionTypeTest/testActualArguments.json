@@ -1,0 +1,578 @@
+[
+  {
+    "files" : {
+      "main.rell" : "\n            function lo0() = 'lo0';\n            function lo1(i: integer) = 'lo1:' + i;\n            function lo2(i: integer, t: text) = 'lo2:' + i + ':' + t;\n\n            struct fns {\n                f0: () -> text = lo0(*);\n                f1: (integer) -> text = lo1(*);\n                f2: (integer, text) -> text = lo2(*);\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function lo0() = 'lo0';\n            function lo1(i: integer) = 'lo1:' + i;\n            function lo2(i: integer, t: text) = 'lo2:' + i + ':' + t;\n\n            struct fns {\n                f0: () -> text = lo0(*);\n                f1: (integer) -> text = lo1(*);\n                f2: (integer, text) -> text = lo2(*);\n            }\n        \nquery q() = fns().f0();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function lo0() = 'lo0';\n            function lo1(i: integer) = 'lo1:' + i;\n            function lo2(i: integer, t: text) = 'lo2:' + i + ':' + t;\n\n            struct fns {\n                f0: () -> text = lo0(*);\n                f1: (integer) -> text = lo1(*);\n                f2: (integer, text) -> text = lo2(*);\n            }\n        \nquery q() = fns().f0(123);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(12:13)",
+        "type" : "ERROR",
+        "code" : "expr:call:too_many_args:[?]:0:1",
+        "text" : "Too many arguments: 1 instead of 0"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function lo0() = 'lo0';\n            function lo1(i: integer) = 'lo1:' + i;\n            function lo2(i: integer, t: text) = 'lo2:' + i + ':' + t;\n\n            struct fns {\n                f0: () -> text = lo0(*);\n                f1: (integer) -> text = lo1(*);\n                f2: (integer, text) -> text = lo2(*);\n            }\n        \nquery q() = fns().f0(123, 'Hello');"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(12:13)",
+        "type" : "ERROR",
+        "code" : "expr:call:too_many_args:[?]:0:2",
+        "text" : "Too many arguments: 2 instead of 0"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function lo0() = 'lo0';\n            function lo1(i: integer) = 'lo1:' + i;\n            function lo2(i: integer, t: text) = 'lo2:' + i + ':' + t;\n\n            struct fns {\n                f0: () -> text = lo0(*);\n                f1: (integer) -> text = lo1(*);\n                f2: (integer, text) -> text = lo2(*);\n            }\n        \nquery q() = fns().f1();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(12:13)",
+        "type" : "ERROR",
+        "code" : "expr:call:missing_args:[?]:0",
+        "text" : "Missing argument(s): 0"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function lo0() = 'lo0';\n            function lo1(i: integer) = 'lo1:' + i;\n            function lo2(i: integer, t: text) = 'lo2:' + i + ':' + t;\n\n            struct fns {\n                f0: () -> text = lo0(*);\n                f1: (integer) -> text = lo1(*);\n                f2: (integer, text) -> text = lo2(*);\n            }\n        \nquery q() = fns().f1(123);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function lo0() = 'lo0';\n            function lo1(i: integer) = 'lo1:' + i;\n            function lo2(i: integer, t: text) = 'lo2:' + i + ':' + t;\n\n            struct fns {\n                f0: () -> text = lo0(*);\n                f1: (integer) -> text = lo1(*);\n                f2: (integer, text) -> text = lo2(*);\n            }\n        \nquery q() = fns().f1('Hello');"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(12:13)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtype:[?]:0:integer:text",
+        "text" : "Wrong argument type for parameter 1: text instead of integer"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function lo0() = 'lo0';\n            function lo1(i: integer) = 'lo1:' + i;\n            function lo2(i: integer, t: text) = 'lo2:' + i + ':' + t;\n\n            struct fns {\n                f0: () -> text = lo0(*);\n                f1: (integer) -> text = lo1(*);\n                f2: (integer, text) -> text = lo2(*);\n            }\n        \nquery q() = fns().f1(123, 'Hello');"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(12:13)",
+        "type" : "ERROR",
+        "code" : "expr:call:too_many_args:[?]:1:2",
+        "text" : "Too many arguments: 2 instead of 1"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function lo0() = 'lo0';\n            function lo1(i: integer) = 'lo1:' + i;\n            function lo2(i: integer, t: text) = 'lo2:' + i + ':' + t;\n\n            struct fns {\n                f0: () -> text = lo0(*);\n                f1: (integer) -> text = lo1(*);\n                f2: (integer, text) -> text = lo2(*);\n            }\n        \nquery q() = fns().f2();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(12:13)",
+        "type" : "ERROR",
+        "code" : "expr:call:missing_args:[?]:0,1",
+        "text" : "Missing argument(s): 0"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function lo0() = 'lo0';\n            function lo1(i: integer) = 'lo1:' + i;\n            function lo2(i: integer, t: text) = 'lo2:' + i + ':' + t;\n\n            struct fns {\n                f0: () -> text = lo0(*);\n                f1: (integer) -> text = lo1(*);\n                f2: (integer, text) -> text = lo2(*);\n            }\n        \nquery q() = fns().f2(123);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(12:13)",
+        "type" : "ERROR",
+        "code" : "expr:call:missing_args:[?]:1",
+        "text" : "Missing argument(s): 0"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function lo0() = 'lo0';\n            function lo1(i: integer) = 'lo1:' + i;\n            function lo2(i: integer, t: text) = 'lo2:' + i + ':' + t;\n\n            struct fns {\n                f0: () -> text = lo0(*);\n                f1: (integer) -> text = lo1(*);\n                f2: (integer, text) -> text = lo2(*);\n            }\n        \nquery q() = fns().f2('Hello');"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(12:13)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtype:[?]:0:integer:text",
+        "text" : "Wrong argument type for parameter 1: text instead of integer"
+      },
+      {
+        "pos" : "main.rell(12:13)",
+        "type" : "ERROR",
+        "code" : "expr:call:missing_args:[?]:1",
+        "text" : "Missing argument(s): 0"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function lo0() = 'lo0';\n            function lo1(i: integer) = 'lo1:' + i;\n            function lo2(i: integer, t: text) = 'lo2:' + i + ':' + t;\n\n            struct fns {\n                f0: () -> text = lo0(*);\n                f1: (integer) -> text = lo1(*);\n                f2: (integer, text) -> text = lo2(*);\n            }\n        \nquery q() = fns().f2(123, 'Hello');"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function lo0() = 'lo0';\n            function lo1(i: integer) = 'lo1:' + i;\n            function lo2(i: integer, t: text) = 'lo2:' + i + ':' + t;\n\n            struct fns {\n                f0: () -> text = lo0(*);\n                f1: (integer) -> text = lo1(*);\n                f2: (integer, text) -> text = lo2(*);\n            }\n        \nquery q() = fns().f2('Hello', 123);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(12:13)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtype:[?]:0:integer:text",
+        "text" : "Wrong argument type for parameter 1: text instead of integer"
+      },
+      {
+        "pos" : "main.rell(12:13)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtype:[?]:1:text:integer",
+        "text" : "Wrong argument type for parameter 2: integer instead of text"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function lo0() = 'lo0';\n            function lo1(i: integer) = 'lo1:' + i;\n            function lo2(i: integer, t: text) = 'lo2:' + i + ':' + t;\n\n            struct fns {\n                f0: () -> text = lo0(*);\n                f1: (integer) -> text = lo1(*);\n                f2: (integer, text) -> text = lo2(*);\n            }\n        \nquery q() = fns().f2('Hello', 'World');"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(12:13)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtype:[?]:0:integer:text",
+        "text" : "Wrong argument type for parameter 1: text instead of integer"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function lo0() = 'lo0';\n            function lo1(i: integer) = 'lo1:' + i;\n            function lo2(i: integer, t: text) = 'lo2:' + i + ':' + t;\n\n            struct fns {\n                f0: () -> text = lo0(*);\n                f1: (integer) -> text = lo1(*);\n                f2: (integer, text) -> text = lo2(*);\n            }\n        \nquery q() = fns().f2(123, 'Hello', 456);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(12:13)",
+        "type" : "ERROR",
+        "code" : "expr:call:too_many_args:[?]:2:3",
+        "text" : "Too many arguments: 3 instead of 2"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function lo0() = 'lo0';\n            function lo1(i: integer) = 'lo1:' + i;\n            function lo2(i: integer, t: text) = 'lo2:' + i + ':' + t;\n\n            struct fns {\n                f0: () -> text = lo0(*);\n                f1: (integer) -> text = lo1(*);\n                f2: (integer, text) -> text = lo2(*);\n            }\n        \nquery q() = fns().f2(123, 'Hello', 'World');"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(12:13)",
+        "type" : "ERROR",
+        "code" : "expr:call:too_many_args:[?]:2:3",
+        "text" : "Too many arguments: 3 instead of 2"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

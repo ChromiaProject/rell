@@ -1,0 +1,748 @@
+[
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{ns.*, st.*}; function __f() = x(123); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{ns.*, st.*}; function __f() = list<x.rec>(); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{ns.*, st.*}; function __f() = x.f(); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:41)",
+        "type" : "ERROR",
+        "code" : "name:ambig:x:[NAMESPACE:a:ns.x,STRUCT:a:st.x]",
+        "text" : "Name 'x' is ambiguous: namespace a:ns.x, struct a:st.x"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{ns.*, en.*}; function __f() = list<x>(); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{ns.*, en.*}; function __f() = list<x.rec>(); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{ns.*, en.*}; function __f() = x.EN; query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:41)",
+        "type" : "ERROR",
+        "code" : "name:ambig:x:[NAMESPACE:a:ns.x,ENUM:a:en.x]",
+        "text" : "Name 'x' is ambiguous: namespace a:ns.x, enum a:en.x"
+      },
+      {
+        "pos" : "main.rell(1:41)",
+        "type" : "ERROR",
+        "code" : "unknown_name:[a:ns.x]:EN",
+        "text" : "Unknown name: 'x.EN'"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{ns.*, en.*}; function __f() = x.f(); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:41)",
+        "type" : "ERROR",
+        "code" : "name:ambig:x:[NAMESPACE:a:ns.x,ENUM:a:en.x]",
+        "text" : "Name 'x' is ambiguous: namespace a:ns.x, enum a:en.x"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{ns.*, fn.*}; function __f() = list<x.rec>(); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{ns.*, fn.*}; function __f() = x.f(); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{ns.*, fn.*}; function __f() = x(); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{st.*, en.*}; function __f() = list<x>(); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:46)",
+        "type" : "ERROR",
+        "code" : "name:ambig:x:[STRUCT:a:st.x,ENUM:a:en.x]",
+        "text" : "Name 'x' is ambiguous: struct a:st.x, enum a:en.x"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{st.*, en.*}; function __f() = x.EN; query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:41)",
+        "type" : "ERROR",
+        "code" : "name:ambig:x:[STRUCT:a:st.x,ENUM:a:en.x]",
+        "text" : "Name 'x' is ambiguous: struct a:st.x, enum a:en.x"
+      },
+      {
+        "pos" : "main.rell(1:43)",
+        "type" : "ERROR",
+        "code" : "unknown_name:[a:st.x]:EN",
+        "text" : "Unknown name: 'a:st.x.EN'"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{st.*, en.*}; function __f() = x.from_bytes(x''); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:41)",
+        "type" : "ERROR",
+        "code" : "name:ambig:x:[STRUCT:a:st.x,ENUM:a:en.x]",
+        "text" : "Name 'x' is ambiguous: struct a:st.x, enum a:en.x"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{st.*, en.*}; function __f() = x.value(0); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:41)",
+        "type" : "ERROR",
+        "code" : "name:ambig:x:[STRUCT:a:st.x,ENUM:a:en.x]",
+        "text" : "Name 'x' is ambiguous: struct a:st.x, enum a:en.x"
+      },
+      {
+        "pos" : "main.rell(1:43)",
+        "type" : "ERROR",
+        "code" : "unknown_name:[a:st.x]:value",
+        "text" : "Unknown name: 'a:st.x.value'"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{st.*, fn.*}; function __f() = list<x>(); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{st.*, fn.*}; function __f() = _type_of(x.from_bytes(x'')); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{st.*, fn.*}; function __f() = x(123); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:41)",
+        "type" : "ERROR",
+        "code" : "name:ambig:x:[STRUCT:a:st.x,FUNCTION:a:fn.x]",
+        "text" : "Name 'x' is ambiguous: struct a:st.x, function a:fn.x"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{en.*, fn.*}; function __f() = list<x>(); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{en.*, fn.*}; function __f() = x.EN; query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module;\n            namespace ns { namespace x { function f(): integer = 456; struct rec { p: text; } } }\n            namespace st { struct x { v: integer; } }\n            namespace en { enum x { EN, DE } }\n            namespace fn { function x(): integer = 123; }\n        ",
+      "main.rell" : "import a.{en.*, fn.*}; function __f() = x(); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

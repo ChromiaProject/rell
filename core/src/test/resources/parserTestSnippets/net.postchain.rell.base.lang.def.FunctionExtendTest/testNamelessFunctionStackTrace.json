@@ -1,0 +1,326 @@
+[
+  {
+    "files" : {
+      "bar.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 2); return false; }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 3); return false; }\n                namespace b {\n                    @extend(lib.f) function(x: integer) { require(x != 4); return false; }\n                }\n            }\n            @extend(lib.f) function g(x: integer) { require(x != 5); return false; }\n            namespace {\n                @extend(lib.f) function(x: integer) { require(x != 6); return false; }\n            }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 7); return false; }\n            }\n        ",
+      "foo.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 1); return false; }\n        ",
+      "lib.rell" : "module; @extendable function f(x: integer) = false;",
+      "main.rell" : "import lib; import foo; import bar;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 2); return false; }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 3); return false; }\n                namespace b {\n                    @extend(lib.f) function(x: integer) { require(x != 4); return false; }\n                }\n            }\n            @extend(lib.f) function g(x: integer) { require(x != 5); return false; }\n            namespace {\n                @extend(lib.f) function(x: integer) { require(x != 6); return false; }\n            }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 7); return false; }\n            }\n        ",
+      "foo.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 1); return false; }\n        ",
+      "lib.rell" : "module; @extendable function f(x: integer) = false;",
+      "main.rell" : "import lib; import foo; import bar;\nquery q() = lib.f(0);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 2); return false; }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 3); return false; }\n                namespace b {\n                    @extend(lib.f) function(x: integer) { require(x != 4); return false; }\n                }\n            }\n            @extend(lib.f) function g(x: integer) { require(x != 5); return false; }\n            namespace {\n                @extend(lib.f) function(x: integer) { require(x != 6); return false; }\n            }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 7); return false; }\n            }\n        ",
+      "foo.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 1); return false; }\n        ",
+      "lib.rell" : "module; @extendable function f(x: integer) = false;",
+      "main.rell" : "import lib; import foo; import bar;\nquery q() = lib.f(1);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 2); return false; }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 3); return false; }\n                namespace b {\n                    @extend(lib.f) function(x: integer) { require(x != 4); return false; }\n                }\n            }\n            @extend(lib.f) function g(x: integer) { require(x != 5); return false; }\n            namespace {\n                @extend(lib.f) function(x: integer) { require(x != 6); return false; }\n            }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 7); return false; }\n            }\n        ",
+      "foo.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 1); return false; }\n        ",
+      "lib.rell" : "module; @extendable function f(x: integer) = false;",
+      "main.rell" : "import lib; import foo; import bar;\nquery q() = lib.f(2);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 2); return false; }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 3); return false; }\n                namespace b {\n                    @extend(lib.f) function(x: integer) { require(x != 4); return false; }\n                }\n            }\n            @extend(lib.f) function g(x: integer) { require(x != 5); return false; }\n            namespace {\n                @extend(lib.f) function(x: integer) { require(x != 6); return false; }\n            }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 7); return false; }\n            }\n        ",
+      "foo.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 1); return false; }\n        ",
+      "lib.rell" : "module; @extendable function f(x: integer) = false;",
+      "main.rell" : "import lib; import foo; import bar;\nquery q() = lib.f(3);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 2); return false; }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 3); return false; }\n                namespace b {\n                    @extend(lib.f) function(x: integer) { require(x != 4); return false; }\n                }\n            }\n            @extend(lib.f) function g(x: integer) { require(x != 5); return false; }\n            namespace {\n                @extend(lib.f) function(x: integer) { require(x != 6); return false; }\n            }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 7); return false; }\n            }\n        ",
+      "foo.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 1); return false; }\n        ",
+      "lib.rell" : "module; @extendable function f(x: integer) = false;",
+      "main.rell" : "import lib; import foo; import bar;\nquery q() = lib.f(4);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 2); return false; }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 3); return false; }\n                namespace b {\n                    @extend(lib.f) function(x: integer) { require(x != 4); return false; }\n                }\n            }\n            @extend(lib.f) function g(x: integer) { require(x != 5); return false; }\n            namespace {\n                @extend(lib.f) function(x: integer) { require(x != 6); return false; }\n            }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 7); return false; }\n            }\n        ",
+      "foo.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 1); return false; }\n        ",
+      "lib.rell" : "module; @extendable function f(x: integer) = false;",
+      "main.rell" : "import lib; import foo; import bar;\nquery q() = lib.f(5);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 2); return false; }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 3); return false; }\n                namespace b {\n                    @extend(lib.f) function(x: integer) { require(x != 4); return false; }\n                }\n            }\n            @extend(lib.f) function g(x: integer) { require(x != 5); return false; }\n            namespace {\n                @extend(lib.f) function(x: integer) { require(x != 6); return false; }\n            }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 7); return false; }\n            }\n        ",
+      "foo.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 1); return false; }\n        ",
+      "lib.rell" : "module; @extendable function f(x: integer) = false;",
+      "main.rell" : "import lib; import foo; import bar;\nquery q() = lib.f(6);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 2); return false; }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 3); return false; }\n                namespace b {\n                    @extend(lib.f) function(x: integer) { require(x != 4); return false; }\n                }\n            }\n            @extend(lib.f) function g(x: integer) { require(x != 5); return false; }\n            namespace {\n                @extend(lib.f) function(x: integer) { require(x != 6); return false; }\n            }\n            namespace a {\n                @extend(lib.f) function(x: integer) { require(x != 7); return false; }\n            }\n        ",
+      "foo.rell" : "\n            module;\n            import lib;\n            @extend(lib.f) function(x: integer) { require(x != 1); return false; }\n        ",
+      "lib.rell" : "module; @extendable function f(x: integer) = false;",
+      "main.rell" : "import lib; import foo; import bar;\nquery q() = lib.f(7);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

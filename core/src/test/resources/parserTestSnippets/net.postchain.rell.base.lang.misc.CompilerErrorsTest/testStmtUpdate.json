@@ -1,0 +1,345 @@
+[
+  {
+    "files" : {
+      "main.rell" : "entity data { mutable i: integer; mutable j: integer; }\nfunction f() { update (a: data, a: data) @* { P, Q } ( X, Y ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:33)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:a",
+        "text" : "Name conflict: 'a' already exists"
+      },
+      {
+        "pos" : "main.rell(2:47)",
+        "type" : "ERROR",
+        "code" : "unknown_name:P",
+        "text" : "Unknown name: 'P'"
+      },
+      {
+        "pos" : "main.rell(2:50)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Q",
+        "text" : "Unknown name: 'Q'"
+      },
+      {
+        "pos" : "main.rell(2:56)",
+        "type" : "ERROR",
+        "code" : "unknown_name:X",
+        "text" : "Unknown name: 'X'"
+      },
+      {
+        "pos" : "main.rell(2:59)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Y",
+        "text" : "Unknown name: 'Y'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { mutable i: integer; mutable j: integer; }\nfunction f() { update data @* {} ( i += true, j += 'hello' ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:36)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:+=:[integer]:[boolean]",
+        "text" : "Wrong operand types for '+=': integer, boolean"
+      },
+      {
+        "pos" : "main.rell(2:47)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:+=:[integer]:[text]",
+        "text" : "Wrong operand types for '+=': integer, text"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { mutable i: integer; mutable j: integer; }\nfunction f() { update data @* { X } ( i = abs(x''), j = min() ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:33)",
+        "type" : "ERROR",
+        "code" : "unknown_name:X",
+        "text" : "Unknown name: 'X'"
+      },
+      {
+        "pos" : "main.rell(2:43)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(2:57)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { mutable i: integer; mutable j: integer; }\nfunction f() { update data @* { X } ( i += abs(x''), j += min() ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:33)",
+        "type" : "ERROR",
+        "code" : "unknown_name:X",
+        "text" : "Unknown name: 'X'"
+      },
+      {
+        "pos" : "main.rell(2:44)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(2:59)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { mutable i: integer; mutable j: integer; }\nfunction f() { val a = 1; val b = 2; update (a: data, b: data) @* { X } ( Y ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:46)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:a",
+        "text" : "Name conflict: 'a' already exists"
+      },
+      {
+        "pos" : "main.rell(2:55)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:b",
+        "text" : "Name conflict: 'b' already exists"
+      },
+      {
+        "pos" : "main.rell(2:69)",
+        "type" : "ERROR",
+        "code" : "unknown_name:X",
+        "text" : "Unknown name: 'X'"
+      },
+      {
+        "pos" : "main.rell(2:75)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Y",
+        "text" : "Unknown name: 'Y'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { mutable i: integer; mutable j: integer; }\nfunction f() { update 123 ( abs(x'') ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:23)",
+        "type" : "ERROR",
+        "code" : "stmt_update_expr_type:integer",
+        "text" : "Invalid expression type: integer; must be an entity or a collection of an entity"
+      },
+      {
+        "pos" : "main.rell(2:29)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { mutable i: integer; mutable j: integer; }\nfunction f() { update (abs(x'')) ( min() ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:24)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(2:36)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

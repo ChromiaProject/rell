@@ -1,0 +1,182 @@
+[
+  {
+    "files" : {
+      "a.rell" : "module; function f(): integer = 123;",
+      "b.rell" : "module; import a; function g(): integer = a.f() * 456;",
+      "main.rell" : "",
+      "c/c1.rell" : "import a; function g(): integer = a.f() * 789;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ],
+      "c/c1.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; function f(): integer = 123;",
+      "b.rell" : "module; import a; function g(): integer = a.f() * 456;",
+      "main.rell" : "import b; query q() = b.g();",
+      "c/c1.rell" : "import a; function g(): integer = a.f() * 789;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ],
+      "c/c1.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; function f(): integer = 123;",
+      "b.rell" : "module; import a; function g(): integer = a.f() * 456;",
+      "main.rell" : "import b; query q() = b.a.f();",
+      "c/c1.rell" : "import a; function g(): integer = a.f() * 789;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ],
+      "c/c1.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; function f(): integer = 123;",
+      "b.rell" : "module; import a; function g(): integer = a.f() * 456;",
+      "main.rell" : "import c; query q() = c.g();",
+      "c/c1.rell" : "import a; function g(): integer = a.f() * 789;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ],
+      "c/c1.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; function f(): integer = 123;",
+      "b.rell" : "module; import a; function g(): integer = a.f() * 456;",
+      "main.rell" : "import c; query q() = c.a.f();",
+      "c/c1.rell" : "import a; function g(): integer = a.f() * 789;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ],
+      "c/c1.rell" : [ ]
+    }
+  }
+]

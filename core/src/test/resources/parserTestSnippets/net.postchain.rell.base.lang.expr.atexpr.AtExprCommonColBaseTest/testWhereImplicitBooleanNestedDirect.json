@@ -1,0 +1,986 @@
+[
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nentity data1 { id; in_id:id; ref; b:boolean; }\nfunction get_data1(): list<data1> = list(data1 @* {});\nentity data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nfunction get_data2(): list<data2> = list(data2 @* {});\nentity outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer0(): list<outer0> = list(outer0 @* {});\nentity outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer1(): list<outer1> = list(outer1 @* {});"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nentity data1 { id; in_id:id; ref; b:boolean; }\nfunction get_data1(): list<data1> = list(data1 @* {});\nentity data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nfunction get_data2(): list<data2> = list(data2 @* {});\nentity outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer0(): list<outer0> = list(outer0 @* {});\nentity outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer1(): list<outer1> = list(outer1 @* {});\noperation o() { create data1(id = id@{'A0'}, in_id = id@{'X'}, ref = ref@{0}, b = false); create data1(id = id@{'A1'}, in_id = id@{'X'}, ref = ref@{1}, b = true); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nentity data1 { id; in_id:id; ref; b:boolean; }\nfunction get_data1(): list<data1> = list(data1 @* {});\nentity data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nfunction get_data2(): list<data2> = list(data2 @* {});\nentity outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer0(): list<outer0> = list(outer0 @* {});\nentity outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer1(): list<outer1> = list(outer1 @* {});\noperation o() { create data2(id = id@{'B0'}, in_id = id@{'X'}, ref = ref@{0}, b1 = false, b2 = true); create data2(id = id@{'B1'}, in_id = id@{'X'}, ref = ref@{1}, b1 = true,  b2 = false); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nentity data1 { id; in_id:id; ref; b:boolean; }\nfunction get_data1(): list<data1> = list(data1 @* {});\nentity data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nfunction get_data2(): list<data2> = list(data2 @* {});\nentity outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer0(): list<outer0> = list(outer0 @* {});\nentity outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer1(): list<outer1> = list(outer1 @* {});\noperation o() { create outer0(outer_id = id@{'O0'}, in_id = id@{'X'}, b = false, b1 = false, b2 = false); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nentity data1 { id; in_id:id; ref; b:boolean; }\nfunction get_data1(): list<data1> = list(data1 @* {});\nentity data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nfunction get_data2(): list<data2> = list(data2 @* {});\nentity outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer0(): list<outer0> = list(outer0 @* {});\nentity outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer1(): list<outer1> = list(outer1 @* {});\noperation o() { create outer1(outer_id = id@{'O1'}, in_id = id@{'X'}, b = true,  b1 = true,  b2 = true); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nentity data1 { id; in_id:id; ref; b:boolean; }\nfunction get_data1(): list<data1> = list(data1 @* {});\nentity data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nfunction get_data2(): list<data2> = list(data2 @* {});\nentity outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer0(): list<outer0> = list(outer0 @* {});\nentity outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer1(): list<outer1> = list(outer1 @* {});\nquery q() = (o:get_outer0()) @ {} ( (i:get_data1()) @* { o.b } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nentity data1 { id; in_id:id; ref; b:boolean; }\nfunction get_data1(): list<data1> = list(data1 @* {});\nentity data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nfunction get_data2(): list<data2> = list(data2 @* {});\nentity outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer0(): list<outer0> = list(outer0 @* {});\nentity outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer1(): list<outer1> = list(outer1 @* {});\nquery q() = (o:get_outer0()) @ {} ( (i:get_data1()) @* { o.b1 } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(11:58)",
+        "type" : "WARNING",
+        "code" : "at:where:name_boolean_no_attr:b1",
+        "text" : "No context attribute matches name 'b1', but the expression is accepted, because its type is boolean (suggestion: write <expression> == true for clarity)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nentity data1 { id; in_id:id; ref; b:boolean; }\nfunction get_data1(): list<data1> = list(data1 @* {});\nentity data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nfunction get_data2(): list<data2> = list(data2 @* {});\nentity outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer0(): list<outer0> = list(outer0 @* {});\nentity outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer1(): list<outer1> = list(outer1 @* {});\nquery q() = (o:get_outer0()) @ {} ( (i:get_data1()) @* { o.b2 } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(11:58)",
+        "type" : "WARNING",
+        "code" : "at:where:name_boolean_no_attr:b2",
+        "text" : "No context attribute matches name 'b2', but the expression is accepted, because its type is boolean (suggestion: write <expression> == true for clarity)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nentity data1 { id; in_id:id; ref; b:boolean; }\nfunction get_data1(): list<data1> = list(data1 @* {});\nentity data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nfunction get_data2(): list<data2> = list(data2 @* {});\nentity outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer0(): list<outer0> = list(outer0 @* {});\nentity outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer1(): list<outer1> = list(outer1 @* {});\nquery q() = (o:get_outer1()) @ {} ( (i:get_data1()) @* { o.b } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nentity data1 { id; in_id:id; ref; b:boolean; }\nfunction get_data1(): list<data1> = list(data1 @* {});\nentity data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nfunction get_data2(): list<data2> = list(data2 @* {});\nentity outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer0(): list<outer0> = list(outer0 @* {});\nentity outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer1(): list<outer1> = list(outer1 @* {});\nquery q() = (o:get_outer1()) @ {} ( (i:get_data1()) @* { o.b1 } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(11:58)",
+        "type" : "WARNING",
+        "code" : "at:where:name_boolean_no_attr:b1",
+        "text" : "No context attribute matches name 'b1', but the expression is accepted, because its type is boolean (suggestion: write <expression> == true for clarity)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nentity data1 { id; in_id:id; ref; b:boolean; }\nfunction get_data1(): list<data1> = list(data1 @* {});\nentity data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nfunction get_data2(): list<data2> = list(data2 @* {});\nentity outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer0(): list<outer0> = list(outer0 @* {});\nentity outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer1(): list<outer1> = list(outer1 @* {});\nquery q() = (o:get_outer1()) @ {} ( (i:get_data1()) @* { o.b2 } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(11:58)",
+        "type" : "WARNING",
+        "code" : "at:where:name_boolean_no_attr:b2",
+        "text" : "No context attribute matches name 'b2', but the expression is accepted, because its type is boolean (suggestion: write <expression> == true for clarity)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nentity data1 { id; in_id:id; ref; b:boolean; }\nfunction get_data1(): list<data1> = list(data1 @* {});\nentity data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nfunction get_data2(): list<data2> = list(data2 @* {});\nentity outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer0(): list<outer0> = list(outer0 @* {});\nentity outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer1(): list<outer1> = list(outer1 @* {});\nquery q() = (o:get_outer0()) @ {} ( (i:get_data2()) @* { o.b } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(11:58)",
+        "type" : "WARNING",
+        "code" : "at:where:name_boolean_no_attr:b",
+        "text" : "No context attribute matches name 'b', but the expression is accepted, because its type is boolean (suggestion: write <expression> == true for clarity)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nentity data1 { id; in_id:id; ref; b:boolean; }\nfunction get_data1(): list<data1> = list(data1 @* {});\nentity data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nfunction get_data2(): list<data2> = list(data2 @* {});\nentity outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer0(): list<outer0> = list(outer0 @* {});\nentity outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer1(): list<outer1> = list(outer1 @* {});\nquery q() = (o:get_outer0()) @ {} ( (i:get_data2()) @* { o.b1 } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nentity data1 { id; in_id:id; ref; b:boolean; }\nfunction get_data1(): list<data1> = list(data1 @* {});\nentity data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nfunction get_data2(): list<data2> = list(data2 @* {});\nentity outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer0(): list<outer0> = list(outer0 @* {});\nentity outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer1(): list<outer1> = list(outer1 @* {});\nquery q() = (o:get_outer0()) @ {} ( (i:get_data2()) @* { o.b2 } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nentity data1 { id; in_id:id; ref; b:boolean; }\nfunction get_data1(): list<data1> = list(data1 @* {});\nentity data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nfunction get_data2(): list<data2> = list(data2 @* {});\nentity outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer0(): list<outer0> = list(outer0 @* {});\nentity outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer1(): list<outer1> = list(outer1 @* {});\nquery q() = (o:get_outer1()) @ {} ( (i:get_data2()) @* { o.b } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(11:58)",
+        "type" : "WARNING",
+        "code" : "at:where:name_boolean_no_attr:b",
+        "text" : "No context attribute matches name 'b', but the expression is accepted, because its type is boolean (suggestion: write <expression> == true for clarity)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nentity data1 { id; in_id:id; ref; b:boolean; }\nfunction get_data1(): list<data1> = list(data1 @* {});\nentity data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nfunction get_data2(): list<data2> = list(data2 @* {});\nentity outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer0(): list<outer0> = list(outer0 @* {});\nentity outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer1(): list<outer1> = list(outer1 @* {});\nquery q() = (o:get_outer1()) @ {} ( (i:get_data2()) @* { o.b1 } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nentity data1 { id; in_id:id; ref; b:boolean; }\nfunction get_data1(): list<data1> = list(data1 @* {});\nentity data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nfunction get_data2(): list<data2> = list(data2 @* {});\nentity outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer0(): list<outer0> = list(outer0 @* {});\nentity outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_outer1(): list<outer1> = list(outer1 @* {});\nquery q() = (o:get_outer1()) @ {} ( (i:get_data2()) @* { o.b2 } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nstruct data1 { id; in_id:id; ref; b:boolean; }\nstruct data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nstruct outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nstruct outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_data1(): list<data1> = [data1(id = id@{'A0'}, in_id = id@{'X'}, ref = ref@{0}, b = false), data1(id = id@{'A1'}, in_id = id@{'X'}, ref = ref@{1}, b = true)];\nfunction get_data2(): list<data2> = [data2(id = id@{'B0'}, in_id = id@{'X'}, ref = ref@{0}, b1 = false, b2 = true), data2(id = id@{'B1'}, in_id = id@{'X'}, ref = ref@{1}, b1 = true,  b2 = false)];\nfunction get_outer0(): list<outer0> = [outer0(outer_id = id@{'O0'}, in_id = id@{'X'}, b = false, b1 = false, b2 = false)];\nfunction get_outer1(): list<outer1> = [outer1(outer_id = id@{'O1'}, in_id = id@{'X'}, b = true,  b1 = true,  b2 = true)];"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nstruct data1 { id; in_id:id; ref; b:boolean; }\nstruct data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nstruct outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nstruct outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_data1(): list<data1> = [data1(id = id@{'A0'}, in_id = id@{'X'}, ref = ref@{0}, b = false), data1(id = id@{'A1'}, in_id = id@{'X'}, ref = ref@{1}, b = true)];\nfunction get_data2(): list<data2> = [data2(id = id@{'B0'}, in_id = id@{'X'}, ref = ref@{0}, b1 = false, b2 = true), data2(id = id@{'B1'}, in_id = id@{'X'}, ref = ref@{1}, b1 = true,  b2 = false)];\nfunction get_outer0(): list<outer0> = [outer0(outer_id = id@{'O0'}, in_id = id@{'X'}, b = false, b1 = false, b2 = false)];\nfunction get_outer1(): list<outer1> = [outer1(outer_id = id@{'O1'}, in_id = id@{'X'}, b = true,  b1 = true,  b2 = true)];\nquery q() = (o:get_outer0()) @ {} ( (i:get_data1()) @* { o.b } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nstruct data1 { id; in_id:id; ref; b:boolean; }\nstruct data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nstruct outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nstruct outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_data1(): list<data1> = [data1(id = id@{'A0'}, in_id = id@{'X'}, ref = ref@{0}, b = false), data1(id = id@{'A1'}, in_id = id@{'X'}, ref = ref@{1}, b = true)];\nfunction get_data2(): list<data2> = [data2(id = id@{'B0'}, in_id = id@{'X'}, ref = ref@{0}, b1 = false, b2 = true), data2(id = id@{'B1'}, in_id = id@{'X'}, ref = ref@{1}, b1 = true,  b2 = false)];\nfunction get_outer0(): list<outer0> = [outer0(outer_id = id@{'O0'}, in_id = id@{'X'}, b = false, b1 = false, b2 = false)];\nfunction get_outer1(): list<outer1> = [outer1(outer_id = id@{'O1'}, in_id = id@{'X'}, b = true,  b1 = true,  b2 = true)];\nquery q() = (o:get_outer0()) @ {} ( (i:get_data1()) @* { o.b1 } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(11:58)",
+        "type" : "WARNING",
+        "code" : "at:where:name_boolean_no_attr:b1",
+        "text" : "No context attribute matches name 'b1', but the expression is accepted, because its type is boolean (suggestion: write <expression> == true for clarity)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nstruct data1 { id; in_id:id; ref; b:boolean; }\nstruct data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nstruct outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nstruct outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_data1(): list<data1> = [data1(id = id@{'A0'}, in_id = id@{'X'}, ref = ref@{0}, b = false), data1(id = id@{'A1'}, in_id = id@{'X'}, ref = ref@{1}, b = true)];\nfunction get_data2(): list<data2> = [data2(id = id@{'B0'}, in_id = id@{'X'}, ref = ref@{0}, b1 = false, b2 = true), data2(id = id@{'B1'}, in_id = id@{'X'}, ref = ref@{1}, b1 = true,  b2 = false)];\nfunction get_outer0(): list<outer0> = [outer0(outer_id = id@{'O0'}, in_id = id@{'X'}, b = false, b1 = false, b2 = false)];\nfunction get_outer1(): list<outer1> = [outer1(outer_id = id@{'O1'}, in_id = id@{'X'}, b = true,  b1 = true,  b2 = true)];\nquery q() = (o:get_outer0()) @ {} ( (i:get_data1()) @* { o.b2 } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(11:58)",
+        "type" : "WARNING",
+        "code" : "at:where:name_boolean_no_attr:b2",
+        "text" : "No context attribute matches name 'b2', but the expression is accepted, because its type is boolean (suggestion: write <expression> == true for clarity)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nstruct data1 { id; in_id:id; ref; b:boolean; }\nstruct data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nstruct outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nstruct outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_data1(): list<data1> = [data1(id = id@{'A0'}, in_id = id@{'X'}, ref = ref@{0}, b = false), data1(id = id@{'A1'}, in_id = id@{'X'}, ref = ref@{1}, b = true)];\nfunction get_data2(): list<data2> = [data2(id = id@{'B0'}, in_id = id@{'X'}, ref = ref@{0}, b1 = false, b2 = true), data2(id = id@{'B1'}, in_id = id@{'X'}, ref = ref@{1}, b1 = true,  b2 = false)];\nfunction get_outer0(): list<outer0> = [outer0(outer_id = id@{'O0'}, in_id = id@{'X'}, b = false, b1 = false, b2 = false)];\nfunction get_outer1(): list<outer1> = [outer1(outer_id = id@{'O1'}, in_id = id@{'X'}, b = true,  b1 = true,  b2 = true)];\nquery q() = (o:get_outer1()) @ {} ( (i:get_data1()) @* { o.b } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nstruct data1 { id; in_id:id; ref; b:boolean; }\nstruct data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nstruct outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nstruct outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_data1(): list<data1> = [data1(id = id@{'A0'}, in_id = id@{'X'}, ref = ref@{0}, b = false), data1(id = id@{'A1'}, in_id = id@{'X'}, ref = ref@{1}, b = true)];\nfunction get_data2(): list<data2> = [data2(id = id@{'B0'}, in_id = id@{'X'}, ref = ref@{0}, b1 = false, b2 = true), data2(id = id@{'B1'}, in_id = id@{'X'}, ref = ref@{1}, b1 = true,  b2 = false)];\nfunction get_outer0(): list<outer0> = [outer0(outer_id = id@{'O0'}, in_id = id@{'X'}, b = false, b1 = false, b2 = false)];\nfunction get_outer1(): list<outer1> = [outer1(outer_id = id@{'O1'}, in_id = id@{'X'}, b = true,  b1 = true,  b2 = true)];\nquery q() = (o:get_outer1()) @ {} ( (i:get_data1()) @* { o.b1 } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(11:58)",
+        "type" : "WARNING",
+        "code" : "at:where:name_boolean_no_attr:b1",
+        "text" : "No context attribute matches name 'b1', but the expression is accepted, because its type is boolean (suggestion: write <expression> == true for clarity)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nstruct data1 { id; in_id:id; ref; b:boolean; }\nstruct data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nstruct outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nstruct outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_data1(): list<data1> = [data1(id = id@{'A0'}, in_id = id@{'X'}, ref = ref@{0}, b = false), data1(id = id@{'A1'}, in_id = id@{'X'}, ref = ref@{1}, b = true)];\nfunction get_data2(): list<data2> = [data2(id = id@{'B0'}, in_id = id@{'X'}, ref = ref@{0}, b1 = false, b2 = true), data2(id = id@{'B1'}, in_id = id@{'X'}, ref = ref@{1}, b1 = true,  b2 = false)];\nfunction get_outer0(): list<outer0> = [outer0(outer_id = id@{'O0'}, in_id = id@{'X'}, b = false, b1 = false, b2 = false)];\nfunction get_outer1(): list<outer1> = [outer1(outer_id = id@{'O1'}, in_id = id@{'X'}, b = true,  b1 = true,  b2 = true)];\nquery q() = (o:get_outer1()) @ {} ( (i:get_data1()) @* { o.b2 } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(11:58)",
+        "type" : "WARNING",
+        "code" : "at:where:name_boolean_no_attr:b2",
+        "text" : "No context attribute matches name 'b2', but the expression is accepted, because its type is boolean (suggestion: write <expression> == true for clarity)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nstruct data1 { id; in_id:id; ref; b:boolean; }\nstruct data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nstruct outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nstruct outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_data1(): list<data1> = [data1(id = id@{'A0'}, in_id = id@{'X'}, ref = ref@{0}, b = false), data1(id = id@{'A1'}, in_id = id@{'X'}, ref = ref@{1}, b = true)];\nfunction get_data2(): list<data2> = [data2(id = id@{'B0'}, in_id = id@{'X'}, ref = ref@{0}, b1 = false, b2 = true), data2(id = id@{'B1'}, in_id = id@{'X'}, ref = ref@{1}, b1 = true,  b2 = false)];\nfunction get_outer0(): list<outer0> = [outer0(outer_id = id@{'O0'}, in_id = id@{'X'}, b = false, b1 = false, b2 = false)];\nfunction get_outer1(): list<outer1> = [outer1(outer_id = id@{'O1'}, in_id = id@{'X'}, b = true,  b1 = true,  b2 = true)];\nquery q() = (o:get_outer0()) @ {} ( (i:get_data2()) @* { o.b } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(11:58)",
+        "type" : "WARNING",
+        "code" : "at:where:name_boolean_no_attr:b",
+        "text" : "No context attribute matches name 'b', but the expression is accepted, because its type is boolean (suggestion: write <expression> == true for clarity)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nstruct data1 { id; in_id:id; ref; b:boolean; }\nstruct data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nstruct outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nstruct outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_data1(): list<data1> = [data1(id = id@{'A0'}, in_id = id@{'X'}, ref = ref@{0}, b = false), data1(id = id@{'A1'}, in_id = id@{'X'}, ref = ref@{1}, b = true)];\nfunction get_data2(): list<data2> = [data2(id = id@{'B0'}, in_id = id@{'X'}, ref = ref@{0}, b1 = false, b2 = true), data2(id = id@{'B1'}, in_id = id@{'X'}, ref = ref@{1}, b1 = true,  b2 = false)];\nfunction get_outer0(): list<outer0> = [outer0(outer_id = id@{'O0'}, in_id = id@{'X'}, b = false, b1 = false, b2 = false)];\nfunction get_outer1(): list<outer1> = [outer1(outer_id = id@{'O1'}, in_id = id@{'X'}, b = true,  b1 = true,  b2 = true)];\nquery q() = (o:get_outer0()) @ {} ( (i:get_data2()) @* { o.b1 } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nstruct data1 { id; in_id:id; ref; b:boolean; }\nstruct data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nstruct outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nstruct outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_data1(): list<data1> = [data1(id = id@{'A0'}, in_id = id@{'X'}, ref = ref@{0}, b = false), data1(id = id@{'A1'}, in_id = id@{'X'}, ref = ref@{1}, b = true)];\nfunction get_data2(): list<data2> = [data2(id = id@{'B0'}, in_id = id@{'X'}, ref = ref@{0}, b1 = false, b2 = true), data2(id = id@{'B1'}, in_id = id@{'X'}, ref = ref@{1}, b1 = true,  b2 = false)];\nfunction get_outer0(): list<outer0> = [outer0(outer_id = id@{'O0'}, in_id = id@{'X'}, b = false, b1 = false, b2 = false)];\nfunction get_outer1(): list<outer1> = [outer1(outer_id = id@{'O1'}, in_id = id@{'X'}, b = true,  b1 = true,  b2 = true)];\nquery q() = (o:get_outer0()) @ {} ( (i:get_data2()) @* { o.b2 } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nstruct data1 { id; in_id:id; ref; b:boolean; }\nstruct data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nstruct outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nstruct outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_data1(): list<data1> = [data1(id = id@{'A0'}, in_id = id@{'X'}, ref = ref@{0}, b = false), data1(id = id@{'A1'}, in_id = id@{'X'}, ref = ref@{1}, b = true)];\nfunction get_data2(): list<data2> = [data2(id = id@{'B0'}, in_id = id@{'X'}, ref = ref@{0}, b1 = false, b2 = true), data2(id = id@{'B1'}, in_id = id@{'X'}, ref = ref@{1}, b1 = true,  b2 = false)];\nfunction get_outer0(): list<outer0> = [outer0(outer_id = id@{'O0'}, in_id = id@{'X'}, b = false, b1 = false, b2 = false)];\nfunction get_outer1(): list<outer1> = [outer1(outer_id = id@{'O1'}, in_id = id@{'X'}, b = true,  b1 = true,  b2 = true)];\nquery q() = (o:get_outer1()) @ {} ( (i:get_data2()) @* { o.b } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(11:58)",
+        "type" : "WARNING",
+        "code" : "at:where:name_boolean_no_attr:b",
+        "text" : "No context attribute matches name 'b', but the expression is accepted, because its type is boolean (suggestion: write <expression> == true for clarity)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nstruct data1 { id; in_id:id; ref; b:boolean; }\nstruct data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nstruct outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nstruct outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_data1(): list<data1> = [data1(id = id@{'A0'}, in_id = id@{'X'}, ref = ref@{0}, b = false), data1(id = id@{'A1'}, in_id = id@{'X'}, ref = ref@{1}, b = true)];\nfunction get_data2(): list<data2> = [data2(id = id@{'B0'}, in_id = id@{'X'}, ref = ref@{0}, b1 = false, b2 = true), data2(id = id@{'B1'}, in_id = id@{'X'}, ref = ref@{1}, b1 = true,  b2 = false)];\nfunction get_outer0(): list<outer0> = [outer0(outer_id = id@{'O0'}, in_id = id@{'X'}, b = false, b1 = false, b2 = false)];\nfunction get_outer1(): list<outer1> = [outer1(outer_id = id@{'O1'}, in_id = id@{'X'}, b = true,  b1 = true,  b2 = true)];\nquery q() = (o:get_outer1()) @ {} ( (i:get_data2()) @* { o.b1 } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity id { s: text; }\nentity ref { i: integer; v: boolean; }\nstruct data1 { id; in_id:id; ref; b:boolean; }\nstruct data2 { id; in_id:id; ref; b1:boolean; b2:boolean; }\nstruct outer0 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nstruct outer1 { outer_id:id; in_id:id; b:boolean; b1:boolean; b2:boolean; }\nfunction get_data1(): list<data1> = [data1(id = id@{'A0'}, in_id = id@{'X'}, ref = ref@{0}, b = false), data1(id = id@{'A1'}, in_id = id@{'X'}, ref = ref@{1}, b = true)];\nfunction get_data2(): list<data2> = [data2(id = id@{'B0'}, in_id = id@{'X'}, ref = ref@{0}, b1 = false, b2 = true), data2(id = id@{'B1'}, in_id = id@{'X'}, ref = ref@{1}, b1 = true,  b2 = false)];\nfunction get_outer0(): list<outer0> = [outer0(outer_id = id@{'O0'}, in_id = id@{'X'}, b = false, b1 = false, b2 = false)];\nfunction get_outer1(): list<outer1> = [outer1(outer_id = id@{'O1'}, in_id = id@{'X'}, b = true,  b1 = true,  b2 = true)];\nquery q() = (o:get_outer1()) @ {} ( (i:get_data2()) @* { o.b2 } (i.id.s) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

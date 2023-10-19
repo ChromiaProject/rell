@@ -1,0 +1,52 @@
+[
+  {
+    "files" : {
+      "imp1.rell" : "module; import lib; override function lib.f(): integer = 123;",
+      "imp2.rell" : "module; import lib; override function lib.f(): integer = 456;",
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        "imp1",
+        "imp2"
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "imp1.rell(1:39)",
+        "type" : "ERROR",
+        "code" : "override:conflict:[lib:f]:[direct:imp1:imp1.rell:1]:[direct:imp2:imp2.rell:1]",
+        "text" : "Override conflict: override for function 'lib:f' defined at imp2.rell:1"
+      },
+      {
+        "pos" : "imp2.rell(1:39)",
+        "type" : "ERROR",
+        "code" : "override:conflict:[lib:f]:[direct:imp2:imp2.rell:1]:[direct:imp1:imp1.rell:1]",
+        "text" : "Override conflict: override for function 'lib:f' defined at imp1.rell:1"
+      }
+    ],
+    "parsing" : {
+      "imp1.rell" : [ ],
+      "imp2.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]
