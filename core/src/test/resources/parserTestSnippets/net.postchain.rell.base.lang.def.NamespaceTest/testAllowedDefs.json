@@ -1,0 +1,427 @@
+[
+  {
+    "files" : {
+      "main.rell" : "\n            namespace foo {\n                function f(): integer = 123;\n                entity user { x: integer; }\n                object state { v: integer = 456; }\n                struct r { x: integer; }\n                enum e { A, B, C }\n                namespace bar { function g(): integer = 789; }\n                operation op() {}\n                query q() = 123;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            namespace foo {\n                function f(): integer = 123;\n                entity user { x: integer; }\n                object state { v: integer = 456; }\n                struct r { x: integer; }\n                enum e { A, B, C }\n                namespace bar { function g(): integer = 789; }\n                operation op() {}\n                query q() = 123;\n            }\n        \nquery q() = foo.f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            namespace foo {\n                function f(): integer = 123;\n                entity user { x: integer; }\n                object state { v: integer = 456; }\n                struct r { x: integer; }\n                enum e { A, B, C }\n                namespace bar { function g(): integer = 789; }\n                operation op() {}\n                query q() = 123;\n            }\n        \nquery q() = foo.user @ {} ( .x );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            namespace foo {\n                function f(): integer = 123;\n                entity user { x: integer; }\n                object state { v: integer = 456; }\n                struct r { x: integer; }\n                enum e { A, B, C }\n                namespace bar { function g(): integer = 789; }\n                operation op() {}\n                query q() = 123;\n            }\n        \nquery q() = foo.state.v;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            namespace foo {\n                function f(): integer = 123;\n                entity user { x: integer; }\n                object state { v: integer = 456; }\n                struct r { x: integer; }\n                enum e { A, B, C }\n                namespace bar { function g(): integer = 789; }\n                operation op() {}\n                query q() = 123;\n            }\n        \nquery q() = foo.r(123);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            namespace foo {\n                function f(): integer = 123;\n                entity user { x: integer; }\n                object state { v: integer = 456; }\n                struct r { x: integer; }\n                enum e { A, B, C }\n                namespace bar { function g(): integer = 789; }\n                operation op() {}\n                query q() = 123;\n            }\n        \nquery q() = foo.e.A;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            namespace foo {\n                function f(): integer = 123;\n                entity user { x: integer; }\n                object state { v: integer = 456; }\n                struct r { x: integer; }\n                enum e { A, B, C }\n                namespace bar { function g(): integer = 789; }\n                operation op() {}\n                query q() = 123;\n            }\n        \nquery q() = foo.bar.g();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            namespace foo {\n                function f(): integer = 123;\n                entity user { x: integer; }\n                object state { v: integer = 456; }\n                struct r { x: integer; }\n                enum e { A, B, C }\n                namespace bar { function g(): integer = 789; }\n                operation op() {}\n                query q() = 123;\n            }\n        \nquery q() = foo.f;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(13:17)",
+        "type" : "ERROR",
+        "code" : "expr_novalue:function:[foo.f]",
+        "text" : "Expression cannot be used as a value: function 'foo.f'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            namespace foo {\n                function f(): integer = 123;\n                entity user { x: integer; }\n                object state { v: integer = 456; }\n                struct r { x: integer; }\n                enum e { A, B, C }\n                namespace bar { function g(): integer = 789; }\n                operation op() {}\n                query q() = 123;\n            }\n        \nquery q() = foo.user;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(13:13)",
+        "type" : "ERROR",
+        "code" : "expr_novalue:type:[foo.user]",
+        "text" : "Expression cannot be used as a value: type 'foo.user'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            namespace foo {\n                function f(): integer = 123;\n                entity user { x: integer; }\n                object state { v: integer = 456; }\n                struct r { x: integer; }\n                enum e { A, B, C }\n                namespace bar { function g(): integer = 789; }\n                operation op() {}\n                query q() = 123;\n            }\n        \nquery q() = foo.state;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            namespace foo {\n                function f(): integer = 123;\n                entity user { x: integer; }\n                object state { v: integer = 456; }\n                struct r { x: integer; }\n                enum e { A, B, C }\n                namespace bar { function g(): integer = 789; }\n                operation op() {}\n                query q() = 123;\n            }\n        \nquery q() = foo.r;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(13:13)",
+        "type" : "ERROR",
+        "code" : "expr_novalue:struct:[foo.r]",
+        "text" : "Expression cannot be used as a value: struct 'foo.r'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            namespace foo {\n                function f(): integer = 123;\n                entity user { x: integer; }\n                object state { v: integer = 456; }\n                struct r { x: integer; }\n                enum e { A, B, C }\n                namespace bar { function g(): integer = 789; }\n                operation op() {}\n                query q() = 123;\n            }\n        \nquery q() = foo.e;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(13:13)",
+        "type" : "ERROR",
+        "code" : "expr_novalue:enum:[foo.e]",
+        "text" : "Expression cannot be used as a value: enum 'foo.e'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            namespace foo {\n                function f(): integer = 123;\n                entity user { x: integer; }\n                object state { v: integer = 456; }\n                struct r { x: integer; }\n                enum e { A, B, C }\n                namespace bar { function g(): integer = 789; }\n                operation op() {}\n                query q() = 123;\n            }\n        \nquery q() = foo.bar;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(13:13)",
+        "type" : "ERROR",
+        "code" : "expr_novalue:namespace:[foo.bar]",
+        "text" : "Expression cannot be used as a value: namespace 'foo.bar'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

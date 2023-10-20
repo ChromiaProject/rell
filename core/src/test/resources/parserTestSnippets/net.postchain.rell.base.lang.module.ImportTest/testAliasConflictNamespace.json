@@ -1,0 +1,134 @@
+[
+  {
+    "files" : {
+      "a.rell" : "module; function f(): integer = 123;",
+      "main.rell" : "import a; namespace a {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:8)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:a:NAMESPACE:main.rell(1:21)",
+        "text" : "Name conflict: namespace 'a' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:21)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:a:IMPORT:main.rell(1:8)",
+        "text" : "Name conflict: import 'a' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; function f(): integer = 123;",
+      "main.rell" : "import x: a.*; namespace x {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:8)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:x:NAMESPACE:main.rell(1:26)",
+        "text" : "Name conflict: namespace 'x' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:26)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:x:NAMESPACE:main.rell(1:8)",
+        "text" : "Name conflict: namespace 'x' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; function f(): integer = 123;",
+      "main.rell" : "import x: a.{f}; namespace x {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:8)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:x:NAMESPACE:main.rell(1:28)",
+        "text" : "Name conflict: namespace 'x' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:28)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:x:NAMESPACE:main.rell(1:8)",
+        "text" : "Name conflict: namespace 'x' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

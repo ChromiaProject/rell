@@ -1,0 +1,117 @@
+[
+  {
+    "files" : {
+      "top1/module.rell" : "@test module;",
+      "top1/mid1/module.rell" : "@test module;",
+      "top1/mid1/sub1/module.rell" : "@test module; import top2;",
+      "top2/module.rell" : "@test module;",
+      "top2/mid2/module.rell" : "@test module;",
+      "top2/mid2/sub2/module.rell" : "@test module; import top1;"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [
+        "top1"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "top1/module.rell" : [ ],
+      "top1/mid1/module.rell" : [ ],
+      "top1/mid1/sub1/module.rell" : [ ],
+      "top2/module.rell" : [ ],
+      "top2/mid2/module.rell" : [ ],
+      "top2/mid2/sub2/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "top1/module.rell" : "@test module;",
+      "top1/mid1/module.rell" : "@test module;",
+      "top1/mid1/sub1/module.rell" : "@test module; import top2;",
+      "top2/module.rell" : "@test module;",
+      "top2/mid2/module.rell" : "@test module;",
+      "top2/mid2/sub2/module.rell" : "@test module; import top1;"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [
+        "top2"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "top1/module.rell" : [ ],
+      "top1/mid1/module.rell" : [ ],
+      "top1/mid1/sub1/module.rell" : [ ],
+      "top2/module.rell" : [ ],
+      "top2/mid2/module.rell" : [ ],
+      "top2/mid2/sub2/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "top1/module.rell" : "@test module;",
+      "top1/mid1/module.rell" : "@test module;",
+      "top1/mid1/sub1/module.rell" : "@test module; import top2;",
+      "top2/module.rell" : "@test module;",
+      "top2/mid2/module.rell" : "@test module;",
+      "top2/mid2/sub2/module.rell" : "@test module; import top1;"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [
+        "top1",
+        "top2"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "top1/module.rell" : [ ],
+      "top1/mid1/module.rell" : [ ],
+      "top1/mid1/sub1/module.rell" : [ ],
+      "top2/module.rell" : [ ],
+      "top2/mid2/module.rell" : [ ],
+      "top2/mid2/sub2/module.rell" : [ ]
+    }
+  }
+]

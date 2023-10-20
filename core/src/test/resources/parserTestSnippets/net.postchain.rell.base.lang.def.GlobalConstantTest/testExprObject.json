@@ -1,0 +1,180 @@
+[
+  {
+    "files" : {
+      "main.rell" : "object state { v: integer = 123; }\nval X = state;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:5)",
+        "type" : "ERROR",
+        "code" : "def:const:bad_type:not_pure:0::X:state",
+        "text" : "Bad type for a global constant: state"
+      },
+      {
+        "pos" : "main.rell(2:9)",
+        "type" : "ERROR",
+        "code" : "def:const:bad_expr:0::X:object",
+        "text" : "Bad expression for a global constant"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "object state { v: integer = 123; }\nval X = state.v;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:9)",
+        "type" : "ERROR",
+        "code" : "def:const:bad_expr:0::X:object_attr",
+        "text" : "Bad expression for a global constant"
+      },
+      {
+        "pos" : "main.rell(2:9)",
+        "type" : "ERROR",
+        "code" : "def:const:bad_expr:0::X:object",
+        "text" : "Bad expression for a global constant"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "object state { v: integer = 123; }\nval X = state.to_struct();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:9)",
+        "type" : "ERROR",
+        "code" : "def:const:bad_expr:0::X:object_to_struct",
+        "text" : "Bad expression for a global constant"
+      },
+      {
+        "pos" : "main.rell(2:9)",
+        "type" : "ERROR",
+        "code" : "def:const:bad_expr:0::X:object",
+        "text" : "Bad expression for a global constant"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "object state { v: integer = 123; }\nval X = state.to_mutable_struct();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:5)",
+        "type" : "ERROR",
+        "code" : "def:const:bad_type:mutable:0::X:struct<mutable state>",
+        "text" : "Global constant cannot have a mutable type: struct<mutable state>"
+      },
+      {
+        "pos" : "main.rell(2:9)",
+        "type" : "ERROR",
+        "code" : "def:const:bad_expr:0::X:object_to_struct",
+        "text" : "Bad expression for a global constant"
+      },
+      {
+        "pos" : "main.rell(2:9)",
+        "type" : "ERROR",
+        "code" : "def:const:bad_expr:0::X:object",
+        "text" : "Bad expression for a global constant"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

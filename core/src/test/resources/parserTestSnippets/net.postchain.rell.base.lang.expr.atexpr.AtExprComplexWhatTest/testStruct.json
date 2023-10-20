@@ -1,0 +1,182 @@
+[
+  {
+    "files" : {
+      "main.rell" : "struct rec { i: integer; t: text; u: text; c: text; }\nstruct rec2 { i: integer = -1; t: text = '?'; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { i: integer; t: text; u: text; c: text; }\nstruct rec2 { i: integer = -1; t: text = '?'; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( data, rec(i = .i, t = .t, u = .u.name, c = .c.name) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { i: integer; t: text; u: text; c: text; }\nstruct rec2 { i: integer = -1; t: text = '?'; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( data, rec(i = 777, t = .t, u = .u.name, c = 'Hello') );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { i: integer; t: text; u: text; c: text; }\nstruct rec2 { i: integer = -1; t: text = '?'; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( data, rec(i = 777, t = 'Hello', u = 'U', c = 'C') );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { i: integer; t: text; u: text; c: text; }\nstruct rec2 { i: integer = -1; t: text = '?'; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( data, rec2(i = .i) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { i: integer; t: text; u: text; c: text; }\nstruct rec2 { i: integer = -1; t: text = '?'; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( data, rec2() );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

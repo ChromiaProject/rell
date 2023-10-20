@@ -1,0 +1,190 @@
+[
+  {
+    "files" : {
+      "a.rell" : "module; @deprecated namespace ns { function f() = 123; }",
+      "b.rell" : "module; namespace ns { function g() = 456; }",
+      "main.rell" : "import a.*; import b.*; function h() = ns.f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:40)",
+        "type" : "ERROR",
+        "code" : "name:ambig:ns:[NAMESPACE:a:ns,NAMESPACE:b:ns]",
+        "text" : "Name 'ns' is ambiguous: namespace a:ns, namespace b:ns"
+      },
+      {
+        "pos" : "main.rell(1:40)",
+        "type" : "ERROR",
+        "code" : "deprecated:NAMESPACE:a:ns",
+        "text" : "Namespace 'a:ns' is deprecated"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; @deprecated namespace ns { function f() = 123; }",
+      "b.rell" : "module; namespace ns { function g() = 456; }",
+      "main.rell" : "import b.*; import a.*; function h() = ns.f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:40)",
+        "type" : "ERROR",
+        "code" : "name:ambig:ns:[NAMESPACE:b:ns,NAMESPACE:a:ns]",
+        "text" : "Name 'ns' is ambiguous: namespace b:ns, namespace a:ns"
+      },
+      {
+        "pos" : "main.rell(1:40)",
+        "type" : "ERROR",
+        "code" : "unknown_name:[b:ns]:f",
+        "text" : "Unknown name: 'ns.f'"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; @deprecated namespace ns { function f() = 123; }",
+      "b.rell" : "module; namespace ns { function g() = 456; }",
+      "main.rell" : "import a.*; import b.*; function h() = ns.g();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:40)",
+        "type" : "ERROR",
+        "code" : "name:ambig:ns:[NAMESPACE:a:ns,NAMESPACE:b:ns]",
+        "text" : "Name 'ns' is ambiguous: namespace a:ns, namespace b:ns"
+      },
+      {
+        "pos" : "main.rell(1:40)",
+        "type" : "ERROR",
+        "code" : "deprecated:NAMESPACE:a:ns",
+        "text" : "Namespace 'a:ns' is deprecated"
+      },
+      {
+        "pos" : "main.rell(1:40)",
+        "type" : "ERROR",
+        "code" : "unknown_name:[a:ns]:g",
+        "text" : "Unknown name: 'ns.g'"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; @deprecated namespace ns { function f() = 123; }",
+      "b.rell" : "module; namespace ns { function g() = 456; }",
+      "main.rell" : "import b.*; import a.*; function h() = ns.g();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:40)",
+        "type" : "ERROR",
+        "code" : "name:ambig:ns:[NAMESPACE:b:ns,NAMESPACE:a:ns]",
+        "text" : "Name 'ns' is ambiguous: namespace b:ns, namespace a:ns"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

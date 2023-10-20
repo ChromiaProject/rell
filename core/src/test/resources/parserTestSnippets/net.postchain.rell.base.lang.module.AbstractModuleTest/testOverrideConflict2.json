@@ -1,0 +1,175 @@
+[
+  {
+    "files" : {
+      "client1.rell" : "module; import lib; import imp1; function p(): integer = lib.f();",
+      "client2.rell" : "module; import lib; import imp2; function q(): integer = lib.f();",
+      "imp1.rell" : "module; import lib; override function lib.f(): integer = 123;",
+      "imp2.rell" : "module; import lib; override function lib.f(): integer = 456;",
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import client1; import client2;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "override:conflict:[lib:f]:[import:client1:imp1:imp1.rell:1]:[import:client2:imp2:imp2.rell:1]",
+        "text" : "Override conflict: override for function 'lib:f' defined at imp1.rell:1 (via import client1 at main.rell:1) and at imp2.rell:1 (via import client2 at main.rell:1)"
+      },
+      {
+        "pos" : "main.rell(1:17)",
+        "type" : "ERROR",
+        "code" : "override:conflict:[lib:f]:[import:client2:imp2:imp2.rell:1]:[import:client1:imp1:imp1.rell:1]",
+        "text" : "Override conflict: override for function 'lib:f' defined at imp2.rell:1 (via import client2 at main.rell:1) and at imp1.rell:1 (via import client1 at main.rell:1)"
+      }
+    ],
+    "parsing" : {
+      "client1.rell" : [ ],
+      "client2.rell" : [ ],
+      "imp1.rell" : [ ],
+      "imp2.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "client1.rell" : "module; import lib; import imp1; function p(): integer = lib.f();",
+      "client2.rell" : "module; import lib; import imp2; function q(): integer = lib.f();",
+      "imp1.rell" : "module; import lib; override function lib.f(): integer = 123;",
+      "imp2.rell" : "module; import lib; override function lib.f(): integer = 456;",
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "client1.rell" : [ ],
+      "client2.rell" : [ ],
+      "imp1.rell" : [ ],
+      "imp2.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "client1.rell" : "module; import lib; import imp1; function p(): integer = lib.f();",
+      "client2.rell" : "module; import lib; import imp2; function q(): integer = lib.f();",
+      "imp1.rell" : "module; import lib; override function lib.f(): integer = 123;",
+      "imp2.rell" : "module; import lib; override function lib.f(): integer = 456;",
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import client1; query q() = client1.p();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "client1.rell" : [ ],
+      "client2.rell" : [ ],
+      "imp1.rell" : [ ],
+      "imp2.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "client1.rell" : "module; import lib; import imp1; function p(): integer = lib.f();",
+      "client2.rell" : "module; import lib; import imp2; function q(): integer = lib.f();",
+      "imp1.rell" : "module; import lib; override function lib.f(): integer = 123;",
+      "imp2.rell" : "module; import lib; override function lib.f(): integer = 456;",
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import client2; query q() = client2.q();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "client1.rell" : [ ],
+      "client2.rell" : [ ],
+      "imp1.rell" : [ ],
+      "imp2.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

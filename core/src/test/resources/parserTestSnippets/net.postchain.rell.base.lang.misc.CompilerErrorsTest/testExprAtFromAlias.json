@@ -1,0 +1,338 @@
+[
+  {
+    "files" : {
+      "main.rell" : "entity user { address: text; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity user { address: text; }\nquery q() = (user: user, user) @* { Y } ( Z );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:37)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Y",
+        "text" : "Unknown name: 'Y'"
+      },
+      {
+        "pos" : "main.rell(2:43)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Z",
+        "text" : "Unknown name: 'Z'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity user { address: text; }\nquery q() = (a: user, a: user) @* { Y } ( Z );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:26)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:a",
+        "text" : "Name conflict: 'a' already exists"
+      },
+      {
+        "pos" : "main.rell(2:37)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Y",
+        "text" : "Unknown name: 'Y'"
+      },
+      {
+        "pos" : "main.rell(2:43)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Z",
+        "text" : "Unknown name: 'Z'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity user { address: text; }\nquery q() { val u = 123; return (u: user) @ { u.address == 'Street' }; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:37)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:u",
+        "text" : "Name conflict: 'u' already exists"
+      },
+      {
+        "pos" : "main.rell(2:49)",
+        "type" : "ERROR",
+        "code" : "unknown_member:[integer]:address",
+        "text" : "Type integer has no member 'address'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity user { address: text; }\nquery q() { val a = 1; val b = 2; return (a: user, b: user) @* { abs(x'') } ( min() ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:46)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:a",
+        "text" : "Name conflict: 'a' already exists"
+      },
+      {
+        "pos" : "main.rell(2:55)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:b",
+        "text" : "Name conflict: 'b' already exists"
+      },
+      {
+        "pos" : "main.rell(2:66)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(2:79)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity user { address: text; }\nquery q() { val a = 123; val b = 456; return (a: user, b: user) @* { X } ( Y ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:50)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:a",
+        "text" : "Name conflict: 'a' already exists"
+      },
+      {
+        "pos" : "main.rell(2:59)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:b",
+        "text" : "Name conflict: 'b' already exists"
+      },
+      {
+        "pos" : "main.rell(2:70)",
+        "type" : "ERROR",
+        "code" : "unknown_name:X",
+        "text" : "Unknown name: 'X'"
+      },
+      {
+        "pos" : "main.rell(2:76)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Y",
+        "text" : "Unknown name: 'Y'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity user { address: text; }\nquery q() { val a = 123; val b = 456; return (a: abs(x''), b: min()) @* { X } ( Y ); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:47)",
+        "type" : "ERROR",
+        "code" : "block:name_conflict:a",
+        "text" : "Name conflict: 'a' already exists"
+      },
+      {
+        "pos" : "main.rell(2:50)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "text" : "Function 'abs' undefined for arguments (byte_array)"
+      },
+      {
+        "pos" : "main.rell(2:63)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[min]:",
+        "text" : "Function 'min' undefined for arguments ()"
+      },
+      {
+        "pos" : "main.rell(2:75)",
+        "type" : "ERROR",
+        "code" : "unknown_name:X",
+        "text" : "Unknown name: 'X'"
+      },
+      {
+        "pos" : "main.rell(2:81)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Y",
+        "text" : "Unknown name: 'Y'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

@@ -1,0 +1,237 @@
+[
+  {
+    "files" : {
+      "main.rell" : "",
+      "a/a1.rell" : "function f1(): integer = 123;",
+      "a/a2.rell" : "function f2(): integer = 456;",
+      "a/a3.rell" : "function f3(): integer = 789;",
+      "a/a4.rell" : "module; function f4(): integer = 987;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/a1.rell" : [ ],
+      "a/a2.rell" : [ ],
+      "a/a3.rell" : [ ],
+      "a/a4.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; query q() = a.f1();",
+      "a/a1.rell" : "function f1(): integer = 123;",
+      "a/a2.rell" : "function f2(): integer = 456;",
+      "a/a3.rell" : "function f3(): integer = 789;",
+      "a/a4.rell" : "module; function f4(): integer = 987;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/a1.rell" : [ ],
+      "a/a2.rell" : [ ],
+      "a/a3.rell" : [ ],
+      "a/a4.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; query q() = a.f2();",
+      "a/a1.rell" : "function f1(): integer = 123;",
+      "a/a2.rell" : "function f2(): integer = 456;",
+      "a/a3.rell" : "function f3(): integer = 789;",
+      "a/a4.rell" : "module; function f4(): integer = 987;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/a1.rell" : [ ],
+      "a/a2.rell" : [ ],
+      "a/a3.rell" : [ ],
+      "a/a4.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; query q() = a.f3();",
+      "a/a1.rell" : "function f1(): integer = 123;",
+      "a/a2.rell" : "function f2(): integer = 456;",
+      "a/a3.rell" : "function f3(): integer = 789;",
+      "a/a4.rell" : "module; function f4(): integer = 987;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/a1.rell" : [ ],
+      "a/a2.rell" : [ ],
+      "a/a3.rell" : [ ],
+      "a/a4.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; query q() = a.f4();",
+      "a/a1.rell" : "function f1(): integer = 123;",
+      "a/a2.rell" : "function f2(): integer = 456;",
+      "a/a3.rell" : "function f3(): integer = 789;",
+      "a/a4.rell" : "module; function f4(): integer = 987;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:23)",
+        "type" : "ERROR",
+        "code" : "unknown_name:[a]:f4",
+        "text" : "Unknown name: 'a.f4'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/a1.rell" : [ ],
+      "a/a2.rell" : [ ],
+      "a/a3.rell" : [ ],
+      "a/a4.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.a4; query q() = a4.f4();",
+      "a/a1.rell" : "function f1(): integer = 123;",
+      "a/a2.rell" : "function f2(): integer = 456;",
+      "a/a3.rell" : "function f3(): integer = 789;",
+      "a/a4.rell" : "module; function f4(): integer = 987;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/a1.rell" : [ ],
+      "a/a2.rell" : [ ],
+      "a/a3.rell" : [ ],
+      "a/a4.rell" : [ ]
+    }
+  }
+]

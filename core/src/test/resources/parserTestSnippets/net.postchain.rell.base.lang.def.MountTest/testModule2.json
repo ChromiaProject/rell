@@ -1,0 +1,36 @@
+[
+  {
+    "files" : {
+      "main.rell" : "import lib;",
+      "lib/module.rell" : "@mount('foo.bar') module; object obj1 { x: integer = 111; }",
+      "lib/part.rell" : "object obj2 { x: integer = 222; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "lib/module.rell" : [ ],
+      "lib/part.rell" : [ ]
+    }
+  }
+]

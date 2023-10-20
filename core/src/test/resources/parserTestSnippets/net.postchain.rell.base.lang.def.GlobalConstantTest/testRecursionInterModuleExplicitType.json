@@ -1,0 +1,57 @@
+[
+  {
+    "files" : {
+      "a.rell" : "module; import b; val X: integer = b.Y;",
+      "b.rell" : "module; import c; val Y: integer = c.Z;",
+      "c.rell" : "module; import a; val Z: integer = a.X;",
+      "main.rell" : "import a;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "a.rell(1:38)",
+        "type" : "ERROR",
+        "code" : "def:const:cycle:0:a:X:1:b:Y",
+        "text" : "Global constant expression is recursive"
+      },
+      {
+        "pos" : "b.rell(1:38)",
+        "type" : "ERROR",
+        "code" : "def:const:cycle:1:b:Y:2:c:Z",
+        "text" : "Global constant expression is recursive"
+      },
+      {
+        "pos" : "c.rell(1:38)",
+        "type" : "ERROR",
+        "code" : "def:const:cycle:2:c:Z:0:a:X",
+        "text" : "Global constant expression is recursive"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

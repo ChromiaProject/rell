@@ -1,0 +1,61 @@
+[
+  {
+    "files" : {
+      "main.rell" : "import a;",
+      "a/a1.rell" : "function f(): integer = unknown_1;",
+      "a/a2.rell" : "function f(): integer = unknown_2;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "a/a1.rell(1:10)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:f:FUNCTION:a/a2.rell(1:10)",
+        "text" : "Name conflict: function 'f' defined at a/a2.rell:1"
+      },
+      {
+        "pos" : "a/a1.rell(1:25)",
+        "type" : "ERROR",
+        "code" : "unknown_name:unknown_1",
+        "text" : "Unknown name: 'unknown_1'"
+      },
+      {
+        "pos" : "a/a2.rell(1:10)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:f:FUNCTION:a/a1.rell(1:10)",
+        "text" : "Name conflict: function 'f' defined at a/a1.rell:1"
+      },
+      {
+        "pos" : "a/a2.rell(1:25)",
+        "type" : "ERROR",
+        "code" : "unknown_name:unknown_2",
+        "text" : "Unknown name: 'unknown_2'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/a1.rell" : [ ],
+      "a/a2.rell" : [ ]
+    }
+  }
+]

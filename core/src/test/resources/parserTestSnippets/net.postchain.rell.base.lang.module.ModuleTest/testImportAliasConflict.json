@@ -1,0 +1,519 @@
+[
+  {
+    "files" : {
+      "main.rell" : "import a.foo;",
+      "a/foo.rell" : "module;",
+      "b/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "b/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.foo; import b.foo;",
+      "a/foo.rell" : "module;",
+      "b/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:10)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:IMPORT:main.rell(1:24)",
+        "text" : "Name conflict: import 'foo' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:24)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:IMPORT:main.rell(1:10)",
+        "text" : "Name conflict: import 'foo' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "b/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.foo; function foo(){}",
+      "a/foo.rell" : "module;",
+      "b/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:10)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:FUNCTION:main.rell(1:24)",
+        "text" : "Name conflict: function 'foo' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:24)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:IMPORT:main.rell(1:10)",
+        "text" : "Name conflict: import 'foo' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "b/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function foo(){} import a.foo;",
+      "a/foo.rell" : "module;",
+      "b/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:10)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:IMPORT:main.rell(1:27)",
+        "text" : "Name conflict: import 'foo' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:27)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:FUNCTION:main.rell(1:10)",
+        "text" : "Name conflict: function 'foo' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "b/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.foo; namespace foo {}",
+      "a/foo.rell" : "module;",
+      "b/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:10)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:NAMESPACE:main.rell(1:25)",
+        "text" : "Name conflict: namespace 'foo' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:25)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:foo:IMPORT:main.rell(1:10)",
+        "text" : "Name conflict: import 'foo' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "b/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import boolean: a.foo;",
+      "a/foo.rell" : "module;",
+      "b/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:8)",
+        "type" : "ERROR",
+        "code" : "name_conflict:sys:boolean:TYPE",
+        "text" : "Name conflict: system type 'boolean'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "b/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import integer: a.foo;",
+      "a/foo.rell" : "module;",
+      "b/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:8)",
+        "type" : "ERROR",
+        "code" : "name_conflict:sys:integer:TYPE",
+        "text" : "Name conflict: system type 'integer'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "b/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import text: a.foo;",
+      "a/foo.rell" : "module;",
+      "b/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:8)",
+        "type" : "ERROR",
+        "code" : "name_conflict:sys:text:TYPE",
+        "text" : "Name conflict: system type 'text'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "b/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import abs: a.foo;",
+      "a/foo.rell" : "module;",
+      "b/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:8)",
+        "type" : "ERROR",
+        "code" : "name_conflict:sys:abs:FUNCTION",
+        "text" : "Name conflict: system function 'abs'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "b/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import block: a.foo;",
+      "a/foo.rell" : "module;",
+      "b/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:8)",
+        "type" : "ERROR",
+        "code" : "name_conflict:sys:block:ENTITY",
+        "text" : "Name conflict: system entity 'block'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "b/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "namespace a { import a.foo; } import b.foo;",
+      "a/foo.rell" : "module;",
+      "b/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "b/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.foo; namespace b { import b.foo; }",
+      "a/foo.rell" : "module;",
+      "b/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "b/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "namespace a { import a.foo; } namespace b { import b.foo; }",
+      "a/foo.rell" : "module;",
+      "b/foo.rell" : "module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/foo.rell" : [ ],
+      "b/foo.rell" : [ ]
+    }
+  }
+]

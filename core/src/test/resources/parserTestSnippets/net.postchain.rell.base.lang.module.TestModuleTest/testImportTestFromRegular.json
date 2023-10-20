@@ -1,0 +1,43 @@
+[
+  {
+    "files" : {
+      "main.rell" : "import regular_module;",
+      "regular_module.rell" : "module; import test_module;",
+      "test_module.rell" : "@test module;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "regular_module.rell(1:9)",
+        "type" : "ERROR",
+        "code" : "import:module_test:test_module",
+        "text" : "Cannot import a test module 'test_module' from a non-test module"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "regular_module.rell" : [ ],
+      "test_module.rell" : [ ]
+    }
+  }
+]

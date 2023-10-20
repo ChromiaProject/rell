@@ -1,0 +1,3536 @@
+[
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\noperation o() { create data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863); create data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447); create data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743); create data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439); create data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274); create data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @* {} ( @sum .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @* {} ( @min .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @* {} ( @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @* {} ( @min .gdp, @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @* {} ( @sum .gdp, @min .gdp, @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @+ {} ( @sum .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @+ {} ( @min .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @+ {} ( @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @+ {} ( @min .gdp, @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @+ {} ( @sum .gdp, @min .gdp, @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @ {} ( @sum .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @ {} ( @min .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @ {} ( @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @ {} ( @min .gdp, @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @ {} ( @sum .gdp, @min .gdp, @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @? {} ( @sum .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @? {} ( @min .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @? {} ( @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @? {} ( @min .gdp, @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = _type_of(data @? {} ( @sum .gdp, @min .gdp, @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @* {} ( @sum 0 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @* {} ( @sum 1 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @* {} ( @sum .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @* {} ( @min 0, @max 0 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @* {} ( @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @* {} ( @sum .gdp, @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @* { .name == 'X' } ( @sum .gdp, @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @+ {} ( @sum 0 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @+ {} ( @sum 1 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @+ {} ( @sum .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @+ {} ( @min 0, @max 0 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @+ {} ( @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @+ {} ( @sum .gdp, @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @+ { .name == 'X' } ( @sum .gdp, @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @ {} ( @sum 0 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @ {} ( @sum 1 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @ {} ( @sum .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @ {} ( @min 0, @max 0 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @ {} ( @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @ {} ( @sum .gdp, @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @ { .name == 'X' } ( @sum .gdp, @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @? {} ( @sum 0 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @? {} ( @sum 1 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @? {} ( @sum .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @? {} ( @min 0, @max 0 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @? {} ( @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @? {} ( @sum .gdp, @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @? { .name == 'X' } ( @sum .gdp, @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @* {} ( @sort @group _=.region, @sum .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @* {} ( _=.name, @sum .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:29)",
+        "type" : "ERROR",
+        "code" : "at:what:no_aggr:0",
+        "text" : "Either none or all what-expressions must be annotated with one of: @group, @sum, @min, @max"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @* {} ( @sum .gdp, _=.name );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:40)",
+        "type" : "ERROR",
+        "code" : "at:what:no_aggr:1",
+        "text" : "Either none or all what-expressions must be annotated with one of: @group, @sum, @min, @max"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @* {} ( _=.region, @sum .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:29)",
+        "type" : "ERROR",
+        "code" : "at:what:no_aggr:0",
+        "text" : "Either none or all what-expressions must be annotated with one of: @group, @sum, @min, @max"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @* {} ( @sum .gdp, _=.region );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:40)",
+        "type" : "ERROR",
+        "code" : "at:what:no_aggr:1",
+        "text" : "Either none or all what-expressions must be annotated with one of: @group, @sum, @min, @max"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @* {} ( 123, @sum .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:26)",
+        "type" : "ERROR",
+        "code" : "at:what:no_aggr:0",
+        "text" : "Either none or all what-expressions must be annotated with one of: @group, @sum, @min, @max"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() = data @* {} ( @sum .gdp, 123 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:37)",
+        "type" : "ERROR",
+        "code" : "at:what:no_aggr:1",
+        "text" : "Either none or all what-expressions must be annotated with one of: @group, @sum, @min, @max"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data { name; region:text; language:text; gdp:integer; }\nquery q() { val (country_count, total_gdp) = data @{} ( @sum 1, @sum .gdp ); return (country_count, total_gdp); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @* {} ( @sum .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @* {} ( @min .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @* {} ( @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @* {} ( @min .gdp, @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @* {} ( @sum .gdp, @min .gdp, @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @+ {} ( @sum .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @+ {} ( @min .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @+ {} ( @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @+ {} ( @min .gdp, @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @+ {} ( @sum .gdp, @min .gdp, @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @ {} ( @sum .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @ {} ( @min .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @ {} ( @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @ {} ( @min .gdp, @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @ {} ( @sum .gdp, @min .gdp, @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @? {} ( @sum .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @? {} ( @min .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @? {} ( @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @? {} ( @min .gdp, @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = _type_of(get_data() @? {} ( @sum .gdp, @min .gdp, @max .gdp ));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @* {} ( @sum 0 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @* {} ( @sum 1 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @* {} ( @sum .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @* {} ( @min 0, @max 0 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @* {} ( @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @* {} ( @sum .gdp, @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @* { .name == 'X' } ( @sum .gdp, @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @+ {} ( @sum 0 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @+ {} ( @sum 1 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @+ {} ( @sum .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @+ {} ( @min 0, @max 0 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @+ {} ( @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @+ {} ( @sum .gdp, @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @+ { .name == 'X' } ( @sum .gdp, @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @ {} ( @sum 0 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @ {} ( @sum 1 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @ {} ( @sum .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @ {} ( @min 0, @max 0 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @ {} ( @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @ {} ( @sum .gdp, @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @ { .name == 'X' } ( @sum .gdp, @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @? {} ( @sum 0 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @? {} ( @sum 1 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @? {} ( @sum .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @? {} ( @min 0, @max 0 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @? {} ( @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @? {} ( @sum .gdp, @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @? { .name == 'X' } ( @sum .gdp, @min .gdp, @max .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @* {} ( @sort @group _=.region, @sum .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @* {} ( _=.name, @sum .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:35)",
+        "type" : "ERROR",
+        "code" : "at:what:no_aggr:0",
+        "text" : "Either none or all what-expressions must be annotated with one of: @group, @sum, @min, @max"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @* {} ( @sum .gdp, _=.name );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:46)",
+        "type" : "ERROR",
+        "code" : "at:what:no_aggr:1",
+        "text" : "Either none or all what-expressions must be annotated with one of: @group, @sum, @min, @max"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @* {} ( _=.region, @sum .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:35)",
+        "type" : "ERROR",
+        "code" : "at:what:no_aggr:0",
+        "text" : "Either none or all what-expressions must be annotated with one of: @group, @sum, @min, @max"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @* {} ( @sum .gdp, _=.region );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:46)",
+        "type" : "ERROR",
+        "code" : "at:what:no_aggr:1",
+        "text" : "Either none or all what-expressions must be annotated with one of: @group, @sum, @min, @max"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @* {} ( 123, @sum .gdp );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:32)",
+        "type" : "ERROR",
+        "code" : "at:what:no_aggr:0",
+        "text" : "Either none or all what-expressions must be annotated with one of: @group, @sum, @min, @max"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() = get_data() @* {} ( @sum .gdp, 123 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:43)",
+        "type" : "ERROR",
+        "code" : "at:what:no_aggr:1",
+        "text" : "Either none or all what-expressions must be annotated with one of: @group, @sum, @min, @max"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct data { name; region:text; language:text; gdp:integer; }\nfunction get_data(): list<data> = [data(name = 'Germany', region = 'EMEA', language = 'German', gdp = 3863), data(name = 'Austria', region = 'EMEA', language = 'German', gdp = 447), data(name = 'United Kingdom', region = 'EMEA', language = 'English', gdp = 2743), data(name = 'USA', region = 'AMER', language = 'English', gdp = 21439), data(name = 'Mexico', region = 'AMER', language = 'Spanish', gdp = 1274), data(name = 'China', region = 'APAC', language = 'Chinese', gdp = 14140)];\nquery q() { val (country_count, total_gdp) = get_data() @{} ( @sum 1, @sum .gdp ); return (country_count, total_gdp); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

@@ -1,0 +1,167 @@
+[
+  {
+    "files" : {
+      "main.rell" : "function f() { if ('not_a_boolean') print(X); else print(Y); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:20)",
+        "type" : "ERROR",
+        "code" : "stmt_if_expr_type:[boolean]:[text]",
+        "text" : "Wrong type of if-expression: text instead of boolean"
+      },
+      {
+        "pos" : "main.rell(1:43)",
+        "type" : "ERROR",
+        "code" : "unknown_name:X",
+        "text" : "Unknown name: 'X'"
+      },
+      {
+        "pos" : "main.rell(1:58)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Y",
+        "text" : "Unknown name: 'Y'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f() { if (BAD) print(X); else print(Y); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:20)",
+        "type" : "ERROR",
+        "code" : "unknown_name:BAD",
+        "text" : "Unknown name: 'BAD'"
+      },
+      {
+        "pos" : "main.rell(1:31)",
+        "type" : "ERROR",
+        "code" : "unknown_name:X",
+        "text" : "Unknown name: 'X'"
+      },
+      {
+        "pos" : "main.rell(1:46)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Y",
+        "text" : "Unknown name: 'Y'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f() { when (BAD) { 0 -> print(X); 'hello' -> print(Y); A -> B; else -> print(Z); } }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:22)",
+        "type" : "ERROR",
+        "code" : "unknown_name:BAD",
+        "text" : "Unknown name: 'BAD'"
+      },
+      {
+        "pos" : "main.rell(1:40)",
+        "type" : "ERROR",
+        "code" : "unknown_name:X",
+        "text" : "Unknown name: 'X'"
+      },
+      {
+        "pos" : "main.rell(1:61)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Y",
+        "text" : "Unknown name: 'Y'"
+      },
+      {
+        "pos" : "main.rell(1:65)",
+        "type" : "ERROR",
+        "code" : "unknown_name:A",
+        "text" : "Unknown name: 'A'"
+      },
+      {
+        "pos" : "main.rell(1:70)",
+        "type" : "ERROR",
+        "code" : "unknown_name:B",
+        "text" : "Unknown name: 'B'"
+      },
+      {
+        "pos" : "main.rell(1:87)",
+        "type" : "ERROR",
+        "code" : "unknown_name:Z",
+        "text" : "Unknown name: 'Z'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

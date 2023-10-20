@@ -1,0 +1,225 @@
+[
+  {
+    "files" : {
+      "main.rell" : "import foo.a;",
+      "foo/a.rell" : "module;",
+      "foo/a_test.rell" : "@test module; function test() {}",
+      "foo/module.rell" : "@test module;",
+      "foo/b/module.rell" : "module;",
+      "foo/c/empty.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "foo/a.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "module:parent_is_test:foo.a:foo",
+        "text" : "Parent module of 'foo.a' is a test module 'foo'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "foo/a.rell" : [ ],
+      "foo/a_test.rell" : [ ],
+      "foo/module.rell" : [ ],
+      "foo/b/module.rell" : [ ],
+      "foo/c/empty.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import foo.b;",
+      "foo/a.rell" : "module;",
+      "foo/a_test.rell" : "@test module; function test() {}",
+      "foo/module.rell" : "@test module;",
+      "foo/b/module.rell" : "module;",
+      "foo/c/empty.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "foo/b/module.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "module:parent_is_test:foo.b:foo",
+        "text" : "Parent module of 'foo.b' is a test module 'foo'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "foo/a.rell" : [ ],
+      "foo/a_test.rell" : [ ],
+      "foo/module.rell" : [ ],
+      "foo/b/module.rell" : [ ],
+      "foo/c/empty.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import foo.c;",
+      "foo/a.rell" : "module;",
+      "foo/a_test.rell" : "@test module; function test() {}",
+      "foo/module.rell" : "@test module;",
+      "foo/b/module.rell" : "module;",
+      "foo/c/empty.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "foo/a.rell" : [ ],
+      "foo/a_test.rell" : [ ],
+      "foo/module.rell" : [ ],
+      "foo/b/module.rell" : [ ],
+      "foo/c/empty.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import foo.a_test;",
+      "foo/a.rell" : "module;",
+      "foo/a_test.rell" : "@test module; function test() {}",
+      "foo/module.rell" : "@test module;",
+      "foo/b/module.rell" : "module;",
+      "foo/c/empty.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "import:module_test:foo.a_test",
+        "text" : "Cannot import a test module 'foo.a_test' from a non-test module"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "foo/a.rell" : [ ],
+      "foo/a_test.rell" : [ ],
+      "foo/module.rell" : [ ],
+      "foo/b/module.rell" : [ ],
+      "foo/c/empty.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "",
+      "foo/a.rell" : "module;",
+      "foo/a_test.rell" : "@test module; function test() {}",
+      "foo/module.rell" : "@test module;",
+      "foo/b/module.rell" : "module;",
+      "foo/c/empty.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [
+        "foo.a_test"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "foo/a.rell" : [ ],
+      "foo/a_test.rell" : [ ],
+      "foo/module.rell" : [ ],
+      "foo/b/module.rell" : [ ],
+      "foo/c/empty.rell" : [ ]
+    }
+  }
+]

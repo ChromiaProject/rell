@@ -1,0 +1,84 @@
+[
+  {
+    "files" : {
+      "ext.rell" : "@external module; @extend(f) function g() {}",
+      "lib.rell" : "@external module; @extendable function f() {}",
+      "main.rell" : "import lib;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "lib.rell(1:40)",
+        "type" : "ERROR",
+        "code" : "def_external:module:FUNCTION",
+        "text" : "Function not allowed in external module"
+      }
+    ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "@external module; @extend(f) function g() {}",
+      "lib.rell" : "@external module; @extendable function f() {}",
+      "main.rell" : "import ext;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "ext.rell(1:39)",
+        "type" : "ERROR",
+        "code" : "def_external:module:FUNCTION",
+        "text" : "Function not allowed in external module"
+      }
+    ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

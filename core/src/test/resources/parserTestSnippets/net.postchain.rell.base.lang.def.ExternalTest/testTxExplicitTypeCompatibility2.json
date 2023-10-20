@@ -1,0 +1,890 @@
+[
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: transaction, y: foo.transaction): boolean = (x == y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:62)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:==:[transaction]:[[foo]:transaction]",
+        "text" : "Wrong operand types for '==': transaction, [foo]:transaction"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: transaction, y: foo.transaction): boolean = (x != y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:62)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:!=:[transaction]:[[foo]:transaction]",
+        "text" : "Wrong operand types for '!=': transaction, [foo]:transaction"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: transaction, y: foo.transaction): boolean = (x < y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:62)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:<:[transaction]:[[foo]:transaction]",
+        "text" : "Wrong operand types for '<': transaction, [foo]:transaction"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: transaction, y: foo.transaction): boolean = (x > y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:62)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:>:[transaction]:[[foo]:transaction]",
+        "text" : "Wrong operand types for '>': transaction, [foo]:transaction"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: foo.transaction, y: transaction): boolean = (x == y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:62)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:==:[[foo]:transaction]:[transaction]",
+        "text" : "Wrong operand types for '==': [foo]:transaction, transaction"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: foo.transaction, y: transaction): boolean = (x != y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:62)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:!=:[[foo]:transaction]:[transaction]",
+        "text" : "Wrong operand types for '!=': [foo]:transaction, transaction"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: foo.transaction, y: transaction): boolean = (x < y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:62)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:<:[[foo]:transaction]:[transaction]",
+        "text" : "Wrong operand types for '<': [foo]:transaction, transaction"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: foo.transaction, y: transaction): boolean = (x > y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:62)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:>:[[foo]:transaction]:[transaction]",
+        "text" : "Wrong operand types for '>': [foo]:transaction, transaction"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: foo.transaction, y: bar.transaction): boolean = (x == y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:66)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:==:[[foo]:transaction]:[[bar]:transaction]",
+        "text" : "Wrong operand types for '==': [foo]:transaction, [bar]:transaction"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: foo.transaction, y: bar.transaction): boolean = (x != y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:66)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:!=:[[foo]:transaction]:[[bar]:transaction]",
+        "text" : "Wrong operand types for '!=': [foo]:transaction, [bar]:transaction"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: foo.transaction, y: bar.transaction): boolean = (x < y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:66)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:<:[[foo]:transaction]:[[bar]:transaction]",
+        "text" : "Wrong operand types for '<': [foo]:transaction, [bar]:transaction"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: foo.transaction, y: bar.transaction): boolean = (x > y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:66)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:>:[[foo]:transaction]:[[bar]:transaction]",
+        "text" : "Wrong operand types for '>': [foo]:transaction, [bar]:transaction"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: block, y: foo.block): boolean = (x == y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:50)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:==:[block]:[[foo]:block]",
+        "text" : "Wrong operand types for '==': block, [foo]:block"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: block, y: foo.block): boolean = (x != y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:50)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:!=:[block]:[[foo]:block]",
+        "text" : "Wrong operand types for '!=': block, [foo]:block"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: block, y: foo.block): boolean = (x < y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:50)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:<:[block]:[[foo]:block]",
+        "text" : "Wrong operand types for '<': block, [foo]:block"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: block, y: foo.block): boolean = (x > y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:50)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:>:[block]:[[foo]:block]",
+        "text" : "Wrong operand types for '>': block, [foo]:block"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: foo.block, y: block): boolean = (x == y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:50)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:==:[[foo]:block]:[block]",
+        "text" : "Wrong operand types for '==': [foo]:block, block"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: foo.block, y: block): boolean = (x != y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:50)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:!=:[[foo]:block]:[block]",
+        "text" : "Wrong operand types for '!=': [foo]:block, block"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: foo.block, y: block): boolean = (x < y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:50)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:<:[[foo]:block]:[block]",
+        "text" : "Wrong operand types for '<': [foo]:block, block"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: foo.block, y: block): boolean = (x > y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:50)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:>:[[foo]:block]:[block]",
+        "text" : "Wrong operand types for '>': [foo]:block, block"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: foo.block, y: bar.block): boolean = (x == y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:54)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:==:[[foo]:block]:[[bar]:block]",
+        "text" : "Wrong operand types for '==': [foo]:block, [bar]:block"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: foo.block, y: bar.block): boolean = (x != y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:54)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:!=:[[foo]:block]:[[bar]:block]",
+        "text" : "Wrong operand types for '!=': [foo]:block, [bar]:block"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: foo.block, y: bar.block): boolean = (x < y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:54)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:<:[[foo]:block]:[[bar]:block]",
+        "text" : "Wrong operand types for '<': [foo]:block, [bar]:block"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "@log entity user { name; }\nnamespace foo { @external('foo') namespace { entity transaction; entity block; @log entity user {name;} } }\nnamespace bar { @external('bar') namespace { entity transaction; entity block; @log entity user {name;} } }\nfunction f(x: foo.block, y: bar.block): boolean = (x > y);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(4:54)",
+        "type" : "ERROR",
+        "code" : "binop_operand_type:>:[[foo]:block]:[[bar]:block]",
+        "text" : "Wrong operand types for '>': [foo]:block, [bar]:block"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

@@ -1,0 +1,146 @@
+[
+  {
+    "files" : {
+      "m1.rell" : "module; namespace ns1 { import m2; }",
+      "m2.rell" : "module; namespace ns2 { import m3.{ns3}; }",
+      "m3.rell" : "module; namespace ns3 { val k = 123; }",
+      "main.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        "m1"
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "m1.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "m1.rell" : [ ],
+      "m2.rell" : [ ],
+      "m3.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "m1.rell" : "module; namespace ns1 { import m2; }",
+      "m2.rell" : "module; namespace ns2 { import m3.{ns3}; }",
+      "m3.rell" : "module; namespace ns3 { val k = 123; }",
+      "main.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        "m2"
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "m2.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "m1.rell" : [ ],
+      "m2.rell" : [ ],
+      "m3.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "m1.rell" : "module; namespace ns1 { import m2; }",
+      "m2.rell" : "module; namespace ns2 { import m3.{ns3}; }",
+      "m3.rell" : "module; namespace ns3 { val k = 123; }",
+      "main.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        "m3"
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "m3.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "m1.rell" : [ ],
+      "m2.rell" : [ ],
+      "m3.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "m1.rell" : "module; namespace ns1 { import m2; }",
+      "m2.rell" : "module; namespace ns2 { import m3.{ns3}; }",
+      "m3.rell" : "module; namespace ns3 { val k = 123; }",
+      "main.rell" : "import m1.{ns1.m2.ns2.ns3.k}; query q() = k;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "m1.rell" : [ ],
+      "m2.rell" : [ ],
+      "m3.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

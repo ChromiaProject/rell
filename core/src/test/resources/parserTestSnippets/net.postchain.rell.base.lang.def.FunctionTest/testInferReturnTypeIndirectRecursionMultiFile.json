@@ -1,0 +1,57 @@
+[
+  {
+    "files" : {
+      "main.rell" : "import lib;",
+      "lib/f1.rell" : "function f(x: integer) = g(x);",
+      "lib/f2.rell" : "function g(x: integer) = h(x);",
+      "lib/f3.rell" : "function h(x: integer) = f(x);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "lib/f1.rell(1:26)",
+        "type" : "ERROR",
+        "code" : "fn_type_recursion:FUNCTION:lib:g",
+        "text" : "Function 'lib:g' is recursive, cannot infer the type; specify type explicitly"
+      },
+      {
+        "pos" : "lib/f2.rell(1:26)",
+        "type" : "ERROR",
+        "code" : "fn_type_recursion:FUNCTION:lib:h",
+        "text" : "Function 'lib:h' is recursive, cannot infer the type; specify type explicitly"
+      },
+      {
+        "pos" : "lib/f3.rell(1:26)",
+        "type" : "ERROR",
+        "code" : "fn_type_recursion:FUNCTION:lib:f",
+        "text" : "Function 'lib:f' is recursive, cannot infer the type; specify type explicitly"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "lib/f1.rell" : [ ],
+      "lib/f2.rell" : [ ],
+      "lib/f3.rell" : [ ]
+    }
+  }
+]

@@ -1,0 +1,202 @@
+[
+  {
+    "files" : {
+      "a1.rell" : "module; import b; object o1 { x: integer = b.f3() + 1; }",
+      "a2.rell" : "module; import b; object o2 { x: integer = b.f4() + 10; }",
+      "a3.rell" : "module; import b; object o3 { x: integer = b.f2() + 100; }",
+      "a4.rell" : "module; import b; object o4 { x: integer = 123; }",
+      "b.rell" : "\n            module;\n            import a1; import a2; import a3; import a4;\n            function f1(): integer = a1.o1.x;\n            function f2(): integer = a2.o2.x;\n            function f3(): integer = a3.o3.x;\n            function f4(): integer = a4.o4.x;\n        ",
+      "main.rell" : "import a1; import a2; import a3; import a4;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a1.rell" : [ ],
+      "a2.rell" : [ ],
+      "a3.rell" : [ ],
+      "a4.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a1.rell" : "module; import b; object o1 { x: integer = b.f3() + 1; }",
+      "a2.rell" : "module; import b; object o2 { x: integer = b.f4() + 10; }",
+      "a3.rell" : "module; import b; object o3 { x: integer = b.f2() + 100; }",
+      "a4.rell" : "module; import b; object o4 { x: integer = 123; }",
+      "b.rell" : "\n            module;\n            import a1; import a2; import a3; import a4;\n            function f1(): integer = a1.o1.x;\n            function f2(): integer = a2.o2.x;\n            function f3(): integer = a3.o3.x;\n            function f4(): integer = a4.o4.x;\n        ",
+      "main.rell" : "import a1; import a2; import a3; import a4;\nquery q() = a1.o1.x;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a1.rell" : [ ],
+      "a2.rell" : [ ],
+      "a3.rell" : [ ],
+      "a4.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a1.rell" : "module; import b; object o1 { x: integer = b.f3() + 1; }",
+      "a2.rell" : "module; import b; object o2 { x: integer = b.f4() + 10; }",
+      "a3.rell" : "module; import b; object o3 { x: integer = b.f2() + 100; }",
+      "a4.rell" : "module; import b; object o4 { x: integer = 123; }",
+      "b.rell" : "\n            module;\n            import a1; import a2; import a3; import a4;\n            function f1(): integer = a1.o1.x;\n            function f2(): integer = a2.o2.x;\n            function f3(): integer = a3.o3.x;\n            function f4(): integer = a4.o4.x;\n        ",
+      "main.rell" : "import a1; import a2; import a3; import a4;\nquery q() = a2.o2.x;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a1.rell" : [ ],
+      "a2.rell" : [ ],
+      "a3.rell" : [ ],
+      "a4.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a1.rell" : "module; import b; object o1 { x: integer = b.f3() + 1; }",
+      "a2.rell" : "module; import b; object o2 { x: integer = b.f4() + 10; }",
+      "a3.rell" : "module; import b; object o3 { x: integer = b.f2() + 100; }",
+      "a4.rell" : "module; import b; object o4 { x: integer = 123; }",
+      "b.rell" : "\n            module;\n            import a1; import a2; import a3; import a4;\n            function f1(): integer = a1.o1.x;\n            function f2(): integer = a2.o2.x;\n            function f3(): integer = a3.o3.x;\n            function f4(): integer = a4.o4.x;\n        ",
+      "main.rell" : "import a1; import a2; import a3; import a4;\nquery q() = a3.o3.x;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a1.rell" : [ ],
+      "a2.rell" : [ ],
+      "a3.rell" : [ ],
+      "a4.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a1.rell" : "module; import b; object o1 { x: integer = b.f3() + 1; }",
+      "a2.rell" : "module; import b; object o2 { x: integer = b.f4() + 10; }",
+      "a3.rell" : "module; import b; object o3 { x: integer = b.f2() + 100; }",
+      "a4.rell" : "module; import b; object o4 { x: integer = 123; }",
+      "b.rell" : "\n            module;\n            import a1; import a2; import a3; import a4;\n            function f1(): integer = a1.o1.x;\n            function f2(): integer = a2.o2.x;\n            function f3(): integer = a3.o3.x;\n            function f4(): integer = a4.o4.x;\n        ",
+      "main.rell" : "import a1; import a2; import a3; import a4;\nquery q() = a4.o4.x;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a1.rell" : [ ],
+      "a2.rell" : [ ],
+      "a3.rell" : [ ],
+      "a4.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

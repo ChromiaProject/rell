@@ -1,0 +1,242 @@
+[
+  {
+    "files" : {
+      "main.rell" : "function si(i: integer) { print(i); return i; }\nfunction st(t: text) { print(t); return t; }\nfunction f(data, i: integer = si(99), t: text = st('Y')) { val r = 'f:'+i+','+t; print(r); return r; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function si(i: integer) { print(i); return i; }\nfunction st(t: text) { print(t); return t; }\nfunction f(data, i: integer = si(99), t: text = st('Y')) { val r = 'f:'+i+','+t; print(r); return r; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( f(data) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function si(i: integer) { print(i); return i; }\nfunction st(t: text) { print(t); return t; }\nfunction f(data, i: integer = si(99), t: text = st('Y')) { val r = 'f:'+i+','+t; print(r); return r; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( f(data, i = si(.i)) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function si(i: integer) { print(i); return i; }\nfunction st(t: text) { print(t); return t; }\nfunction f(data, i: integer = si(99), t: text = st('Y')) { val r = 'f:'+i+','+t; print(r); return r; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( f(data, i = si(77)) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function si(i: integer) { print(i); return i; }\nfunction st(t: text) { print(t); return t; }\nfunction f(data, i: integer = si(99), t: text = st('Y')) { val r = 'f:'+i+','+t; print(r); return r; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( f(data, t = st(.t)) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function si(i: integer) { print(i); return i; }\nfunction st(t: text) { print(t); return t; }\nfunction f(data, i: integer = si(99), t: text = st('Y')) { val r = 'f:'+i+','+t; print(r); return r; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( f(data, t = st('Z')) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function si(i: integer) { print(i); return i; }\nfunction st(t: text) { print(t); return t; }\nfunction f(data, i: integer = si(99), t: text = st('Y')) { val r = 'f:'+i+','+t; print(r); return r; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* { .i == 444 } ( f(data, i = si(77)) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function si(i: integer) { print(i); return i; }\nfunction st(t: text) { print(t); return t; }\nfunction f(data, i: integer = si(99), t: text = st('Y')) { val r = 'f:'+i+','+t; print(r); return r; }\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* { .i == 333 } ( f(data, i = si(77)) );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

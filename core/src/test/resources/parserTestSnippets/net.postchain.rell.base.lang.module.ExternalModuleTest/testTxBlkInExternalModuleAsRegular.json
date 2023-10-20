@@ -1,0 +1,578 @@
+[
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;\nquery q() = _type_of(ext.ns.transaction@{});"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;\nquery q() = _type_of(ext.ns.transaction@{}(.block));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;\nquery q() = _type_of(ext.ns.block@{});"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;\nquery q() = _type_of(ext.transaction@{});"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;\nquery q() = _type_of(ext.transaction@{}(.block));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;\nquery q() = _type_of(ext.block@{});"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;\nquery q() = _type_of(ext.data@{}(.transaction));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;\nquery q() = _type_of(ext.data@{}(.transaction.block));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;\nquery q() = _type_of(ext.data@{}(.imp_tx));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;\nquery q() = _type_of(ext.data@{}(.imp_tx.block));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;\nquery q() = _type_of(ext.data@{}(.imp_blk));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;\nquery q() = _type_of(ext.data@{}(.exp_tx));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;\nquery q() = _type_of(ext.data@{}(.exp_tx.block));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;\nquery q() = _type_of(ext.data@{}(.exp_blk));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;\nquery q() = _type_of(transaction@{});"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;\nquery q() = _type_of(transaction@{}(.block));"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "ext.rell" : "\n            @external module;\n            namespace ns { entity transaction; entity block; }\n            @log entity data {\n                name;\n                imp_blk: block;\n                imp_tx: transaction;\n                exp_blk: ns.block;\n                exp_tx: ns.transaction;\n            }\n        ",
+      "main.rell" : "import ext;\nquery q() = _type_of(block@{});"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "ext.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

@@ -1,0 +1,222 @@
+[
+  {
+    "files" : {
+      "main.rell" : "",
+      "dir/foo.rell" : "module; function f(x: integer): integer = x * x;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "dir/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : " query q() = f(123);",
+      "dir/foo.rell" : "module; function f(x: integer): integer = x * x;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:14)",
+        "type" : "ERROR",
+        "code" : "unknown_name:f",
+        "text" : "Unknown name: 'f'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "dir/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : " query q() = foo.f(123);",
+      "dir/foo.rell" : "module; function f(x: integer): integer = x * x;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:14)",
+        "type" : "ERROR",
+        "code" : "unknown_name:foo",
+        "text" : "Unknown name: 'foo'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "dir/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : " query q() = dir.foo.f(123);",
+      "dir/foo.rell" : "module; function f(x: integer): integer = x * x;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:14)",
+        "type" : "ERROR",
+        "code" : "unknown_name:dir",
+        "text" : "Unknown name: 'dir'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "dir/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import dir.foo; query q() = f(123);",
+      "dir/foo.rell" : "module; function f(x: integer): integer = x * x;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:29)",
+        "type" : "ERROR",
+        "code" : "unknown_name:f",
+        "text" : "Unknown name: 'f'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "dir/foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import dir.foo; query q() = foo.f(123);",
+      "dir/foo.rell" : "module; function f(x: integer): integer = x * x;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "dir/foo.rell" : [ ]
+    }
+  }
+]

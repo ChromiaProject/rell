@@ -1,0 +1,62 @@
+[
+  {
+    "files" : {
+      "main.rell" : "entity user { name; id: integer; value1: integer; value2: integer; }\nfunction fi(x: integer, tag: text): integer { print(tag); return x; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity user { name; id: integer; value1: integer; value2: integer; }\nfunction fi(x: integer, tag: text): integer { print(tag); return x; }\nquery q(a: integer) = user @* {} ( \n            when (fi(a, 'A')) {\n                fi(25, 'C1') -> fi(501, 'R1');\n                .value1 -> fi(502, 'R2');\n                fi(133, 'C3') -> fi(503, 'R3');\n                .value2 -> fi(504, 'R4');\n                else -> fi(505, 'R5')\n            }\n         );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "files" : {
+      "main.rell" : "",
+      "prod.rell" : "\n            module;\n            entity user { name; }\n            operation add_user(name) { create user(name); }\n        ",
+      "tests.rell" : "\n            @test module;\n            import prod;\n\n            function rowid_to_int(r: rowid) = integer.from_gtv(r.to_gtv());\n\n            function test_add_user() {\n                assert_equals(prod.user@*{}(.name), list<text>());\n                assert_equals(block@*{}(.block_height), list<integer>());\n                assert_equals(transaction@*{}(rowid_to_int(.rowid)), list<integer>());\n\n                prod.add_user('Bob').run();\n                assert_equals(prod.user@*{}(.name), ['Bob']);\n                assert_equals(block@*{}(.block_height), [0]);\n                assert_equals(transaction@*{}(rowid_to_int(.rowid)), [1]);\n\n                prod.add_user('Alice').run();\n                assert_equals(prod.user@*{}(.name), ['Bob', 'Alice']);\n                assert_equals(block@*{}(.block_height), [0, 1]);\n                assert_equals(transaction@*{}(rowid_to_int(.rowid)), [1, 2]);\n\n                prod.add_user('Trudy').run();\n                assert_equals(prod.user@*{}(.name), ['Bob', 'Alice', 'Trudy']);\n                assert_equals(block@*{}(.block_height), [0, 1, 2]);\n                assert_equals(transaction@*{}(rowid_to_int(.rowid)), [1, 2, 3]);\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [
+        "tests"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "prod.rell" : [ ],
+      "tests.rell" : [ ]
+    }
+  }
+]

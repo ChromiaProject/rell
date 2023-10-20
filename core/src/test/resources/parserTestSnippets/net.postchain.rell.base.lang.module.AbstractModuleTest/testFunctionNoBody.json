@@ -1,0 +1,178 @@
+[
+  {
+    "files" : {
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import wrong;",
+      "wrong.rell" : "abstract module; function f(): integer;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "wrong.rell(1:27)",
+        "type" : "ERROR",
+        "code" : "fn:no_body:wrong:f",
+        "text" : "Function must have a body"
+      }
+    ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "wrong.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import lib; override function lib.f(): integer;",
+      "wrong.rell" : "abstract module; function f(): integer;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:31)",
+        "type" : "ERROR",
+        "code" : "fn:no_body:lib.f",
+        "text" : "Function must have a body"
+      }
+    ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "wrong.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "import lib; function lib.f(): integer;",
+      "wrong.rell" : "abstract module; function f(): integer;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "override:missing:[lib:f]:[lib.rell:1]",
+        "text" : "No override for abstract function 'lib:f' (defined at lib.rell:1)"
+      },
+      {
+        "pos" : "main.rell(1:22)",
+        "type" : "ERROR",
+        "code" : "fn:no_body:lib.f",
+        "text" : "Function must have a body"
+      },
+      {
+        "pos" : "main.rell(1:22)",
+        "type" : "ERROR",
+        "code" : "fn:qname_no_override:lib.f",
+        "text" : "Invalid function name: 'lib.f' (qualified names allowed only for override)"
+      }
+    ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "wrong.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "abstract module; abstract function f(): integer;",
+      "main.rell" : "function f(): integer;",
+      "wrong.rell" : "abstract module; function f(): integer;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:10)",
+        "type" : "ERROR",
+        "code" : "fn:no_body:f",
+        "text" : "Function must have a body"
+      }
+    ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "wrong.rell" : [ ]
+    }
+  }
+]

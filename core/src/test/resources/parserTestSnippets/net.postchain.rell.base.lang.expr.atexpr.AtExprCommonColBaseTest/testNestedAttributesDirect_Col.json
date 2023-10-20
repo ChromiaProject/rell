@@ -1,0 +1,404 @@
+[
+  {
+    "files" : {
+      "main.rell" : "entity company { name; city:text; company_attr:text; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; city:text; user_attr:text; }\nfunction get_user(): list<user> = list(user @* {});"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; city:text; company_attr:text; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; city:text; user_attr:text; }\nfunction get_user(): list<user> = list(user @* {});\noperation o() { create company(name = 'Adidas', city = 'London', company_attr = 'C1'); create company(name = 'Reebok', city = 'Paris', company_attr = 'C2'); create company(name = 'Puma', city = 'London', company_attr = 'C3'); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; city:text; company_attr:text; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; city:text; user_attr:text; }\nfunction get_user(): list<user> = list(user @* {});\noperation o() { create user(id = 501, name = 'Bob', city = 'Paris', user_attr = 'U1'); create user(id = 502, name = 'Alice', city = 'London', user_attr = 'U2'); create user(id = 503, name = 'Trudy', city = 'Berlin', user_attr = 'U3'); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; city:text; company_attr:text; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; city:text; user_attr:text; }\nfunction get_user(): list<user> = list(user @* {});\nquery q() = get_user() @* {} ( _=.name, get_company() @ {} (.user_attr) limit 1 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:62)",
+        "type" : "ERROR",
+        "code" : "at_expr:attr:belongs_to_outer:user_attr:$:user",
+        "text" : "Name 'user_attr' belongs to an outer at-expression, fully qualified name is required"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; city:text; company_attr:text; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; city:text; user_attr:text; }\nfunction get_user(): list<user> = list(user @* {});\nquery q() = (u:get_user()) @* {} ( get_company() @ {} (u.name) limit 1 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; city:text; company_attr:text; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; city:text; user_attr:text; }\nfunction get_user(): list<user> = list(user @* {});\nquery q() = get_user() @* {} ( _=.name, get_company() @ {} (.user_attr) limit 1 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "NONE",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:62)",
+        "type" : "ERROR",
+        "code" : "at_expr:attr:belongs_to_outer:user_attr:$:user",
+        "text" : "Name 'user_attr' belongs to an outer at-expression, fully qualified name is required"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; city:text; company_attr:text; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; city:text; user_attr:text; }\nfunction get_user(): list<user> = list(user @* {});\nquery q() = get_user() @* {} ( _=.name, get_company() @ {} (.user_attr) limit 1 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "PARTIAL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:62)",
+        "type" : "ERROR",
+        "code" : "at_expr:attr:belongs_to_outer:user_attr:$:user",
+        "text" : "Name 'user_attr' belongs to an outer at-expression, fully qualified name is required"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct company { name; city:text; company_attr:text; }\nstruct user { id:integer; name; city:text; user_attr:text; }\nfunction get_company(): list<company> = [company(name = 'Adidas', city = 'London', company_attr = 'C1'), company(name = 'Reebok', city = 'Paris', company_attr = 'C2'), company(name = 'Puma', city = 'London', company_attr = 'C3')];\nfunction get_user(): list<user> = [user(id = 501, name = 'Bob', city = 'Paris', user_attr = 'U1'), user(id = 502, name = 'Alice', city = 'London', user_attr = 'U2'), user(id = 503, name = 'Trudy', city = 'Berlin', user_attr = 'U3')];"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct company { name; city:text; company_attr:text; }\nstruct user { id:integer; name; city:text; user_attr:text; }\nfunction get_company(): list<company> = [company(name = 'Adidas', city = 'London', company_attr = 'C1'), company(name = 'Reebok', city = 'Paris', company_attr = 'C2'), company(name = 'Puma', city = 'London', company_attr = 'C3')];\nfunction get_user(): list<user> = [user(id = 501, name = 'Bob', city = 'Paris', user_attr = 'U1'), user(id = 502, name = 'Alice', city = 'London', user_attr = 'U2'), user(id = 503, name = 'Trudy', city = 'Berlin', user_attr = 'U3')];\nquery q() = get_user() @* {} ( _=.name, get_company() @ {} (.user_attr) limit 1 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:62)",
+        "type" : "ERROR",
+        "code" : "at_expr:attr:belongs_to_outer:user_attr:$:user",
+        "text" : "Name 'user_attr' belongs to an outer at-expression, fully qualified name is required"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct company { name; city:text; company_attr:text; }\nstruct user { id:integer; name; city:text; user_attr:text; }\nfunction get_company(): list<company> = [company(name = 'Adidas', city = 'London', company_attr = 'C1'), company(name = 'Reebok', city = 'Paris', company_attr = 'C2'), company(name = 'Puma', city = 'London', company_attr = 'C3')];\nfunction get_user(): list<user> = [user(id = 501, name = 'Bob', city = 'Paris', user_attr = 'U1'), user(id = 502, name = 'Alice', city = 'London', user_attr = 'U2'), user(id = 503, name = 'Trudy', city = 'Berlin', user_attr = 'U3')];\nquery q() = (u:get_user()) @* {} ( get_company() @ {} (u.name) limit 1 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct company { name; city:text; company_attr:text; }\nstruct user { id:integer; name; city:text; user_attr:text; }\nfunction get_company(): list<company> = [company(name = 'Adidas', city = 'London', company_attr = 'C1'), company(name = 'Reebok', city = 'Paris', company_attr = 'C2'), company(name = 'Puma', city = 'London', company_attr = 'C3')];\nfunction get_user(): list<user> = [user(id = 501, name = 'Bob', city = 'Paris', user_attr = 'U1'), user(id = 502, name = 'Alice', city = 'London', user_attr = 'U2'), user(id = 503, name = 'Trudy', city = 'Berlin', user_attr = 'U3')];\nquery q() = get_user() @* {} ( _=.name, get_company() @ {} (.user_attr) limit 1 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "NONE",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:62)",
+        "type" : "ERROR",
+        "code" : "at_expr:attr:belongs_to_outer:user_attr:$:user",
+        "text" : "Name 'user_attr' belongs to an outer at-expression, fully qualified name is required"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct company { name; city:text; company_attr:text; }\nstruct user { id:integer; name; city:text; user_attr:text; }\nfunction get_company(): list<company> = [company(name = 'Adidas', city = 'London', company_attr = 'C1'), company(name = 'Reebok', city = 'Paris', company_attr = 'C2'), company(name = 'Puma', city = 'London', company_attr = 'C3')];\nfunction get_user(): list<user> = [user(id = 501, name = 'Bob', city = 'Paris', user_attr = 'U1'), user(id = 502, name = 'Alice', city = 'London', user_attr = 'U2'), user(id = 503, name = 'Trudy', city = 'Berlin', user_attr = 'U3')];\nquery q() = get_user() @* {} ( _=.name, get_company() @ {} (.user_attr) limit 1 );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "PARTIAL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:62)",
+        "type" : "ERROR",
+        "code" : "at_expr:attr:belongs_to_outer:user_attr:$:user",
+        "text" : "Name 'user_attr' belongs to an outer at-expression, fully qualified name is required"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

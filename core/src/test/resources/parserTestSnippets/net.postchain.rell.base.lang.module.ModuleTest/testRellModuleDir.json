@@ -1,0 +1,173 @@
+[
+  {
+    "files" : {
+      "main.rell" : "import rell;",
+      "a/rell.rell" : "module; val X = 123;",
+      "rell/a.rell" : "module;",
+      "rell/module.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "import:not_found:rell",
+        "text" : "Module 'rell' not found"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/rell.rell" : [ ],
+      "rell/a.rell" : [ ],
+      "rell/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import r: rell;",
+      "a/rell.rell" : "module; val X = 123;",
+      "rell/a.rell" : "module;",
+      "rell/module.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "import:not_found:rell",
+        "text" : "Module 'rell' not found"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/rell.rell" : [ ],
+      "rell/a.rell" : [ ],
+      "rell/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import rell.a;",
+      "a/rell.rell" : "module; val X = 123;",
+      "rell/a.rell" : "module;",
+      "rell/module.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "import:not_found:rell.a",
+        "text" : "Module 'rell.a' not found"
+      },
+      {
+        "pos" : "rell/a.rell(1:1)",
+        "type" : "ERROR",
+        "code" : "module:reserved_name:rell.a",
+        "text" : "Defining a module called 'rell.a' is not allowed"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/rell.rell" : [ ],
+      "rell/a.rell" : [ ],
+      "rell/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import r: a.rell; function f() = r.X;",
+      "a/rell.rell" : "module; val X = 123;",
+      "rell/a.rell" : "module;",
+      "rell/module.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/rell.rell" : [ ],
+      "rell/a.rell" : [ ],
+      "rell/module.rell" : [ ]
+    }
+  }
+]

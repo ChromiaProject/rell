@@ -1,0 +1,1416 @@
+[
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<list<integer>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<set<integer>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<map<text,integer>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<map<integer,text>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:map<integer,text>",
+        "text" : "Type 'map<integer,text>' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<rec>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<rec?>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:rec?",
+        "text" : "Type 'rec?' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<(integer,text)>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<(a:integer,b:text)>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<(a:integer,text)>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<(integer,b:text)>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<(integer,)>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<list<map<text,(rec,integer)>>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<list<integer?>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<list<gtv>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<list<virtual<rec>>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<set<virtual<rec>>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<list<vir>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<set<vir>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<vir>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<(set<integer>)>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<list<set<integer>>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<list<map<text,set<integer>>>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<integer>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:integer",
+        "text" : "Type 'integer' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<boolean>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:boolean",
+        "text" : "Type 'boolean' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<range>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:range",
+        "text" : "Type 'range' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<list<range>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:list<range>",
+        "text" : "Type 'list<range>' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<set<range>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:set<range>",
+        "text" : "Type 'set<range>' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<integer?>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:integer?",
+        "text" : "Type 'integer?' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<list<integer>?>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:list<integer>?",
+        "text" : "Type 'list<integer>?' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<gtv>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:gtv",
+        "text" : "Type 'gtv' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<E>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:E",
+        "text" : "Type 'E' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<user>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:user",
+        "text" : "Type 'user' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<nogtv>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:nogtv",
+        "text" : "Type 'nogtv' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<list<nogtv>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:list<nogtv>",
+        "text" : "Type 'list<nogtv>' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<set<nogtv>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:set<nogtv>",
+        "text" : "Type 'set<nogtv>' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<virtual<rec>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:virtual<rec>",
+        "text" : "Type 'virtual<rec>' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<novir>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:novir",
+        "text" : "Type 'novir' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<cycle>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:cycle",
+        "text" : "Type 'cycle' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<list<map<integer,text>>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:list<map<integer,text>>",
+        "text" : "Type 'list<map<integer,text>>' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<list<map<integer,(rec,integer)>>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:list<map<integer,(rec,integer)>>",
+        "text" : "Type 'list<map<integer,(rec,integer)>>' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<(integer)->text>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:(integer)->text",
+        "text" : "Type '(integer)->text' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nstruct vir { y: virtual<rec>; }\nstruct nogtv { z: range; }\nenum E {A,B,C}\nentity user { name; }\nstruct novir { m: map<integer,text>; }\nstruct cycle { mutable next: cycle?; m: map<integer,text>; }\noperation o(a: virtual<list<(integer)->text>>){}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(8:16)",
+        "type" : "ERROR",
+        "code" : "type:virtual:bad_inner_type:list<(integer)->text>",
+        "text" : "Type 'list<(integer)->text>' cannot be virtual (allowed types are: list, set, map, struct, tuple)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

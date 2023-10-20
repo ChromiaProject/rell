@@ -1,0 +1,31 @@
+[
+  {
+    "files" : {
+      "test.rell" : "@test module; function test_1(){} function test_2(){ assert_true(false); } function test_3(){}"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [
+        "test"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "test.rell" : [ ]
+    }
+  }
+]

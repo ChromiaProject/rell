@@ -1,0 +1,392 @@
+[
+  {
+    "files" : {
+      "main.rell" : "\n            function get_values(n: integer): list<text> {\n                val res = ['London', 'Paris', 'coder', 'lawyer'];\n                while (res.size() < n) res.add('' + res.size());\n                return res;\n            }\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function get_values(n: integer): list<text> {\n                val res = ['London', 'Paris', 'coder', 'lawyer'];\n                while (res.size() < n) res.add('' + res.size());\n                return res;\n            }\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { .city.name in get_values(2) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function get_values(n: integer): list<text> {\n                val res = ['London', 'Paris', 'coder', 'lawyer'];\n                while (res.size() < n) res.add('' + res.size());\n                return res;\n            }\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { .city.name in get_values(100) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function get_values(n: integer): list<text> {\n                val res = ['London', 'Paris', 'coder', 'lawyer'];\n                while (res.size() < n) res.add('' + res.size());\n                return res;\n            }\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { .city.name in get_values(1000) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function get_values(n: integer): list<text> {\n                val res = ['London', 'Paris', 'coder', 'lawyer'];\n                while (res.size() < n) res.add('' + res.size());\n                return res;\n            }\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { .city.name in get_values(10000) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function get_values(n: integer): list<text> {\n                val res = ['London', 'Paris', 'coder', 'lawyer'];\n                while (res.size() < n) res.add('' + res.size());\n                return res;\n            }\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { .city.name in get_values(30000) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function get_values(n: integer): list<text> {\n                val res = ['London', 'Paris', 'coder', 'lawyer'];\n                while (res.size() < n) res.add('' + res.size());\n                return res;\n            }\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { .city.name in get_values(32767) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function get_values(n: integer): list<text> {\n                val res = ['London', 'Paris', 'coder', 'lawyer'];\n                while (res.size() < n) res.add('' + res.size());\n                return res;\n            }\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { .city.name in get_values(32768) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function get_values(n: integer): list<text> {\n                val res = ['London', 'Paris', 'coder', 'lawyer'];\n                while (res.size() < n) res.add('' + res.size());\n                return res;\n            }\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { .city.name in get_values(32769) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function get_values(n: integer): list<text> {\n                val res = ['London', 'Paris', 'coder', 'lawyer'];\n                while (res.size() < n) res.add('' + res.size());\n                return res;\n            }\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { .city.name in get_values(50000) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function get_values(n: integer): list<text> {\n                val res = ['London', 'Paris', 'coder', 'lawyer'];\n                while (res.size() < n) res.add('' + res.size());\n                return res;\n            }\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { .city.name in get_values(100000) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function get_values(n: integer): list<text> {\n                val res = ['London', 'Paris', 'coder', 'lawyer'];\n                while (res.size() < n) res.add('' + res.size());\n                return res;\n            }\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { .city.name in get_values(16384), .job in get_values(16383) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "\n            function get_values(n: integer): list<text> {\n                val res = ['London', 'Paris', 'coder', 'lawyer'];\n                while (res.size() < n) res.add('' + res.size());\n                return res;\n            }\n        \nentity city { name; country: text; }\nentity user { name; city; job: text; }\nentity work { company: text; city; job: text; }\nquery q() = user @* { .city.name in get_values(16384), .job in get_values(16384) } (.name);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

@@ -1,0 +1,1828 @@
+[
+  {
+    "files" : {
+      "main.rell" : "",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 123;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.obj1;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.obj1;\nquery q() = obj1.foo.x;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.obj2;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.obj2;\nquery q() = obj2.foo.x;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.obj1; import a.op2;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.obj1; import a.op2;\nquery q() = obj1.foo.x;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.obj1; import a.q2;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.obj1; import a.q2;\nquery q() = obj1.foo.x;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.obj1; import a.obj2;\n",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "a/obj1.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[a.obj1:foo]:foo:OBJECT:[a.obj2:foo]:a/obj2.rell(1:16)",
+        "text" : "Mount name conflict: object 'foo' has mount name 'foo' (defined at a/obj2.rell:1)"
+      },
+      {
+        "pos" : "a/obj2.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[a.obj2:foo]:foo:OBJECT:[a.obj1:foo]:a/obj1.rell(1:16)",
+        "text" : "Mount name conflict: object 'foo' has mount name 'foo' (defined at a/obj1.rell:1)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.obj1; import a.cls2;\n",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "a/cls2.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[a.cls2:foo]:foo:OBJECT:[a.obj1:foo]:a/obj1.rell(1:16)",
+        "text" : "Mount name conflict: object 'foo' has mount name 'foo' (defined at a/obj1.rell:1)"
+      },
+      {
+        "pos" : "a/obj1.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[a.obj1:foo]:foo:ENTITY:[a.cls2:foo]:a/cls2.rell(1:16)",
+        "text" : "Mount name conflict: entity 'foo' has mount name 'foo' (defined at a/cls2.rell:1)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.cls1;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.cls1;\nquery q() = 123;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.cls1; import a.op2;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.cls1; import a.op2;\nquery q() = 123;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.cls1; import a.q2;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.cls1; import a.q2;\nquery q() = 123;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.cls1; import a.cls2;\n",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "a/cls1.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[a.cls1:foo]:foo:ENTITY:[a.cls2:foo]:a/cls2.rell(1:16)",
+        "text" : "Mount name conflict: entity 'foo' has mount name 'foo' (defined at a/cls2.rell:1)"
+      },
+      {
+        "pos" : "a/cls2.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[a.cls2:foo]:foo:ENTITY:[a.cls1:foo]:a/cls1.rell(1:16)",
+        "text" : "Mount name conflict: entity 'foo' has mount name 'foo' (defined at a/cls1.rell:1)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.cls1; import a.obj2;\n",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "a/cls1.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[a.cls1:foo]:foo:OBJECT:[a.obj2:foo]:a/obj2.rell(1:16)",
+        "text" : "Mount name conflict: object 'foo' has mount name 'foo' (defined at a/obj2.rell:1)"
+      },
+      {
+        "pos" : "a/obj2.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[a.obj2:foo]:foo:ENTITY:[a.cls1:foo]:a/cls1.rell(1:16)",
+        "text" : "Mount name conflict: entity 'foo' has mount name 'foo' (defined at a/cls1.rell:1)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.op1;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.op1;\nquery q() = 123;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.op1; import a.cls2;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.op1; import a.cls2;\nquery q() = 123;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.op1; import a.obj2;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.op1; import a.obj2;\nquery q() = 123;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.op1; import a.q2;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.op1; import a.q2;\nquery q() = 123;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.op1; import a.op2;\n",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "a/op1.rell(1:19)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[a.op1:foo]:foo:OPERATION:[a.op2:foo]:a/op2.rell(1:19)",
+        "text" : "Mount name conflict: operation 'foo' has mount name 'foo' (defined at a/op2.rell:1)"
+      },
+      {
+        "pos" : "a/op2.rell(1:19)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[a.op2:foo]:foo:OPERATION:[a.op1:foo]:a/op1.rell(1:19)",
+        "text" : "Mount name conflict: operation 'foo' has mount name 'foo' (defined at a/op1.rell:1)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.q1;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.q1;\nquery q() = 123;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.q1; import a.cls2;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.q1; import a.cls2;\nquery q() = 123;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.q1; import a.obj2;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.q1; import a.obj2;\nquery q() = 123;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.q1; import a.op2;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.q1; import a.op2;\nquery q() = 123;",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a.q1; import a.q2;\n",
+      "a/cls1.rell" : "module; entity foo { x: text = 'cls1'; }",
+      "a/cls2.rell" : "module; entity foo { x: text = 'cls2'; }",
+      "a/obj1.rell" : "module; object foo { x: text = 'obj1'; }",
+      "a/obj2.rell" : "module; object foo { x: text = 'obj2'; }",
+      "a/op1.rell" : "module; operation foo() {}",
+      "a/op2.rell" : "module; operation foo() {}",
+      "a/q1.rell" : "module; query foo() = 'q1';",
+      "a/q2.rell" : "module; query foo() = 'q2';"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "a/q1.rell(1:15)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[a.q1:foo]:foo:QUERY:[a.q2:foo]:a/q2.rell(1:15)",
+        "text" : "Mount name conflict: query 'foo' has mount name 'foo' (defined at a/q2.rell:1)"
+      },
+      {
+        "pos" : "a/q2.rell(1:15)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[a.q2:foo]:foo:QUERY:[a.q1:foo]:a/q1.rell(1:15)",
+        "text" : "Mount name conflict: query 'foo' has mount name 'foo' (defined at a/q1.rell:1)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/cls1.rell" : [ ],
+      "a/cls2.rell" : [ ],
+      "a/obj1.rell" : [ ],
+      "a/obj2.rell" : [ ],
+      "a/op1.rell" : [ ],
+      "a/op2.rell" : [ ],
+      "a/q1.rell" : [ ],
+      "a/q2.rell" : [ ]
+    }
+  }
+]

@@ -1,0 +1,794 @@
+[
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : "import lib; query q() = lib.z();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : "import lib; import a; query q() = lib.z();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : "import lib; import b; query q() = lib.z();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : "import lib; import c; query q() = lib.z();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : "import lib; import d; query q() = lib.z();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : "import lib; import e; query q() = lib.z();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : "import lib; import f; query q() = lib.z();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : "import lib; import a; import b; query q() = lib.z();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : "import lib; import b; import a; query q() = lib.z();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : "import lib; import a; import c; query q() = lib.z();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : "import lib; import c; import a; query q() = lib.z();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : "import lib; import a; import d; query q() = lib.z();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : "import lib; import d; import a; query q() = lib.z();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : "import lib; import a; import e; query q() = lib.z();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : "import lib; import e; import a; query q() = lib.z();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : "import lib; import a; import f; query q() = lib.z();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; import lib; @extend(lib.z) function a() = ['a'];",
+      "b.rell" : "module; import lib; @extend(lib.z) function b() = ['b'];",
+      "c.rell" : "module; import lib; import a; @extend(lib.z) function c() = ['c'];",
+      "d.rell" : "module; import lib; @extend(lib.z) function d() = ['d']; import b;",
+      "e.rell" : "module; import lib; import a; import f; @extend(lib.z) function e() = ['e'];",
+      "f.rell" : "module; import lib; import b; @extend(lib.z) function f() = ['f']; import e;",
+      "lib.rell" : "module; @extendable function z() = ['z'];",
+      "main.rell" : "import lib; import f; import a; query q() = lib.z();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "d.rell" : [ ],
+      "e.rell" : [ ],
+      "f.rell" : [ ],
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

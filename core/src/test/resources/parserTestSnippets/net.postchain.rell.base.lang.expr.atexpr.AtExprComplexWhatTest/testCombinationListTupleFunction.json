@@ -1,0 +1,62 @@
+[
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text): text = i + ':' + t;\nfunction g(i: integer): integer = i * i;\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function f(i: integer, t: text): text = i + ':' + t;\nfunction g(i: integer): integer = i * i;\nentity city { name; country: text; }\nentity user { name; score: integer; }\nentity data { i: integer; d: decimal; t: text; ba: byte_array; u: user; c: city; }\nquery q() = data @* {} ( data, [(.i, f(.u.score, .u.name)), (g(.i), .c.name)] );"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

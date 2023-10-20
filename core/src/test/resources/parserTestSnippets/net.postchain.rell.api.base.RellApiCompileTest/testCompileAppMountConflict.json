@@ -1,0 +1,255 @@
+[
+  {
+    "files" : {
+      "bar.rell" : "module; entity user {}",
+      "foo.rell" : "module; entity user {}"
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [
+      {
+        "pos" : "bar.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[bar:user]:user:ENTITY:[foo:user]:foo.rell(1:16)",
+        "text" : "Mount name conflict: entity 'user' has mount name 'user' (defined at foo.rell:1)"
+      },
+      {
+        "pos" : "foo.rell(1:16)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:user:[foo:user]:user:ENTITY:[bar:user]:bar.rell(1:16)",
+        "text" : "Mount name conflict: entity 'user' has mount name 'user' (defined at bar.rell:1)"
+      }
+    ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "module; entity user {}",
+      "foo.rell" : "module; entity user {}"
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : false,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "module; entity user {}",
+      "foo.rell" : "module; entity user {}"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "module; entity user {}",
+      "foo.rell" : "module; entity user {}"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : false,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "module; entity user {}",
+      "foo.rell" : "module; entity user {}"
+    },
+    "modules" : {
+      "modules" : [
+        "foo"
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "module; entity user {}",
+      "foo.rell" : "module; entity user {}"
+    },
+    "modules" : {
+      "modules" : [
+        "foo"
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : false,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "module; entity user {}",
+      "foo.rell" : "module; entity user {}"
+    },
+    "modules" : {
+      "modules" : [
+        "bar"
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "module; entity user {}",
+      "foo.rell" : "module; entity user {}"
+    },
+    "modules" : {
+      "modules" : [
+        "bar"
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : false,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ]
+    }
+  }
+]

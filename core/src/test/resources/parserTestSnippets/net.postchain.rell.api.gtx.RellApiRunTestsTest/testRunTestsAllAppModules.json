@@ -1,0 +1,138 @@
+[
+  {
+    "files" : {
+      "def.rell" : "module; import lib; @extend(lib.f) function() = 123;",
+      "lib.rell" : "module; @extendable function f(): integer?;",
+      "test.rell" : "@test module; import lib; function test_1(){ assert_equals(lib.f(), 123); }"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [
+        "test"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "def.rell" : [ ],
+      "lib.rell" : [ ],
+      "test.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "def.rell" : "module; import lib; @extend(lib.f) function() = 123;",
+      "lib.rell" : "module; @extendable function f(): integer?;",
+      "test.rell" : "@test module; import lib; function test_1(){ assert_equals(lib.f(), 123); }"
+    },
+    "modules" : {
+      "modules" : [
+        "lib"
+      ],
+      "test_root_modules" : [
+        "test"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "def.rell" : [ ],
+      "lib.rell" : [ ],
+      "test.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "def.rell" : "module; import lib; @extend(lib.f) function() = 123;",
+      "lib.rell" : "module; @extendable function f(): integer?;",
+      "test.rell" : "@test module; import lib; function test_1(){ assert_equals(lib.f(), 123); }"
+    },
+    "modules" : {
+      "modules" : [
+        "def"
+      ],
+      "test_root_modules" : [
+        "test"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "def.rell" : [ ],
+      "lib.rell" : [ ],
+      "test.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "def.rell" : "module; import lib; @extend(lib.f) function() = 123;",
+      "lib.rell" : "module; @extendable function f(): integer?;",
+      "test.rell" : "@test module; import lib; function test_1(){ assert_equals(lib.f(), 123); }"
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        "test"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "def.rell" : [ ],
+      "lib.rell" : [ ],
+      "test.rell" : [ ]
+    }
+  }
+]

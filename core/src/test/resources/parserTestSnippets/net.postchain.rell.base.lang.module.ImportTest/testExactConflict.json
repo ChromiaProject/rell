@@ -1,0 +1,221 @@
+[
+  {
+    "files" : {
+      "a.rell" : "module; function f(): integer = 123;",
+      "b.rell" : "module; function f(): integer = 123;",
+      "c.rell" : "module; import a.{f};",
+      "main.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; function f(): integer = 123;",
+      "b.rell" : "module; function f(): integer = 123;",
+      "c.rell" : "module; import a.{f};",
+      "main.rell" : "function f(): integer = 123; import a.{f}; function __f() = 0; query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:10)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:f:IMPORT:main.rell(1:40)",
+        "text" : "Name conflict: import 'f' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:40)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:f:FUNCTION:main.rell(1:10)",
+        "text" : "Name conflict: function 'f' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; function f(): integer = 123;",
+      "b.rell" : "module; function f(): integer = 123;",
+      "c.rell" : "module; import a.{f};",
+      "main.rell" : "import a.{f}; import b.{f}; function __f() = 0; query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:11)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:f:IMPORT:main.rell(1:25)",
+        "text" : "Name conflict: import 'f' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:25)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:f:IMPORT:main.rell(1:11)",
+        "text" : "Name conflict: import 'f' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; function f(): integer = 123;",
+      "b.rell" : "module; function f(): integer = 123;",
+      "c.rell" : "module; import a.{f};",
+      "main.rell" : "import a.{f}; import a.{f}; function __f() = f(); query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "a.rell" : "module; function f(): integer = 123;",
+      "b.rell" : "module; function f(): integer = 123;",
+      "c.rell" : "module; import a.{f};",
+      "main.rell" : "import a.{f}; import c.{f}; function __f() = 0; query q() = __f();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:11)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:f:IMPORT:main.rell(1:25)",
+        "text" : "Name conflict: import 'f' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:25)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:f:IMPORT:main.rell(1:11)",
+        "text" : "Name conflict: import 'f' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "c.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]
