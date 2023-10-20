@@ -4,7 +4,6 @@ import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.InitializeResult
 import org.eclipse.lsp4j.services.*
 import java.util.concurrent.CompletableFuture
-import kotlin.system.exitProcess
 
 
 interface RellLanguageServer : LanguageServer, LanguageClientAware
@@ -15,6 +14,7 @@ class LanguageServerImpl : RellLanguageServer {
     private lateinit var languageClient: LanguageClient
 
     override fun initialize(params: InitializeParams?): CompletableFuture<InitializeResult> {
+        println("Initializing language server...")
         val result = InitializeResult()
         return CompletableFuture.completedFuture(result)
     }
@@ -24,7 +24,8 @@ class LanguageServerImpl : RellLanguageServer {
     }
 
     override fun exit() {
-        exitProcess(0)
+        println("Exiting language Server")
+        LanguageServerTerminator().exit()
     }
 
     override fun getTextDocumentService(): TextDocumentService {
