@@ -1,5 +1,6 @@
 package net.postchain.rell.toolbox.lsp.launcher
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import org.eclipse.lsp4j.launch.LSPLauncher
 import org.koin.java.KoinJavaComponent
@@ -8,6 +9,7 @@ import java.net.ServerSocket
 
 class ServerLauncher {
     private val languageServer: RellLanguageServer by KoinJavaComponent.inject(RellLanguageServer::class.java)
+    private val logger = KotlinLogging.logger {}
     private val lspPort = 5008
     private val trace = "-trace"
     private val noValidate = "-noValidate"
@@ -25,13 +27,12 @@ class ServerLauncher {
     }
 
     private fun launchSocketServer(args: Array<String>) {
-        println("Launching Socket Server")
+        logger.info { "Launching Language Server on socket: $lspPort..." }
         val validate: Boolean = shouldValidate(args)
         val trace: PrintWriter? = getTrace(args)
 
         ServerSocket(lspPort).use { socket ->
             val client = socket.accept()
-            println("InputStream Test" + client.getInputStream())
             val launcher = LSPLauncher.createServerLauncher(
                 languageServer,
                 client.getInputStream(),
@@ -41,11 +42,12 @@ class ServerLauncher {
             )
             languageServer.connect(launcher.remoteProxy)
             launcher.startListening()
+            logger.info { "Server are listening on input stream" }
         }
     }
 
     private fun launchStdioServer(args: Array<String>) {
-        println("Launching Stdio Server")
+        logger.info { "Launching Language Server with Stdio as input and output stream..." }
         val validate: Boolean = shouldValidate(args)
         val trace: PrintWriter? = getTrace(args)
         val launcher = LSPLauncher.createServerLauncher(
@@ -56,11 +58,8 @@ class ServerLauncher {
             trace
         )
         languageServer.connect(launcher.remoteProxy)
-        val future = launcher.startListening()
-        //TODO: This is from xtext. Is it needed?
-        while (!future.isDone) {
-            Thread.sleep(10000L)
-        }
+        launcher.startListening()
+        logger.info { "Server are listening on input stream" }
     }
 
     private fun getTrace(args: Array<String>) = if (args.contains(trace)) PrintWriter(System.out) else null
