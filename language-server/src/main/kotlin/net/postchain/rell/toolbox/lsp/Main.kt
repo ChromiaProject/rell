@@ -15,5 +15,5 @@ fun main(args: Array<String>) {
             single<RellLanguageServer> { LanguageServerImpl() }
         })
     }
-    ServerLauncher().launch(arrayOf())
+    ServerLauncher().launch(args)
 }

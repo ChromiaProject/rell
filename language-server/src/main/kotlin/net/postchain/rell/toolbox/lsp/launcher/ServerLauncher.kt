@@ -13,8 +13,12 @@ class ServerLauncher {
     private val noValidate = "-noValidate"
     fun launch(args: Array<String>) {
         try {
-            //TODO: StdioSocketServer default
-            launchSocketServer(args)
+            if (args.contains("-socket")) {
+                launchSocketServer(args)
+            } else {
+                launchStdioServer(args)
+            }
+
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -37,6 +41,25 @@ class ServerLauncher {
             )
             languageServer.connect(launcher.remoteProxy)
             launcher.startListening()
+        }
+    }
+
+    private fun launchStdioServer(args: Array<String>) {
+        println("Launching Stdio Server")
+        val validate: Boolean = shouldValidate(args)
+        val trace: PrintWriter? = getTrace(args)
+        val launcher = LSPLauncher.createServerLauncher(
+            languageServer,
+            System.`in`,
+            System.out,
+            validate,
+            trace
+        )
+        languageServer.connect(launcher.remoteProxy)
+        val future = launcher.startListening()
+        //TODO: This is from xtext. Is it needed?
+        while (!future.isDone) {
+            Thread.sleep(10000L)
         }
     }
 

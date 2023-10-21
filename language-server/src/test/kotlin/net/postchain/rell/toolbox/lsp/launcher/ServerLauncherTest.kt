@@ -7,6 +7,8 @@ import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.launch.LSPLauncher
 import org.eclipse.lsp4j.services.LanguageServer
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
@@ -30,7 +32,7 @@ class ServerLauncherTest {
             })
         }
 
-        thread = Thread { ServerLauncher().launch(arrayOf()) }
+        thread = Thread { ServerLauncher().launch(arrayOf("-socket")) }
         thread.start()
 
         val socket = Socket("0.0.0.0", 5008);
@@ -41,6 +43,13 @@ class ServerLauncherTest {
         client = clientLauncher.remoteProxy
     }
 
+    @AfterEach
+    fun tearDown() {
+        //TODO: This client.exit() makes it so that tests is ignored
+//        client.exit()
+        thread.interrupt()
+    }
+
     @Test
     fun `Socket Launcher initiates language server`() {
         val serverResponse = client.initialize(InitializeParams()).get()
@@ -48,5 +57,16 @@ class ServerLauncherTest {
         //TODO: Fix assertions
         assertThat(serverResponse.serverInfo).isEqualTo(null)
         assertThat(serverResponse.capabilities).isEqualTo(null)
+    }
+
+    companion object {
+        @JvmStatic
+        @AfterAll
+        fun printMemoryUsage(): Unit {
+            val rt = Runtime.getRuntime()
+            val total = rt.totalMemory().toDouble() / 1000000.0
+            val free = rt.freeMemory().toDouble() / 1000000.0
+            println("Memory after test: ${total - free} MB used / $total MB total")
+        }
     }
 }
