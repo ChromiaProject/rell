@@ -1,6 +1,5 @@
 package net.postchain.rell.toolbox.lsp
 
-import net.postchain.rell.toolbox.lsp.launcher.ServerLauncher
 import net.postchain.rell.toolbox.lsp.server.LanguageServerImpl
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import org.koin.core.context.startKoin
@@ -15,5 +14,4 @@ fun main(args: Array<String>) {
             single<RellLanguageServer> { LanguageServerImpl() }
         })
     }
-    ServerLauncher().launch(args)
 }

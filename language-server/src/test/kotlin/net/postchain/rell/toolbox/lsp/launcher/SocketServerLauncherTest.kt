@@ -17,13 +17,14 @@ import org.koin.core.logger.Level
 import org.koin.core.logger.PrintLogger
 import org.koin.dsl.module
 import util.TestClient
-import java.io.PipedInputStream
-import java.io.PipedOutputStream
+import java.net.Socket
 
 
-class ServerLauncherTest {
+class SocketServerLauncherTest {
+    lateinit var thread: Thread
     lateinit var client: LanguageServer
     lateinit var koinApplication: KoinApplication
+
 
     @BeforeEach
     fun setup() {
@@ -34,24 +35,20 @@ class ServerLauncherTest {
             })
         }
 
-        val clientInputStream = PipedInputStream()
-        val clientOutputStream = PipedOutputStream(clientInputStream)
+        thread = Thread { SocketServerLauncher().launch(arrayOf()) }
+        thread.start()
 
-        val serverLauncher = ServerLauncher(clientOutputStream)
-        serverLauncher.launch(arrayOf())
-
-        val clientLauncher = LSPLauncher.createClientLauncher(
-            TestClient(),
-            clientInputStream,
-            serverLauncher.serverOutputStream
-        )
+        val socket = Socket("0.0.0.0", 5008);
+        val clientLauncher =
+            LSPLauncher.createClientLauncher(TestClient(), socket.getInputStream(), socket.getOutputStream())
         clientLauncher.startListening()
 
         client = clientLauncher.remoteProxy
     }
 
     @AfterEach
-    fun teardown() {
+    fun tearDown() {
+        thread.interrupt()
         koinApplication.close()
     }
 
