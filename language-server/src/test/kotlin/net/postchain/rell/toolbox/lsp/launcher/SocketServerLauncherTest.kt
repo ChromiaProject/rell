@@ -12,6 +12,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.koin.core.KoinApplication
+import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.core.logger.PrintLogger
@@ -24,7 +25,6 @@ class SocketServerLauncherTest {
     lateinit var thread: Thread
     lateinit var client: LanguageServer
     lateinit var koinApplication: KoinApplication
-
 
     @BeforeEach
     fun setup() {
@@ -49,7 +49,7 @@ class SocketServerLauncherTest {
     @AfterEach
     fun tearDown() {
         thread.interrupt()
-        koinApplication.close()
+        GlobalContext.stopKoin()
     }
 
     @Test

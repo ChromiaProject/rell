@@ -12,6 +12,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.koin.core.KoinApplication
+import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.core.logger.PrintLogger
@@ -52,7 +53,7 @@ class ServerLauncherTest {
 
     @AfterEach
     fun teardown() {
-        koinApplication.close()
+        GlobalContext.stopKoin()
     }
 
     @Test
