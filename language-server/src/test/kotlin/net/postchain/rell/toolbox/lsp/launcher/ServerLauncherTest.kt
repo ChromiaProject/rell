@@ -10,6 +10,8 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import util.TestClient
+import java.io.InputStream
+import java.io.OutputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 
@@ -19,16 +21,16 @@ class ServerLauncherTest {
 
     @BeforeEach
     fun setup() {
-        val clientInputStream = PipedInputStream()
-        val clientOutputStream = PipedOutputStream(clientInputStream)
-
-        val serverLauncher = ServerLauncher(clientOutputStream, LanguageServerImpl())
+        val serverStreams = createStreams()
+        val clientStreams = createStreams()
+        
+        val serverLauncher = ServerLauncher(serverStreams.inputStream, clientStreams.outputStream, LanguageServerImpl())
         serverLauncher.launch(arrayOf())
 
         val clientLauncher = LSPLauncher.createClientLauncher(
             TestClient(),
-            clientInputStream,
-            serverLauncher.serverOutputStream
+            clientStreams.inputStream,
+            serverStreams.outputStream
         )
         clientLauncher.startListening()
 
@@ -53,4 +55,14 @@ class ServerLauncherTest {
             println("Memory after test: ${total - free} MB used / $total MB total")
         }
     }
+
+    data class StreamPair(val inputStream: InputStream, val outputStream: OutputStream)
+
+    private fun createStreams(): StreamPair {
+        val inputStream = PipedInputStream()
+        val outputStream = PipedOutputStream(inputStream)
+        return StreamPair(inputStream, outputStream)
+    }
+
+
 }

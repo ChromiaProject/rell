@@ -8,8 +8,8 @@ abstract class AbstractServerLauncher(
     protected val languageServer: RellLanguageServer
 ) {
     protected val logger = KotlinLogging.logger {}
-    protected val trace = "-trace"
-    protected val noValidate = "-noValidate"
+    private val trace = "-trace"
+    private val noValidate = "-noValidate"
     abstract fun launch(args: Array<String>)
 
     protected fun getTrace(args: Array<String>) = if (args.contains(trace)) PrintWriter(System.out) else null

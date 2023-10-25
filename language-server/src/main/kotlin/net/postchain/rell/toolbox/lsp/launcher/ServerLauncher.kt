@@ -2,17 +2,15 @@ package net.postchain.rell.toolbox.lsp.launcher
 
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import org.eclipse.lsp4j.launch.LSPLauncher
-import java.io.*
+import java.io.InputStream
+import java.io.OutputStream
+import java.io.PrintWriter
 
-class ServerLauncher(private val clientOutputStream: OutputStream, languageServer: RellLanguageServer) :
-    AbstractServerLauncher(languageServer) {
-    private val serverInputStream: InputStream
-    val serverOutputStream: OutputStream
-
-    init {
-        this.serverInputStream = PipedInputStream()
-        this.serverOutputStream = PipedOutputStream(serverInputStream)
-    }
+class ServerLauncher(
+    private val serverInputStream: InputStream,
+    private val clientOutputStream: OutputStream,
+    languageServer: RellLanguageServer
+) : AbstractServerLauncher(languageServer) {
 
     override fun launch(args: Array<String>) {
         try {
