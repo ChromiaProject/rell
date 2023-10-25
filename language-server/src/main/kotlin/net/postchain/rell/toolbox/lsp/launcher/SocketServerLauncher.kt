@@ -10,7 +10,7 @@ class SocketServerLauncher(languageServer: RellLanguageServer) : AbstractServerL
 
     override fun launch(args: Array<String>) {
         try {
-            logger.info { "Launching Language Server on socket: $lspPort..." }
+            logger.info { "Starting Rell Language Server on port: $lspPort..." }
             val validate: Boolean = shouldValidate(args)
             val trace: PrintWriter? = getTrace(args)
 
@@ -25,7 +25,7 @@ class SocketServerLauncher(languageServer: RellLanguageServer) : AbstractServerL
                 )
                 languageServer.connect(launcher.remoteProxy)
                 launcher.startListening()
-                logger.info { "Server are listening on input stream" }
+                logger.info { "Rell Language Server started." }
             }
 
         } catch (e: Exception) {
