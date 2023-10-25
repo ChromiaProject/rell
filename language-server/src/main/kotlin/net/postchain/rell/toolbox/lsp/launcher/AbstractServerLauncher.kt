@@ -7,7 +7,6 @@ import java.io.PrintWriter
 abstract class AbstractServerLauncher(
     protected val languageServer: RellLanguageServer
 ) {
-    protected val logger = KotlinLogging.logger {}
     private val trace = "-trace"
     private val noValidate = "-noValidate"
     abstract fun launch(args: Array<String>)

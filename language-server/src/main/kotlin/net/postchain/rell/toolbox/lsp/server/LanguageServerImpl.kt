@@ -14,7 +14,6 @@ class LanguageServerImpl : RellLanguageServer {
     private lateinit var languageClient: LanguageClient
 
     override fun initialize(params: InitializeParams?): CompletableFuture<InitializeResult> {
-        println("Initializing language server...")
         val result = InitializeResult()
         return CompletableFuture.completedFuture(result)
     }
@@ -24,7 +23,6 @@ class LanguageServerImpl : RellLanguageServer {
     }
 
     override fun exit() {
-        println("Exiting language Server")
         LanguageServerTerminator().exit()
     }
 

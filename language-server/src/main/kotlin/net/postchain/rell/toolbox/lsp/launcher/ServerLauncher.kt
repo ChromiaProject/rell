@@ -1,5 +1,6 @@
 package net.postchain.rell.toolbox.lsp.launcher
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import org.eclipse.lsp4j.launch.LSPLauncher
 import java.io.InputStream
@@ -11,6 +12,7 @@ class ServerLauncher(
     private val clientOutputStream: OutputStream,
     languageServer: RellLanguageServer
 ) : AbstractServerLauncher(languageServer) {
+    private val logger = KotlinLogging.logger {}
 
     override fun launch(args: Array<String>) {
         try {
