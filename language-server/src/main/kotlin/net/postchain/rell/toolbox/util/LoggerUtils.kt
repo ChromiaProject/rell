@@ -1,6 +1,8 @@
 package net.postchain.rell.toolbox.util
 
 import net.postchain.rell.toolbox.lsp.LauncherType
+import org.apache.logging.log4j.core.LoggerContext
+import org.apache.logging.log4j.core.appender.RollingFileAppender
 import org.apache.logging.log4j.core.config.Configurator
 
 fun initializeLogger(debug: Boolean, launcherType: LauncherType) {
@@ -24,4 +26,14 @@ fun initializeLogger(debug: Boolean, launcherType: LauncherType) {
     } else {
         println("No logger is initialized")
     }
+}
+
+fun getCurrentLogFileName(): String {
+    val loggerContext = LoggerContext.getContext(false)
+    val config = loggerContext.configuration
+    val appender = config.appenders["RollingFile"]  // Replace with the name of your appender
+    if (appender is RollingFileAppender) {
+        return appender.fileName
+    }
+    return ""
 }

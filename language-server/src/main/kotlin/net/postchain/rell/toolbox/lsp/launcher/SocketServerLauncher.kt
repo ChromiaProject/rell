@@ -14,7 +14,7 @@ class SocketServerLauncher(languageServer: RellLanguageServer) : AbstractServerL
         try {
             logger.info { "Starting Rell Language Server on port: $lspPort..." }
             val validate: Boolean = shouldValidate(args)
-            val trace: PrintWriter? = getTrace(args)
+            val trace: PrintWriter? = setTracePrintWriter(args)
 
             ServerSocket(lspPort).use { socket ->
                 val client = socket.accept()
@@ -34,4 +34,8 @@ class SocketServerLauncher(languageServer: RellLanguageServer) : AbstractServerL
             logger.error { "Exception while running language server: ${e.message}" }
         }
     }
+
+    override fun setTracePrintWriter(args: Array<String>): PrintWriter? =
+        if (args.contains(trace)) PrintWriter(System.out) else null
+
 }
