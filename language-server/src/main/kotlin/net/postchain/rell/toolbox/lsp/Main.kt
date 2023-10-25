@@ -4,6 +4,7 @@ import net.postchain.rell.toolbox.lsp.launcher.ServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.server.LanguageServerImpl
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
+import net.postchain.rell.toolbox.util.initializeLogger
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.core.logger.PrintLogger
@@ -14,18 +15,24 @@ fun main(args: Array<String>) {
 
     //TODO: Should read from args. Keeping it simple now for development
     val debug = false
+    val launcherType = LauncherType.SOCKET
+
+    val serverModule = getServerModule(launcherType)
+    initializeLogger(debug, launcherType)
 
     startKoin {
         logger(PrintLogger(Level.INFO))
         modules(
-            getServerModule(debug)
+            serverModule
         )
     }
 }
 
-fun getServerModule(debug: Boolean): Module {
-    if (debug) return socketServerModule
-    return serverModule
+fun getServerModule(launcherType: LauncherType): Module {
+    return when (launcherType) {
+        LauncherType.STDIO -> serverModule
+        LauncherType.SOCKET -> socketServerModule
+    }
 }
 
 val socketServerModule = module {
@@ -36,4 +43,8 @@ val socketServerModule = module {
 val serverModule = module {
     single<RellLanguageServer> { LanguageServerImpl() }
     single { ServerLauncher(System.`in`, System.out, get()) }
+}
+
+enum class LauncherType {
+    SOCKET, STDIO;
 }
