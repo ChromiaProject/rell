@@ -1,7 +1,5 @@
 package net.postchain.rell.toolbox.lsp.launcher
 
-import assertk.assertThat
-import assertk.assertions.isEqualTo
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.launch.LSPLauncher
@@ -11,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import util.TestClient
 import java.net.Socket
+import kotlin.test.assertEquals
 
 
 class SocketServerLauncherTest {
@@ -38,8 +37,11 @@ class SocketServerLauncherTest {
     @Test
     fun `Initiates language server request`() {
         val serverResponse = client.initialize(InitializeParams()).get()
-
-        assertThat(serverResponse.serverInfo).isEqualTo(null)
-        assertThat(serverResponse.capabilities).isEqualTo(null)
+        assertEquals(
+            serverResponse.toString(), "InitializeResult [\n" +
+                    "  capabilities = null\n" +
+                    "  serverInfo = null\n" +
+                    "]"
+        )
     }
 }

@@ -1,7 +1,5 @@
 package net.postchain.rell.toolbox.lsp.launcher
 
-import assertk.assertThat
-import assertk.assertions.isEqualTo
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.launch.LSPLauncher
@@ -13,6 +11,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
+import kotlin.test.assertEquals
 
 
 class ServerLauncherTest {
@@ -39,9 +38,12 @@ class ServerLauncherTest {
     @Test
     fun `Initiates language server request`() {
         val serverResponse = client.initialize(InitializeParams()).get()
-
-        assertThat(serverResponse.serverInfo).isEqualTo(null)
-        assertThat(serverResponse.capabilities).isEqualTo(null)
+        assertEquals(
+            serverResponse.toString(), "InitializeResult [\n" +
+                    "  capabilities = null\n" +
+                    "  serverInfo = null\n" +
+                    "]"
+        )
     }
 
     data class StreamPair(val inputStream: InputStream, val outputStream: OutputStream)
