@@ -2,7 +2,7 @@ package net.postchain.rell.toolbox.lsp.server
 
 import kotlin.system.exitProcess
 
-class LanguageServerTerminator {
+class RellLanguageServerTerminator {
 
     //TODO: False as default. Needs shutdown request implementation in language server
     private var hasBeenShutdown = true

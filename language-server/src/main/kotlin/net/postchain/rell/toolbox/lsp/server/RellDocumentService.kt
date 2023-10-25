@@ -6,7 +6,7 @@ import org.eclipse.lsp4j.DidOpenTextDocumentParams
 import org.eclipse.lsp4j.DidSaveTextDocumentParams
 import org.eclipse.lsp4j.services.TextDocumentService
 
-class DocumentServiceImpl : TextDocumentService {
+class RellDocumentService : TextDocumentService {
     override fun didOpen(params: DidOpenTextDocumentParams?) {
         TODO("Not yet implemented")
     }

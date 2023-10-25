@@ -2,11 +2,10 @@ package net.postchain.rell.toolbox.lsp.launcher
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import net.postchain.rell.toolbox.lsp.server.LanguageServerImpl
+import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.launch.LSPLauncher
 import org.eclipse.lsp4j.services.LanguageServer
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import util.TestClient
@@ -23,8 +22,8 @@ class ServerLauncherTest {
     fun setup() {
         val serverStreams = createStreams()
         val clientStreams = createStreams()
-        
-        val serverLauncher = ServerLauncher(serverStreams.inputStream, clientStreams.outputStream, LanguageServerImpl())
+
+        val serverLauncher = ServerLauncher(serverStreams.inputStream, clientStreams.outputStream, RellLanguageServer())
         serverLauncher.launch(arrayOf())
 
         val clientLauncher = LSPLauncher.createClientLauncher(
@@ -45,17 +44,6 @@ class ServerLauncherTest {
         assertThat(serverResponse.capabilities).isEqualTo(null)
     }
 
-    companion object {
-        @JvmStatic
-        @AfterAll
-        fun printMemoryUsage(): Unit {
-            val rt = Runtime.getRuntime()
-            val total = rt.totalMemory().toDouble() / 1000000.0
-            val free = rt.freeMemory().toDouble() / 1000000.0
-            println("Memory after test: ${total - free} MB used / $total MB total")
-        }
-    }
-
     data class StreamPair(val inputStream: InputStream, val outputStream: OutputStream)
 
     private fun createStreams(): StreamPair {
@@ -63,6 +51,4 @@ class ServerLauncherTest {
         val outputStream = PipedOutputStream(inputStream)
         return StreamPair(inputStream, outputStream)
     }
-
-
 }
