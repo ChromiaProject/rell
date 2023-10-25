@@ -1,9 +1,11 @@
 package net.postchain.rell.toolbox.lsp.launcher
 
+import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import org.eclipse.lsp4j.launch.LSPLauncher
 import java.io.*
 
-class ServerLauncher(private val clientOutputStream: OutputStream) : AbstractServerLauncher() {
+class ServerLauncher(private val clientOutputStream: OutputStream, languageServer: RellLanguageServer) :
+    AbstractServerLauncher(languageServer) {
     private val serverInputStream: InputStream
     val serverOutputStream: OutputStream
 

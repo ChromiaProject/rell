@@ -1,10 +1,11 @@
 package net.postchain.rell.toolbox.lsp.launcher
 
+import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import org.eclipse.lsp4j.launch.LSPLauncher
 import java.io.PrintWriter
 import java.net.ServerSocket
 
-class SocketServerLauncher : AbstractServerLauncher() {
+class SocketServerLauncher(languageServer: RellLanguageServer) : AbstractServerLauncher(languageServer) {
     private val lspPort = 5008
 
     override fun launch(args: Array<String>) {

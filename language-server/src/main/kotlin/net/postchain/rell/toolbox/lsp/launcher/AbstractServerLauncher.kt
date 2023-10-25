@@ -2,11 +2,11 @@ package net.postchain.rell.toolbox.lsp.launcher
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
-import org.koin.java.KoinJavaComponent
 import java.io.PrintWriter
 
-abstract class AbstractServerLauncher {
-    protected val languageServer: RellLanguageServer by KoinJavaComponent.inject(RellLanguageServer::class.java)
+abstract class AbstractServerLauncher(
+    protected val languageServer: RellLanguageServer
+) {
     protected val logger = KotlinLogging.logger {}
     protected val trace = "-trace"
     protected val noValidate = "-noValidate"

@@ -1,5 +1,6 @@
 package net.postchain.rell.toolbox.lsp
 
+import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.server.LanguageServerImpl
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import org.koin.core.context.startKoin
@@ -10,8 +11,13 @@ import org.koin.dsl.module
 fun main(args: Array<String>) {
     startKoin {
         logger(PrintLogger(Level.INFO))
-        modules(module {
-            single<RellLanguageServer> { LanguageServerImpl() }
-        })
+        modules(
+            socketServerModule
+        )
     }
+}
+
+val socketServerModule = module {
+    single<RellLanguageServer> { LanguageServerImpl() }
+    single { SocketServerLauncher(get()) }
 }
