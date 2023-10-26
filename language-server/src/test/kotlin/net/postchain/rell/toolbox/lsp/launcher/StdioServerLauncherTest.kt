@@ -1,14 +1,14 @@
 package net.postchain.rell.toolbox.lsp.launcher
 
-import net.postchain.rell.toolbox.lsp.server.RellDocumentService
-import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
-import net.postchain.rell.toolbox.lsp.server.RellWorkspaceService
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.launch.LSPLauncher
 import org.eclipse.lsp4j.services.LanguageServer
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.koin.core.parameter.parametersOf
 import util.TestClient
+import util.TestServerModule
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.PipedInputStream
@@ -17,6 +17,7 @@ import kotlin.test.assertEquals
 
 
 class StdioServerLauncherTest {
+    private val serverModule = TestServerModule()
     private lateinit var client: LanguageServer
 
     @BeforeEach
@@ -24,9 +25,9 @@ class StdioServerLauncherTest {
         val serverStreams = createStreams()
         val clientStreams = createStreams()
 
-        val rellLanguageServer = RellLanguageServer(RellDocumentService(), RellWorkspaceService())
-        val serverLauncher =
-            StdioServerLauncher(serverStreams.inputStream, clientStreams.outputStream, rellLanguageServer)
+        val koinApp = serverModule.startKoin()
+        val params = parametersOf(serverStreams.inputStream, clientStreams.outputStream)
+        val serverLauncher = koinApp.koin.get<AbstractServerLauncher> { params }
         serverLauncher.launch(arrayOf())
 
         val clientLauncher = LSPLauncher.createClientLauncher(
@@ -37,6 +38,11 @@ class StdioServerLauncherTest {
         clientLauncher.startListening()
 
         client = clientLauncher.remoteProxy
+    }
+
+    @AfterEach
+    fun tearDown() {
+        serverModule.stopKoinGlobalContext()
     }
 
     @Test

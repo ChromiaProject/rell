@@ -1,15 +1,15 @@
 package net.postchain.rell.toolbox.lsp.launcher
 
-import net.postchain.rell.toolbox.lsp.server.RellDocumentService
-import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
-import net.postchain.rell.toolbox.lsp.server.RellWorkspaceService
+import net.postchain.rell.toolbox.lsp.server.LauncherType
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.launch.LSPLauncher
 import org.eclipse.lsp4j.services.LanguageServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.koin.core.qualifier.named
 import util.TestClient
+import util.TestServerModule
 import java.net.Socket
 import kotlin.test.assertEquals
 
@@ -17,12 +17,14 @@ import kotlin.test.assertEquals
 class SocketServerLauncherTest {
     private lateinit var thread: Thread
     private lateinit var client: LanguageServer
+    private val serverModule = TestServerModule()
 
     @BeforeEach
     fun setup() {
         thread = Thread {
-            val rellLanguageServer = RellLanguageServer(RellDocumentService(), RellWorkspaceService())
-            SocketServerLauncher(rellLanguageServer).launch(arrayOf())
+            val koinApp = serverModule.startKoin()
+            val serverLauncher = koinApp.koin.get<AbstractServerLauncher>(named(LauncherType.SOCKET))
+            serverLauncher.launch(arrayOf())
         }
         thread.start()
 
@@ -36,6 +38,7 @@ class SocketServerLauncherTest {
 
     @AfterEach
     fun tearDown() {
+        serverModule.stopKoinGlobalContext()
         thread.interrupt()
     }
 
