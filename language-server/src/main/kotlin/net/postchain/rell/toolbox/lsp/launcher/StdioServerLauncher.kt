@@ -9,7 +9,7 @@ import java.io.*
 
 class StdioServerLauncher(
     private val serverInputStream: InputStream,
-    private val clientOutputStream: OutputStream,
+    private val serverOutputStream: OutputStream,
     languageServer: RellLanguageServer
 ) : AbstractServerLauncher(languageServer) {
     private val logger = KotlinLogging.logger {}
@@ -22,7 +22,7 @@ class StdioServerLauncher(
             val launcher = LSPLauncher.createServerLauncher(
                 languageServer,
                 serverInputStream,
-                clientOutputStream,
+                serverOutputStream,
                 validate,
                 trace
             )
