@@ -1,6 +1,8 @@
 package net.postchain.rell.toolbox.lsp.launcher
 
+import net.postchain.rell.toolbox.lsp.server.RellDocumentService
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
+import net.postchain.rell.toolbox.lsp.server.RellWorkspaceService
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.launch.LSPLauncher
 import org.eclipse.lsp4j.services.LanguageServer
@@ -14,7 +16,7 @@ import java.io.PipedOutputStream
 import kotlin.test.assertEquals
 
 
-class ServerLauncherTest {
+class StdioServerLauncherTest {
     private lateinit var client: LanguageServer
 
     @BeforeEach
@@ -22,7 +24,9 @@ class ServerLauncherTest {
         val serverStreams = createStreams()
         val clientStreams = createStreams()
 
-        val serverLauncher = ServerLauncher(serverStreams.inputStream, clientStreams.outputStream, RellLanguageServer())
+        val rellLanguageServer = RellLanguageServer(RellDocumentService(), RellWorkspaceService())
+        val serverLauncher =
+            StdioServerLauncher(serverStreams.inputStream, clientStreams.outputStream, rellLanguageServer)
         serverLauncher.launch(arrayOf())
 
         val clientLauncher = LSPLauncher.createClientLauncher(

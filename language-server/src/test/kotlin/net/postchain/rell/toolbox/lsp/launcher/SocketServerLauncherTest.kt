@@ -1,6 +1,8 @@
 package net.postchain.rell.toolbox.lsp.launcher
 
+import net.postchain.rell.toolbox.lsp.server.RellDocumentService
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
+import net.postchain.rell.toolbox.lsp.server.RellWorkspaceService
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.launch.LSPLauncher
 import org.eclipse.lsp4j.services.LanguageServer
@@ -18,7 +20,10 @@ class SocketServerLauncherTest {
 
     @BeforeEach
     fun setup() {
-        thread = Thread { SocketServerLauncher(RellLanguageServer()).launch(arrayOf()) }
+        thread = Thread {
+            val rellLanguageServer = RellLanguageServer(RellDocumentService(), RellWorkspaceService())
+            SocketServerLauncher(rellLanguageServer).launch(arrayOf())
+        }
         thread.start()
 
         val socket = Socket("0.0.0.0", 5008);

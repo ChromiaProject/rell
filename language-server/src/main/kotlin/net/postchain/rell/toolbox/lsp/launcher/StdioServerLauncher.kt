@@ -7,7 +7,7 @@ import org.eclipse.lsp4j.launch.LSPLauncher
 import java.io.*
 
 
-class ServerLauncher(
+class StdioServerLauncher(
     private val serverInputStream: InputStream,
     private val clientOutputStream: OutputStream,
     languageServer: RellLanguageServer

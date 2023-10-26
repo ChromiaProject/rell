@@ -5,10 +5,12 @@ import org.eclipse.lsp4j.InitializeResult
 import org.eclipse.lsp4j.services.*
 import java.util.concurrent.CompletableFuture
 
-class RellLanguageServer : LanguageServer, LanguageClientAware {
+class RellLanguageServer(
+    private val documentService: TextDocumentService,
+    private val workspaceService: WorkspaceService
+) :
+    LanguageServer, LanguageClientAware {
 
-    private val documentService: RellDocumentService = RellDocumentService()
-    private val workspaceService: RellWorkspaceService = RellWorkspaceService()
     private lateinit var languageClient: LanguageClient
 
     override fun initialize(params: InitializeParams?): CompletableFuture<InitializeResult> {

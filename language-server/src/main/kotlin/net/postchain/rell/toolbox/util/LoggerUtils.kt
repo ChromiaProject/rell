@@ -1,6 +1,6 @@
 package net.postchain.rell.toolbox.util
 
-import net.postchain.rell.toolbox.lsp.LauncherType
+import net.postchain.rell.toolbox.lsp.server.LauncherType
 import org.apache.logging.log4j.core.LoggerContext
 import org.apache.logging.log4j.core.appender.RollingFileAppender
 import org.apache.logging.log4j.core.config.Configurator
