@@ -13,8 +13,10 @@ repositories {
 dependencies {
     implementation(libs.bundles.lsp4j)
     implementation(libs.bundles.logging)
+    implementation(libs.bundles.koin)
 
     testImplementation(libs.bundles.testcontainers)
+    testImplementation(kotlin("test"))
 }
 
 tasks.test {
