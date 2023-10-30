@@ -17,7 +17,12 @@ class SocketServerLauncher(languageServer: RellLanguageServer) : AbstractServerL
             val validate: Boolean = shouldValidate(args)
             val trace: PrintWriter? = setTracePrintWriter(args)
 
-            ServerSocket(lspPort, 50, InetAddress.getLoopbackAddress()).use { socket ->
+            val maxQueueLengthOfIncommingConnections = 50
+            ServerSocket(
+                lspPort,
+                maxQueueLengthOfIncommingConnections,
+                InetAddress.getLoopbackAddress()
+            ).use { socket ->
                 val client = socket.accept()
                 val launcher = LSPLauncher.createServerLauncher(
                     languageServer,
