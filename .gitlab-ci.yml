@@ -1,0 +1,9 @@
+image: gradle:8.4.0-jdk17
+
+stages:
+  - build-and-test
+
+build-and-test:
+  stage: build-and-test
+  interruptible: true
+  script: ./gradlew build --info
