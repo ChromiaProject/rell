@@ -10,7 +10,9 @@ import org.junit.jupiter.api.Test
 import org.koin.core.qualifier.named
 import util.TestClient
 import util.TestServerModule
+import java.io.IOException
 import java.net.Socket
+import java.net.SocketTimeoutException
 import kotlin.test.assertEquals
 
 
@@ -21,14 +23,14 @@ class SocketServerLauncherTest {
 
     @BeforeEach
     fun setup() {
+        val koinApp = serverModule.startKoin()
+        val serverLauncher = koinApp.koin.get<AbstractServerLauncher>(named(LauncherType.SOCKET))
         thread = Thread {
-            val koinApp = serverModule.startKoin()
-            val serverLauncher = koinApp.koin.get<AbstractServerLauncher>(named(LauncherType.SOCKET))
             serverLauncher.launch(arrayOf())
         }
         thread.start()
 
-        val socket = Socket("0.0.0.0", 5008);
+        val socket = connectToServer()
         val clientLauncher =
             LSPLauncher.createClientLauncher(TestClient(), socket.getInputStream(), socket.getOutputStream())
         clientLauncher.startListening()
@@ -51,5 +53,18 @@ class SocketServerLauncherTest {
                     "  serverInfo = null\n" +
                     "]"
         )
+    }
+
+    private fun connectToServer(attempt: Int = 0): Socket {
+        val maxRetryAttempts = 5
+        if (attempt >= maxRetryAttempts) {
+            throw SocketTimeoutException("Failed to connect to server after $maxRetryAttempts retries.")
+        }
+        return try {
+            Socket("127.0.0.1", 5008);
+        } catch (e: IOException) {
+            Thread.sleep(500)
+            connectToServer(attempt + 1)
+        }
     }
 }
