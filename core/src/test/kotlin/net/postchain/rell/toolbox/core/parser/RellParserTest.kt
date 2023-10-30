@@ -1,16 +1,17 @@
 package net.postchain.rell.toolbox.core.parser
 
 import assertk.assertThat
-import assertk.assertions.*
+import assertk.assertions.hasSameSizeAs
+import assertk.assertions.isEqualTo
+import assertk.assertions.isGreaterThanOrEqualTo
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_Parser
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
 import net.postchain.rell.base.utils.ide.IdeDirApi
-import net.postchain.rell.toolbox.core.compiler.RellcAPI
 import net.postchain.rell.toolbox.core.compiler.RellcAPI.validateSimple
-import net.postchain.rell.toolbox.core.compiler.RellcFilePath
-import org.antlr.v4.runtime.*
+import org.antlr.v4.runtime.CharStreams
+import org.antlr.v4.runtime.CommonTokenStream
 import org.junit.jupiter.api.Test
 
 
@@ -70,29 +71,6 @@ class RellParserTest {
             val compilerDefinition = compilerAst.definitions[i]
             assertThat(transformedDefinition).isSimilarTo(compilerDefinition)
         }
-    }
-
-    @Test
-    fun tmp() {
-
-
-        var code = """
-query q() {
-	val x = 5;
-	val x = 6;
-	return 0;
-}
-        """.trimIndent()
-        code = code.replace("\t", "\n\n\n\n")
-        val parser = AntlrRellParser()
-        val antlrAst = parser.parse(code)
-        val sourcePath = IdeDirApi.parseSourcePath("main.rell")
-        val idePath = IdeSourcePathFilePath(sourcePath!!)
-        val rcFilePath = RellcFilePath(sourcePath, idePath)
-        val transformedAst = RellcAPI.antlrToRellAst(rcFilePath, antlrAst)
-        val compilerAst = C_Parser.parse(sourcePath, idePath, code)
-        println(transformedAst)
-
     }
 
     private fun validateTestCase(testCase: RellTestCaseSnippet) {

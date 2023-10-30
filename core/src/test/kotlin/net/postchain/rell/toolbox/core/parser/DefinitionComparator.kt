@@ -17,6 +17,7 @@ fun Assert<S_Definition>.isSimilarTo(expected: S_Definition) = given { actual ->
 
 class DefinitionComparator : Comparator<S_Definition> {
 
+
     override fun compare(first: S_Definition?, second: S_Definition?): Int {
         val seen = mutableSetOf<Any>()
         return if (deepCompare(first, second, seen)) {
@@ -26,45 +27,47 @@ class DefinitionComparator : Comparator<S_Definition> {
         }
     }
 
-    private fun deepCompare(firstDefinition: Any?, secondDefinition: Any?, seen: MutableSet<Any>): Boolean {
-        if (firstDefinition == null && secondDefinition == null) {
+    private fun deepCompare(first: Any?, second: Any?, seen: MutableSet<Any>): Boolean {
+        if (first == null && second == null) {
             return true
         }
 
-        if (firstDefinition == null || secondDefinition == null) {
+        if (first == null || second == null) {
             return false
         }
 
-        if (seen.contains(firstDefinition) && seen.contains(secondDefinition)) {
+        if (seen.contains(first) && seen.contains(second)) {
             return true
         }
 
-        seen.add(firstDefinition)
-        seen.add(secondDefinition)
+        seen.add(first)
+        seen.add(second)
 
-        if (firstDefinition is Iterable<*> && secondDefinition is Iterable<*>) {
-            return compareIterables(firstDefinition, secondDefinition, seen)
+        if (first is Iterable<*> && second is Iterable<*>) {
+            return compareIterables(first, second, seen)
         }
 
-        if (firstDefinition is Map<*,*> && secondDefinition is Map<*, *>) {
-            return compareMaps(firstDefinition, secondDefinition, seen)
+        if (first is Map<*,*> && second is Map<*, *>) {
+            return compareMaps(first, second, seen)
         }
 
-        if (firstDefinition.javaClass != secondDefinition.javaClass) {
+        if (first.javaClass != second.javaClass) {
             // ANTLR parser uses AntlrPos class and compiler parser S_BasicPos. comparing logically
-            if (firstDefinition is S_Pos && secondDefinition is S_Pos) {
-                return true
-                // TODO: figure out why some positions not matching
-//                return firstDefinition.toString() == secondDefinition.toString()
+            if (first is S_Pos && second is S_Pos) {
+                // Comparing only line numbers and there is difference how ANTLR and compiler parser count column positions for strings containing tabs.
+                // For ANTLR tab is 1 character, for compiler it's 4, resulting in mismatch.
+                // Positions are used in error messages and ANTLR version is technically correct.
+                // Might need to be revisited if it's used in other context as well
+                return first.line() == second.line()
             }
             return false
         }
 
-        if (firstDefinition is String || firstDefinition is Number || firstDefinition is Boolean) {
-            return firstDefinition == secondDefinition
+        if (first is String || first is Number || first is Boolean) {
+            return first == second
         }
 
-        val fields: Array<Field> = firstDefinition.javaClass.declaredFields
+        val fields: Array<Field> = first.javaClass.declaredFields
         for (field in fields) {
             if (shouldBeSkipped(field)) {
                 continue
@@ -72,8 +75,8 @@ class DefinitionComparator : Comparator<S_Definition> {
 
             field.isAccessible = true
 
-            val value1: Any? = field.get(firstDefinition)
-            val value2: Any? = field.get(secondDefinition)
+            val value1: Any? = field.get(first)
+            val value2: Any? = field.get(second)
 
             if (!deepCompare(value1, value2, seen)) {
                 return false
