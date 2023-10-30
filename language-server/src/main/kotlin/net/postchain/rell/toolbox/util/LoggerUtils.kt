@@ -1,30 +1,28 @@
 package net.postchain.rell.toolbox.util
 
 import net.postchain.rell.toolbox.lsp.server.LauncherType
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.core.Logger
 import org.apache.logging.log4j.core.LoggerContext
 import org.apache.logging.log4j.core.appender.RollingFileAppender
-import org.apache.logging.log4j.core.config.Configurator
 
-fun initializeLogger(debug: Boolean, launcherType: LauncherType) {
 
-    //TODO: Consider if we should build config completely programatically instead of reading configs from files
-    //https://www.baeldung.com/log4j2-programmatic-config
-    val classLoader = ClassLoader.getSystemClassLoader()
-    val configFileName = when {
-        launcherType == LauncherType.SOCKET -> classLoader.getResource("log4j2-socket.properties")
-        launcherType == LauncherType.STDIO && debug -> classLoader.getResource("log4j2-debug-stdio.properties")
-        launcherType == LauncherType.STDIO && !debug -> classLoader.getResource("log4j2-null.properties")
-        else -> {
-            ""
+fun initializeLogger(logLevel: Level, launcherType: LauncherType) {
+    val loggerContext = LoggerContext.getContext(false)
+    val appenders = loggerContext.configuration.appenders
+
+    val rootLogger = LogManager.getLogger("") as Logger
+    rootLogger.level = logLevel
+
+    //Configure logger for STDIO launcher. For socket launcher it uses properties from log4j2.properties
+    if (launcherType == LauncherType.STDIO) {
+        if (logLevel >= Level.DEBUG) {
+            rootLogger.removeAppender(appenders["ConsoleLogger"])
+            rootLogger.addAppender(appenders["RollingFile"])
+        } else {
+            rootLogger.level = Level.OFF
         }
-    }
-    if (configFileName != null) {
-        Configurator.initialize(
-            null,
-            configFileName.toString()
-        )
-    } else {
-        println("No logger is initialized")
     }
 }
 
