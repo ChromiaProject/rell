@@ -35,6 +35,7 @@ dependencies {
     implementation(libs.bundles.koin)
     implementation(libs.bundles.rell)
     implementation(libs.bundles.jackson)
+    implementation(libs.bundles.logging)
 
     testImplementation(libs.bundles.testing)
     testImplementation(libs.bundles.testcontainers)

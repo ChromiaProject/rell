@@ -42,13 +42,13 @@ testcintainers-junit = { module = "org.testcontainers:junit-jupiter", version.re
 #logging
 oshai = {module = "io.github.oshai:kotlin-logging-jvm", version.ref = "oshai" }
 log4j = {module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
-
+log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 
 [bundles]
 testcontainers = [ "testcontainers-base", "testcintainers-junit" ]
-logging = ["oshai", "log4j"]
+logging = ["oshai", "log4j", "log4j-core"]
 rell = ["rell", "rell-base", "rell-api-base", "rell-tools"]
 lsp4j = ["lsp4j", "lsp4j-debug", "lsp4j-websocket"]
-koin = ["koin-core", "koin-logger"]
+koin = ["koin-core"]
 jackson = ["jackson", "jackson-yml", "jackson-kotlin"]
 testing = ["kotlin-test-junit", "assertk"]
