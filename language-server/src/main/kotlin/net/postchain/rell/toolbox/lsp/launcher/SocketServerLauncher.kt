@@ -4,6 +4,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import org.eclipse.lsp4j.launch.LSPLauncher
 import java.io.PrintWriter
+import java.net.InetAddress
 import java.net.ServerSocket
 
 class SocketServerLauncher(languageServer: RellLanguageServer) : AbstractServerLauncher(languageServer) {
@@ -16,7 +17,12 @@ class SocketServerLauncher(languageServer: RellLanguageServer) : AbstractServerL
             val validate: Boolean = shouldValidate(args)
             val trace: PrintWriter? = setTracePrintWriter(args)
 
-            ServerSocket(lspPort).use { socket ->
+            val maxQueueLengthOfIncommingConnections = 50
+            ServerSocket(
+                lspPort,
+                maxQueueLengthOfIncommingConnections,
+                InetAddress.getLoopbackAddress()
+            ).use { socket ->
                 val client = socket.accept()
                 val launcher = LSPLauncher.createServerLauncher(
                     languageServer,

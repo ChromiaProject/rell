@@ -40,7 +40,7 @@ class StdioServerLauncher(
     override fun setTracePrintWriter(args: Array<String>): PrintWriter? {
         val currentLogFileName = getCurrentLogFileName()
         return if (args.contains(trace) && currentLogFileName.isNotEmpty()) {
-            PrintWriter(FileOutputStream(getCurrentLogFileName(), true), true)
+            PrintWriter(FileOutputStream(currentLogFileName, true), true)
         } else null
     }
 
