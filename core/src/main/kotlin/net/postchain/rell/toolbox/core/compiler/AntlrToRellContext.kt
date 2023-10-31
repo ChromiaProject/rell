@@ -38,8 +38,8 @@ class AntlrToRellContext {
         errors.add(error)
     }
 
-    fun <T> runWithAttachment(attachment: ParserRuleContext?, code: () -> T): T {
-        attachmentProvider.node = attachment
+    fun <T> runWithAttachment(node: ParserRuleContext?, code: () -> T): T {
+        attachmentProvider.node = node
         attachmentProvider.attachment = null
         return try {
             code()
@@ -62,7 +62,7 @@ class AntlrToRellContext {
                 }
                 list.add(res0)
             }
-            check(list.size == 1) { "${list.size}" }
+            check(list.size == 1) { "Wrong number of result values: ${list.size}" }
             val res = list[0]
             return Pair(res, ImmutableList.copyOf(ctx.errors))
         }

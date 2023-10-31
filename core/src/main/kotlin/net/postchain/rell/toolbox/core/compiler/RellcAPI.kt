@@ -15,21 +15,11 @@ object RellcAPI {
         path: RellcFilePath,
         antlrRootNode: RuleX_RootParserContext
     ): Pair<S_RellFile?, List<C_Error>> {
-        setupLogging()
         return AntlrToRellContext.runWithContext { ctx ->
             RellcFilePathHolder.overrideCurrentFile(path) {
                 val root = AntlrToRell.process(ctx, antlrRootNode)
                 root as S_RellFile
             }
-        }
-    }
-
-    private fun setupLogging() {
-        // Rell JARs (more precisely, Postchain) brings its own logging configuration which causes creation of a director and a log file.
-        // Forcing our own log configuration.
-        val log4jKey = "log4j.configurationFile"
-        if (System.getProperty(log4jKey) == null) {
-            System.setProperty(log4jKey, "log4j2.yml")
         }
     }
 

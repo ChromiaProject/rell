@@ -10,6 +10,8 @@ import net.postchain.rell.base.compiler.parser.S_Grammar
 import net.postchain.rell.base.utils.LateInit
 import org.apache.commons.collections4.MapUtils
 
+// TODO: Grammar generator should be revisited as current implementation was not used for initial generation.
+// It's used by action generator for tranformer generation.
 fun main() {
     generateHeader()
     generateNonterminals()
@@ -203,7 +205,6 @@ private object AntlrNontermGen {
         for (sub in subs) {
             var attr: AntlrAttr? = null
             if (sub.hasValue()) {
-//                val attrName = "" + Character.forDigit(10 + attrs.size, 36)
                 val attrName = sub.getRuleClassString()
                 attr = AntlrAttr(attrName, sub.many())
                 attrs.add(attr)
@@ -412,7 +413,6 @@ private class AntlrExpr_Opt(private val sub: AntlrExpr): AntlrExpr() {
 private class AntlrExpr_Attr(private val attr: String, private val many: Boolean, private val sub: AntlrExpr): AntlrExpr() {
     override fun generate(): String {
         val op = if (many) "+=" else "="
-//        return "$attr$op" + sub.generate()
         return sub.generate()
     }
 }
