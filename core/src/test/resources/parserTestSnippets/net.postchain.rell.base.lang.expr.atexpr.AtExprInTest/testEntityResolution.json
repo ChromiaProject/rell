@@ -88,8 +88,8 @@
       {
         "pos" : "main.rell(4:50)",
         "type" : "ERROR",
-        "code" : "unknown_name:[work]:job",
-        "text" : "Unknown name: 'work.job'"
+        "code" : "unknown_member:[work]:job",
+        "text" : "Type work has no member 'job'"
       }
     ],
     "parsing" : {

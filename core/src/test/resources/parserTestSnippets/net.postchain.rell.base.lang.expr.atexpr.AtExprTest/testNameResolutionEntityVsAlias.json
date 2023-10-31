@@ -118,8 +118,8 @@
       {
         "pos" : "main.rell(3:32)",
         "type" : "ERROR",
-        "code" : "unknown_name:[user]:firstName",
-        "text" : "Unknown name: 'user.firstName'"
+        "code" : "unknown_member:[user]:firstName",
+        "text" : "Type user has no member 'firstName'"
       }
     ],
     "parsing" : {

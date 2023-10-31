@@ -301,7 +301,7 @@
   },
   {
     "files" : {
-      "main.rell" : "enum color { red, green, blue }\nentity user { name; }\nstruct data { v:rowid; }\nfunction get_data(): list<data> = [data(v = _int_to_rowid(123))];"
+      "main.rell" : "enum color { red, green, blue }\nentity user { name; }\nstruct data { v:rowid; }\nfunction get_data(): list<data> = [data(v = rowid(123))];"
     },
     "modules" : {
       "modules" : [
@@ -331,7 +331,7 @@
   },
   {
     "files" : {
-      "main.rell" : "enum color { red, green, blue }\nentity user { name; }\nstruct data { v:rowid; }\nfunction get_data(): list<data> = [data(v = _int_to_rowid(123))];\nquery q() = get_data() @? {} ( @group .v );"
+      "main.rell" : "enum color { red, green, blue }\nentity user { name; }\nstruct data { v:rowid; }\nfunction get_data(): list<data> = [data(v = rowid(123))];\nquery q() = get_data() @? {} ( @group .v );"
     },
     "modules" : {
       "modules" : [
@@ -1201,7 +1201,7 @@
   },
   {
     "files" : {
-      "main.rell" : "enum color { red, green, blue }\nentity user { name; }\nstruct const_struct { q: integer; }\nstruct data { v:rowid?; }\nfunction get_data(): list<data> = [data(v = _int_to_rowid(123))];"
+      "main.rell" : "enum color { red, green, blue }\nentity user { name; }\nstruct const_struct { q: integer; }\nstruct data { v:rowid?; }\nfunction get_data(): list<data> = [data(v = rowid(123))];"
     },
     "modules" : {
       "modules" : [
@@ -1231,7 +1231,7 @@
   },
   {
     "files" : {
-      "main.rell" : "enum color { red, green, blue }\nentity user { name; }\nstruct const_struct { q: integer; }\nstruct data { v:rowid?; }\nfunction get_data(): list<data> = [data(v = _int_to_rowid(123))];\nquery q() = get_data() @? {} ( @group .v );"
+      "main.rell" : "enum color { red, green, blue }\nentity user { name; }\nstruct const_struct { q: integer; }\nstruct data { v:rowid?; }\nfunction get_data(): list<data> = [data(v = rowid(123))];\nquery q() = get_data() @? {} ( @group .v );"
     },
     "modules" : {
       "modules" : [

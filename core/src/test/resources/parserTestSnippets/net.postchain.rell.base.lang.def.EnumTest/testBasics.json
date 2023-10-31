@@ -148,8 +148,8 @@
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "unknown_name:[foo]:X",
-        "text" : "Unknown name: 'foo.X'"
+        "code" : "unknown_member:[foo]:X",
+        "text" : "Type foo has no member 'X'"
       }
     ],
     "parsing" : {

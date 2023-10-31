@@ -88,7 +88,7 @@
       {
         "pos" : "main.rell(4:40)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:to_full",
+        "code" : "expr_mem_null:virtual<rec>?:to_full",
         "text" : "Cannot access member 'to_full' of nullable type virtual<rec>?"
       }
     ],
@@ -155,7 +155,7 @@
       {
         "pos" : "main.rell(4:40)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:i",
+        "code" : "expr_mem_null:virtual<rec>?:i",
         "text" : "Cannot access member 'i' of nullable type virtual<rec>?"
       }
     ],
@@ -192,7 +192,7 @@
       {
         "pos" : "main.rell(4:40)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:t",
+        "code" : "expr_mem_null:virtual<rec>?:t",
         "text" : "Cannot access member 't' of nullable type virtual<rec>?"
       }
     ],
@@ -229,7 +229,7 @@
       {
         "pos" : "main.rell(4:40)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:s",
+        "code" : "expr_mem_null:virtual<rec>?:s",
         "text" : "Cannot access member 's' of nullable type virtual<rec>?"
       }
     ],
@@ -356,7 +356,7 @@
       {
         "pos" : "main.rell(4:43)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:to_full",
+        "code" : "expr_mem_null:virtual<sub>?:to_full",
         "text" : "Cannot access member 'to_full' of nullable type virtual<sub>?"
       }
     ],
@@ -423,7 +423,7 @@
       {
         "pos" : "main.rell(4:43)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:q",
+        "code" : "expr_mem_null:virtual<sub>?:q",
         "text" : "Cannot access member 'q' of nullable type virtual<sub>?"
       }
     ],
@@ -460,7 +460,7 @@
       {
         "pos" : "main.rell(4:43)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:p",
+        "code" : "expr_mem_null:virtual<sub>?:p",
         "text" : "Cannot access member 'p' of nullable type virtual<sub>?"
       }
     ],
@@ -707,7 +707,7 @@
       {
         "pos" : "main.rell(4:41)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:to_full",
+        "code" : "expr_mem_null:virtual<sub>?:to_full",
         "text" : "Cannot access member 'to_full' of nullable type virtual<sub>?"
       }
     ],
@@ -774,7 +774,7 @@
       {
         "pos" : "main.rell(4:41)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:q",
+        "code" : "expr_mem_null:virtual<sub>?:q",
         "text" : "Cannot access member 'q' of nullable type virtual<sub>?"
       }
     ],
@@ -811,7 +811,7 @@
       {
         "pos" : "main.rell(4:41)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:p",
+        "code" : "expr_mem_null:virtual<sub>?:p",
         "text" : "Cannot access member 'p' of nullable type virtual<sub>?"
       }
     ],

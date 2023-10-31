@@ -178,8 +178,8 @@
       {
         "pos" : "main.rell(1:23)",
         "type" : "ERROR",
-        "code" : "unknown_member:[range]:to_gtv",
-        "text" : "Type range has no member 'to_gtv'"
+        "code" : "fn:invalid:range:to_gtv",
+        "text" : "Function 'to_gtv' not available for type 'range'"
       }
     ],
     "parsing" : {
@@ -215,8 +215,8 @@
       {
         "pos" : "main.rell(1:23)",
         "type" : "ERROR",
-        "code" : "unknown_member:[range]:to_gtv_pretty",
-        "text" : "Type range has no member 'to_gtv_pretty'"
+        "code" : "fn:invalid:range:to_gtv_pretty",
+        "text" : "Function 'to_gtv_pretty' not available for type 'range'"
       }
     ],
     "parsing" : {

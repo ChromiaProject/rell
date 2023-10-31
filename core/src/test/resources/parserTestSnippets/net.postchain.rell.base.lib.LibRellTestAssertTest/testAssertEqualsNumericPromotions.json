@@ -534,14 +534,7 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:13)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_equals]:integer?,decimal",
-        "text" : "Function 'assert_equals' undefined for arguments (integer?, decimal)"
-      }
-    ],
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
@@ -571,88 +564,7 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:23)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_equals]:integer?,decimal",
-        "text" : "Function 'rell.test.assert_equals' undefined for arguments (integer?, decimal)"
-      }
-    ],
-    "parsing" : {
-      "main.rell" : [ ]
-    }
-  },
-  {
-    "files" : {
-      "main.rell" : "query q() { assert_not_equals(_nullable_int(123), 123.0); return 0; }"
-    },
-    "modules" : {
-      "modules" : [
-        ""
-      ],
-      "test_root_modules" : [ ],
-      "test_sub_modules" : true
-    },
-    "options" : {
-      "gtv" : false,
-      "deprecatedError" : false,
-      "ide" : false,
-      "atAttrShadowing" : "FULL",
-      "testLib" : true,
-      "hiddenLib" : true,
-      "allowDbModificationsInObjectExprs" : true,
-      "complexWhatEnabled" : true,
-      "mountConflictError" : true,
-      "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
-    },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:13)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_not_equals]:integer?,decimal",
-        "text" : "Function 'assert_not_equals' undefined for arguments (integer?, decimal)"
-      }
-    ],
-    "parsing" : {
-      "main.rell" : [ ]
-    }
-  },
-  {
-    "files" : {
-      "main.rell" : "query q() { rell.test.assert_not_equals(_nullable_int(123), 123.0); return 0; }"
-    },
-    "modules" : {
-      "modules" : [
-        ""
-      ],
-      "test_root_modules" : [ ],
-      "test_sub_modules" : true
-    },
-    "options" : {
-      "gtv" : false,
-      "deprecatedError" : false,
-      "ide" : false,
-      "atAttrShadowing" : "FULL",
-      "testLib" : true,
-      "hiddenLib" : true,
-      "allowDbModificationsInObjectExprs" : true,
-      "complexWhatEnabled" : true,
-      "mountConflictError" : true,
-      "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
-    },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:23)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_not_equals]:integer?,decimal",
-        "text" : "Function 'rell.test.assert_not_equals' undefined for arguments (integer?, decimal)"
-      }
-    ],
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
@@ -682,14 +594,7 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:13)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_equals]:decimal,integer?",
-        "text" : "Function 'assert_equals' undefined for arguments (decimal, integer?)"
-      }
-    ],
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
@@ -719,21 +624,14 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:23)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_equals]:decimal,integer?",
-        "text" : "Function 'rell.test.assert_equals' undefined for arguments (decimal, integer?)"
-      }
-    ],
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_not_equals(123.0, _nullable_int(123)); return 0; }"
+      "main.rell" : "query q() { assert_equals(_nullable_int(123), 456.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -756,21 +654,14 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:13)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_not_equals]:decimal,integer?",
-        "text" : "Function 'assert_not_equals' undefined for arguments (decimal, integer?)"
-      }
-    ],
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_not_equals(123.0, _nullable_int(123)); return 0; }"
+      "main.rell" : "query q() { rell.test.assert_equals(_nullable_int(123), 456.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -793,14 +684,67 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:23)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_not_equals]:decimal,integer?",
-        "text" : "Function 'rell.test.assert_not_equals' undefined for arguments (decimal, integer?)"
-      }
-    ],
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() { assert_equals(123.0, _nullable_int(456)); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() { rell.test.assert_equals(123.0, _nullable_int(456)); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
@@ -830,14 +774,7 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:13)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_equals]:decimal?,integer",
-        "text" : "Function 'assert_equals' undefined for arguments (decimal?, integer)"
-      }
-    ],
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
@@ -867,88 +804,7 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:23)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_equals]:decimal?,integer",
-        "text" : "Function 'rell.test.assert_equals' undefined for arguments (decimal?, integer)"
-      }
-    ],
-    "parsing" : {
-      "main.rell" : [ ]
-    }
-  },
-  {
-    "files" : {
-      "main.rell" : "query q() { assert_not_equals(_nullable(123.0), 123); return 0; }"
-    },
-    "modules" : {
-      "modules" : [
-        ""
-      ],
-      "test_root_modules" : [ ],
-      "test_sub_modules" : true
-    },
-    "options" : {
-      "gtv" : false,
-      "deprecatedError" : false,
-      "ide" : false,
-      "atAttrShadowing" : "FULL",
-      "testLib" : true,
-      "hiddenLib" : true,
-      "allowDbModificationsInObjectExprs" : true,
-      "complexWhatEnabled" : true,
-      "mountConflictError" : true,
-      "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
-    },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:13)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_not_equals]:decimal?,integer",
-        "text" : "Function 'assert_not_equals' undefined for arguments (decimal?, integer)"
-      }
-    ],
-    "parsing" : {
-      "main.rell" : [ ]
-    }
-  },
-  {
-    "files" : {
-      "main.rell" : "query q() { rell.test.assert_not_equals(_nullable(123.0), 123); return 0; }"
-    },
-    "modules" : {
-      "modules" : [
-        ""
-      ],
-      "test_root_modules" : [ ],
-      "test_sub_modules" : true
-    },
-    "options" : {
-      "gtv" : false,
-      "deprecatedError" : false,
-      "ide" : false,
-      "atAttrShadowing" : "FULL",
-      "testLib" : true,
-      "hiddenLib" : true,
-      "allowDbModificationsInObjectExprs" : true,
-      "complexWhatEnabled" : true,
-      "mountConflictError" : true,
-      "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
-    },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:23)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_not_equals]:decimal?,integer",
-        "text" : "Function 'rell.test.assert_not_equals' undefined for arguments (decimal?, integer)"
-      }
-    ],
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
@@ -978,14 +834,7 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:13)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_equals]:integer,decimal?",
-        "text" : "Function 'assert_equals' undefined for arguments (integer, decimal?)"
-      }
-    ],
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
@@ -1015,21 +864,14 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:23)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_equals]:integer,decimal?",
-        "text" : "Function 'rell.test.assert_equals' undefined for arguments (integer, decimal?)"
-      }
-    ],
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_not_equals(123, _nullable(123.0)); return 0; }"
+      "main.rell" : "query q() { assert_equals(_nullable(123.0), 456); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1052,21 +894,14 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:13)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_not_equals]:integer,decimal?",
-        "text" : "Function 'assert_not_equals' undefined for arguments (integer, decimal?)"
-      }
-    ],
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_not_equals(123, _nullable(123.0)); return 0; }"
+      "main.rell" : "query q() { rell.test.assert_equals(_nullable(123.0), 456); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1089,14 +924,67 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:23)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_not_equals]:integer,decimal?",
-        "text" : "Function 'rell.test.assert_not_equals' undefined for arguments (integer, decimal?)"
-      }
-    ],
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() { assert_equals(123, _nullable(456.0)); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() { rell.test.assert_equals(123, _nullable(456.0)); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }

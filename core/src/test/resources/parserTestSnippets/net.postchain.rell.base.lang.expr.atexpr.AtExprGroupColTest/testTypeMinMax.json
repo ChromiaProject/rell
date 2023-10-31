@@ -271,7 +271,7 @@
   },
   {
     "files" : {
-      "main.rell" : "enum color { red, green, blue }\nentity user { name; }\nstruct data { v:rowid; }\nfunction get_data(): list<data> = [data(v = _int_to_rowid(123)), data(v = _int_to_rowid(456))];"
+      "main.rell" : "enum color { red, green, blue }\nentity user { name; }\nstruct data { v:rowid; }\nfunction get_data(): list<data> = [data(v = rowid(123)), data(v = rowid(456))];"
     },
     "modules" : {
       "modules" : [
@@ -301,7 +301,7 @@
   },
   {
     "files" : {
-      "main.rell" : "enum color { red, green, blue }\nentity user { name; }\nstruct data { v:rowid; }\nfunction get_data(): list<data> = [data(v = _int_to_rowid(123)), data(v = _int_to_rowid(456))];\nquery q() = get_data() @? {} ( @min .v );"
+      "main.rell" : "enum color { red, green, blue }\nentity user { name; }\nstruct data { v:rowid; }\nfunction get_data(): list<data> = [data(v = rowid(123)), data(v = rowid(456))];\nquery q() = get_data() @? {} ( @min .v );"
     },
     "modules" : {
       "modules" : [
@@ -331,7 +331,7 @@
   },
   {
     "files" : {
-      "main.rell" : "enum color { red, green, blue }\nentity user { name; }\nstruct data { v:rowid; }\nfunction get_data(): list<data> = [data(v = _int_to_rowid(123)), data(v = _int_to_rowid(456))];\nquery q() = get_data() @? {} ( @max .v );"
+      "main.rell" : "enum color { red, green, blue }\nentity user { name; }\nstruct data { v:rowid; }\nfunction get_data(): list<data> = [data(v = rowid(123)), data(v = rowid(456))];\nquery q() = get_data() @? {} ( @max .v );"
     },
     "modules" : {
       "modules" : [

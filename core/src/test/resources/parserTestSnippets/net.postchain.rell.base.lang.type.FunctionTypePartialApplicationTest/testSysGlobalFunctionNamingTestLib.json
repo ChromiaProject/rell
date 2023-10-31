@@ -252,8 +252,8 @@
       {
         "pos" : "main.rell(1:25)",
         "type" : "ERROR",
-        "code" : "expr:call:partial_not_supported:rell.test.assert_null",
-        "text" : "Partial application not supported for function 'rell.test.assert_null'"
+        "code" : "expr:call:partial_bad_case:rell.test.assert_null(anything):unit",
+        "text" : "Partial application not supported for function rell.test.assert_null(anything): unit"
       }
     ],
     "parsing" : {

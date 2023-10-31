@@ -159,7 +159,7 @@
       {
         "pos" : "main.rell(1:30)",
         "type" : "ERROR",
-        "code" : "name:ambig:f:[FUNCTION:a:f,FUNCTION:b:f]",
+        "code" : "namespace:ambig:f:[FUNCTION:a:f,FUNCTION:b:f]",
         "text" : "Name 'f' is ambiguous: function a:f, function b:f"
       }
     ],
@@ -204,7 +204,7 @@
       {
         "pos" : "main.rell(1:30)",
         "type" : "ERROR",
-        "code" : "name:ambig:f:[FUNCTION:d:f,FUNCTION:a:f,FUNCTION:b:f]",
+        "code" : "namespace:ambig:f:[FUNCTION:d:f,FUNCTION:a:f,FUNCTION:b:f]",
         "text" : "Name 'f' is ambiguous: function d:f, function a:f, function b:f"
       }
     ],

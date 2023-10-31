@@ -58,8 +58,8 @@
       {
         "pos" : "main.rell(2:44)",
         "type" : "ERROR",
-        "code" : "unknown_name:[virtual<rec>]:from_gtv_pretty",
-        "text" : "Unknown name: 'virtual<rec>.from_gtv_pretty'"
+        "code" : "fn:invalid:virtual<rec>:from_gtv_pretty",
+        "text" : "Function 'from_gtv_pretty' not available for type 'virtual<rec>'"
       }
     ],
     "parsing" : {

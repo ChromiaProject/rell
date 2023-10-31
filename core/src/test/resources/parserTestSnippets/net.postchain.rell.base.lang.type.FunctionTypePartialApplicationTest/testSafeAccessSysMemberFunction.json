@@ -148,7 +148,7 @@
       {
         "pos" : "main.rell(5:29)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:replace",
+        "code" : "expr_mem_null:text?:replace",
         "text" : "Cannot access member 'replace' of nullable type text?"
       }
     ],

@@ -58,7 +58,7 @@
       {
         "pos" : "main.rell(3:32)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:replace",
+        "code" : "expr_mem_null:text?:replace",
         "text" : "Cannot access member 'replace' of nullable type text?"
       }
     ],
@@ -95,7 +95,7 @@
       {
         "pos" : "main.rell(3:32)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:replace",
+        "code" : "expr_mem_null:text?:replace",
         "text" : "Cannot access member 'replace' of nullable type text?"
       }
     ],

@@ -131,8 +131,8 @@
       {
         "pos" : "main.rell(3:17)",
         "type" : "ERROR",
-        "code" : "unknown_name:[bar]:b",
-        "text" : "Unknown name: 'bar.b'"
+        "code" : "unknown_member:[bar]:b",
+        "text" : "Type bar has no member 'b'"
       }
     ],
     "parsing" : {

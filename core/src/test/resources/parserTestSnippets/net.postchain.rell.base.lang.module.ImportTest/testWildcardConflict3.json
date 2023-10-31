@@ -64,7 +64,7 @@
       {
         "pos" : "main.rell(1:42)",
         "type" : "ERROR",
-        "code" : "name:ambig:f:[FUNCTION:a:f,FUNCTION:b:f]",
+        "code" : "namespace:ambig:f:[FUNCTION:a:f,FUNCTION:b:f]",
         "text" : "Name 'f' is ambiguous: function a:f, function b:f"
       }
     ],

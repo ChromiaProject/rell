@@ -64,7 +64,7 @@
       {
         "pos" : "main.rell(1:36)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:size",
+        "code" : "expr_mem_null:text?:size",
         "text" : "Cannot access member 'size' of nullable type text?"
       }
     ],
@@ -107,7 +107,7 @@
       {
         "pos" : "main.rell(1:43)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:a",
+        "code" : "expr_mem_null:(a:integer)?:a",
         "text" : "Cannot access member 'a' of nullable type (a:integer)?"
       }
     ],
@@ -144,7 +144,7 @@
       {
         "pos" : "main.rell(1:43)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:b",
+        "code" : "expr_mem_null:(a:integer)?:b",
         "text" : "Cannot access member 'b' of nullable type (a:integer)?"
       },
       {
@@ -298,7 +298,7 @@
       {
         "pos" : "main.rell(1:56)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:to_hex",
+        "code" : "expr_mem_null:integer?:to_hex",
         "text" : "Cannot access member 'to_hex' of nullable type integer?"
       }
     ],

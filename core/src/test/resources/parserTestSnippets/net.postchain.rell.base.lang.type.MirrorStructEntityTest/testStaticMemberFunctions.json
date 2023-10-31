@@ -148,8 +148,8 @@
       {
         "pos" : "main.rell(2:26)",
         "type" : "ERROR",
-        "code" : "unknown_name:[struct<data>]:bad_name",
-        "text" : "Unknown name: 'struct<data>.bad_name'"
+        "code" : "unknown_member:[struct<data>]:bad_name",
+        "text" : "Type struct<data> has no member 'bad_name'"
       }
     ],
     "parsing" : {
@@ -305,8 +305,8 @@
       {
         "pos" : "main.rell(2:26)",
         "type" : "ERROR",
-        "code" : "unknown_name:[struct<data>]:bad_name",
-        "text" : "Unknown name: 'struct<data>.bad_name'"
+        "code" : "unknown_member:[struct<data>]:bad_name",
+        "text" : "Type struct<data> has no member 'bad_name'"
       }
     ],
     "parsing" : {

@@ -132,8 +132,8 @@
       {
         "pos" : "main.rell(2:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[try_call]:()->unit,null",
-        "text" : "Function 'try_call' undefined for arguments (()->unit, null)"
+        "code" : "fn:sys:no_res_type:try_call",
+        "text" : "Return type is unknown for function 'try_call'"
       }
     ],
     "parsing" : {

@@ -31,7 +31,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() = [];"
+      "main.rell" : "query q() = [:];"
     },
     "modules" : {
       "modules" : [
@@ -58,8 +58,8 @@
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_list_no_type",
-        "text" : "Cannot determine the type of the list; use list<T>() syntax to specify the type"
+        "code" : "expr_map_notype",
+        "text" : "Cannot determine type of the map; use map<K,V>() syntax to specify the type"
       }
     ],
     "parsing" : {

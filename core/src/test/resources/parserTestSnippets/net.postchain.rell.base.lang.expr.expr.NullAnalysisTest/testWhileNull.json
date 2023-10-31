@@ -118,7 +118,7 @@
       {
         "pos" : "main.rell(3:85)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:value",
+        "code" : "expr_mem_null:node?:value",
         "text" : "Cannot access member 'value' of nullable type node?"
       }
     ],
@@ -155,13 +155,13 @@
       {
         "pos" : "main.rell(3:73)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:value",
+        "code" : "expr_mem_null:node?:value",
         "text" : "Cannot access member 'value' of nullable type node?"
       },
       {
         "pos" : "main.rell(3:86)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:next",
+        "code" : "expr_mem_null:node?:next",
         "text" : "Cannot access member 'next' of nullable type node?"
       }
     ],
@@ -198,13 +198,13 @@
       {
         "pos" : "main.rell(3:70)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:value",
+        "code" : "expr_mem_null:node?:value",
         "text" : "Cannot access member 'value' of nullable type node?"
       },
       {
         "pos" : "main.rell(3:83)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:next",
+        "code" : "expr_mem_null:node?:next",
         "text" : "Cannot access member 'next' of nullable type node?"
       }
     ],
