@@ -1,67 +1,63 @@
 package net.postchain.rell.toolbox.core.indexer
 
-import net.postchain.rell.toolbox.core.parser.RellLexer
+import io.github.oshai.kotlinlogging.KotlinLogging
+import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import net.postchain.rell.toolbox.core.parser.RellParser
-import org.antlr.v4.runtime.CharStream
-import org.antlr.v4.runtime.CharStreams
-import org.antlr.v4.runtime.CommonTokenStream
 import java.io.File
 import java.net.URI
 
 //data class WorkspaceIndex(val uri: URI, val resource: Resource)
 data class Resource(val parseTree: RellParser.RuleX_RootParserContext)
+
 class WorkspaceIndexer() {
-    var indexMap: HashMap<URI, Resource> = HashMap()
+    private val logger = KotlinLogging.logger {}
 
-    fun fullIndexing(rootURI: URI) {
-        //1. Use root path to of workspace read uri to all rell files
-        val uris = scan(rootURI)
-
-
-        //2. Create resource from each .rell files
-        //3. Add to indexMap
+    //TODO: Should we inject this?
+    private val parser = AntlrRellParser()
+    var fileUriResourceMap: HashMap<URI, Resource> = HashMap()
+    fun initialFileIndexBuild(rootURI: URI) {
+        val rellUris = addRellFilesUri(rootURI)
+        rellUris.forEach { uri -> updateFileUriResourceMap(uri) }
     }
 
-    fun buildFileResources(uris: MutableList<URI>) {
-        uris.forEach { uri ->
-            val input: CharStream = CharStreams.fromString(source)
-            val lexer = RellLexer(input)
-            val tokens = CommonTokenStream(lexer)
-            val parser = RellParser(tokens)
+    fun updateFileUriResourceMap(uri: URI) {
+        fileUriResourceMap[uri] = Resource(parser.parse(File(uri).readText()))
+    }
+
+    fun updateFileUriResourceMap(oldUri: URI, newUri: URI) {
+        val resource = fileUriResourceMap[oldUri]
+        if (resource != null) {
+            fileUriResourceMap[newUri] = resource
+            fileUriResourceMap.remove(oldUri)
+        } else {
+            logger.warn { "Could not find resource for $oldUri. Re-parsing file..." }
+            updateFileUriResourceMap(newUri)
         }
     }
 
-    private fun readFile(uri: URI): String {
-
-    }
-
-    fun scan(uri: URI): List<URI> {
+    fun addRellFilesUri(uri: URI): List<URI> {
         val uris: MutableList<URI> = ArrayList()
-        val file = File(uri)
-        scanRec(file, uris)
+        addRellFilesUri(File(uri), uris)
         return uris.toList()
     }
 
-    fun scanRec(file: File, uris: MutableList<URI>) {
-        //TODO: Verify path
-        // we need to convert the given file to a decoded emf file uri
+    private fun addRellFilesUri(file: File, uris: MutableList<URI>) {
+        //TODO: Verify path. From xtext impl:
+        // "we need to convert the given file to a decoded emf file uri
         // e.g. file:///Users/x/y/z
-        // or file:///C:/x/y/z
+        // or file:///C:/x/y/z"
 
         if (file.isDirectory()) {
             val files = file.listFiles()
             if (files != null) {
                 for (f in files) {
-                    scanRec(f, uris)
+                    addRellFilesUri(f, uris)
                 }
             }
         } else {
-            //TODO: Filter out for rell files
             if (file.extension == "rell") {
                 uris.add(file.toURI())
             }
         }
     }
-
-
 }
