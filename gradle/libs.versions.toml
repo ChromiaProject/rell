@@ -1,6 +1,7 @@
 [versions]
 rell = "0.13.2"
 testcontainers = "1.18.3"
+lsp4jVersion = "0.21.1"
 
 [libraries]
 rell = { module = "net.postchain.rell:rell-api-base", version.ref = "rell" }
@@ -16,6 +17,13 @@ oshai = { module = "io.github.oshai:kotlin-logging-jvm", version = "5.1.0" }
 log4j = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version = "2.20.0" }
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version = "2.20.0" }
 
+#Language Server
+lsp4j-core = { module = "org.eclipse.lsp4j:org.eclipse.lsp4j", version.ref = "lsp4jVersion" }
+lsp4j-debug = { module = "org.eclipse.lsp4j:org.eclipse.lsp4j.debug", version.ref = "lsp4jVersion" }
+lsp4j-websocket = { module = "org.eclipse.lsp4j:org.eclipse.lsp4j.websocket", version.ref = "lsp4jVersion" }
+
+
 [bundles]
 testcontainers = ["testcontainers-base", "testcintainers-junit"]
 logging = ["oshai", "log4j", "log4j-core"]
+lsp4j = ["lsp4j-core", "lsp4j-debug", "lsp4j-websocket"]

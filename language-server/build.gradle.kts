@@ -15,9 +15,7 @@ val koinVersion = "3.5.0"
 val junitJupiterVersion = "5.10.0"
 
 dependencies {
-    implementation("org.eclipse.lsp4j:org.eclipse.lsp4j:$lsp4jVersion")
-    implementation("org.eclipse.lsp4j:org.eclipse.lsp4j.debug:$lsp4jVersion")
-    implementation("org.eclipse.lsp4j:org.eclipse.lsp4j.websocket:$lsp4jVersion")
+    implementation(libs.bundles.lsp4j)
     implementation("io.insert-koin:koin-core:$koinVersion")
     implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
     implementation(libs.bundles.logging)
