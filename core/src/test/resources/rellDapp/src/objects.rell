@@ -1,0 +1,5 @@
+module;
+
+object my_name {
+mutable name= "World";
+}

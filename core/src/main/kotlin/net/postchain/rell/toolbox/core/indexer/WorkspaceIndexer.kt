@@ -6,14 +6,22 @@ import net.postchain.rell.toolbox.core.parser.RellParser
 import java.io.File
 import java.net.URI
 
-//data class WorkspaceIndex(val uri: URI, val resource: Resource)
-data class Resource(val parseTree: RellParser.RuleX_RootParserContext)
+//1. onchange (absURI for editerad fil)
+//2. vi parsar om editerad fil
+//3. För alla resources som importerar editerad fil parsa om
 
-class WorkspaceIndexer() {
+
+//data class WorkspaceIndex(val uri: URI, val resource: Resource)
+data class Resource(val absoluteURI: URI) {
+    private val parser = AntlrRellParser()
+    val parseTree: RellParser.RuleX_RootParserContext = parser.parse(File(absoluteURI).readText())
+}
+
+class WorkspaceIndexer {
     private val logger = KotlinLogging.logger {}
 
     //TODO: Should we inject this?
-    private val parser = AntlrRellParser()
+
     var fileUriResourceMap: HashMap<URI, Resource> = HashMap()
     fun initialFileIndexBuild(rootURI: URI) {
         val rellUris = addRellFilesUri(rootURI)
@@ -21,7 +29,7 @@ class WorkspaceIndexer() {
     }
 
     fun updateFileUriResourceMap(uri: URI) {
-        fileUriResourceMap[uri] = Resource(parser.parse(File(uri).readText()))
+        fileUriResourceMap[uri] = Resource(uri)
     }
 
     fun updateFileUriResourceMap(oldUri: URI, newUri: URI) {

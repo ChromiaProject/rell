@@ -1,0 +1,7 @@
+module;
+
+@mount("bar")
+entity rell_ent {
+    name: text;
+    age: integer;
+}

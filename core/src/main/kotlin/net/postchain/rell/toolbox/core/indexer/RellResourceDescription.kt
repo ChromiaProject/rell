@@ -9,27 +9,30 @@ import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import java.io.File
 import java.net.URI
 
+//TODO rename placeholder
+data class placeholder (val moduleInfo: IdeModuleInfo, val relativePath: String, val absolutePath: String) {
+
+}
+
 class RellResourceDescription {
-    var fileUriModuleInfoMap: HashMap<URI, IdeModuleInfo> = HashMap()
+    var fileUriModuleInfoMap: HashMap<URI, placeholder> = HashMap()
 
     fun buildRellResource(rootURI: URI) {
         val parser = AntlrRellParser()
         val rellUris = WorkspaceIndexer().addRellFilesUri(rootURI)
 
         rellUris.forEach { uri ->
+            //TODO verfiy correct path behaviour
             val antlrRellRootNode = parser.parse(File(uri).readText())
-
-            val testPath = uri.toString().substring("file:/".length)
-            val compilerSrcPath = IdeDirApi.parseSourcePath(testPath)
+            val relativePath = uri.toString().substring(rootURI.toString().length)
+            val compilerSrcPath = IdeDirApi.parseSourcePath(relativePath)
             val idePath = IdeSourcePathFilePath(compilerSrcPath!!)
             val rcPath = RellcFilePath(compilerSrcPath, idePath)
 
             val ast = RellcAPI.antlrToRellAst(rcPath, antlrRellRootNode)
 
             val moduleInfo = ast.first!!.ideModuleInfo(compilerSrcPath)
-//            val moduleInfo = IdeApi.getModuleInfo(compilerSrcPath, ast.first!!)
-            fileUriModuleInfoMap[uri] = moduleInfo!!
-
+            fileUriModuleInfoMap[uri] = placeholder(moduleInfo!!, relativePath, uri.toString())
         }
 
 

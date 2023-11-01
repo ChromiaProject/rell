@@ -8,6 +8,7 @@ import java.nio.file.Path
 import kotlin.io.path.createDirectory
 import kotlin.io.path.createParentDirectories
 
+
 class RellResourceDescriptionTest {
 
     @TempDir
@@ -29,8 +30,10 @@ class RellResourceDescriptionTest {
 
     @Test
     fun `just a runner`() {
+        val classLoader = javaClass.getClassLoader()
+        val file = File(classLoader.getResource("rellDapp").file)
         val rellDesc = RellResourceDescription()
-        rellDesc.buildRellResource(File("/Users/tim/chromaway/test/oct").toURI())
+        rellDesc.buildRellResource(file.toURI())
 
         val a = rellDesc.fileUriModuleInfoMap
         val b = 2
