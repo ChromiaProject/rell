@@ -1,7 +1,7 @@
 module;
 import ^.objects.*;
 import ^.entities.*;
-import ^.bar.*;
+import ^.subfolder.entities.*;
 
 operation set_name(name) {
   my_name.name = name;

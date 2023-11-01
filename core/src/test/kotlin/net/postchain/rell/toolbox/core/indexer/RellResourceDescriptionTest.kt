@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.createDirectory
 import kotlin.io.path.createParentDirectories
@@ -30,12 +31,13 @@ class RellResourceDescriptionTest {
 
     @Test
     fun `just a runner`() {
+        var rellFiles: MutableList<URI> = mutableListOf()
         val classLoader = javaClass.getClassLoader()
         val file = File(classLoader.getResource("rellDapp").file)
-        val rellDesc = RellResourceDescription()
-        rellDesc.buildRellResource(file.toURI())
 
-        val a = rellDesc.fileUriModuleInfoMap
+        val rellDesc = RellResourceDescription()
+        findRellFilesInWorkspace(file, rellFiles)
+        val resource = rellDesc.buildRellResource(file.toURI(), rellFiles.first())
         val b = 2
     }
 }

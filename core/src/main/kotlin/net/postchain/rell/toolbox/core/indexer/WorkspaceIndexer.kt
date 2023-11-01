@@ -1,8 +1,6 @@
 package net.postchain.rell.toolbox.core.indexer
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import net.postchain.rell.toolbox.core.parser.AntlrRellParser
-import net.postchain.rell.toolbox.core.parser.RellParser
 import java.io.File
 import java.net.URI
 
@@ -10,26 +8,22 @@ import java.net.URI
 //2. vi parsar om editerad fil
 //3. För alla resources som importerar editerad fil parsa om
 
-
-//data class WorkspaceIndex(val uri: URI, val resource: Resource)
-data class Resource(val absoluteURI: URI) {
-    private val parser = AntlrRellParser()
-    val parseTree: RellParser.RuleX_RootParserContext = parser.parse(File(absoluteURI).readText())
-}
-
 class WorkspaceIndexer(private val workspaceURI: URI) {
     private val logger = KotlinLogging.logger {}
+    private val resourceDescription = RellResourceDescription()
 
     //TODO: Should we inject this?
 
     var fileUriResourceMap: HashMap<URI, Resource> = HashMap()
     fun initialFileIndexBuild() {
         val rellUris = addRellFilesUri()
-        rellUris.forEach { uri -> updateFileUriResourceMap(uri) }
+        rellUris.forEach{
+            fileUriResourceMap[it] = resourceDescription.buildRellResource(workspaceURI, it)
+        }
     }
 
     fun updateFileUriResourceMap(uri: URI) {
-        fileUriResourceMap[uri] = Resource(uri)
+        fileUriResourceMap[uri] = resourceDescription.buildRellResource(workspaceURI, uri)
     }
 
     fun updateFileUriResourceMap(oldUri: URI, newUri: URI) {
@@ -43,29 +37,29 @@ class WorkspaceIndexer(private val workspaceURI: URI) {
         }
     }
 
-    fun addRellFilesUri(): List<URI> {
-        val uris: MutableList<URI> = ArrayList()
-        addRellFilesUri(File(workspaceURI), uris)
-        return uris.toList()
-    }
+    fun findAffectedFiles(uri: URI): Set<URI> {
+        //TODO make it so it can find affected files that are importing an affected file
+        var shallowCopy = fileUriResourceMap.toMutableMap()
+        val changedFileResource: Resource = fileUriResourceMap[uri]!!
+        shallowCopy.remove(uri)
+        var filesToUpdate: MutableSet<URI> = mutableSetOf(uri)
 
-    private fun addRellFilesUri(file: File, uris: MutableList<URI>) {
-        //TODO: Verify path. From xtext impl:
-        // "we need to convert the given file to a decoded emf file uri
-        // e.g. file:///Users/x/y/z
-        // or file:///C:/x/y/z"
-
-        if (file.isDirectory()) {
-            val files = file.listFiles()
-            if (files != null) {
-                for (f in files) {
-                    addRellFilesUri(f, uris)
+        shallowCopy.forEach { (key, value) ->
+            if (value.imports.isNullOrEmpty()) {
+                //
+            } else {
+                if(value.imports.contains(changedFileResource.rName)) {
+                    filesToUpdate.add(key)
                 }
             }
-        } else {
-            if (file.extension == "rell") {
-                uris.add(file.toURI())
-            }
         }
+        return filesToUpdate.toSet()
+
+    }
+
+    fun addRellFilesUri(): List<URI> {
+        val uris: MutableList<URI> = ArrayList()
+        findRellFilesInWorkspace(File(workspaceURI), uris)
+        return uris.toList()
     }
 }

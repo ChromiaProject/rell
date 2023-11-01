@@ -1,10 +1,7 @@
 package net.postchain.rell.toolbox.core.indexer
 
 import assertk.assertThat
-import assertk.assertions.isEqualTo
-import assertk.assertions.isNotEmpty
-import assertk.assertions.isNotEqualTo
-import assertk.assertions.isNull
+import assertk.assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -23,13 +20,13 @@ class WorkspaceIndexerTest {
     @BeforeEach
     fun setup() {
         val childDir = File(tempDir.toFile(), "directory").toPath().createDirectory()
-        File(childDir.toFile(), "rell-file.rell").apply {
+        File(childDir.toFile(), "rell_file.rell").apply {
             writeText("module;")
         }
-        File(tempDir.toFile(), "rell-file.rell").apply {
+        File(tempDir.toFile(), "rell_file.rell").apply {
             writeText("module;")
         }
-        File(tempDir.toFile(), "not-a-rell-file.json").apply {
+        File(tempDir.toFile(), "not_a_rell_file.json").apply {
             writeText("{module}")
         }
     }
@@ -58,7 +55,7 @@ class WorkspaceIndexerTest {
 
         val prevUriResourceMap = workspaceIndexer.fileUriResourceMap.toMap()
         val appendText = "val a = \"a\";"
-        val pathToFile = Path("$tempDir/rell-file.rell")
+        val pathToFile = Path("$tempDir/rell_file.rell")
         Files.write(pathToFile, appendText.toByteArray(), StandardOpenOption.APPEND)
         val pathUri = pathToFile.toUri()
 
@@ -78,13 +75,64 @@ class WorkspaceIndexerTest {
         workspaceIndexer.initialFileIndexBuild()
         val prevUriResourceMap = workspaceIndexer.fileUriResourceMap.toMap()
 
-        val oldUri = Path("$tempDir/rell-file.rell").toUri()
-        val newUri = Path("$tempDir/renamed-rell-file.rell").toUri()
+        val oldUri = Path("$tempDir/rell_file.rell").toUri()
+        val newUri = Path("$tempDir/renamed_rell_file.rell").toUri()
         workspaceIndexer.updateFileUriResourceMap(oldUri, newUri)
         val updateFileUriResourceMap = workspaceIndexer.fileUriResourceMap
 
         assertThat(updateFileUriResourceMap.size).isEqualTo(prevUriResourceMap.size)
         assertThat(updateFileUriResourceMap[oldUri]).isNull()
         assertThat(updateFileUriResourceMap[newUri]).isEqualTo(prevUriResourceMap[oldUri])
+    }
+
+    @Test
+    fun `find Affected Files depth one`(@TempDir dir: File) {
+        val file1 = File(dir, "main.rell").apply {
+            writeText(
+                """
+                module;
+                import ^.imported_module.*;
+            """.trimIndent()
+            )
+        }
+
+        val file2 = File(dir, "imported_module.rell").apply {
+            writeText(
+                """
+                module;
+            """.trimIndent()
+            )
+        }
+
+        val workspaceIndexer = WorkspaceIndexer(dir.toURI())
+        workspaceIndexer.initialFileIndexBuild()
+        val files = workspaceIndexer.findAffectedFiles(file2.toURI())
+        assertThat(files.size).isEqualTo(2)
+        assertThat(files.containsAll(listOf(file1.toURI(), file2.toURI()))).isTrue()
+    }
+
+    @Test
+    fun `find Affected Files no imports`(@TempDir dir: File) {
+        val file1 = File(dir, "main.rell").apply {
+            writeText(
+                """
+                module;
+            """.trimIndent()
+            )
+        }
+
+        val file2 = File(dir, "imported_module.rell").apply {
+            writeText(
+                """
+                module;
+            """.trimIndent()
+            )
+        }
+
+        val workspaceIndexer = WorkspaceIndexer(dir.toURI())
+        workspaceIndexer.initialFileIndexBuild()
+        val files = workspaceIndexer.findAffectedFiles(file2.toURI())
+        assertThat(files.size).isEqualTo(1)
+        assertThat(files.first()).isEqualTo(file2.toURI())
     }
 }
