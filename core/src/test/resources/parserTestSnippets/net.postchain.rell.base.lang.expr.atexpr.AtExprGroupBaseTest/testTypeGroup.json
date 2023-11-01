@@ -481,7 +481,7 @@
   },
   {
     "files" : {
-      "main.rell" : "enum color { red, green, blue }\nentity user { name; }\nentity data { v:rowid; }\noperation o() { create data(v = _int_to_rowid(123)); }"
+      "main.rell" : "enum color { red, green, blue }\nentity user { name; }\nentity data { v:rowid; }\noperation o() { create data(v = rowid(123)); }"
     },
     "modules" : {
       "modules" : [

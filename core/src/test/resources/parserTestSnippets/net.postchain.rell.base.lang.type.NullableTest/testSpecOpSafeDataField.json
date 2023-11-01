@@ -118,7 +118,7 @@
       {
         "pos" : "main.rell(3:52)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:company",
+        "code" : "expr_mem_null:user?:company",
         "text" : "Cannot access member 'company' of nullable type user?"
       }
     ],
@@ -155,7 +155,7 @@
       {
         "pos" : "main.rell(3:61)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:name",
+        "code" : "expr_mem_null:company?:name",
         "text" : "Cannot access member 'name' of nullable type company?"
       }
     ],

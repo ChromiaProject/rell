@@ -79,7 +79,7 @@
       {
         "pos" : "main.rell(1:62)",
         "type" : "ERROR",
-        "code" : "name:ambig:foo:[ENTITY:lib_entity:foo,OBJECT:lib_object:foo]",
+        "code" : "namespace:ambig:foo:[ENTITY:lib_entity:foo,OBJECT:lib_object:foo]",
         "text" : "Name 'foo' is ambiguous: entity lib_entity:foo, object lib_object:foo"
       }
     ],
@@ -130,7 +130,7 @@
       {
         "pos" : "main.rell(1:65)",
         "type" : "ERROR",
-        "code" : "name:ambig:foo:[ENTITY:lib_entity:foo,OPERATION:lib_operation:foo]",
+        "code" : "namespace:ambig:foo:[ENTITY:lib_entity:foo,OPERATION:lib_operation:foo]",
         "text" : "Name 'foo' is ambiguous: entity lib_entity:foo, operation lib_operation:foo"
       }
     ],
@@ -181,7 +181,7 @@
       {
         "pos" : "main.rell(1:62)",
         "type" : "ERROR",
-        "code" : "name:ambig:foo:[ENTITY:lib_entity:foo,STRUCT:lib_struct:foo]",
+        "code" : "namespace:ambig:foo:[ENTITY:lib_entity:foo,STRUCT:lib_struct:foo]",
         "text" : "Name 'foo' is ambiguous: entity lib_entity:foo, struct lib_struct:foo"
       }
     ],
@@ -232,7 +232,7 @@
       {
         "pos" : "main.rell(1:60)",
         "type" : "ERROR",
-        "code" : "name:ambig:foo:[ENTITY:lib_entity:foo,ENUM:lib_enum:foo]",
+        "code" : "namespace:ambig:foo:[ENTITY:lib_entity:foo,ENUM:lib_enum:foo]",
         "text" : "Name 'foo' is ambiguous: entity lib_entity:foo, enum lib_enum:foo"
       }
     ],
@@ -283,7 +283,7 @@
       {
         "pos" : "main.rell(1:64)",
         "type" : "ERROR",
-        "code" : "name:ambig:foo:[ENTITY:lib_entity:foo,FUNCTION:lib_function:foo]",
+        "code" : "namespace:ambig:foo:[ENTITY:lib_entity:foo,FUNCTION:lib_function:foo]",
         "text" : "Name 'foo' is ambiguous: entity lib_entity:foo, function lib_function:foo"
       }
     ],

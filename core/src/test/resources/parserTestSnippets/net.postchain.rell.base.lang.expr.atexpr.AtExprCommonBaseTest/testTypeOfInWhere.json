@@ -1,0 +1,545 @@
+[
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; pos:text; employer:company; }\nfunction get_user(): list<user> = list(user @* {});"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; pos:text; employer:company; }\nfunction get_user(): list<user> = list(user @* {});\noperation o() { create company(name = 'Apple'); create company(name = 'Google'); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; pos:text; employer:company; }\nfunction get_user(): list<user> = list(user @* {});\noperation o() { create user(id = 501, name = 'Bob', pos = 'Dev', employer = get_company()@{.name=='Apple'}); create user(id = 502, name = 'Alice', pos = 'Tester', employer = get_company()@{.name=='Google'}); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; pos:text; employer:company; }\nfunction get_user(): list<user> = list(user @* {});\nquery q() = get_company() @* { $.name };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:32)",
+        "type" : "ERROR",
+        "code" : "at_where:type:0:[boolean]:[text]",
+        "text" : "Wrong type of where-expression: text instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; pos:text; employer:company; }\nfunction get_user(): list<user> = list(user @* {});\nquery q() = get_company() @* { _type_of($) };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:32)",
+        "type" : "ERROR",
+        "code" : "at_where:type:0:[boolean]:[text]",
+        "text" : "Wrong type of where-expression: text instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nfunction get_company(): list<company> = list(company @* {});\nentity user { id:integer; name; pos:text; employer:company; }\nfunction get_user(): list<user> = list(user @* {});\nquery q() = get_company() @* { _type_of($.name) };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:32)",
+        "type" : "ERROR",
+        "code" : "at_where:type:0:[boolean]:[text]",
+        "text" : "Wrong type of where-expression: text instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nentity user { id:integer; name; pos:text; employer:company; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nentity user { id:integer; name; pos:text; employer:company; }\noperation o() { create company(name = 'Apple'); create company(name = 'Google'); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nentity user { id:integer; name; pos:text; employer:company; }\noperation o() { create user(id = 501, name = 'Bob', pos = 'Dev', employer = company@{.name=='Apple'}); create user(id = 502, name = 'Alice', pos = 'Tester', employer = company@{.name=='Google'}); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nentity user { id:integer; name; pos:text; employer:company; }\nquery q() = company @* { $.name };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:26)",
+        "type" : "ERROR",
+        "code" : "at_where:type:0:[boolean]:[text]",
+        "text" : "Wrong type of where-expression: text instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nentity user { id:integer; name; pos:text; employer:company; }\nquery q() = company @* { _type_of($) };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:26)",
+        "type" : "ERROR",
+        "code" : "at_where:type:0:[boolean]:[text]",
+        "text" : "Wrong type of where-expression: text instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name; }\nentity user { id:integer; name; pos:text; employer:company; }\nquery q() = company @* { _type_of($.name) };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(3:26)",
+        "type" : "ERROR",
+        "code" : "at_where:type:0:[boolean]:[text]",
+        "text" : "Wrong type of where-expression: text instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct company { name; }\nstruct user { id:integer; name; pos:text; employer:company; }\nfunction get_company(): list<company> = [company(name = 'Apple'), company(name = 'Google')];\nfunction get_user(): list<user> = [user(id = 501, name = 'Bob', pos = 'Dev', employer = get_company()@{.name=='Apple'}), user(id = 502, name = 'Alice', pos = 'Tester', employer = get_company()@{.name=='Google'})];"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct company { name; }\nstruct user { id:integer; name; pos:text; employer:company; }\nfunction get_company(): list<company> = [company(name = 'Apple'), company(name = 'Google')];\nfunction get_user(): list<user> = [user(id = 501, name = 'Bob', pos = 'Dev', employer = get_company()@{.name=='Apple'}), user(id = 502, name = 'Alice', pos = 'Tester', employer = get_company()@{.name=='Google'})];\nquery q() = get_company() @* { $.name };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:32)",
+        "type" : "ERROR",
+        "code" : "at_where:type:0:[boolean]:[text]",
+        "text" : "Wrong type of where-expression: text instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct company { name; }\nstruct user { id:integer; name; pos:text; employer:company; }\nfunction get_company(): list<company> = [company(name = 'Apple'), company(name = 'Google')];\nfunction get_user(): list<user> = [user(id = 501, name = 'Bob', pos = 'Dev', employer = get_company()@{.name=='Apple'}), user(id = 502, name = 'Alice', pos = 'Tester', employer = get_company()@{.name=='Google'})];\nquery q() = get_company() @* { _type_of($) };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:32)",
+        "type" : "ERROR",
+        "code" : "at_where:type:0:[boolean]:[text]",
+        "text" : "Wrong type of where-expression: text instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct company { name; }\nstruct user { id:integer; name; pos:text; employer:company; }\nfunction get_company(): list<company> = [company(name = 'Apple'), company(name = 'Google')];\nfunction get_user(): list<user> = [user(id = 501, name = 'Bob', pos = 'Dev', employer = get_company()@{.name=='Apple'}), user(id = 502, name = 'Alice', pos = 'Tester', employer = get_company()@{.name=='Google'})];\nquery q() = get_company() @* { _type_of($.name) };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(5:32)",
+        "type" : "ERROR",
+        "code" : "at_where:type:0:[boolean]:[text]",
+        "text" : "Wrong type of where-expression: text instead of boolean"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

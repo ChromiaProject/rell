@@ -58,7 +58,7 @@
       {
         "pos" : "main.rell(3:51)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:x",
+        "code" : "expr_mem_null:foo?:x",
         "text" : "Cannot access member 'x' of nullable type foo?"
       }
     ],
@@ -215,7 +215,7 @@
       {
         "pos" : "main.rell(3:44)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:x",
+        "code" : "expr_mem_null:foo?:x",
         "text" : "Cannot access member 'x' of nullable type foo?"
       }
     ],

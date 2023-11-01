@@ -238,8 +238,8 @@
       {
         "pos" : "main.rell(3:47)",
         "type" : "ERROR",
-        "code" : "unknown_name:[person]:name",
-        "text" : "Unknown name: 'person.name'"
+        "code" : "unknown_member:[person]:name",
+        "text" : "Type person has no member 'name'"
       }
     ],
     "parsing" : {

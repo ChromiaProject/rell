@@ -118,7 +118,7 @@
       {
         "pos" : "main.rell(7:36)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:p",
+        "code" : "expr_mem_null:s?:p",
         "text" : "Cannot access member 'p' of nullable type s?"
       }
     ],
@@ -215,7 +215,7 @@
       {
         "pos" : "main.rell(7:36)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:u",
+        "code" : "expr_mem_null:v?:u",
         "text" : "Cannot access member 'u' of nullable type v?"
       }
     ],
@@ -252,7 +252,7 @@
       {
         "pos" : "main.rell(7:39)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:s",
+        "code" : "expr_mem_null:u?:s",
         "text" : "Cannot access member 's' of nullable type u?"
       }
     ],
@@ -289,7 +289,7 @@
       {
         "pos" : "main.rell(7:42)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:p",
+        "code" : "expr_mem_null:s?:p",
         "text" : "Cannot access member 'p' of nullable type s?"
       }
     ],
@@ -356,7 +356,7 @@
       {
         "pos" : "main.rell(7:49)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:p",
+        "code" : "expr_mem_null:s?:p",
         "text" : "Cannot access member 'p' of nullable type s?"
       }
     ],
@@ -453,7 +453,7 @@
       {
         "pos" : "main.rell(7:49)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:u",
+        "code" : "expr_mem_null:v?:u",
         "text" : "Cannot access member 'u' of nullable type v?"
       }
     ],
@@ -490,7 +490,7 @@
       {
         "pos" : "main.rell(7:52)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:s",
+        "code" : "expr_mem_null:u?:s",
         "text" : "Cannot access member 's' of nullable type u?"
       }
     ],
@@ -527,7 +527,7 @@
       {
         "pos" : "main.rell(7:55)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:p",
+        "code" : "expr_mem_null:s?:p",
         "text" : "Cannot access member 'p' of nullable type s?"
       }
     ],

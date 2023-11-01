@@ -1,0 +1,186 @@
+[
+  {
+    "files" : {
+      "main.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() { val x: text? = 'hello'; return f(x); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:46)",
+        "type" : "WARNING",
+        "code" : "expr:smartnull:var:never:x",
+        "text" : "Variable 'x' cannot be null at this location"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() { val x: integer? = 123; return f(x); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:45)",
+        "type" : "WARNING",
+        "code" : "expr:smartnull:var:never:x",
+        "text" : "Variable 'x' cannot be null at this location"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() { val x: boolean? = true; return f(x); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:46)",
+        "type" : "WARNING",
+        "code" : "expr:smartnull:var:never:x",
+        "text" : "Variable 'x' cannot be null at this location"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() { val x: text? = 'hello'; return f(x) + f(x); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:46)",
+        "type" : "WARNING",
+        "code" : "expr:smartnull:var:never:x",
+        "text" : "Variable 'x' cannot be null at this location"
+      },
+      {
+        "pos" : "main.rell(1:53)",
+        "type" : "WARNING",
+        "code" : "expr:smartnull:var:never:x",
+        "text" : "Variable 'x' cannot be null at this location"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

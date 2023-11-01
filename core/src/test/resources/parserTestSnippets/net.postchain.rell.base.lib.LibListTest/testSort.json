@@ -335,8 +335,8 @@
       {
         "pos" : "main.rell(2:34)",
         "type" : "ERROR",
-        "code" : "unknown_member:[list<rec>]:sorted",
-        "text" : "Type list<rec> has no member 'sorted'"
+        "code" : "fn:collection.sorted:not_comparable:rec",
+        "text" : "Cannot sort values of non-comparable type rec"
       }
     ],
     "parsing" : {

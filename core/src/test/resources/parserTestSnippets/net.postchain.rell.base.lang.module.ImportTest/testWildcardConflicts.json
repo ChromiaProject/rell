@@ -125,7 +125,7 @@
       {
         "pos" : "main.rell(1:41)",
         "type" : "ERROR",
-        "code" : "name:ambig:x:[NAMESPACE:a:ns.x,STRUCT:a:st.x]",
+        "code" : "namespace:ambig:x:[NAMESPACE:a:ns.x,STRUCT:a:st.x]",
         "text" : "Name 'x' is ambiguous: namespace a:ns.x, struct a:st.x"
       }
     ],
@@ -228,7 +228,7 @@
       {
         "pos" : "main.rell(1:41)",
         "type" : "ERROR",
-        "code" : "name:ambig:x:[NAMESPACE:a:ns.x,ENUM:a:en.x]",
+        "code" : "namespace:ambig:x:[NAMESPACE:a:ns.x,ENUM:a:en.x]",
         "text" : "Name 'x' is ambiguous: namespace a:ns.x, enum a:en.x"
       },
       {
@@ -273,7 +273,7 @@
       {
         "pos" : "main.rell(1:41)",
         "type" : "ERROR",
-        "code" : "name:ambig:x:[NAMESPACE:a:ns.x,ENUM:a:en.x]",
+        "code" : "namespace:ambig:x:[NAMESPACE:a:ns.x,ENUM:a:en.x]",
         "text" : "Name 'x' is ambiguous: namespace a:ns.x, enum a:en.x"
       }
     ],
@@ -408,7 +408,7 @@
       {
         "pos" : "main.rell(1:46)",
         "type" : "ERROR",
-        "code" : "name:ambig:x:[STRUCT:a:st.x,ENUM:a:en.x]",
+        "code" : "namespace:ambig:x:[STRUCT:a:st.x,ENUM:a:en.x]",
         "text" : "Name 'x' is ambiguous: struct a:st.x, enum a:en.x"
       }
     ],
@@ -447,14 +447,14 @@
       {
         "pos" : "main.rell(1:41)",
         "type" : "ERROR",
-        "code" : "name:ambig:x:[STRUCT:a:st.x,ENUM:a:en.x]",
+        "code" : "namespace:ambig:x:[STRUCT:a:st.x,ENUM:a:en.x]",
         "text" : "Name 'x' is ambiguous: struct a:st.x, enum a:en.x"
       },
       {
         "pos" : "main.rell(1:43)",
         "type" : "ERROR",
-        "code" : "unknown_name:[a:st.x]:EN",
-        "text" : "Unknown name: 'a:st.x.EN'"
+        "code" : "unknown_member:[a:st.x]:EN",
+        "text" : "Type a:st.x has no member 'EN'"
       }
     ],
     "parsing" : {
@@ -492,7 +492,7 @@
       {
         "pos" : "main.rell(1:41)",
         "type" : "ERROR",
-        "code" : "name:ambig:x:[STRUCT:a:st.x,ENUM:a:en.x]",
+        "code" : "namespace:ambig:x:[STRUCT:a:st.x,ENUM:a:en.x]",
         "text" : "Name 'x' is ambiguous: struct a:st.x, enum a:en.x"
       }
     ],
@@ -531,14 +531,14 @@
       {
         "pos" : "main.rell(1:41)",
         "type" : "ERROR",
-        "code" : "name:ambig:x:[STRUCT:a:st.x,ENUM:a:en.x]",
+        "code" : "namespace:ambig:x:[STRUCT:a:st.x,ENUM:a:en.x]",
         "text" : "Name 'x' is ambiguous: struct a:st.x, enum a:en.x"
       },
       {
         "pos" : "main.rell(1:43)",
         "type" : "ERROR",
-        "code" : "unknown_name:[a:st.x]:value",
-        "text" : "Unknown name: 'a:st.x.value'"
+        "code" : "unknown_member:[a:st.x]:value",
+        "text" : "Type a:st.x has no member 'value'"
       }
     ],
     "parsing" : {
@@ -640,7 +640,7 @@
       {
         "pos" : "main.rell(1:41)",
         "type" : "ERROR",
-        "code" : "name:ambig:x:[STRUCT:a:st.x,FUNCTION:a:fn.x]",
+        "code" : "namespace:ambig:x:[STRUCT:a:st.x,FUNCTION:a:fn.x]",
         "text" : "Name 'x' is ambiguous: struct a:st.x, function a:fn.x"
       }
     ],

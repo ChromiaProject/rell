@@ -95,8 +95,8 @@
       {
         "pos" : "main.rell(1:24)",
         "type" : "ERROR",
-        "code" : "expr_map_keytype:list<integer>",
-        "text" : "Mutable type cannot be used as a map key: list<integer>"
+        "code" : "param_bounds:map:K:-immutable:list<integer>",
+        "text" : "Type parameter 'K' of type 'map' does not allow 'list<integer>'"
       }
     ],
     "parsing" : {
@@ -130,10 +130,16 @@
     },
     "messages" : [
       {
+        "pos" : "main.rell(1:20)",
+        "type" : "ERROR",
+        "code" : "param_bounds:map:K:-immutable:list<integer>",
+        "text" : "Type parameter 'K' of type 'map' does not allow 'list<integer>'"
+      },
+      {
         "pos" : "main.rell(1:24)",
         "type" : "ERROR",
-        "code" : "expr_map_keytype:list<integer>",
-        "text" : "Mutable type cannot be used as a map key: list<integer>"
+        "code" : "param_bounds:map:K:-immutable:list<integer>",
+        "text" : "Type parameter 'K' of type 'map' does not allow 'list<integer>'"
       }
     ],
     "parsing" : {

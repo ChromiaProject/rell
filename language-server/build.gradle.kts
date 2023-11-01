@@ -10,21 +10,12 @@ repositories {
     mavenCentral()
 }
 
-val lsp4jVersion = "0.21.1"
-val koinVersion = "3.5.0"
-val junitJupiterVersion = "5.10.0"
-
 dependencies {
-    implementation("org.eclipse.lsp4j:org.eclipse.lsp4j:$lsp4jVersion")
-    implementation("org.eclipse.lsp4j:org.eclipse.lsp4j.debug:$lsp4jVersion")
-    implementation("org.eclipse.lsp4j:org.eclipse.lsp4j.websocket:$lsp4jVersion")
-    implementation("io.insert-koin:koin-core:$koinVersion")
-    implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
+    implementation(libs.bundles.lsp4j)
     implementation(libs.bundles.logging)
+    implementation(libs.bundles.koin)
+
     testImplementation(libs.bundles.testcontainers)
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.27.0")
     testImplementation(kotlin("test"))
 }
 

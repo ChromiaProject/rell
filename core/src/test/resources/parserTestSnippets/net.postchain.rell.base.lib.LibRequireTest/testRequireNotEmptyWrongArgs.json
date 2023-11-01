@@ -95,8 +95,8 @@
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[require_not_empty]:null",
-        "text" : "Function 'require_not_empty' undefined for arguments (null)"
+        "code" : "fn:sys:unresolved_type_params:require_not_empty:T",
+        "text" : "Failed to infer type arguments for function 'require_not_empty': [T]"
       }
     ],
     "parsing" : {

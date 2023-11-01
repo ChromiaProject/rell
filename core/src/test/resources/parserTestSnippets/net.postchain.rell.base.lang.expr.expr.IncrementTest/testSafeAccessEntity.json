@@ -64,7 +64,7 @@
       {
         "pos" : "main.rell(2:52)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:x",
+        "code" : "expr_mem_null:user?:x",
         "text" : "Cannot access member 'x' of nullable type user?"
       }
     ],
@@ -107,7 +107,7 @@
       {
         "pos" : "main.rell(2:52)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:x",
+        "code" : "expr_mem_null:user?:x",
         "text" : "Cannot access member 'x' of nullable type user?"
       }
     ],
@@ -150,7 +150,7 @@
       {
         "pos" : "main.rell(2:54)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:x",
+        "code" : "expr_mem_null:user?:x",
         "text" : "Cannot access member 'x' of nullable type user?"
       }
     ],
@@ -193,7 +193,7 @@
       {
         "pos" : "main.rell(2:54)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:x",
+        "code" : "expr_mem_null:user?:x",
         "text" : "Cannot access member 'x' of nullable type user?"
       }
     ],

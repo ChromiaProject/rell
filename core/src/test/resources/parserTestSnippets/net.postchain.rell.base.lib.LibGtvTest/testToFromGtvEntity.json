@@ -268,8 +268,8 @@
       {
         "pos" : "main.rell(3:19)",
         "type" : "ERROR",
-        "code" : "unknown_member:[state]:to_gtv",
-        "text" : "Type state has no member 'to_gtv'"
+        "code" : "fn:invalid:state:to_gtv",
+        "text" : "Function 'to_gtv' not available for type 'state'"
       }
     ],
     "parsing" : {
@@ -305,8 +305,8 @@
       {
         "pos" : "main.rell(3:19)",
         "type" : "ERROR",
-        "code" : "unknown_member:[state]:to_gtv_pretty",
-        "text" : "Type state has no member 'to_gtv_pretty'"
+        "code" : "fn:invalid:state:to_gtv_pretty",
+        "text" : "Function 'to_gtv_pretty' not available for type 'state'"
       }
     ],
     "parsing" : {

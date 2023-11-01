@@ -178,7 +178,7 @@
       {
         "pos" : "main.rell(2:50)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:to_hex",
+        "code" : "expr_mem_null:integer?:to_hex",
         "text" : "Cannot access member 'to_hex' of nullable type integer?"
       }
     ],

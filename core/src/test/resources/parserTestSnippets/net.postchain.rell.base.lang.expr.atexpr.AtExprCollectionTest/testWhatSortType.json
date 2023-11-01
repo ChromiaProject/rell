@@ -391,7 +391,7 @@
   },
   {
     "files" : {
-      "main.rell" : "struct country { name; region: text; language: text; gdp: integer; }\nfunction make_country(name, region: text, language: text, gdp: integer) = country(name, region, language, gdp);\n\n            function countries() = [\n                make_country('Germany','EMEA','German',3863),\n                make_country('Austria','EMEA','German',447),\n                make_country('United Kingdom','EMEA','English',2743),\n                make_country('USA','AMER','English',21439),\n                make_country('Mexico','AMER','Spanish',1274),\n                make_country('China','APAC','Chinese',14140)\n            ];\n        \nenum color { red, green, blue }\nentity user { name; }\nquery q() = [0,1,2] @* {} ( @sort ((v:[123,456,789])@*{}(_int_to_rowid(v)))[$] );"
+      "main.rell" : "struct country { name; region: text; language: text; gdp: integer; }\nfunction make_country(name, region: text, language: text, gdp: integer) = country(name, region, language, gdp);\n\n            function countries() = [\n                make_country('Germany','EMEA','German',3863),\n                make_country('Austria','EMEA','German',447),\n                make_country('United Kingdom','EMEA','English',2743),\n                make_country('USA','AMER','English',21439),\n                make_country('Mexico','AMER','Spanish',1274),\n                make_country('China','APAC','Chinese',14140)\n            ];\n        \nenum color { red, green, blue }\nentity user { name; }\nquery q() = [0,1,2] @* {} ( @sort ((v:[123,456,789])@*{}(rowid(v)))[$] );"
     },
     "modules" : {
       "modules" : [
@@ -421,7 +421,7 @@
   },
   {
     "files" : {
-      "main.rell" : "struct country { name; region: text; language: text; gdp: integer; }\nfunction make_country(name, region: text, language: text, gdp: integer) = country(name, region, language, gdp);\n\n            function countries() = [\n                make_country('Germany','EMEA','German',3863),\n                make_country('Austria','EMEA','German',447),\n                make_country('United Kingdom','EMEA','English',2743),\n                make_country('USA','AMER','English',21439),\n                make_country('Mexico','AMER','Spanish',1274),\n                make_country('China','APAC','Chinese',14140)\n            ];\n        \nenum color { red, green, blue }\nentity user { name; }\nquery q() = [0,1,2] @* {} ( @sort_desc ((v:[123,456,789])@*{}(_int_to_rowid(v)))[$] );"
+      "main.rell" : "struct country { name; region: text; language: text; gdp: integer; }\nfunction make_country(name, region: text, language: text, gdp: integer) = country(name, region, language, gdp);\n\n            function countries() = [\n                make_country('Germany','EMEA','German',3863),\n                make_country('Austria','EMEA','German',447),\n                make_country('United Kingdom','EMEA','English',2743),\n                make_country('USA','AMER','English',21439),\n                make_country('Mexico','AMER','Spanish',1274),\n                make_country('China','APAC','Chinese',14140)\n            ];\n        \nenum color { red, green, blue }\nentity user { name; }\nquery q() = [0,1,2] @* {} ( @sort_desc ((v:[123,456,789])@*{}(rowid(v)))[$] );"
     },
     "modules" : {
       "modules" : [

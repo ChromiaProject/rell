@@ -95,8 +95,8 @@
       {
         "pos" : "main.rell(1:26)",
         "type" : "ERROR",
-        "code" : "expr:call:partial_not_supported:set",
-        "text" : "Partial application not supported for function 'set'"
+        "code" : "expr:call:partial_ambiguous:set<integer>",
+        "text" : "Cannot determine which variant of function 'set<integer>' to use"
       }
     ],
     "parsing" : {
@@ -165,14 +165,37 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:54)",
-        "type" : "ERROR",
-        "code" : "expr:call:partial_not_supported:set",
-        "text" : "Partial application not supported for function 'set'"
-      }
-    ],
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() { val f: () -> set<integer> = set<integer>(*); return f(); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
@@ -239,9 +262,150 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() { val f: (set<integer>) -> set<integer> = set(*); return f; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
     "messages" : [
       {
-        "pos" : "main.rell(1:67)",
+        "pos" : "main.rell(1:57)",
+        "type" : "ERROR",
+        "code" : "expr:call:partial_not_supported:set",
+        "text" : "Partial application not supported for function 'set'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() { val f: (map<text,integer>) -> set<(text,integer)> = set(*); return f; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:69)",
+        "type" : "ERROR",
+        "code" : "expr:call:partial_not_supported:set",
+        "text" : "Partial application not supported for function 'set'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() { val f: (range) -> set<integer> = set(*); return f; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:50)",
+        "type" : "ERROR",
+        "code" : "expr:call:partial_not_supported:set",
+        "text" : "Partial application not supported for function 'set'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() { val f: (byte_array) -> set<integer> = set(*); return f; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:55)",
         "type" : "ERROR",
         "code" : "expr:call:partial_not_supported:set",
         "text" : "Partial application not supported for function 'set'"

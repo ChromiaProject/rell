@@ -248,7 +248,14 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [ ],
+    "messages" : [
+      {
+        "pos" : "main.rell(1:13)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[assert_null]:null",
+        "text" : "Function 'assert_null' undefined for arguments (null)"
+      }
+    ],
     "parsing" : {
       "main.rell" : [ ]
     }
@@ -278,7 +285,14 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [ ],
+    "messages" : [
+      {
+        "pos" : "main.rell(1:23)",
+        "type" : "ERROR",
+        "code" : "expr_call_argtypes:[rell.test.assert_null]:null",
+        "text" : "Function 'rell.test.assert_null' undefined for arguments (null)"
+      }
+    ],
     "parsing" : {
       "main.rell" : [ ]
     }

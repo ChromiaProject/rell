@@ -28,7 +28,7 @@
       {
         "pos" : "main.rell(1:9)",
         "type" : "ERROR",
-        "code" : "op_ctx_noop",
+        "code" : "op_ctx:noop",
         "text" : "Can access 'op_context' only in an operation, function or entity"
       },
       {
@@ -71,7 +71,7 @@
       {
         "pos" : "main.rell(1:9)",
         "type" : "ERROR",
-        "code" : "op_ctx_noop",
+        "code" : "op_ctx:noop",
         "text" : "Can access 'op_context' only in an operation, function or entity"
       },
       {
@@ -114,7 +114,7 @@
       {
         "pos" : "main.rell(1:9)",
         "type" : "ERROR",
-        "code" : "op_ctx_noop",
+        "code" : "op_ctx:noop",
         "text" : "Can access 'op_context' only in an operation, function or entity"
       },
       {
@@ -163,7 +163,7 @@
       {
         "pos" : "main.rell(1:9)",
         "type" : "ERROR",
-        "code" : "op_ctx_noop",
+        "code" : "op_ctx:noop",
         "text" : "Can access 'op_context' only in an operation, function or entity"
       },
       {
@@ -206,7 +206,7 @@
       {
         "pos" : "main.rell(1:20)",
         "type" : "ERROR",
-        "code" : "op_ctx_noop",
+        "code" : "op_ctx:noop",
         "text" : "Can access 'op_context' only in an operation, function or entity"
       },
       {
@@ -255,7 +255,7 @@
       {
         "pos" : "main.rell(1:9)",
         "type" : "ERROR",
-        "code" : "op_ctx_noop",
+        "code" : "op_ctx:noop",
         "text" : "Can access 'op_context' only in an operation, function or entity"
       },
       {
@@ -304,7 +304,7 @@
       {
         "pos" : "main.rell(1:20)",
         "type" : "ERROR",
-        "code" : "op_ctx_noop",
+        "code" : "op_ctx:noop",
         "text" : "Can access 'op_context' only in an operation, function or entity"
       },
       {
@@ -353,7 +353,7 @@
       {
         "pos" : "main.rell(1:20)",
         "type" : "ERROR",
-        "code" : "op_ctx_noop",
+        "code" : "op_ctx:noop",
         "text" : "Can access 'op_context' only in an operation, function or entity"
       },
       {
@@ -402,7 +402,7 @@
       {
         "pos" : "main.rell(1:20)",
         "type" : "ERROR",
-        "code" : "op_ctx_noop",
+        "code" : "op_ctx:noop",
         "text" : "Can access 'op_context' only in an operation, function or entity"
       },
       {

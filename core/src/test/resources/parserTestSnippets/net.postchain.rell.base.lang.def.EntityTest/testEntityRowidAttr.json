@@ -238,7 +238,7 @@
       {
         "pos" : "main.rell(4:49)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:rowid",
+        "code" : "expr_mem_null:user?:rowid",
         "text" : "Cannot access member 'rowid' of nullable type user?"
       }
     ],

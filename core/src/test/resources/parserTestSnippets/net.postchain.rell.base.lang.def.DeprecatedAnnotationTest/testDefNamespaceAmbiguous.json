@@ -30,7 +30,7 @@
       {
         "pos" : "main.rell(1:40)",
         "type" : "ERROR",
-        "code" : "name:ambig:ns:[NAMESPACE:a:ns,NAMESPACE:b:ns]",
+        "code" : "namespace:ambig:ns:[NAMESPACE:a:ns,NAMESPACE:b:ns]",
         "text" : "Name 'ns' is ambiguous: namespace a:ns, namespace b:ns"
       },
       {
@@ -77,7 +77,7 @@
       {
         "pos" : "main.rell(1:40)",
         "type" : "ERROR",
-        "code" : "name:ambig:ns:[NAMESPACE:b:ns,NAMESPACE:a:ns]",
+        "code" : "namespace:ambig:ns:[NAMESPACE:b:ns,NAMESPACE:a:ns]",
         "text" : "Name 'ns' is ambiguous: namespace b:ns, namespace a:ns"
       },
       {
@@ -124,7 +124,7 @@
       {
         "pos" : "main.rell(1:40)",
         "type" : "ERROR",
-        "code" : "name:ambig:ns:[NAMESPACE:a:ns,NAMESPACE:b:ns]",
+        "code" : "namespace:ambig:ns:[NAMESPACE:a:ns,NAMESPACE:b:ns]",
         "text" : "Name 'ns' is ambiguous: namespace a:ns, namespace b:ns"
       },
       {
@@ -177,7 +177,7 @@
       {
         "pos" : "main.rell(1:40)",
         "type" : "ERROR",
-        "code" : "name:ambig:ns:[NAMESPACE:b:ns,NAMESPACE:a:ns]",
+        "code" : "namespace:ambig:ns:[NAMESPACE:b:ns,NAMESPACE:a:ns]",
         "text" : "Name 'ns' is ambiguous: namespace b:ns, namespace a:ns"
       }
     ],

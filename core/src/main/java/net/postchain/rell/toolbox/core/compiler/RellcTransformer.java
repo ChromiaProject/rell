@@ -1,0 +1,36 @@
+package net.postchain.rell.toolbox.core.compiler;
+
+import kotlin.jvm.functions.Function1;
+import net.postchain.rell.base.compiler.base.utils.C_Error;
+import net.postchain.rell.base.compiler.parser.RellTokenizerDecodingException;
+import net.postchain.rell.lsp.grammar.AntlrActionEx;
+import org.antlr.v4.runtime.ParserRuleContext;
+final class RellcTransformer {
+
+    private final Function1<Object, Object> transform;
+
+    RellcTransformer(AntlrActionEx action) {
+        transform = action.getTransform();
+    }
+
+    Object transform(AntlrToRellContext ctx, ParserRuleContext eObject, Object value) {
+        Object res = ctx.runWithAttachment(eObject, () -> {
+            try {
+                Object res0 = transform.invoke(value);
+                return res0;
+            } catch (RellTokenizerDecodingException e) {
+                var err = e.toCError();
+                ctx.addError(err);
+                return null;
+            } catch (C_Error e) {
+                throw e;
+            } catch (RuntimeException e) {
+                // Can be a normal situation: if there is a syntax error, some AST sub-nodes may be nulls, causing transformer code to fail.
+                // Returning null in such case.
+                return null;
+            }
+        });
+        return res;
+    }
+}
+

@@ -76,7 +76,7 @@
       {
         "pos" : "main.rell(1:30)",
         "type" : "ERROR",
-        "code" : "name:ambig:c.f:[FUNCTION:c:f,FUNCTION:a:f,FUNCTION:b:f]",
+        "code" : "namespace:ambig:c.f:[FUNCTION:c:f,FUNCTION:a:f,FUNCTION:b:f]",
         "text" : "Name 'c.f' is ambiguous: function c:f, function a:f, function b:f"
       }
     ],

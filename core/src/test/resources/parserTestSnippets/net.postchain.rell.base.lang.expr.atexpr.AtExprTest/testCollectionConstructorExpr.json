@@ -148,8 +148,8 @@
       {
         "pos" : "main.rell(3:64)",
         "type" : "ERROR",
-        "code" : "expr_list_badtype:text",
-        "text" : "Wrong argument type for 'list': text"
+        "code" : "expr_call_argtypes:[list]:text",
+        "text" : "Function 'list' undefined for arguments (text)"
       }
     ],
     "parsing" : {
@@ -185,8 +185,8 @@
       {
         "pos" : "main.rell(3:64)",
         "type" : "ERROR",
-        "code" : "expr_set_badtype:text",
-        "text" : "Wrong argument type for 'set': text"
+        "code" : "expr_call_argtypes:[set]:text",
+        "text" : "Function 'set' undefined for arguments (text)"
       }
     ],
     "parsing" : {
@@ -222,8 +222,8 @@
       {
         "pos" : "main.rell(3:64)",
         "type" : "ERROR",
-        "code" : "expr_map_badtype:text",
-        "text" : "Wrong argument type for map<>: text"
+        "code" : "expr_call_argtypes:[map]:text",
+        "text" : "Function 'map' undefined for arguments (text)"
       }
     ],
     "parsing" : {

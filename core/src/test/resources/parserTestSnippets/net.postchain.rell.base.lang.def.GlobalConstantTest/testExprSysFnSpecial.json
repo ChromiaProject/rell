@@ -34,7 +34,7 @@
       {
         "pos" : "main.rell(1:9)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:fn:print",
+        "code" : "def:const:bad_expr:0::X:fn:sys:print",
         "text" : "Bad expression for a global constant: function 'print'"
       }
     ],
@@ -77,7 +77,7 @@
       {
         "pos" : "main.rell(1:9)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:fn:log",
+        "code" : "def:const:bad_expr:0::X:fn:sys:log",
         "text" : "Bad expression for a global constant: function 'log'"
       }
     ],
