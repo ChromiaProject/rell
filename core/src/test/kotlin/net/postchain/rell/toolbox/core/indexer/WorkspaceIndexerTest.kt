@@ -36,14 +36,14 @@ class WorkspaceIndexerTest {
 
     @Test
     fun `addRellFilesUri returns uris to all Rell files from folders within workspace`() {
-        val fileUris = WorkspaceIndexer().addRellFilesUri(tempDir.toUri())
+        val fileUris = WorkspaceIndexer(tempDir.toUri()).addRellFilesUri()
         assertThat(fileUris.size).isEqualTo(2)
     }
 
     @Test
     fun `initialFileIndexBuild builds index mapper of files in workspace`() {
-        val workspaceIndexer = WorkspaceIndexer()
-        workspaceIndexer.initialFileIndexBuild(tempDir.toUri())
+        val workspaceIndexer = WorkspaceIndexer(tempDir.toUri())
+        workspaceIndexer.initialFileIndexBuild()
 
         assertThat(workspaceIndexer.fileUriResourceMap.size).isEqualTo(2)
         workspaceIndexer.fileUriResourceMap.forEach {
@@ -53,26 +53,29 @@ class WorkspaceIndexerTest {
 
     @Test
     fun `updateFileUriResourceMap updates resource of existing uri`() {
-        val workspaceIndexer = WorkspaceIndexer()
-        workspaceIndexer.initialFileIndexBuild(tempDir.toUri())
+        val workspaceIndexer = WorkspaceIndexer(tempDir.toUri())
+        workspaceIndexer.initialFileIndexBuild()
 
         val prevUriResourceMap = workspaceIndexer.fileUriResourceMap.toMap()
         val appendText = "val a = \"a\";"
         val pathToFile = Path("$tempDir/rell-file.rell")
         Files.write(pathToFile, appendText.toByteArray(), StandardOpenOption.APPEND)
+        val pathUri = pathToFile.toUri()
 
         workspaceIndexer.updateFileUriResourceMap(pathToFile.toUri())
         val updateFileUriResourceMap = workspaceIndexer.fileUriResourceMap
 
         assertThat(updateFileUriResourceMap.size).isEqualTo(prevUriResourceMap.size)
         prevUriResourceMap.keys.forEach { assertNotNull(updateFileUriResourceMap[it]) }
-        assertThat(updateFileUriResourceMap.get(pathToFile.toUri())).isNotEqualTo(prevUriResourceMap.get(pathToFile.toUri()))
+        assertThat(updateFileUriResourceMap[pathUri]!!.parseTree.children.size).isNotEqualTo(
+            prevUriResourceMap[pathUri]!!.parseTree.children.size
+        )
     }
 
     @Test
     fun `updateFileUriResourceMap updates uri of existing resource`() {
-        val workspaceIndexer = WorkspaceIndexer()
-        workspaceIndexer.initialFileIndexBuild(tempDir.toUri())
+        val workspaceIndexer = WorkspaceIndexer(tempDir.toUri())
+        workspaceIndexer.initialFileIndexBuild()
         val prevUriResourceMap = workspaceIndexer.fileUriResourceMap.toMap()
 
         val oldUri = Path("$tempDir/rell-file.rell").toUri()

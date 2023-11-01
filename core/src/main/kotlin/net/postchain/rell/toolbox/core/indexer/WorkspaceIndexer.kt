@@ -17,14 +17,14 @@ data class Resource(val absoluteURI: URI) {
     val parseTree: RellParser.RuleX_RootParserContext = parser.parse(File(absoluteURI).readText())
 }
 
-class WorkspaceIndexer {
+class WorkspaceIndexer(private val workspaceURI: URI) {
     private val logger = KotlinLogging.logger {}
 
     //TODO: Should we inject this?
 
     var fileUriResourceMap: HashMap<URI, Resource> = HashMap()
-    fun initialFileIndexBuild(rootURI: URI) {
-        val rellUris = addRellFilesUri(rootURI)
+    fun initialFileIndexBuild() {
+        val rellUris = addRellFilesUri()
         rellUris.forEach { uri -> updateFileUriResourceMap(uri) }
     }
 
@@ -43,9 +43,9 @@ class WorkspaceIndexer {
         }
     }
 
-    fun addRellFilesUri(uri: URI): List<URI> {
+    fun addRellFilesUri(): List<URI> {
         val uris: MutableList<URI> = ArrayList()
-        addRellFilesUri(File(uri), uris)
+        addRellFilesUri(File(workspaceURI), uris)
         return uris.toList()
     }
 
