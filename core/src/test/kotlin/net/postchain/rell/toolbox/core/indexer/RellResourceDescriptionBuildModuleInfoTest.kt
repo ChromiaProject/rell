@@ -10,13 +10,19 @@ class RellResourceDescriptionBuildModuleInfoTest {
 
     @Test
     fun `sRellFile finds single errors in single rell file`() {
+        val fileUri = rellFilesCorrect.find { it.toString().endsWith("entities.rell") }!!
 
-        val parseTreeWithErrors =
-            rellDesc.buildParseTreeWithSyntaxErrors(rellFilesCorrect.find { it.toString().endsWith("entities.rell") }!!)
+        val rellCompilerPaths = RellCompilerPaths(workspaceCorrect.toURI())
+        val compilerSourcePath = rellCompilerPaths.createCompilerSourcePath(fileUri)
+        val rellCompilerFilePath = rellCompilerPaths.createRellCompilerFilePath(compilerSourcePath)
+
+        val rellDesc = RellResourceDescription(workspaceCorrect.toURI())
+        val parseTree = rellDesc.buildParseTreeWithSyntaxErrors(fileUri)
+        val sRellFile = rellDesc.buildRellAstWithCompilerErrors(rellCompilerFilePath, parseTree.first)
+
         val rellModuleInfo = rellDesc.compileResult(
-            workspaceCorrect.toURI(),
-            rellFilesCorrect.find { it.toString().endsWith("entities.rell") }!!,
-            parseTreeWithErrors.first
+            fileUri,
+            sRellFile.first
         )
         //assertThat(parseTreeWithErrors.second.size).isEqualTo(0)
         //assertThat(parseTree.exception).isNotNull()
@@ -28,7 +34,7 @@ class RellResourceDescriptionBuildModuleInfoTest {
         val classLoader = javaClass.getClassLoader()
         val workspaceError = File(classLoader.getResource("rellDappWithErrors").file)
         val workspaceCorrect = File(classLoader.getResource("rellDapp").file)
-        val rellDesc = RellResourceDescription()
+
 
         @JvmStatic
         @BeforeAll

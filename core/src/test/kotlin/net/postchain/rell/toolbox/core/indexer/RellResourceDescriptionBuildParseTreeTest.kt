@@ -38,7 +38,7 @@ class RellResourceDescriptionBuildParseTreeTest {
         var rellFiles: MutableList<URI> = mutableListOf()
         val classLoader = javaClass.getClassLoader()
         val workspace = File(classLoader.getResource("rellDappWithErrors").file).absoluteFile
-        val rellDesc = RellResourceDescription()
+        val rellDesc = RellResourceDescription(workspace.toURI())
 
         @JvmStatic
         @BeforeAll

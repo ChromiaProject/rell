@@ -17,19 +17,18 @@ import net.postchain.rell.toolbox.core.parser.SyntaxErrorCollector
 import java.io.File
 import java.net.URI
 
-class RellResourceDescription {
+class RellResourceDescription(private val workspaceURI: URI) {
     val parser = AntlrRellParser()
-
-    fun buildRellResource(workspaceURI: URI, uri: URI): Resource {
+    val rellCompilerPaths = RellCompilerPaths(workspaceURI)
+    fun buildRellResource(uri: URI): Resource {
         //TODO verfiy correct path behaviour
         val parseTree = buildParseTreeWithSyntaxErrors(uri)
-        val rellCompilerInfo = buildModuleInfo(workspaceURI, uri, parseTree.first)
+        val rellCompilerInfo = buildModuleInfo(uri, parseTree.first)
         return Resource(parseTree.first, rellCompilerInfo.first!!)
     }
 
     //TODO: Remove this? Use buildRellAstWithCompilerErrors
     fun buildModuleInfo(
-        workspaceURI: URI,
         uri: URI,
         parseTree: RellParser.RuleX_RootParserContext
     ): Pair<IdeModuleInfo?, List<C_Error>> {
@@ -43,23 +42,19 @@ class RellResourceDescription {
 
 
     fun compileResult(
-        workspaceURI: URI,
         uri: URI,
-        parseTree: RellParser.RuleX_RootParserContext
+        sRellfile: S_RellFile
     ): IdeCompilationResult {
-        val rellCompilerPaths = RellCompilerPaths(workspaceURI)
+
 
         val compilerSrcPath = rellCompilerPaths.createCompilerSourcePath(uri)
-        val rellCompilerFilePath = rellCompilerPaths.createRellCompilerFilePath(compilerSrcPath)
         val compilerSourceDir = rellCompilerPaths.createCompilerSourceDir()
-
-        val astWithCompilerErrors = buildRellAstWithCompilerErrors(rellCompilerFilePath, parseTree)
 
         val options = C_CompilerOptions.builder()
             .symbolInfoFile(compilerSrcPath)
             .build()
 
-        val moduleNames = IdeApi.getModuleName(compilerSrcPath, astWithCompilerErrors.first)
+        val moduleNames = IdeApi.getModuleName(compilerSrcPath, sRellfile)
         return IdeApi.compile(compilerSourceDir, listOf(moduleNames!!), options)
     }
 

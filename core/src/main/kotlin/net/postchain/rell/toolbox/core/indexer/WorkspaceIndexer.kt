@@ -10,20 +10,20 @@ import java.net.URI
 
 class WorkspaceIndexer(private val workspaceURI: URI) {
     private val logger = KotlinLogging.logger {}
-    private val resourceDescription = RellResourceDescription()
+    private val resourceDescription = RellResourceDescription(workspaceURI)
 
     //TODO: Should we inject this?
 
     var fileUriResourceMap: HashMap<URI, Resource> = HashMap()
     fun initialFileIndexBuild() {
         val rellUris = addRellFilesUri()
-        rellUris.forEach{
-            fileUriResourceMap[it] = resourceDescription.buildRellResource(workspaceURI, it)
+        rellUris.forEach {
+            fileUriResourceMap[it] = resourceDescription.buildRellResource(it)
         }
     }
 
     fun updateFileUriResourceMap(uri: URI) {
-        fileUriResourceMap[uri] = resourceDescription.buildRellResource(workspaceURI, uri)
+        fileUriResourceMap[uri] = resourceDescription.buildRellResource(uri)
     }
 
     fun updateFileUriResourceMap(oldUri: URI, newUri: URI) {
@@ -48,7 +48,7 @@ class WorkspaceIndexer(private val workspaceURI: URI) {
             if (value.imports.isNullOrEmpty()) {
                 //
             } else {
-                if(value.imports.contains(changedFileResource.rName)) {
+                if (value.imports.contains(changedFileResource.rName)) {
                     filesToUpdate.add(key)
                 }
             }
