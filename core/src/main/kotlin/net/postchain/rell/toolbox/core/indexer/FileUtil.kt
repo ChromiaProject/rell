@@ -22,3 +22,18 @@ import java.net.URI
             }
         }
  }
+
+fun findRellFilesInWorkspace(file: File, uris: MutableMap<String, URI>) {
+    if (file.isDirectory()) {
+        val files = file.listFiles()
+        if (files != null) {
+            for (f in files) {
+                findRellFilesInWorkspace(f, uris)
+            }
+        }
+    } else {
+        if (file.extension == "rell") {
+            uris[file.name] = file.toURI()
+        }
+    }
+}

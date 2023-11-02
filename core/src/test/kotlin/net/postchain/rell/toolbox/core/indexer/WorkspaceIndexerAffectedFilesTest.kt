@@ -17,7 +17,7 @@ class WorkspaceIndexerAffectedFilesTest {
 
     @BeforeEach
     fun setup() {
-        mainFile = File(tempDir, "main.rell").apply {
+        mainFile = File(tempDir, "syntax_error.rell").apply {
             writeText(
                 """
                 module;

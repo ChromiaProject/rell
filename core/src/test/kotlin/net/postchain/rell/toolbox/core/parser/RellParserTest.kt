@@ -26,7 +26,7 @@ class RellParserTest {
     @Test
     fun `Rell code is validated by compiler`() {
         val code = "query q() = 123; query p(x: integer) { return 'Hello ' + x; }"
-        val files = mapOf("main.rell" to code)
+        val files = mapOf("syntax_error.rell" to code)
 
         val parser = AntlrRellParser()
         val srcDir: C_SourceDir = TestSourceDir.create(parser, files)
