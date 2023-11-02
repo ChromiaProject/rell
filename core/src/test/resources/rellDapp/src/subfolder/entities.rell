@@ -1,4 +1,3 @@
-@mount("bar")
 module;
 
 entity rell_ent2 {

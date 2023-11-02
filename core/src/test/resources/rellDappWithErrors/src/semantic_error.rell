@@ -1,0 +1,9 @@
+module;
+
+entity c {
+    name;
+}
+
+function a() {
+    create b(name = "");
+}

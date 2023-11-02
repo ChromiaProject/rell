@@ -33,7 +33,7 @@ fun findRellFilesInWorkspace(file: File, uris: MutableMap<String, URI>) {
         }
     } else {
         if (file.extension == "rell") {
-            uris[file.name] = file.toURI()
+            uris[file.parent + "/" + file.name] = file.toURI()
         }
     }
 }
