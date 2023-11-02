@@ -3,13 +3,10 @@ package net.postchain.rell.toolbox.core.indexer
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_Error
-import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
+import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeCompilationResult
-import net.postchain.rell.base.utils.ide.IdeDirApi
-import net.postchain.rell.base.utils.ide.IdeModuleInfo
 import net.postchain.rell.toolbox.core.compiler.RellcAPI
-import net.postchain.rell.toolbox.core.compiler.RellcFilePath
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import net.postchain.rell.toolbox.core.parser.RellParser
 import net.postchain.rell.toolbox.core.parser.SyntaxError
@@ -19,35 +16,18 @@ import java.net.URI
 
 class RellResourceDescription(private val workspaceURI: URI) {
     val parser = AntlrRellParser()
-    val rellCompilerPaths = RellCompilerPaths(workspaceURI)
+    private val rellCompilerPaths = RellCompilerPaths(workspaceURI)
     fun buildRellResource(uri: URI): Resource {
-        //TODO verfiy correct path behaviour
+        val rellCompilerSourcePath = rellCompilerPaths.createCompilerSourcePath(uri)
+
         val parseTree = buildParseTreeWithSyntaxErrors(uri)
-        val rellCompilerInfo = buildModuleInfo(uri, parseTree.first)
-        return Resource(parseTree.first, rellCompilerInfo.first!!)
+        val rellAst = buildRellAstWithCompilerErrors(rellCompilerSourcePath, parseTree.first)
+        //TODO: Add compilation results to resource
+//        val compileResult = compileResult(rellCompilerSourcePath, rellAst.first)
+        return Resource(parseTree.first, rellAst.first.ideModuleInfo(rellCompilerSourcePath)!!)
     }
 
-    //TODO: Remove this? Use buildRellAstWithCompilerErrors
-    fun buildModuleInfo(
-        uri: URI,
-        parseTree: RellParser.RuleX_RootParserContext
-    ): Pair<IdeModuleInfo?, List<C_Error>> {
-        val relativePath = uri.toString().substring(workspaceURI.toString().length)
-        val compilerSrcPath = IdeDirApi.parseSourcePath(relativePath)
-        val idePath = IdeSourcePathFilePath(compilerSrcPath!!)
-        val rcPath = RellcFilePath(compilerSrcPath, idePath)
-        val ast = RellcAPI.antlrToRellAst(rcPath, parseTree)
-        return Pair(ast.first!!.ideModuleInfo(compilerSrcPath), ast.second)
-    }
-
-
-    fun compileResult(
-        uri: URI,
-        sRellfile: S_RellFile
-    ): IdeCompilationResult {
-
-
-        val compilerSrcPath = rellCompilerPaths.createCompilerSourcePath(uri)
+    fun compileResult(compilerSrcPath: C_SourcePath, sRellfile: S_RellFile): IdeCompilationResult {
         val compilerSourceDir = rellCompilerPaths.createCompilerSourceDir()
 
         val options = C_CompilerOptions.builder()
@@ -58,7 +38,6 @@ class RellResourceDescription(private val workspaceURI: URI) {
         return IdeApi.compile(compilerSourceDir, listOf(moduleNames!!), options)
     }
 
-
     fun buildParseTreeWithSyntaxErrors(uri: URI): Pair<RellParser.RuleX_RootParserContext, MutableList<SyntaxError>> {
         val errorListener = SyntaxErrorCollector()
         val parseTree = parser.parse(File(uri).readText(), errorListeners = listOf(errorListener))
@@ -67,9 +46,10 @@ class RellResourceDescription(private val workspaceURI: URI) {
 
     //TODO: Should we have S_RellFile here or use module info only (can be reached through S_RellFile)
     fun buildRellAstWithCompilerErrors(
-        rellCompilerFilePath: RellcFilePath,
+        rellCompilerSourcePath: C_SourcePath,
         parseTree: RellParser.RuleX_RootParserContext
     ): Pair<S_RellFile, List<C_Error>> {
+        val rellCompilerFilePath = rellCompilerPaths.createRellCompilerFilePath(rellCompilerSourcePath)
         val ast = RellcAPI.antlrToRellAst(rellCompilerFilePath, parseTree)
         val sRellFile = ast.first
         if (sRellFile != null) {

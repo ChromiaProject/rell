@@ -14,14 +14,13 @@ class RellResourceDescriptionBuildModuleInfoTest {
 
         val rellCompilerPaths = RellCompilerPaths(workspaceCorrect.toURI())
         val compilerSourcePath = rellCompilerPaths.createCompilerSourcePath(fileUri)
-        val rellCompilerFilePath = rellCompilerPaths.createRellCompilerFilePath(compilerSourcePath)
 
         val rellDesc = RellResourceDescription(workspaceCorrect.toURI())
         val parseTree = rellDesc.buildParseTreeWithSyntaxErrors(fileUri)
-        val sRellFile = rellDesc.buildRellAstWithCompilerErrors(rellCompilerFilePath, parseTree.first)
+        val sRellFile = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePath, parseTree.first)
 
         val rellModuleInfo = rellDesc.compileResult(
-            fileUri,
+            compilerSourcePath,
             sRellFile.first
         )
         //assertThat(parseTreeWithErrors.second.size).isEqualTo(0)
