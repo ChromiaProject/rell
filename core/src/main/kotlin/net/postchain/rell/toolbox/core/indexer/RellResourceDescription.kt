@@ -15,6 +15,7 @@ import java.net.URI
 
 class RellResourceDescription {
     val parser = AntlrRellParser()
+    private val errorListener = SyntaxErrorCollector()
     fun buildRellResource(workspaceURI: URI, uri: URI): Resource {
         //TODO verfiy correct path behaviour
         val parseTree = buildParseTreeWithSyntaxErrors(uri)
