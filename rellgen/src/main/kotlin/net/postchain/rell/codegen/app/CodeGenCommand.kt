@@ -32,7 +32,9 @@ class KotlinOptionGroup: KotlinCodeGeneratorConfig, LanguageOption("Kotlin") {
 
 class MermaidOption: MermaidCodeGeneratorConfig, LanguageOption("Mermaid") {
     private val mdx by option(help = "Surround with mdx tags").flag()
+    private val er  by option("--entity-relation", help = "Generate entity relation diagram or class diagram").flag("--class-diagram", default = true)
     override fun mdx() = mdx
+    override fun erDiagram() = er
 }
 
 class TypescriptOption: TypescriptCodeGeneratorConfig, LanguageOption("Typescript")
@@ -40,7 +42,7 @@ class JavscriptOption: JavascriptCodeGeneratorConfig, LanguageOption("Typescript
 
 class CodeGenCommand : CliktCommand("Generates files based on rell sources") {
 
-    private val source by argument("source", "Source folder").file(true)
+    private val source by argument("source", "Source folder").file()
     private val target by argument("target", "Target folder").file(canBeFile = false, canBeDir = true)
 
     private val moduleName by option("--module", help = "Module name").split(",")

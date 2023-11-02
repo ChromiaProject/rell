@@ -14,9 +14,9 @@ import net.postchain.rell.codegen.util.BuiltinType
 class MermaidDocumentFactory(private val config: MermaidCodeGeneratorConfig): DocumentFactory {
     override val fileExtension = if (config.mdx()) "mdx" else "mmd"
 
-    override fun createDocument(moduleName: String) = MermaidDocument(config.mdx())
+    override fun createDocument(moduleName: String) = MermaidDocument(config.mdx(), config.erDiagram())
 
-    override fun createEntity(className: ClassName, rellEntity: R_EntityDefinition) = MermaidEntity(rellEntity)
+    override fun createEntity(className: ClassName, rellEntity: R_EntityDefinition) = if (config.erDiagram()) MermaidEntityReference(rellEntity) else MermaidClass(rellEntity)
 
     override fun createBuiltins(type: BuiltinType) = NullSection
 
