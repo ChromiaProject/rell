@@ -32,9 +32,9 @@ internal class SimpleMermaidEntityTest {
         assertThat(formatted.split("\n")).containsAll(
                 "\t",
                 "\ttest_entity {",
-                "\t\ttext name",
-                "\t\tinteger num",
-                "\t\tboolean b_type",
+                "\t\ttext name  ",
+                "\t\tinteger num  ",
+                "\t\tboolean b_type  ",
                 "\t}"
         )
     }
@@ -97,7 +97,7 @@ internal class SimpleMermaidEntityTest {
         val formatted = k.format()
         assertThat(formatted).all {
             contains("\tnested_entity || -- |{ text_entity")
-            contains("\t\t*text_entity a")
+            contains("\t\ttext_entity a FK")
         }
     }
 
@@ -107,8 +107,7 @@ internal class SimpleMermaidEntityTest {
         val k = MermaidEntityReference(entity)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("\ttransaction_entity || -- || transaction")
-            contains("\t\t*transaction[i] transaction")
+            contains("\t\ttransaction transaction FK, UK \"index\"")
         }
     }
 }
