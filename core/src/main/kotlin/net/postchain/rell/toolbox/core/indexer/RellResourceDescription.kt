@@ -1,5 +1,6 @@
 package net.postchain.rell.toolbox.core.indexer
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_Error
@@ -17,9 +18,9 @@ import java.net.URI
 class RellResourceDescription(private val workspaceURI: URI) {
     val parser = AntlrRellParser()
     val rellCompilerPaths = RellCompilerPaths(workspaceURI)
+    private val logger = KotlinLogging.logger {}
     fun buildRellResource(uri: URI): Resource {
         val rellCompilerSourcePath = rellCompilerPaths.createCompilerSourcePath(uri)
-
         val parseTree = buildParseTreeWithSyntaxErrors(uri)
         val rellAst = buildRellAstWithCompilerErrors(rellCompilerSourcePath, parseTree.first)
         //TODO: Add compilation results to resource
@@ -40,8 +41,18 @@ class RellResourceDescription(private val workspaceURI: URI) {
 
     fun buildParseTreeWithSyntaxErrors(uri: URI): Pair<RellParser.RuleX_RootParserContext, MutableList<SyntaxError>> {
         val errorListener = SyntaxErrorCollector()
-        val parseTree = parser.parse(File(uri).readText(), errorListeners = listOf(errorListener))
-        return Pair(parseTree, errorListener.errors)
+        return try {
+            val fileContent = File(uri).readText()
+            val parseTree = parser.parse(fileContent, errorListeners = listOf(errorListener))
+            Pair(parseTree, errorListener.errors)
+        } catch (e: Exception) {
+            //If error occurred we build a parse tree from an empty string instead. This is so that we can continue
+            //with the flow of building the whole project
+            logger.warn { "Could not build parse tree for file: $uri" }
+            logger.debug { "Stacktrace for failure for building parse tree: $e" }
+            val parseTree = parser.parse("", errorListeners = listOf(errorListener))
+            Pair(parseTree, errorListener.errors)
+        }
     }
 
     //TODO: Should we have S_RellFile here or use module info only (can be reached through S_RellFile)
