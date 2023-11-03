@@ -1,6 +1,5 @@
 package net.postchain.rell.toolbox.core.compiler;
 
-import net.postchain.rell.toolbox.core.compiler.AntlrToRellContext;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.ObjectUtils;
@@ -301,8 +300,8 @@ public final class AntlrToRell {
             case RULE_ruleX_FunctionType: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
                 // Manual fix
-                List<?> typeRefs =  node.getRuleContexts(RuleX_TypeRefContext.class);
-                List<?> param_1 =  null;
+                List<?> typeRefs = node.getRuleContexts(RuleX_TypeRefContext.class);
+                List<?> param_1 = null;
                 if (typeRefs != null && typeRefs.size() > 1) {
                     param_1 = typeRefs.subList(0, typeRefs.size() - 1);
                 }
@@ -1244,7 +1243,7 @@ public final class AntlrToRell {
             case RULE_ruleX_ConstantDef: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkVALContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_NameContext.class, 0));
-                Object var_2 = RellcUtils.processObject(ctx, ((RuleX_ConstantDefContext)node).ruleX_TypeRef());
+                Object var_2 = RellcUtils.processObject(ctx, ((RuleX_ConstantDefContext) node).ruleX_TypeRef());
                 Object var_3 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionRefContext.class, 0));
                 Object tup = RellcUtils.tuple(var_0, var_1, var_2, var_3);
                 return TRANS_XCONSTANT_DEF.transform(ctx, node, tup);
@@ -1274,8 +1273,9 @@ public final class AntlrToRell {
                         }
                     }
                 }
-                throw new IllegalArgumentException(
-                        String.format("Node[%s] RuleIndex[%d]", node.getText(), node.getRuleIndex()));
+                //TODO: Might need to handle this better. We get here when we expect a child
+                // but no child is defined. At least we should log a warning before returning
+                return null;
             }
         }
     }

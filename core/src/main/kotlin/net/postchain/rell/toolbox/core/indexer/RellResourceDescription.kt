@@ -16,7 +16,7 @@ import java.net.URI
 
 class RellResourceDescription(private val workspaceURI: URI) {
     val parser = AntlrRellParser()
-    private val rellCompilerPaths = RellCompilerPaths(workspaceURI)
+    val rellCompilerPaths = RellCompilerPaths(workspaceURI)
     fun buildRellResource(uri: URI): Resource {
         val rellCompilerSourcePath = rellCompilerPaths.createCompilerSourcePath(uri)
 

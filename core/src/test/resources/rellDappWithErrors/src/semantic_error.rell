@@ -7,3 +7,11 @@ entity c {
 function a() {
     create b(name = "");
 }
+
+function a() {
+    val a = 2;
+}
+
+function foo() {
+    val a = 2;
+}

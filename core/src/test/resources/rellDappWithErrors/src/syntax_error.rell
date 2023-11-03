@@ -1,1 +1,21 @@
-module; functiion a(
+module;
+
+
+function a() {
+    val a = 2
+}
+
+
+namespace ns {
+    function ns_b() {
+        val a = 2
+    }
+
+    operation ns_op() {
+        errVal = "error
+    }
+}
+
+
+function c()
+
