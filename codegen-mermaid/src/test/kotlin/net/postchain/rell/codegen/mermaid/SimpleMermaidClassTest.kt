@@ -5,7 +5,6 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsAll
 import net.postchain.rell.codegen.MermaidClass
-import net.postchain.rell.codegen.MermaidEntityReference
 import net.postchain.rell.codegen.SingleFileRellApp
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -13,7 +12,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import kotlin.test.assertNotNull
 
-internal class SimpleMermaidEntityTest {
+internal class SimpleMermaidClassTest {
 
     companion object : SingleFileRellApp("entities") {
 
@@ -27,14 +26,14 @@ internal class SimpleMermaidEntityTest {
     @Test
     fun format() {
         val entity = assertNotNull(testModule.entities["test_entity"])
-        val k = MermaidEntityReference(entity)
+        val k = MermaidClass(entity)
         val formatted = k.format()
         assertThat(formatted.split("\n")).containsAll(
                 "\t",
-                "\ttest_entity {",
-                "\t\ttext name  ",
-                "\t\tinteger num  ",
-                "\t\tboolean b_type  ",
+                "\tclass test_entity {",
+                "\t\tname: text",
+                "\t\tnum: integer",
+                "\t\tb_type: boolean",
                 "\t}"
         )
     }
@@ -47,10 +46,10 @@ internal class SimpleMermaidEntityTest {
     )
     fun namespaceTest(rellQualifiedName: String, mermaidName: String) {
         val entity = assertNotNull(testModule.entities[rellQualifiedName])
-        val k = MermaidEntityReference(entity)
+        val k = MermaidClass(entity)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains(mermaidName)
+            contains("class $mermaidName")
         }
     }
 
@@ -67,10 +66,10 @@ internal class SimpleMermaidEntityTest {
     )
     fun simpleEntities(fieldName: String, rellType: String) {
         val entity = assertNotNull(testModule.entities["${rellType}_entity"], "entity does not exist")
-        val k = MermaidEntityReference(entity)
+        val k = MermaidClass(entity)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("$rellType $fieldName")
+            contains("$fieldName: $rellType")
         }
     }
 
@@ -82,10 +81,10 @@ internal class SimpleMermaidEntityTest {
     )
     fun aliasEntities(fieldName: String, alias: String, rellType: String) {
         val entity = assertNotNull(testModule.entities["builtin_${alias}"], "entity does not exist")
-        val k = MermaidEntityReference(entity)
+        val k = MermaidClass(entity)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("$rellType $fieldName")
+            contains("$fieldName: $rellType")
         }
     }
 
@@ -93,21 +92,22 @@ internal class SimpleMermaidEntityTest {
     @Test
     fun nested() {
         val entity = assertNotNull(testModule.entities["nested_entity"])
-        val k = MermaidEntityReference(entity)
+        val k = MermaidClass(entity)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("\tnested_entity || -- |{ text_entity")
-            contains("\t\ttext_entity a FK")
+            contains("\ttext_entity <|-- nested_entity")
+            contains("\t\t+a: text_entity")
         }
     }
 
     @Test
     fun transaction() {
         val entity = assertNotNull(testModule.entities["transaction_entity"])
-        val k = MermaidEntityReference(entity)
+        val k = MermaidClass(entity)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("\t\ttransaction transaction FK, UK \"index\"")
+            contains("\ttransaction <|-- transaction_entity")
+            contains("\t\t+transaction: transaction")
         }
     }
 }

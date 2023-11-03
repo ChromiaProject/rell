@@ -6,7 +6,7 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.section.Entity
 
-class MermaidEntity(private val rellEntity: R_EntityDefinition): Entity {
+class MermaidClass(private val rellEntity: R_EntityDefinition) : Entity {
     override val moduleName: String
         get() = rellEntity.moduleLevelName
     override val imports: List<String>

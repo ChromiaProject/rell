@@ -35,6 +35,7 @@ internal class MermaidCodeGeneratorTest {
     private val rellCliEnv = CachedRellCliEnv(RellCliEnv.DEFAULT, true, true)
     private val config = object : MermaidCodeGeneratorConfig {
         override fun mdx() = false
+        override fun erDiagram() = true
     }
     private val generator = CodeGenerator(MermaidDocumentFactory(config), config, rellCliEnv)
 
