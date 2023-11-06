@@ -1,5 +1,6 @@
 package net.postchain.rell.toolbox.core.indexer
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.*
@@ -16,6 +17,7 @@ import java.net.URI
 class RellResourceFactory(workspaceURI: URI) {
     val parser = AntlrRellParser()
     val rellCompilerPaths = RellCompilerPaths(workspaceURI)
+    private val logger = KotlinLogging.logger {}
     fun buildRellResource(uri: URI, fileCompilerSourceDir: C_SourceDir): Resource {
         //TODO maybe change it to constructor
         val fileContent = File(uri).readText()
@@ -51,8 +53,16 @@ class RellResourceFactory(workspaceURI: URI) {
 
     fun buildParseTreeWithSyntaxErrors(fileContent: String): Pair<RellParser.RuleX_RootParserContext, MutableList<SyntaxError>> {
         val errorListener = SyntaxErrorCollector()
-        val parseTree = parser.parse(fileContent, errorListeners = listOf(errorListener))
-        return Pair(parseTree, errorListener.errors)
+        return try {
+            val parseTree = parser.parse(fileContent, errorListeners = listOf(errorListener))
+            Pair(parseTree, errorListener.errors)
+        } catch (e: Exception) {
+            //If error occurred we build a parse tree from an empty string instead. This is so that we can continue
+            //with the flow of building the whole project
+            logger.debug { "Stacktrace for failure for building parse tree: $e" }
+            val parseTree = parser.parse("", errorListeners = listOf(errorListener))
+            Pair(parseTree, errorListener.errors)
+        }
     }
 
     fun buildRellAstWithCompilerErrors(

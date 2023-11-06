@@ -51,6 +51,13 @@ class RellResourceDescriptionBuildParseTreeTest {
         assertThat(parseTreeWithErrors.second.size).isEqualTo(0)
     }
 
+    @Test
+    fun `Builds minimal parse tree when error occurred of building initial tree`() {
+        val parseTreeWithError = rellDesc.buildParseTreeWithSyntaxErrors(URI("noFile.rell"))
+        assertThat(parseTreeWithError.first.children.size).isEqualTo(1)
+        assertThat(parseTreeWithError.first.children.first().toString()).isEqualTo("<EOF>")
+    }
+
     companion object {
         var rellFilesError: MutableList<URI> = mutableListOf()
         var rellFilesCorrect: MutableList<URI> = mutableListOf()
