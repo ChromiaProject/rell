@@ -44,7 +44,7 @@ class WorkspaceIndexerUpdateIndexTest {
         Files.write(pathToFile, appendText.toByteArray(), StandardOpenOption.APPEND)
         val pathUri = pathToFile.toUri()
 
-        workspaceIndexer.updateFileUriResourceMap(pathToFile.toUri())
+        workspaceIndexer.updateFileUriResourceMap(pathToFile.toUri(), File(pathUri).readText())
         val updateFileUriResourceMap = workspaceIndexer.fileUriResourceMap
 
         assertThat(updateFileUriResourceMap.size).isEqualTo(prevUriResourceMap.size)

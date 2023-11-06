@@ -1,5 +1,10 @@
 package net.postchain.rell.toolbox.core.indexer
 
+import assertk.assertThat
+import assertk.assertions.containsAll
+import assertk.assertions.extracting
+import assertk.assertions.isEqualTo
+import net.postchain.rell.base.compiler.base.utils.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -9,22 +14,57 @@ import java.net.URI
 class RellResourceDescriptionBuildModuleInfoTest {
 
     @Test
-    fun `sRellFile finds single errors in single rell file`() {
-        val fileUri = rellFilesCorrect.find { it.toString().endsWith("entities.rell") }!!
-
-        val rellCompilerPaths = RellCompilerPaths(workspaceCorrect.toURI())
+    fun `compiler finds errors in from imported file`() {
+        val map: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
+        val fileUri = rellFilesErrors.find { it.toString().endsWith("import.rell") }!!
+        val fileContent = File(fileUri).readText()
+        val rellCompilerPaths = RellCompilerPaths(workspaceError.toURI())
         val compilerSourcePath = rellCompilerPaths.createCompilerSourcePath(fileUri)
 
-        val rellDesc = RellResourceDescription(workspaceCorrect.toURI())
-        val parseTree = rellDesc.buildParseTreeWithSyntaxErrors(fileUri)
-        val sRellFile = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePath, parseTree.first)
+        val rellDesc = RellResourceFactory(workspaceError.toURI())
+        val parseTree = rellDesc.buildParseTreeWithSyntaxErrors(fileContent).first
+        val sRellFile = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePath, parseTree).first
 
-        val rellModuleInfo = rellDesc.compileResult(
+        map[compilerSourcePath] = C_TextSourceFile(compilerSourcePath, File(fileUri).readText())
+        val fileCompilerSourceDir = C_SourceDir.mapDir(map)
+
+        val rellCompileResult = rellDesc.compileResult(
             compilerSourcePath,
-            sRellFile.first
+            sRellFile,
+            fileCompilerSourceDir
         )
-        //assertThat(parseTreeWithErrors.second.size).isEqualTo(0)
-        //assertThat(parseTree.exception).isNotNull()
+
+        assertThat(rellCompileResult.messages.size).isEqualTo(2)
+        assertThat(rellCompileResult.messages).extracting(C_Message::code)
+            .containsAll("import:not_found:src.semantic_error", "unknown_name:c")
+    }
+
+    @Test
+    fun `compiler finds single errors in single rell file`() {
+        val map: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
+        val fileUri = rellFilesErrors.find { it.toString().endsWith("semantic_error.rell") }!!
+        val fileContent = File(fileUri).readText()
+        val rellCompilerPaths = RellCompilerPaths(workspaceError.toURI())
+        val compilerSourcePath = rellCompilerPaths.createCompilerSourcePath(fileUri)
+
+        val rellDesc = RellResourceFactory(workspaceError.toURI())
+        val parseTree = rellDesc.buildParseTreeWithSyntaxErrors(fileContent).first
+        val sRellFile = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePath, parseTree).first
+
+        map[compilerSourcePath] = C_TextSourceFile(compilerSourcePath, File(fileUri).readText())
+        val fileCompilerSourceDir = C_SourceDir.mapDir(map)
+
+        val rellCompileResult = rellDesc.compileResult(
+            compilerSourcePath,
+            sRellFile,
+            fileCompilerSourceDir
+        )
+        assertThat(rellCompileResult.messages.size).isEqualTo(3)
+        assertThat(rellCompileResult.messages).extracting(C_Message::code).containsAll(
+            "name_conflict:user:a:FUNCTION:src/semantic_error.rell(11:10)",
+            "unknown_name:b",
+            "name_conflict:user:a:FUNCTION:src/semantic_error.rell(7:10)"
+        )
     }
 
     companion object {

@@ -50,7 +50,7 @@ class AntlrToRellContext {
     }
 
     companion object {
-        fun <T> runWithContext(code: (AntlrToRellContext) -> T): Pair<T?, List<C_Error>> {
+        fun <T> runWithContext(code: (AntlrToRellContext) -> T): Pair<T, List<C_Error>> {
             val list = mutableListOf<T?>()
             val ctx = AntlrToRellContext()
             S_Node.runWithAttachmentProvider(ctx.attachmentProvider) {
@@ -63,7 +63,7 @@ class AntlrToRellContext {
                 list.add(res0)
             }
             check(list.size == 1) { "${list.size}" }
-            val res = list[0]
+            val res = list[0]!!
             return Pair(res, ImmutableList.copyOf(ctx.errors))
         }
     }
