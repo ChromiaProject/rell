@@ -31,7 +31,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { _crash('hello'); return 0; }"
+      "main.rell" : "query q() { val f: (list<integer>) -> text = _foo(*); return f; }"
     },
     "modules" : {
       "modules" : [
@@ -54,7 +54,51 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [ ],
+    "messages" : [
+      {
+        "pos" : "main.rell(1:51)",
+        "type" : "ERROR",
+        "code" : "expr:call:partial_ambiguous:_foo",
+        "text" : "Cannot determine which variant of function '_foo' to use"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() { val f: (list<boolean>) -> text = _foo(*); return f; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:51)",
+        "type" : "ERROR",
+        "code" : "expr:call:partial_ambiguous:_foo",
+        "text" : "Cannot determine which variant of function '_foo' to use"
+      }
+    ],
     "parsing" : {
       "main.rell" : [ ]
     }

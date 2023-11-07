@@ -1,7 +1,7 @@
 [
   {
     "files" : {
-      "main.rell" : ""
+      "main.rell" : "enum ord { zero, one, two, three, four }"
     },
     "modules" : {
       "modules" : [
@@ -31,7 +31,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt(1, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(1, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -61,7 +61,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt(1, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(1, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -91,7 +91,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt(2, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(2, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -121,7 +121,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt(2, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(2, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -151,7 +151,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt(3, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(3, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -181,7 +181,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt(3, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(3, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -211,7 +211,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt(4, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(4, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -241,7 +241,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt(4, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(4, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -271,7 +271,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt(5, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(5, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -301,7 +301,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt(5, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(5, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -331,7 +331,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt(1.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(1.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -361,7 +361,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt(1.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(1.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -391,7 +391,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt(2.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(2.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -421,7 +421,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt(2.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(2.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -451,7 +451,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt(3.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(3.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -481,7 +481,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt(3.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(3.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -511,7 +511,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt(4.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(4.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -541,7 +541,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt(4.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(4.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -571,7 +571,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt(5.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(5.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -601,7 +601,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt(5.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(5.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -631,7 +631,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt('a', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt('a', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -661,7 +661,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt('a', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt('a', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -691,7 +691,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt('b', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt('b', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -721,7 +721,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt('b', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt('b', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -751,7 +751,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt('c', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt('c', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -781,7 +781,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt('c', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt('c', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -811,7 +811,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt('d', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt('d', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -841,7 +841,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt('d', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt('d', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -871,7 +871,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt('e', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt('e', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -901,7 +901,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt('e', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt('e', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -931,7 +931,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt(x'a1', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(x'a1', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -961,7 +961,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt(x'a1', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(x'a1', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -991,7 +991,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt(x'b2', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(x'b2', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1021,7 +1021,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt(x'b2', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(x'b2', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1051,7 +1051,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt(x'c3', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(x'c3', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1081,7 +1081,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt(x'c3', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(x'c3', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1111,7 +1111,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt(x'd4', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(x'd4', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1141,7 +1141,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt(x'd4', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(x'd4', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1171,7 +1171,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_lt(x'e5', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(x'e5', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1201,7 +1201,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_lt(x'e5', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(x'e5', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1231,7 +1231,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le(1, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(ord.zero, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1261,7 +1261,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le(1, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(ord.zero, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1291,7 +1291,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le(2, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(ord.one, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1321,7 +1321,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le(2, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(ord.one, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1351,7 +1351,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le(3, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(ord.two, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1381,7 +1381,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le(3, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(ord.two, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1411,7 +1411,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le(4, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(ord.three, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1441,7 +1441,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le(4, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(ord.three, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1471,7 +1471,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le(5, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt(ord.four, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1501,7 +1501,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le(5, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt(ord.four, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1531,7 +1531,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le(1.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt((1,'a'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1561,7 +1561,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le(1.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt((1,'a'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1591,7 +1591,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le(2.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt((1,'b'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1621,7 +1621,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le(2.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt((1,'b'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1651,7 +1651,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le(3.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt((2,'a'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1681,7 +1681,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le(3.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt((2,'a'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1711,7 +1711,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le(4.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt((3,'c'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1741,7 +1741,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le(4.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt((3,'c'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1771,7 +1771,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le(5.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_lt((3,'d'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1801,7 +1801,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le(5.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_lt((3,'d'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1831,7 +1831,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le('a', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(1, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1861,7 +1861,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le('a', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(1, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1891,7 +1891,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le('b', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(2, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1921,7 +1921,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le('b', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(2, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1951,7 +1951,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le('c', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(3, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -1981,7 +1981,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le('c', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(3, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2011,7 +2011,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le('d', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(4, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2041,7 +2041,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le('d', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(4, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2071,7 +2071,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le('e', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(5, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2101,7 +2101,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le('e', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(5, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2131,7 +2131,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le(x'a1', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(1.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2161,7 +2161,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le(x'a1', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(1.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2191,7 +2191,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le(x'b2', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(2.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2221,7 +2221,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le(x'b2', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(2.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2251,7 +2251,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le(x'c3', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(3.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2281,7 +2281,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le(x'c3', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(3.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2311,7 +2311,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le(x'd4', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(4.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2341,7 +2341,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le(x'd4', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(4.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2371,7 +2371,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_gt_le(x'e5', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(5.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2401,7 +2401,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_gt_le(x'e5', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(5.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2431,7 +2431,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt(1, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le('a', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2461,7 +2461,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt(1, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le('a', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2491,7 +2491,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt(2, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le('b', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2521,7 +2521,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt(2, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le('b', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2551,7 +2551,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt(3, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le('c', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2581,7 +2581,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt(3, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le('c', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2611,7 +2611,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt(4, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le('d', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2641,7 +2641,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt(4, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le('d', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2671,7 +2671,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt(5, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le('e', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2701,7 +2701,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt(5, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le('e', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2731,7 +2731,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt(1.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(x'a1', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2761,7 +2761,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt(1.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(x'a1', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2791,7 +2791,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt(2.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(x'b2', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2821,7 +2821,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt(2.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(x'b2', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2851,7 +2851,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt(3.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(x'c3', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2881,7 +2881,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt(3.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(x'c3', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2911,7 +2911,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt(4.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(x'd4', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2941,7 +2941,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt(4.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(x'd4', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -2971,7 +2971,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt(5.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(x'e5', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3001,7 +3001,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt(5.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(x'e5', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3031,7 +3031,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt('a', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(ord.zero, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3061,7 +3061,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt('a', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(ord.zero, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3091,7 +3091,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt('b', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(ord.one, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3121,7 +3121,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt('b', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(ord.one, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3151,7 +3151,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt('c', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(ord.two, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3181,7 +3181,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt('c', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(ord.two, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3211,7 +3211,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt('d', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(ord.three, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3241,7 +3241,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt('d', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(ord.three, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3271,7 +3271,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt('e', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le(ord.four, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3301,7 +3301,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt('e', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le(ord.four, ord.one, ord.three); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3331,7 +3331,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt(x'a1', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le((1,'a'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3361,7 +3361,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt(x'a1', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le((1,'a'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3391,7 +3391,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt(x'b2', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le((1,'b'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3421,7 +3421,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt(x'b2', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le((1,'b'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3451,7 +3451,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt(x'c3', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le((2,'a'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3481,7 +3481,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt(x'c3', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le((2,'a'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3511,7 +3511,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt(x'd4', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le((3,'c'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3541,7 +3541,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt(x'd4', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le((3,'c'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3571,7 +3571,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_lt(x'e5', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_gt_le((3,'d'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3601,7 +3601,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_lt(x'e5', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_gt_le((3,'d'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3631,7 +3631,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le(1, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(1, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3661,7 +3661,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le(1, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(1, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3691,7 +3691,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le(2, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(2, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3721,7 +3721,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le(2, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(2, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3751,7 +3751,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le(3, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(3, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3781,7 +3781,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le(3, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(3, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3811,7 +3811,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le(4, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(4, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3841,7 +3841,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le(4, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(4, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3871,7 +3871,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le(5, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(5, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3901,7 +3901,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le(5, 2, 4); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(5, 2, 4); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3931,7 +3931,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le(1.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(1.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3961,7 +3961,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le(1.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(1.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -3991,7 +3991,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le(2.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(2.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4021,7 +4021,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le(2.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(2.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4051,7 +4051,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le(3.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(3.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4081,7 +4081,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le(3.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(3.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4111,7 +4111,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le(4.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(4.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4141,7 +4141,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le(4.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(4.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4171,7 +4171,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le(5.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(5.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4201,7 +4201,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le(5.0, 2.0, 4.0); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(5.0, 2.0, 4.0); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4231,7 +4231,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le('a', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt('a', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4261,7 +4261,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le('a', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt('a', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4291,7 +4291,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le('b', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt('b', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4321,7 +4321,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le('b', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt('b', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4351,7 +4351,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le('c', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt('c', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4381,7 +4381,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le('c', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt('c', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4411,7 +4411,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le('d', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt('d', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4441,7 +4441,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le('d', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt('d', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4471,7 +4471,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le('e', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt('e', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4501,7 +4501,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le('e', 'b', 'd'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt('e', 'b', 'd'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4531,7 +4531,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le(x'a1', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(x'a1', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4561,7 +4561,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le(x'a1', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(x'a1', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4591,7 +4591,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le(x'b2', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(x'b2', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4621,7 +4621,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le(x'b2', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(x'b2', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4651,7 +4651,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le(x'c3', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(x'c3', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4681,7 +4681,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le(x'c3', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(x'c3', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4711,7 +4711,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le(x'd4', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(x'd4', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4741,7 +4741,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le(x'd4', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(x'd4', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4771,7 +4771,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { assert_ge_le(x'e5', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(x'e5', x'b2', x'd4'); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -4801,7 +4801,2407 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { rell.test.assert_ge_le(x'e5', x'b2', x'd4'); return 0; }"
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(x'e5', x'b2', x'd4'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(ord.zero, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(ord.zero, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(ord.one, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(ord.one, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(ord.two, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(ord.two, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(ord.three, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(ord.three, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt(ord.four, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt(ord.four, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt((1,'a'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt((1,'a'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt((1,'b'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt((1,'b'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt((2,'a'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt((2,'a'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt((3,'c'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt((3,'c'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_lt((3,'d'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_lt((3,'d'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(1, 2, 4); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(1, 2, 4); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(2, 2, 4); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(2, 2, 4); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(3, 2, 4); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(3, 2, 4); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(4, 2, 4); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(4, 2, 4); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(5, 2, 4); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(5, 2, 4); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(1.0, 2.0, 4.0); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(1.0, 2.0, 4.0); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(2.0, 2.0, 4.0); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(2.0, 2.0, 4.0); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(3.0, 2.0, 4.0); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(3.0, 2.0, 4.0); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(4.0, 2.0, 4.0); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(4.0, 2.0, 4.0); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(5.0, 2.0, 4.0); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(5.0, 2.0, 4.0); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le('a', 'b', 'd'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le('a', 'b', 'd'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le('b', 'b', 'd'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le('b', 'b', 'd'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le('c', 'b', 'd'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le('c', 'b', 'd'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le('d', 'b', 'd'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le('d', 'b', 'd'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le('e', 'b', 'd'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le('e', 'b', 'd'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(x'a1', x'b2', x'd4'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(x'a1', x'b2', x'd4'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(x'b2', x'b2', x'd4'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(x'b2', x'b2', x'd4'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(x'c3', x'b2', x'd4'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(x'c3', x'b2', x'd4'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(x'd4', x'b2', x'd4'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(x'd4', x'b2', x'd4'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(x'e5', x'b2', x'd4'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(x'e5', x'b2', x'd4'); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(ord.zero, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(ord.zero, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(ord.one, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(ord.one, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(ord.two, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(ord.two, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(ord.three, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(ord.three, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le(ord.four, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le(ord.four, ord.one, ord.three); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le((1,'a'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le((1,'a'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le((1,'b'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le((1,'b'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le((2,'a'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le((2,'a'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le((3,'c'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le((3,'c'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { assert_ge_le((3,'d'), (1,'b'), (3,'c')); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "enum ord { zero, one, two, three, four }\nquery q() { rell.test.assert_ge_le((3,'d'), (1,'b'), (3,'c')); return 0; }"
     },
     "modules" : {
       "modules" : [

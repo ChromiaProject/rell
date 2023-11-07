@@ -24,15 +24,6 @@ object RellcAPI {
         }
     }
 
-    private fun setupLogging() {
-        // Rell JARs (more precisely, Postchain) brings its own logging configuration which causes creation of a director and a log file.
-        // Forcing our own log configuration.
-        val log4jKey = "log4j.configurationFile"
-        if (System.getProperty(log4jKey) == null) {
-            System.setProperty(log4jKey, "log4j2.yml")
-        }
-    }
-
     fun validateSimple(srcDir: C_SourceDir, moduleName: String): String {
         val modules = listOf(moduleName)
         val options: C_CompilerOptions = C_CompilerOptions.builder()

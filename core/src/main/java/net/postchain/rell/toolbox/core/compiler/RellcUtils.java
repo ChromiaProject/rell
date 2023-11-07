@@ -13,15 +13,25 @@ import net.postchain.rell.lsp.grammar.AntlrGrammarGenerator;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.text.StringEscapeUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 final class RellcUtils {
+
+    private static final String SINGLE_QUOTE = "'";
+    private static final String DOUBLE_QUOTE = "\"";
+    private static final String BYTE_ARRAY_START_SINGLE_QUOTE = "x" + SINGLE_QUOTE;
+    private static final String BYTE_ARRAY_START_DOUBLE_QUOTE = "x" + DOUBLE_QUOTE;
+
     private RellcUtils() {
     }
 
     static RellcTransformer transformer(String name) {
         RellcTransformer transformer = Transformers.MAP.get(name);
-        Objects.requireNonNull(transformer, String.format("%s", name));
+        Objects.requireNonNull(transformer, String.format("Transformer not found for: %s", name));
         return transformer;
     }
 
@@ -31,22 +41,31 @@ final class RellcUtils {
 
     static Object tokenString(ParserRuleContext obj) {
         String text = obj.getText();
-        if (!(text.startsWith("'") && text.endsWith("'")) && !(text.startsWith("\"") && text.endsWith("\""))) {
+        if (!(text.startsWith(SINGLE_QUOTE) && text.endsWith(SINGLE_QUOTE)) && !(text.startsWith(DOUBLE_QUOTE) && text.endsWith(DOUBLE_QUOTE))) {
             return null;
         }
-        text = text.substring(1, text.length() - 1);
+        text = extractStringContent(text);
         // Unescaping special characters like: \\n -> \n to match compiler's parser
         String unescaped = StringEscapeUtils.unescapeJava(text);
         return token0(obj, unescaped);
     }
 
+    private static String extractStringContent(String text) {
+        return text.substring(1, text.length() - 1);
+    }
+
     static Object tokenBytes(ParserRuleContext obj) {
         String text = obj.getText();
-        if (!(text.startsWith("x'") && text.endsWith("'")) && !(text.startsWith("x\"") && text.endsWith("\""))) {
+        if (!(text.startsWith(BYTE_ARRAY_START_SINGLE_QUOTE) && text.endsWith(SINGLE_QUOTE)) &&
+                !(text.startsWith(BYTE_ARRAY_START_DOUBLE_QUOTE) && text.endsWith(DOUBLE_QUOTE))) {
             return null;
         }
-        text = text.substring(2, text.length() - 1);
+        text = extractByteArrayContent(text);
         return token0(obj, text);
+    }
+
+    private static String extractByteArrayContent(String text) {
+        return text.substring(2, text.length() - 1);
     }
 
     private static Object token0(ParserRuleContext obj, String text) {
@@ -60,15 +79,14 @@ final class RellcUtils {
         return new RellTokenMatch(pos, text);
     }
 
-    static Object processList(AntlrToRellContext ctx, Object value) {
-        if (value == null) {
+    static Object processList(AntlrToRellContext ctx, List<? extends ParserRuleContext> values) {
+        if (values == null) {
             // Can happen in case of a syntax error.
             return Collections.emptyList();
         }
 
-        List<?> eList = (List<?>) value;
-        List<Object> res = new ArrayList<>(eList.size());
-        for (Object eSub : eList) {
+        List<Object> res = new ArrayList<>(values.size());
+        for (ParserRuleContext eSub : values) {
             Object sub = processObject(ctx, eSub);
             if (sub != null) {
                 res.add(sub);
@@ -78,10 +96,8 @@ final class RellcUtils {
         return Collections.unmodifiableList(res);
     }
 
-    static Object processObject(AntlrToRellContext ctx, Object value) {
-        ParserRuleContext eObj = (ParserRuleContext) value;
-        Object res = AntlrToRell.process(ctx, eObj);
-        return res;
+    static Object processObject(AntlrToRellContext ctx, ParserRuleContext value) {
+        return AntlrToRell.process(ctx, value);
     }
 
     static Object tuple(Object v1) {

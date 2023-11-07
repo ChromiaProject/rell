@@ -1,67 +1,7 @@
 [
   {
     "files" : {
-      "main.rell" : "operation new_user(name, rating: integer) {}"
-    },
-    "modules" : {
-      "modules" : [
-        ""
-      ],
-      "test_root_modules" : [ ],
-      "test_sub_modules" : true
-    },
-    "options" : {
-      "gtv" : false,
-      "deprecatedError" : false,
-      "ide" : false,
-      "atAttrShadowing" : "FULL",
-      "testLib" : true,
-      "hiddenLib" : true,
-      "allowDbModificationsInObjectExprs" : true,
-      "complexWhatEnabled" : true,
-      "mountConflictError" : true,
-      "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
-    },
-    "messages" : [ ],
-    "parsing" : {
-      "main.rell" : [ ]
-    }
-  },
-  {
-    "files" : {
-      "main.rell" : "operation new_user(name, rating: integer) {}\nquery q() = struct<new_user>('Bob',123).to_test_op();"
-    },
-    "modules" : {
-      "modules" : [
-        ""
-      ],
-      "test_root_modules" : [ ],
-      "test_sub_modules" : true
-    },
-    "options" : {
-      "gtv" : false,
-      "deprecatedError" : false,
-      "ide" : false,
-      "atAttrShadowing" : "FULL",
-      "testLib" : true,
-      "hiddenLib" : true,
-      "allowDbModificationsInObjectExprs" : true,
-      "complexWhatEnabled" : true,
-      "mountConflictError" : true,
-      "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
-    },
-    "messages" : [ ],
-    "parsing" : {
-      "main.rell" : [ ]
-    }
-  },
-  {
-    "files" : {
-      "main.rell" : "operation new_user(name, rating: integer) {}\nquery q() = struct<new_user>('Bob',123).to_test_op();"
+      "main.rell" : ""
     },
     "modules" : {
       "modules" : [
@@ -84,14 +24,97 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(2:41)",
-        "type" : "ERROR",
-        "code" : "expr:fn:struct:to_test_op:no_test",
-        "text" : "Function 'to_test_op' can be called only in tests or REPL"
-      }
-    ],
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = _type_hint([]);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = _type_hint(set());"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = _type_hint([:]);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }

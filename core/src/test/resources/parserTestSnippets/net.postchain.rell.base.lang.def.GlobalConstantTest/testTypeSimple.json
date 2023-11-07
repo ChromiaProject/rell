@@ -451,7 +451,7 @@
   },
   {
     "files" : {
-      "main.rell" : "entity user { name; }\nenum color { red, green, blue }\nval X = _int_to_rowid(123);"
+      "main.rell" : "entity user { name; }\nenum color { red, green, blue }\nval X = rowid(123);"
     },
     "modules" : {
       "modules" : [
@@ -481,7 +481,7 @@
   },
   {
     "files" : {
-      "main.rell" : "entity user { name; }\nenum color { red, green, blue }\nval X = _int_to_rowid(123);\nquery q() = _type_of(X);"
+      "main.rell" : "entity user { name; }\nenum color { red, green, blue }\nval X = rowid(123);\nquery q() = _type_of(X);"
     },
     "modules" : {
       "modules" : [
@@ -511,7 +511,7 @@
   },
   {
     "files" : {
-      "main.rell" : "entity user { name; }\nenum color { red, green, blue }\nval X = _int_to_rowid(123);\nquery q() = X;"
+      "main.rell" : "entity user { name; }\nenum color { red, green, blue }\nval X = rowid(123);\nquery q() = X;"
     },
     "modules" : {
       "modules" : [

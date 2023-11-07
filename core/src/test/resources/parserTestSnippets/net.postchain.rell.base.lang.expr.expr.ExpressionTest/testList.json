@@ -88,8 +88,8 @@
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_list_notype",
-        "text" : "Element type not specified for 'list'"
+        "code" : "fn:sys:unresolved_type_params:list:T",
+        "text" : "Failed to infer type arguments for function 'list': [T]"
       }
     ],
     "parsing" : {
@@ -185,8 +185,8 @@
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_list_typemiss:integer:text",
-        "text" : "Element type mismatch for 'list': text instead of integer"
+        "code" : "expr_call_argtypes:[list<integer>]:list<text>",
+        "text" : "Function 'list<integer>' undefined for arguments (list<text>)"
       }
     ],
     "parsing" : {
@@ -222,8 +222,8 @@
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_list_typemiss:text:integer",
-        "text" : "Element type mismatch for 'list': integer instead of text"
+        "code" : "expr_call_argtypes:[list<text>]:list<integer>",
+        "text" : "Function 'list<text>' undefined for arguments (list<integer>)"
       }
     ],
     "parsing" : {

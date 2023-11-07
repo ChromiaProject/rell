@@ -88,7 +88,7 @@
       {
         "pos" : "main.rell(6:38)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:c3",
+        "code" : "expr_mem_null:c4?:c3",
         "text" : "Cannot access member 'c3' of nullable type c4?"
       }
     ],
@@ -155,7 +155,7 @@
       {
         "pos" : "main.rell(6:42)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:c2",
+        "code" : "expr_mem_null:c3?:c2",
         "text" : "Cannot access member 'c2' of nullable type c3?"
       }
     ],
@@ -222,7 +222,7 @@
       {
         "pos" : "main.rell(6:46)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:c1",
+        "code" : "expr_mem_null:c2?:c1",
         "text" : "Cannot access member 'c1' of nullable type c2?"
       }
     ],

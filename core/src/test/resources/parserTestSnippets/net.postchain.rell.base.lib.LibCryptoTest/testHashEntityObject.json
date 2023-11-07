@@ -118,8 +118,8 @@
       {
         "pos" : "main.rell(3:17)",
         "type" : "ERROR",
-        "code" : "unknown_member:[obj]:hash",
-        "text" : "Type obj has no member 'hash'"
+        "code" : "fn:invalid:obj:hash",
+        "text" : "Function 'hash' not available for type 'obj'"
       }
     ],
     "parsing" : {

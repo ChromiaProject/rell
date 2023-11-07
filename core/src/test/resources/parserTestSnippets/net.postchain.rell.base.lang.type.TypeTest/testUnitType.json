@@ -907,8 +907,8 @@
       {
         "pos" : "main.rell(1:20)",
         "type" : "ERROR",
-        "code" : "type:list:elem:unit:?",
-        "text" : "Type of list element cannot be unit"
+        "code" : "type:list:component:unit:?",
+        "text" : "Type of list component cannot be unit"
       }
     ],
     "parsing" : {
@@ -944,8 +944,8 @@
       {
         "pos" : "main.rell(1:19)",
         "type" : "ERROR",
-        "code" : "type:set:elem:unit:?",
-        "text" : "Type of set element cannot be unit"
+        "code" : "type:set:component:unit:?",
+        "text" : "Type of set component cannot be unit"
       }
     ],
     "parsing" : {
@@ -981,8 +981,8 @@
       {
         "pos" : "main.rell(1:27)",
         "type" : "ERROR",
-        "code" : "type:map_elem:unit:?",
-        "text" : "Type of map element cannot be unit"
+        "code" : "type:map:component:unit:?",
+        "text" : "Type of map component cannot be unit"
       }
     ],
     "parsing" : {
@@ -1018,8 +1018,8 @@
       {
         "pos" : "main.rell(1:19)",
         "type" : "ERROR",
-        "code" : "type:map_elem:unit:?",
-        "text" : "Type of map element cannot be unit"
+        "code" : "type:map:component:unit:?",
+        "text" : "Type of map component cannot be unit"
       }
     ],
     "parsing" : {

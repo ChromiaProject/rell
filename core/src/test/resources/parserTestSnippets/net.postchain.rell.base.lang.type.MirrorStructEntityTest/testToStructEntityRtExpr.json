@@ -118,7 +118,7 @@
       {
         "pos" : "main.rell(4:33)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:to_struct",
+        "code" : "expr_mem_null:user?:to_struct",
         "text" : "Cannot access member 'to_struct' of nullable type user?"
       }
     ],
@@ -185,7 +185,7 @@
       {
         "pos" : "main.rell(4:29)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:to_struct",
+        "code" : "expr_mem_null:user?:to_struct",
         "text" : "Cannot access member 'to_struct' of nullable type user?"
       }
     ],

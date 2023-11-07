@@ -238,7 +238,7 @@
       {
         "pos" : "main.rell(3:59)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:score",
+        "code" : "expr_mem_null:person?:score",
         "text" : "Cannot access member 'score' of nullable type person?"
       }
     ],

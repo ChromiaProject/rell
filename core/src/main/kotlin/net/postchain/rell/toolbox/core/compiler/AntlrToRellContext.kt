@@ -38,8 +38,8 @@ class AntlrToRellContext {
         errors.add(error)
     }
 
-    fun <T> runWithAttachment(attachment: ParserRuleContext?, code: () -> T): T {
-        attachmentProvider.node = attachment
+    fun <T> runWithAttachment(node: ParserRuleContext?, code: () -> T): T {
+        attachmentProvider.node = node
         attachmentProvider.attachment = null
         return try {
             code()

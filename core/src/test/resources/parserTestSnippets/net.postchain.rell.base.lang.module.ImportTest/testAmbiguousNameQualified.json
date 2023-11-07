@@ -32,7 +32,7 @@
       {
         "pos" : "main.rell(1:30)",
         "type" : "ERROR",
-        "code" : "name:ambig:a.b:[NAMESPACE:b1:b,NAMESPACE:b2:b]",
+        "code" : "namespace:ambig:a.b:[NAMESPACE:b1:b,NAMESPACE:b2:b]",
         "text" : "Name 'a.b' is ambiguous: namespace b1:b, namespace b2:b"
       }
     ],

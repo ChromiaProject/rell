@@ -31,7 +31,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() = _type_of(123);"
+      "main.rell" : "query q() { val f = integer.from_hex(*); return f.hash(); }"
     },
     "modules" : {
       "modules" : [
@@ -54,14 +54,21 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [ ],
+    "messages" : [
+      {
+        "pos" : "main.rell(1:51)",
+        "type" : "ERROR",
+        "code" : "fn:invalid:(text)->integer:hash",
+        "text" : "Function 'hash' not available for type '(text)->integer'"
+      }
+    ],
     "parsing" : {
       "main.rell" : [ ]
     }
   },
   {
     "files" : {
-      "main.rell" : "query q() = _type_of(_nullable(123));"
+      "main.rell" : "query q() { val f = integer.from_hex(*); return f.to_gtv(); }"
     },
     "modules" : {
       "modules" : [
@@ -84,7 +91,14 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [ ],
+    "messages" : [
+      {
+        "pos" : "main.rell(1:51)",
+        "type" : "ERROR",
+        "code" : "fn:invalid:(text)->integer:to_gtv",
+        "text" : "Function 'to_gtv' not available for type '(text)->integer'"
+      }
+    ],
     "parsing" : {
       "main.rell" : [ ]
     }

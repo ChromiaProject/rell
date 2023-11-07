@@ -15,7 +15,7 @@
       "deprecatedError" : false,
       "ide" : false,
       "atAttrShadowing" : "FULL",
-      "testLib" : false,
+      "testLib" : true,
       "hiddenLib" : true,
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
@@ -31,7 +31,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() = _type_of(123);"
+      "main.rell" : "query q() = assert_null(*);"
     },
     "modules" : {
       "modules" : [
@@ -45,7 +45,44 @@
       "deprecatedError" : false,
       "ide" : false,
       "atAttrShadowing" : "FULL",
-      "testLib" : false,
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:25)",
+        "type" : "ERROR",
+        "code" : "expr:call:partial_bad_case:rell.test.assert_null(anything):unit",
+        "text" : "Partial application not supported for function rell.test.assert_null(anything): unit"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() { val f: (integer?) -> unit = assert_null(*); return _type_of(f); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
       "hiddenLib" : true,
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
@@ -61,7 +98,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() = _nullable(123);"
+      "main.rell" : "query q() { val f: (integer) -> unit = assert_null(*); return _type_of(f); }"
     },
     "modules" : {
       "modules" : [
@@ -75,7 +112,7 @@
       "deprecatedError" : false,
       "ide" : false,
       "atAttrShadowing" : "FULL",
-      "testLib" : false,
+      "testLib" : true,
       "hiddenLib" : true,
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
@@ -91,7 +128,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() = _nullable_int(123);"
+      "main.rell" : "query q() { val f: (integer) -> unit = assert_null(*); return f; }"
     },
     "modules" : {
       "modules" : [
@@ -105,7 +142,7 @@
       "deprecatedError" : false,
       "ide" : false,
       "atAttrShadowing" : "FULL",
-      "testLib" : false,
+      "testLib" : true,
       "hiddenLib" : true,
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
@@ -121,7 +158,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() = _crash('hello');"
+      "main.rell" : "query q() { val f: (integer) -> unit = assert_null(*); f(123); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -135,7 +172,7 @@
       "deprecatedError" : false,
       "ide" : false,
       "atAttrShadowing" : "FULL",
-      "testLib" : false,
+      "testLib" : true,
       "hiddenLib" : true,
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
@@ -144,21 +181,14 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:7)",
-        "type" : "ERROR",
-        "code" : "query_exprtype_unit",
-        "text" : "Query expressions returns nothing"
-      }
-    ],
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
   },
   {
     "files" : {
-      "main.rell" : "query q() = _type_of(123);"
+      "main.rell" : "query q() { val f: (integer?) -> unit = assert_null(*); f(123); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -172,8 +202,8 @@
       "deprecatedError" : false,
       "ide" : false,
       "atAttrShadowing" : "FULL",
-      "testLib" : false,
-      "hiddenLib" : false,
+      "testLib" : true,
+      "hiddenLib" : true,
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
@@ -181,21 +211,14 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:13)",
-        "type" : "ERROR",
-        "code" : "unknown_name:_type_of",
-        "text" : "Unknown name: '_type_of'"
-      }
-    ],
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
   },
   {
     "files" : {
-      "main.rell" : "query q() = _nullable(123);"
+      "main.rell" : "query q() { val f: (integer?) -> unit = assert_null(*); f(null); return 0; }"
     },
     "modules" : {
       "modules" : [
@@ -209,8 +232,8 @@
       "deprecatedError" : false,
       "ide" : false,
       "atAttrShadowing" : "FULL",
-      "testLib" : false,
-      "hiddenLib" : false,
+      "testLib" : true,
+      "hiddenLib" : true,
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
@@ -218,88 +241,7 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:13)",
-        "type" : "ERROR",
-        "code" : "unknown_name:_nullable",
-        "text" : "Unknown name: '_nullable'"
-      }
-    ],
-    "parsing" : {
-      "main.rell" : [ ]
-    }
-  },
-  {
-    "files" : {
-      "main.rell" : "query q() = _nullable_int(123);"
-    },
-    "modules" : {
-      "modules" : [
-        ""
-      ],
-      "test_root_modules" : [ ],
-      "test_sub_modules" : true
-    },
-    "options" : {
-      "gtv" : false,
-      "deprecatedError" : false,
-      "ide" : false,
-      "atAttrShadowing" : "FULL",
-      "testLib" : false,
-      "hiddenLib" : false,
-      "allowDbModificationsInObjectExprs" : true,
-      "complexWhatEnabled" : true,
-      "mountConflictError" : true,
-      "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
-    },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:13)",
-        "type" : "ERROR",
-        "code" : "unknown_name:_nullable_int",
-        "text" : "Unknown name: '_nullable_int'"
-      }
-    ],
-    "parsing" : {
-      "main.rell" : [ ]
-    }
-  },
-  {
-    "files" : {
-      "main.rell" : "query q() = _crash('hello');"
-    },
-    "modules" : {
-      "modules" : [
-        ""
-      ],
-      "test_root_modules" : [ ],
-      "test_sub_modules" : true
-    },
-    "options" : {
-      "gtv" : false,
-      "deprecatedError" : false,
-      "ide" : false,
-      "atAttrShadowing" : "FULL",
-      "testLib" : false,
-      "hiddenLib" : false,
-      "allowDbModificationsInObjectExprs" : true,
-      "complexWhatEnabled" : true,
-      "mountConflictError" : true,
-      "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
-    },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:13)",
-        "type" : "ERROR",
-        "code" : "unknown_name:_crash",
-        "text" : "Unknown name: '_crash'"
-      }
-    ],
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }

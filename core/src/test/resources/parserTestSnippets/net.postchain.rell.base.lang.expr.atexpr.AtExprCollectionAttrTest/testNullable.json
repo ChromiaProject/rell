@@ -205,7 +205,7 @@
       {
         "pos" : "main.rell(3:30)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:i",
+        "code" : "expr_mem_null:rec?:i",
         "text" : "Cannot access member 'i' of nullable type rec?"
       }
     ],
@@ -242,7 +242,7 @@
       {
         "pos" : "main.rell(3:30)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:t",
+        "code" : "expr_mem_null:rec?:t",
         "text" : "Cannot access member 't' of nullable type rec?"
       }
     ],
@@ -279,13 +279,13 @@
       {
         "pos" : "main.rell(3:30)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:i",
+        "code" : "expr_mem_null:rec?:i",
         "text" : "Cannot access member 'i' of nullable type rec?"
       },
       {
         "pos" : "main.rell(3:35)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:t",
+        "code" : "expr_mem_null:rec?:t",
         "text" : "Cannot access member 't' of nullable type rec?"
       }
     ],
@@ -502,7 +502,7 @@
       {
         "pos" : "main.rell(3:35)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:i",
+        "code" : "expr_mem_null:rec?:i",
         "text" : "Cannot access member 'i' of nullable type rec?"
       }
     ],
@@ -539,7 +539,7 @@
       {
         "pos" : "main.rell(3:35)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:t",
+        "code" : "expr_mem_null:rec?:t",
         "text" : "Cannot access member 't' of nullable type rec?"
       }
     ],
@@ -576,13 +576,13 @@
       {
         "pos" : "main.rell(3:35)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:i",
+        "code" : "expr_mem_null:rec?:i",
         "text" : "Cannot access member 'i' of nullable type rec?"
       },
       {
         "pos" : "main.rell(3:40)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:t",
+        "code" : "expr_mem_null:rec?:t",
         "text" : "Cannot access member 't' of nullable type rec?"
       }
     ],

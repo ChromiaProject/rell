@@ -88,8 +88,8 @@
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_list_typemiss:integer:integer?",
-        "text" : "Element type mismatch for 'list': integer? instead of integer"
+        "code" : "expr_call_argtypes:[list<integer>]:list<integer?>",
+        "text" : "Function 'list<integer>' undefined for arguments (list<integer?>)"
       }
     ],
     "parsing" : {
@@ -155,8 +155,8 @@
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_list_typemiss:integer:integer?",
-        "text" : "Element type mismatch for 'list': integer? instead of integer"
+        "code" : "expr_call_argtypes:[list<integer>]:set<integer?>",
+        "text" : "Function 'list<integer>' undefined for arguments (set<integer?>)"
       }
     ],
     "parsing" : {
@@ -342,8 +342,8 @@
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_set_typemiss:integer:integer?",
-        "text" : "Element type mismatch for 'set': integer? instead of integer"
+        "code" : "expr_call_argtypes:[set<integer>]:list<integer?>",
+        "text" : "Function 'set<integer>' undefined for arguments (list<integer?>)"
       }
     ],
     "parsing" : {
@@ -409,8 +409,8 @@
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_set_typemiss:integer:integer?",
-        "text" : "Element type mismatch for 'set': integer? instead of integer"
+        "code" : "expr_call_argtypes:[set<integer>]:set<integer?>",
+        "text" : "Function 'set<integer>' undefined for arguments (set<integer?>)"
       }
     ],
     "parsing" : {
@@ -566,8 +566,8 @@
       {
         "pos" : "main.rell(1:52)",
         "type" : "ERROR",
-        "code" : "expr_list_typemiss:integer:integer?",
-        "text" : "Element type mismatch for 'list': integer? instead of integer"
+        "code" : "expr_call_argtypes:[list<integer>]:list<integer?>",
+        "text" : "Function 'list<integer>' undefined for arguments (list<integer?>)"
       }
     ],
     "parsing" : {
@@ -663,8 +663,8 @@
       {
         "pos" : "main.rell(1:51)",
         "type" : "ERROR",
-        "code" : "expr_list_typemiss:integer:integer?",
-        "text" : "Element type mismatch for 'list': integer? instead of integer"
+        "code" : "expr_call_argtypes:[list<integer>]:set<integer?>",
+        "text" : "Function 'list<integer>' undefined for arguments (set<integer?>)"
       }
     ],
     "parsing" : {
@@ -760,8 +760,8 @@
       {
         "pos" : "main.rell(1:52)",
         "type" : "ERROR",
-        "code" : "expr_set_typemiss:integer:integer?",
-        "text" : "Element type mismatch for 'set': integer? instead of integer"
+        "code" : "expr_call_argtypes:[set<integer>]:list<integer?>",
+        "text" : "Function 'set<integer>' undefined for arguments (list<integer?>)"
       }
     ],
     "parsing" : {
@@ -857,8 +857,8 @@
       {
         "pos" : "main.rell(1:51)",
         "type" : "ERROR",
-        "code" : "expr_set_typemiss:integer:integer?",
-        "text" : "Element type mismatch for 'set': integer? instead of integer"
+        "code" : "expr_call_argtypes:[set<integer>]:set<integer?>",
+        "text" : "Function 'set<integer>' undefined for arguments (set<integer?>)"
       }
     ],
     "parsing" : {

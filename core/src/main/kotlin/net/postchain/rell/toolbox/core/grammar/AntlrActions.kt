@@ -3,7 +3,7 @@ package net.postchain.rell.lsp.grammar
 import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.grammar.GrammarUtils
 
-
+// TODO: This action generator should be revisited as current implementation was used for initial generation  and then modified manually.
 fun main() {
     AntlrGenUtils.printHeader()
 
@@ -36,7 +36,6 @@ fun main() {
 
         val attrs = action.action.generate(type)
         val attrsStr = attrs.joinToString(", ")
-        //TODO: UGLY and tired
         var varStr = ""
         attrs.forEachIndexed { index, s ->
             varStr += "var_$index"
@@ -100,9 +99,6 @@ class AntlrAttr(val name: String, val many: Boolean)
 
 class AntlrAction_General(private val attrs: List<AntlrAttr>) : AntlrAction() {
     override fun generate(type: String): List<String> {
-//        val fullType = "net.postchain.rell.lsp.rell.$type"
-//        println("                $fullType node = ($fullType) obj;")
-
         for (i in attrs.indices) {
             val attr = attrs[i]
             val expr = if (attr.many) {

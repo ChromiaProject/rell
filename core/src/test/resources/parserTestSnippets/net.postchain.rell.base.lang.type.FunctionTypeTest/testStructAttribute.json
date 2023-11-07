@@ -148,7 +148,7 @@
       {
         "pos" : "main.rell(5:18)",
         "type" : "ERROR",
-        "code" : "name:ambig:to_gtv:[attribute,function]",
+        "code" : "type_value_member:ambig:to_gtv:[attribute,function]",
         "text" : "Name 'to_gtv' is ambiguous: attribute, function"
       }
     ],
@@ -215,7 +215,7 @@
       {
         "pos" : "main.rell(5:18)",
         "type" : "ERROR",
-        "code" : "name:ambig:to_gtv:[attribute,function]",
+        "code" : "type_value_member:ambig:to_gtv:[attribute,function]",
         "text" : "Name 'to_gtv' is ambiguous: attribute, function"
       }
     ],

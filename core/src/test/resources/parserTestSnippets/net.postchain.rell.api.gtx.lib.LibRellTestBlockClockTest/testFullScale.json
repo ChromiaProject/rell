@@ -1,0 +1,38 @@
+[
+  {
+    "files" : {
+      "app.rell" : "module; operation op(x: integer) {}",
+      "main.rell" : "",
+      "tests.rell" : "\n            @test module;\n            import app;\n\n            function test_1() = run_blocks(1);\n            function test_2() = run_blocks(123);\n            function test_3() = run_blocks(10000);\n            function test_4() = run_blocks(100500);\n\n            function run_blocks(step: integer) {\n                rell.test.set_block_interval(step);\n                run_block(step, 0);\n                run_block(step, 1);\n                run_block(step, 2);\n                run_block(step, 3);\n            }\n\n            function run_block(step: integer, i: integer) {\n                app.op(i).run();\n                val exp_time = rell.test.DEFAULT_FIRST_BLOCK_TIME + step * i;\n                assert_equals(rell.test.last_block_time, exp_time);\n                assert_equals(block @{} ( @omit @sort_desc .rowid, .timestamp ) limit 1, exp_time);\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [
+        "tests"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "app.rell" : [ ],
+      "main.rell" : [ ],
+      "tests.rell" : [ ]
+    }
+  }
+]

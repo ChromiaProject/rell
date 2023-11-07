@@ -1,7 +1,7 @@
 [
   {
     "files" : {
-      "main.rell" : "struct rec { i: integer; }"
+      "main.rell" : "struct rec { i: integer; j: integer; }"
     },
     "modules" : {
       "modules" : [
@@ -31,7 +31,7 @@
   },
   {
     "files" : {
-      "main.rell" : "struct rec { i: integer; }\nquery q(x: virtual<map<text, rec>>) { for ((k, v) in x) return _type_of(k); return ''; }"
+      "main.rell" : "struct rec { i: integer; j: integer; }\nquery q(x: virtual<map<text, rec>>) { for (e in x) return _type_of(e); return ''; }"
     },
     "modules" : {
       "modules" : [
@@ -61,7 +61,7 @@
   },
   {
     "files" : {
-      "main.rell" : "struct rec { i: integer; }\nquery q(x: virtual<map<text, rec>>) { for ((k, v) in x) return _type_of(v); return ''; }"
+      "main.rell" : "struct rec { i: integer; j: integer; }\nquery q(x: virtual<map<text, rec>>) = x @ {} ( _type_of($) ) limit 1;"
     },
     "modules" : {
       "modules" : [
@@ -91,7 +91,7 @@
   },
   {
     "files" : {
-      "main.rell" : "struct rec { i: integer; }\nquery q(x: virtual<map<text, rec>>) { for ((k, v) in x) return _strict_str(k); return ''; }"
+      "main.rell" : "struct rec { i: integer; j: integer; }\nquery q(x: virtual<map<text, rec>>) { for ((k, v) in x) return _type_of(k); return ''; }"
     },
     "modules" : {
       "modules" : [
@@ -121,7 +121,7 @@
   },
   {
     "files" : {
-      "main.rell" : "struct rec { i: integer; }\nquery q(x: virtual<map<text, rec>>) { for ((k, v) in x) return _strict_str(v); return ''; }"
+      "main.rell" : "struct rec { i: integer; j: integer; }\nquery q(x: virtual<map<text, rec>>) { for ((k, v) in x) return _type_of(v); return ''; }"
     },
     "modules" : {
       "modules" : [
@@ -151,7 +151,127 @@
   },
   {
     "files" : {
-      "main.rell" : "struct rec { i: integer; }\nquery q(x: virtual<map<text, rec>>) { for (v in x.values()) return _strict_str(v); return ''; }"
+      "main.rell" : "struct rec { i: integer; j: integer; }\nquery q(x: virtual<map<text, rec>>) { for (e in x) return _strict_str(e); return ''; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { i: integer; j: integer; }\nquery q(x: virtual<map<text, rec>>) = x @ {} ( _strict_str($) ) limit 1;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { i: integer; j: integer; }\nquery q(x: virtual<map<text, rec>>) { for ((k, v) in x) return _strict_str(k); return ''; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { i: integer; j: integer; }\nquery q(x: virtual<map<text, rec>>) { for ((k, v) in x) return _strict_str(v); return ''; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { i: integer; j: integer; }\nquery q(x: virtual<map<text, rec>>) { for (v in x.values()) return _strict_str(v); return ''; }"
     },
     "modules" : {
       "modules" : [

@@ -331,7 +331,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { val x = map<integer,text>(); return require_not_empty(x); }"
+      "main.rell" : "query q() { val x: list<integer>? = _nullable([123]); return require_not_empty(x); }"
     },
     "modules" : {
       "modules" : [
@@ -361,7 +361,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { val x = map([123:'Hello']); return require_not_empty(x); }"
+      "main.rell" : "query q() { val x: list<integer>? = _nullable(list<integer>()); return require_not_empty(x); }"
     },
     "modules" : {
       "modules" : [
@@ -391,7 +391,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { val x: map<integer,text>? = null; return require_not_empty(x); }"
+      "main.rell" : "query q() { val x: set<integer>? = _nullable(set([123])); return require_not_empty(x); }"
     },
     "modules" : {
       "modules" : [
@@ -421,37 +421,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() { val x: map<integer,text>? = map<integer,text>(); return require_not_empty(x); }"
-    },
-    "modules" : {
-      "modules" : [
-        ""
-      ],
-      "test_root_modules" : [ ],
-      "test_sub_modules" : true
-    },
-    "options" : {
-      "gtv" : false,
-      "deprecatedError" : false,
-      "ide" : false,
-      "atAttrShadowing" : "FULL",
-      "testLib" : false,
-      "hiddenLib" : true,
-      "allowDbModificationsInObjectExprs" : true,
-      "complexWhatEnabled" : true,
-      "mountConflictError" : true,
-      "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
-    },
-    "messages" : [ ],
-    "parsing" : {
-      "main.rell" : [ ]
-    }
-  },
-  {
-    "files" : {
-      "main.rell" : "query q() { val x: map<integer,text>? = [123:'Hello']; return require_not_empty(x); }"
+      "main.rell" : "query q() { val x: set<integer>? = _nullable(set<integer>()); return require_not_empty(x); }"
     },
     "modules" : {
       "modules" : [

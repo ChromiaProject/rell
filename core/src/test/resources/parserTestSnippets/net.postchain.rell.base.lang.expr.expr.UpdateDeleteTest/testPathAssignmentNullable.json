@@ -58,7 +58,7 @@
       {
         "pos" : "main.rell(4:39)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:company",
+        "code" : "expr_mem_null:user?:company",
         "text" : "Cannot access member 'company' of nullable type user?"
       }
     ],
@@ -95,7 +95,7 @@
       {
         "pos" : "main.rell(4:48)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:city",
+        "code" : "expr_mem_null:company?:city",
         "text" : "Cannot access member 'city' of nullable type company?"
       }
     ],

@@ -31,44 +31,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() = set();"
-    },
-    "modules" : {
-      "modules" : [
-        ""
-      ],
-      "test_root_modules" : [ ],
-      "test_sub_modules" : true
-    },
-    "options" : {
-      "gtv" : false,
-      "deprecatedError" : false,
-      "ide" : false,
-      "atAttrShadowing" : "FULL",
-      "testLib" : false,
-      "hiddenLib" : true,
-      "allowDbModificationsInObjectExprs" : true,
-      "complexWhatEnabled" : true,
-      "mountConflictError" : true,
-      "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
-    },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:13)",
-        "type" : "ERROR",
-        "code" : "expr_set_notype",
-        "text" : "Element type not specified for 'set'"
-      }
-    ],
-    "parsing" : {
-      "main.rell" : [ ]
-    }
-  },
-  {
-    "files" : {
-      "main.rell" : "query q() = set<integer>();"
+      "main.rell" : "query q() = integer.static_result_type();"
     },
     "modules" : {
       "modules" : [
@@ -98,81 +61,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() = set([]);"
-    },
-    "modules" : {
-      "modules" : [
-        ""
-      ],
-      "test_root_modules" : [ ],
-      "test_sub_modules" : true
-    },
-    "options" : {
-      "gtv" : false,
-      "deprecatedError" : false,
-      "ide" : false,
-      "atAttrShadowing" : "FULL",
-      "testLib" : false,
-      "hiddenLib" : true,
-      "allowDbModificationsInObjectExprs" : true,
-      "complexWhatEnabled" : true,
-      "mountConflictError" : true,
-      "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
-    },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:17)",
-        "type" : "ERROR",
-        "code" : "expr_list_no_type",
-        "text" : "Cannot determine the type of the list; use list<T>() syntax to specify the type"
-      }
-    ],
-    "parsing" : {
-      "main.rell" : [ ]
-    }
-  },
-  {
-    "files" : {
-      "main.rell" : "query q() = set<integer>([]);"
-    },
-    "modules" : {
-      "modules" : [
-        ""
-      ],
-      "test_root_modules" : [ ],
-      "test_sub_modules" : true
-    },
-    "options" : {
-      "gtv" : false,
-      "deprecatedError" : false,
-      "ide" : false,
-      "atAttrShadowing" : "FULL",
-      "testLib" : false,
-      "hiddenLib" : true,
-      "allowDbModificationsInObjectExprs" : true,
-      "complexWhatEnabled" : true,
-      "mountConflictError" : true,
-      "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
-    },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:26)",
-        "type" : "ERROR",
-        "code" : "expr_list_no_type",
-        "text" : "Cannot determine the type of the list; use list<T>() syntax to specify the type"
-      }
-    ],
-    "parsing" : {
-      "main.rell" : [ ]
-    }
-  },
-  {
-    "files" : {
-      "main.rell" : "query q() = set([123]);"
+      "main.rell" : "query q() = _type_of(integer.static_result_type());"
     },
     "modules" : {
       "modules" : [
@@ -202,7 +91,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() = set([123, 456, 789]);"
+      "main.rell" : "query q() = (0).value_self_type();"
     },
     "modules" : {
       "modules" : [
@@ -232,7 +121,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() = set([1, 2, 3, 2, 3, 4, 5]);"
+      "main.rell" : "query q() = (0).value_result_type();"
     },
     "modules" : {
       "modules" : [
@@ -262,7 +151,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() = set(list([123, 456, 789]));"
+      "main.rell" : "query q() = _type_of((0).value_result_type());"
     },
     "modules" : {
       "modules" : [
@@ -292,7 +181,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() = set(range(5));"
+      "main.rell" : "query q() = list<integer>.static_result_type();"
     },
     "modules" : {
       "modules" : [
@@ -322,7 +211,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() = set([1:'A',2:'B']);"
+      "main.rell" : "query q() = _type_of(list<integer>.static_result_type());"
     },
     "modules" : {
       "modules" : [
@@ -352,7 +241,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() = set<list<integer>>();"
+      "main.rell" : "query q() = [0].value_self_type();"
     },
     "modules" : {
       "modules" : [
@@ -375,21 +264,14 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:17)",
-        "type" : "ERROR",
-        "code" : "expr_set_type:list<integer>",
-        "text" : "Mutable type cannot be used as a set element: list<integer>"
-      }
-    ],
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
   },
   {
     "files" : {
-      "main.rell" : "query q() = set([[123]]);"
+      "main.rell" : "query q() = [0].value_result_type();"
     },
     "modules" : {
       "modules" : [
@@ -412,21 +294,14 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:17)",
-        "type" : "ERROR",
-        "code" : "expr_set_type:list<integer>",
-        "text" : "Mutable type cannot be used as a set element: list<integer>"
-      }
-    ],
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
   },
   {
     "files" : {
-      "main.rell" : "query q() = set(x=[1,2,3]);"
+      "main.rell" : "query q() = _type_of([0].value_result_type());"
     },
     "modules" : {
       "modules" : [
@@ -449,21 +324,14 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:17)",
-        "type" : "ERROR",
-        "code" : "expr:call:named_args_not_allowed:[set]:x",
-        "text" : "Named arguments not supported for function 'set'"
-      }
-    ],
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
   },
   {
     "files" : {
-      "main.rell" : "query q() = set<integer>(x=[1,2,3]);"
+      "main.rell" : "query q() = map<integer,text>.static_result_type();"
     },
     "modules" : {
       "modules" : [
@@ -486,14 +354,277 @@
       "symbolInfoFile" : "main.rell",
       "ideDefIdConflictError" : true
     },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:26)",
-        "type" : "ERROR",
-        "code" : "expr:call:named_args_not_allowed:[set]:x",
-        "text" : "Named arguments not supported for function 'set'"
-      }
-    ],
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = _type_of(map<integer,text>.static_result_type());"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = [0:''].value_self_type();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = [0:''].value_result_type();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = _type_of([0:''].value_result_type());"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = list<(integer,text)>.static_result_type();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = _type_of(list<(integer,text)>.static_result_type());"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = [(0,'')].value_self_type();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = [(0,'')].value_result_type();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = _type_of([(0,'')].value_result_type());"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true
+    },
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }

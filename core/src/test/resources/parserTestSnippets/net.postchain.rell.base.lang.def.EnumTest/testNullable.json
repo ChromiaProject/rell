@@ -199,7 +199,7 @@
       {
         "pos" : "main.rell(3:48)",
         "type" : "ERROR",
-        "code" : "expr_mem_null:name",
+        "code" : "expr_mem_null:foo?:name",
         "text" : "Cannot access member 'name' of nullable type foo?"
       }
     ],
