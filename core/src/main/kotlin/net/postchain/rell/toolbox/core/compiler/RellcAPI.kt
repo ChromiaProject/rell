@@ -15,7 +15,6 @@ object RellcAPI {
         path: RellcFilePath,
         antlrRootNode: RuleX_RootParserContext
     ): Pair<S_RellFile, List<C_Error>> {
-        setupLogging()
         return AntlrToRellContext.runWithContext { ctx ->
             RellcFilePathHolder.overrideCurrentFile(path) {
                 val root = AntlrToRell.process(ctx, antlrRootNode)
