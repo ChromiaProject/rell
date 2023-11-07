@@ -4,7 +4,10 @@ import assertk.assertThat
 import assertk.assertions.containsAll
 import assertk.assertions.extracting
 import assertk.assertions.isEqualTo
-import net.postchain.rell.base.compiler.base.utils.*
+import net.postchain.rell.base.compiler.base.utils.C_Message
+import net.postchain.rell.base.compiler.base.utils.C_SourceFile
+import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.base.compiler.base.utils.C_TextSourceFile
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -26,12 +29,11 @@ class RellResourceDescriptionBuildModuleInfoTest {
         val sRellFile = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePath, parseTree).first
 
         map[compilerSourcePath] = C_TextSourceFile(compilerSourcePath, File(fileUri).readText())
-        val fileCompilerSourceDir = C_SourceDir.mapDir(map)
 
         val rellCompileResult = rellDesc.compileResult(
             compilerSourcePath,
             sRellFile,
-            fileCompilerSourceDir
+            map
         )
 
         assertThat(rellCompileResult.messages.size).isEqualTo(2)
@@ -52,12 +54,11 @@ class RellResourceDescriptionBuildModuleInfoTest {
         val sRellFile = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePath, parseTree).first
 
         map[compilerSourcePath] = C_TextSourceFile(compilerSourcePath, File(fileUri).readText())
-        val fileCompilerSourceDir = C_SourceDir.mapDir(map)
 
         val rellCompileResult = rellDesc.compileResult(
             compilerSourcePath,
             sRellFile,
-            fileCompilerSourceDir
+            map
         )
         assertThat(rellCompileResult.messages.size).isEqualTo(3)
         assertThat(rellCompileResult.messages).extracting(C_Message::code).containsAll(

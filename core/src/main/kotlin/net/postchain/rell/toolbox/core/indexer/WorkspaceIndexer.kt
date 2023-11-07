@@ -1,7 +1,6 @@
 package net.postchain.rell.toolbox.core.indexer
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.base.utils.C_TextSourceFile
@@ -22,15 +21,13 @@ class WorkspaceIndexer(private val workspaceURI: URI) {
     //TODO: Should we inject this?
 
     var fileUriResourceMap: HashMap<URI, Resource> = HashMap()
-    private val compilerResourceMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
+    private var compilerResourceMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
     fun initialFileIndexBuild() {
         val dirtyFiles: MutableMap<URI, String> = mutableMapOf()
         val rellUris = addRellFilesUri()
         rellUris.forEach { fileURI ->
             val fileContent = File(fileURI).readText()
-            val compilerSourcePath = RellCompilerPaths(workspaceURI).createCompilerSourcePath(fileURI)
-            compilerResourceMap[compilerSourcePath] = C_TextSourceFile(compilerSourcePath, fileContent)
-            val resource = resourceDescription.buildRellResource(fileURI, C_SourceDir.mapDir(compilerResourceMap))
+            val resource = resourceDescription.buildRellResource(fileURI, compilerResourceMap)
 
             if (resource.imports.isNotEmpty()) {
                 dirtyFiles[fileURI] = fileContent
@@ -41,7 +38,7 @@ class WorkspaceIndexer(private val workspaceURI: URI) {
         dirtyFiles.forEach { (fileURI, fileContent) ->
             val compilerSourcePath = RellCompilerPaths(workspaceURI).createCompilerSourcePath(fileURI)
             compilerResourceMap[compilerSourcePath] = C_TextSourceFile(compilerSourcePath, fileContent)
-            val resource = resourceDescription.buildRellResource(fileURI, C_SourceDir.mapDir(compilerResourceMap))
+            val resource = resourceDescription.buildRellResource(fileURI, compilerResourceMap)
             fileUriResourceMap[fileURI] = resource
         }
 
@@ -52,7 +49,7 @@ class WorkspaceIndexer(private val workspaceURI: URI) {
         val compilerSourcePath = RellCompilerPaths(workspaceURI).createCompilerSourcePath(fileURI)
         compilerResourceMap[compilerSourcePath] = C_TextSourceFile(compilerSourcePath, fileContent)
         fileUriResourceMap[fileURI] =
-            resourceDescription.buildRellResource(fileURI, C_SourceDir.mapDir(compilerResourceMap))
+            resourceDescription.buildRellResource(fileURI, compilerResourceMap)
     }
 
     //Rename and Move file
