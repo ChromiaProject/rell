@@ -25,6 +25,7 @@ class RellResourceFactory(workspaceURI: URI) {
     val rellCompilerPaths = RellCompilerPaths(workspaceURI)
     private val logger = KotlinLogging.logger {}
     fun buildRellResource(uri: URI, fileCompilerSourceMap: MutableMap<C_SourcePath, C_SourceFile>): Resource {
+
         //TODO maybe change it to constructor
         val fileContent = File(uri).readText()
         val rellCompilerSourcePath = rellCompilerPaths.createCompilerSourcePath(uri)
@@ -33,10 +34,20 @@ class RellResourceFactory(workspaceURI: URI) {
         return Resource(
             antlrParseTree.first,
             ast.first.ideModuleInfo(rellCompilerSourcePath),
-            //buildCSourceFile(ast.first, IdeFilePath(rellCompilerSourcePath)),
             ast.first,
             antlrParseTree.second,
             compileResult(rellCompilerSourcePath, ast.first, fileCompilerSourceMap).messages
+        )
+    }
+
+    fun buildRellResource(resource: Resource, uri: URI, fileCompilerSourceMap: MutableMap<C_SourcePath, C_SourceFile>): Resource {
+        val rellCompilerSourcePath = rellCompilerPaths.createCompilerSourcePath(uri)
+        return Resource(
+            resource.parseTree,
+            resource.moduleInfo,
+            resource.ast,
+            resource.syntaxErrors,
+            compileResult(rellCompilerSourcePath, resource.ast, fileCompilerSourceMap).messages
         )
     }
 
@@ -45,7 +56,7 @@ class RellResourceFactory(workspaceURI: URI) {
     ): IdeCompilationResult {
         val options = C_CompilerOptions.builder().symbolInfoFile(compilerSrcPath).ide(true).build()
 
-        val moduleNames = IdeApi.getModuleName(compilerSrcPath, ast)
+        val moduleName = IdeApi.getModuleName(compilerSrcPath, ast) ?: throw Exception("Can not find the moduleName for $compilerSrcPath")
 
         val idePath = IdeSourcePathFilePath(compilerSrcPath)
         val mainFile = AstSourceFile.make(ast, idePath)
@@ -54,7 +65,7 @@ class RellResourceFactory(workspaceURI: URI) {
         compoundSourceMap.putAll(fileMap)
 
         return IdeApi.compile(
-            CompoundSourceDir(selfDir, IdeDirApi.mapDir(compoundSourceMap)), listOf(moduleNames!!), options
+            CompoundSourceDir(selfDir, IdeDirApi.mapDir(compoundSourceMap)), listOf(moduleName), options
         )
     }
 

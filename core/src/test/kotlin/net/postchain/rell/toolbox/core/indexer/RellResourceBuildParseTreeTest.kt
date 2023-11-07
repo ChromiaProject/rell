@@ -8,7 +8,7 @@ import java.io.File
 import java.net.URI
 
 
-class RellResourceDescriptionBuildParseTreeTest {
+class RellResourceBuildParseTreeTest {
     //TODO: Test only works in isolation (not running test suite)
     private fun getFileContent(suffix: String): String {
         return File(rellFilesError.find { it.toString().endsWith(suffix) }!!).readText()
@@ -56,7 +56,7 @@ class RellResourceDescriptionBuildParseTreeTest {
         var rellFilesCorrect: MutableList<URI> = mutableListOf()
         val classLoader = javaClass.getClassLoader()
         val workspaceError = File(classLoader.getResource("rellDappWithErrors").file).absoluteFile
-        val workspaceCorrect = File(RellResourceDescriptionBuildModuleInfoTest.classLoader.getResource("rellDapp").file)
+        val workspaceCorrect = File(RellResourceBuildModuleInfoTest.classLoader.getResource("rellDapp").file)
         val rellDesc = RellResourceFactory(workspaceError.toURI())
 
         @JvmStatic

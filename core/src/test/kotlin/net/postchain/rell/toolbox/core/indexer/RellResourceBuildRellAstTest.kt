@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import java.net.URI
 
-class RellResourceDescriptionBuildRellAstTest {
+class RellResourceBuildRellAstTest {
     @Test
     fun `buildRellAst returns S_RellFile with no errors`() {
         val (rellCSrcPath, parseTree) = getSrcPathAndParseTree(rellFilesCorrect, "objects.rell")

@@ -3,53 +3,37 @@ package net.postchain.rell.toolbox.core.indexer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
-import net.postchain.rell.base.compiler.base.utils.C_TextSourceFile
 import java.io.File
 import java.net.URI
 
-//1. init event workspaceFiles[]
-// -> loop over each ws and create an WorkspaceIndexer for it
-// 2. initialFileIndexBuild (full index)
-// 3. update event
-// -> updateFileUriResourceMap (simple no imports)
-// -> updateFileUriResourceMap + findAffectedFiles (with import)
-// -> updateFileUriResourceMap(oldURI, NewURI) file moved
 class WorkspaceIndexer(private val workspaceURI: URI) {
     private val logger = KotlinLogging.logger {}
-    private val resourceDescription = RellResourceFactory(workspaceURI)
-
-    //TODO: Should we inject this?
+    private val resourceFactory = RellResourceFactory(workspaceURI)
 
     var fileUriResourceMap: HashMap<URI, Resource> = HashMap()
     private var compilerResourceMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
     fun initialFileIndexBuild() {
-        val dirtyFiles: MutableMap<URI, String> = mutableMapOf()
+        val dirtyFiles: MutableList<URI> = mutableListOf()
         val rellUris = addRellFilesUri()
         rellUris.forEach { fileURI ->
-            val fileContent = File(fileURI).readText()
-            val resource = resourceDescription.buildRellResource(fileURI, compilerResourceMap)
+            val resource = resourceFactory.buildRellResource(fileURI, compilerResourceMap)
 
             if (resource.imports.isNotEmpty()) {
-                dirtyFiles[fileURI] = fileContent
+                dirtyFiles.add(fileURI)
             }
             fileUriResourceMap[fileURI] = resource
         }
 
-        dirtyFiles.forEach { (fileURI, fileContent) ->
-            val compilerSourcePath = RellCompilerPaths(workspaceURI).createCompilerSourcePath(fileURI)
-            compilerResourceMap[compilerSourcePath] = C_TextSourceFile(compilerSourcePath, fileContent)
-            val resource = resourceDescription.buildRellResource(fileURI, compilerResourceMap)
+        dirtyFiles.forEach { fileURI ->
+            val resource = resourceFactory.buildRellResource(fileUriResourceMap[fileURI]!!, fileURI, compilerResourceMap)
             fileUriResourceMap[fileURI] = resource
         }
 
     }
 
     //Change in source code
-    fun updateFileUriResourceMap(fileURI: URI, fileContent: String) {
-        val compilerSourcePath = RellCompilerPaths(workspaceURI).createCompilerSourcePath(fileURI)
-        compilerResourceMap[compilerSourcePath] = C_TextSourceFile(compilerSourcePath, fileContent)
-        fileUriResourceMap[fileURI] =
-            resourceDescription.buildRellResource(fileURI, compilerResourceMap)
+    fun updateFileUriResourceMap(fileURI: URI) {
+        fileUriResourceMap[fileURI] = resourceFactory.buildRellResource(fileURI, compilerResourceMap)
     }
 
     //Rename and Move file
@@ -60,10 +44,7 @@ class WorkspaceIndexer(private val workspaceURI: URI) {
             fileUriResourceMap.remove(oldUri)
         } else {
             logger.warn { "Could not find resource for $oldUri. Re-parsing file..." }
-            val compilerSourcePathNewFile = RellCompilerPaths(workspaceURI).createCompilerSourcePath(newUri)
-            val fileContent = File(newUri).readText()
-            compilerResourceMap[compilerSourcePathNewFile] = C_TextSourceFile(compilerSourcePathNewFile, fileContent)
-            updateFileUriResourceMap(newUri, fileContent)
+            updateFileUriResourceMap(newUri)
         }
     }
 

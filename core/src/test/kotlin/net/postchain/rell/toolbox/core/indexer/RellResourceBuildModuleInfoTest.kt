@@ -14,7 +14,7 @@ import java.io.File
 import java.net.URI
 
 
-class RellResourceDescriptionBuildModuleInfoTest {
+class RellResourceBuildModuleInfoTest {
 
     @Test
     fun `compiler finds errors in from imported file`() {
