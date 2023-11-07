@@ -300,8 +300,8 @@ public final class AntlrToRell {
             case RULE_ruleX_FunctionType: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
                 // Manual fix
-                List<?> typeRefs = node.getRuleContexts(RuleX_TypeRefContext.class);
-                List<?> param_1 = null;
+                List<ParserRuleContext> typeRefs = node.getRuleContexts(RuleX_TypeRefContext.class);
+                List<ParserRuleContext> param_1 = null;
                 if (typeRefs != null && typeRefs.size() > 1) {
                     param_1 = typeRefs.subList(0, typeRefs.size() - 1);
                 }
