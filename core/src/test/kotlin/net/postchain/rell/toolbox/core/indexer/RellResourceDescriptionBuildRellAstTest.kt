@@ -47,7 +47,7 @@ class RellResourceDescriptionBuildRellAstTest {
         workSpace: MutableList<URI>,
         fileName: String
     ): Pair<C_SourcePath, RellParser.RuleX_RootParserContext> {
-        val fileUri = workSpace.find { it.toString().endsWith(fileName) }!!
+        val fileUri = workSpace.find { it.toString().endsWith("/$fileName") }!!
         val rellResDesc = RellResourceFactory(workspaceCorrect.toURI())
         val rellCSrcPath = rellResDesc.rellCompilerPaths.createCompilerSourcePath(fileUri)
         val errorListener = SyntaxErrorCollector()
