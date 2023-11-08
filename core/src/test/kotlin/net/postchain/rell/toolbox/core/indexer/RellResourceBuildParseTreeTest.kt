@@ -1,6 +1,9 @@
 package net.postchain.rell.toolbox.core.indexer
 
 import assertk.assertThat
+import assertk.assertions.containsAll
+import assertk.assertions.containsExactly
+import assertk.assertions.extracting
 import assertk.assertions.isEqualTo
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -9,7 +12,6 @@ import java.net.URI
 
 
 class RellResourceBuildParseTreeTest {
-    //TODO: Test only works in isolation (not running test suite)
     private fun getFileContent(suffix: String): String {
         return File(rellFilesError.find { it.toString().endsWith(suffix) }!!).readText()
     }
@@ -26,20 +28,25 @@ class RellResourceBuildParseTreeTest {
         val parseTreeWithErrors =
             rellDesc.buildParseTreeWithSyntaxErrors(getFileContent("single_syntax_error.rell"))
         //TODO proper assertion on error
-        assertThat(parseTreeWithErrors.second.size).isEqualTo(1)
+
+        assertThat(parseTreeWithErrors.second).extracting { it.message }.containsExactly("missing ';' at '}'")
     }
 
     @Test
     fun `ParseTree finds multiple errors in single rell file`() {
         val parseTreeWithErrors = rellDesc.buildParseTreeWithSyntaxErrors(getFileContent("multiple_syntax_error.rell"))
         //TODO proper assertion on error
-        assertThat(parseTreeWithErrors.second.size).isEqualTo(4)
+        assertThat(parseTreeWithErrors.second).extracting { it.message }.containsAll(
+            "missing ';' at 'function'",
+            "missing ';' at '}'",
+            "extraneous input 'va' expecting {<EOF>, 'abstract', 'override', '@', 'entity', 'class', 'struct', 'object', 'record', 'enum', 'function', 'val', 'namespace', 'import', 'operation', 'query', 'include'}"
+            , "extraneous input ';' expecting {'(', 'false', 'true', 'null', '.', 'virtual', 'struct', '+', '-', 'not', '++', '--', '\$', 'create', '[', 'if', 'when', RULE_ID, RULE_DECIMAL, RULE_BIG_INTEGER, RULE_NUMBER, RULE_BYTES, RULE_STRING}"
+        )
     }
 
     @Test
     fun `ParseTree finds no error in semantic error file`() {
         val parseTreeWithErrors = rellDesc.buildParseTreeWithSyntaxErrors(getFileContent("semantic_error.rell"))
-        //TODO proper assertion on error
         assertThat(parseTreeWithErrors.second.size).isEqualTo(0)
 
     }
@@ -47,7 +54,6 @@ class RellResourceBuildParseTreeTest {
     @Test
     fun `ParseTree finds no error in import error file`() {
         val parseTreeWithErrors = rellDesc.buildParseTreeWithSyntaxErrors(getFileContent("import.rell"))
-        //TODO proper assertion on error
         assertThat(parseTreeWithErrors.second.size).isEqualTo(0)
     }
 
