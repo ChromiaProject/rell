@@ -1,0 +1,6 @@
+module;
+
+entity rell_ent2 {
+    name: text;
+    age: integer;
+}

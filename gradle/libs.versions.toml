@@ -5,8 +5,8 @@ lsp4j = "0.21.1"
 koin = "3.5.0"
 jackson = "2.15.3"
 antlr = "4.13.1"
-assertk="0.27.0"
-kotlin-test="1.9.10"
+assertk = "0.27.0"
+kotlin-test = "1.9.10"
 oshai = "5.1.0"
 log4j = "2.20.0"
 
@@ -32,7 +32,7 @@ antlr = { module = "org.antlr:antlr4", version.ref = "antlr" }
 
 
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin-test" }
-assertk = { module = "com.willowtreeapps.assertk:assertk-jvm", version.ref="assertk" }
+assertk = { module = "com.willowtreeapps.assertk:assertk-jvm", version.ref = "assertk" }
 
 #Testing
 testcontainers-base = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
@@ -44,8 +44,9 @@ oshai = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "oshai" }
 log4j = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 
+
 [bundles]
-testcontainers = [ "testcontainers-base", "testcintainers-junit" ]
+testcontainers = ["testcontainers-base", "testcintainers-junit"]
 logging = ["oshai", "log4j", "log4j-core"]
 rell = ["rell", "rell-base", "rell-api-base", "rell-tools"]
 lsp4j = ["lsp4j", "lsp4j-debug", "lsp4j-websocket"]

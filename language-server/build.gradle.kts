@@ -10,6 +10,7 @@ repositories {
     mavenCentral()
 }
 
+
 dependencies {
     implementation(libs.bundles.lsp4j)
     implementation(libs.bundles.logging)

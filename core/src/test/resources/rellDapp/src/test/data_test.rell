@@ -1,0 +1,12 @@
+@test module;
+import ^^.main.{my_name, set_name};
+
+function test_add_name() {
+    assert_equals(my_name.name, "World");
+
+    val tx = rell.test.tx(set_name("Bob"));
+    assert_equals(my_name.name, "World");
+
+    tx.run();
+    assert_equals(my_name.name, "Bob");
+}

@@ -1,0 +1,9 @@
+@test module;
+
+function test_foo() {
+    assert_equals(2 + 2, 4);
+}
+
+function test_bar() {
+    assert_not_equals(2 + 2, 5);
+}
