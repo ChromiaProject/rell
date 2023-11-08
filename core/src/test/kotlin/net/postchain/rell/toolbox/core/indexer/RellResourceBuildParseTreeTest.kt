@@ -27,15 +27,12 @@ class RellResourceBuildParseTreeTest {
     fun `ParseTree finds error in single rell file`() {
         val parseTreeWithErrors =
             rellDesc.buildParseTreeWithSyntaxErrors(getFileContent("single_syntax_error.rell"))
-        //TODO proper assertion on error
-
         assertThat(parseTreeWithErrors.second).extracting { it.message }.containsExactly("missing ';' at '}'")
     }
 
     @Test
     fun `ParseTree finds multiple errors in single rell file`() {
         val parseTreeWithErrors = rellDesc.buildParseTreeWithSyntaxErrors(getFileContent("multiple_syntax_error.rell"))
-        //TODO proper assertion on error
         assertThat(parseTreeWithErrors.second).extracting { it.message }.containsAll(
             "missing ';' at 'function'",
             "missing ';' at '}'",
