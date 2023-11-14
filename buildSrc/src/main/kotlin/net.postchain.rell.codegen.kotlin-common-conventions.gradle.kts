@@ -12,6 +12,7 @@ repositories {
     maven("https://gitlab.com/api/v4/projects/32294340/packages/maven")
     maven("https://gitlab.com/api/v4/projects/32802097/packages/maven")
     maven("https://gitlab.com/api/v4/projects/46288950/packages/maven")
+    maven("https://gitlab.com/api/v4/projects/50818999/packages/maven")
     maven("https://jcenter.bintray.com")
     maven("https://maven.emrld.io")
 }

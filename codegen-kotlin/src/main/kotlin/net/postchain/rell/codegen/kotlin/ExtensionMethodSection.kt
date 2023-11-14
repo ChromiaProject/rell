@@ -11,7 +11,7 @@ import net.postchain.gtv.mapper.GtvObjectMapper
 import net.postchain.gtv.mapper.Name
 import net.postchain.gtv.mapper.Nullable
 import net.postchain.rell.base.model.R_MountName
-import net.postchain.rell.base.model.R_Param
+import net.postchain.rell.base.model.R_FunctionParam
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.DependencyFinder
@@ -30,7 +30,7 @@ abstract class ExtensionMethodSection(
         protected val mountName: R_MountName,
         private val extendedClass: KClass<*>,
         private val extendenMethod: String,
-        protected val params: List<R_Param>,
+        protected val params: List<R_FunctionParam>,
         private val returnType: R_Type?
 ) : DocumentSection {
     override val moduleName: String
@@ -83,7 +83,7 @@ abstract class ExtensionMethodSection(
 
     abstract fun formatGtvParameters(): String
 
-    internal fun parameterToGtv(param: R_Param): String {
+    internal fun parameterToGtv(param: R_FunctionParam): String {
         return attributeToGtv(param.name.str.snakeToLowerCamelCase(), param.type)
     }
 
