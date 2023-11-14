@@ -1,7 +1,7 @@
 package net.postchain.rell.codegen.typescript
 
 import net.postchain.rell.base.model.R_MountName
-import net.postchain.rell.base.model.R_Param
+import net.postchain.rell.base.model.R_FunctionParam
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.DependencyFinder
@@ -12,7 +12,7 @@ import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 abstract class TypescriptFunction(
         protected val className: ClassName,
         protected val mountName: R_MountName,
-        protected val params: List<R_Param>,
+        protected val params: List<R_FunctionParam>,
         private val async: Boolean,
         protected val returnType: R_Type?,
         private val querySuffix: String = "",

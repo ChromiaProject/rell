@@ -8,7 +8,7 @@ import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 abstract class JavascriptFunction(
         protected val className: ClassName,
         protected val mountName: R_MountName,
-        protected val params: List<R_Param>,
+        protected val params: List<R_FunctionParam>,
         private val async: Boolean,
         private val querySuffix: String = "",
 ) : DocumentSection {
