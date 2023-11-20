@@ -5,6 +5,7 @@ import assertk.assertions.containsAll
 import assertk.assertions.containsExactly
 import assertk.assertions.extracting
 import assertk.assertions.isEqualTo
+import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -36,8 +37,8 @@ class RellResourceBuildParseTreeTest {
         assertThat(parseTreeWithErrors.second).extracting { it.message }.containsAll(
             "missing ';' at 'function'",
             "missing ';' at '}'",
-            "extraneous input 'va' expecting {<EOF>, 'abstract', 'override', '@', 'entity', 'class', 'struct', 'object', 'record', 'enum', 'function', 'val', 'namespace', 'import', 'operation', 'query', 'include'}"
-            , "extraneous input ';' expecting {'(', 'false', 'true', 'null', '.', 'virtual', 'struct', '+', '-', 'not', '++', '--', '\$', 'create', '[', 'if', 'when', RULE_ID, RULE_DECIMAL, RULE_BIG_INTEGER, RULE_NUMBER, RULE_BYTES, RULE_STRING}"
+            "extraneous input 'va' expecting {<EOF>, 'abstract', 'override', '@', 'entity', 'class', 'struct', 'object', 'record', 'enum', 'function', 'val', 'namespace', 'import', 'operation', 'query', 'include'}",
+            "extraneous input ';' expecting {'(', 'false', 'true', 'null', '.', 'virtual', 'struct', '+', '-', 'not', '++', '--', '\$', 'create', '[', 'if', 'when', RULE_ID, RULE_DECIMAL, RULE_BIG_INTEGER, RULE_NUMBER, RULE_BYTES, RULE_STRING}"
         )
     }
 
@@ -60,7 +61,7 @@ class RellResourceBuildParseTreeTest {
         val classLoader = javaClass.getClassLoader()
         val workspaceError = File(classLoader.getResource("rellDappWithErrors").file).absoluteFile
         val workspaceCorrect = File(RellResourceBuildModuleInfoTest.classLoader.getResource("rellDapp").file)
-        val rellDesc = RellResourceFactory(workspaceError.toURI())
+        val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser())
 
         @JvmStatic
         @BeforeAll

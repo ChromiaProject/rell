@@ -12,9 +12,10 @@ import org.koin.dsl.module
 
 
 val serverModule = module {
-    single<WorkspaceService> { RellWorkspaceService() }
-
-    single<TextDocumentService> { RellDocumentService() }
+    single { RellWorkspaceManager() }
+    single { RellRequestManager() }
+    single { RellLanguageServerTerminator() }
+    single { CapabilitiesProvider() }
 
     singleOf(::RellLanguageServer)
 

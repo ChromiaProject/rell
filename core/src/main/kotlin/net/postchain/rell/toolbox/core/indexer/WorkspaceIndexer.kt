@@ -1,59 +1,95 @@
 package net.postchain.rell.toolbox.core.indexer
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import net.postchain.rell.base.compiler.base.utils.C_SourceFile
-import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import java.io.File
 import java.net.URI
 
-class WorkspaceIndexer(private val workspaceURI: URI) {
+class WorkspaceIndexer(val workspaceUri: URI) {
     private val logger = KotlinLogging.logger {}
-    private val resourceFactory = RellResourceFactory(workspaceURI)
-
-    var fileUriResourceMap: HashMap<URI, Resource> = HashMap()
-    private var compilerResourceMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
+    private val resourceFactory = RellResourceFactory(workspaceUri, AntlrRellParser())
+    var fileUriResourceMap = mutableMapOf<URI, Resource>()
     fun initialFileIndexBuild() {
         val dirtyFiles: MutableList<URI> = mutableListOf()
         val rellUris = addRellFilesUri()
-        rellUris.forEach { fileURI ->
-            val resource = resourceFactory.buildRellResource(fileURI, compilerResourceMap)
+        rellUris.forEach { fileUri ->
+            val resource = resourceFactory.buildRellResource(fileUri)
 
             if (resource.imports.isNotEmpty()) {
-                dirtyFiles.add(fileURI)
+                dirtyFiles.add(fileUri)
             }
-            fileUriResourceMap[fileURI] = resource
+            fileUriResourceMap[fileUri] = resource
         }
 
-        dirtyFiles.forEach { fileURI ->
-            val resource = resourceFactory.buildRellResource(fileUriResourceMap[fileURI]!!, fileURI, compilerResourceMap)
-            fileUriResourceMap[fileURI] = resource
+        dirtyFiles.forEach { fileUri ->
+            val resource =
+                resourceFactory.buildRellResource(fileUriResourceMap[fileUri]!!, fileUri)
+            fileUriResourceMap[fileUri] = resource
         }
 
+    }
+
+    fun hasFile(fileUri: URI): Boolean {
+        return fileUriResourceMap.containsKey(fileUri)
+    }
+
+    fun getAllIssues(): Map<URI, List<RellIssue>> {
+        val issues: MutableMap<URI, List<RellIssue>> = mutableMapOf()
+        fileUriResourceMap.forEach { (uri, resource) ->
+            issues[uri] = collectIssues(resource)
+        }
+        return issues
+    }
+
+    private fun collectIssues(resource: Resource): List<RellIssue> {
+        return listOf(getSyntaxErrors(resource), getSemanticErrors(resource)).flatten()
+    }
+
+    private fun getSyntaxErrors(resource: Resource): List<RellIssue> {
+        return resource.syntaxErrors.map(RellIssue::fromSyntaxError)
+    }
+
+    private fun getSemanticErrors(resource: Resource): List<RellIssue> {
+        return resource.fileSpecificSemanticErrors.map(RellIssue::fromCMessage)
     }
 
     //Change in source code
-    fun updateFileUriResourceMap(fileURI: URI) {
-        fileUriResourceMap[fileURI] = resourceFactory.buildRellResource(fileURI, compilerResourceMap)
+    fun updateFileUriResourceMap(fileUri: URI) {
+        fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri)
+    }
+
+    fun updateFileUriResourceMap(fileUri: URI, fileContent: String) {
+        if (isGitScheme(fileUri)) {
+            logger.info { "Skipping indexing of file $fileUri because it is a git file" }
+            return
+        }
+        fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileContent)
     }
 
     //Rename and Move file
-    fun updateFileUriResourceMap(oldUri: URI, newUri: URI) {
-        val resource = fileUriResourceMap[oldUri]
+    fun updateFileUriResourceMap(oldFileUri: URI, newFileUri: URI) {
+        val resource = fileUriResourceMap[oldFileUri]
         if (resource != null) {
-            fileUriResourceMap[newUri] = resource
-            fileUriResourceMap.remove(oldUri)
+            fileUriResourceMap[newFileUri] = resource
+            fileUriResourceMap.remove(oldFileUri)
         } else {
-            logger.warn { "Could not find resource for $oldUri. Re-parsing file..." }
-            updateFileUriResourceMap(newUri)
+            logger.warn { "Could not find resource for $oldFileUri. Re-parsing file..." }
+            updateFileUriResourceMap(newFileUri)
         }
     }
 
-    fun findAffectedFiles(uri: URI): Set<URI> {
+    private fun isGitScheme(gitUri: URI) = "git" == gitUri.scheme
+
+    fun removeFileUriResourceMap(fileUri: URI) {
+        fileUriResourceMap.remove(fileUri)
+    }
+
+    fun findAffectedFiles(fileUri: URI): Set<URI> {
         //TODO make it so it can find affected files that are importing an affected file
         var shallowCopy = fileUriResourceMap.toMutableMap()
-        val changedFileResource: Resource = fileUriResourceMap[uri]!!
-        shallowCopy.remove(uri)
-        var filesToUpdate: MutableSet<URI> = mutableSetOf(uri)
+        val changedFileResource: Resource = fileUriResourceMap[fileUri]!!
+        shallowCopy.remove(fileUri)
+        var filesToUpdate: MutableSet<URI> = mutableSetOf(fileUri)
 
         shallowCopy.forEach { (key, value) ->
             if (value.imports.isNullOrEmpty()) {
@@ -70,7 +106,7 @@ class WorkspaceIndexer(private val workspaceURI: URI) {
 
     fun addRellFilesUri(): List<URI> {
         val uris: MutableList<URI> = ArrayList()
-        findRellFilesInWorkspace(File(workspaceURI), uris)
+        findRellFilesInWorkspace(File(workspaceUri), uris)
         return uris.toList()
     }
 }

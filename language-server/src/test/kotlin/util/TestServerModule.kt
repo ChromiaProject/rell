@@ -3,10 +3,13 @@ package util
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
+import net.postchain.rell.toolbox.lsp.server.CapabilitiesProvider
 import net.postchain.rell.toolbox.lsp.server.LauncherType
 import net.postchain.rell.toolbox.lsp.server.RellDocumentService
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
-import net.postchain.rell.toolbox.lsp.server.RellWorkspaceService
+import net.postchain.rell.toolbox.lsp.server.RellLanguageServerTerminator
+import net.postchain.rell.toolbox.lsp.server.RellRequestManager
+import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
 import org.eclipse.lsp4j.services.TextDocumentService
 import org.eclipse.lsp4j.services.WorkspaceService
 import org.koin.core.KoinApplication
@@ -32,9 +35,10 @@ class TestServerModule {
     }
 
     private val serverModule = module {
-        single<WorkspaceService> { RellWorkspaceService() }
-
-        single<TextDocumentService> { RellDocumentService() }
+        single { RellWorkspaceManager() }
+        single { RellRequestManager() }
+        single { RellLanguageServerTerminator() }
+        single { CapabilitiesProvider() }
 
         singleOf(::RellLanguageServer)
         

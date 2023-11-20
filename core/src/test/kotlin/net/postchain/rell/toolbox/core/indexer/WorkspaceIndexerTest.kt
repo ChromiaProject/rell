@@ -32,18 +32,23 @@ class WorkspaceIndexerTest {
     }
 
     @Test
-    fun `initialFileIndexBuild builds index mapper of files in workspace imports file with error`(@TempDir dir: File) {
+    fun `initialFileIndexBuild builds index mapper of files in workspace imports file with error and same name`(@TempDir dir: File) {
+        val childDir = File(dir, "directory").toPath().createDirectory()
+        File(childDir.toFile(), "main.rell").apply {
+            writeText("""
+                module;
+                import ^^.main.*;
+                
+                function d() {
+                    create f(name = "");
+                }
+            """.trimIndent())
+        }
         File(dir, "main.rell").apply {
             writeText("""
                 module;
-                import ^.importer.*;
-            """.trimIndent())
-        }
-        File(dir, "importer.rell").apply {
-            writeText("""
-                module;
                 function a() {
-                 create b(name = "");
+                    create b(name = "");
                 }
             """.trimIndent())
         }
@@ -54,61 +59,37 @@ class WorkspaceIndexerTest {
         assertThat(workspaceIndexer.fileUriResourceMap.size).isEqualTo(2)
         workspaceIndexer.fileUriResourceMap.forEach {
             assertThat(it.value.parseTree.children).isNotEmpty()
-            assertThat(it.value.semanticErrors[0].code == "unknown_name:b")
+            assertThat(it.value.fileSpecificSemanticErrors.size).isEqualTo(1)
         }
     }
-
-
     @Test
-    fun `initialFileIndexBuild builds index mapper of files in workspace with errors`(@TempDir dir: File) {
-        File(dir, "rell_syntax_error.rell").apply {
-            writeText("""
-                module;
-                function a() {
-                    val a = 2
-                }
-            """.trimIndent())
-        }
-        File(dir, "rell_semantic_error.rell").apply {
-            writeText("""
-                module;
-                function a() {
-                    create b(name = "");
-                }
-            """.trimIndent())
-        }
+    fun `initialFileIndexBuild builds index mapper of files in workspace imports file with error`(@TempDir dir: File) {
 
-        File(dir, "rell_semantic_and_syntax_error.rell").apply {
+        File(dir, "main.rell").apply {
             writeText("""
                 module;
+                import ^.importer.*;
                 
+                function d() {
+                    create f(name = "");
+                }
+            """.trimIndent())
+        }
+        File(dir, "importer.rell").apply {
+            writeText("""
+                module;
                 function a() {
                     create b(name = "");
                 }
-                val v = ;
             """.trimIndent())
         }
 
-        File(dir, "rell_semantic_and_syntax_error_other_order.rell").apply {
-            writeText("""
-                module;
-                function a()() {
-                    create b(name = "");
-                }
-                function c() {
-                    create b(name ="");
-                }
-            """.trimIndent())
-        }
         val workspaceIndexer = WorkspaceIndexer(dir.toURI())
         workspaceIndexer.initialFileIndexBuild()
-        //Manual testing for now, will be improved
+
         workspaceIndexer.fileUriResourceMap.forEach {
-            println("-----------------------")
-            println(it.key)
-            println(it.value.semanticErrors)
-            println(it.value.syntaxErrors)
-            println("-----------------------")
+            assertThat(it.value.parseTree.children).isNotEmpty()
+            assertThat(it.value.fileSpecificSemanticErrors.size).isEqualTo(1)
         }
     }
 }

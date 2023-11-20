@@ -4,12 +4,14 @@ import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
 import net.postchain.rell.base.utils.ide.IdeDirApi
 import net.postchain.rell.toolbox.core.compiler.RellcFilePath
+import java.io.File
 import java.net.URI
 
-class RellCompilerPaths(private val workspaceURI: URI) {
+class RellCompilerPaths(private val workspaceUri: URI) {
 
     fun createCompilerSourcePath(uri: URI): C_SourcePath {
-        val relativePath = uri.toString().substring(workspaceURI.toString().length)
+        // TODO: Make sure line below works. Old line: val relativePath = uri.toString().substring(workspaceURI.toString().length)
+        val relativePath = File(uri).relativeTo(File(workspaceUri)).toString()
         val compilerSourcePath = IdeDirApi.parseSourcePath(relativePath)
         if (compilerSourcePath != null) {
             return compilerSourcePath
