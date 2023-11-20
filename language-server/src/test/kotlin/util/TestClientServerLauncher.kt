@@ -1,55 +1,56 @@
-package net.postchain.rell.toolbox.lsp.launcher
+package util
 
-import assertk.assertThat
-import assertk.assertions.isNotNull
+import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.server.LauncherType
+import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import org.eclipse.lsp4j.InitializeParams
+import org.eclipse.lsp4j.InitializedParams
+import org.eclipse.lsp4j.WorkspaceFolder
 import org.eclipse.lsp4j.launch.LSPLauncher
 import org.eclipse.lsp4j.services.LanguageServer
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.koin.core.KoinApplication
 import org.koin.core.qualifier.named
-import util.TestClient
-import util.TestServerModule
+import org.testcontainers.shaded.org.awaitility.Awaitility.await
 import java.io.IOException
 import java.net.Socket
 import java.net.SocketTimeoutException
-import kotlin.test.assertEquals
+import java.net.URI
 
-
-class SocketServerLauncherTest {
+class TestClientServerLauncher(private val koinApp: KoinApplication) {
     private lateinit var thread: Thread
     private lateinit var client: LanguageServer
-    private val serverModule = TestServerModule()
+    val testClient: TestClient = TestClient()
 
-    @BeforeEach
-    fun setup() {
-        val koinApp = serverModule.startKoin()
+    fun launch() {
         val serverLauncher = koinApp.koin.get<AbstractServerLauncher>(named(LauncherType.SOCKET))
         thread = Thread {
             serverLauncher.launch(arrayOf())
         }
         thread.start()
-
         val socket = connectToServer()
         val clientLauncher =
-            LSPLauncher.createClientLauncher(TestClient(), socket.getInputStream(), socket.getOutputStream())
+            LSPLauncher.createClientLauncher(testClient, socket.getInputStream(), socket.getOutputStream())
         clientLauncher.startListening()
 
         client = clientLauncher.remoteProxy
     }
 
-    @AfterEach
-    fun tearDown() {
-        serverModule.stopKoinGlobalContext()
+    fun stop() {
         thread.interrupt()
     }
 
-    @Test
-    fun `Initiates language server request`() {
-        val serverResponse = client.initialize(InitializeParams()).get()
-        assertThat(serverResponse.capabilities).isNotNull()
+    fun initializeServer(workspaceUri: URI, clearDiagnostic: Boolean = true) {
+        val initParams = InitializeParams()
+        initParams.workspaceFolders = listOf(WorkspaceFolder(workspaceUri.toString()))
+        client.initialize(initParams).get()
+        client.initialized(InitializedParams())
+
+        val server = koinApp.koin.get<RellLanguageServer>()
+        await().until { server.initialized.isDone }
+
+        if (clearDiagnostic) {
+            testClient.clearDiagnostics()
+        }
     }
 
     private fun connectToServer(attempt: Int = 0): Socket {

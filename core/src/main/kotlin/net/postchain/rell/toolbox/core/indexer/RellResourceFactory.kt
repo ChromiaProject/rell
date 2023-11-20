@@ -5,7 +5,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_Error
-import net.postchain.rell.base.compiler.base.utils.C_SourceFile
+import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
 import net.postchain.rell.base.utils.ide.IdeApi
@@ -20,52 +20,63 @@ import java.io.File
 import java.net.URI
 
 
-class RellResourceFactory(workspaceURI: URI) {
-    val parser = AntlrRellParser()
-    val rellCompilerPaths = RellCompilerPaths(workspaceURI)
+class RellResourceFactory(private val workspaceUri: URI, private val parser: AntlrRellParser) {
+    val rellCompilerPaths = RellCompilerPaths(workspaceUri)
     private val logger = KotlinLogging.logger {}
-    fun buildRellResource(uri: URI, fileCompilerSourceMap: MutableMap<C_SourcePath, C_SourceFile>): Resource {
 
-        //TODO maybe change it to constructor
-        val fileContent = File(uri).readText()
-        val rellCompilerSourcePath = rellCompilerPaths.createCompilerSourcePath(uri)
+    fun buildRellResource(fileUri: URI, fileContent: String): Resource {
+        val rellCompilerSourcePath = rellCompilerPaths.createCompilerSourcePath(fileUri)
         val antlrParseTree = buildParseTreeWithSyntaxErrors(fileContent)
         val ast = buildRellAstWithCompilerErrors(rellCompilerSourcePath, antlrParseTree.first)
+        val compilationResult = compileResult(rellCompilerSourcePath, ast.first)
+
         return Resource(
             antlrParseTree.first,
             ast.first.ideModuleInfo(rellCompilerSourcePath),
+            fileUri,
+            workspaceUri,
             ast.first,
             antlrParseTree.second,
-            compileResult(rellCompilerSourcePath, ast.first, fileCompilerSourceMap).messages
+            compilationResult.messages,
+            compilationResult.symbolInfos
         )
     }
 
-    fun buildRellResource(resource: Resource, uri: URI, fileCompilerSourceMap: MutableMap<C_SourcePath, C_SourceFile>): Resource {
-        val rellCompilerSourcePath = rellCompilerPaths.createCompilerSourcePath(uri)
+    fun buildRellResource(fileUri: URI): Resource {
+        val fileContent = File(fileUri).readText()
+        return buildRellResource(fileUri, fileContent)
+    }
+
+    fun buildRellResource(resource: Resource, fileUri: URI): Resource {
+        val rellCompilerSourcePath = rellCompilerPaths.createCompilerSourcePath(fileUri)
+        val compilationResult = compileResult(rellCompilerSourcePath, resource.ast)
         return Resource(
             resource.parseTree,
             resource.moduleInfo,
+            fileUri,
+            workspaceUri,
             resource.ast,
             resource.syntaxErrors,
-            compileResult(rellCompilerSourcePath, resource.ast, fileCompilerSourceMap).messages
+            compilationResult.messages,
+            compilationResult.symbolInfos
         )
     }
 
     fun compileResult(
-        compilerSrcPath: C_SourcePath, ast: S_RellFile, compoundSourceMap: MutableMap<C_SourcePath, C_SourceFile>
+        compilerSrcPath: C_SourcePath, ast: S_RellFile
     ): IdeCompilationResult {
         val options = C_CompilerOptions.builder().symbolInfoFile(compilerSrcPath).ide(true).build()
-
-        val moduleName = IdeApi.getModuleName(compilerSrcPath, ast) ?: throw Exception("Can not find the moduleName for $compilerSrcPath")
+        val commonSourceDir: C_SourceDir = C_SourceDir.diskDir(File(workspaceUri))
+        val moduleName = IdeApi.getModuleName(compilerSrcPath, ast)
+            ?: throw Exception("Can not find the moduleName for $compilerSrcPath")
 
         val idePath = IdeSourcePathFilePath(compilerSrcPath)
         val mainFile = AstSourceFile.make(ast, idePath)
         val fileMap = ImmutableMap.of(compilerSrcPath, mainFile)
         val selfDir = IdeDirApi.mapDir(fileMap)
-        compoundSourceMap.putAll(fileMap)
 
         return IdeApi.compile(
-            CompoundSourceDir(selfDir, IdeDirApi.mapDir(compoundSourceMap)), listOf(moduleName), options
+            CompoundSourceDir(selfDir, commonSourceDir), listOf(moduleName), options
         )
     }
 

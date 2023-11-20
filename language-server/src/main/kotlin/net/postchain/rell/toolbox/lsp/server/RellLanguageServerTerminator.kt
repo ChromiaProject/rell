@@ -4,8 +4,7 @@ import kotlin.system.exitProcess
 
 class RellLanguageServerTerminator {
 
-    //TODO: False as default. Needs shutdown request implementation in language server
-    private var hasBeenShutdown = true
+    private var hasBeenShutdown = false
     fun shutdown() {
         hasBeenShutdown = true
     }

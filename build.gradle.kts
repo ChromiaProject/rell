@@ -30,11 +30,11 @@ repositories {
 
 dependencies {
 
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.3")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.3")
     // TODO: check if only ANTLR4 runtime if enough
     // implementation("org.antlr:antlr4-runtime:4.13.1")
 
-    testImplementation("com.fasterxml.jackson.core:jackson-databind:2.0.1")
+    testImplementation("com.fasterxml.jackson.core:jackson-databind:2.12.7.1")
 }
 
 tasks.test {
