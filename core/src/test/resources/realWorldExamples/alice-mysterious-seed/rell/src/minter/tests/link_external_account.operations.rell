@@ -1,0 +1,37 @@
+function test_link_external_account() {
+	val acc = ft3_test.create_ft3_test_acc(util.admin_keypair());
+
+	val tx1 = rell.test.tx()
+		.op(minter.link_external_account(acc.id, 1620219504000, "0xaed13D14bDa8BaBE169D10AeAE948d5a49125967"))
+		.sign(acc.keypair);
+	
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val external_address = minter.external_account @ { .account.id == acc.id } ( .address );
+	
+	assert_equals(external_address, "0xaed13D14bDa8BaBE169D10AeAE948d5a49125967".lower_case());
+}
+
+function test_link_multiple_external_accounts() {
+	val acc = ft3_test.create_ft3_test_acc(util.admin_keypair());
+	val mock_address = acc.id.to_hex();
+
+	val tx1 = rell.test.tx()
+		.op(minter.link_external_account(acc.id, 1620219504000, "0xaed13D14bDa8BaBE169D10AeAE948d5a49125967"))
+		.op(minter.link_external_account(acc.id, 1620219504000, "0xaed13D14bDa8BaBE169D10AeAE948d5a49125968"))
+		.sign(acc.keypair);
+	
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val external_addresses = minter.external_account @* { .account.id == acc.id } ( .address );
+	
+	assert_equals(external_addresses.size(), 2);
+}

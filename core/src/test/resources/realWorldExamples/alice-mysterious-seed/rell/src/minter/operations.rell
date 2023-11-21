@@ -1,0 +1,72 @@
+operation initialize() {
+	require(op_context.is_signer(chain_context.args.admin_pubkey));
+	init();
+}
+
+operation update_block_height(name, block_height: integer) {
+	require(op_context.is_signer(chain_context.args.admin_pubkey));
+	update sync_status @{ name } ( block_height = block_height );
+}
+
+operation link_external_account(account_id: byte_array, timestamp, address: text) {
+	require(op_context.is_signer(chain_context.args.admin_pubkey));
+	val account = ft3.acc.account @ {.id == account_id};
+	val address_lower = address.lower_case();
+
+	val external_account = external_account @? { address_lower };
+	
+	if (external_account == null) {
+		create external_account(address_lower, account);
+	} else {
+		external_account.account = account;
+	}
+	
+	create external_account_link_updated(address_lower, timestamp, account.id);
+}
+
+operation mint_alice_seed(address: text, chain_name: name, tx_id: text) {
+	require(op_context.is_signer(chain_context.args.admin_pubkey));
+	require(sync_status @? { chain_name } != null);
+
+  val address_lower = address.lower_case();
+	val eth_account = external_account @ { address_lower };
+		
+	mysterious_seed.create_seed(
+		eth_account.account, 
+		get_random_text_element_from_list(alice_seeds())
+	);
+	create minted_seed_log(eth_account, chain_name, tx_id, type = "Alice Seed");
+}
+
+operation mint_chromia_seed(address: text, chain_name: name, tx_id: text) {
+	require(op_context.is_signer(chain_context.args.admin_pubkey));
+	require(sync_status @? { chain_name } != null);
+	
+	val address_lower = address.lower_case();
+  val eth_account = external_account @ { address_lower };
+	
+	mysterious_seed.create_seed(
+		eth_account.account, 
+		get_random_text_element_from_list(chromia_seeds())
+	);
+	create minted_seed_log(eth_account, chain_name, tx_id, type = "Chromia Seed");
+}
+
+operation mint_bnft_seed(account_id: byte_array, token_id: integer, type: name) {
+  require(op_context.is_signer(chain_context.args.admin_pubkey));
+  require(type == "Alice Seed" or type == "Chromia Seed", "Invalid Seed Type");
+    
+  if (type == "Alice Seed") {
+    mysterious_seed.create_seed(
+      ft3.acc.account @ { account_id },
+      get_random_text_element_from_list(alice_seeds())
+    );
+  } else if (type == "Chromia Seed") {
+    mysterious_seed.create_seed(
+      ft3.acc.account @ { account_id }, 
+      get_random_text_element_from_list(chromia_seeds())
+    );
+  }
+  
+  create minted_bnft_seed(token_id, account_id, timestamp = op_context.last_block_time);
+}

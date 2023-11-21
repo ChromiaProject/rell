@@ -1,0 +1,9 @@
+module;
+
+// Main TEST Rell start file for ecosec dApp
+////////////////////////////////////////////////
+
+import ecosec.main;
+
+// Test API
+import ecosec.test_m;

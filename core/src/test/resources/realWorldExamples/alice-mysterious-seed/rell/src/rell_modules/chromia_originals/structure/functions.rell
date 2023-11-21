@@ -1,0 +1,66 @@
+struct property {
+	name;
+	value: gtv;
+}
+
+function structure_implements_interface(structure, interface): boolean {
+	return structure_interface @? { structure, interface } != null;
+}
+
+function _get_static_properties_of_interface(
+	structure, 
+	interface
+): list<static_property> {
+	
+	// query returns all static properties defined by interface
+	// and intererface's base interfaces 
+	val static_properties = (
+		si: structure_interface,
+		ei: extended_interface,
+		sp: static_property,
+		infp: interface_property
+	) @* {
+		si.structure == structure,
+		si.interface == interface
+			or
+		(ei.extended == interface and si.interface == ei.base),
+		infp.interface == si.interface,
+		sp.structure == structure,
+		sp.name == infp.name
+	} ( sp );
+
+	return set<static_property>(static_properties).sorted();
+}
+
+function _get_static_properties_of_interfaces(
+	structure, 
+	interfaces: list<interface>
+): list<static_property> {
+	val static_properties = set<static_property>();
+	for (interface in interfaces) {
+		static_properties.add_all(
+			_get_static_properties_of_interface(structure, interface)
+		);
+	}
+	return static_properties.sorted();
+}
+
+function find_static_properties_by_meta_tag(
+	structure, 
+	tag_name: name
+): list<static_property> {
+	return (
+		sp: static_property, 
+		spmt: static_property_meta_tag
+	) @* {
+		sp.structure == structure,
+		spmt.static_property == sp,
+		spmt.name == tag_name
+	} (
+		sp
+	);
+}
+
+function _get_structure_direct_interfaces(structure): list<interface> {
+	return structure_interface @* { structure, .direct == true } ( .interface );
+}

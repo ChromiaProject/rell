@@ -1,0 +1,102 @@
+import wallet;
+import wacc: wallet.account;
+import wallet.payment_history;
+
+operation ft3_transfer(inputs: list<ft3_entry>, outputs: list<ft3_entry>, chain_id: integer) {
+  val sum_inputs = map<wallet.asset, integer>();
+   var idx = 0;
+   for (i in inputs) {
+      val asset = wallet.asset @ { .id == i.asset_id, .chain_id == chain_id };
+      val account = wacc.account@{.id == i.account_id, .chain_id == chain_id};
+      wacc.tkl_require_auth( account );
+      require( i.amount >= 0, "Amount should be positive." );
+      require( wallet.balance @ { account, asset, .chain_id == chain_id }.amount >= i.amount, "Your balance is too low");
+      sum_inputs[asset] = if (asset in sum_inputs) sum_inputs[asset] + i.amount else i.amount;
+
+      // We are sure that the balance is already registered, otherwise the account doesn't have money and should fail
+      update wallet.balance@{ account, asset, .chain_id == chain_id} (.amount -= i.amount);
+
+      create payment_history.payment_history_entry (
+        .chain_id = chain_id,
+        account,
+        asset,
+        .block_height = op_context.transaction.block.block_height,
+        .delta = -i.amount,
+
+        .op_index = 0, //op_context ???
+        .is_input = true,
+        .entry_index = idx
+      );
+      idx += 1;
+   }
+
+   idx = 0;
+   for (o in outputs) {
+      val target_account = wacc.account @ { .id == o.account_id, .chain_id == chain_id };
+      print(1000);
+      val asset = wallet.asset @ { o.asset_id, .chain_id == chain_id  };
+      require( sum_inputs[asset] >= o.amount );
+      sum_inputs[asset] -= o.amount;
+      require(sum_inputs[asset] >= 0);
+      val balance = wallet.create_balance_if_not_exists(target_account, asset, chain_id);
+      balance.amount += o.amount;
+
+      create payment_history.payment_history_entry (
+        .chain_id = chain_id,
+        .account = target_account,
+        asset,
+        .block_height = op_context.transaction.block.block_height,
+        .delta = o.amount,
+
+        .op_index = 500, // something from op_context,
+        .is_input = true,
+        .entry_index = idx
+      );
+      idx += 1;
+   }
+}
+
+operation xc_init_chroma_deposit(
+    from_account: byte_array,
+    from_blockchain: byte_array,
+    to_account: byte_array,
+    to_blockchain: byte_array,
+    asset_id: byte_array,
+    amount: integer,
+    args: gtv
+) {
+    xc_init_ft3_deposit(
+        xc_ft_entry(
+            from_account,
+            from_blockchain,
+            to_account,
+            to_blockchain,
+            asset_id,
+            amount,
+            args
+        )
+    );
+}
+
+operation xc_apply_dapp_deposit(
+    from_account: byte_array,
+    from_blockchain: byte_array,
+    to_account: byte_array,
+    to_blockchain: byte_array,
+    asset_id: byte_array,
+    amount: integer,
+    args: gtv
+) { // TODO REMOVE from_blockchain_rid
+    xc_apply_ft3_deposit(
+        xc_ft_entry(
+            from_account,
+            from_blockchain,
+            to_account,
+            to_blockchain,
+            asset_id,
+            amount,
+            args
+        ),
+        1
+    );
+}

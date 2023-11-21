@@ -1,0 +1,53 @@
+namespace config {
+	object field {
+		min_width: integer = 12;
+		min_height: integer = 12;
+		max_width: integer = 12;
+		max_height: integer = 12;
+	}
+
+	object game {
+		max_players_count: integer = 2;
+		lobby_name: text = 'Global';
+	}
+
+	object soldier_hero {
+		name: text = 'Soldier';
+		type: integer = 1;
+		max_health: integer = 100;
+		step: integer = 5;
+		damage: integer = 30;
+		attack_range: integer = 1;
+		mutable health: integer = 100;
+		price: integer = 2;
+	}
+
+	object tank_hero {
+		name: text = 'Tank';
+		type: integer = 2;
+		max_health: integer = 200;
+		step: integer = 3;
+		damage: integer = 15;
+		attack_range: integer = 1;
+		mutable health: integer = 200;
+		price: integer = 5;
+	}
+
+	object archer_hero {
+		name: text = 'Archer';
+		type: integer = 3;
+		max_health: integer = 100;
+		step: integer = 1;
+		damage: integer = 30;
+		attack_range: integer = 5;
+		mutable health: integer = 100;
+		price: integer = 3;
+	}
+
+	object misc {
+	    map_size_x: integer = 123;
+	    map_size_y: integer = 123;
+	    cost_of_attack: integer = 123;
+	    recovery_time: integer = 123;
+	}
+}

@@ -1,0 +1,15 @@
+
+//****************************************
+// cert_worst_case_time
+//
+// - Return the "current worst case time" from a
+// - certificate validity perspective based on the
+// - time of the latest existing block.
+//
+// LIMITATIONS
+// - 
+
+function cert_worst_case_time(): timestamp{
+	
+	return op_context.last_block_time + 1000*60*60*24; // Last block time + 24h
+}

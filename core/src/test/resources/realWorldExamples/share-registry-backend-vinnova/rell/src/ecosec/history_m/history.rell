@@ -1,0 +1,203 @@
+//****************************************
+// History module
+//
+// PURPOSE
+// - Record changes to share registries in accordance
+//	 with legal requirements
+// - Record changes to the solution from a system
+//   traceability perspective
+
+import ecosec.identity_m;
+import ecosec.persona_m;
+
+//namespace history {
+
+	// Sub modules
+//	include 'object_type'; // Types of history objects known
+//	include 'event_type'; // Types of history events known
+	
+	// Functions
+//	include 'add'; // Function for adding new history log entries
+//	include 'empty_json'; // Used for old/new when state does not exist
+
+
+	//****************************************
+	// history - class
+	//
+	// - Keeps history of changes on a company
+	// - History should be searchable by a few different criteria
+	// - Each record should be stand alone in case related data is removed
+	// - Each record should be stand alone to handle blockchain changes over time
+	// - Language dependent texts should also have a text ID that can be
+	//   used on the front-end to present a localized text.
+	
+	entity history {
+		company_org_nr: text = '000000-0000'; // 000000-0000 means system wide
+		created_time_stamp: timestamp;
+		
+		
+		// Agent acting in the solution
+		agent_id: text;
+		agent_pubkey: pubkey;
+		agent_first_name: text = '';
+		agent_last_name: text = '';
+		agent_identity_type_id: identity_m.id_type_enum;
+		agent_identity_nr: text = '';
+		
+		// Changes
+		object_type_id: integer; // Type being changed as per object_type. For search/filter. ex: share_block, company, persona
+		object_type_text: text; // Default language English object type text for log readability
+		
+		event_type_id: integer; // From event_type for frontend translation. ex: Create,  change, delete, address request, address approve, address reject, lost ownership, gained ownership
+		event_type_text: text; // Default language English action type text for log readability
+		
+		old: text = ''; // Concatenated / json values before change (if applicable)
+		new: text = ''; // Concatenated / json valued after change (if applicable)
+		
+		// Allow search based on affected object
+		object_id: text; // Unique (json?) ID of affected record if applicable. ex: persona_id, org_nr, agent_id, share_block from/to
+		object_text: text; // Human readable description of the object_id 'key'
+		
+		// Allow search based on affected persona
+		persona_id: text = ''; // Unique ID of affected persona if applicable
+		persona_first_name: text = '';
+		persona_last_name: text = '';
+		persona_identity_type_id: identity_m.id_type_enum;
+		persona_identity_nr: text = '';
+		
+		// Allow mapping to blockchain block
+		block_height: integer; // op_context.block_height
+		
+		// Blockchain version at the time of the record
+		major_version: integer;
+		minor_version: integer;
+		
+		// Indexes
+		// TODO: history class, index needed with rowid to be able to get events in right order even when timestamp is the same
+		index company_org_nr, created_time_stamp; // Used for listing company specific history (or system specific "000000-0000")
+		index company_org_nr, object_type_id, object_id, created_time_stamp; // Used for listing company history for an object type or for a specific object id (ex one share block)
+		index company_org_nr, persona_id, created_time_stamp; // Used to list company history for a specific Persona
+	}
+	
+	// Format for Company onboard JSON
+	struct company_onboard_json {
+		org_nr: text;
+		name: text;
+		email: text;
+		phone: text;
+	}
+	
+	// Format for Company address JSON
+	struct company_address_json {
+		address1: text;
+		address2: text;
+		postal_code: text;
+		city: text;
+		country: text;
+		visit_address1: text;
+		visit_address2: text;
+		visit_postal_code: text;
+		visit_city: text;
+		visit_country: text;
+	}
+	
+	// Format for Company clauses JSON
+	struct company_clauses_json {
+		clause_conversion: boolean;
+		clause_consent: boolean;
+		clause_purchase_right: boolean;
+		clause_refusal: boolean;
+		clause_redemption: boolean;
+	}
+	
+	// Format for Company contact JSON
+	struct company_contact_json {
+		email: text;
+		phone: text;
+	}
+	
+	// Format for Company name JSON
+	struct company_name_json {
+		name: text;
+	}
+	
+	// Format for Company share info
+	struct company_share_info_json {
+		share_count: integer;
+		share_value: integer;
+	}
+	
+	// Format for Company summons JSON
+	struct company_summons_json {
+		summons: integer;
+	}
+
+	// Format for Persona JSON
+	struct persona_json {
+		id: text;	// Unique id set by front-end at creation
+		
+	    first_name: text;
+	    last_name: text;
+	    address1: text;
+	    address2: text; // TODO: Make sure this implemented in persona APIs, request classes, request APIs and address request frontend 
+	    postal_code: text;
+	    city: text;
+	    country: text;
+	    
+	    phone: text;
+	    email: text;
+	    
+	    type: integer; // Person, Company
+	    
+	    identity_type_id: identity_m.id_type_enum;
+	    identity_nr: text;
+	    
+	    trustee: boolean; // 0 = false, 1 = true, default 0 - Trustee exists for Persona
+	}
+	
+	// Format for Agent JSON
+	struct agent_json {
+		id: text;	// Unique id set by front-end at creation
+		
+	    first_name: text;
+	    last_name: text;
+	    address1: text;
+	    address2: text; 
+	    postal_code: text;
+	    city: text;
+	    country: text;
+	    
+	    phone: text;
+	    email: text;
+	    
+	    identity_type_id: identity_m.id_type_enum;
+	    identity_nr: text;
+	}
+	
+	// Format for Share block JSON
+	struct share_block_json {
+		share_from: integer;
+		share_to: integer;
+		
+		persona_id: text;
+		
+		share_type: text; // Free text field to specify A, B, C, preferens or anything else)
+		
+		pledging: boolean; // UI 0 = No, 1 = Yes, Default 0 - "Pantsättning", the share a security for a loan
+		certificate: boolean; // UI 0 = No, 1 = Yes, Default 0 - share certificate issued = paper shares
+		recalled: boolean; // UI 0 = No, 1 = Yes, Default 0 - If shares are "deleted" / "indragna"
+	}
+	
+	// Format for Request address JSON
+	struct persona_addrreq_json {
+		first_name: text;
+		last_name: text;
+		address1: text;
+		address2: text;
+		postal_code: text;
+		city: text;
+		country: text;
+		phone: text;
+		email: text;
+	}
+//}

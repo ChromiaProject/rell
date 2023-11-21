@@ -1,0 +1,27 @@
+
+operation publish_chain_op(
+	brid: byte_array, 
+	location: text, 
+	account_id: byte_array,
+	auth_descriptor_id: byte_array
+) {
+	publish_chain(brid, location, account_id, auth_descriptor_id);
+}
+
+operation unpublish_chain_op(
+	brid: byte_array, 
+	account_id: byte_array,
+	auth_descriptor_id: byte_array
+) {
+	unpublish_chain(brid, account_id, auth_descriptor_id);
+}
+
+operation update_chain_op(
+	brid: byte_array, 
+	new_brid: byte_array, 
+	new_location: text, 
+	account_id: byte_array,
+	auth_descriptor_id: byte_array
+) {
+	update_chain(brid, new_brid, new_location, account_id, auth_descriptor_id);
+}

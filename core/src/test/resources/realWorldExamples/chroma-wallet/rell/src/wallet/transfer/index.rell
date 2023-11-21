@@ -1,0 +1,16 @@
+struct ft3_entry {
+   account_id: byte_array;
+   asset_id: byte_array;
+   amount: integer;
+   extra: map<text, gtv>;
+}
+
+struct xc_ft_entry {
+    from_account: byte_array;
+    from_blockchain: byte_array;
+    to_account: byte_array;
+    to_blockchain: byte_array;
+    asset_id: byte_array;
+    amount: integer;
+    args: gtv;
+}

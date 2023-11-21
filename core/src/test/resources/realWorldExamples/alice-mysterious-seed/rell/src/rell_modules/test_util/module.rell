@@ -1,0 +1,19 @@
+@test module;
+
+function admin_keypair(): rell.test.keypair {
+	val priv = byte_array.from_hex("854D8402085EC5F737B1BE63FFD980981EED2A0DA5FAC6B4468CB1F176BA0321");
+	val pub = byte_array.from_hex("02897FAC9964FBDF97E6B83ECCBDE4A8D28729E0FB27059487D1B6B29F70B48767");
+	return rell.test.keypair(priv, pub);
+}
+
+function alice_keypair(): rell.test.keypair {
+	val priv = byte_array.from_hex("a3a0b4cd66de47ad5fce84300cc31b0b6ae9713ab9cec6f2de56f6b77817948f");
+	val pub = byte_array.from_hex("02ae9f061829533b2e15ee723e39fc3084d1ff31e8779a68c25444006a06c1832c");
+	return rell.test.keypair(priv, pub);
+}
+
+function bob_keypair(): rell.test.keypair {
+	val priv = byte_array.from_hex("8a3c2a0aec7337eba48eb3908a11a38d78d6a783adb597aa3293e31fe97ffb6d");
+	val pub = byte_array.from_hex("027fddef8a4d416eddbdfc7cf882d0c2d563eccb5942002ea81acac14a8a94cb3c");
+	return rell.test.keypair(priv, pub);
+}

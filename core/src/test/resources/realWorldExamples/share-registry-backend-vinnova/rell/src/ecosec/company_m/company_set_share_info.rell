@@ -1,0 +1,60 @@
+
+//****************************************
+// company_set_share_info - business logic
+//
+// - Sets the share count and value on the company level
+// - This should always match with sum(share_block_shares)
+// - Using old field values for checking previous state instead of time stamp
+//   to allow other company changes in parallel.
+//
+// LIMITATIONS
+// - This function should never be published as an API by it self
+//   since it should only be used in a context where
+//   share_count = sum(share_block count) is enforced
+// - The caller must ensure authorization
+
+import ecosec.extlib_m;
+import ecosec.appmsg_m;
+import ecosec.history_m;
+
+function company_set_share_info(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				old_share_count: integer, old_share_value: integer,
+				new_share_count: integer, new_share_value: integer) {
+	
+	// Check that that current state is as expected
+	val orig_company = company @? { .org_nr == org_nr, .share_count == old_share_count, .share_value == old_share_value }(
+		.rowid,
+		.name
+	);
+	require( orig_company != null, appmsg_m.msg('MSGE0201', 'Company share count / quota', 'company_set_share_info')); // share count / quota changed by someone else?
+	
+	if(old_share_count != new_share_count or old_share_value != new_share_value){ // Old make update if there is a change
+		// update share count / quota
+		update company @ { orig_company!!.rowid }(
+			.share_count = new_share_count,
+			.share_value = new_share_value
+		);
+	}
+	
+	// History log - Company share info
+	val company_old = history_m.company_share_info_json(
+		share_count = old_share_count, share_value = old_share_value
+	);
+	val company_new = history_m.company_share_info_json(
+		share_count = new_share_count, share_value = new_share_value
+	);
+	history_m.add(
+		org_nr,
+		op_context.last_block_time,
+		agent_id,
+		agent_pubkey,
+		history_m.object_type_enum.COMPANY,
+		history_m.event_type_enum.COMPANY_SHARE_INFO,
+		company_old.to_gtv_pretty().to_json(),
+		company_new.to_gtv_pretty().to_json(),
+		org_nr,
+		orig_company!!.name + ' (' + org_nr + ')',
+		''
+	);
+}

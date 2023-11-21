@@ -1,0 +1,356 @@
+function test_plant_should_initially_have_0_days_planted() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+		
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.sign(alice.keypair);
+		
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+			
+	val status = mysterious_seed.retrieve_plant_status(alice.account, time.now());
+	
+	assert_equals(status.days_planted, 0);
+}
+
+function test_plant_should_initially_be_dying() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+		
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.sign(alice.keypair);
+		
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+			
+	val status = mysterious_seed.retrieve_plant_status(alice.account, time.now());
+	
+	assert_equals(status.status, "dying");
+}
+
+function test_plant_remains_dying_for_11h() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+			
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.sign(alice.keypair);
+		
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+			
+	val status = mysterious_seed.retrieve_plant_status(alice.account, time.hours_from_now(11));
+	
+	assert_equals(status.status, "dying");
+}
+
+function test_plant_is_dying_before_12h() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+			
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.sign(alice.keypair);
+		
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+			
+	val status = mysterious_seed.retrieve_plant_status(alice.account, time.hours_from_now(12));
+	
+	assert_equals(status.status, "dying");
+}
+
+function test_plant_is_dying_after_12h() {
+  val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+    
+  val tx1 = rell.test
+    .tx()
+    .op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+    .sign(util.admin_keypair());
+    
+  rell.test
+    .block()
+    .tx(init())
+    .tx(tx1)
+    .run();
+    
+  val originals = get_originals_for_account(alice.account.id);
+  var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+      
+  val tx2 = rell.test
+    .tx()
+    .op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+    .sign(alice.keypair);
+    
+  rell.test
+    .block()
+    .tx(tx2)
+    .run();
+      
+  val status = mysterious_seed.retrieve_plant_status(alice.account, time.hours_from_now(12) + 1000);
+  
+  assert_equals(status.status, "dying");
+}
+
+function test_plant_remains_dead_indefinitely_after_failing() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+			
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.sign(alice.keypair);
+		
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+			
+	val status = mysterious_seed.retrieve_plant_status(alice.account, time.days_from_now(524));
+	
+	assert_equals(status.status, "dead");
+}
+
+function test_plant_remains_dead_indefinitely_after_failing1() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+			
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.op(mysterious_seed.water_plant(alice.account.id, alice.auth_descriptor, 10))
+		.sign(alice.keypair);
+		
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+			
+	val status = mysterious_seed.retrieve_plant_status(alice.account, time.days_from_now(524));
+	
+	assert_equals(status.status, "dead");
+}
+
+function test_days_planted_does_not_increment_after_death() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+		
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.sign(alice.keypair);
+		
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+			
+	val status = mysterious_seed.retrieve_plant_status(alice.account, time.days_from_now(6));
+	assert_equals(status.days_planted, 0);
+	assert_equals(status.status, "dead");
+}
+
+function test_completing_tasks_makes_it_healthy() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+		
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.op(mysterious_seed.water_plant(alice.account.id, alice.auth_descriptor, 1))
+		.op(mysterious_seed.entertain_plant(alice.account.id, alice.auth_descriptor, 1))
+		.sign(alice.keypair);
+		
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+			
+	val status = mysterious_seed.retrieve_plant_status(alice.account, time.now());
+	assert_equals(status.status, "healthy");
+}
+
+function test_completing_all_tasks_makes_the_plant_healthy() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+		
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.op(mysterious_seed.water_plant(alice.account.id, alice.auth_descriptor, 1))
+		.op(mysterious_seed.fertilize_plant(alice.account.id, alice.auth_descriptor, 1))
+		.op(mysterious_seed.entertain_plant(alice.account.id, alice.auth_descriptor, 1))
+		.sign(alice.keypair);
+		
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+			
+	val status = mysterious_seed.retrieve_plant_status(alice.account, time.now());
+	assert_equals(status.status, "healthy");
+}
+
+function test_plant_should_be_1_day_planted_after_completing_first_bonus() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+		
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.op(mysterious_seed.fertilize_plant(alice.account.id, alice.auth_descriptor, 10))
+		.sign(alice.keypair);
+		
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+			
+	val status = mysterious_seed.retrieve_plant_status(alice.account, time.now());
+	
+	assert_equals(status.days_planted, 1);
+}

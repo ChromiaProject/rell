@@ -1,0 +1,30 @@
+module;
+
+import wallet;
+import wallet.blockchain;
+
+entity chain_balance {
+  key wallet.asset, blockchain.blockchain;
+  mutable amount: integer;
+
+  chain_id: integer; // TOREMOVE
+}
+
+function create_chain_balance_if_not_exists(wallet.asset, blockchain.blockchain, chain_id: integer): chain_balance {
+  val chain_balance_exists = chain_balance@?{asset, blockchain, .chain_id == chain_id};
+  if( chain_balance_exists == null) {
+    return create chain_balance(
+      chain_id = chain_id,
+      asset = asset,
+      blockchain = blockchain,
+      amount = 0
+    );
+  }
+  return chain_balance_exists!!;
+}
+
+query get_chain_balance(blockchain_rid: byte_array, asset_id: byte_array, chain_id: integer ) {
+    print("blockchain_rid", blockchain_rid);
+    print("asset id", asset_id);
+    return chain_balance@{blockchain.blockchain@{blockchain_rid, chain_id}, wallet.asset@{.id == asset_id, .chain_id == chain_id}, chain_id}.amount;
+}

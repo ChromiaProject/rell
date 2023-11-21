@@ -1,0 +1,34 @@
+
+//****************************************
+// request - class
+//
+// - Any request in this class/table should have been checked for authorization
+//   before being inserted into this table.
+// - Requests are per company. An address change for an owner of multiple companies
+//   will generate one request per company
+
+import ecosec.agent_m;
+import ecosec.persona_m;
+
+entity request {
+	//key id: text; // This needs to be a unique id created with some logic
+	
+	index agent_m.agent;   // The authorized agent making the request at the front-end
+	agent_pubkey: pubkey; // Agents active pubkey at the time of request creation
+	index persona_m.persona; // The persona for which the request concerns
+	// Removed since we have to be able to change state: index request_state_type; // The current state of the request
+	
+	//mutable first_name: text;
+	//mutable last_name: text;
+    mutable address1: text;
+    mutable address2: text;
+    mutable postal_code: text;
+    mutable city: text;
+    mutable country: text;
+    
+    mutable phone: text;
+    mutable email: text;
+	
+	created_time_stamp: timestamp;
+}
+

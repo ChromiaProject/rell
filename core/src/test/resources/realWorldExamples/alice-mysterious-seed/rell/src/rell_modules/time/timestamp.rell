@@ -1,0 +1,23 @@
+function now(): timestamp {
+	return block @ {} ( @sort_desc .timestamp ) limit 1;
+}
+
+function millis_from_now(millis: integer) {
+	return now() + millis;
+}
+
+function seconds_from_now(seconds: integer) {
+	return now() + (seconds * 1000);
+}
+
+function minutes_from_now(minutes: integer) {
+	return now() + (minutes * 60 * 1000);
+}
+
+function hours_from_now(hours: integer) {
+	return now() + (hours * 60 * 60 * 1000);
+}
+
+function days_from_now(days: integer) {
+	return now() + (days * 24 * 60 * 60 * 1000);
+}

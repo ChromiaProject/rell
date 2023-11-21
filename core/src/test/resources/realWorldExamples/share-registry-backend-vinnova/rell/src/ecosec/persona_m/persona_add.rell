@@ -1,0 +1,114 @@
+
+//****************************************
+// persona_add - business logic
+//
+// - Add a new Persona
+// - 
+//
+// LIMITATIONS
+// - 
+
+import ecosec.extlib_m;
+import ecosec.appmsg_m;
+import ecosec.auth_m;
+import ecosec.identity_m;
+import ecosec.company_m;
+import ecosec.history_m;
+
+function persona_add(agent_pubkey: pubkey, agent_id: text, 
+				org_nr: text,
+				id: text, first_name: text, last_name: text,
+				address1: text, address2: text, postal_code: text, city: text, country: text,
+				phone: text, email: text,
+				type: persona_type_enum,
+				identity_type_id: identity_m.id_type_enum, identity_nr: text,
+				trustee: boolean,
+				board_member: boolean
+				) {
+	
+	// Check authorization for self
+	require(auth_m.have_auth_agent(agent_pubkey, agent_id), appmsg_m.msg('MSGE0101', 'agent', 'persona_add')); // Supplied pubkey not signer?
+	
+	// Check authorization for action
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'persona_add')); // Not board representative?
+
+	
+	// Create Persona
+	val p = create persona (
+		id = id,
+		
+		company = company_m.company @ { .org_nr == org_nr },
+	
+	    first_name = first_name,
+	    last_name = last_name,
+	    address1 = address1,
+	    address2 = address2,
+	    postal_code = postal_code,
+	    city = city,
+	    country = country,
+	    
+	    phone = phone,
+	    email = email,
+	    
+	    type = type,
+	    
+	    identity_type = identity_m.id_type @ {identity_type_id},
+	    identity_nr = identity_nr,
+	    
+	    trustee = trustee,
+		
+		created_time_stamp = op_context.last_block_time,
+		changed_time_stamp = op_context.last_block_time
+	);
+	
+	// History log - Persona added
+	val persona_new = history_m.persona_json(id = id, first_name = first_name, last_name = last_name,
+	    address1 = address1, address2 = address2, postal_code = postal_code, city = city, country = country,
+	    phone = phone, email = email,
+	    type = type.value,
+	    identity_type_id = identity_type_id, identity_nr = identity_nr,
+	    trustee = trustee);
+	
+	history_m.add(
+		org_nr,
+		p.changed_time_stamp,
+		agent_id,
+		agent_pubkey,
+		history_m.object_type_enum.PERSONA,
+		history_m.event_type_enum.ADDED,
+		history_m.empty_json(),
+		persona_new.to_gtv_pretty().to_json(),
+		p.id,
+		p.first_name + ' ' + p.last_name + ' (' + p.identity_nr + ')',
+		p.id
+	);
+	
+	// Set correct board member status
+	if(board_member){
+		create persona_role (
+			persona = p,
+			role_type = role_type @ { .id == role_type_enum.BOARD_MEMBER }
+		);
+		
+		// History log - Persona was made board member
+		history_m.add(
+			org_nr,
+			p.changed_time_stamp,
+			agent_id,
+			agent_pubkey,
+			history_m.object_type_enum.PERSONA,
+			history_m.event_type_enum.PERSONA_GAINEDBM,
+			history_m.empty_json(),
+			history_m.empty_json(),
+			p.id,
+			p.first_name + ' ' + p.last_name + ' (' + p.identity_nr + ')',
+			p.id
+		);
+	}
+	
+	// Sync (remove/add) agent authorization for persona based on new identity_type/identity_nr
+	auth_m.auth_sync_persona_identity_change(agent_pubkey, agent_id,
+				p,
+				identity_m.id_type_enum.NO_ID, '',
+				identity_type_id, identity_nr);
+}

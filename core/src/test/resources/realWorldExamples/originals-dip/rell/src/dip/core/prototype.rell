@@ -1,0 +1,102 @@
+entity instance_prototype {
+	p_index: integer; // index of this prototype in the chain, p_index = 0 is highest priority, etc.
+	key instance, p_index; // make sure we have only one prototype at given priority level, also can find all instance_prototype for a given instance
+ 	key prototype: instance, instance; // also serves as index which retrieves instances by the prototype
+}
+
+entity prototype_name {
+    key dclass, name;
+    instance;
+}
+
+// Pointing to a page with instance_prototype
+struct p_from {
+	instance_rowid: rowid = util.r_zero();
+	prototype_rowid: rowid = util.r_zero();
+}
+
+function split_prototype_name(name?): (interface: text, name: text)? {
+	if (name??) {
+		val s = name.split(".");
+		return (interface = s[0], name = s[1]);
+	}
+	
+	return null;
+}
+
+function link_instance_prototypes_by_name(instance, prototype: (interface: text, name: text)) {
+	val prototype_inst = get_prototype_by_dclass_name(prototype.interface, prototype.name)!!;
+	
+	link_instance_prototypes(instance, prototype_inst);
+}
+
+function link_instance_prototypes(instance, parent_prototype: instance) {
+	val prototypes = instance_prototype @* { .instance == parent_prototype } (.prototype, @omit @sort .p_index);
+	prototypes.add(0, parent_prototype);
+	
+	require(instance not in prototypes, 'Instance already in prototype chain');
+	
+	var idx = 0;
+	for (prototype in prototypes) {
+		require(prototype.is_prototype, 'Tried to link non prototype instance');
+		create instance_prototype(idx++, instance, prototype);
+	}
+}
+
+function get_prototype_by_dclass_name(dclass_name: text, name): instance? {
+	return prototype_name @? {.dclass.name == dclass_name, name} .instance; 
+}
+
+function get_prototype(name?): instance? {
+	val split = split_prototype_name(name);
+	
+	if (split??) {
+		return prototype_name @? {.dclass.name == split.interface, split.name} .instance;	
+	} else {
+		return null;
+	}
+}
+
+function get_prototypes(instance): list<instance> {
+	return instance_prototype @* { instance } (.prototype, @omit @sort .p_index);	
+}
+
+function _prototype_fetch_range_from(prototype: instance, from: rowid, _limit: integer): list<instance> {
+	return instance_prototype @* { 
+		prototype, .instance.is_prototype == false, .instance.rowid > from
+	} (.instance) limit _limit;
+}
+
+function unpack_prototype_instances_(instances: list<instance>, from: p_from, _limit: integer): (results: list<instance>, from: p_from) {
+	var out = list<instance>();
+	var last_seen = util.r_zero();
+	
+	val prototype = instance_prototype @? {
+		.prototype.rowid == from.instance_rowid,
+		.instance.rowid == from.prototype_rowid
+	} (.prototype);
+	
+	if(prototype??) {
+		instances.add(0, prototype);
+		last_seen = from.prototype_rowid;
+	}	
+	
+	for(i in instances) {
+		if(i.is_prototype) {
+			val res = _prototype_fetch_range_from(i, last_seen, (_limit - out.size()));
+			out.add_all(res);
+			last_seen = util.r_zero();
+			
+		} else {
+			out.add(i);
+		}
+		
+		if (out.size() >= _limit) {
+			val last_prot = if(i.is_prototype) out[out.size() - 1].rowid else util.r_zero();
+			return (results = out, from = p_from(instance_rowid = i.rowid, prototype_rowid = last_prot) );	
+		}
+	}
+	
+	val last_instance = if (out.size() >= 1) out[out.size() - 1].rowid else util.r_zero();
+	return (results = out, from = p_from(instance_rowid = last_instance, prototype_rowid = util.r_zero()));
+}

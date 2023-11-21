@@ -1,0 +1,23 @@
+import .blockchain;
+
+entity asset {
+    id: byte_array; // make it key
+    key id, chain_id: integer;  //TOREMOVE
+    key name, chain_id;
+    mother_chain: blockchain.blockchain;
+}
+
+
+operation register_asset(id: byte_array, asset_name: text, mother_chain: byte_array, chain_id: integer) {
+  // TODO id = hash(asset_name, mother_chain);
+  require(import_state.dev == true);
+  create asset (id, asset_name, blockchain.blockchain@{.blockchain_rid == mother_chain, chain_id}, chain_id);
+}
+
+query get_asset(id: byte_array, chain_id: integer) {
+    return asset@?{id,chain_id} (
+        .id,
+        .name,
+        mother_chain = .mother_chain.blockchain_rid
+    );
+}

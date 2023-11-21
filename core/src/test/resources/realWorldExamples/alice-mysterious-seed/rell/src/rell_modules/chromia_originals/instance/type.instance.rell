@@ -1,0 +1,143 @@
+
+entity instance_property_value_instance {
+	instance_property;
+	mutable value: instance;
+}
+
+function set_property_instance(instance, path: text, value: instance) {
+	_set_property_instance(_instance_property_of_path(instance, path), value);
+}
+
+function _set_property_instance(instance_property, value: instance?) {	
+	require_instance_property_not_readonly(instance_property);
+	
+	if (empty(value)) {
+		require_instance_property_optional(instance_property);
+		
+		val property_value = instance_property_value_instance @? { instance_property };
+		
+		if (empty(property_value)) return;
+		
+		if (not property_value.value.structure.is_entity) _delete_instance(property_value.value);
+		
+		delete property_value;
+		
+		return;
+	}
+	
+	require_instance_is_of_valid_type(instance_property, value);
+	
+	val instance_value = 
+		if (value.structure.is_entity)
+			value
+		else 
+			deep_copy(value);
+	
+	val property_value = instance_property_value_instance @? { instance_property };
+	
+	if (property_value??) {
+		val old_value = property_value.value;
+		
+		property_value.value = instance_value;
+		
+		if (not old_value.structure.is_entity) {
+			_delete_instance(old_value);
+		}	
+	} else {
+		create instance_property_value_instance(
+			instance_property,
+			value = instance_value
+		);
+	}
+}
+
+function Instance(id: gtv): instance {
+	if (not is_integer(id) and not is_text_or_byte_array(id)) {
+		throw("Cannot load an instance by gtv: " + id);
+	}
+	
+	return 
+		if (is_integer(id)) 
+			instance.from_gtv(id)
+		else 
+			find_by_id(byte_array.from_gtv(id))!!;
+}
+
+function get_property_instance(instance, path: text): instance? {
+	return _get_property_instance(_instance_property_of_path(instance, path));
+}
+
+function _get_property_instance(instance_property): instance? {
+	_require_property_structure_or_interface(instance_property);
+	return instance_property_value_instance @? { instance_property }.value;
+}
+
+function _get_property_instance_serialized(instance_property): gtv? {
+	return _get_property_instance_serialized_with_rules(
+		instance_property, all()
+	);
+}
+
+function find_one_instance(structure, property_name: name, value: instance): instance? {
+	val instances = instance_property_value_instance @* {
+		.instance_property.instance.structure == structure,
+		.instance_property.structure_property.name == property_name,
+		.value == value
+	} ( .instance_property.instance ) limit 1;
+	
+	return if (instances.size() > 0) instances[0] else null;
+}
+
+function find_all_instance(structure, property_name: name, value: instance): list<instance> {
+	//TODO: require property type is structure or interface
+	
+	return instance_property_value_instance @* {
+		.instance_property.instance.structure == structure,
+		.instance_property.structure_property.name == property_name,
+		.value == value
+	} ( .instance_property.instance ) ;
+}
+
+function _get_property_instance_serialized_with_rules(
+	instance_property, 
+	property_rules: list<instance_map_rule>
+): gtv? {
+	val instance = _get_property_instance(instance_property);
+	
+	if (not instance??) return null;
+	
+	val instance_rules = _mapping_rules(instance, property_rules);
+	
+	return map_instance(instance, instance_rules, property_rules).to_gtv();
+}
+
+/*
+ * Initialization
+ */
+
+function _initialize_instance_property(instance_property, init_value: gtv?) {
+	val prop = instance_property.structure_property;
+	
+	if (init_value??) {
+		if (is_integer(init_value)) {
+			create instance_property_value_instance(
+				instance_property,
+				instance @ { rowid.from_gtv(init_value) }
+			);
+		} else if(is_map(init_value)) {
+			val properties = map<text, gtv>.from_gtv(init_value);
+			val structure = structure_property_structure @ { prop }.structure;
+			val instance = new_(instance_(structure, init(properties)));
+			create instance_property_value_instance(
+				instance_property,
+				instance
+			);
+		} else {
+			throw("Unsupported argument type");
+		}
+	}
+	
+	//TODO: require non-optional property initialized
+	//TODO: require read-only property initialized only once
+	//TODO: handle default value
+}

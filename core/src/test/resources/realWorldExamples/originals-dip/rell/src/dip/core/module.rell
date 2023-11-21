@@ -1,0 +1,7 @@
+abstract module;
+
+import ^.attributes.*;
+
+// Return TRUE if the mutability of the attribute is checked in the dapp constraint
+// Constraints which check mutability have to contain the string "mutable"
+abstract function check_dapp_constraint(i: instance, attribute, meta_key: text, meta_value: gtv, value: gtv, context: meta_context): boolean;

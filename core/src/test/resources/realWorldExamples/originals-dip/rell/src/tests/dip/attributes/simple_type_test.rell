@@ -1,0 +1,430 @@
+@test module;
+import ^^^.dip.*;
+
+function INAME() {
+	return "ITestSimple";
+}
+
+struct expected_values {
+	Boolean: boolean = true;
+	ByteArray: byte_array = x'affe';
+	Decimal: decimal = 1.25;
+	Instance: instance = create_instance();
+	Integer: integer = 42;
+	Text: text = "Hello Test";
+}
+
+function simple_interface() {
+	Interface_(INAME(), 
+		[
+			"boolean": Type(Boolean()),
+			"byte_array": Type(ByteArray()),
+			"decimal": Type(Decimal()),
+			"instance": Type(Instance()),
+			"integer": Type(Integer()),
+			"text": Type(Text())
+		]
+	).run();
+}
+
+function simple_instance(ev: expected_values) {
+	Instance_(
+		[INAME()],
+		[
+			"boolean": Boolean(ev.Boolean),
+			"byte_array": ByteArray(ev.ByteArray),
+			"decimal": Decimal(ev.Decimal),
+			"instance": Instance(ev.Instance),
+			"integer": Integer(ev.Integer),
+			"text": Text(ev.Text)
+		]
+	).run();
+	
+	return get_last_instance();
+}
+
+function assert_get_simple_attribute(instance, ev: expected_values, name) {
+	val attr = get_attribute_by_dclass_name(INAME(), name);
+	
+	when(name) {
+		"boolean" -> assert_equals( get_boolean_attribute(instance, attr), ev.Boolean );
+		"byte_array" -> assert_equals( get_byte_array_attribute(instance, attr), ev.ByteArray );
+		"decimal" -> assert_equals( get_decimal_attribute(instance, attr), ev.Decimal );
+		"instance" -> assert_equals( get_instance_attribute(instance, attr), ev.Instance );
+		"integer" -> assert_equals( get_integer_attribute(instance, attr), ev.Integer );
+		"text" -> assert_equals( get_text_attribute(instance, attr), ev.Text );
+	}
+}
+
+/* Tests */
+
+function test_attribute_can_be_accessed_by_interface_name() {
+	Interface_("ITest1", [
+		"id": Type(Integer())
+	]).run();
+	
+	Interface_("ITest2", [
+		"id": Type(Integer())
+	]).run();
+	
+	Instance_(
+		["ITest1", "ITest2"],
+		[
+			"ITest1.id": Integer(123),
+			"ITest2.id": Integer(456)
+		]
+	).run();
+	val instance = get_last_instance();
+	
+	val attr1 = get_attribute_by_dclass_name("ITest1", "id");
+	val attr2 = get_attribute_by_dclass_name("ITest2", "id");
+	
+	assert_equals(get_integer_attribute(instance, attr1), 123);
+	assert_equals(get_integer_attribute(instance, attr2), 456);
+}
+
+function test_simple_attribute_can_be_created_in_instance() {
+	val ev = expected_values();
+	simple_interface();
+	
+	val instance = simple_instance(ev);
+	
+    assert_get_simple_attribute(instance, ev, "boolean");
+    assert_get_simple_attribute(instance, ev, "byte_array");
+    assert_get_simple_attribute(instance, ev, "decimal");
+    assert_get_simple_attribute(instance, ev, "instance");
+    assert_get_simple_attribute(instance, ev, "integer");
+    assert_get_simple_attribute(instance, ev, "text");
+}
+
+function test_integer_attribute_can_be_created_in_prototype() {
+	val expected_value = 42;
+	Interface_("ITest", ["id": Type(Integer())]).run();
+	
+	Prototype_(
+		["ITest"],
+		["id": Integer(expected_value)],
+		"PrototypeName"
+	).run();
+	
+	val prototype = get_prototype_by_dclass_name("ITest", "PrototypeName")!!;
+	val attr = get_attribute_by_dclass_name("ITest", "id");
+	
+	assert_equals( get_integer_attribute(prototype, attr), expected_value );
+}
+
+function test_integer_attribute_can_not_be_created_twice_in_prototype_chain() {
+	val expected_value = 42;
+	Interface_("ITest", ["id": Type(Integer())]).run();
+	
+	Prototype_(
+		["ITest"],
+		["id": Integer(expected_value)],
+		"PrototypeName"
+	).run();
+	
+	val prototype = get_prototype_by_dclass_name("ITest", "PrototypeName")!!;
+	
+	Instance_(
+		[],
+		["id": Integer(expected_value)],
+		"ITest.PrototypeName"
+	).run_must_fail();
+	
+	Instance_(
+		[],
+		[:],
+		"ITest.PrototypeName"
+	).run();
+	val instance = get_last_instance();
+	
+	val attr = get_attribute_by_dclass_name("ITest", "id");
+		
+	add_type_attribute_(prototype, attr, expected_value.to_gtv()).run_must_fail();
+	add_type_attribute_(instance, attr, expected_value.to_gtv()).run_must_fail();
+}
+
+function test_integer_attribute_can_be_updated_by_creating_instance() {
+	var expected_value = 42;
+	Interface_("ITest", ["id": Type(Integer())]).run();
+	
+	Prototype_(
+		["ITest"],
+		["id": Integer(expected_value)],
+		"PrototypeName"
+	).run();
+	
+	val prototype = get_prototype_by_dclass_name("ITest", "PrototypeName")!!;
+	val attr = get_attribute_by_dclass_name("ITest", "id");
+	
+	assert_equals( get_integer_attribute(prototype, attr), expected_value );
+	expected_value = 125;
+	set_type_attribute_(prototype, attr, expected_value.to_gtv()).run();
+	assert_equals( get_integer_attribute(prototype, attr), expected_value );
+}
+
+function test_integer_attribute_can_not_be_updated_by_child_instance_created_by_parent() {
+	var expected_value = 42;
+	Interface_("ITest", ["id": Type(Integer())]).run();
+	
+	Prototype_(
+		["ITest"],
+		["id": Integer(expected_value)],
+		"PrototypeName"
+	).run();
+	
+	Instance_(
+		[],
+		[:],
+		"ITest.PrototypeName"
+	).run();
+	val instance = get_last_instance();
+	
+	val attr = get_attribute_by_dclass_name("ITest", "id");
+	
+	expected_value = 125;
+	set_type_attribute_(instance, attr, expected_value.to_gtv()).run_must_fail();
+}
+
+function test_integer_attribute_can_be_found_in_instance_created_by_instance() {
+	var expected_value = 42;
+	Interface_("ITest", ["id": Type(Integer())]).run();
+	
+	Prototype_(
+		["ITest"],
+		[:],
+		"PrototypeName"
+	).run();
+	val prototype = get_prototype_by_dclass_name("ITest", "PrototypeName")!!;
+	
+	Instance_(
+		[],
+		["id": Integer(expected_value)],
+		"ITest.PrototypeName"
+	).run();
+	val instance = get_last_instance();
+	
+	val attr = get_attribute_by_dclass_name("ITest", "id");
+	
+	assert_equals( get_integer_attribute(instance, attr), expected_value );
+	assert_null(get_integer_attribute(prototype, attr));
+}
+
+
+function test_integer_attribute_can_be_found_in_instance_created_by_prototype() {
+	var expected_value = 42;
+	Interface_("ITest", ["id": Type(Integer())]).run();
+	
+	Prototype_(
+		["ITest"],
+		["id": Integer(expected_value)],
+		"PrototypeName"
+	).run();
+	val prototype = get_prototype_by_dclass_name("ITest", "PrototypeName")!!;
+	
+	Instance_(
+		[],
+		[:],
+		"ITest.PrototypeName"
+	).run();
+	val instance = get_last_instance();
+	
+	val attr = get_attribute_by_dclass_name("ITest", "id");
+	
+	assert_equals( get_integer_attribute(prototype, attr), expected_value );
+	assert_equals( get_integer_attribute(instance, attr), expected_value );
+}
+
+function test_instance_can_be_found_by_integer_attribute_created_by_instance() {
+	var expected_value = 42;
+	Interface_("ITest", ["id": Type(Integer())]).run();
+	
+	Instance_(
+		["ITest"],
+		["id": Integer(expected_value)]
+	).run();
+	val instance = get_last_instance();
+	val attr = get_attribute_by_dclass_name("ITest", "id");
+	
+	assert_true( find_instances_by_type_attribute(attr, expected_value.to_gtv(), p_from(), integer.MAX_VALUE).results.contains_all( [instance] ) );
+}
+
+function test_instances_can_be_found_by_integer_attribute_created_by_instances() {
+	var expected_value = 42;
+	Interface_("ITest", ["id": Type(Integer())]).run();
+	
+	Instance_(
+		["ITest"],
+		["id": Integer(expected_value)]
+	).run();
+	val instance1 = get_last_instance();
+	
+	Instance_(
+		["ITest"],
+		["id": Integer(expected_value)]
+	).run();
+	val instance2 = get_last_instance();
+	
+	Instance_(
+		["ITest"],
+		["id": Integer(125)]
+	).run();
+	val instance3 = get_last_instance();
+	
+	val attr = get_attribute_by_dclass_name("ITest", "id");
+	
+	assert_true( find_instances_by_type_attribute(attr, (42).to_gtv(), p_from(), integer.MAX_VALUE).results.contains_all([instance1, instance2]) );
+	assert_true( find_instances_by_type_attribute(attr, (125).to_gtv(), p_from(), integer.MAX_VALUE).results.contains_all([instance3]) );
+}
+
+function test_instance_can_be_found_by_type_attribute_created_by_prototype() {
+	var expected_value = 42;
+	Interface_("ITest", ["id": Type(Integer())]).run();
+	
+	Prototype_(
+		["ITest"],
+		["id": Integer(expected_value)],
+		"PrototypeName"
+	).run();
+	
+	Instance_(
+		[],
+		[:],
+		"ITest.PrototypeName"
+	).run();
+	val instance = get_last_instance();
+	val attr = get_attribute_by_dclass_name("ITest", "id");
+	
+	assert_true( find_instances_by_type_attribute(attr, expected_value.to_gtv(), p_from(), integer.MAX_VALUE).results.contains_all([instance]) );
+}
+
+function test_instances_can_be_found_by_type_attribute_created_by_prototype() {
+	var expected_value = 42;
+	Interface_("ITest", ["id": Type(Integer())]).run();
+	
+	Prototype_(
+		["ITest"],
+		["id": Integer(expected_value)],
+		"PrototypeName"
+	).run();
+	
+	Instance_(
+		[],
+		[:],
+		"ITest.PrototypeName"
+	).run();
+	
+	Instance_(
+		[],
+		[:],
+		"ITest.PrototypeName"
+	).run();
+	
+	Instance_(
+		[],
+		[:],
+		"ITest.PrototypeName"
+	).run();
+	
+	val instances = get_last_instances();
+	val attr = get_attribute_by_dclass_name("ITest", "id");
+	
+	assert_true( find_instances_by_type_attribute(attr, (42).to_gtv(), p_from(), integer.MAX_VALUE).results.contains_all(instances) );
+}
+
+function test_instances_can_be_found_by_type_attribute_created_by_prototype_paginated() {
+	var expected_value = 42;
+	Interface_("ITest", ["id": Type(Integer())]).run();
+	
+	Prototype_(
+		["ITest"],
+		["id": Integer(expected_value)],
+		"PrototypeName"
+	).run();
+	
+	
+	for(i in range(0, 5)) {
+		Instance_(
+			[],
+			[:],
+			"ITest.PrototypeName"
+		).run();
+	}
+	
+	val instances = get_last_instances();
+	val attr = get_attribute_by_dclass_name("ITest", "id");
+	
+	var res = find_instances_by_type_attribute(attr, expected_value.to_gtv(), p_from(), 5);
+	assert_true( res.results.contains_all( instances ) );
+	
+	res = find_instances_by_type_attribute(attr, expected_value.to_gtv(), res.from, 2);
+	assert_true( res.results.contains_all( instances.sub(0, 2) ) );
+	
+	res = find_instances_by_type_attribute(attr, expected_value.to_gtv(), res.from, 2 );
+	assert_true( res.results.contains_all( instances.sub(2, 4) ) );
+	
+	res = find_instances_by_type_attribute(attr, expected_value.to_gtv(), res.from, 2);
+	assert_true( res.results.contains_all( instances.sub(4, 5) ) );
+}
+
+
+function test_instances_can_be_found_by_type_attribute_created_by_prototype_and_instance() {
+	var expected_value = 42;
+	Interface_("ITest", ["id": Type(Integer())]).run();
+	
+	Prototype_(
+		["ITest"],
+		["id": Integer(expected_value)],
+		"PrototypeName1"
+	).run();
+	
+	Prototype_(
+		["ITest"],
+		["id": Integer(expected_value)],
+		"PrototypeName2"
+	).run();
+	
+	Prototype_(
+		["ITest"],
+		[:],
+		"PrototypeName3"
+	).run();
+	
+	Instance_(
+		[],
+		[:],
+		"ITest.PrototypeName1"
+	).run();
+	
+	Instance_(
+		[],
+		[:],
+		"ITest.PrototypeName2"
+	).run();
+	
+	Instance_(
+		[],
+		["id": Integer(expected_value)],
+		"ITest.PrototypeName3"
+	).run();
+	
+	val instances = get_last_instances();
+	val attr = get_attribute_by_dclass_name("ITest", "id");
+	assert_true( find_instances_by_type_attribute(attr, expected_value.to_gtv(), p_from(), integer.MAX_VALUE).results.contains_all(instances) );
+}
+
+function test_instance_can_be_found_by_id_attribute() {
+	var expected_value = x'0350fe40766bc0ce8d08b3f5b810e49a8352fdd458606bd5fafe5acdcdc8ff3f57';
+	Interface_("ITest", ["id": Type(Id())]).run();
+		
+	Instance_(
+		["ITest"],
+		["id": Id(expected_value)]
+	).run();
+	val instance = get_last_instance();
+	
+	val attr = get_attribute_by_dclass_name("ITest", "id");
+	assert_equals(find_instance_by_id_attribute(attr, expected_value), instance);
+
+	assert_equals( get_id_attribute(instance, attr), expected_value );
+}

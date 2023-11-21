@@ -1,0 +1,71 @@
+function activate_seed(ft3.acc.account, id: byte_array) {
+	val plant = plant @? { account };
+	
+	if (plant != null) {
+		require(
+			calculate_plant_health(plant, op_context.last_block_time) != "completed", 
+			"You must pick the completed fruit prior to planting another seed"
+		);
+		delete_plant(plant);
+	}
+	
+	val seed = require(find_by_id(id));
+	
+	val owner = get_property_account(seed, "owner");
+	require(owner != null and owner == account);
+	
+	require_structure_to_be_of_interface(seed.structure, "Seed");
+	
+	val activated_seed = create plant (account, id, op_context.last_block_time);
+	create water (activated_seed, 0.0, op_context.last_block_time);
+	create fertilizer (activated_seed, 0.0, op_context.last_block_time);
+	create happiness (activated_seed, 0.0, op_context.last_block_time);
+}
+
+function delete_plant(plant) {
+	delete water @? { plant };
+	delete fertilizer @? { plant };
+	delete happiness @? { plant };
+	delete bonus_interval @* { plant };
+	delete plant;
+}
+
+function transform_plant(ft3.acc.account, plant) {
+	// Create fruit depending on what type of seed
+	val seed = find_by_id(plant.id);
+	require(seed != null, "No Original found for the seed");
+	
+	val owner = get_property_account(seed!!, "owner");
+	require(owner != null and owner == account);
+	
+	val type = get_property_text(seed, "type");
+	val target_fruit = get_target_fruit(type);
+	
+	_delete_instance_entity(seed);
+	
+	if (target_fruit != null) {
+		new_(instance_(Structure(target_fruit),
+			init([
+				"id": plant.id.to_gtv(),
+				"owner": account.to_gtv(),
+				"created_at": op_context.last_block_time.to_gtv()
+			])
+		));
+	}
+	
+	delete_plant(plant);
+}
+
+function get_target_fruit(type: text?) {
+	return when(type) {
+		"Starberry Seed" -> "Starberry";
+		"Leafy Plum Seed" -> "Leafy Plum";
+		"Rooster Fruit Seed" -> "Rooster Fruit";
+		"Dragon Brut Seed" -> "Dragon Brut";
+		"Blue Velvet Seed" -> "Blue Velvet";
+		"Moondrop Seed" -> "Moondrop";
+		"Sapphire Lettuce Seed" -> "Sapphire Lettuce";
+		"Peppery Onion Seed" -> "Peppery Onion";
+		else -> null;
+	};
+}

@@ -62,6 +62,7 @@ class WorkspaceIndexerTest {
             assertThat(it.value.fileSpecificSemanticErrors.size).isEqualTo(1)
         }
     }
+
     @Test
     fun `initialFileIndexBuild builds index mapper of files in workspace imports file with error`(@TempDir dir: File) {
 
@@ -90,6 +91,19 @@ class WorkspaceIndexerTest {
         workspaceIndexer.fileUriResourceMap.forEach {
             assertThat(it.value.parseTree.children).isNotEmpty()
             assertThat(it.value.fileSpecificSemanticErrors.size).isEqualTo(1)
+        }
+    }
+
+    @Test
+    fun `initialFileIndexBuild builds real world examples without crashing`() {
+        val classLoader = javaClass.getClassLoader()
+        val realWorldExamples = File(classLoader.getResource("realWorldExamples")!!.file).absoluteFile
+
+        realWorldExamples.listFiles()!!.forEach { dir ->
+            val srcDir = dir.resolve("rell/src")
+            val workspaceIndexer = WorkspaceIndexer(srcDir.toURI())
+            workspaceIndexer.initialFileIndexBuild()
+            assertThat(workspaceIndexer.fileUriResourceMap).isNotEmpty()
         }
     }
 }

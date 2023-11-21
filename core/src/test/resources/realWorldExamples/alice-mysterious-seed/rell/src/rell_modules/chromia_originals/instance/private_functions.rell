@@ -1,0 +1,20 @@
+
+function instance_property_name(instance_property): text {
+	return instance_property.structure_property.name;
+}
+
+function instance_property_type(instance_property): property_type {
+	return instance_property.structure_property.type;
+}
+
+function is_instance_property_readonly(instance_property): boolean {
+	return instance_property.structure_property.mutation == mutation_type.readonly;
+}
+
+function is_instance_property_optional(instance_property): boolean {
+	return instance_property.structure_property.optional;
+}
+
+function is_entity(instance): boolean {
+	return instance.structure.is_entity;
+}

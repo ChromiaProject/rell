@@ -1,0 +1,33 @@
+import wallet;
+
+operation xc_register_account(account_type_: text, args: gtv, id: byte_array, chain_id: integer) {
+  if(account_type_ == 'single_key_account') {
+    tkl_register_account(account_descriptor(account_type.single_key_account, args), chain_id, id);
+  } else  if (account_type_ == 'multi_sig_account'  ){
+    tkl_register_account(account_descriptor(account_type.multi_sig_account, args), chain_id, id);
+  } else {
+    require(false);
+  }
+}
+
+operation dapp_import_account(id: byte_array, account_type_: text, args: gtv, chain_id: integer, this_chain_id: integer) {
+    // This operation will be removed, it simulates the transaction proof
+    val a_t = if (account_type_ == "single_key_account") account_type.single_key_account else account_type.multi_sig_account;
+    xc_import_account(
+        xc_account (
+            id = id,
+            a_t,
+            args = args.to_bytes(),
+            mother_chain = wallet._this_blockchain@{chain_id}.blockchain,
+            chain_id = chain_id
+        ),
+        this_chain_id
+    );
+}
+
+
+operation test_auth (id: byte_array, chain_id: integer) {
+    require(wallet.import_state.dev == true);
+    val account = account@{.id == id, .chain_id == chain_id};
+    tkl_require_auth(account);
+}

@@ -1,0 +1,34 @@
+
+//****************************************
+// require_share_count - share_block
+//
+// - Meant to be used as a last step in a batch of transaction
+// - Will fail if the company share count does not match sum(share block shares)  
+//
+// LIMITATIONS
+// - Caller must have done the authorization check
+
+import ecosec.appmsg_m;
+import ecosec.company_m;
+
+function require_share_count(agent_pubkey: pubkey, agent_id: text, 
+				org_nr: text){
+	
+	// Check authorization for self
+	//require(have_auth_agent(agent_pubkey, agent_id), appmessage('MSGE0101', 'agent', 'share_block_require_share_count')); // Supplied pubkey not signer?
+	
+	// Check authorization for action
+	//require(have_auth_br(agent_id, org_nr), appmessage('MSGE0102', 'board representative', 'share_block_require_share_count')); // Not board representative?
+	
+	// Get company share count
+	val company_share_count = company_m.company @ { .org_nr == org_nr }(.share_count);
+	
+	// Calc share_block share count
+	var share_count = 0;
+	for(sb in (share_block @* { .company.org_nr == org_nr}( share_count = .share_to - .share_from + 1)) ){
+		share_count += sb.share_count;
+	}
+	
+	// "Throw" if sum of share blocks != Company share count field
+	require(company_share_count == share_count, appmsg_m.msg('MSGE0302', 'Share count', 'share_block_require_share_count'));
+}

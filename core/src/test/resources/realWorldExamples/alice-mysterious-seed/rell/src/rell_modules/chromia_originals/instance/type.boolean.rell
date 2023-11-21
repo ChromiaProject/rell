@@ -1,0 +1,120 @@
+
+entity instance_property_value_boolean {
+	key instance_property;
+	mutable value: boolean;
+}
+
+/*
+ * Get & Set functions
+ */
+ 
+function set_property_boolean(instance, path: text, value: boolean) {
+	_set_property_boolean(_instance_property_of_path(instance, path), value);
+}
+
+function _set_property_boolean(instance_property, value: boolean?) {	
+	require_instance_property_not_readonly(instance_property);
+	
+	if (empty(value)) {
+		require_instance_property_optional(instance_property);
+		delete instance_property_value_boolean @? { instance_property };
+		return;
+	}
+	
+	val property_value = instance_property_value_boolean @? { instance_property };
+	
+	if (property_value??) {
+		property_value.value = value;
+	} else {
+		create instance_property_value_boolean(
+			instance_property,
+			value = value
+		);
+	}
+}
+
+function get_property_boolean(instance, path: text): boolean? {
+	return _get_property_boolean(_instance_property_of_path(instance, path));
+}
+
+function _get_property_boolean(instance_property): boolean? {
+	require(
+		instance_property_type(instance_property) == property_type.boolean
+	);
+	
+	return instance_property_value_boolean @? { 
+		instance_property	
+	}.value;
+}
+
+function _unset_instance_property_boolean(instance_property) {
+	delete instance_property_value_boolean @? {
+		instance_property
+	};
+}
+
+/*
+ * Query functions
+ */
+
+function find_one_boolean(structure, property_name: text, value: boolean): instance? {
+	val instances = instance_property_value_boolean @* {
+		.instance_property.instance.structure == structure,
+		.instance_property.structure_property.name == property_name,
+		.value == value
+	} ( .instance_property.instance ) limit 1;
+	
+	return if (instances.size() > 0) instances[0] else null;
+}
+
+function find_all_boolean(structure, property_name: text, value: boolean): list<instance> {
+	return instance_property_value_boolean @* {
+		.instance_property.instance.structure == structure,
+		.instance_property.structure_property.name == property_name,
+		.value == value
+	} ( .instance_property.instance );
+}
+
+/*
+ * Initialization
+ */
+
+function _initialize_boolean_property(instance_property, init_value: gtv?) {
+	val prop = instance_property.structure_property;
+	val init_value_boolean = if (init_value??) boolean.from_gtv(init_value) else null;
+	
+	val default_value = 
+		if (instance_property.structure_property.value.size() != 0) 
+			boolean.from_gtv(gtv.from_bytes(instance_property.structure_property.value)) 
+		else 
+			null;
+
+	require(
+		default_value != null 
+			or 
+		init_value_boolean != null 
+			or 
+		prop.optional == true,
+		"Non-optional property '" + prop.name + "' is not initialized"
+	); 
+	
+	require(
+		prop.mutation != mutation_type.readonly
+			or
+		(
+			(default_value == null or init_value_boolean == null) 
+				and 
+			prop.mutation == mutation_type.readonly
+		),
+		"Read-only property '" + prop.name + "' can be initialized only once"
+	);
+	
+	val v = init_value_boolean ?: default_value;
+	
+	if (v??) {
+		create instance_property_value_boolean(
+			instance_property,
+			v
+		);
+	}
+}

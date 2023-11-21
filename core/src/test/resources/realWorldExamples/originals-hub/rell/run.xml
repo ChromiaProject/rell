@@ -1,0 +1,25 @@
+<run wipe-db="true">
+  <nodes>
+    <config src="config/node-config.properties" add-signers="false" />
+    <test-config src="config/node-config-test.properties" />
+  </nodes>
+  <chains>
+    <chain name="dip" iid="0">
+        <config height="0">
+          <app module="main">
+            <args module="ft3.core">
+              <arg key="my_blockchain_name"><string>OriginalsHub</string></arg>
+              <arg key="my_blockchain_website"><string>https://chromia.com</string></arg>
+              <arg key="my_blockchain_description"><string>Chromia OriginalsHub</string></arg>
+              <arg key="rate_limit_active"><int>0</int></arg>
+              <arg key="rate_limit_max_points"><int>10</int></arg>
+              <arg key="rate_limit_recovery_time"><int>30000</int></arg>
+              <arg key="rate_limit_points_at_account_creation"><int>5</int></arg>
+            </args>
+          </app>
+          <gtv src="config/config.template.xml"/>
+      </config>
+     <test module="tests" />
+    </chain>
+  </chains>
+</run>

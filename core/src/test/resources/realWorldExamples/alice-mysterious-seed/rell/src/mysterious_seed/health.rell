@@ -1,0 +1,194 @@
+function retrieve_water_level(ft3.acc.account, timestamp) {
+	val active_seed = plant @ { account };
+	val water = water @ { active_seed };
+	return calculate_meter(water.level, water.timestamp, timestamp);
+}
+
+function retrieve_fertilizer_level(ft3.acc.account, timestamp) {
+	val active_seed = plant @ { account };
+	val fertilizer = fertilizer @ { active_seed };
+	return calculate_meter(fertilizer.level, fertilizer.timestamp, timestamp);
+}
+
+function retrieve_happiness_level(ft3.acc.account, timestamp) {
+	val active_seed = plant @ { account };
+	val happiness = happiness @ { active_seed };
+	return calculate_meter(happiness.level, happiness.timestamp, timestamp);
+}
+
+function increment_water_level(plant, droplets: integer) {
+	val water = water @ { plant };
+	
+	val level_after_top_off = calculate_updated_level(water.level, water.timestamp, droplets);
+	update water ( level = level_after_top_off.min(1), timestamp = op_context.last_block_time );
+}
+
+function increment_fertilizer_level(plant, shovels: integer) {
+	val fertilizer = fertilizer @ { plant };
+	val timestamp = op_context.last_block_time;
+	val decimal_divider = 10.0;
+	
+	val meter = calculate_meter(fertilizer.level + (shovels / decimal_divider), fertilizer.timestamp, timestamp);
+	
+	// Keeping plant fertilized should grant bonus
+	val current_bonus_interval = bonus_interval @? { 
+		plant, 
+		task_fertilizer(),
+		.timestamp + seed_day() > timestamp,
+		.timestamp > timestamp - seed_day()
+	} (
+		@sort .rowid,
+		.days,
+		.timestamp
+	) limit 1;
+		
+	if (current_bonus_interval == null) {
+		create bonus_interval(plant, task_fertilizer(), days = meter.level.min(1.0), timestamp);
+	} else {
+		val current_days = current_bonus_interval.days;
+		val days_with_full_contribution = current_days + (shovels / decimal_divider);
+
+		if (current_days < 1.0) {
+			val updated_days = days_with_full_contribution.min(1.0);
+			update bonus_interval @ { current_bonus_interval.rowid } ( days = updated_days );
+		}
+		
+		if (days_with_full_contribution > 1.0) {
+			val remainder = days_with_full_contribution % 1.0;
+			
+			val next_period_starts = current_bonus_interval.timestamp + seed_day() + 1;
+			val time_remaining_on_current_period = next_period_starts - timestamp;
+			val overspills_to_next_period = remainder.min(time_remaining_on_current_period / seed_day());
+			
+			// Check if next period started
+			val next_period = bonus_interval @? {
+				plant,
+				task_fertilizer(),
+				.timestamp > timestamp
+			} limit 1;
+			
+			if (next_period != null) {
+				next_period.days = 0;
+			} else {
+				create bonus_interval(
+					plant, 
+					task_fertilizer(), 
+					days = overspills_to_next_period,
+					timestamp = next_period_starts
+				);
+			}
+		}
+	}
+	
+	val level_after_top_off = calculate_updated_level(fertilizer.level, fertilizer.timestamp, shovels);
+	update fertilizer ( level = level_after_top_off.min(1), timestamp = op_context.last_block_time );
+}
+
+function increment_happiness_level(plant, joy: integer) {
+	val happiness = happiness @ { plant };
+	
+	val level_after_top_off = calculate_updated_level(happiness.level, happiness.timestamp, joy);	
+	update happiness ( level = level_after_top_off.min(1), timestamp = op_context.last_block_time );
+}
+
+function calculate_updated_level(level: decimal, last_updated: timestamp, contribution: integer) {
+	val current_level = calculate_meter(level, last_updated, op_context.last_block_time).level;
+	
+	val max_contribution = 10.0;
+	val actual_contribution = contribution / max_contribution;
+	
+	return current_level + actual_contribution;
+}
+
+function calculate_meter(level: decimal, last_updated: timestamp, timestamp): meter {
+	val millis_since_recent_addition = timestamp - last_updated;
+	val full_task_depletion_duration = seed_day();
+	val millis_per_percent_unit = full_task_depletion_duration / 100.0;
+	
+	val current_level = level - (millis_since_recent_addition / millis_per_percent_unit / 100.0);
+	
+	if (current_level < 0) return meter(0.0, 0);
+	return meter(current_level, integer(current_level * full_task_depletion_duration));
+}
+
+function retrieve_plant_status(ft3.acc.account, timestamp) {
+	val plant = plant @ { account };
+	
+	val plant_health = calculate_plant_health(plant, timestamp);
+	var days_planted = 0;
+	if (plant_health != "dead") {
+		days_planted = days_planted(plant, timestamp);
+	} else {
+		days_planted = day_of_death(plant);
+	}
+	
+	val bonus_days = bonus_interval @? { plant } ( @sum .days ) ?: 0.0;
+
+	return plant_status(plant_health, (days_planted + bonus_days).to_integer());
+}
+
+function days_planted(plant, timestamp): integer {
+	// Makes sure days scale with modified depletion for testing
+	val day_in_millis = seed_day();
+	return (timestamp - plant.timestamp) / day_in_millis;
+}
+
+function day_of_death(plant): integer {
+	val water = water @ { plant };
+	// Makes sure days scale with modified depletion for testing
+	val day_in_millis = seed_day();
+	return (water.timestamp + (water.level * seed_day()).to_integer() - plant.timestamp) / day_in_millis;
+}
+
+function calculate_plant_health(plant, timestamp) {
+	val millis_activated = timestamp - plant.timestamp;
+	
+	val bonus_millis = (bonus_interval @? { plant } ( @sum .days ) ?: 0.0) * seed_day();
+	
+	if (not is_plant_alive(plant, timestamp)) {
+		return "dead";
+	} else if (not plant_currently_satisfied(plant, timestamp)) {
+		return "dying";
+	} else if (millis_activated >= seed_to_fruit_duration_in_millis() - bonus_millis) {
+		return "completed";
+	}
+	
+	return "healthy";
+}
+
+function plant_currently_satisfied(plant, timestamp) {
+	val water = water @ { plant };
+	val water_meter = calculate_meter(water.level, water.timestamp, timestamp);
+	if (water_meter.level <= 0) return false;
+	
+	val happiness = happiness @ { plant };
+	val happiness_meter = calculate_meter(happiness.level, happiness.timestamp, timestamp);
+	if (happiness_meter.level <= 0) return false;
+	
+	return true;
+}
+
+function is_plant_alive(plant, timestamp) {
+	return not has_plant_died_from_lack_of_water(plant, timestamp)
+		and not has_plant_died_from_boredom(plant, timestamp);
+}
+
+function has_plant_died_from_lack_of_water(plant, timestamp) {
+	val water = water @ { plant };
+	val water_meter = calculate_meter(water.level, water.timestamp, timestamp);
+
+	if (water_meter.level > 0) return false;
+	if (water.timestamp + seed_day() + millis_from_dying_to_death() > timestamp) return false;
+	
+	return true;
+}
+
+function has_plant_died_from_boredom(plant, timestamp) {
+	val happiness = happiness @ { plant };
+	val happiness_meter = calculate_meter(happiness.level, happiness.timestamp, timestamp);
+
+	if (happiness_meter.level > 0) return false;
+	if (happiness.timestamp + seed_day() + millis_from_dying_to_death() > timestamp) return false;
+	
+	return true;
+}

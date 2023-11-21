@@ -1,0 +1,3 @@
+function day_in_millis() {
+	return 86400000;
+}

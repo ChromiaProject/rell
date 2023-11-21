@@ -1,0 +1,32 @@
+entity plant {
+	key account: ft3.acc.account;
+	id: byte_array;
+	timestamp;
+}
+
+entity water {
+	key plant;
+	mutable level: decimal;
+	mutable timestamp;
+}
+
+entity fertilizer {
+	key plant;
+	mutable level: decimal;
+	mutable timestamp;
+}
+
+entity happiness {
+	key plant;
+	mutable level: decimal;
+	mutable timestamp;
+}
+
+entity bonus_interval {
+	plant; 
+	task: name;
+	mutable days: decimal;
+	timestamp;
+	
+	index plant, task: name;
+}

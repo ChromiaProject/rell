@@ -1,0 +1,83 @@
+
+entity instance_property_value_enum {
+	key instance_property;
+	mutable value: enum_value;
+}
+
+function set_property_enum(instance, path: text, enum_value) {
+	_set_property_enum(_instance_property_of_path(instance, path), enum_value);
+}
+
+function _set_property_enum(instance_property, value: enum_value?) {
+	require_instance_property_not_readonly(instance_property);
+	
+	if (empty(value)) {
+		require_instance_property_optional(instance_property);
+		delete instance_property_value_enum @? { instance_property };
+		return;
+	}
+	
+	val property_value = instance_property_value_enum @? { instance_property };
+	
+	if (property_value??) {
+		property_value.value = value;
+	} else {
+		create instance_property_value_enum(
+			instance_property,
+			value = value
+		);
+	}
+}
+
+function get_property_enum(instance, path: text): enum_value? {
+	return _get_property_enum(_instance_property_of_path(instance, path));
+}
+
+function _get_property_enum(instance_property): enum_value? {
+	require(
+		instance_property_type(instance_property) == property_type._enum
+	);
+	
+	return instance_property_value_enum @? {
+		instance_property
+	}.value;
+}
+
+function _get_property_enum_serialized(instance_property): gtv? {
+	return _get_property_enum(instance_property)?.value?.to_gtv();
+}
+
+function find_one_enum(structure, property_name: name, value: enum_value): instance? {
+	val instances = instance_property_value_enum @* {
+		.instance_property.instance.structure == structure,
+		.instance_property.structure_property.name == property_name,
+		.value == value
+	} ( .instance_property.instance ) limit 1;
+	
+	return if (instances.size() > 0) instances[0] else null;
+}
+
+function find_all_enum(structure, property_name: name, value: enum_value): list<instance> {
+	return instance_property_value_enum @* {
+		.instance_property.instance.structure == structure,
+		.instance_property.structure_property.name == property_name,
+		.value == value
+	} ( .instance_property.instance );
+} 
+
+function _initialize_enum_property(instance_property, init_value: gtv?) {
+	val prop = instance_property.structure_property;
+	val init_value_enum = if (init_value??) enum_value.from_gtv(init_value) else null;
+
+	require(
+		init_value_enum != null or prop.optional == true,
+		"Non-optional property '" + prop.name + "' is not initialized"
+	); 
+	
+	if (init_value_enum??) {
+		create instance_property_value_enum(
+			instance_property,
+			init_value_enum
+		);
+	}
+}

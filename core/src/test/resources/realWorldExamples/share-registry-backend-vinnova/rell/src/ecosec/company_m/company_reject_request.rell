@@ -1,0 +1,94 @@
+
+//****************************************
+// company_reject_request - business logic
+//
+// - Reject request_id setting request to rejected
+//
+// LIMITATIONS
+// -
+
+import ecosec.extlib_m;
+import ecosec.appmsg_m;
+import ecosec.auth_m;
+import ecosec.persona_m;
+import ecosec.request_m;
+import ecosec.history_m;
+
+function company_reject_request(agent_pubkey: pubkey, agent_id: text, org_nr: text, request_id: rowid) {
+
+	// Check authorization for self
+	require(auth_m.have_auth_agent(agent_pubkey, agent_id), appmsg_m.msg('MSGE0101', 'agent', 'company_reject_request')); // Supplied pubkey not signer?
+
+	// Check authorization for action
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'company_reject_request')); // Not board representative?
+
+	// Get request
+	val reject_request = request_m.request_state @ { .request.rowid == request_id, .request_state_type.id == request_m.request_state_type_enum.PENDING}(
+	    id= .request.rowid,
+	    agent_pubkey = .request.agent_pubkey,
+	    org_nr= .request.persona.company.org_nr,
+	    persona_id= .request.persona.id,
+	    persona= .request.persona,
+	    //first_name= .request.first_name,
+	    //last_name= .request.last_name,
+	    address1= .request.address1,
+	    address2= .request.address2,
+	    postal_code= .request.postal_code,
+	    city= .request.city,
+	    country= .request.country,
+	    phone = .request.phone,
+	    email = .request.email
+	);
+
+	// Check that request belongs to org_nr
+	require(reject_request.org_nr == org_nr, appmsg_m.msg('MSGE0310', 'Request', 'company_reject_request')); // Request does not belong to org_nr?
+
+	// Check that request is oldest for persona
+    val oldest_request = request_m.request_state @ { .request.persona.id == reject_request.persona_id, .request_state_type.id == request_m.request_state_type_enum.PENDING} (
+		id= .request.rowid,
+		@sort .request.created_time_stamp
+	) limit 1;
+	require(oldest_request.id == reject_request.id, appmsg_m.msg('MSGE0311', 'Request', 'company_reject_request')); // There is an older request that needs to be handled first
+
+	// Set request to rejected
+	delete request_m.request_state @ {.request.rowid == reject_request.id };
+	create request_m.request_state (
+		request = request_m.request @ { reject_request.id },
+		request_state_type = request_m.request_state_type @ {.id == request_m.request_state_type_enum.REJECTED }
+		);
+
+	// History log - Request rejected
+	val orig_persona = persona_m.persona @ { .id == reject_request.persona_id }(
+		.id,
+		.first_name, .last_name,
+		.address1, .address2,
+		.postal_code, .city, .country,
+		.phone, .email,
+		.type,
+		identity_type_id = .identity_type.id, .identity_nr,
+		.trustee
+	);
+	val persona_req = history_m.persona_json(
+		id = reject_request.persona_id,
+		first_name = orig_persona.first_name, last_name = orig_persona.last_name,
+		address1 = reject_request.address1, address2 = reject_request.address2,
+		postal_code = reject_request.postal_code, city = reject_request.city, country = reject_request.country,
+		phone =reject_request.phone, email = reject_request.email,
+		type = orig_persona.type.value,
+		identity_type_id = orig_persona.identity_type_id, identity_nr = orig_persona.identity_nr,
+		trustee = orig_persona.trustee
+	);
+	history_m.add(
+		org_nr,
+		op_context.last_block_time,
+		agent_id,
+		agent_pubkey,
+		history_m.object_type_enum.REQUEST,
+		history_m.event_type_enum.REQ_ADDR_REJECT,
+		persona_req.to_gtv_pretty().to_json(),
+		history_m.empty_json(),
+		extlib_m.rowid_to_text(reject_request.id), // Possible addition: For rowid to be Rell searchable, a history rowid field needs to be added
+		extlib_m.rowid_to_text(reject_request.id),
+		orig_persona.id
+	);
+}

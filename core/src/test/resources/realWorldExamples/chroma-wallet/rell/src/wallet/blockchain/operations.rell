@@ -1,0 +1,11 @@
+import wallet;
+
+operation add_blockchain(blockchain_rid: byte_array, chain_id: integer) {
+    create blockchain(blockchain_rid, chain_id);
+}
+
+operation init(blockchain_rid: byte_array, chain_id: integer) {
+    require((wallet._this_blockchain@*{.chain_id == chain_id} limit 1).size() == 0);
+    val bc = create blockchain(blockchain_rid, chain_id);
+    create wallet._this_blockchain(bc, chain_id);
+}

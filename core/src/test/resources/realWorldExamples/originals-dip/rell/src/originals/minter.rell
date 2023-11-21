@@ -1,0 +1,131 @@
+
+struct original_type {
+	interfaces: list<text>;
+	mutable types: map<text, gtv>;
+	prototype: text? = null;
+}
+
+function _mint(original_type, creator_id: byte_array, creator_auth: byte_array, quantity: integer): byte_array {
+	require_creator(original_type, creator_id);
+
+	val asset_id = ft3_helper.create_and_mint_asset(generate_id(), creator_id, quantity);
+	
+	val (types, instance_ids) = convert_original_types(original_type.types);
+	original_type.types = types;
+	original_type.types.put("id", Id(asset_id));
+
+	val instance = Instantiation(original_type.interfaces, original_type.prototype, original_type.types);
+	for (id in instance_ids) {
+		ft3_helper.lock_asset(creator_id, id);
+	}
+	
+	return asset_id;
+}
+
+function mint_non_fungible_original(original_type, creator_id: byte_array, creator_auth: byte_array): byte_array {
+	require_interface(INFO(), original_type);
+	
+	return _mint(original_type, creator_id, creator_auth, 1);
+}
+
+function mint_non_fungible_original_to_account(original_type, 
+	creator_id: byte_array, creator_auth: byte_array,
+	to_account_id: byte_array
+): byte_array {
+	val id = mint_non_fungible_original(original_type, creator_id, creator_auth);
+	
+	transfer(id, creator_id, creator_auth,to_account_id, 1);
+	
+	return id;
+}
+
+function mint_fungible_original(original_type?, fungible_id: byte_array?, 
+	creator_id: byte_array, creator_auth: byte_array, quantity: integer = 1
+): byte_array {
+	require(quantity > 0, "Quantity has to be greater than 0");
+	require(original_type?? or fungible_id??, "Either type definition or existing id must be set.");
+	
+	if(original_type??) {
+		require_interface(IFO(), original_type);
+		return _mint(original_type, creator_id, creator_auth, quantity);
+	}
+	
+	if(fungible_id??) {
+		val res_inst = get_instance_by_id(fungible_id);
+		require(res_inst, "No instance with id found");
+		
+		val creator_id_check = get_byte_array_attribute(res_inst, CREATOR_ID_ATTR());
+		require(creator_id_check, "No creator value found from instance");
+		require(creator_id_check == creator_id, "Only creator can mint new originals");
+		
+		ft3_helper.require_transfer_auth(creator_id, creator_auth);
+		
+		val max_supply_attr = get_attribute_by_dclass_name(IFO(), "max_supply");
+		val max_supply = get_integer_attribute(res_inst, max_supply_attr);
+				
+		val total_supply = ft3_helper.get_asset_supply(fungible_id);
+		require(total_supply + quantity <= max_supply!!, "Total supply exceeds max supply");
+		
+		ft3_helper.mint_existing_asset(fungible_id, creator_id, quantity);
+		
+		return fungible_id;
+	}
+	
+	// Never reached
+	return x"00";
+}
+
+function mint_fungible_original_to_account(original_type?, fungible_id: byte_array?, 
+	creator_id: byte_array, creator_auth: byte_array,
+	to_account_id: byte_array,
+	quantity: integer = 1
+): byte_array {
+	val id = mint_fungible_original(original_type, fungible_id, creator_id, creator_auth, quantity);
+	
+	transfer(id, creator_id, creator_auth,to_account_id, quantity);
+	
+	return id;
+}
+
+function require_interface(interface: text, original_type) {
+	val dclasses = get_dclasses(original_type.interfaces, split_prototype_name(original_type.prototype));
+	val has_interface = interface in dclasses @* {} .name;
+	
+	require(has_interface, "Type not implementing interface " + interface);
+}
+
+function require_creator(original_def: original_type, acc_id: byte_array) {
+	if (original_def.prototype??) {
+		val prototype = get_prototype(original_def.prototype);
+		require(prototype, "Prototype " + original_def.prototype + " not found.");
+		
+		val creator_id = get_byte_array_attribute(prototype, CREATOR_ID_ATTR());
+		require(creator_id?? and creator_id == acc_id, "Only creator can mint new originals");
+	} 
+}
+
+function convert_original_types(types: map<text, gtv>): (v: map<text, gtv>, i: list<byte_array>) {
+	val instance_ids = list<byte_array>();
+	val valid = map<text, gtv>();
+	
+	for ((k, type) in types) {
+		val attr = _attribute_value.from_gtv(type);
+		when (attr.type) {
+			a_type.id -> {
+				if (attr.value??) {
+					instance_ids.add(byte_array.from_gtv(attr.value!!));
+					
+					val converted = _attribute_value(
+						a_type.instance,
+						value = get_instance_by_id(byte_array.from_gtv(attr.value!!))?.to_gtv()
+					);
+					valid.put(k, converted.to_gtv());
+				}
+			}
+			a_type.instance -> require(false, "Use ID type to link originals after minting.");
+			else -> valid.put(k, type);
+		}
+	}
+	
+	return (v = valid, i = instance_ids);
+}

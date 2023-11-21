@@ -1,0 +1,28 @@
+function is_map(gtv): boolean {
+	return gtv.to_bytes()[0] == x"a4"[0];
+}
+
+function is_list(gtv): boolean {
+	return gtv.to_bytes()[0] == x"a5"[0];
+}
+
+function is_text(gtv): boolean {
+	return gtv.to_bytes()[0] == x"a2"[0];
+}
+
+function is_text_or_byte_array(gtv): boolean {
+	val first_byte = gtv.to_bytes()[0];
+	return first_byte == x"a1"[0] or first_byte == x"a2"[0];
+}
+
+function is_byte_array(gtv): boolean {
+	return gtv.to_bytes()[0] == x"a2"[0];
+}
+
+function is_integer(gtv): boolean {
+	return gtv.to_bytes()[0] == x"a3"[0];
+}
+
+function throw(message: text) {
+	require(false, message);
+}

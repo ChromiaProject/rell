@@ -1,0 +1,16 @@
+
+function marketplace_description(description: text): tag {
+	return tag("marketplace_description", value(description));
+}
+
+function marketplace_label(label: text): tag {
+	return tag("marketplace_label", value(label));
+}
+
+function category(name): tag {
+	return tag("marketplace_category", value(name));
+}
+
+function marketplace_name(name): tag {
+	return tag("marketplace_name", value(name));
+}

@@ -1,0 +1,101 @@
+
+function filter_property(name): tag {
+	return tag("filter-property", value(name));
+}
+
+function get_interface_filters(name, brid: byte_array): map<name, gtv> {
+	val property_tag_pair_list = find_interface_properties_by_meta_tag(Interface(name), "filter-property");
+	val filters_definition = map<name, gtv>();
+	
+	for ((property, tag) in property_tag_pair_list) {
+		when (property.type) {
+			property_type.text -> 
+				filters_definition[tag.value] 
+					= _handle_text_filter(property).to_gtv();
+			property_type.integer ->
+				filters_definition[tag.value]
+					= _handle_integer_filter(property).to_gtv();
+		}
+	}
+	
+	return filters_definition;
+}
+
+function _options_filter(name, values: list<gtv>): map<text, gtv> {
+	return [
+		"name": name.to_gtv(),
+		"type": "options".to_gtv(),
+		"values": values.to_gtv()
+	];
+}
+
+function _options_filter_text(name, values: list<text>): map<text, gtv> {
+	return _options_filter(
+		name,
+		text_list_to_gtv_list(values)
+	);
+}
+
+function _range_filter(name, min: integer, max: integer): map<text, gtv> {
+	return [
+		"name": name.to_gtv(),
+		"type": "range".to_gtv(),
+		"values": [
+			"min": min.to_gtv(),
+			"max": max.to_gtv()
+		].to_gtv()
+	];
+}
+
+function _handle_text_filter(interface_property): map<name, gtv> {
+	return _options_filter_text(
+		interface_property.name,
+		_get_interface_static_property_values_text(interface_property)
+	);
+}
+
+function _handle_integer_filter(interface_property): map<name, gtv> {
+	val values = _get_interface_static_property_values_integer(interface_property);
+	
+	if (values.size() == 0) return _range_filter(interface_property.name, 0,100);
+	
+	if (values.size() == 1) return _range_filter(interface_property.name, values[0], values[0]);
+	
+	return _range_filter(interface_property.name, values[0], values[values.size()-1]);
+}
+
+function _get_interface_static_property_values_text(interface_property): list<text> {
+	require_interface_property_static(interface_property);
+	require_interface_property_type(interface_property, property_type.text);
+	
+	val values = (
+		sp: static_property,
+		si: structure_interface, 
+		spvt: static_property_value_text
+	) @* {
+		si.interface == interface_property.interface,
+		si.structure == sp.structure,
+		sp.name == interface_property.name,
+		spvt.static_property == sp
+	} ( spvt.value );
+	
+	return set<text>(values).sorted();
+}
+
+function _get_interface_static_property_values_integer(interface_property): list<integer> {
+	require_interface_property_static(interface_property);
+	require_interface_property_type(interface_property, property_type.integer);
+
+	val values = (
+		sp: static_property,
+		si: structure_interface, 
+		spvi: static_property_value_integer
+	) @* {
+		si.interface == interface_property.interface,
+		si.structure == sp.structure,
+		sp.name == interface_property.name,
+		spvi.static_property == sp
+	} ( spvi.value );
+	
+	return set<integer>(values).sorted();
+}

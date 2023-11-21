@@ -1,0 +1,41 @@
+//****************************************
+// share_block module
+//
+// PURPOSE
+// - Handle a company's ledger (class share_block)
+// - Handle which persona owns each share block
+// - Ensure integritiy between company share count
+//   and the sum of shares in share blocks 
+
+import ecosec.company_m;
+import ecosec.persona_m;
+
+//****************************************
+// share_block - class
+
+entity share_block {
+	key company_m.company,
+		share_from: integer,
+		share_to: integer;
+	
+	mutable share_type: text; // Free text field to specify A, B, C, preferens or anything else)
+	
+	mutable pledging: boolean; // 0 = No, 1 = Yes, Default 0 - "Pantsättning", the share a security for a loan
+	mutable certificate: boolean; // 0 = No, 1 = Yes, Default 0 - share certificate issued = paper shares
+	mutable recalled: boolean; // 0 = No, 1 = Yes, Default 0 - If shares are "deleted" / "indragna"
+	
+	created_time_stamp: timestamp;
+	mutable changed_time_stamp: timestamp;
+}
+
+//****************************************
+// share_block_persona - class
+//
+// - Contains, for each share_block, the persona owner.
+// - A share_block should always have an owner, even when it is initially created
+//
+
+entity share_block_persona {
+	key share_block;
+	index persona_m.persona;
+}

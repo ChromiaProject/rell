@@ -1,0 +1,97 @@
+enum a_type {
+    boolean,
+    byte_array,
+    decimal,
+    id,
+	instance,
+	integer,
+	text,
+	unordered_container,   // set
+	ordered_container,	   // list
+	addressable_container, // map
+	meta
+}
+
+// dclass = interface
+entity dclass {
+	key name;
+}
+
+entity dclass_inheritance {
+	key dclass, parent: dclass;
+}
+
+entity attribute {
+	key dclass, name;
+    a_type;
+}
+
+entity instance {
+	is_prototype: boolean = false;
+}
+
+// one entity might have more than one dclass
+entity instance_dclass {
+	index dclass;
+	key instance, dclass;
+}
+
+function create_dclass_inheritance(child: dclass, parents_in: list<dclass>) {
+	val parents = list(parents_in);
+	val gparents = dclass_inheritance @* {.dclass in parents}.parent;
+	parents.add_all(gparents);
+	
+	require(child not in parents, "Child inherits itself");
+	require(parents.size() == set(parents).size(), "Duplicate inheritance violation");
+	
+	for (parent in parents) {
+		create dclass_inheritance(dclass = child, parent);
+	}
+}
+
+function get_dclasses(interfaces: list<text>, prototype: (interface: text, name: text)? = null): set<dclass> {
+	val dclasses = list<dclass>();
+	
+	if (prototype??) {
+		val prototype_instance = get_prototype_by_dclass_name(prototype.interface, prototype.name);
+		require(prototype_instance, "Prototype not found: " + prototype);
+		
+		dclasses.add_all(
+			instance_dclass @* {prototype_instance} .dclass
+		);
+	}
+	
+	for (interface_name in interfaces) {
+		val interface = dclass @ {interface_name};
+		dclasses.add(interface);
+		dclasses.add_all(dclass_inheritance @* {.dclass == interface}.parent);	
+	}
+	
+	return set(dclasses);
+}
+
+function get_attribute_by_dclass_name(dclass_name: text, name): attribute {
+	return attribute @ { .dclass.name == dclass_name, name};
+}
+
+function get_attribute_from_instance_by_name(attr_name: text, instance): attribute {
+	val dclasses = instance_dclass @* {instance}.dclass;
+	
+	return get_attribute_from_interfaces_by_name(attr_name, set(dclasses));
+}
+
+function get_attribute_from_interfaces_by_name(attr_name: text, dclasses: set<dclass>): attribute {
+	val attr: list<attribute>;
+	
+	val split = attr_name.split('.');
+	require(split.size() <= 2, "Too many '.' characters in attribute name: " + attr_name);
+	if (split.size() == 1) {
+		attr = attribute @* {.dclass in dclasses, attr_name, .a_type != a_type.meta};
+	} else {
+		attr = attribute @* {.dclass in dclasses, .dclass.name == split[0], split[1], .a_type != a_type.meta};
+	}
+	
+	require(attr.size() != 0, "Attribute not found in interfaces: " + attr_name);
+	require(attr.size() == 1, "Multiple attributes found with name: " + attr_name + ". Specify the interface of the attribute with <interface>.<attribute_name>");
+	return attr[0];
+}

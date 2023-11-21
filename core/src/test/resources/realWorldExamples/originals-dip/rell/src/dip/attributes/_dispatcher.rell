@@ -1,0 +1,98 @@
+import ^.util;
+
+function add_type_attribute(i: instance, attribute, value: gtv) {
+	util.ensure_not_implemented(i, attribute);
+	when (attribute.a_type) {
+		a_type.boolean -> add_boolean_attribute(i, attribute, boolean.from_gtv(value));
+		a_type.byte_array -> add_byte_array_attribute(i, attribute, byte_array.from_gtv(value));
+		a_type.decimal -> add_decimal_attribute(i, attribute, decimal.from_gtv(value));
+		a_type.id -> add_id_attribute(i, attribute, byte_array.from_gtv(value));
+		a_type.instance -> add_instance_attribute(i, attribute, instance.from_gtv(value));
+		a_type.integer -> add_integer_attribute(i, attribute, integer.from_gtv(value));
+		a_type.text -> add_text_attribute(i, attribute, text.from_gtv(value));
+		a_type.ordered_container -> create_list_attribute(i, attribute, value);
+		a_type.unordered_container -> create_set_attribute(i, attribute, value);
+		a_type.addressable_container -> create_map_attribute(i, attribute, value);
+	}
+}
+
+function set_type_attribute(i: instance, attribute, value: gtv) {
+	when (attribute.a_type) {
+		a_type.boolean -> set_boolean_attribute(i, attribute, boolean.from_gtv(value));
+		a_type.byte_array -> set_byte_array_attribute(i, attribute, byte_array.from_gtv(value));
+		a_type.decimal -> set_decimal_attribute(i, attribute, decimal.from_gtv(value));
+		a_type.instance -> set_instance_attribute(i, attribute, instance.from_gtv(value));
+		a_type.integer -> set_integer_attribute(i, attribute, integer.from_gtv(value));
+		a_type.text -> set_text_attribute(i, attribute, text.from_gtv(value));
+	}
+}
+
+function remove_type_attribute(i: instance, attribute): gtv {
+	when (attribute.a_type) {
+		a_type.boolean -> return remove_boolean_attribute(i, attribute);
+		a_type.byte_array -> return remove_byte_array_attribute(i, attribute);
+		a_type.decimal -> return remove_decimal_attribute(i, attribute);
+		a_type.instance -> return remove_instance_attribute(i, attribute);
+		a_type.integer -> return remove_integer_attribute(i, attribute);
+		a_type.text -> return remove_text_attribute(i, attribute);
+		else -> {require(false, "Unimplemented path"); return (0).to_gtv();}
+	}
+}
+
+function find_attribute_by_name(attribute_name: text): attribute {
+	val split = attribute_name.split(".");
+	
+	if(split.size() == 1) {
+		val attributes = attribute @* { split[0] };
+		require(attributes.size() == 1, "No unique attribute found. Try interface_name.attribute_name");
+		return attributes[0];
+	}
+	
+	return attribute @ { .dclass.name == split[0], split[1]};
+}
+
+function find_instances_by_type_attribute (attribute, value: gtv, from: p_from, page_size: integer): (results: list<instance>, from: p_from) {
+	var out = list<instance>();
+	var cur_from = from;
+	
+	while(true) {
+		val instances = when (attribute.a_type) {
+			a_type.boolean -> _fetch_boolean_range_from(attribute, boolean.from_gtv(value), cur_from.instance_rowid);
+			a_type.byte_array -> _fetch_byte_array_range_from(attribute, byte_array.from_gtv(value), cur_from.instance_rowid);
+			a_type.decimal -> _fetch_decimal_range_from(attribute, decimal.from_gtv(value), cur_from.instance_rowid);
+			a_type.instance -> _fetch_instance_range_from(attribute, instance.from_gtv(value), cur_from.instance_rowid);
+			a_type.integer -> _fetch_integer_range_from(attribute, integer.from_gtv(value), cur_from.instance_rowid);
+			a_type.ordered_container -> _fetch_list_range_from(attribute, value, cur_from.instance_rowid);
+			a_type.unordered_container -> _fetch_set_range_from(attribute, value, cur_from.instance_rowid);
+			a_type.addressable_container -> _fetch_map_range_from(attribute, value, cur_from.instance_rowid);
+			a_type.text -> _fetch_text_range_from(attribute, text.from_gtv(value), cur_from.instance_rowid);
+			else -> list<instance>();
+		};
+		val unpacked = unpack_prototype_instances_(instances, cur_from, (page_size - out.size()));
+		out.add_all(unpacked.results);
+		cur_from = unpacked.from;
+		
+		if (out.size() >= page_size or instances.empty()) break;
+	}
+
+	return (results = out, from = cur_from);
+}
+
+function get_type_value(instance, attribute_name: text): gtv? {
+	val attribute = find_attribute_by_name(attribute_name);
+	
+	when (attribute.a_type) {
+		a_type.boolean -> return get_boolean_attribute(instance, attribute)!!.to_gtv();
+		a_type.byte_array -> return get_byte_array_attribute(instance, attribute)!!.to_gtv();
+		a_type.decimal -> return get_decimal_attribute(instance, attribute)!!.to_gtv();
+		a_type.id -> return get_id_attribute(instance, attribute)!!.to_gtv();
+		a_type.instance -> return get_instance_attribute(instance, attribute)!!.to_gtv();
+		a_type.integer -> return get_integer_attribute(instance, attribute)!!.to_gtv();
+		a_type.text -> return get_text_attribute(instance, attribute)!!.to_gtv();
+		a_type.ordered_container -> return list_unpack(instance, attribute).values;
+		a_type.unordered_container -> return unpack_set(instance, attribute)!!.values;
+		a_type.addressable_container -> return map_unpack(instance, attribute).to_gtv();
+	}
+	
+	return null;
+}

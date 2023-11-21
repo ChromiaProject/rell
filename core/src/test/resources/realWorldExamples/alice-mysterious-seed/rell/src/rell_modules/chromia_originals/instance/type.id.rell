@@ -1,0 +1,41 @@
+
+entity instance_property_value_id {
+	key instance_property;
+	key value: byte_array;
+}
+
+function get_property_id(instance, path: text): byte_array {
+	return _get_property_id(_instance_property_of_path(instance, path));
+}
+
+function _get_property_id(instance_property): byte_array {
+	require(instance_property_type(instance_property) == property_type.id);
+	return instance_property_value_id @ {
+		instance_property
+	}.value;
+}
+
+function find_one_id(structure, property_name: name, value: byte_array): instance? {
+	return instance_property_value_id @? {
+		.instance_property.instance.structure == structure,	
+		.instance_property.structure_property.name == property_name,
+		.value == value		
+	} ( .instance_property.instance );	
+}
+
+function find_all_id(structure, property_name: name, value: byte_array): list<instance> {
+	val instance = find_one_id(structure, property_name, value);
+	
+	if (instance == null) return list<instance>();
+	
+	return [instance];
+}
+
+function _initialize_id_property(instance_property, init_value: gtv?) {
+	require(init_value??, "ID property cannot be null");
+	
+	create instance_property_value_id(
+		instance_property,
+		value = byte_array.from_gtv(init_value!!)
+	);
+}

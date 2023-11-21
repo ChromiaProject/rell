@@ -1,0 +1,4 @@
+function nop(): rell.test.op {
+	val latest_block_time = block @ {} ( @sort_desc .timestamp ) limit 1;
+	return rell.test.op("nop", latest_block_time.to_gtv());
+}

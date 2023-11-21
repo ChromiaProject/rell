@@ -1,0 +1,32 @@
+
+//****************************************
+// agent_set_admin - business logic
+//
+// - Set if agent is a system wide administrator
+// - Allow auth "System admin" or "Founder"
+// - Do not allow agent to remove super admin from self
+//
+// LIMITATIONS
+// - 
+
+import ecosec.auth_m;
+import ecosec.appmsg_m;
+
+function agent_set_admin(agent_pubkey: pubkey, agent_id: text, target_agent_id: text, target_agent_administrator: integer){
+	
+	// Check authorization for self
+	require(auth_m.have_auth_agent(agent_pubkey, agent_id), appmsg_m.msg('MSGE0101', 'agent', 'agent_m.agent_set_admin')); // Supplied pubkey not signer?
+	
+	// Check authorization role
+	require(auth_m.have_auth_admin(agent_id), appmsg_m.msg('MSGE0103', 'Admin', 'agent_m.agent_set_admin')); // Not admin?
+	
+	// Check that agent is not modifying self (ie not allowed to remove superadmin from self)
+	require(agent_id != target_agent_id, appmsg_m.msg('MSGE0107', 'Admin', 'agent_m.agent_set_admin')); // No allowed to change self
+	
+	print('agent_set_admin: Ready to set ' + target_agent_id + ' as system administrator');
+	update agent @ { .id == target_agent_id } (
+		administrator = target_agent_administrator,
+		changed_time_stamp = op_context.last_block_time
+	);
+	
+}

@@ -1,0 +1,43 @@
+@test module;
+
+namespace ft3 {
+	import rell_modules.ft3.core.*;
+	import rell_modules.ft3.operations.dev_op_asset;
+	import rell_modules.ft3.operations.dev_op_account;
+	import rell_modules.ft3.account.operations;
+	import rell_modules.ft3.core.operations.transfer;
+	import rell_modules.ft3.operations.dev_op_balance;
+	import rell_modules.ft3.operations.dev_op_rate_limit;
+}
+
+namespace time {
+	import rell_modules.time.*;
+}
+
+namespace util {
+	import rell_modules.test_util.*;
+}
+
+namespace ft3_test {
+	import rell_modules.ft3_test.*;
+}
+
+namespace original {
+	import rell_modules.chromia_originals.original.*;
+}
+
+namespace marketplace {
+	import rell_modules.chromia_originals.marketplace.*;
+}
+
+namespace marketplace_ops {
+	import rell_modules.chromia_originals.marketplace.abstract_operations.*;
+}
+
+namespace mysterious_seed {
+	import mysterious_seed.*;
+}
+
+namespace minter {
+	import minter.*;
+}

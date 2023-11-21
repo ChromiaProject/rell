@@ -1,0 +1,43 @@
+struct external_address {
+	address: text;
+	timestamp;
+}
+
+query get_external_addresses(account_id: byte_array) {
+	val external_addresses = list<external_address>();
+	
+	val addresses = external_account @* { .account.id == account_id } ( .address );
+	
+	for (address in addresses) {
+		val updated_at = external_account_link_updated @ { address } ( @sort_desc .timestamp ) limit 1;
+		external_addresses.add(external_address(address, updated_at));
+	}
+
+	return external_addresses;
+}
+
+query get_synced_block(name): integer {
+	return sync_status @{ name } ( .block_height );
+}
+
+struct count_record {
+	alice: integer;
+	chromia: integer;
+}
+
+query count_minted_seeds(): count_record {
+	val old_minted_alice_seeds = minted_seed @* { .type == "Alice Seed" } ( .block ).size();
+	val old_minted_chromia_seeds = minted_seed @* { .type == "Chromia Seed" } ( .block ).size();
+	
+	val minted_alice_seeds = minted_seed_log @* { .type == "Alice Seed" } ( .tx_id ).size();
+  val minted_chromia_seeds = minted_seed_log @* { .type == "Chromia Seed" } ( .tx_id ).size();
+  
+	return count_record(
+	  alice = minted_alice_seeds + old_minted_alice_seeds, 
+	  chromia = minted_chromia_seeds + old_minted_chromia_seeds
+	);
+}
+
+query is_bnft_seed_minted(token_id: integer) {
+  return minted_bnft_seed @? { token_id } != null;
+}

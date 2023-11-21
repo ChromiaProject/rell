@@ -1,0 +1,146 @@
+
+entity collection_set {
+	type: set_type;
+}
+
+enum set_type {
+	integer,
+	instance,
+	byte_array,
+	text
+}
+
+function new_set(type: set_type): collection_set {
+	return create collection_set(type);
+}
+
+function collection_set_add(collection_set, value: gtv) {
+	
+}
+
+function collection_set_remove(collection_set, value: gtv) {
+	
+}
+
+function collection_set_size(collection_set): integer {
+	val type = collection_set.type;
+	
+	when (type) {
+		set_type.integer -> return collection_set_size_integer(collection_set);
+		set_type.instance -> return collection_set_size_instance(collection_set);
+		set_type.byte_array -> return collection_set_size_byte_array(collection_set);
+		set_type.text -> return collection_set_size_text(collection_set);
+	}
+}
+
+/* integer */
+
+entity collection_set_value_integer {
+	key collection_set, value: integer;
+}
+
+function collection_set_contains_integer(collection_set, value: integer) {
+	return (collection_set_value_integer @? { collection_set, value })??;
+}
+
+function collection_set_add_integer(collection_set, value: integer) {
+	if (collection_set_contains_integer(collection_set, value)) return;
+	
+	create collection_set_value_integer(collection_set, value);
+}
+
+function collection_set_remove_integer(collection_set, value: integer) {
+	delete collection_set_value_integer @? { collection_set, value };
+}
+
+function collection_set_size_integer(collection_set): integer {
+	return (collection_set_value_integer @* { collection_set }).size();
+}
+
+function collection_set_elements_integer(collection_set): set<integer> {
+	return set(collection_set_value_integer @* { collection_set } ( .value ));
+}
+
+/* instance */
+
+entity collection_set_value_instance {
+	key collection_set, value: instance;
+}
+
+function collection_set_contains_instance(collection_set, value: instance) {
+	return (collection_set_value_instance @? { collection_set, value })??;
+}
+
+function collection_set_add_instance(collection_set, value: instance) {
+	if (collection_set_contains_instance(collection_set, value)) return;
+	
+	create collection_set_value_instance(collection_set, value);
+}
+
+function collection_set_remove_instance(collection_set, value: instance) {
+	delete collection_set_value_instance @? { collection_set, value };
+}
+
+function collection_set_size_instance(collection_set): integer {
+	return (collection_set_value_instance @* { collection_set } ( .rowid )).size();
+}
+
+function collection_set_elements_instance(collection_set): set<instance> {
+	return set(collection_set_value_instance @* { collection_set } ( .value ));
+}
+
+/* byte array */
+
+entity _collection_set_value_byte_array {
+	key collection_set, value: byte_array;
+}
+
+function collection_set_contains_byte_array(collection_set, value: byte_array) {
+	return (_collection_set_value_byte_array @? { collection_set, value })??;
+}
+
+function collection_set_add_byte_array(collection_set, value: byte_array) {
+	if (collection_set_contains_byte_array(collection_set, value)) return;
+	
+	create _collection_set_value_byte_array(collection_set, value);
+}
+
+function collection_set_remove_byte_array(collection_set, value: byte_array) {
+	delete _collection_set_value_byte_array @? { collection_set, value };
+}
+
+function collection_set_size_byte_array(collection_set): integer {
+	return (_collection_set_value_byte_array @* { collection_set } ( .rowid )).size();
+}
+
+function collection_set_elements_byte_array(collection_set): set<byte_array> {
+	return set(_collection_set_value_byte_array @* { collection_set } ( .value ));
+}
+
+/* text */
+
+entity collection_set_value_text {
+	key collection_set, value: text;
+}
+
+function collection_set_contains_text(collection_set, value: text) {
+	return (collection_set_value_text @? { collection_set, value })??;
+}
+
+function collection_set_add_text(collection_set, value: text) {
+	if (collection_set_contains_text(collection_set, value)) return;
+	
+	create collection_set_value_text(collection_set, value);
+}
+
+function collection_set_remove_text(collection_set, value: text) {
+	delete collection_set_value_text @? { collection_set, value };
+}
+
+function collection_set_size_text(collection_set): integer {
+	return (collection_set_value_text @* { collection_set } ( .rowid )).size();
+}
+
+function collection_set_elements_text(collection_set): set<text> {
+	return set(collection_set_value_text @* { collection_set } ( .value ));
+}

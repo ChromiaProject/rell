@@ -1,0 +1,62 @@
+import ^.interface.*;
+import ^.instance.*;
+
+function initialize_originals() {
+	val OriginalImage = def_(structure_("OriginalImage", [
+		"data": prop(propT(txt())),
+		"type": prop(propT(txt()))
+	]));
+	
+	val ITradeable = defI(interface_("ITradeable", [
+		"price": prop(
+			optional(),
+			propI(int())
+		),
+		"asset_id": prop(
+			optional(),
+			propB(bytes())
+		),
+		"image": prop(
+			static(),
+			readonly(),
+			propS(strct(OriginalImage))
+		),
+		"is_listed": prop(propBool(bool(
+			value = false
+		)))
+	]));
+	
+	val IOriginal = defI(interface_("IOriginal",
+		[
+			"id": prop(propID(id())),
+			"index": prop(propIndx(indx())),
+			"name": prop(
+				static(),
+				readonly(),
+				propT(txt())
+			),
+			"owner": prop(
+				optional(),
+				propA(account(
+					owner()
+				))
+			),
+			"designer_id": prop(
+				static(),
+				readonly(),
+				propB(bytes())
+			),
+			"designer_name": prop(
+				static(),
+				readonly(),
+				propT(txt())
+			),
+			"description": prop(
+				static(),
+				propT(txt())
+			)
+		]
+	));
+	
+	val ITradeableOriginal = defI(interface_("ITradeableOriginal", extends([IOriginal, ITradeable])));
+}

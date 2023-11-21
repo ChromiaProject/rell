@@ -1,0 +1,41 @@
+
+function IO() = "IOriginal";
+function INFO() = "INonFungibleOriginal";
+function IFO() = "IFungibleOriginal";
+function IFRO() = "IFractionalizedOriginal";
+
+function ID_ATTR() = get_attribute_by_dclass_name(IO(), "id");
+function CREATOR_ID_ATTR() = get_attribute_by_dclass_name(IO(), "creator_id");
+function CREATOR_NAME_ATTR() = get_attribute_by_dclass_name(IO(), "creator_name");
+
+function initialize_original_interfaces() {
+	Interface(IO(), [
+		"id": Type(Id()),
+		"creator_id": Type(ByteArray()),
+		"creator_name": Type(Text()),
+		"description": Type(Text(), [Optional(), CreatorMutable()])
+	]);
+	
+	// Fungible Original
+	Interface(IFO(), [
+		"max_supply": Type(Integer())
+	], [IO()]);
+	
+	// Non Fungible Original
+	Interface(INFO(), [:], [IO()]);
+	
+	// Fractionalized Original
+	Interface(IFRO(), [
+		"original": Type(Instance())
+	], [IFO()]);
+}
+
+function get_instance_by_id(id: byte_array): instance? {
+	return find_instance_by_id_attribute(ID_ATTR(), id);
+}
+
+function is_nfo(id: byte_array): boolean {
+	val instance = get_instance_by_id(id)!!;
+	
+	return instance_dclass @? {instance, .dclass.name == INFO()}??;
+}

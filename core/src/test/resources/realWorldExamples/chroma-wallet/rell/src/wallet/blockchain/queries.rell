@@ -1,0 +1,8 @@
+
+query get_registered_blockchains(chain_id: integer) {
+    return blockchain@*{chain_id}.blockchain_rid;
+}
+
+query get_connected_blockchains() {
+    return blockchain@*{} ( id = .blockchain_rid );
+}
