@@ -615,7 +615,8 @@ public final class AntlrToRell {
                 return TRANS_XAT_EXPR_WHERE.transform(ctx, node, tup);
             }
             case RULE_ruleX_AtExprWhatSimple: {
-                Object var_0 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_tkDOTContext.class));
+                // Manual fix. generated used RuleX_tkDOTContext instead of RuleX_NameContext
+                Object var_0 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_NameContext.class));
                 Object tup = RellcUtils.tuple(var_0);
                 return TRANS_XAT_EXPR_WHAT_SIMPLE.transform(ctx, node, tup);
             }
