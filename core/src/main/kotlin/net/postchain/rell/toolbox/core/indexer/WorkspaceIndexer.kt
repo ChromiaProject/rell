@@ -109,4 +109,8 @@ class WorkspaceIndexer(val workspaceUri: URI) {
         findRellFilesInWorkspace(File(workspaceUri), uris)
         return uris.toList()
     }
+
+    fun getResource(uri: URI): Resource? {
+        return fileUriResourceMap[uri]
+    }
 }

@@ -4,6 +4,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.toolbox.core.RellAbout
 import net.postchain.rell.toolbox.core.RellVersionInfo
 import net.postchain.rell.toolbox.core.indexer.RellIssue
+import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsConverter
 import org.eclipse.lsp4j.DidChangeConfigurationParams
 import org.eclipse.lsp4j.DidChangeTextDocumentParams
@@ -16,7 +17,13 @@ import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.InitializeResult
 import org.eclipse.lsp4j.InitializedParams
 import org.eclipse.lsp4j.PublishDiagnosticsParams
+import org.eclipse.lsp4j.SemanticTokens
+import org.eclipse.lsp4j.SemanticTokensDelta
+import org.eclipse.lsp4j.SemanticTokensDeltaParams
+import org.eclipse.lsp4j.SemanticTokensParams
+import org.eclipse.lsp4j.SemanticTokensRangeParams
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier
+import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest
 import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware
@@ -31,7 +38,8 @@ class RellLanguageServer(
     private val workspaceManager: RellWorkspaceManager,
     private val requestManager: RellRequestManager,
     private val languageServerTerminator: RellLanguageServerTerminator,
-    private val capabilitiesProvider: CapabilitiesProvider
+    private val capabilitiesProvider: CapabilitiesProvider,
+    private val semanticTokensManager: RellSemanticTokensManager
 ) : LanguageServer, LanguageClientAware, TextDocumentService, WorkspaceService {
 
     private val logger = KotlinLogging.logger {}
@@ -148,6 +156,19 @@ class RellLanguageServer(
 
         requestManager.runWrite {
             workspaceManager.didChangeFiles(dirtyFiles, deletedFiles, updateAffectedFiles = true)
+        }
+    }
+
+    override fun semanticTokensFull(params: SemanticTokensParams): CompletableFuture<SemanticTokens> {
+        val uri = URI(params.textDocument.uri)
+
+        return requestManager.runRead {
+            val resource = workspaceManager.getResource(uri)
+            if (resource != null) {
+                SemanticTokens(semanticTokensManager.getRelativeSemanticTokens(resource))
+            } else {
+                SemanticTokens()
+            }
         }
     }
 }

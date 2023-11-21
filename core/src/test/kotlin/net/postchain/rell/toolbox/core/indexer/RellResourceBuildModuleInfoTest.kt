@@ -20,7 +20,6 @@ class RellResourceBuildModuleInfoTest {
             fileUri.path == workspaceError.toURI().path + it.pos.path().str()
         }
     }
-
     //TODO make it so a compiler can take in one file without ws defined
     @Test
     fun `compiler finds errors in from imported file`() {
