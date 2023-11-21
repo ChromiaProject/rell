@@ -1,5 +1,6 @@
 package net.postchain.rell.toolbox.lsp.server
 
+import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
@@ -16,6 +17,7 @@ val serverModule = module {
     single { RellRequestManager() }
     single { RellLanguageServerTerminator() }
     single { CapabilitiesProvider() }
+    single { RellSemanticTokensManager() }
 
     singleOf(::RellLanguageServer)
 

@@ -2,6 +2,7 @@ package net.postchain.rell.toolbox.core.indexer
 
 import com.google.common.collect.ImmutableMap
 import io.github.oshai.kotlinlogging.KotlinLogging
+import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_Error
@@ -11,13 +12,17 @@ import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeCompilationResult
 import net.postchain.rell.base.utils.ide.IdeDirApi
+import net.postchain.rell.base.utils.ide.IdeSymbolInfo
+import net.postchain.rell.toolbox.core.compiler.AntlrPos
 import net.postchain.rell.toolbox.core.compiler.RellcAPI
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import net.postchain.rell.toolbox.core.parser.RellParser
 import net.postchain.rell.toolbox.core.parser.SyntaxError
 import net.postchain.rell.toolbox.core.parser.SyntaxErrorCollector
+import org.antlr.v4.runtime.misc.Interval
 import java.io.File
 import java.net.URI
+import java.util.TreeMap
 
 
 class RellResourceFactory(private val workspaceUri: URI, private val parser: AntlrRellParser) {
@@ -29,6 +34,8 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
         val antlrParseTree = buildParseTreeWithSyntaxErrors(fileContent)
         val ast = buildRellAstWithCompilerErrors(rellCompilerSourcePath, antlrParseTree.first)
         val compilationResult = compileResult(rellCompilerSourcePath, ast.first)
+        val symbolInfo = compilationResult.symbolInfos
+        val locationInfo = createLocationInfo(symbolInfo)
 
         return Resource(
             antlrParseTree.first,
@@ -38,8 +45,28 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
             ast.first,
             antlrParseTree.second,
             compilationResult.messages,
-            compilationResult.symbolInfos
+            symbolInfo,
+            locationInfo
         )
+    }
+
+    private fun createLocationInfo(symbolInfos: Map<S_Pos, IdeSymbolInfo>): Map<Interval, IdeSymbolInfo> {
+        val intervalMap = symbolInfos.map {
+            (it.key as AntlrPos).node.sourceInterval to it.value
+        }
+        val locationInfo = TreeMap<Interval, IdeSymbolInfo>(::intervalCompare)
+        locationInfo.putAll(intervalMap)
+        return locationInfo
+    }
+
+    private fun intervalCompare(intervalA: Interval, intervalB: Interval): Int {
+        if (intervalA.properlyContains(intervalB)) {
+            return 0
+        } else if (intervalA.startsAfter(intervalB)) {
+            return -1
+        } else {
+            return 1
+        }
     }
 
     fun buildRellResource(fileUri: URI): Resource {
@@ -50,6 +77,9 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
     fun buildRellResource(resource: Resource, fileUri: URI): Resource {
         val rellCompilerSourcePath = rellCompilerPaths.createCompilerSourcePath(fileUri)
         val compilationResult = compileResult(rellCompilerSourcePath, resource.ast)
+        val symbolInfo = compilationResult.symbolInfos
+        val locationInfo = createLocationInfo(symbolInfo)
+
         return Resource(
             resource.parseTree,
             resource.moduleInfo,
@@ -58,7 +88,8 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
             resource.ast,
             resource.syntaxErrors,
             compilationResult.messages,
-            compilationResult.symbolInfos
+            symbolInfo,
+            locationInfo
         )
     }
 

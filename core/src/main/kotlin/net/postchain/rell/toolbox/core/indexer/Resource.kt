@@ -5,8 +5,10 @@ import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.utils.C_Message
 import net.postchain.rell.base.utils.ide.IdeModuleInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
+import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.core.parser.RellParser
 import net.postchain.rell.toolbox.core.parser.SyntaxError
+import org.antlr.v4.runtime.misc.Interval
 import java.net.URI
 
 data class Resource(
@@ -17,8 +19,14 @@ data class Resource(
     val ast: S_RellFile,
     val syntaxErrors: List<SyntaxError> = listOf(),
     val semanticErrors: List<C_Message> = listOf(),
-    val symbolInfos: Map<S_Pos, IdeSymbolInfo>
+    val symbolInfos: Map<S_Pos, IdeSymbolInfo>,
+    val locationInfo: Map<Interval, IdeSymbolInfo>
 ) {
+    fun getSymbolKindForInterval(interval: Interval): IdeSymbolKind? {
+        val symbolInfo = locationInfo[interval]
+        return symbolInfo?.kind
+    }
+
     val rName = moduleInfo?.name
     val imports = moduleInfo?.imports ?: listOf()
     val fileSpecificSemanticErrors: List<C_Message> = semanticErrors.filter {

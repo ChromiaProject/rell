@@ -1,11 +1,9 @@
 package net.postchain.rell.toolbox.lsp.server
 
-import org.eclipse.lsp4j.ClientCapabilities
-import org.eclipse.lsp4j.CodeLensOptions
-import org.eclipse.lsp4j.CompletionOptions
-import org.eclipse.lsp4j.ExecuteCommandCapabilities
-import org.eclipse.lsp4j.ExecuteCommandOptions
+import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
 import org.eclipse.lsp4j.InitializeParams
+import org.eclipse.lsp4j.SemanticTokensLegend
+import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions
 import org.eclipse.lsp4j.ServerCapabilities
 import org.eclipse.lsp4j.SignatureHelpOptions
 import org.eclipse.lsp4j.TextDocumentSyncKind
@@ -24,6 +22,12 @@ class CapabilitiesProvider {
         serverCapabilities.setWorkspaceSymbolProvider(true)
         serverCapabilities.signatureHelpProvider = SignatureHelpOptions(listOf("(", ","))
         serverCapabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental)
+
+        val semanticTokensOptions = SemanticTokensWithRegistrationOptions()
+        semanticTokensOptions.setLegend(SemanticTokensLegend(RellSemanticTokensManager.tokenTypes, listOf()))
+        semanticTokensOptions.setRange(false)
+        semanticTokensOptions.setFull(true)
+        serverCapabilities.semanticTokensProvider = semanticTokensOptions
 
 //        val completionOptions = CompletionOptions()
 //        completionOptions.resolveProvider = false

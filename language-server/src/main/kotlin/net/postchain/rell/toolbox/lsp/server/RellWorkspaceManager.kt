@@ -2,6 +2,7 @@ package net.postchain.rell.toolbox.lsp.server
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.toolbox.core.indexer.RellIssue
+import net.postchain.rell.toolbox.core.indexer.Resource
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.editing.Document
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
@@ -153,7 +154,6 @@ class RellWorkspaceManager {
                 }
             }
         }
-
         affectedUris.removeAll((deletedFiles + dirtyFiles).toSet())
         affectedUris.forEach { uri ->
             getIndexerFor(uri).updateFileUriResourceMap(uri)
@@ -178,5 +178,10 @@ class RellWorkspaceManager {
             val affectedUris = indexer.findAffectedFiles(fileUri)
             didChangeFiles(affectedUris.toList() + fileUri, listOf())
         }
+    }
+
+    fun getResource(fileUri: URI): Resource? {
+        val indexer = getIndexerFor(fileUri)
+        return indexer.getResource(fileUri)
     }
 }
