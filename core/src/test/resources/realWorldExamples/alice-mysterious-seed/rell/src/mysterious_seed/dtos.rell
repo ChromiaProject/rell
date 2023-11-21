@@ -1,0 +1,9 @@
+struct meter {
+	level: decimal;
+	time_until_empty: integer;
+}
+
+struct plant_status {
+	status: text;
+	days_planted: integer;
+}

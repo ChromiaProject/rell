@@ -1,0 +1,283 @@
+/**
+ * A set attribute contains its attributes in a child instance (elements).
+ * The child instance has x amounts of attributes, which are stored as normal {type}_attribute.
+ * Each {type}_attribute is linked with the same attribute as the set_attribute.
+ * Elements can only be of simple types (i.e. not another container).
+ */
+ 
+entity set_inner_type {
+	key attribute;
+	index attribute, a_type;
+}
+ 
+entity set_attribute {
+	index instance, attribute; // select by instance or instance-attribute pair
+}
+
+/**
+ * Set attribute constructor. Can optionally be initialized with values, otherwise empty.
+ * Note: Only set<T>(set<T>) exists, set<T>(list<T>) is not implemented.
+ * @param instance instance The instance the attribute should be mapped with
+ * @param attribute attribute The set attribute to map the instance to
+ * @param values gtv? The set<T>() parameter broken down to set<T>(values).to_gtv()
+ */
+function create_set_attribute (instance, attribute, values: gtv?) {
+	util.ensure_type(a_type.unordered_container, attribute.a_type);
+	
+	if (values??) {
+		_create_set_elements(instance, attribute, values);
+	}
+	
+	create set_attribute ( instance, attribute );
+}
+
+function _create_set_elements(root_element: instance, attribute, values: gtv) {
+	val set_type = set_inner_type @ {attribute}.a_type;
+	for (value in util.gtv_to_set_of_gtv(values, set_type)) {
+		_create_set_element(root_element, attribute, set_type, value);
+	}
+}
+
+function _create_set_element(root_element: instance, attribute, type: a_type, gtv_value: gtv): boolean {
+	when (type) {
+		a_type.byte_array -> {
+			val value = byte_array.from_gtv(gtv_value);
+			if (byte_array_attribute @? {root_element, attribute, .value == value} == null) {
+				add_byte_array_attribute(root_element, attribute, value);
+				return true;
+			}
+			return false;
+		}
+		a_type.decimal -> {
+			val value = decimal.from_gtv(gtv_value);
+			if (decimal_attribute @? {root_element, attribute, .value == value} == null) {
+				add_decimal_attribute(root_element, attribute, value);
+				return true;
+			}
+			return false;
+		}
+		a_type.instance -> {
+			val value = instance.from_gtv(gtv_value);
+			if (instance_attribute @? {.instance == root_element, attribute, .instance_value == value} == null) {
+				add_instance_attribute(root_element, attribute, value);
+				return true;
+		 	}
+			return false;
+		}
+		a_type.integer -> {
+			val value = integer.from_gtv(gtv_value);
+			if (integer_attribute @? {root_element, attribute, .value == value} == null) {
+				add_integer_attribute(root_element, attribute, value);
+				return true;
+			}
+			return false;
+		}
+		a_type.text -> {
+			val value = text.from_gtv(gtv_value);
+			if (text_attribute @? {root_element, attribute, .value == value} == null) {
+				add_text_attribute(root_element, attribute, value);
+				return true;
+			}
+			return false;
+		}
+		else -> {require(false, "Unimplemented path"); return false;}
+	}
+}
+
+/**
+ * Like set.add() in rell
+ * @param instance instance The instance the attribute is mapped on
+ * @param attribute attribute The set attribute to search for
+ * @param value gtv The set.add() parameter broken down to T(value).to_gtv()
+ */
+function add_set_attribute_element (instance, attribute, value: gtv): boolean {
+	val set_type = set_inner_type @ {attribute}.a_type;
+	val attr = set_attribute @ {instance, attribute};
+	return _create_set_element(attr.instance, attribute, set_type, value);
+}
+
+/**
+ * Like set.add_all() in rell
+ * Note: This function only implements set.add_all(set()), not set.add_all(list())
+ * @param instance instance The instance the attribute is mapped on
+ * @param attribute attribute The set attribute to search for
+ * @param values gtv The set.add_all() parameter broken down to set<T>(values).to_gtv()
+ */
+function add_set_attribute_elements (instance, attribute, values: gtv) {
+	val attr = set_attribute @ {instance, attribute};
+	_create_set_elements(attr.instance, attribute, values);
+}
+
+/**
+ * Like set.contains() in rell
+ * @param instance instance The instance the attribute is mapped on
+ * @param attribute attribute The set attribute to search for
+ * @param value gtv The set.contains() parameter broken down to T(value).to_gtv()
+ * @returns boolean True if element with key exists, false if not
+ */
+function set_attribute_contains(root_instance: instance, attribute, value: gtv): boolean {
+	val set_type = set_inner_type @ {attribute}.a_type;
+	val attr = set_attribute @ {.instance == root_instance, attribute};
+	when (set_type) {
+		a_type.byte_array -> return byte_array_attribute @? {attr.instance, attribute, byte_array.from_gtv(value)} != null;
+		a_type.decimal -> return decimal_attribute @? {attr.instance, attribute, decimal.from_gtv(value)} != null;
+		a_type.instance -> return instance_attribute @? {.instance == attr.instance, attribute, .instance_value == instance.from_gtv(value)} != null;
+		a_type.integer -> return integer_attribute @? {attr.instance, attribute, integer.from_gtv(value)} != null;
+		a_type.text -> return text_attribute @? {attr.instance, attribute, text.from_gtv(value)} != null;
+		else -> {require(false, "Unimplemented path"); return false;}
+	}
+}
+
+/**
+ * Like set.contains_all() in rell
+ * Note: Only set.contains_all(set<T>) exists, set.contains_all(list<T>) is not implemented.
+ * @param instance instance The instance the attribute is mapped on
+ * @param attribute attribute The set attribute to search for
+ * @param values gtv The set.contains_all() parameter broken down to set<T>(values).to_gtv()
+ * @returns boolean True if element with key exists, false if not
+ */
+function set_attribute_contains_all(root_instance: instance, attribute, values: gtv): boolean {
+	val set_type = set_inner_type @ {attribute}.a_type;
+	val attr = set_attribute @ {.instance == root_instance, attribute};
+	when (set_type) {
+		a_type.byte_array -> {val vals = set<byte_array>.from_gtv(values); return byte_array_attribute @ {attr.instance, attribute, .value in vals} (@sum 1) == vals.size();}
+		a_type.decimal -> {val vals = set<decimal>.from_gtv(values); return decimal_attribute @ {attr.instance, attribute, .value in vals} (@sum 1) == vals.size();}
+		a_type.instance -> {val vals = set<instance>.from_gtv(values); return instance_attribute @ {.instance == attr.instance, attribute, .instance_value in vals} (@sum 1) == vals.size();}
+		a_type.integer -> {val vals = set<integer>.from_gtv(values); return integer_attribute @ {attr.instance, attribute, .value in vals} (@sum 1) == vals.size();}
+		a_type.text -> {val vals = set<text>.from_gtv(values); return text_attribute @ {attr.instance, attribute, .value in vals} (@sum 1) == vals.size();}
+		else -> {require(false, "Unimplemented path"); return false;}
+	}
+}
+
+/**
+ * Like set.remove() in rell
+ * @param instance instance The instance the attribute is mapped on
+ * @param attribute attribute The set attribute to search for
+ * @param value gtv The set.remove() parameter broken down to T(value).to_gtv()
+ */
+function set_attribute_remove(root_instance: instance, attribute, value: gtv) {
+	val set_type = set_inner_type @ {attribute}.a_type;
+	val attr = set_attribute @ {.instance == root_instance, attribute};
+	when (set_type) {
+		a_type.byte_array -> delete byte_array_attribute @? {attr.instance, attribute, .value == byte_array.from_gtv(value)};
+		a_type.decimal -> delete decimal_attribute @? {attr.instance, attribute, .value == decimal.from_gtv(value)};
+		a_type.instance -> delete instance_attribute @? {.instance == attr.instance, attribute, .instance_value == instance.from_gtv(value)};
+		a_type.integer -> delete integer_attribute @? {attr.instance, attribute, .value == integer.from_gtv(value)};
+		a_type.text -> delete text_attribute @? {attr.instance, attribute, .value == text.from_gtv(value)};
+	}
+}
+
+/**
+ * Like set.remove_all() in rell
+ * Note: Only set.remove_all(set<T>) exists, set.remove_all(list<T>) is not implemented.
+ * @param instance instance The instance the attribute is mapped on
+ * @param attribute attribute The set attribute to search for
+ * @param values gtv The set.remove_all() parameter broken down to set<T>(values).to_gtv()
+ */
+function set_attribute_remove_all(root_instance: instance, attribute, values: gtv) {
+	val set_type = set_inner_type @ {attribute}.a_type;
+	val attr = set_attribute @ {.instance == root_instance, attribute};
+	when (set_type) {
+		a_type.byte_array -> {val vals = set<byte_array>.from_gtv(values); delete byte_array_attribute @* {attr.instance, attribute, .value in vals};}
+		a_type.decimal -> {val vals = set<decimal>.from_gtv(values); delete decimal_attribute @* {attr.instance, attribute, .value in vals};}
+		a_type.instance -> {val vals = set<instance>.from_gtv(values); delete instance_attribute @* {.instance == attr.instance, attribute, .instance_value in vals};}
+		a_type.integer -> {val vals = set<integer>.from_gtv(values); delete integer_attribute @* {attr.instance, attribute, .value in vals};}
+		a_type.text -> {val vals = set<text>.from_gtv(values); delete text_attribute @* {attr.instance, attribute, .value in vals};}
+	}
+}
+
+/**
+ * Like set.clear() in rell
+ * @param instance instance The instance the attribute is mapped on
+ * @param attribute attribute The set attribute to search for
+ */
+function set_attribute_clear(root_instance: instance, attribute) {
+	val set_type = set_inner_type @ {attribute}.a_type;
+	val attr = set_attribute @ {.instance == root_instance, attribute};
+	when (set_type) {
+		a_type.byte_array -> delete byte_array_attribute @* {attr.instance, attribute};
+		a_type.decimal -> delete decimal_attribute @* {attr.instance, attribute};
+		a_type.instance -> delete instance_attribute @* {.instance == attr.instance, attribute};
+		a_type.integer -> delete integer_attribute @* {attr.instance, attribute};
+		a_type.text -> delete text_attribute @* {attr.instance, attribute};
+	}
+}
+
+/**
+ * Like set.size() in rell
+ * @param instance instance The instance the attribute is mapped on
+ * @param attribute attribute The set attribute to search for
+ * @returns integer The amount of elements in the set
+ */
+function set_attribute_size(root_instance: instance, attribute): integer {
+	val set_type = set_inner_type @ {attribute}.a_type;
+	val attr = set_attribute @ {.instance == root_instance, attribute};
+	when (set_type) {
+		a_type.byte_array -> return byte_array_attribute @ {attr.instance, attribute} (@sum 1);
+		a_type.decimal -> return decimal_attribute @ {attr.instance, attribute} (@sum 1);
+		a_type.instance -> return instance_attribute @ {.instance == attr.instance, attribute} (@sum 1);
+		a_type.integer -> return integer_attribute @ {attr.instance, attribute} (@sum 1);
+		a_type.text -> return text_attribute @ {attr.instance, attribute} (@sum 1);
+		else -> {require(false, "Unimplemented path"); return 0;}
+	}
+}
+
+/**
+ * Like set.empty() in rell
+ * @param instance instance The instance the attribute is mapped on
+ * @param attribute attribute The set attribute to search for
+ * @returns integer True if no elements in set, false if any
+ */
+function set_attribute_empty(instance, attribute): boolean {
+	return set_attribute_size(instance, attribute) == 0;
+}
+
+/**
+ * Get the set attribute from an instance and unpack it to a rell set.
+ * @param instance instance The instance the attribute is mapped on
+ * @param attribute attribute The set attribute to search for
+ * @returns (type: a_type, values: gtv) A tuple containing the set type and the set parsed as set<T>(values).to_gtv()
+ */
+function unpack_set(instance, attribute): (type: a_type, values: gtv)? {	
+	val set_type = set_inner_type @ {attribute}.a_type;
+	
+	var attr = set_attribute @? { instance, attribute };
+ 	
+ 	if(not attr??) {
+ 		val prototypes = get_prototypes(instance);
+ 		for (p in prototypes) {
+ 			attr = set_attribute @? { p, attribute };
+ 			if(attr??) {
+ 				break;
+ 			}
+ 		}
+ 	}
+ 	
+ 	if(not attr??) return null;
+	
+	var ret: gtv;
+	when (set_type) {
+		a_type.byte_array -> ret = set(byte_array_attribute @* {attr.instance, attribute} (.value)).to_gtv();
+		a_type.decimal -> ret = set(decimal_attribute @* {attr.instance, attribute} (.value)).to_gtv();
+		a_type.instance -> ret = set(instance_attribute @* {.instance == attr.instance, attribute} (.instance_value)).to_gtv();
+		a_type.integer -> ret = set(integer_attribute @* {attr.instance, attribute} (.value)).to_gtv();
+		a_type.text -> ret = set(text_attribute @* {attr.instance, attribute} (.value)).to_gtv();
+		else -> {require(false, "Unimplemented path"); return (type = a_type.instance, values = instance.to_gtv());}
+	}
+	
+	return (type = set_type, values = ret);
+}
+
+function _fetch_set_range_from(attribute, value: gtv, from: rowid) {
+	val set_type = set_inner_type @ {attribute}.a_type;
+	// TODO remaining types
+	when (set_type) {
+		a_type.integer -> {
+			return (s: set_attribute, v:integer_attribute) @* {
+					v.attribute == attribute, v.value == integer.from_gtv(value), v.instance == s.instance,
+					v.instance.rowid > from
+				} (s.instance) limit 100;	
+		}
+		else -> {require(false, "Unimplemented path"); return list<instance>();}
+	}
+}

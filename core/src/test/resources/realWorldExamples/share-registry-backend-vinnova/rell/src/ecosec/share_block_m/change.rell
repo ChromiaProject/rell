@@ -1,0 +1,126 @@
+
+//****************************************
+// change - share_block
+//
+// - Update an existing share block
+// - If changing Share block owner, update roles
+//
+// LIMITATIONS
+// - Caller must have done the authorization check
+
+import ecosec.appmsg_m;
+import ecosec.persona_m;
+import ecosec.history_m;
+
+function change(agent_pubkey: pubkey, agent_id: text, 
+				org_nr: text,
+				share_from: integer, share_to: integer,
+				old_persona_id: text, old_share_type: text,
+				old_pledging: boolean, old_certificate: boolean,
+				new_persona_id: text, new_share_type: text,
+				new_pledging: boolean, new_certificate: boolean
+				){
+
+	// Check that the share block has not changed
+	val orig_share_block_info = share_block_persona @* {
+							.share_block.company.org_nr == org_nr,
+							.persona.id == old_persona_id,
+							.share_block.share_from == share_from, .share_block.share_to == share_to,
+							.share_block.share_type == old_share_type,
+							.share_block.pledging == old_pledging,
+							.share_block.certificate == old_certificate
+							}(
+								.rowid,
+								.share_block,
+								company = .share_block.company,
+								.persona,
+								recalled = .share_block.recalled,
+								changed_time_stamp = .share_block.changed_time_stamp
+							);
+	require(orig_share_block_info.size() == 1, appmsg_m.msg('MSGE0201', 'Share block', 'share_block.change')); // Share block changed by someone else?
+	
+	// Update share block fields
+	update share_block @ { share_block == orig_share_block_info[0].share_block }(
+		.share_type = new_share_type,
+		.pledging = new_pledging,
+		.certificate = new_certificate,
+		.changed_time_stamp = op_context.last_block_time
+	);
+	
+	// History log - Share block fields changed
+	val share_block_old = history_m.share_block_json(
+		share_from = share_from, share_to=share_to,
+		persona_id = old_persona_id, share_type = old_share_type,
+		pledging = old_pledging, certificate = old_certificate,
+		recalled = orig_share_block_info[0].recalled		
+	);
+	val share_block_new = history_m.share_block_json(
+		share_from = share_from, share_to=share_to,
+		persona_id = new_persona_id, share_type = new_share_type,
+		pledging = new_pledging, certificate = new_certificate,
+		recalled = orig_share_block_info[0].recalled		
+	);
+	history_m.add(
+		org_nr,
+		op_context.last_block_time,
+		agent_id,
+		agent_pubkey,
+		history_m.object_type_enum.SHAREBLOCK,
+		history_m.event_type_enum.CHANGED,
+		share_block_old.to_gtv_pretty().to_json(),
+		share_block_new.to_gtv_pretty().to_json(),
+		'['+share_from+','+share_to+']',
+		share_from + ' - ' + share_to,
+		old_persona_id
+	);
+	
+	// Share block owner persona
+	if(old_persona_id != new_persona_id){
+
+		// Delete old share block persona mapping in cross-ref
+		delete share_block_persona @ { orig_share_block_info[0].rowid };
+
+		// Create new share block persona mapping in cross-ref
+		val new_sb_persona = create share_block_persona (
+			share_block = orig_share_block_info[0].share_block,
+			persona = persona_m.persona @ { .id == new_persona_id }
+		);
+		
+		// History log - Share block lost owner
+		history_m.add(
+			org_nr,
+			op_context.last_block_time,
+			agent_id,
+			agent_pubkey,
+			history_m.object_type_enum.SHAREBLOCK,
+			history_m.event_type_enum.SB_OWNERSHIP_LOST,
+			share_block_old.to_gtv_pretty().to_json(),
+			share_block_new.to_gtv_pretty().to_json(),
+			'['+share_from+','+share_to+']',
+			share_from + ' - ' + share_to,
+			old_persona_id
+		);
+		// History log - Share block gained owner
+		history_m.add(
+			org_nr,
+			op_context.last_block_time,
+			agent_id,
+			agent_pubkey,
+			history_m.object_type_enum.SHAREBLOCK,
+			history_m.event_type_enum.SB_OWNERSHIP_GAINED,
+			share_block_old.to_gtv_pretty().to_json(),
+			share_block_new.to_gtv_pretty().to_json(),
+			'['+share_from+','+share_to+']',
+			share_from + ' - ' + share_to,
+			new_persona_id
+		);
+
+		// Ensure that owner roles for both personas are correct after change
+		persona_m.persona_sync_owner_role(agent_pubkey, agent_id, 
+				org_nr,
+				orig_share_block_info[0].persona);
+		persona_m.persona_sync_owner_role(agent_pubkey, agent_id, 
+				org_nr,
+				new_sb_persona.persona);
+	}
+}

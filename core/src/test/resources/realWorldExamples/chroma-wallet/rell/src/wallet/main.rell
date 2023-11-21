@@ -1,0 +1,17 @@
+import .account;
+import .blockchain;
+import .transfer;
+
+object import_state {
+   mutable dev: boolean = true;
+}
+
+// TOREMOVE all the class and put it in one object
+entity _this_blockchain {
+  key blockchain.blockchain;
+  key blockchain, chain_id: integer;
+}
+
+
+operation foo(timestamp) {
+}

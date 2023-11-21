@@ -1,0 +1,30 @@
+
+entity _enum {
+	key name;
+}
+
+entity enum_value {
+	key _enum, value: text;
+}
+
+function Enum(name): _enum {
+	return _enum @ { name };
+}
+
+function enum_(name, values: list<text>): _enum {
+	val e = create _enum(name);
+	
+	for (value in values) {
+		create enum_value(e, value);
+	}
+	
+	return e;
+}
+
+function e_value(e: name, value: name): enum_value {
+	return enum_value @ { ._enum.name == e, .value == value };
+}
+
+function en_value(e: _enum, value: name): enum_value {
+	return enum_value @ { e, value };
+}

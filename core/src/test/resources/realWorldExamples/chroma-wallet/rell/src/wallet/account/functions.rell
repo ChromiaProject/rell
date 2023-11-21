@@ -1,0 +1,100 @@
+import wallet;
+import wallet.blockchain;
+
+function tkl_register_account (account_descriptor, chain_id: integer, id: byte_array) { // TODO remove id, should be description hash
+    create account (
+       .id = id, // Replace this with account_descriptor.hash()
+       account_type = account_descriptor.account_type,
+       args = account_descriptor.args.to_bytes(),
+       mother_chain = wallet._this_blockchain@{chain_id}.blockchain,
+
+       chain_id // TOREMOVE
+    );
+}
+
+function tkl_change_auth(old_account: account, new_account_type: account_type, new_args: gtv, chain_id: integer) {
+  tkl_require_auth(old_account);
+  // Question, should we perform checks here?
+  update account@{.id == old_account.id, .chain_id == chain_id}(.account_type = new_account_type, .args = new_args.to_bytes());
+}
+
+function tkl_require_auth (account) {
+   tkl_require_auth_params(account.account_type, account.args);
+}
+
+// Question, is tkl_require_aut_params used or can it be inside tkl_require_auth
+function tkl_require_auth_params (a_t: account_type, args: byte_array) {
+    require(tkl_auth_params(a_t, args), "Authentication failed");
+}
+
+function tkl_auth(account): boolean {
+    return tkl_auth_params(account.account_type, account.args);
+}
+
+function tkl_auth_params(a_t: account_type, args: byte_array): boolean {
+    when(a_t) {
+
+        account_type.single_key_account -> {
+            return is_signer(single_key_account_args.from_bytes(args).pubkey);
+        }
+        account_type.multi_sig_account -> {
+            val multi_sign_req = multi_sig_account_args.from_bytes(args);
+             var num_sign = multi_sign_req.signatures_required;
+             for(s in multi_sign_req.pubkeys) {
+               if(is_signer(s)) {
+                 num_sign -= 1;
+                 if(num_sign < 1) {return true;}
+               }
+             }
+        }
+    }
+    return false;
+}
+
+
+function xc_import_account(new_account: xc_account, chain_id: integer) { // incoming_proof:proof<xc_account>
+    // val xc_account = verifyProof(incoming_proof);
+    tkl_require_auth_params(new_account.account_type, new_account.args);
+    require(blockchain.blockchain@?{new_account.mother_chain.blockchain_rid, chain_id} != null, "This account comes from a blockchain that is not authorized");
+    create account(
+        .id = new_account.id,
+        .account_type = new_account.account_type,
+        .args = new_account.args,
+        .mother_chain = blockchain.blockchain@{new_account.mother_chain.blockchain_rid, chain_id},
+        .chain_id = chain_id
+    );
+}
+
+
+function create_account_if_not_exists(id: byte_array, selected_account_type: account_type, args: byte_array, mother_chain: byte_array, chain_id: integer): account {
+   print("111111111", account@*{
+        .id == id,
+         .mother_chain == blockchain.blockchain@{mother_chain, chain_id},
+        .chain_id == chain_id
+    }(.id, .account_type, .mother_chain.blockchain_rid, .chain_id));
+  print("CAN'T ?BELIEVE IT", blockchain.blockchain@{.blockchain_rid == mother_chain, chain_id}.blockchain_rid);
+  var account_exists = account@?{
+    .id == id,
+    //.account_type == selected_account_type,
+    .mother_chain == blockchain.blockchain@{.blockchain_rid == mother_chain, chain_id},
+
+    .chain_id == chain_id
+  };
+
+
+   print(7);
+   print(account_exists);
+
+  if(account_exists == null) {
+    return  create account (
+      id = id,
+      account_type = selected_account_type,
+      args = args,
+      mother_chain = blockchain.blockchain@{.blockchain_rid == mother_chain, chain_id},
+
+      chain_id = chain_id
+    );
+  }
+
+  return account_exists;
+}

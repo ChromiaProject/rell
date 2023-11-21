@@ -1,0 +1,83 @@
+//****************************************
+// DemoAuth module
+//
+// PURPOSE
+// - Allow sign up / sign in for demo purposes
+// - No real security is provided
+// - Sign in with API not needed(?)
+
+import ecosec.identity_m;
+import ecosec.appmsg_m;
+import ecosec.agent_m;
+import ecosec.auth_m;
+
+//namespace demoauth {
+	
+	// Demo emulated Sign up - 
+	// - Meant to be used with pubkey generated from Pnr
+	// - No real security
+	function sign_up(new_agent_pubkey: pubkey, new_agent_id: text,
+			identity_nr: text,
+			first_name: text,
+			last_name: text,
+			address1: text,
+			address2: text,
+			postal_code: text,
+			city: text,
+			country: text,
+			phone: text,
+			email: text
+		){
+		
+		// Check authorization for self
+		require(is_signer(new_agent_pubkey), appmsg_m.msg('MSGE0101', 'agent', 'demoauth.sign_up')); // Supplied pubkey not signer?
+		
+		// Check that agent id does not exist
+		require(agent_m.agent @? { .id == new_agent_id } == null, appmsg_m.msg('MSGE0202', 'agent', 'demoauth.sign_up')); // ID already taken?
+		
+		// Check that pubkey does not exist and that identity_nr does not exist
+		val exist_certs = agent_m.cert @* { .pubkey == new_agent_pubkey or (.identity_nr == identity_nr and .identity_type == identity_m.id_type @ { .id == identity_m.id_type_enum.SWE_ID })}; 
+		require(exist_certs.size() == 0, appmsg_m.msg('MSGE0000', 'agent, pubkey taken', 'demoauth.sign_up')); // pubkey already taken? (temp message for demo auth)
+		
+		// Create agent
+		val created_agent = create  agent_m.agent (
+			id = new_agent_id,
+		    first_name = first_name,
+		    last_name = last_name,
+		    address1 = address1,
+		    address2 = address2,
+		    postal_code = postal_code,
+		    city = city,
+		    country = country,		    
+		    email = email,
+		    phone = phone,
+		    created_time_stamp = op_context.last_block_time,
+			changed_time_stamp = op_context.last_block_time
+		);
+		
+		// Create certificate
+		val created_cert = create agent_m.cert (
+			agent = created_agent,
+			identity_type = identity_m.id_type @ { .id == identity_m.id_type_enum.SWE_ID },
+			identity_nr = identity_nr,
+			pubkey = new_agent_pubkey,
+			signer_pubkey = new_agent_pubkey // "Self signed"  
+		);
+		create agent_m.cert_status (
+			cert = created_cert,
+			cert_status_type = agent_m.cert_status_type @ { .id == agent_m.cert_status_type_enum.ACTIVE },
+			valid_from = 0,
+			expire_at = integer.MAX_VALUE // Will not expire
+		);
+		// TODO: demoauth.sign_up, verify that MAX_VALUE is for ever
+		// TODO: demoauth.sign_up, check how enum are numbered!
+		
+		// Auto Authorize any existing Persona without current connections
+		// TODO: !! Implement, probably as separate function for "new agent identity_nr/identity_type? (That also removes any lost connections based on identity_nr, History log for Persona)
+		// TODO: !! Implement, probably as separate function for "new persona identity_nr/identity_type? (That also removes any lost connections based on identity_nr, History log for Person)
+		auth_m.auth_sync_agent_identity_change(new_agent_pubkey, new_agent_id,
+				created_agent,
+				identity_m.id_type_enum.NO_ID, '',
+				created_cert.identity_type.id, identity_nr);
+	}
+//}

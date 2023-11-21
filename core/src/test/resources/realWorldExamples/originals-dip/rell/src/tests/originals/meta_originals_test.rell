@@ -1,0 +1,104 @@
+@test module;
+import ^^.originals.*;
+import ^^.dip.*;
+
+function test_meta_creator_constraint() {
+	Initialize_original_interfaces();
+	
+	val admin_acc_data = create_ft3_test_acc(admin_keypair());
+	val creator = acc_auth(account_id = admin_acc_data.id, auth_descriptor_id = admin_acc_data.auth_descriptor);
+	
+	val bob_acc_data = create_ft3_test_acc(bob_keypair());
+	val bob = acc_auth(account_id = bob_acc_data.id, auth_descriptor_id = bob_acc_data.auth_descriptor);
+	
+	val original_def = original_type(
+		[INFO()],
+		[
+			"creator_id": ByteArray(admin_acc_data.id),
+			"creator_name": Text("Admin")
+		]
+	);
+	
+	MintNonFungibleOriginal(original_def, bob_acc_data.id, bob_acc_data.auth_descriptor).sign(bob_acc_data.keypair).run();
+	val original_id = get_last_id();
+	val original = get_instance_by_id(original_id)!!;
+	
+	val desc_attr = get_attribute_by_dclass_name(IO(), "description");
+	
+	add_type_attribute_meta_(original, desc_attr, "test".to_gtv()).sign(admin_acc_data.keypair).run_must_fail();
+	
+	add_type_attribute_meta_(original, desc_attr, "test".to_gtv(), bob.to_gtv()).sign(bob_acc_data.keypair).run_must_fail();
+		
+	add_type_attribute_meta_(original, desc_attr, "test".to_gtv(), creator.to_gtv()).sign(admin_acc_data.keypair).run();
+}
+
+function test_meta_owner_constraint() {
+	Initialize_original_interfaces();
+	
+	val admin_acc_data = create_ft3_test_acc(admin_keypair());
+	val creator = acc_auth(account_id = admin_acc_data.id, auth_descriptor_id = admin_acc_data.auth_descriptor);
+	
+	val bob_acc_data = create_ft3_test_acc(bob_keypair());
+	val bob = acc_auth(account_id = bob_acc_data.id, auth_descriptor_id = bob_acc_data.auth_descriptor);
+	
+	Interface_("ITestDapp", [
+		"price": Type(Integer(0), [OwnerMutable()])
+	], [INFO()]).run();
+	
+	val original_def = original_type(
+		["ITestDapp"],
+		[
+			"creator_id": ByteArray(admin_acc_data.id),
+			"creator_name": Text("Admin")
+		]
+	);
+	
+	MintNonFungibleOriginal(original_def, bob_acc_data.id, bob_acc_data.auth_descriptor).sign(bob_acc_data.keypair).run();
+	val original_id = get_last_id();
+	val original = get_instance_by_id(original_id)!!;
+	
+	val price_attr = get_attribute_by_dclass_name("ITestDapp", "price");
+	
+	set_type_attribute_meta_(original, price_attr, (123).to_gtv()).sign(bob_acc_data.keypair).run_must_fail();
+		
+	set_type_attribute_meta_(original, price_attr, (123).to_gtv(), creator.to_gtv()).sign(admin_acc_data.keypair).run_must_fail();
+	
+	set_type_attribute_meta_(original, price_attr, (123).to_gtv(), bob.to_gtv()).sign(bob_acc_data.keypair).run();
+}
+
+
+function test_meta_creator_constraint_prototype() {
+	Initialize_original_interfaces();
+	
+	val admin_acc = create_ft3_test_acc(admin_keypair());
+	val creator = acc_auth(account_id = admin_acc.id, auth_descriptor_id = admin_acc.auth_descriptor);
+	
+	val bob_acc = create_ft3_test_acc(bob_keypair());
+	val bob = acc_auth(account_id = bob_acc.id, auth_descriptor_id = bob_acc.auth_descriptor);
+	
+	Interface_("ITestDapp", [:], [INFO()]).run();
+	
+	Prototype_(["ITestDapp"], [
+		"creator_id": ByteArray(admin_acc.id),
+		"creator_name": Text("Admin")
+	], "TestDapp").run();
+	
+	val original_def = original_type(["ITestDapp"], types=[:], "ITestDapp.TestDapp");
+	
+	MintNonFungibleOriginal(original_def, admin_acc.id, admin_acc.auth_descriptor).sign(admin_acc.keypair).run();
+	val original_id = get_last_id();
+	val original = get_instance_by_id(original_id)!!;
+	
+	Transfer(original_id, 
+		admin_acc.id, admin_acc.auth_descriptor,
+		bob_acc.id
+	).sign(admin_acc.keypair).run();
+	
+	val desc_attr = get_attribute_by_dclass_name(IO(), "description");
+	
+	add_type_attribute_meta_(original, desc_attr, "test".to_gtv()).sign(admin_acc.keypair).run_must_fail();
+	
+	add_type_attribute_meta_(original, desc_attr, "test".to_gtv(), bob.to_gtv()).sign(bob_acc.keypair).run_must_fail();
+		
+	add_type_attribute_meta_(original, desc_attr, "test".to_gtv(), creator.to_gtv()).sign(admin_acc.keypair).run();
+}

@@ -1,0 +1,26 @@
+import .master_account;
+
+entity blockchain_info {
+    key chain_id: integer;
+    key blockchain_rid: byte_array;
+    name;
+    mutable website: text;
+    mutable description: text;
+}
+
+operation add_blockchain_info(name, website: text, description: text, blockchain_rid: byte_array, chain_id: integer) {
+    require(import_state.dev);
+    create blockchain_info(name, website, description, blockchain_rid, chain_id);
+}
+
+query get_blockchain_info(blockchain_rid: byte_array) {
+    return blockchain_info@?{ blockchain_rid } ( .name, .website, .description, .blockchain_rid );
+}
+
+query get_controlled_accounts(master_account_id: byte_array, chain_id: integer) {
+  return master_account.master_account@*{
+    .master.id == master_account_id
+  } (
+    id = .controlled.id
+  );
+}

@@ -1,0 +1,302 @@
+@test module;
+import ^^^.dip.*;
+
+function test_list_definition() {
+	Interface_("ITest", ["list": Type(List(a_type.integer))]).run();
+	Interface_("ITest2", ["list": Type(List(a_type.text))]).run();
+}
+
+function test_list_definition_disallowed_types() {
+	Interface_("ITest", ["list": Type(List(a_type.ordered_container))]).run_must_fail();
+//	Interface_("ITest", ["list": Type(List(a_type.meta))]).run_must_fail();
+}
+
+function test_list_initialization() {
+	Interface_("ITest", ["list": Type(List(a_type.integer))]).run();
+	Instance_(["ITest"], ["list": List(value=[42].to_gtv())]).run();
+}
+
+function test_list_initialization_wrong_type() {
+	Interface_("ITest", ["list": Type(List(a_type.text))]).run();
+	Instance_(["ITest"], ["list": List(value=[42].to_gtv())]).run_must_fail();
+}
+
+function test_list_add() {
+	Interface_("ITest", ["list": Type(List(a_type.text))]).run();
+	Instance_(["ITest"], ["list": List(value=["test"].to_gtv())]).run();
+	
+	val i = get_last_instance();
+	val a = get_attribute_by_dclass_name("ITest", "list");
+	assert_equals(list_sizeof(i, a), 1);
+	
+	assert_false(list_contains(i, a, "test2".to_gtv()));
+	list_add_(i, a, "test2".to_gtv()).run();
+	assert_true(list_contains(i, a, "test2".to_gtv()));
+	
+	assert_equals(list_sizeof(i, a), 2);
+}
+
+function test_list_add_on_empty() {
+	Interface_("ITest", ["list": Type(List(a_type.text))]).run();
+	Instance_(["ITest"], ["list": List(value=list<text>().to_gtv())]).run();
+	
+	val i = get_last_instance();
+	val a = get_attribute_by_dclass_name("ITest", "list");
+	assert_equals(list_sizeof(i, a), 0);
+	
+	assert_false(list_contains(i, a, "test".to_gtv()));
+	list_add_(i, a, "test".to_gtv()).run();
+	assert_true(list_contains(i, a, "test".to_gtv()));
+	
+	assert_equals(list_sizeof(i, a), 1);
+}
+
+function test_list_add_at() {
+	Interface_("ITest", ["list": Type(List(a_type.text))]).run();
+	Instance_(["ITest"], ["list": List(value=["test1", "test3"].to_gtv())]).run();
+	
+	val i = get_last_instance();
+	val a = get_attribute_by_dclass_name("ITest", "list");
+	assert_equals(list_sizeof(i, a), 2);
+	
+	assert_false(list_contains(i, a, "test2".to_gtv()));
+	list_add_(i, a, "test2".to_gtv(), 1).run();
+	assert_true(list_contains(i, a, "test2".to_gtv()));
+	
+	assert_equals(list_get(i, a, 0), "test1".to_gtv());
+	assert_equals(list_get(i, a, 1), "test2".to_gtv());
+	assert_equals(list_get(i, a, 2), "test3".to_gtv());
+	
+	assert_equals(list_sizeof(i, a), 3);
+}
+
+function test_list_add_all() {
+	Interface_("ITest", ["list": Type(List(a_type.text))]).run();
+	Instance_(["ITest"], ["list": List(value=["test"].to_gtv())]).run();
+	
+	val i = get_last_instance();
+	val a = get_attribute_by_dclass_name("ITest", "list");
+	assert_equals(list_sizeof(i, a), 1);
+	
+	assert_false(list_contains(i, a, "test3".to_gtv()));
+	val l = ["test2", "test3", "test4", "test5"];
+	list_add_all_(i, a, l.to_gtv()).run();
+	assert_true(list_contains(i, a, "test3".to_gtv()));
+	
+	assert_equals(list_sizeof(i, a), 5);
+}
+
+function test_list_add_all_on_empty() {
+	Interface_("ITest", ["list": Type(List(a_type.text))]).run();
+	Instance_(["ITest"], ["list": List(value=list<text>().to_gtv())]).run();
+	
+	val i = get_last_instance();
+	val a = get_attribute_by_dclass_name("ITest", "list");
+	assert_equals(list_sizeof(i, a), 0);
+	
+	assert_false(list_contains(i, a, "test3".to_gtv()));
+	val l = ["test2", "test3", "test4", "test5"];
+	list_add_all_(i, a, l.to_gtv()).run();
+	assert_true(list_contains(i, a, "test3".to_gtv()));
+	
+	assert_equals(list_sizeof(i, a), 4);
+}
+
+function test_list_add_all_at() {
+	Interface_("ITest", ["list": Type(List(a_type.text))]).run();
+	Instance_(["ITest"], ["list": List(value=["test1", "test6"].to_gtv())]).run();
+	
+	val i = get_last_instance();
+	val a = get_attribute_by_dclass_name("ITest", "list");
+	assert_equals(list_sizeof(i, a), 2);
+	
+	assert_false(list_contains(i, a, "test3".to_gtv()));
+	val l = ["test2", "test3", "test4", "test5"];
+	list_add_all_(i, a, l.to_gtv(), 1).run();
+	assert_true(list_contains(i, a, "test3".to_gtv()));
+		
+	assert_equals(list_get(i, a, 0), "test1".to_gtv());
+	assert_equals(list_get(i, a, 1), "test2".to_gtv());
+	assert_equals(list_get(i, a, 4), "test5".to_gtv());
+	assert_equals(list_get(i, a, 5), "test6".to_gtv());
+	
+	assert_equals(list_sizeof(i, a), 6);
+}
+
+function test_list_add_multiple_instances() {
+	Interface_("ITest", ["list": Type(List(a_type.text))]).run();
+	
+	val a = get_attribute_by_dclass_name("ITest", "list");	
+	
+	Instance_(["ITest"], ["list": List(value=["test"].to_gtv())]).run();
+	val i1 = get_last_instance();
+	
+	Instance_(["ITest"], ["list": List(value=["test"].to_gtv())]).run();
+	val i2 = get_last_instance();
+	
+	Instance_(["ITest"], ["list": List(value=["test"].to_gtv())]).run();
+	val i3 = get_last_instance();
+	
+	assert_equals(list_sizeof(i1, a), 1);
+	assert_equals(list_sizeof(i2, a), 1);
+	assert_equals(list_sizeof(i3, a), 1);
+	
+	list_add_(i2, a, "test2".to_gtv()).run();
+	
+	val l = ["test2", "test3", "test4", "test5"];
+	list_add_all_(i3, a, l.to_gtv()).run();
+	
+	assert_equals(list_sizeof(i1, a), 1);
+	assert_equals(list_sizeof(i2, a), 2);
+	assert_equals(list_sizeof(i3, a), 5);
+	
+	assert_false(list_contains(i1, a, "test2".to_gtv()));
+	assert_false(list_contains(i2, a, "test3".to_gtv()));
+	assert_true(list_contains(i3, a, "test3".to_gtv()));
+}
+
+function test_list_remove() {
+	Interface_("ITest", ["list": Type(List(a_type.text))]).run();
+	
+	val l = ["affe", "caffee"];
+	Instance_(["ITest"], ["list": List(value=l.to_gtv())]).run();
+	
+	val i = get_last_instance();
+	val a = get_attribute_by_dclass_name("ITest", "list");
+	
+	assert_equals(list_sizeof(i, a), 2);
+	
+	assert_true(list_contains(i, a, "caffee".to_gtv()));
+	list_remove_(i, a, "caffee".to_gtv()).run();
+	assert_equals(list_sizeof(i, a), 1);	
+	assert_false(list_contains(i, a, "caffee".to_gtv()));
+	
+	list_remove_(i, a, "abcd".to_gtv()).run_must_fail();	
+	list_remove_(i, a, integer(1).to_gtv()).run_must_fail();
+	
+	list_remove_(i, a, "affe".to_gtv()).run();
+	assert_true(map_empty(i, a));
+}
+
+function test_list_remove_at() {
+	Interface_("ITest", ["list": Type(List(a_type.text))]).run();
+	Instance_(["ITest"], ["list": List(value=["test1", "test2", "test3"].to_gtv())]).run();
+	
+	val i = get_last_instance();
+	val a = get_attribute_by_dclass_name("ITest", "list");
+	assert_equals(list_sizeof(i, a), 3);
+	
+	assert_true(list_contains(i, a, "test2".to_gtv()));
+	list_remove_at_(i, a, 1).run();
+	assert_false(list_contains(i, a, "test2".to_gtv()));
+	
+	assert_equals(list_get(i, a, 0), "test1".to_gtv());
+	assert_equals(list_get(i, a, 1), "test3".to_gtv());
+	
+	assert_equals(list_sizeof(i, a), 2);
+}
+
+function test_list_remove_all() {
+	Interface_("ITest", ["list": Type(List(a_type.integer))]).run();
+	
+	val l = [42, 21, 123, 321, 98];
+	Instance_(["ITest"], ["list": List(value=l.to_gtv())]).run();
+	
+	val i = get_last_instance();
+	val a = get_attribute_by_dclass_name("ITest", "list");
+	
+	assert_true(list_contains(i, a, integer(123).to_gtv()));
+	assert_equals(list_sizeof(i, a), 5);
+	
+	list_remove_all_(i, a, [21, 321].to_gtv()).run();
+	
+	assert_true(list_contains_all(i,a, [42,123,98].to_gtv()));	
+	assert_false(list_contains(i, a, integer(21).to_gtv()));
+	assert_false(list_contains(i, a, integer(321).to_gtv()));
+	
+	val (t, r) = list_unpack(i, a);	
+	assert_equals(list<integer>.from_gtv(r), [42,123,98]);
+}
+
+function test_list_clear() {
+	Interface_("ITest", ["list": Type(List(a_type.integer))]).run();
+	
+	val l = [42, 21, 123, 321, 98];
+	Instance_(["ITest"], ["list": List(value=l.to_gtv())]).run();
+	
+	val i = get_last_instance();
+	val a = get_attribute_by_dclass_name("ITest", "list");
+	
+	assert_true(list_contains(i, a, integer(123).to_gtv()));
+	assert_equals(list_sizeof(i, a), 5);
+	
+	list_clear_(i, a).run();
+	assert_true(list_empty(i, a));
+	
+	list_clear_(i, a).run();
+	assert_true(list_empty(i, a));
+	
+	assert_false(list_contains(i, a, integer(123).to_gtv()));
+}
+
+function test_list_get() {
+	Interface_("ITest", ["list": Type(List(a_type.text))]).run();
+	
+	var l = ["abc", "def"];
+	Instance_(["ITest"], ["list": List(value=l.to_gtv())]).run();
+	
+	var i = get_last_instance();
+	var a = get_attribute_by_dclass_name("ITest", "list");
+	
+	assert_equals(text.from_gtv(list_get(i, a, 0)), "abc");
+	assert_equals(text.from_gtv(list_get(i, a, 1)), "def");
+	
+	Interface_("ITest2", ["list": Type(List(a_type.integer))]).run();
+	
+	val t = [21, 42];	
+	Instance_(["ITest2"], ["list": List(value=t.to_gtv())]).run();
+	
+	i = get_last_instance();
+	a = get_attribute_by_dclass_name("ITest2", "list");
+	
+	assert_equals(integer.from_gtv(list_get(i, a, 0)), 21);
+	assert_equals(integer.from_gtv(list_get(i, a, 1)), 42);
+}
+
+function test_list_unpack() {
+	Interface_("ITest", ["list": Type(List(a_type.integer))]).run();
+	
+	val l = [42, 21, 123, 321, 98];
+	Instance_(["ITest"], ["list": List(value=l.to_gtv())]).run();
+	
+	val i = get_last_instance();
+	val a = get_attribute_by_dclass_name("ITest", "list");
+	
+	val (t, r) = list_unpack(i, a);	
+	assert_equals(t, a_type.integer);
+	assert_equals(list<integer>.from_gtv(r), l);
+}
+
+function test_list_find_instances() {
+	Interface_("ITest", ["list": Type(List(a_type.text))]).run();
+	
+	val a = get_attribute_by_dclass_name("ITest", "list");	
+	
+	Instance_(["ITest"], ["list": List(value=["test"].to_gtv())]).run();
+	val i1 = get_last_instance();
+	
+	Instance_(["ITest"], ["list": List(value=["test", "test2"].to_gtv())]).run();
+	val i2 = get_last_instance();
+	
+	Instance_(["ITest"], ["list": List(value=["test", "test2", "test3"].to_gtv())]).run();
+	val i3 = get_last_instance();
+	
+	val (r1, _) = find_instances_by_type_attribute(a, "test".to_gtv(), p_from(), integer.MAX_VALUE);
+	assert_equals(set(r1), set([i1,i2,i3]));
+	
+	val (r2, _) = find_instances_by_type_attribute(a, "test2".to_gtv(), p_from(), integer.MAX_VALUE);
+	assert_equals(set(r2), set([i2,i3]));
+	
+	val (r3, _) = find_instances_by_type_attribute(a, "test3".to_gtv(), p_from(), integer.MAX_VALUE);
+	assert_equals(set(r3), set([i3]));
+}

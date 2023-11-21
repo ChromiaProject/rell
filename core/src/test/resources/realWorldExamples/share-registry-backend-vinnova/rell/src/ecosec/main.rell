@@ -1,0 +1,27 @@
+module;
+
+// Main Rell start file for ecosec dApp
+///////////////////////////////////////////
+
+// Global dApp settings
+//import ecosec.config_m;
+
+// API
+//import ecosec.ecosec.operations_queries_api;
+
+// Modules (file modules)
+import ecosec.init_m;
+
+
+// Modules (folder modules)
+import ecosec.agent_m;
+import ecosec.appmsg_m;
+import ecosec.auth_m;
+import ecosec.company_m;
+import ecosec.demoauth_m;
+import ecosec.extlib_m;
+import ecosec.history_m;
+import ecosec.identity_m;
+import ecosec.persona_m;
+import ecosec.request_m;
+import ecosec.share_block_m;

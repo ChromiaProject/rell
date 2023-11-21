@@ -1,0 +1,34 @@
+function init() {
+	val eth_sync_status = sync_status @? { "Ethereum" };
+	if (eth_sync_status == null) {
+		create sync_status("Ethereum");
+	}
+	
+	val bsc_sync_status = sync_status @? { "BSC" };
+	if (bsc_sync_status == null) {
+		create sync_status("BSC");
+	}
+}
+
+function get_random_text_element_from_list(l: list<text>) {
+	val randomIndex = (op_context.last_block_time - op_context.block_height) % l.size();
+	return l[randomIndex];
+}
+
+function alice_seeds(): list<name> {
+	return [
+		"Starberry Seed",
+		"Leafy Plum Seed",
+		"Rooster Fruit Seed",
+		"Sapphire Lettuce Seed",
+		"Peppery Onion Seed"
+	];
+}
+
+function chromia_seeds(): list<name> {
+	return [
+		"Dragon Brut Seed",
+		"Blue Velvet Seed",
+		"Moondrop Seed"
+	];
+}

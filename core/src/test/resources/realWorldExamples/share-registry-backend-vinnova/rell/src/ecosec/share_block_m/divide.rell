@@ -1,0 +1,159 @@
+
+//****************************************
+// divide - share_block
+//
+// - Divide an existing block into smaller parts
+// - 
+//
+// LIMITATIONS
+// - 
+
+import ecosec.appmsg_m;
+import ecosec.auth_m;
+import ecosec.persona_m;
+import ecosec.history_m;
+
+function divide(agent_pubkey: pubkey, agent_id: text, 
+				org_nr: text,
+				share_from: integer, share_to: integer,
+				old_persona_id: text, old_share_type: text,
+				old_pledging: boolean, old_certificate: boolean,
+				//recalled: integer,				
+				//orig_time_stamp: integer,
+				new_parts: list<integer>
+				){
+
+	// Check authorization for self
+	require(auth_m.have_auth_agent(agent_pubkey, agent_id), appmsg_m.msg('MSGE0101', 'agent', 'share_block.divide')); // Supplied pubkey not signer?
+	
+	// Check authorization for action
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'share_block.divide')); // Not board representative?
+	
+	// Check that the share block has not changed
+	val orig_share_block = share_block_persona @* {
+							.share_block.company.org_nr == org_nr,
+							.persona.id == old_persona_id,
+							.share_block.share_from == share_from, .share_block.share_to == share_to,
+							.share_block.share_type == old_share_type,
+							.share_block.pledging == old_pledging,
+							.share_block.certificate == old_certificate
+							//.share_block.recalled == recalled
+							}(
+								.share_block,
+								company = .share_block.company,
+								.persona,
+								share_type = .share_block.share_type,
+								pledging = .share_block.pledging,
+								certificate = .share_block.certificate,
+								recalled = .share_block.recalled,
+								changed_time_stamp = .share_block.changed_time_stamp
+							);
+	require(orig_share_block.size() == 1, appmsg_m.msg('MSGE0201', 'Share block', 'share_block.divide')); // Share block changed by someone else?
+	
+	// Check that parts add up to correct number of shares
+	var share_count = 0;
+	for(part in new_parts){
+		share_count += part;
+	}
+	require(share_count == share_to - share_from + 1, appmsg_m.msg('MSGE0301', 'Share block', 'share_block.divide')); // Share block changed by someone else?);
+	
+	// Remove old share block owner ref
+	delete share_block_persona @ { .persona == orig_share_block[0].persona, .share_block == orig_share_block[0].share_block };
+	
+	// Remove old share block
+	delete share_block @ { .company == orig_share_block[0].company, .share_from == share_from, .share_to == share_to };
+	
+	// History log
+	val share_block_old = history_m.share_block_json(
+		share_from = share_from, share_to=share_to,
+		persona_id = old_persona_id, share_type = old_share_type,
+		pledging = old_pledging, certificate = old_certificate,
+		recalled = orig_share_block[0].recalled		
+	);
+
+	// History log - Share block lost owner
+	history_m.add(
+		org_nr,
+		op_context.last_block_time,
+		agent_id,
+		agent_pubkey,
+		history_m.object_type_enum.SHAREBLOCK,
+		history_m.event_type_enum.SB_OWNERSHIP_LOSTDIVIDE,
+		share_block_old.to_gtv_pretty().to_json(),
+		history_m.empty_json(),
+		'['+share_from+','+share_to+']',
+		share_from + ' - ' + share_to,
+		old_persona_id
+	);
+	// History log - share block divided
+	history_m.add(
+		org_nr,
+		op_context.last_block_time,
+		agent_id,
+		agent_pubkey,
+		history_m.object_type_enum.SHAREBLOCK,
+		history_m.event_type_enum.SB_DIVIDE_REMOVE,
+		share_block_old.to_gtv_pretty().to_json(),
+		history_m.empty_json(),
+		'['+share_from+','+share_to+']',
+		share_from + ' - ' + share_to,
+		old_persona_id
+	);	
+	
+	// Create all new share parts
+	var share_next = share_from;
+	for(part in new_parts){
+		val sb = create share_block (
+			company = orig_share_block[0].company,
+			share_from = share_next,
+			share_to = share_next + part - 1,
+			share_type = orig_share_block[0].share_type,
+			pledging = orig_share_block[0].pledging,
+			certificate = orig_share_block[0].certificate,
+			recalled = orig_share_block[0].recalled,
+			created_time_stamp = op_context.last_block_time,
+			changed_time_stamp = op_context.last_block_time
+		);
+		share_next += part;
+		
+		create share_block_persona (
+			persona = orig_share_block[0].persona,
+			share_block = sb
+		);
+		
+		// History log - Share block divide, sub share block create
+		val share_block_new = history_m.share_block_json(
+			share_from = sb.share_from, share_to=sb.share_to,
+			persona_id = old_persona_id, share_type = sb.share_type,
+			pledging = sb.pledging, certificate = sb.certificate,
+			recalled = sb.recalled		
+		);
+		history_m.add(
+			org_nr,
+			op_context.last_block_time,
+			agent_id,
+			agent_pubkey,
+			history_m.object_type_enum.SHAREBLOCK,
+			history_m.event_type_enum.SB_DIVIDE_ADD,
+			share_block_old.to_gtv_pretty().to_json(),
+			share_block_new.to_gtv_pretty().to_json(),
+			'['+sb.share_from+','+sb.share_to+']',
+			sb.share_from + ' - ' + sb.share_to,
+			old_persona_id
+		);
+		// History log - sub share block owner
+		history_m.add(
+			org_nr,
+			op_context.last_block_time,
+			agent_id,
+			agent_pubkey,
+			history_m.object_type_enum.SHAREBLOCK,
+			history_m.event_type_enum.SB_OWNERSHIP_GAINEDDIVIDE,
+			share_block_old.to_gtv_pretty().to_json(),
+			share_block_new.to_gtv_pretty().to_json(),
+			'['+sb.share_from+','+sb.share_to+']',
+			sb.share_from + ' - ' + sb.share_to,
+			old_persona_id
+		);
+	}				
+}

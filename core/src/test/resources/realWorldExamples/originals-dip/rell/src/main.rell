@@ -1,0 +1,5 @@
+module;
+
+import tests.operations;
+
+import ft3.ft3_basic_dev.*;

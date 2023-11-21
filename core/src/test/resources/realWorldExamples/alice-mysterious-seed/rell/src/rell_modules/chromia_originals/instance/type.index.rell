@@ -1,0 +1,56 @@
+
+entity instance_property_value_index {
+	key instance_property, value: integer;
+}
+
+function get_property_index(instance, path: text): integer {
+	return _get_property_index(_instance_property_of_path(instance, path));
+}
+
+function _get_property_index(instance_property): integer {
+	require(
+		instance_property_type(instance_property) == property_type.indx
+	);
+	return instance_property_value_index @ {
+		instance_property
+	}.value;
+}
+
+function _initialize_index_property(instance_property, init_value: gtv?) {
+	val structure = instance_property.structure_property.structure;
+	
+	// TODO: convert to single function
+	var count = get_instances_count(structure);
+	val max_count = get_instances_max_count(structure);
+	
+	if (max_count??) {
+		require(
+			count <= max_count, 
+			"Maximum instance count reached for structure '" + structure.name + "'"
+		);
+	}
+	
+	//TODO: analyze if two instances with same index could be concurrently created
+	create instance_property_value_index(
+		instance_property,
+		value = count - 1
+	);
+}
+
+function find_one_index(structure, property_name: text, value: integer): instance? {
+	val instances = instance_property_value_index @* {
+		.instance_property.instance.structure == structure,	
+		.instance_property.structure_property.name == property_name,
+		.value == value
+	} ( .instance_property.instance ) limit 1;
+	
+	return if (instances.size() > 0) instances[0] else null;
+}
+
+function find_all_index(structure, property_name: text, value: integer): list<instance> {
+	return instance_property_value_index @* {
+		.instance_property.instance.structure == structure,	
+		.instance_property.structure_property.name == property_name,
+		.value == value
+	} ( .instance_property.instance );
+}

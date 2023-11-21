@@ -1,0 +1,175 @@
+
+struct sd_config {
+	static: static_key = static_key.all;
+	optional: optional_key = optional_key.all;
+	meta: boolean = false;
+	tags: list<name> = list<name>();
+}
+
+function structure_definition(structure, sd_config): map<name, gtv> {
+	val structure_definition_map = map<name, gtv>();
+	structure_definition_map["name"] = structure.name.to_gtv();
+	structure_definition_map["properties"] = __structure.structure_property_definitions(structure, sd_config).to_gtv();
+	return structure_definition_map;
+}
+
+namespace __structure {
+	function structure_property_definitions(structure, sd_config): map<name, gtv> {
+		val properties_map = map<name, gtv>();
+		
+		if (sd_config.static != static_key.non_static) {
+			properties_map.put_all(static_property_definitions(structure, sd_config));
+		}
+		
+		if (sd_config.static != static_key.static) {
+			properties_map.put_all(property_definitions(structure, sd_config));
+		}
+		
+		return properties_map;
+	}
+	
+	function property_definitions(structure, sd_config): map<name, gtv> {	
+		val structure_properties = structure_property @* { structure };
+		val properties_map = map<name, gtv>();
+		for (structure_property in structure_properties) {
+			properties_map[structure_property.name] 
+				= property_definition(structure_property, sd_config).to_gtv();
+		}
+		return properties_map;
+	}
+	
+	function property_definition(structure_property, sd_config): map<name, gtv> {
+		val property_definition_map = map<name, gtv>();
+		
+		property_definition_map["type"] = property_type(structure_property).to_gtv();
+		
+		if (sd_config.static == static_key.all) {
+			property_definition_map["static"] = (false).to_gtv();
+		}
+		
+		if (sd_config.meta or sd_config.tags.size() > 0) {
+			property_definition_map["meta"] 
+				= property_meta(structure_property, sd_config.tags).to_gtv();
+		}
+		
+		if (sd_config.optional == optional_key.all) {
+			property_definition_map["optional"] = structure_property.optional.to_gtv();
+		}
+		
+		return property_definition_map;
+	}
+	
+	function property_type(structure_property): name {
+		when (structure_property.type) {
+			property_type.interface ->
+				return structure_property_interface @ { 
+					structure_property
+				} ( 
+					.interface.name
+				);
+			property_type.structure ->
+				return structure_property_structure @ {
+					structure_property
+				} (
+					.structure.name				
+				);
+			else -> {
+				val type = structure_property.type;
+				return type.name;
+			}
+		}
+	}
+	
+	function property_meta(structure_property, tags: list<name>): map<name, gtv> {
+		val property_meta_map = map<name, gtv>();
+		
+		if (tags.size() == 0) {
+			val meta_tags = structure_property_meta_tag @* { structure_property };
+			for (tag in meta_tags) {
+				property_meta_map[tag.name] = tag.value.to_gtv();
+			}
+		} else {
+			for (tag in tags) {
+				val meta_tag = structure_property_meta_tag @? { structure_property, .name == tag };
+				
+				if (meta_tag??) {
+					property_meta_map[meta_tag.name] = meta_tag.value.to_gtv();
+				}
+			}
+		}
+		
+		return property_meta_map;
+	}
+	
+	function static_property_definitions(structure, sd_config): map<name, gtv> {
+		val properties = static_property @* { structure };
+		val properties_map = map<name, gtv>();
+		for (property in properties) {
+			properties_map[property.name] = static_property_definition(property, sd_config).to_gtv();
+		}
+		return properties_map;
+	}
+	
+	function static_property_definition(static_property, sd_config): map<name, gtv> {
+		val property_definition_map = map<name, gtv>();
+		
+		property_definition_map["type"] = static_property_type(static_property).to_gtv();
+		
+		if (sd_config.static == static_key.all) {
+			property_definition_map["static"] = (true).to_gtv();
+		}
+		
+		if (sd_config.meta or sd_config.tags.size() > 0) {
+			property_definition_map["meta"]
+				= static_property_meta(static_property, sd_config.tags).to_gtv();
+		}
+		
+		if (sd_config.optional == optional_key.all) {
+			property_definition_map["optional"] = static_property.optional.to_gtv();
+		}
+		
+		return property_definition_map;
+	}
+	
+	function static_property_type(static_property): text {
+			when (static_property.type) {
+			property_type.interface ->
+				return static_property_interface @ { 
+					static_property
+				} ( 
+					.interface.name
+				);
+			property_type.structure ->
+				return static_property_structure @ {
+					static_property
+				} (
+					.structure.name				
+				);
+			else -> {
+				val type = static_property.type;
+				return type.name;
+			}
+		}
+	}
+	
+	function static_property_meta(static_property, tags: list<name>): map<name, gtv> {
+		val property_meta_map = map<name, gtv>();
+		
+		if (tags.size() == 0) {
+			val meta_tags = static_property_meta_tag @* { static_property };
+			for (tag in meta_tags) {
+				property_meta_map[tag.name] = tag.value.to_gtv();
+			}
+		} else {
+			for (tag in tags) {
+				val meta_tag = static_property_meta_tag @? { static_property, .name == tag };
+				
+				if (meta_tag??) {
+					property_meta_map[meta_tag.name] = meta_tag.value.to_gtv();				
+				}
+			}
+		}
+		
+		return property_meta_map;
+	}
+}

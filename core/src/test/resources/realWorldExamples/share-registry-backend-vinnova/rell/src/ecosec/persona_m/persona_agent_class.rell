@@ -1,0 +1,13 @@
+
+//****************************************
+// persona_agent - class
+//
+// - Table authorizing an agent for specific persona
+// - agent should still be required to have a valid pubkey
+
+import ecosec.agent_m;
+
+entity persona_agent {
+	key persona; // key: One persona can only have one agent.
+	index agent_m.agent; // index: One agent can be authorized for many personas
+}

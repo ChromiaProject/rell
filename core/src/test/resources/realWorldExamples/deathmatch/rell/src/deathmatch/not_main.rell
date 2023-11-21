@@ -1,0 +1,903 @@
+enum notification_types {
+  END_TIME
+}
+
+object char_type_1 {
+  char_type: integer = 1;
+  cost: integer = 1;
+  mutable move_distance: integer = 4;
+  mutable health: integer = 15;
+  mutable damage: integer = 5;
+  mutable max_health: integer = 15;
+  mutable attac_range: integer = 3;
+  name: text = 'Soldier';
+}
+
+object char_type_2 {
+  char_type: integer = 2;
+  cost: integer = 2;
+  mutable move_distance: integer = 2;
+  mutable health: integer = 8;
+  mutable damage: integer = 10;
+  mutable max_health: integer = 8;
+  mutable attac_range: integer = 2;
+  name: text = 'Assassin';
+}
+
+object char_type_3 {
+  char_type: integer = 3;
+  cost: integer = 3;
+  mutable move_distance: integer = 3;
+  mutable health: integer = 15;
+  mutable damage: integer = 5;
+  mutable max_health: integer = 15;
+  mutable attac_range: integer = 4;
+  name: text = 'Archer';
+}
+
+object char_type_4 {
+  char_type: integer = 4;
+  cost: integer = 4;
+  mutable move_distance: integer = 4;
+  mutable health: integer = 35;
+  mutable damage: integer = 10;
+  mutable max_health: integer = 35;
+  mutable attac_range: integer = 1;
+  name: text = 'Tank';
+}
+
+function require_turn (
+  user,
+  combat
+) {
+  val list_of_turns = combat_user @* {.combat == combat} (@sort .last_turn);
+  val the_turn = combat_user @ {.last_turn == list_of_turns[0]} (.user);
+  require(user == the_turn);
+}
+
+function update_move (
+  user,
+  combat
+) {
+  val current_user = combat_user @ {user, combat} (.last_turn);
+  update combat_user @ {user, combat} (.last_turn += 200);
+}
+
+function update_notification (
+  user,
+  notification_type: integer
+) {
+  val e_notification = notification_types.value(notification_type);
+  val is_notification_exist = notification @? {
+    .user == user,
+    .notification_types == e_notification
+  };
+  if (is_notification_exist != null) {
+    update is_notification_exist(time = op_context.last_block_time);
+  } else {
+    create notification (
+      user,
+      e_notification,
+      op_context.last_block_time
+    );
+  }
+}
+
+function rate_limit (the_game: combat, the_user: user) {
+  delete notification @? {the_user, .notification_types == notification_types.value(0)};
+  require_turn(the_user, the_game);
+
+  val chek = (char @* {
+    the_game, .owner == the_user, .char_type > 0, .dead == false
+  }).size() == 0;
+  if (chek) {
+    update combat @ {combat == the_game} (
+      .last_update = op_context.last_block_time
+    );
+    update_move(the_user, the_game);
+  }
+
+  val recovery_time = config.misc.recovery_time;
+  var stat = combat_user @ {
+    .user == the_user, .combat == the_game
+  } (.combat.last_update);
+  val delta = op_context.last_block_time - stat;
+  if(delta > recovery_time){
+    delete notification @? {the_user, .notification_types == notification_types.value(0)};
+    update combat @ {combat == the_game} (
+      .last_update = op_context.last_block_time
+    );
+    update_move(the_user, the_game);
+    var distance = 0;
+    for (cell in char @* {
+      .combat == the_game
+    })
+    {
+      if (cell.char_type == 1){
+        distance = char_type_1.move_distance;
+        update char @* {the_game, .char_type == cell.char_type} ( move_distance=distance);
+      } else if(cell.char_type == 2){
+        distance = char_type_2.move_distance;
+        update char @* {the_game, .char_type == cell.char_type} ( move_distance=distance);
+      } else if(cell.char_type == 3){
+        distance = char_type_3.move_distance;
+        update char @* {the_game, .char_type == cell.char_type} ( move_distance=distance);
+      } else if(cell.char_type == 4){
+        distance = char_type_4.move_distance;
+        update char @* {the_game, .char_type == cell.char_type} ( move_distance=distance);
+      }
+    }
+    val enemy_is_dead = (char @* {
+      the_game, .owner != the_user, .dead == false
+    }).size() == 0;
+    if (enemy_is_dead) {
+      update combat @ {combat == the_game} (
+        .winner = the_user.name
+      );
+    }
+  }
+  else if(delta > recovery_time - 10000){
+    update_notification(the_user, 0);
+  };
+}
+
+function init_board_state (the_game: combat, finalArr: list<integer>) {
+  val users = combat_user @* {.combat == the_game} (.user);
+  for (i in range(finalArr.size())) {
+    val char = finalArr[i];
+    var owner = users[0];
+    var char_type = 0;
+    var move_distance = 0;
+    var health = 0;
+    var damage = 0;
+    var max_health = 0;
+    var attac_range = 0;
+    var dead = true;
+    if( char == 1) {
+      char_type = char_type_1.char_type;
+      owner = users[0];
+      move_distance = char_type_1.move_distance;
+      health = char_type_1.health;
+      damage = char_type_1.damage;
+      max_health = char_type_1.max_health;
+      attac_range = char_type_1.attac_range;
+      dead = false;
+    }
+    if( char == 2) {
+      char_type = char_type_2.char_type;
+      owner = users[0];
+      move_distance = char_type_2.move_distance;
+      health = char_type_2.health;
+      damage = char_type_2.damage;
+      max_health = char_type_2.max_health;
+      attac_range = char_type_2.attac_range;
+      dead = false;
+    }
+    if( char == 3) {
+      char_type = char_type_3.char_type;
+      owner = users[0];
+      move_distance = char_type_3.move_distance;
+      health = char_type_3.health;
+      damage = char_type_3.damage;
+      max_health = char_type_3.max_health;
+      attac_range = char_type_3.attac_range;
+      dead = false;
+    }
+    if( char == 4) {
+      char_type = char_type_4.char_type;
+      owner = users[0];
+      move_distance = char_type_4.move_distance;
+      health = char_type_4.health;
+      damage = char_type_4.damage;
+      max_health = char_type_4.max_health;
+      attac_range = char_type_4.attac_range;
+      dead = false;
+    }
+    if( char == 5 ) {
+      char_type = char_type_1.char_type;
+      owner = users[1];
+      move_distance = char_type_1.move_distance;
+      health = char_type_1.health;
+      damage = char_type_1.damage;
+      max_health = char_type_1.max_health;
+      attac_range = char_type_1.attac_range;
+      dead = false;
+    }
+    if( char == 6 ) {
+      char_type = char_type_2.char_type;
+      owner = users[1];
+      move_distance = char_type_2.move_distance;
+      health = char_type_2.health;
+      damage = char_type_2.damage;
+      max_health = char_type_2.max_health;
+      attac_range = char_type_2.attac_range;
+      dead = false;
+    }
+    if( char == 7 ) {
+      char_type = char_type_3.char_type;
+      owner = users[1];
+      move_distance = char_type_3.move_distance;
+      health = char_type_3.health;
+      damage = char_type_3.damage;
+      max_health = char_type_3.max_health;
+      attac_range = char_type_3.attac_range;
+      dead = false;
+    }
+    if( char == 8 ) {
+      char_type = char_type_4.char_type;
+      owner = users[1];
+      move_distance = char_type_4.move_distance;
+      health = char_type_4.health;
+      damage = char_type_4.damage;
+      max_health = char_type_4.max_health;
+      attac_range = char_type_4.attac_range;
+      dead = false;
+    }
+    if( char == 9 ) {
+      char_type = char_type_1.char_type;
+      owner = users[2];
+      move_distance = char_type_1.move_distance;
+      health = char_type_1.health;
+      damage = char_type_1.damage;
+      max_health = char_type_1.max_health;
+      attac_range = char_type_1.attac_range;
+      dead = false;
+    }
+    if( char == 10 ) {
+      char_type = char_type_2.char_type;
+      owner = users[2];
+      move_distance = char_type_2.move_distance;
+      health = char_type_2.health;
+      damage = char_type_2.damage;
+      max_health = char_type_2.max_health;
+      attac_range = char_type_2.attac_range;
+      dead = false;
+    }
+    if( char == 11 ) {
+      char_type = char_type_3.char_type;
+      owner = users[2];
+      move_distance = char_type_3.move_distance;
+      health = char_type_3.health;
+      damage = char_type_3.damage;
+      max_health = char_type_3.max_health;
+      attac_range = char_type_3.attac_range;
+      dead = false;
+    }
+    if( char == 12 ) {
+      char_type = char_type_4.char_type;
+      owner = users[2];
+      move_distance = char_type_4.move_distance;
+      health = char_type_4.health;
+      damage = char_type_4.damage;
+      max_health = char_type_4.max_health;
+      attac_range = char_type_4.attac_range;
+      dead = false;
+    }
+    if( char == 13 ) {
+      char_type = char_type_1.char_type;
+      owner = users[3];
+      move_distance = char_type_1.move_distance;
+      health = char_type_1.health;
+      damage = char_type_1.damage;
+      max_health = char_type_1.max_health;
+      attac_range = char_type_1.attac_range;
+      dead = false;
+    }
+    if( char == 14 ) {
+      char_type = char_type_2.char_type;
+      owner = users[3];
+      move_distance = char_type_2.move_distance;
+      health = char_type_2.health;
+      damage = char_type_2.damage;
+      max_health = char_type_2.max_health;
+      attac_range = char_type_2.attac_range;
+      dead = false;
+    }
+    if( char == 15 ) {
+      char_type = char_type_3.char_type;
+      owner = users[3];
+      move_distance = char_type_3.move_distance;
+      health = char_type_3.health;
+      damage = char_type_3.damage;
+      max_health = char_type_3.max_health;
+      attac_range = char_type_3.attac_range;
+      dead = false;
+    }
+    if( char == 16 ) {
+      char_type = char_type_4.char_type;
+      owner = users[3];
+      move_distance = char_type_4.move_distance;
+      health = char_type_4.health;
+      damage = char_type_4.damage;
+      max_health = char_type_4.max_health;
+      attac_range = char_type_4.attac_range;
+      dead = false;
+    }
+    val x = i / config.misc.map_size_x;
+    val y = i % config.misc.map_size_y;
+
+    create char(
+      combat = the_game,
+      x, y,
+      owner,
+      char_type,
+      move_distance,
+      health,
+      damage,
+      max_health,
+      attac_range,
+      dead
+    );
+    update combat @ {combat == the_game} (
+      .last_update = op_context.last_block_time
+    );
+  }
+}
+
+operation check_time (the_game: combat, the_user: user) {
+  check_signer(the_user.pubkey);
+  rate_limit(the_game, the_user);
+}
+
+operation add_arr_user (pubkey_user: pubkey, selectedHeroes: list<integer>) {
+  check_signer(pubkey_user);
+  require(user @ {pubkey_user} (.coins) <= 9);
+  update user @ {pubkey_user}(
+    .battle_field = selectedHeroes.str()
+  );
+}
+
+operation start_game (pubkey_user_1: pubkey, pubkey_user_2: pubkey, finalArr: list<integer>, the_game: combat) {
+  check_signer(pubkey_user_1);
+  var user_1 = user @ {pubkey_user_1};
+  var user_2 = user @ {pubkey_user_2};
+  require(user_1 != user_2);
+  require(char @? {.combat == the_game} == null);
+  init_board_state(the_game, finalArr);
+}
+
+operation want_to_play (user, quantity: integer) {
+  check_signer(user.pubkey);
+  create user_wants_to_play (
+    user,
+    quantity
+  );
+}
+
+operation dont_want_to_play (user) {
+  check_signer(user.pubkey);
+  delete user_wants_to_play @? {user};
+  delete combat_user @? {user};
+}
+
+operation move_unit (
+  the_game: combat,
+  the_user: user,
+  from_x: integer,
+  from_y: integer,
+  to_x: integer,
+  to_y: integer,
+  move_distance: integer
+){
+  check_signer(the_user.pubkey);
+  require_turn(the_user, the_game);
+
+  var distance = abs(abs(to_x - from_x) + abs(to_y - from_y));
+  val count_x = abs(to_x - from_x);
+  val count_y = abs(to_y - from_y);
+  if (abs(from_x - to_x) <= move_distance  and abs(from_y - to_y) <= move_distance) {
+    var target_unit = char @ {
+      the_game, .x == from_x, .y == from_y
+    };
+    var diagonalX = abs(from_x - to_x);
+    var diagonalY = abs(from_y - to_y);
+    var current_distance = 0;
+    if ((target_unit.move_distance - distance) < 0) {
+      current_distance = 0;
+    } else if ((diagonalX == diagonalY) and (diagonalX <= move_distance)){
+      current_distance = target_unit.move_distance - diagonalX;
+    } else {
+      current_distance = target_unit.move_distance - distance;
+    }
+
+    update char @ {
+      the_game, .x == to_x, .y == to_y
+    } (
+      owner = the_user,
+      char_type = target_unit.char_type,
+      move_distance = current_distance,
+      damage = target_unit.damage,
+      health = target_unit.health,
+      max_health = target_unit.max_health,
+      attac_range = target_unit.attac_range,
+      dead = false
+    );
+
+    update char @ {
+      the_game, .x == from_x, .y == from_y
+    } (char_type = 0, move_distance = 0, dead = true);
+
+    update combat @ {combat == the_game} (
+      .last_update = op_context.last_block_time
+    );
+  }
+}
+
+operation attac_unit (
+  the_game: combat,
+  the_user: user,
+  from_x: integer,
+  from_y: integer,
+  to_x: integer,
+  to_y: integer,
+  damage: integer,
+  attac_range: integer
+){
+  check_signer(the_user.pubkey);
+  require_turn(the_user, the_game);
+
+  var distance = abs(abs(to_x - from_x) + abs(to_y - from_y));
+  var move_distance = char @ {
+    the_game, .x == from_x, .y == from_y
+  } (.move_distance);
+
+  require(abs(from_x - to_x) <= attac_range and abs(from_y - to_y) <= attac_range);
+  require(move_distance > 1);
+  if ((abs(from_x - to_x) <= move_distance  and abs(from_y - to_y) <= move_distance) or
+    (abs(from_x - to_x) <= attac_range and abs(from_y - to_y) <= attac_range)) {
+    var enemy = char @ {
+      the_game, .x == to_x, .y == to_y
+    };
+
+    require(enemy.owner != the_user);
+
+    if (move_distance <= config.misc.cost_of_attack) {
+      update char @ {
+        the_game, .x == from_x, .y == from_y
+      } (move_distance = 0);
+    } else {
+      update char @ {
+        the_game, .x == from_x, .y == from_y
+      } (move_distance = (move_distance - config.misc.cost_of_attack));
+    }
+
+    update char @ {
+      the_game, .x == to_x, .y == to_y
+    } (.health = (.health - damage));
+
+    update combat @ {combat == the_game} (
+      .last_update = op_context.last_block_time
+    );
+
+    if (enemy.health <= 0){
+      enemy.dead = true;
+      enemy.move_distance = 0;
+      enemy.attac_range = 0;
+      enemy.health = 0;
+    }
+  }
+}
+
+operation finish_move (game: combat, user) {
+  check_signer(user.pubkey);
+  require_turn(user, game);
+
+  var distance = 0;
+  for (cell in char @* {
+    .combat == game
+  })
+  {
+    if (cell.char_type == 1){
+      distance = char_type_1.move_distance;
+      update char @* {game, .char_type == cell.char_type} ( move_distance=distance);
+    } else if (cell.char_type == 2){
+      distance = char_type_2.move_distance;
+      update char @* {game, .char_type == cell.char_type} ( move_distance=distance);
+    } else if (cell.char_type == 3){
+      distance = char_type_3.move_distance;
+      update char @* {game, .char_type == cell.char_type} ( move_distance=distance);
+    } else if (cell.char_type == 4){
+      distance = char_type_4.move_distance;
+      update char @* {game, .char_type == cell.char_type} ( move_distance=distance);
+    }
+  }
+
+  update game (last_update = op_context.last_block_time);
+
+  val enemy_is_dead = (char @* {
+    game, .owner != user, .dead == false
+  }).size() == 0;
+
+  if (enemy_is_dead) {
+    update combat @ {combat == game} (
+      .winner = user.name
+    );
+  }
+  update_move(user, game);
+  delete notification @? {user, .notification_types == notification_types.value(0)};
+}
+
+operation give_up(game: combat, user) {
+  check_signer(user.pubkey);
+  val enemy = combat_user @ {.combat == game, .user != user} (.user);
+  update combat @ {combat == game} (
+    .winner = enemy.name
+  );
+}
+
+operation give_up_four(game: combat, user) {
+  check_signer(user.pubkey);
+  update char @* {game, .owner == user} ( dead = true);
+  val list_of_turns = combat_user @* {.combat == game} (@sort .last_turn);
+  val the_turn = combat_user @ {.last_turn == list_of_turns[0]} (.user);
+
+  if(the_turn == user) {
+    update_move(user, game);
+  };
+  delete combat_user @? {.user == user, .combat == game };
+}
+
+operation exit_game(pubkey, user, game: combat) {
+  check_signer(pubkey);
+  delete viewers @* {.combat_user.combat == game};
+  delete char @* {
+    .combat == game
+  };
+  delete combat_user @* {.combat == game};
+  delete combat @ {combat == game};
+}
+
+operation buy_unit(pubkey, cost: integer) {
+  check_signer(pubkey);
+  require( user @ {
+    pubkey
+  }.coins - cost >= 0);
+  update user @ {pubkey}(
+    .coins = .coins - cost
+  );
+}
+
+operation sold_unit(pubkey, cost: integer) {
+  check_signer(pubkey);
+  require( user @ {
+    pubkey
+  }.coins + cost <= 10);
+  update user @ {pubkey}(
+    .coins = .coins + cost
+  );
+}
+
+operation show_modal(pubkey_user_1: pubkey, pubkey_user_2: pubkey) {
+  check_signer(pubkey_user_1);
+  val user_1 = user @ {pubkey_user_1};
+  val user_2 = user @ {pubkey_user_2};
+  require(user_1 != user_2);
+
+  create users_confirm(user1 = user_1, user2 = user_2);
+
+  update user @ {pubkey_user_1}(
+    .show_modal = 1,
+    .ready = 0,
+    .battle_field = ''
+  );
+  update user @ {pubkey_user_2}(
+    .show_modal = 1,
+    .ready = 0,
+    .battle_field = ''
+  );
+}
+
+operation confirm_game(pubkey, users_confirm) {
+  check_signer(pubkey);
+  var users = users_confirm @ {(.user1.pubkey == pubkey) or (.user2.pubkey == pubkey)};
+  var mode = user_wants_to_play @ {.user == users.user2};
+  if (users.user1.pubkey == pubkey) {
+    update user @ {pubkey}(
+      .ready = 1
+    );
+  } else if (users.user2.pubkey == pubkey) {
+    update user @ {pubkey}(
+      .ready = 1
+    );
+  };
+  if ((users.user1.ready == 1) and (users.user2.ready == 1)){
+    require(users.user1 != users.user2);
+    update user @ {users.user1.pubkey} (
+      .battle_field = '',
+      .coins = 10,
+      .show_modal = 0,
+      .ready = 1
+    );
+    update user @ {users.user2.pubkey} (
+      .battle_field = '',
+      .coins = 10,
+      .show_modal = 0,
+      .ready = 1
+    );
+
+    var the_game = create combat (last_update = op_context.last_block_time, game_mode = mode.number_of_players);
+    create combat_user(user = users.user1, the_game, last_turn = op_context.last_block_time);
+    create combat_user(user = users.user2, the_game, last_turn = op_context.last_block_time + 50);
+
+    delete user_wants_to_play @? {users.user2};
+    delete user_wants_to_play @? {users.user1};
+  }
+}
+
+operation close_modal(pubkey) {
+  check_signer(pubkey);
+  update user @ {pubkey}(
+    .show_modal = 0
+  );
+  delete users_confirm @? {
+    ((.user1.pubkey == pubkey) or (.user2.pubkey == pubkey))
+  };
+}
+
+operation watch_game(user, combatId: combat) {
+  check_signer(user.pubkey);
+  val game = combat_user @* {.combat == combatId};
+  create viewers(user = user, game[0]);
+}
+
+operation exit_form_view(user) {
+  check_signer(user.pubkey);
+  delete viewers @? {.user == user};
+}
+
+operation add_user_game(pubkey_user_1: pubkey, pubkey_user_2: pubkey) {
+  check_signer(pubkey_user_1);
+  val user_1 = user @ {pubkey_user_1};
+  val user_2 = user @ {pubkey_user_2};
+  require(user_1 != user_2);
+  create users_for_game_mode(user1 = user_2, user2 = user_1);
+}
+
+operation start_game_mode(player: user, player2: user, player3: user, player4: user) {
+  check_signer(player.pubkey);
+
+  update user @ {player.pubkey} (
+    .battle_field = '',
+    .coins = 10,
+    .show_modal = 0,
+    .ready = 1
+  );
+  update user @ {player2.pubkey} (
+    .battle_field = '',
+    .coins = 10,
+    .show_modal = 0,
+    .ready = 1
+  );
+  update user @ {player3.pubkey} (
+    .battle_field = '',
+    .coins = 10,
+    .show_modal = 0,
+    .ready = 1
+  );
+  update user @ {player4.pubkey} (
+    .battle_field = '',
+    .coins = 10,
+    .show_modal = 0,
+    .ready = 1
+  );
+
+  var the_game = create combat (last_update = op_context.last_block_time, game_mode = 4);
+  create combat_user(user = player, the_game, last_turn = op_context.last_block_time);
+  create combat_user(user = player2, the_game, last_turn = op_context.last_block_time + 50);
+  create combat_user(user = player3, the_game, last_turn = op_context.last_block_time + 100);
+  create combat_user(user = player4, the_game, last_turn = op_context.last_block_time + 150);
+
+  delete users_confirm_four @* {.user2 == player};
+
+  delete user_wants_to_play @? {player};
+  delete user_wants_to_play @? {player2};
+  delete user_wants_to_play @? {player3};
+  delete user_wants_to_play @? {player4};
+  delete users_for_game_mode @* {.user1 == player};
+}
+
+operation show_modal_four(pubkey_user_1: pubkey, pubkey_user_2: pubkey) {
+  check_signer(pubkey_user_1);
+  val user_1 = user @ {pubkey_user_1};
+  val user_2 = user @ {pubkey_user_2};
+  require(user_1 != user_2);
+
+  create users_confirm_four(user1 = user_2, user2 = user_1);
+}
+
+operation close_modal_four(pubkey) {
+  check_signer(pubkey);
+  update user @ {pubkey}(
+    .show_modal = 0
+  );
+  delete users_confirm_four @? {
+    ((.user1.pubkey == pubkey) or (.user2.pubkey == pubkey))
+  };
+  delete users_for_game_mode @? {
+    ((.user1.pubkey == pubkey) or (.user2.pubkey == pubkey))
+  };
+}
+
+query get_winner (game: combat) {
+  return combat @ {combat == game} (
+    .winner
+  );
+}
+
+query users_with_modal(user) {
+  return users_confirm @? {
+    ((.user1 == user) or (.user2 == user))
+  } (
+    id=users_confirm,
+    player_1 = users_confirm.user1,
+    player_2 = users_confirm.user2,
+    player_1_pubkey = users_confirm.user1.pubkey,
+    player_2_pubkey = users_confirm.user2.pubkey,
+    player_1_name = users_confirm.user1.name,
+    player_2_name = users_confirm.user2.name
+  );
+}
+
+query get_active_game_of_viewer (user) {
+  return viewers @? {
+    (.user == user)
+  } (
+    id = .combat_user.combat
+  );
+}
+
+query viewers_count() {
+  return viewers @* {} (
+    .combat_user,
+    users = .user
+  );
+}
+
+query get_users_for_game (user){
+  val game = users_for_game_mode @* {
+    .user1 == user
+  } (
+    .user2,
+    host = .user1
+  );
+  return game;
+}
+
+query users_with_modal_four(user) {
+  return users_confirm_four @* {
+    ((.user1 == user) or (.user2 == user))
+  } (
+    id=users_confirm_four,
+    player_1 = users_confirm_four.user1,
+    player_2 = users_confirm_four.user2,
+    player_1_pubkey = users_confirm_four.user1.pubkey,
+    player_2_pubkey = users_confirm_four.user2.pubkey,
+    player_1_name = users_confirm_four.user1.name,
+    player_2_name = users_confirm_four.user2.name
+  );
+}
+
+query get_all_game_mode (){
+  val game = users_for_game_mode @* {} (
+    .user2,
+    host = .user1
+  );
+  return game;
+}
+
+query check_notification (user) {
+  val notifications = notification @* {
+    .user == user
+  } (
+    .user,
+    type = .notification_types
+  );
+  return notifications;
+}
+
+query get_users () {
+  return user @* {} (.name, .pubkey, id=user);
+}
+
+query get_units() = (
+  unit1=(
+    char_type = char_type_1.char_type,
+    cost = char_type_1.cost,
+    move_distance = char_type_1.move_distance,
+    health = char_type_1.health,
+    damage = char_type_1.damage,
+    attac_range = char_type_1.attac_range,
+    name = char_type_1.name
+  ),
+  unit2=(
+    char_type = char_type_2.char_type,
+    cost = char_type_2.cost,
+    move_distance = char_type_2.move_distance,
+    health = char_type_2.health,
+    damage = char_type_2.damage,
+    attac_range = char_type_2.attac_range,
+    name = char_type_2.name
+  ),
+  unit3=(
+    char_type = char_type_3.char_type,
+    cost = char_type_3.cost,
+    move_distance = char_type_3.move_distance,
+    health = char_type_3.health,
+    damage = char_type_3.damage,
+    attac_range = char_type_3.attac_range,
+    name = char_type_3.name
+  ),
+  unit4=(
+    char_type = char_type_4.char_type,
+    cost = char_type_4.cost,
+    move_distance = char_type_4.move_distance,
+    health = char_type_4.health,
+    damage = char_type_4.damage,
+    attac_range = char_type_4.attac_range,
+    name = char_type_4.name
+  )
+);
+
+query get_combat_user () {
+  return combat_user @* {} (
+    player = .user,
+    combat = .combat
+  );
+}
+
+query get_users_who_want_to_play () {
+  return user_wants_to_play @* {}(
+    name = .user.name, pubkey = .user.pubkey, id = .user, quantity = .number_of_players
+  );
+}
+
+query arr_user (pubkey_user: pubkey) {
+  return user @? {
+    (pubkey_user)
+  } (
+    .battle_field
+  );
+}
+
+query get_active_games () {
+  return combat_user @* {} (
+    id = combat_user,
+    combat_id = .combat,
+    player_id = .user,
+    player_name = .user.name,
+    player_coins = .user.coins,
+    game_mode = .combat.game_mode
+  );
+}
+
+query get_active_game_of_user (combat) {
+  return combat_user @* {
+    combat
+  } (
+    id = combat_user,
+    player = .user,
+    player_pubkey = .user.pubkey,
+    player_name = .user.name,
+    player_coins = .user.coins,
+    game_mode = .combat.game_mode
+  );
+}
+
+query get_game_state (game: combat, user) {
+  val currnet_turn = combat_user @* {.combat == game} (@sort .last_turn);
+  val the_turn = combat_user @ {.last_turn == currnet_turn[0]} (.user);
+
+  return combat_user @* {.combat == game} (
+    id = combat_user,
+    turn = the_turn.name,
+    owner = the_turn,
+    game_mode = .combat.game_mode
+  );
+}
+
+query get_board (game: combat) {
+  val board = char @+ {
+    game
+  } (@sort .x, @sort .y, .owner, .char_type, .dead, .move_distance, .health, .damage, .max_health, .attac_range);
+  return board;
+}

@@ -1,0 +1,5 @@
+@test module;
+
+import ^.operations.*;
+
+import ^.ft3.*;

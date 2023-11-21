@@ -1,0 +1,219 @@
+function test_fertilize_plant() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+		
+	val tx2 = rell.test.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.op(mysterious_seed.fertilize_plant(alice.account.id, alice.auth_descriptor, 5))
+		.sign(alice.keypair);
+	
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+		
+	val fertilizer_meter = mysterious_seed.retrieve_fertilizer_level(alice.account, time.now());
+	
+	assert_gt_lt(fertilizer_meter.level, 0.49, 0.5);
+}
+
+function test_fertilize_drops_by_1_percent_unit_every_864_seconds() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+		
+	val tx2 = rell.test.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.op(mysterious_seed.fertilize_plant(alice.account.id, alice.auth_descriptor, 5))
+		.sign(alice.keypair);
+	
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+		
+	val fertilizer_meter1 = mysterious_seed.retrieve_fertilizer_level(alice.account, time.now());
+	assert_gt_lt(fertilizer_meter1.level, 0.49, 0.5);
+	
+	val fertilizer_meter2 = mysterious_seed.retrieve_fertilizer_level(alice.account, time.seconds_from_now(864));
+	assert_gt_lt(fertilizer_meter2.level, 0.48, 0.49);
+}
+
+function test_fertilizer_level_resets_after_replanting() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+		
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.op(mysterious_seed.fertilize_plant(alice.account.id, alice.auth_descriptor, 5))
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.sign(alice.keypair);
+	
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+		
+	val fertilizer_meter = mysterious_seed.retrieve_fertilizer_level(alice.account, time.now());
+	
+	assert_equals(fertilizer_meter.level, 0);
+}
+
+function test_fertilizer_gives_bonus() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+		
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.op(mysterious_seed.fertilize_plant(alice.account.id, alice.auth_descriptor, 5))
+		.sign(alice.keypair);
+	
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+		
+	val bonus = mysterious_seed.bonus_interval @ { 
+		.plant.id == original_id, 
+		mysterious_seed.task_fertilizer()
+	};
+	
+	assert_equals(bonus.days, 0.5);
+}
+
+function test_fertilizer_bonus_increasable_to_max_of_day() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+		
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.op(mysterious_seed.fertilize_plant(alice.account.id, alice.auth_descriptor, 5))
+		.op(mysterious_seed.fertilize_plant(alice.account.id, alice.auth_descriptor, 5))
+		.sign(alice.keypair);
+	
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+		
+	val bonus = mysterious_seed.bonus_interval @ { 
+		.plant.id == original_id, 
+		mysterious_seed.task_fertilizer()
+	};
+	
+	assert_equals(bonus.days, 1);
+}
+
+function test_fertilizer_doesnt_increase_bonus_if_called_too_soon() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+		
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.op(mysterious_seed.fertilize_plant(alice.account.id, alice.auth_descriptor, 5))
+		.op(mysterious_seed.fertilize_plant(alice.account.id, alice.auth_descriptor, 5))
+		.op(mysterious_seed.fertilize_plant(alice.account.id, alice.auth_descriptor, 5))
+		.sign(alice.keypair);
+	
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+		
+	val tx3 = rell.test
+		.tx()
+		.op(mysterious_seed.fertilize_plant(alice.account.id, alice.auth_descriptor, 10))
+		.sign(alice.keypair);
+		
+	rell.test
+		.block()
+		.tx(tx3)
+		.run();
+		
+	val bonus = mysterious_seed.bonus_interval @* { 
+		.plant.id == original_id, 
+		mysterious_seed.task_fertilizer()
+	} ( @omit @sort .rowid, .days );
+	
+	assert_equals(bonus.get(0), 1);
+	assert_true(bonus.get(1) < 0.01);
+}

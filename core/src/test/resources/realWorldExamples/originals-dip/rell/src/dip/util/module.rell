@@ -1,0 +1,114 @@
+abstract module;
+
+import ^^.dip.*;
+
+function SEPERATOR() = "/";
+
+function validate_name(name) {
+	require(not name.contains(SEPERATOR()), "Illegal character in definition");
+}
+
+function ensure_type(expected: a_type, got: a_type) {
+	if (got != a_type.meta) {
+		if (expected.name.contains("container")) {
+			require(expected == got, "Unexpected type, expected " + expected + " got " + got);	
+		} else {
+			require(expected == got or got.name.contains("container"), "Unexpected type, expected " + expected + " got " + got);	
+		}
+	}
+}
+
+function ensure_simple_type(got: a_type) {
+	if (got != a_type.meta) {
+		require(not got.name.contains("container"), "Unexpected type, expected simple type got " + got);
+	}
+}
+
+function ensure_not_implemented(instance, attribute) {
+	require(not is_implemented(instance, attribute), "Attribute already implemented in parent!");
+}
+
+function ensure_optional(attribute) {
+	require(is_attribute_optional(attribute), "Tried to remove non optional attribute value.");
+}
+
+function r_zero(): rowid {
+	return rowid.from_gtv(integer(0).to_gtv());
+}
+
+function is_implemented(instance, attribute): boolean {
+	val prototypes = get_prototypes(instance);
+	prototypes.add(instance);
+	
+	when (attribute.a_type) {
+		a_type.boolean -> {
+			return boolean_attribute @? {.instance in prototypes or .instance == instance, attribute} != null;
+		}
+		a_type.byte_array -> {
+			return byte_array_attribute @? {.instance in prototypes or .instance == instance, attribute} != null;
+		}
+		a_type.decimal -> {
+			return decimal_attribute @? {.instance in prototypes or .instance == instance, attribute} != null;
+		}
+		a_type.id -> {
+			return id_attribute @? {.instance in prototypes or .instance == instance, attribute} != null;
+		}
+		a_type.instance -> {
+			return instance_attribute @? {.instance in prototypes or .instance == instance, attribute} != null;
+		}
+		a_type.integer -> {
+			return integer_attribute @? {.instance in prototypes or .instance == instance, attribute} != null;
+		}
+		a_type.text -> {
+			return text_attribute @? {.instance in prototypes or .instance == instance, attribute} != null;
+		}
+		a_type.unordered_container -> {
+			return set_attribute @? {.instance in prototypes or .instance == instance, attribute} != null;
+		}
+		a_type.addressable_container -> {
+			return map_attribute @? {.instance in prototypes or .instance == instance, attribute} != null;
+		}
+		a_type.ordered_container -> {
+			return list_attribute @? {.instance in prototypes or .instance == instance, attribute} != null;
+		}
+		else -> return false;
+	}
+}
+
+function gtv_to_list_of_gtv(gtv, type: a_type): list<gtv> {
+	val ret = list<gtv>();
+	
+	when (type) {
+		a_type.boolean -> {
+			val elements = list<boolean>.from_gtv(gtv);
+			for (element in elements) ret.add(element.to_gtv());
+		}
+		a_type.byte_array -> {
+			val elements = list<byte_array>.from_gtv(gtv);
+			for (element in elements) ret.add(element.to_gtv());
+		}
+		a_type.decimal -> {
+			val elements = list<decimal>.from_gtv(gtv);
+			for (element in elements) ret.add(element.to_gtv());
+		}
+		a_type.instance -> {
+			val elements = list<instance>.from_gtv(gtv);
+			for (element in elements) ret.add(element.to_gtv());
+		}
+		a_type.integer -> {
+			val elements = list<integer>.from_gtv(gtv);
+			for (element in elements) ret.add(element.to_gtv());
+		}
+		a_type.text -> {
+			val elements = list<text>.from_gtv(gtv);
+			for (element in elements) ret.add(element.to_gtv());
+		}
+		else -> require(false, "Unimplemented path");
+	}
+	
+	return ret;
+}
+
+function gtv_to_set_of_gtv(gtv, type: a_type): set<gtv> {	
+	return set(gtv_to_list_of_gtv(gtv, type));
+}

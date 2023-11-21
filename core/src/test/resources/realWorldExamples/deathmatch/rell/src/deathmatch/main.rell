@@ -1,0 +1,719 @@
+operation register_user (pubkey, name) {
+  require(is_signer(pubkey));
+  create user (name, pubkey);
+}
+
+operation create_lobby (name, max_players_count: integer, user_pubkey: pubkey) {
+  val user_id = user @ { user_pubkey };
+  remove_user_lobby_relations(user_id);
+
+  val lobby_id = create lobby (
+    name,
+    max_players_count,
+    created = op_context.last_block_time
+  );
+
+  init_heroes();
+  create_map(lobby_id);
+  create user_lobby (
+    lobby = lobby_id,
+    user = user_id,
+    is_player = true,
+    coins_amount = 10
+  );
+
+  create chat (
+    lobby = lobby_id
+  );
+
+  val found_chat = chat @ {
+    .lobby == lobby_id
+  };
+
+  create chat_member (
+    chat = found_chat,
+    user = user_id,
+    is_muted = false
+  );
+}
+
+operation join_lobby (lobby_id: lobby, user_pubkey: pubkey) {
+  val lobby_or_null = lobby @? {
+    lobby == lobby_id
+  };
+
+  if (lobby_or_null != null) {
+    val user_id = user @ { user_pubkey };
+    remove_user_lobby_relations(user_id);
+
+    val found_lobby = lobby_or_null;
+
+    val lobby_players_size = (user_lobby @* {
+      .lobby == found_lobby,
+      .is_player == true
+    }).size();
+
+    if (lobby_players_size < found_lobby.max_players_count) {
+      create user_lobby (
+        lobby = found_lobby,
+        user = user_id,
+        is_player = true,
+        coins_amount = 10
+      );
+    } else {
+      create user_lobby (
+        lobby = found_lobby,
+        user = user_id,
+        is_player = false,
+        coins_amount = 0
+      );
+    }
+
+    val found_chat = chat @ {
+      .lobby == found_lobby
+    };
+
+    create chat_member (
+      chat = found_chat,
+      user = user_id,
+      is_muted = false
+    );
+  }
+}
+
+operation find_game (user_pubkey: pubkey) {
+  val user_id = user @ { user_pubkey };
+  remove_user_lobby_relations(user_id);
+
+  var lobby_id_or_null: lobby? = null;
+  val lobbies = lobby @* {};
+
+  for (l_lobby in lobbies) {
+    val players_in_lobby = user_lobby @* {
+      .lobby == l_lobby,
+      .is_player == true
+    } ( .user );
+
+    val max_players_for_lobby = lobby @ {
+      lobby == l_lobby
+    } ( .max_players_count );
+
+    if (players_in_lobby.size() < max_players_for_lobby) {
+      lobby_id_or_null = l_lobby;
+      break;
+    }
+  }
+
+  if (lobby_id_or_null == null) {
+    lobby_id_or_null = create lobby (
+      name = 'Global ('+ user_id.name + ')',
+      max_players_count = config.game.max_players_count,
+      created = op_context.last_block_time
+    );
+  }
+
+  init_heroes();
+
+  val found_lobby_id = lobby_id_or_null;
+
+  create user_lobby (
+    lobby = found_lobby_id,
+    user = user_id,
+    is_player = true,
+    coins_amount = 10
+  );
+  create_map(found_lobby_id);
+}
+
+operation toggle_player_status (user_pubkey: pubkey, lobby_id: lobby) {
+  val lobby_or_null = lobby @? {
+    lobby == lobby_id
+  };
+
+  if (lobby_or_null != null) {
+    val user_id = user @ { user_pubkey };
+    val ready_player = user_lobby @? {
+      .lobby == lobby_or_null,
+      .user == user_id,
+      .is_ready == true,
+      .is_player == true
+    };
+
+    update user_lobby @ {
+      .lobby == lobby_or_null,
+      .user == user_id,
+      .is_player == true
+    } ( .is_ready = (ready_player == null) );
+  }
+
+  init_heroes_positions(lobby_id);
+}
+
+operation cancel_prepare_for_game (user_pubkey: pubkey, lobby_id: lobby) {
+  val lobby_or_null = lobby @? {
+    lobby == lobby_id
+  };
+
+  if (lobby_or_null != null) {
+    val user_id = user @ { user_pubkey };
+    update user_lobby @ {
+      .lobby == lobby_or_null,
+      .user == user_id,
+      .is_ready == false,
+      .is_player == true
+    } ( .is_ready = true );
+  }
+}
+
+operation create_game (lobby_id: lobby) {
+  val lobby_or_null = lobby @? {
+    lobby == lobby_id
+  };
+
+  val battle_or_null = lobby_battle @? {
+    .lobby == lobby_id
+  } ( .battle );
+
+  if (lobby_or_null != null and battle_or_null == null) {
+    val found_lobby = lobby_or_null;
+
+    val lobby_ready_players = user_lobby @* {
+      .lobby == found_lobby,
+      .is_ready == true,
+      .is_player == true
+    } ( .user );
+
+    if (lobby_ready_players.size() == found_lobby.max_players_count) {
+      val battle_id = create battle (
+        lobby = found_lobby,
+        created = op_context.last_block_time
+      );
+
+      val all_lobby_users = user_lobby @* {
+        .lobby == found_lobby
+      } ( .user );
+
+      for (user in all_lobby_users) {
+        create user_battle (
+          battle = battle_id,
+          user
+        );
+      }
+    }
+  }
+}
+
+operation buy_hero (chosen_hero: hero, user_pubkey: pubkey) {
+  val hero_id = hero @? {
+    hero == chosen_hero
+  };
+
+  if (hero_id != null) {
+    val user_id = user @ {
+      .pubkey == user_pubkey
+    };
+
+    val price = hero @ {
+      hero == chosen_hero
+    } (.price);
+
+    val current_coins_amount = user_lobby @ {
+      .user == user_id
+    } (.coins_amount);
+
+    if (current_coins_amount >= price){
+      create user_hero (
+        hero = hero_id,
+        user = user_id,
+        pos_x = 0,
+        pos_y = 0
+      );
+
+      update user_lobby @ {
+        .user == user_id
+      } (coins_amount = current_coins_amount - price);
+    }
+  };
+}
+
+operation sell_hero (chosen_hero: hero, user_pubkey: pubkey) {
+  val heroes = user_hero @* {
+    .hero == chosen_hero
+  };
+
+  if (heroes.size() > 0) {
+    val user_id = user @ {
+      .pubkey == user_pubkey
+    };
+
+    val current_coins_amount = user_lobby @ {
+      .user == user_id
+    } (.coins_amount);
+
+    update user_lobby @ {
+      .user == user_id
+    } (coins_amount = current_coins_amount + heroes[0].hero.price);
+
+    delete heroes[0];
+  }
+}
+
+operation move_hero (
+  user_pubkey: pubkey,
+  hero_id: hero,
+  position_x: integer,
+  position_y: integer
+) {
+  val user_id = user @ { .pubkey == user_pubkey };
+
+  val max_hero_step = hero @ {
+    hero == hero_id
+  } ( .step );
+
+  val hero_position = user_hero @ {
+    .hero == hero_id,
+    .user == user_id
+  } ( .pos_x, .pos_y );
+
+  val distance_x = abs(position_x - hero_position.pos_x);
+  val distance_y = abs(position_y - hero_position.pos_y);
+
+  if (distance_x <= max_hero_step and distance_y <= max_hero_step) {
+    update user_hero @ {
+      .hero == hero_id,
+      .user == user_id
+    } ( .pos_x = position_x, .pos_y = position_y );
+  }
+}
+
+operation leave_lobby (user_pubkey: pubkey) {
+  val user_id = user @ { user_pubkey };
+  remove_user_lobby_relations(user_id);
+}
+
+query get_lobbies () {
+  val all_lobbies = lobby @* { };
+
+  val users_data = map<text, list<map<text, text>>>();
+  val lobbies_list =  list<map<text, text>>();
+
+  for (lobby_id in all_lobbies) {
+    val text_lobby_id = '' + lobby_id;
+
+    val users_in_lobby = user_lobby @* {
+      .lobby == lobby_id
+    };
+
+    val users_list = list<map<text, text>>();
+    for (u_lobby in users_in_lobby) {
+      val user_data = [
+        'id': '' + u_lobby.user,
+        'name': u_lobby.user.name
+      ];
+
+      users_list.add(user_data);
+    }
+    users_data.put(text_lobby_id, users_list);
+
+    val ready_users_count = (user_lobby @* {
+      .lobby == lobby_id,
+      .is_player == true,
+      .is_ready == true
+    }).size();
+
+    val players_in_lobby_count = (user_lobby @* {
+      .lobby == lobby_id,
+      .is_player == true
+    }).size();
+
+    val lobby_data = [
+      'id': text_lobby_id,
+      'name': lobby_id.name,
+      'created': lobby_id.created.str(),
+      'maxPlayersCount': lobby_id.max_players_count.str(),
+      'readyUsersCount': ready_users_count.str(),
+      'playersCount': players_in_lobby_count.str()
+    ];
+    lobbies_list.add(lobby_data);
+  }
+
+  return (users = users_data, lobbies = lobbies_list);
+}
+
+query get_user_by_pubkey (pubkey) {
+  return user @? {pubkey} (id=user, .pubkey, .name);
+}
+
+query get_user_by_name(name) {
+  return user @? {name};
+}
+
+query get_lobby (lobbyId: lobby) {
+  var lobby_id = lobby @ {
+    lobby == lobbyId
+  };
+
+  val users_in_lobby = user_lobby @* {
+    .lobby == lobby_id
+  };
+
+  val users_list = list<map<text, text>>();
+  for (u_lobby in users_in_lobby) {
+    val user_data = [
+      'id': '' + u_lobby.user,
+      'name': u_lobby.user.name,
+      'isPlayer': boolean_to_string(u_lobby.is_player),
+      'isReady': boolean_to_string(u_lobby.is_ready)
+    ];
+
+    users_list.add(user_data);
+  }
+
+  val ready_users_count = (user_lobby @* {
+    .lobby == lobby_id,
+    .is_player == true,
+    .is_ready == true
+  }).size();
+
+  val players_in_lobby_count = (user_lobby @* {
+    .lobby == lobby_id,
+    .is_player == true
+  }).size();
+
+  val lobby_data = [
+    'id': '' + lobby_id,
+    'name': lobby_id.name,
+    'created': lobby_id.created.str(),
+    'maxPlayersCount': lobby_id.max_players_count.str(),
+    'readyUsersCount': ready_users_count.str(),
+    'playersCount': players_in_lobby_count.str()
+  ];
+
+  return (users = users_list, lobby = lobby_data);
+}
+
+query get_battles () {
+  val all_battles = battle @* { };
+
+  val users_data = map<text, list<map<text, text>>>();
+  val battles_list =  list<map<text, text>>();
+
+  for (battle_id in all_battles) {
+    val text_battle_id = '' + battle_id;
+
+    val lobby_id = lobby_battle @ {
+      .battle == battle_id
+    } ( .lobby );
+
+    val users_in_lobby = user_lobby @* {
+      .lobby == lobby_id
+    };
+
+    val users_list = list<map<text, text>>();
+    for (u_lobby in users_in_lobby) {
+      val user_id = u_lobby.user;
+      val user_data = [
+        'id': '' + u_lobby.user,
+        'name': u_lobby.user.name,
+        'isPlayer': boolean_to_string(u_lobby.is_player)
+      ];
+
+      users_list.add(user_data);
+    }
+    users_data.put(text_battle_id, users_list);
+
+    val battle_data = [
+      'id': text_battle_id,
+      'playersCount': lobby_id.max_players_count.str()
+    ];
+    battles_list.add(battle_data);
+  }
+
+  return (users = users_data, battles = battles_list);
+}
+
+query get_player_lobby_info (pubkey: pubkey) {
+  return user_lobby @ {
+    .user.pubkey == pubkey
+  } ( lobbyId = .lobby, isPlayer = .is_player, isReady = .is_ready );
+}
+
+query get_heroes (user_pubkey: pubkey) {
+  val user_id = user @ {
+    .pubkey == user_pubkey
+  };
+  val heroes = hero @* { };
+
+  val l_heroes = list<map<text, text>>();
+  for (hero_id in heroes) {
+    val heroesCount = (user_hero @* {
+      .hero == hero_id,
+      .user == user_id
+    }).size();
+
+    val m_hero = [
+      'id': '' + hero_id,
+      'name': hero_id.name,
+      'type': hero_id.type.str(),
+      'step': hero_id.step.str(),
+      'damage': hero_id.damage.str(),
+      'price': hero_id.price.str(),
+      'attackRange': hero_id.attack_range.str(),
+      'maxHealth': hero_id.max_health.str(),
+      'heroesCount': heroesCount.str()
+    ];
+
+    l_heroes.add(m_hero);
+  }
+
+  return l_heroes;
+}
+
+query get_map (user_pubkey: pubkey) {
+  val user_id = user @ { .pubkey == user_pubkey };
+  val lobby_id = user_lobby @ {
+    .user == user_id
+  } ( .lobby );
+
+  val map_id = lobby_battlefield_map @ {
+    .lobby == lobby_id
+  } ( .battlefield_map );
+
+  val map_data = battlefield_map @ {
+    battlefield_map == map_id
+  } ( .type, fieldMaxX = .field_max_x, fieldMaxY = .filed_max_y );
+
+  return map_data;
+}
+
+query get_hero (user_pubkey: pubkey) {
+  val user_id = user @ { .pubkey == user_pubkey };
+
+  val hero_id = hero @ {
+    .type == 1
+  };
+
+  val hero_position = user_hero @ {
+    .hero == hero_id,
+    .user == user_id
+  } ( .pos_x, .pos_y );
+
+  return hero @ {
+    .type == 1
+  } (
+    positionX = hero_position.pos_x,
+    positionY = hero_position.pos_y,
+    id = hero,
+    .health,
+    .attack_range,
+    .damage,
+    .step,
+    .max_health,
+    .type
+  );
+}
+
+query get_heroes_positions (battle_id: battle) {
+  val lobby_id = lobby_battle @ {
+    .battle == battle_id
+  } ( .lobby );
+
+  val players = user_lobby @* {
+    .lobby == lobby_id,
+    .is_player == true
+  } ( .user );
+
+  val list_of_heroes = list<map<text, text>>();
+  for (player in players) {
+    val heroes_data = user_hero @* {
+      .user == player
+    } ( .hero, .pos_x, .pos_y );
+
+    for (data in heroes_data) {
+      var hero_data = [
+        'id': '' + data.hero,
+        'health': data.hero.health.str(),
+        'attackRange': data.hero.attack_range.str(),
+        'damage': data.hero.damage.str(),
+        'step': data.hero.step.str(),
+        'maxHealth': data.hero.max_health.str(),
+        'type': data.hero.type.str(),
+        'positionX': data.pos_x.str(),
+        'positionY': data.pos_y.str(),
+        'owner': player.name
+      ];
+
+      list_of_heroes.add(hero_data);
+    }
+  }
+
+  return list_of_heroes;
+}
+
+query get_game (lobby_id: lobby) {
+  val players = user_lobby @* {
+    .lobby == lobby_id,
+    .is_player == true
+  } ( .user );
+
+  val list_of_heroes = list<map<text, text>>();
+  for (player in players) {
+    val heroes_data = user_hero @* {
+      .user == player
+    } ( .hero, .pos_x, .pos_y );
+
+    for (data in heroes_data) {
+      var hero_data = [
+        'id': '' + data.hero,
+        'health': data.hero.health.str(),
+        'attackRange': data.hero.attack_range.str(),
+        'damage': data.hero.damage.str(),
+        'step': data.hero.step.str(),
+        'maxHealth': data.hero.max_health.str(),
+        'type': data.hero.type.str(),
+        'positionX': data.pos_x.str(),
+        'positionY': data.pos_y.str(),
+        'owner': player.name
+      ];
+
+      list_of_heroes.add(hero_data);
+    }
+  }
+
+  val map_id = lobby_battlefield_map @ {
+    .lobby == lobby_id
+  } ( .battlefield_map );
+
+  val map_data = battlefield_map @ {
+    battlefield_map == map_id
+  } ( .type, fieldMaxX = .field_max_x, fieldMaxY = .filed_max_y );
+
+  val battle_data = battle @ {
+    .lobby == lobby_id
+  } ( id = battle, .created );
+
+  return (
+    heroes = list_of_heroes,
+    battlefieldMap = map_data,
+    battleData = battle_data
+  );
+}
+
+operation send_message (user_pubkey: pubkey, message_text: text) {
+  val creator_chat_member = chat_member @ {
+    chat_member.user.pubkey == user_pubkey
+  };
+
+  val messages =  message @* {
+    message.chat_member.chat == creator_chat_member.chat
+  };
+
+  create message (
+    chat_member = creator_chat_member,
+    text = message_text,
+    created = op_context.last_block_time
+  );
+}
+
+operation mute_user (user_pubkey: pubkey, muted_chat_member: chat_member) {
+  val chat_member = chat_member @ { .user.pubkey == user_pubkey };
+  create mute_member (
+    .chat_member = chat_member,
+    .muted_chat_member = muted_chat_member
+  );
+}
+
+operation unmute_user (user_pubkey: pubkey, muted_member: chat_member) {
+  delete mute_member @ {
+    .chat_member.user.pubkey == user_pubkey,
+    .muted_chat_member == muted_member
+  };
+}
+
+operation mute_chat (pubkey) {
+  update chat_member @ {
+      .user.pubkey == pubkey
+    } ( .is_muted = true );
+}
+
+operation unmute_chat (pubkey) {
+  update chat_member @ {
+      .user.pubkey == pubkey
+    } ( .is_muted = false );
+}
+
+query get_latest_messages (pubkey, created: timestamp) {
+  val member = chat_member @ {
+    .user.pubkey == pubkey
+  };
+  if (member.is_muted == true) return list<(username: text, chat_member: chat_member, text: text, created: integer, id: message)>();
+
+  if (created == 0) {
+    return (message @* {
+      .chat_member.chat == member.chat
+    } (username = message.chat_member.user.name, message.chat_member, message.text, message.created, id = message));
+  }
+
+  val oldest_message_id = message @ {
+    .created == created,
+    .chat_member.chat == member.chat
+  } (message);
+
+  val messages = message @* {
+    .chat_member.chat == member.chat
+  } (username = message.chat_member.user.name, message.chat_member, message.text, message.created, id = message);
+
+  var recent_messages = filter_older_messages(oldest_message_id, messages);
+  if (recent_messages.size() == 0) return list<(username: text, chat_member: chat_member, text: text, created: integer, id: message)>();
+
+  var filtered_messages = filter_muted_messages(member, recent_messages);
+  return filtered_messages;
+}
+
+query get_previous_messages (pubkey, count: integer, created: timestamp) {
+  if (created == 0) return list<(username: text, chat_member: chat_member, text: text, created: integer, id: message)>();
+
+  val member = chat_member @ {
+    .user.pubkey == pubkey
+  };
+
+
+  val newest_message_id = message @ {
+    message.created == created,
+    message.chat_member.chat == member.chat
+  } (message);
+
+  val messages = message @* {
+    message.chat_member.chat == member.chat
+  } (username = message.chat_member.user.name, message.chat_member, message.text, message.created, id = message);
+
+  val older_messages = filter_newer_messages(newest_message_id, messages);
+  if (older_messages.size() == 0) return list<(username: text, chat_member: chat_member, text: text, created: integer, id: message)>();
+
+  val filtered_messages = filter_muted_messages(member, older_messages);
+  if (filtered_messages.size() > 10) {
+  var return_list = filtered_messages.sub((filtered_messages.size() - count), filtered_messages.size());
+  return return_list;
+  };
+
+  return filtered_messages;
+}
+
+query get_last_messages (pubkey, count: integer) {
+  val member = chat_member @ {
+    .user.pubkey == pubkey
+  };
+
+  if (member.is_muted == true) return list<(username: text, chat_member: chat_member, text: text, created: integer, id: message)>();
+
+  val messages = message @* {
+    message.chat_member.chat == member.chat
+  } (username = message.chat_member.user.name, message.chat_member, message.text, message.created, id = message);
+
+  var filtered_messages = filter_muted_messages(member, messages);
+  if (filtered_messages.size() > 10) {
+    var return_list = filtered_messages.sub((filtered_messages.size() - count), filtered_messages.size());
+    return return_list;
+  };
+  return filtered_messages;
+}

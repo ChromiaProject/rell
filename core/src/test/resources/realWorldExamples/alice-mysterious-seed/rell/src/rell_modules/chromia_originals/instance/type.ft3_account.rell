@@ -1,0 +1,110 @@
+import ft3: rell_modules.ft3.account;
+
+entity instance_property_value_account {
+	key instance_property;
+	mutable value: ft3.account;
+}
+
+function Account(id: byte_array): ft3.account {
+	return ft3.account @ { id };
+}
+
+function set_property_account(instance, path: text, value: ft3.account) {
+	_set_property_account(_instance_property_of_path(instance, path), value);
+}
+
+function _set_property_account(instance_property, value: ft3.account?) {
+	require_instance_property_not_readonly(instance_property);
+	
+	if (empty(value)) {
+		require_instance_property_optional(instance_property);
+		delete instance_property_value_account @? { instance_property };
+		return;
+	}
+	
+	val property_value = instance_property_value_account @? { instance_property };
+	
+	if (property_value??) {
+		property_value.value = value;
+	} else {
+		create instance_property_value_account(
+			instance_property,
+			value
+		);
+	}
+}
+
+function get_property_account(instance, path: text): ft3.account? {
+	return _get_property_account(_instance_property_of_path(instance, path));
+}
+
+function _get_property_account(instance_property): ft3.account? {
+	require(
+		instance_property_type(instance_property) == property_type.account
+	);
+	
+	return instance_property_value_account @? { 
+		instance_property
+	}?.value;
+}
+
+function _get_property_account_serialized(instance_property): gtv? {
+	return _get_property_account(instance_property)?.id?.to_gtv();
+}
+
+function find_one_account(structure, property_name: name, value: ft3.account): instance? {
+	val instances = instance_property_value_account @* {
+		.instance_property.instance.structure == structure,		
+		.instance_property.structure_property.name == property_name,
+		.value == value
+	} ( .instance_property.instance ) limit 1;
+	
+	return if (instances.size() > 0) instances[0] else null;
+}
+
+function find_all_account(structure, property_name: name, value: ft3.account): list<instance> {
+	return instance_property_value_account @* {
+		.instance_property.instance.structure == structure,		
+		.instance_property.structure_property.name == property_name,
+		.value == value
+	} ( .instance_property.instance );
+}
+
+/*
+ * Initialization
+ */
+
+function _initialize_ft3_account_property(instance_property, init_value: gtv?)  {
+	val prop = instance_property.structure_property;
+	
+	var account: ft3.account? = null;
+	
+	if (init_value??) {
+		if (is_integer(init_value)) {
+			val rowid = rowid.from_gtv(init_value);
+			account = ft3.account @ { rowid };
+		} else if (is_text_or_byte_array(init_value)) {
+			val account_id = byte_array.from_gtv(init_value);
+			account = Account(account_id);
+		} else {
+			throw("Don't know how to initialize a property of ft3 account type with value: " + init_value);
+		}
+	}
+	
+
+	require(
+		account != null 
+			or 
+		prop.optional == true,
+		"Non-optional property '" + prop.name + "' is not initialized"
+	); 
+	
+	
+	
+	if (account??) {
+		create instance_property_value_account(
+			instance_property,
+			account
+		);
+	}
+}

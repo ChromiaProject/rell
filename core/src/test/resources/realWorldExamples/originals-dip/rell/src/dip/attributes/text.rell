@@ -1,0 +1,106 @@
+entity text_attribute {
+	index instance, attribute, value;
+	index instance, attribute; 
+	index attribute, value;
+	mutable value: text;
+}
+
+function get_text_attribute (instance, attribute): text? {
+	var attr = text_attribute @? { instance, attribute };
+ 	
+ 	if(attr??) {
+ 		return attr.value;
+ 	} else {
+ 		val prototypes = get_prototypes(instance);
+ 		for (p in prototypes) {
+ 			attr = text_attribute @? { p, attribute };
+ 			if(attr??) {
+ 				return attr.value;
+ 			}
+ 		}
+ 	}
+ 	
+ 	return null;
+}
+
+function get_text_attributes (instance, attribute): list<text> {
+	var attrs = text_attribute @* { instance, attribute } (.value);
+ 	
+ 	if(not empty(attrs)) {
+ 		return attrs;
+ 	} else {
+ 		val prototypes = get_prototypes(instance);
+ 		
+ 		for (p in prototypes) {
+ 			attrs = text_attribute @* { p, attribute } (.value);
+ 			if(not empty(attrs)) {
+ 				return attrs;
+ 			}
+ 		}
+ 	}
+ 	
+ 	return list<text>();
+}
+
+function set_text_attribute (instance, attribute, value: text) {
+	util.ensure_type(a_type.text, attribute.a_type);
+	update text_attribute @ { instance, attribute } (.value = value);
+}
+
+function add_text_attribute (instance, attribute, value: text) {
+	util.ensure_type(a_type.text, attribute.a_type);
+	create text_attribute ( instance, attribute, value );
+}
+
+function remove_text_attribute (instance, attribute): gtv {	
+	val i = text_attribute @ {instance, attribute};
+	val value = i.value;
+	
+	delete i;
+	
+	return value.to_gtv();
+}
+
+function _fetch_text_range_from(attribute, value: text, from: rowid) {
+	return text_attribute @* {
+		attribute, .value == value, .instance.rowid > from
+	} (.instance) limit 100;
+}
+
+function apply_text_filter(instances: list<instance>, filter, from: p_from):
+ (results: list<instance>, from: p_from?) {
+	val limit_count = 100;
+	val attribute = filter.attribute;
+	val value = text.from_gtv(filter.parameter);
+	
+	if(instances.empty()) {
+		return find_instances_by_type_attribute(attribute, value.to_gtv(), from, limit_count);
+	};
+	
+	var res = list<instance>();
+	
+	val first = instances[0];
+	val last = instances[instances.size() - 1];
+	
+	val in_prototype = (a: text_attribute, ip: instance_prototype) @* {
+		a.attribute == attribute, a.value == value,
+		ip.prototype == a.instance,
+		ip.instance >= first, ip.instance <= last
+	} (ip.instance) limit limit_count;
+	
+	res.add_all(in_prototype);
+	
+	val in_attribute = (a: text_attribute) @* {
+			attribute,
+			a.value == value,
+			a.instance >= first, a.instance <= last
+	} (a.instance) limit limit_count;
+	
+	res.add_all(in_attribute);
+	
+	val prior_instances = set(instances);
+	res = res @* {prior_instances.contains($)};
+	
+	return (results = res, from = null);
+
+}

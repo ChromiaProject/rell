@@ -1,0 +1,43 @@
+entity id_attribute {
+	index instance, attribute;
+	key value: byte_array;
+}
+
+function get_id_attribute (instance, attribute): byte_array? {
+	var attr = id_attribute @? { instance, attribute };
+ 	
+ 	if(attr??) {
+ 		return attr.value;
+ 	} else {
+ 		val prototypes = get_prototypes(instance);
+ 		for (p in prototypes) {
+ 			attr = id_attribute @? { p, attribute };
+ 			if(attr??) {
+ 				return attr.value;
+ 			}
+ 		}
+ 	}
+ 	
+ 	return null;
+}
+
+function generate_id() {
+	val last_id = id_attribute @? {} (@sort_desc .rowid) limit 1;
+	return (op_context.transaction.tx_hash, last_id).hash();
+}
+
+function add_id_attribute (instance, attribute, value: byte_array) {
+	util.ensure_type(a_type.id, attribute.a_type);
+	require(not instance.is_prototype, "ID attribute cannot be implemented in prototypes.");
+	create id_attribute ( instance, attribute, value );
+}
+
+function find_instance_by_id_attribute (attribute, value: byte_array): instance? {
+	val instance = id_attribute @? {attribute, value} .instance;
+	
+	if(instance?? and instance.is_prototype) {
+		return instance_prototype @? {.prototype == instance, .instance.is_prototype == false} .instance;
+	}
+	
+	return instance;
+}

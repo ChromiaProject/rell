@@ -1,0 +1,31 @@
+<run wipe-db="false">
+  <nodes>
+    <config src="config/node-config.properties" add-signers="true" />
+    <test-config src="config/node-config.properties" />
+  </nodes>
+  <chains>
+    <chain name="mysterious_seed" iid="0">
+        <config height="0">
+          <app module="">
+            <args module="minter">
+              <arg key="admin_pubkey"><string>02897FAC9964FBDF97E6B83ECCBDE4A8D28729E0FB27059487D1B6B29F70B48767</string></arg>
+            </args>
+            <args module="mysterious_seed">
+              <arg key="admin_pubkey"><string>02897FAC9964FBDF97E6B83ECCBDE4A8D28729E0FB27059487D1B6B29F70B48767</string></arg>
+              <arg key="day_in_millis"><int>86400000</int></arg>
+              <arg key="seed_to_fruit_days"><int>14</int></arg>
+            </args>
+            <args module="rell_modules.ft3.core">
+              <arg key="my_blockchain_name"><string>Seed</string></arg>
+              <arg key="my_blockchain_website"><string>https://seed.myneighboralice.com</string></arg>
+              <arg key="my_blockchain_description"><string>Alice's Mysterious Seed</string></arg>
+              <arg key="rate_limit_active"><int>0</int></arg>
+              <arg key="rate_limit_max_points"><int>10</int></arg>
+              <arg key="rate_limit_recovery_time"><int>30000</int></arg>
+              <arg key="rate_limit_points_at_account_creation"><int>5</int></arg>
+            </args>
+          </app>
+      </config>
+    </chain>
+  </chains>
+</run>

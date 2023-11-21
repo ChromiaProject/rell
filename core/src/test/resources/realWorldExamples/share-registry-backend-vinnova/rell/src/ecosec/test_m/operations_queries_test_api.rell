@@ -1,0 +1,10 @@
+
+/////////////////////////////////
+// TEST API definitions
+/////////////////////////////////
+
+operation test_api_init_data (founder_pubkey: pubkey, agent1_pubkey: pubkey, agent2_pubkey: pubkey,
+	agent3_pubkey: pubkey, agent4_pubkey: pubkey
+) {
+    test_init_data(founder_pubkey, agent1_pubkey, agent2_pubkey, agent3_pubkey, agent4_pubkey);
+}

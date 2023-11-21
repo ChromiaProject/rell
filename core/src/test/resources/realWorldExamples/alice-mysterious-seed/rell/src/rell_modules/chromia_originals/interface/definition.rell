@@ -1,0 +1,144 @@
+
+enum optional_key {
+	optional,
+	non_optional,
+	all
+}
+
+enum static_key {
+	static,
+	non_static,
+	all
+}
+
+struct id_config {
+	static: static_key = static_key.all;
+	optional: optional_key = optional_key.all;
+	meta: boolean = false;
+	tags: list<name> = list<name>();
+	interface_meta: boolean = false;
+	interface_tags: list<name> = list<name>();
+}
+
+function interface_definition(interface, id_config): map<name, gtv> {
+	val definition = map<name, gtv>();
+	definition["name"] = interface.name.to_gtv();
+	definition["properties"] = __interface.property_definitions(interface, id_config).to_gtv();
+	
+	if (id_config.interface_meta or id_config.interface_tags.size() > 0) {
+		definition["meta"] = __interface.meta(interface, id_config.interface_tags).to_gtv();
+	}
+	
+	return definition;
+}
+
+namespace __interface {
+	function meta(interface, tags: list<name>): map<name, text?> {
+		val meta_tags_map = map<name, text?>();
+		
+		if (tags.size() == 0) {
+			val interface_tags = interface_meta_tag @* { interface };
+			for (tag in interface_tags) {
+				meta_tags_map[tag.name] = tag.value;
+			}
+		} else {
+			for (tag in tags) {
+				val interface_tag = interface_meta_tag @? { interface, .name == tag };
+				if (interface_tag??) {
+					meta_tags_map[tag] = interface_tag.value;
+				}
+			}
+		}
+		
+		return meta_tags_map;
+	}
+	
+	function property_definitions(interface, id_config): map<name, gtv> {
+		val properties = _get_interface_all_properties(interface);
+		val properties_map = map<name, gtv>();
+		for (property in properties) {
+			if (
+				fulfils_static_rule(property, id_config)
+					and
+				fulfils_optional_rule(property, id_config)
+			) {
+				properties_map[property.name] 
+					= property_definition(property, id_config).to_gtv();
+			}
+		}
+		return properties_map;
+	}
+	
+	function property_definition(interface_property, id_config): map<name, gtv> {
+		val property_definition_map = map<name, gtv>();
+		property_definition_map["type"] 
+			= property_type(interface_property).to_gtv();
+		if (id_config.static == static_key.all) {
+			property_definition_map["static"] 
+				= interface_property.static.to_gtv();
+		}
+		if (id_config.meta or id_config.tags.size() > 0) {
+			property_definition_map["meta"] 
+				= property_meta(interface_property, id_config.tags).to_gtv();
+		}
+		if (id_config.optional == optional_key.all) {
+			property_definition_map["optional"] = interface_property.optional.to_gtv();
+		}
+		
+		return property_definition_map;
+	}
+	
+	function property_type(interface_property): name {
+		val prop = prop.from_bytes(interface_property.encoded_prop);
+		when (interface_property.type) {
+			property_type.interface -> {
+				val interface_prop = inf.from_gtv(prop.prop_type_struct.type_gtv);
+				return interface_prop.interface.name;
+			}
+			property_type.structure -> {
+				val structure_prop = strct.from_gtv(prop.prop_type_struct.type_gtv);
+				return structure_prop.structure.name;
+			}
+			else -> {
+				val type = interface_property.type;
+				return type.name;
+			}
+		}
+	}
+	
+	function property_meta(interface_property, tags: list<name>): map<name, gtv> {
+		val meta_tags_map = map<name, gtv>();
+		
+		if (tags.size() == 0) {
+			val meta_tags = interface_property_meta_tag @* { interface_property };
+			
+			for (tag in meta_tags) {
+				meta_tags_map[tag.name] = tag.value.to_gtv();
+			}
+		} else {
+			for (tag in tags) {
+				val meta_tag = interface_property_meta_tag @? { interface_property, .name == tag };
+				
+				if (meta_tag??) {
+					meta_tags_map[meta_tag.name] = meta_tag.value.to_gtv();
+				}
+			}
+		}
+		
+		return meta_tags_map;
+	}
+	
+	function fulfils_static_rule(interface_property, id_config): boolean {
+		return
+			(interface_property.static and id_config.static != static_key.non_static) 
+				or 
+			(not interface_property.static and id_config.static != static_key.static);
+	}
+	
+	function fulfils_optional_rule(interface_property, id_config): boolean {
+		return
+			(interface_property.optional and id_config.optional != optional_key.non_optional) 
+				or 
+			(not interface_property.optional and id_config.optional != optional_key.optional);
+	}
+}

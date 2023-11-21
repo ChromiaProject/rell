@@ -1,0 +1,67 @@
+
+//****************************************
+// persona_sync_owner_role - business logic
+//
+// - Sync the Personas role "owner" with state of share_blocks
+// - If not owner on any share blocks, make sure the role "owner" is not set
+// - If owner of any share block, make sure the role owner is set 
+//
+// LIMITATIONS
+// - This function is not meant to be published as an API!
+// - This function expects all authorization checks to have been done before the call
+
+import ecosec.appmsg_m;
+import ecosec.share_block_m;
+import ecosec.history_m;
+
+function persona_sync_owner_role(agent_pubkey: pubkey, agent_id: text, 
+				org_nr: text,
+				sync_persona: persona
+		){
+
+	// Check if shares are owned
+	val is_shares_owned = (share_block_m.share_block_persona @* { .persona == sync_persona } limit 1).size() == 1;
+	
+	// Get share owner role record (if exist)
+	val old_persona_role = persona_role @? { .persona == sync_persona, .role_type.id == role_type_enum.SHARE_HOLDER};
+	
+	if(is_shares_owned and old_persona_role == null){ // Persona missing role owner
+		create persona_role (
+			persona = sync_persona,
+			role_type = role_type @ { .id == role_type_enum.SHARE_HOLDER }
+		);
+		
+		// History log - Persona becomes share holder
+		history_m.add(
+			org_nr,
+			op_context.last_block_time,
+			agent_id,
+			agent_pubkey,
+			history_m.object_type_enum.PERSONA,
+			history_m.event_type_enum.PERSONA_GAINEDSH,
+			history_m.empty_json(),
+			history_m.empty_json(),
+			sync_persona.id,
+			sync_persona.first_name + ' ' + sync_persona.last_name + ' (' + sync_persona.identity_nr + ')',
+			sync_persona.id
+		);
+	} 
+	else if(not is_shares_owned and old_persona_role != null){ // Persona needs to loose role share owner
+		delete persona_role @ { .persona == old_persona_role.persona, .role_type == old_persona_role.role_type }; // did not work with just old_persona_role
+		
+		// History log - Persona no longer share holder
+		history_m.add(
+			org_nr,
+			op_context.last_block_time,
+			agent_id,
+			agent_pubkey,
+			history_m.object_type_enum.PERSONA,
+			history_m.event_type_enum.PERSONA_LOSTSH,
+			history_m.empty_json(),
+			history_m.empty_json(),
+			sync_persona.id,
+			sync_persona.first_name + ' ' + sync_persona.last_name + ' (' + sync_persona.identity_nr + ')',
+			sync_persona.id
+		);
+	}					
+}

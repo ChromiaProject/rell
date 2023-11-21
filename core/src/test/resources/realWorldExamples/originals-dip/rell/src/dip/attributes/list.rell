@@ -1,0 +1,199 @@
+
+entity list_attribute {
+	index instance, attribute;
+}
+
+function create_list_type(attribute, value_type: a_type) {
+	util.ensure_simple_type(value_type);
+	
+	create_map_type(attribute, a_type.integer, value_type);
+}
+
+function create_list_attribute (instance, attribute, elements: gtv?) {
+	util.ensure_type(a_type.ordered_container, attribute.a_type);
+	
+	val list_attrs = _get_list_types(attribute);
+	var m = map<gtv,gtv>();
+	if (elements??) {
+		m = _list_to_map(util.gtv_to_list_of_gtv(elements, list_attrs.V.a_type));
+	}
+	
+	create list_attribute (instance, attribute);
+	_create_map_attribute(instance, attribute, m.to_gtv());
+}
+
+function _list_to_map(values: list<gtv>, pos: integer = 0) {
+	val m = map<gtv,gtv>();
+	var i = pos;
+	
+	for (value in values) {
+		m.put(i.to_gtv(), value);
+		i++;
+	}
+	
+	return m;
+}
+
+function _get_list_types(attr: attribute): (K: attribute, V: attribute, I: attribute) {
+	return _get_map_types(attr);
+}
+
+function _get_list_add_position(instance, attribute, list_attrs: (K: attribute, V: attribute, I: attribute), pos: integer, elements: integer = 1) {
+	if (pos >= 0) {
+		update (a: integer_attribute, i: instance_attribute) @* {
+			i.instance_value == instance,
+			i.instance == a.instance,
+			i.attribute == list_attrs.I,
+			a.attribute == list_attrs.K,
+			a.value >= pos
+		} (value += elements);
+		
+		return pos;
+	}
+	
+	return list_sizeof(instance, attribute);
+}
+
+function _reduce_list_position(instance, list_attrs: (K: attribute, V: attribute, I: attribute), pos: integer, elements: integer = 1) {
+	update (a: integer_attribute, i: instance_attribute) @* {
+		i.instance_value == instance,
+		i.instance == a.instance,
+		i.attribute == list_attrs.I,
+		a.attribute == list_attrs.K,
+		a.value >= pos
+	} (value -= elements);
+}
+
+function list_add(instance, attribute, value: gtv, pos: integer = -1) {
+	val list_attrs = _get_list_types(attribute);
+	val add_pos = _get_list_add_position(instance, attribute, list_attrs, pos);
+	
+	map_put(instance, attribute, (add_pos.to_gtv(), value));
+}
+
+function list_add_all(instance, attribute, values: gtv, pos: integer = -1) {
+	val list_attrs = _get_list_types(attribute);
+	val l = util.gtv_to_list_of_gtv(values, list_attrs.V.a_type);
+	val add_pos = _get_list_add_position(instance, attribute, list_attrs, pos, l.size());
+	
+	val m = _list_to_map(l, add_pos);	
+	map_put_all(instance, attribute, m);
+}
+
+function list_clear(instance, attribute) {
+	map_clear(instance, attribute);
+}
+
+function list_contains(instance, attribute, value: gtv) {
+	val list_attrs = _get_list_types(attribute);
+	return _find_instance_by_value_in_map(instance, value, list_attrs) != null;
+}
+
+function list_contains_all(instance, attribute, values: gtv) {
+	val list_attrs = _get_list_types(attribute);
+	val l = util.gtv_to_list_of_gtv(values, list_attrs.V.a_type);
+	
+	for (e in l) {
+		if (_find_instance_by_value_in_map(instance, e, list_attrs) == null) {
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+function list_get(instance, attribute, idx: integer) {
+	return map_get(instance, attribute, idx.to_gtv());
+}
+
+function list_index_of(instance, attribute, value: gtv) {
+	val list_attrs = _get_list_types(attribute);
+	val f = _find_instance_by_value_in_map(instance, value, list_attrs);
+	if (f??) {
+		return integer_attribute @ {f.instance, list_attrs.K}.value;
+	}
+	
+	return -1;
+}
+
+function list_empty(instance, attribute) {
+	return map_sizeof(instance, attribute) == 0;
+}
+
+function list_remove(instance, attribute, value: gtv) {
+	val list_attrs = _get_list_types(attribute);
+	_map_remove(instance, list_attrs.V, list_attrs.I, list_attrs.K, value);
+	_reduce_list_position(instance, list_attrs, list_index_of(instance, attribute, value));
+}
+
+function list_remove_all(instance, attribute, values: gtv) {
+	val list_attrs = _get_list_types(attribute);
+	val l = util.gtv_to_list_of_gtv(values, list_attrs.V.a_type);
+	
+	for (e in l) {
+		_map_remove(instance, list_attrs.V, list_attrs.I, list_attrs.K, e);
+	}
+	_reduce_list_position(instance, list_attrs, list_index_of(instance, attribute, l[0]), l.size());
+}
+
+function list_remove_at(instance, attribute, idx: integer) {
+	val list_attrs = _get_list_types(attribute);
+	map_remove(instance, attribute, idx.to_gtv());
+	_reduce_list_position(instance, list_attrs, idx);
+}
+
+function list_sizeof(instance, attribute) {
+	return map_sizeof(instance, attribute);
+}
+
+function list_unpack(instance, attribute): (type: a_type, values: gtv) {
+	val list_attrs = _get_list_types(attribute);	
+	var ret: gtv? = null;
+	val instances = get_prototypes(instance);
+	instances.add(instance);
+	
+	// TODO remaining types
+	when (list_attrs.V.a_type) {
+		a_type.integer -> ret = (i: instance_attribute, k: integer_attribute, v: integer_attribute) @* {
+				i.instance_value in instances, 
+				i.attribute == list_attrs.I,
+				i.instance == k.instance,
+				i.instance == v.instance,
+				k.attribute == list_attrs.K,
+				v.attribute == list_attrs.V
+			} (v.value, @sort @omit k.value).to_gtv();
+		a_type.text -> ret = (i: instance_attribute, k: integer_attribute, v: text_attribute) @* {
+				i.instance_value in instances, 
+				i.attribute == list_attrs.I,
+				i.instance == k.instance,
+				i.instance == v.instance,
+				k.attribute == list_attrs.K,
+				v.attribute == list_attrs.V
+			} (v.value, @sort @omit k.value).to_gtv();
+		else -> require(false, "Unimplemented path");
+	}
+	
+	return (type = list_attrs.V.a_type, values = ret!!);
+}
+
+function _fetch_list_range_from(attribute, value: gtv, from: rowid) {
+	val list_attrs = _get_list_types(attribute);
+	// TODO remaining types
+	when (list_attrs.V.a_type) {
+		a_type.integer -> return (i: instance_attribute, a: integer_attribute) @* {
+				a.attribute == list_attrs.V,
+				a.value == integer.from_gtv(value),
+				i.attribute == list_attrs.I,
+				i.instance == a.instance,
+				i.instance_value.rowid > from
+			} (i.instance_value) limit 100;	
+		a_type.text -> return (i: instance_attribute, a: text_attribute) @* {
+				a.attribute == list_attrs.V,
+				a.value == text.from_gtv(value),
+				i.attribute == list_attrs.I,
+				i.instance == a.instance,
+				i.instance_value.rowid > from
+			} (i.instance_value) limit 100;	
+		else -> {require(false, "Unimplemented path"); return list<instance>();}
+	}
+}

@@ -1,0 +1,116 @@
+@test module;
+import ^^^.dip.*;
+
+function test_dclass_inheritance_simple() {
+	val (child, parent) = ("IChild", "IParent");
+	Interface_(parent, [:]).run();
+	Interface_(child, [:], [parent]).run();
+	
+	assert_equals(get_dclasses([child]), set(dclass @* {.name in [parent, child]}));
+}
+
+function test_dclass_inheritance_self() {
+	val (child, parent) = ("IChild", "IChild");
+	
+	Interface_(parent, [:]).run();
+	Interface_(child, [:], [parent]).run_must_fail();
+}
+
+function test_dclass_inheritance_linear() {
+	val (child, parent, gparent) = ("IChild", "IParent", "IGParent");
+	
+	Interface_(gparent, [:]).run();
+	Interface_(parent, [:], [gparent]).run();
+	Interface_(child, [:], [parent]).run();
+	
+	assert_equals(get_dclasses([child], null), set(dclass @* {.name in [parent, child, gparent]}));
+}
+
+function test_dclass_inheritance_multi() {
+	val (child, mother, father) = ("IChild", "IMother", "IFather");
+	
+	Interface_(mother, [:]).run();
+	Interface_(father, [:]).run();
+	Interface_(child, [:], [mother, father]).run();
+	
+	assert_equals(get_dclasses([child], null), set(dclass @* {.name in [mother, child, father]}));
+}
+
+function test_dclass_inheritance_same_gparent() {
+	val (child, mother, father, gparent) = ("IChild", "IMother", "IFather", "IGParent");
+	
+	Interface_(gparent, [:]).run();
+	Interface_(mother, [:], [gparent]).run();
+	Interface_(father, [:], [gparent]).run();
+	Interface_(child, [:], [mother, father]).run_must_fail();
+}
+
+/** dclass tests in combination with prototypes */
+
+function test_instance_implements_own_dclass_and_from_prototype() {
+	val (child, parent, prototype) = ("IChild", "IParent", "IPrototype");
+	
+	Interface_(parent, [:]).run();
+	Interface_(child, [:], [parent]).run();
+	Interface_(prototype, [:]).run();
+	
+	Prototype_(
+		[prototype],
+		[:],
+		"PrototypeName"
+	).run();
+	val prot = get_prototype_by_dclass_name(prototype, "PrototypeName")!!;
+	var implemented_dclasses = instance_dclass @* {prot} .dclass.name;
+	assert_true(implemented_dclasses.contains_all([prototype]));
+	
+	Instance_(
+		[child],
+		[:],
+		prototype+".PrototypeName"
+	).run();
+	
+	val instance = get_last_instance();
+	
+	implemented_dclasses = instance_dclass @* {instance} .dclass.name;
+	assert_true(implemented_dclasses.contains_all([child, parent, prototype]));
+}
+
+function test_instance_can_implement_dclass_multiple_times() {
+	val (child, parent, prototype, gprototype) = ("IChild", "IParent", "IPrototype", "IGPrototype");
+	
+	Interface_(parent, [:]).run();
+	Interface_(child, [:], [parent]).run();
+	Interface_(prototype, [:]).run();
+	Interface_(gprototype, [:]).run();
+	
+	Prototype_(
+		[prototype],
+		[:],
+		"PrototypeName"
+	).run();
+	
+	Instance_(
+		[prototype],
+		[:],
+		prototype+".PrototypeName"
+	).run();
+	
+	Instance_(
+		[child, parent],
+		[:]
+	).run();
+	
+	Prototype_(
+		[gprototype],
+		[:],
+		"GPrototypeName",
+		prototype+".PrototypeName"
+	).run();
+
+	Instance_(
+		[prototype],
+		[:],
+		gprototype+".GPrototypeName"
+	).run();
+}
+

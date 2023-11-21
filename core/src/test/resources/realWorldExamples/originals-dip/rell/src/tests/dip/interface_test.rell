@@ -1,0 +1,140 @@
+@test module;
+import ^^.dip.*;
+
+function test_interface() {
+	
+	Interface_("EthereumNFT", [
+		"contract_address": Type(Text()),
+		"id": Type(Integer(), [Min(1), Max(10)]),
+		"name": Type(Text(), [Mutable()]),
+		"description": Type(Text()),
+		"image": Type(ByteArray()),
+		"image_type": Type(Text())
+	]).run();
+	
+	// AliceAnimalNFT
+	Prototype_(["EthereumNFT"],[
+		"contract_address": Text("0x111")
+	], "AliceAnimalNFT").run();
+	val alice_animal_prot = get_prototype_by_dclass_name("EthereumNFT", "AliceAnimalNFT")!!;
+	
+	// BertaTheCow
+	Prototype_([],  [
+		"description": Text("This is a cow!"),
+		"image": ByteArray(x'affe'),
+		"image_type": Text("jpeg")
+	], "BertaTheCow",
+	"EthereumNFT.AliceAnimalNFT").run();
+	val berta_the_cow_prot = get_prototype_by_dclass_name("EthereumNFT", "BertaTheCow")!!;
+	
+	Instance_([], [
+		"name": Text("Berta #01"),
+		"id": Integer(1)
+	], "EthereumNFT.BertaTheCow").run();
+	val berta01 = get_last_instance();
+	
+	Instance_([], [
+		"name": Text("Berta #02"),
+		"id": Integer(2)
+	], "EthereumNFT.BertaTheCow").run();
+	val berta02 = get_last_instance();
+	
+	val contract_address_attr = attribute @ {.name == "contract_address"};
+	val id_attr = attribute @ {.dclass.name == "EthereumNFT", .name == "id"};
+	val name_attr = attribute @ {.name == "name"};
+	val description_attr = attribute @ {.name == "description"};
+	val image_attr = attribute @ {.name == "image"};
+	val image_type_attr = attribute @ {.name == "image_type"};
+	
+	print(get_text_attribute(berta01, contract_address_attr));
+	print(get_prototypes(alice_animal_prot));
+	print(get_prototypes(berta_the_cow_prot));
+	print(get_prototypes(berta01));
+	
+	// Single Filter
+	assert_true( find_instances_by_type_attribute(contract_address_attr, "0x111".to_gtv(), p_from(), integer.MAX_VALUE).results.contains_all( [berta01, berta02] ) );
+	assert_true( find_instances_by_type_attribute(name_attr, "Berta #01".to_gtv(), p_from(), integer.MAX_VALUE).results.contains_all( [berta01] ) );
+	assert_true( find_instances_by_type_attribute(name_attr, "Berta #02".to_gtv(), p_from(), integer.MAX_VALUE).results.contains_all( [berta02] ) );
+	assert_true( find_instances_by_type_attribute(name_attr, "Berta #03".to_gtv(), p_from(), integer.MAX_VALUE).results.contains_all( [] ) );
+	
+	var res = find_instances_by_type_attribute(contract_address_attr, "0x111".to_gtv(), p_from(), 1);
+	assert_true( res.results.contains_all( [berta01] ) );
+	assert_true( find_instances_by_type_attribute(contract_address_attr, "0x111".to_gtv(), res.from, 1).results.contains_all( [berta02] ) );
+	
+	// Constraint
+	// Readonly
+	set_type_attribute_meta_(alice_animal_prot, contract_address_attr, "0x222".to_gtv()).run_must_fail();
+	set_type_attribute_meta_(berta01, id_attr, integer(12).to_gtv()).run_must_fail();
+	
+	set_type_attribute_meta_(berta02, name_attr, "Berta #03!".to_gtv()).run();
+	assert_equals(get_text_attribute(berta02, name_attr), "Berta #03!");
+}
+
+function test_interface_same_attribute_names() {
+	Interface_("ITest1", [
+		"id": Type(Text())
+	]).run();
+	
+	Interface_("ITest2", [
+		"id": Type(Text())
+	]).run();
+	
+	Instance_(["ITest1", "ITest2"], [
+		"id": Text("test1")
+	]).run_must_fail();
+	
+	Instance_(["ITest1", "ITest2"], [
+		"ITest1.id": Text("test1"),
+		"ITest2.id": Text("test2")
+	]).run();
+}
+
+function test_interface_different_attribute_names() {
+	Interface_("ITest1", [
+		"id": Type(Text())
+	]).run();
+	
+	Interface_("ITest2", [
+		"name": Type(Text())
+	]).run();
+	
+	Instance_(["ITest1", "ITest2"], [
+		"id": Text("abc"),
+		"name": Text("xyz")
+	]).run();
+	
+	Instance_(["ITest1", "ITest2"], [
+		"ITest1.id": Text("test1"),
+		"ITest2.name": Text("test2")
+	]).run();
+	
+	Instance_(["ITest1", "ITest2"], [
+		"ITest2.id": Text("fail"),
+		"ITest1.name": Text("fail")
+	]).run_must_fail();
+}
+
+function test_interface_complex_types() {
+	
+	Interface_("EthereumNFT", [
+		"ids": Type(List(a_type.integer))
+	]).run();
+	
+	// AliceAnimalNFT
+	Prototype_(["EthereumNFT"], [
+		"ids": List(a_type.integer, [1, 255].to_gtv())
+	], "AliceAnimalNFT").run();
+	val alice_animal_prot = get_prototype_by_dclass_name("EthereumNFT", "AliceAnimalNFT")!!;
+		
+	Instance_([], [:], "EthereumNFT.AliceAnimalNFT").run();
+	val berta01 = get_last_instance();
+	
+	val ids_attr = attribute @ {.name == "ids"};
+	
+	var unpacked = list_unpack(alice_animal_prot, ids_attr);	
+	assert_equals(list<integer>.from_gtv(unpacked.values), [1, 255]);
+	
+	unpacked = list_unpack(berta01, ids_attr);
+	assert_equals(list<integer>.from_gtv(unpacked.values), [1, 255]);
+}
+

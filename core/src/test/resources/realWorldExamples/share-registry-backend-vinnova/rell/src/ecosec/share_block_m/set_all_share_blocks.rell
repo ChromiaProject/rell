@@ -1,0 +1,209 @@
+
+//****************************************
+// set_all_share_blocks - share_block
+//
+// - Takes a complete set of share blocks and
+//   identifies was has been changed and do
+//   the changes one by one to get correct history
+// - Sets the company's share count + share value
+// - Checks that company share count matches sum
+//   of share block share count after all modifications
+// - New share interval numbers are assumed to be new
+//   share blocks
+// - All existing share block interval numbers must
+//   match with new interval numbers to do a correct
+//   divide of the old share block
+// - The complete number range cannot be broken
+// - Argument example:
+//		agent_pubkey, agent_id,
+//		org_nr (ex "929292-9292"),
+//		old_share_count,
+//		old_share_value,
+//		new_share_count (ex 15000),
+//		new_share_value (ex 500),
+//		[
+//			[
+//				share_from (ex 1),
+//				share_to (ex 5000),
+//				old_share_type,
+//				old_pledging,
+//				old_certificate,
+//				old_recalled, // NOT INCLUDED FOR NOW
+//				old_persona_id,
+//				new_share_type (ex "A"),
+//				new_pledging (ex 0),
+//				new_certificate (ex 0),
+//				new_recalled (ex 0), // NOT INCLUDED FOR NOW
+//				new_persona_id (ex "TestRandomPersonaId2")
+//			],
+//			[
+//				share_from (ex 5001),
+//				share_to (ex 15000),
+//				old_share_type,
+//				old_pledging,
+//				old_certificate,
+//				old_recalled, // NOT INCLUDED FOR NOW
+//				old_persona_id,
+//				new_share_type (ex "A"),
+//				new_pledging (ex 0),
+//				new_certificate (ex 0),
+//				new_recalled (ex 0), // NOT INCLUDED FOR NOW
+//				new_persona_id (ex "TestRandomPersonaId2")
+//		    ]
+//		  ]
+//
+// LIMITATIONS
+// - All share block must be in number order
+// - Does not support removal of share blocks
+
+import ecosec.extlib_m;
+import ecosec.appmsg_m;
+import ecosec.auth_m;
+import ecosec.company_m;
+import ecosec.history_m;
+
+function set_all_share_blocks(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				old_share_count: integer, old_share_value: integer,
+				new_share_count: integer, new_share_value: integer,
+				new_share_blocks: list<(share_from: integer, share_to: integer,
+				old_share_type: text, old_pledging: boolean,
+				old_certificate: boolean, old_persona_id: text,
+				new_share_type: text, new_pledging: boolean,
+				new_certificate: boolean, new_persona_id: text)>
+				){
+	/*
+	print('------------------------------------------------------------------------------');
+	print('------------------------------------------------------------------------------');
+	print('------------------------------------------------------------------------------');
+	print('org_nr: ' + org_nr);
+	print('change_list[0].share_from: ' + change_list[0].share_from);
+	print('change_list[0].old_persona_id: ' + change_list[0].old_persona_id);
+	print('change_list[0].new_persona_id: ' + change_list[0].new_persona_id);
+	print('change_list[0].new_parts.size(): ' + change_list[0].new_parts.size());
+	print('------------------------------------------------------------------------------');
+	print('------------------------------------------------------------------------------');
+	print('------------------------------------------------------------------------------');
+	*/
+
+	// Check authorization for self
+	require(auth_m.have_auth_agent(agent_pubkey, agent_id), appmsg_m.msg('MSGE0101', 'agent', 'apply_change_list')); // Supplied pubkey not signer?
+
+	// Check authorization for action
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'apply_change_list')); // Not board representative?
+
+	// Require that there are items in the list new_share_blocks
+	require(new_share_blocks.size()> 0, appmsg_m.msg('MSGE0306', 'share block', 'share_block.set_all_share_blocks'));
+
+	// Get existing share blocks
+	val orig_share_blocks = share_block_persona @* { .share_block.company.org_nr == org_nr }(
+		@sort share_from = .share_block.share_from,
+		share_to = .share_block.share_to,
+		share_type = .share_block.share_type,
+		pledging = .share_block.pledging,
+		certificate = .share_block.certificate,
+		recalled = .share_block.recalled,
+		persona_id = .persona.id
+	);
+
+	var next_new_sb_id = 0; // Next new share block to process
+
+	for(orig_sb in orig_share_blocks){
+		// Require that first part's share_from matches old share block's share from
+		require(orig_sb.share_from == new_share_blocks[next_new_sb_id].share_from,appmsg_m.msg('MSGE0303', 'share block', 'share_block.set_all_share_blocks'));
+
+		// Divide if needed Loop searching for all new share blocks that are within the original share blocks (Ie if the original share block have been divided)
+		var next_part_id = next_new_sb_id; // Start from current new share block
+		var parts = list<integer>();
+		while(new_share_blocks[next_part_id].share_to <= orig_sb.share_to ){
+			// Require that new parts old values matches the old share block's values
+			require(orig_sb.share_type == new_share_blocks[next_part_id].old_share_type and
+					orig_sb.pledging == new_share_blocks[next_part_id].old_pledging and
+					orig_sb.certificate == new_share_blocks[next_part_id].old_certificate and
+					orig_sb.persona_id == new_share_blocks[next_part_id].old_persona_id,
+					appmsg_m.msg('MSGE0201', 'share block', 'share_block.set_all_share_blocks'));
+
+			// Add part for divide
+			parts.add(new_share_blocks[next_part_id].share_to - new_share_blocks[next_part_id].share_from + 1);
+
+			next_part_id += 1; // Go to next new share block for search of parts
+
+			// Check if we are out of new share blocks to search
+			if(next_part_id  >= new_share_blocks.size()){
+				break;
+			}
+
+			// Require that there are not gaps in share numbers
+			require(new_share_blocks[next_part_id - 1].share_to + 1 == new_share_blocks[next_part_id].share_from, appmsg_m.msg('MSGE0303', 'share block', 'share_block.set_all_share_blocks') );
+		}
+		// Require that last part's share_to matches old share block's share_to
+		require(orig_sb.share_to == new_share_blocks[next_part_id - 1].share_to,appmsg_m.msg('MSGE0303', 'share block', 'share_block.set_all_share_blocks'));
+
+		if(parts.size()>1){ // If a divide is needed
+			// Use old original values from one of the new blocks (should be the same since its a divide!)
+			divide(agent_pubkey, agent_id,
+				org_nr,
+				orig_sb.share_from, orig_sb.share_to,
+				new_share_blocks[next_part_id - 1].old_persona_id, new_share_blocks[next_part_id - 1].old_share_type,
+				new_share_blocks[next_part_id - 1].old_pledging, new_share_blocks[next_part_id - 1].old_certificate,
+				//recalled,
+				parts
+				);
+		}
+
+		print('>>>>>>>>>>>>>>>>>>>>>>>>>Looping parts to change for old share block>>>>>>>>>>>> ' + next_new_sb_id + ' / ' + new_share_blocks.size());
+		// Loop new parts of old share block again and apply any changes
+		while(new_share_blocks[next_new_sb_id].share_to <= orig_sb.share_to ){
+			// Check if there are any changes
+			if(orig_sb.share_type != new_share_blocks[next_new_sb_id].new_share_type or
+					orig_sb.pledging != new_share_blocks[next_new_sb_id].new_pledging or
+					orig_sb.certificate != new_share_blocks[next_new_sb_id].new_certificate or
+					orig_sb.persona_id != new_share_blocks[next_new_sb_id].new_persona_id){
+
+				change(agent_pubkey, agent_id,
+					org_nr,
+					new_share_blocks[next_new_sb_id].share_from, new_share_blocks[next_new_sb_id].share_to,
+					new_share_blocks[next_new_sb_id].old_persona_id, new_share_blocks[next_new_sb_id].old_share_type,
+					new_share_blocks[next_new_sb_id].old_pledging, new_share_blocks[next_new_sb_id].old_certificate,
+					new_share_blocks[next_new_sb_id].new_persona_id, new_share_blocks[next_new_sb_id].new_share_type,
+					new_share_blocks[next_new_sb_id].new_pledging, new_share_blocks[next_new_sb_id].new_certificate
+					);
+			}
+
+			next_new_sb_id += 1;
+
+			// Check if we are out of new share blocks to change for this old block
+			if(next_new_sb_id  >= new_share_blocks.size()){
+				break;
+			}
+		}
+	}
+
+	print('>>>>>>>>>>>>>>>Looping new share blocks>>>>>>>>>>>>>>>>>>>');
+	// Add completely new share blocks (any remaining in list)
+	while(next_new_sb_id < new_share_blocks.size() ){
+		// Require that old information is empty
+		require(new_share_blocks[next_new_sb_id].old_share_type == '' and
+			new_share_blocks[next_new_sb_id].old_persona_id == '',
+			appmsg_m.msg('MSGE0201', 'share block', 'share_block.set_all_share_blocks'));
+
+		// Let "add" function enforce "no gaps" on share numbers
+		add(agent_pubkey, agent_id,
+				org_nr,
+				new_share_blocks[next_new_sb_id].share_from, new_share_blocks[next_new_sb_id].share_to,
+				new_share_blocks[next_new_sb_id].new_persona_id, new_share_blocks[next_new_sb_id].new_share_type,
+				new_share_blocks[next_new_sb_id].new_pledging, new_share_blocks[next_new_sb_id].new_certificate
+				);
+		next_new_sb_id += 1;
+	}
+
+	print('>>>>>>>>>>>>>>>>>>>>>>>>>>>update company share count>>>>>>>>>>>>');
+	// Update company share count
+	company_m.company_set_share_info(agent_pubkey, agent_id,
+				org_nr,
+				old_share_count, old_share_value,
+				new_share_count, new_share_value);
+
+	// Verify that share count is consistent for company
+	require_share_count(agent_pubkey, agent_id, org_nr);
+}

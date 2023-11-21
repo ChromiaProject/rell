@@ -1,0 +1,112 @@
+
+//****************************************
+// history_event_type - class
+
+
+/* For future use if event type
+ * text should be fetched from database
+entity history_event_type {
+	key id: event_type_enum;
+	key name: text;
+}
+
+function event_type_init(){
+	// Initialize blockchain with object type texts
+	...
+}
+*/
+
+// Getting English example text for event type
+function event_type_text(id: event_type_enum): text{
+	return when(id){
+		// Generic
+		event_type_enum.ADDED -> 'added';
+		event_type_enum.CHANGED -> 'changed';
+		event_type_enum.REMOVED -> 'removed';
+		
+		// Agent
+		event_type_enum.AGENT_LOSTPERSONA -> 'no longer authorized for Persona';
+		event_type_enum.AGENT_GAINEDPERSONA -> 'has been authorized for Persona';
+		
+		// Company
+		event_type_enum.COMPANY_ONBOARD -> 'has been onboarded';
+		event_type_enum.COMPANY_NAME -> 'name was changed';
+		event_type_enum.COMPANY_BR -> 'board representative was changed';
+		event_type_enum.COMPANY_CLAUSES -> 'clauses were changed';
+		event_type_enum.COMPANY_SUMMONS -> 'summons method was changed';
+		event_type_enum.COMPANY_ADDRESS -> 'address was changed';
+		event_type_enum.COMPANY_CONTACT -> 'contact information was changed';
+		event_type_enum.COMPANY_SHARE_INFO -> 'share information was changed';
+		
+		// Persona (specifics)
+		event_type_enum.PERSONA_LOSTAGENT -> 'no longer have authorized user';
+		event_type_enum.PERSONA_GAINEDAGENT -> 'now have authorized user';
+		event_type_enum.PERSONA_LOSTBM -> 'is no longer a board member';
+		event_type_enum.PERSONA_GAINEDBM -> 'is now a board member';
+		event_type_enum.PERSONA_LOSTBR -> 'is no longer a board representative';
+		event_type_enum.PERSONA_GAINEDBR -> 'is now a board representative';
+		event_type_enum.PERSONA_LOSTSH -> 'is no longer a share holder';
+		event_type_enum.PERSONA_GAINEDSH -> 'is now a share holder';
+		
+		// Share block
+		event_type_enum.SB_DIVIDE_REMOVE -> 'was divided and replaced by smaller share blocks';
+		event_type_enum.SB_DIVIDE_ADD -> 'added as new sub part of a divided share block';
+		event_type_enum.SB_OWNERSHIP_LOST -> 'had old owner removed';
+		event_type_enum.SB_OWNERSHIP_GAINED -> 'had new new owner set';
+		event_type_enum.SB_OWNERSHIP_LOSTDIVIDE -> 'had old owner removed since it will replaced in a Share block divide';
+		event_type_enum.SB_OWNERSHIP_GAINEDDIVIDE -> 'new owner set for sub share block after Share block divide';
+		
+		// Request Address
+		event_type_enum.REQ_ADDR_REQUEST -> 'for contact information change created';
+		event_type_enum.REQ_ADDR_APPROVE -> 'for contact information change approved';
+		event_type_enum.REQ_ADDR_REJECT -> 'for contact information change rejected';
+		//else -> 'Unknown'; // Not needed (or allowed) since all cases must always be covered
+	};
+}
+
+enum event_type_enum {
+	// Please note!
+	//	When solution is live new events MUST only be added to the end!
+	
+	// Generic
+	ADDED, // Record added
+	CHANGED, // Record changed
+	REMOVED, // Record removed
+	
+	// Agent
+	AGENT_LOSTPERSONA, // Not company specific
+	AGENT_GAINEDPERSONA, // Not company specific
+	
+	// Company
+	COMPANY_ONBOARD, // Onboarded / Created
+	COMPANY_NAME, // Fields changed
+	COMPANY_BR, // Fields changed
+	COMPANY_CLAUSES, // Fields changed
+	COMPANY_SUMMONS, // Fields changed
+	COMPANY_ADDRESS, // Fields changed
+	COMPANY_CONTACT, // Fields changed
+	COMPANY_SHARE_INFO, // Fields changed
+	
+	// Persona (specifics)
+	PERSONA_LOSTAGENT, // No longer have agent
+	PERSONA_GAINEDAGENT, // Have agent
+	PERSONA_LOSTBM, // No longer is board member
+	PERSONA_GAINEDBM, // Is now board member
+	PERSONA_LOSTBR, // No longer is board representative
+	PERSONA_GAINEDBR, // Is now board representative
+	PERSONA_LOSTSH,  // No longer is share holder
+	PERSONA_GAINEDSH, // Is now share holder
+	
+	// Share block
+	SB_DIVIDE_REMOVE, // Share block divided and removed
+	SB_DIVIDE_ADD, // Share block created due to a share block divide 
+	SB_OWNERSHIP_LOST, // Ownership lost for share block (transfer)
+	SB_OWNERSHIP_GAINED, // Ownership gained for share block (initial, transfer)
+	SB_OWNERSHIP_LOSTDIVIDE, // Ownership lost on share block being divided
+	SB_OWNERSHIP_GAINEDDIVIDE, // Ownership gained for new sub share blocks
+	
+	// Address request
+	REQ_ADDR_REQUEST,
+	REQ_ADDR_APPROVE,
+	REQ_ADDR_REJECT
+}

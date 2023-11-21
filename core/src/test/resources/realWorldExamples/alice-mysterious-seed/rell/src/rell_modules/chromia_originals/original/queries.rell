@@ -1,0 +1,112 @@
+@mount("original")
+module;
+
+import ^^.original;
+import ^^.instance.{
+	map_,
+	direct,
+	to_map,
+	properties,
+	struct_details,
+	all_properties,
+	find_by_id,
+	map_instance,
+	instance_map_rule
+};
+import ^^.structure.{
+	structure,
+	map_structure
+};
+import ^^.interface.{
+	Interface
+};
+
+query find_originals_by_owner(
+	interface: name, 
+	owner: byte_array, 
+	properties: list<name>, 
+	static_properties: list<name>
+) {
+	val instances = original.find_original_instances_by_interface_and_owner_id(Interface(interface), owner);
+	val instance_map_list = list<map<name, gtv?>>();
+	var structure_static_properties_map = map<structure, map<name, gtv?>>();
+	
+	val mapping_rules = [
+		map_(properties(properties), direct())
+	];
+	
+	for (instance in instances) {
+		val instance_map = map_instance(instance, 
+			mapping_rules, list<instance_map_rule>()
+		);
+		
+		if (static_properties.size() > 0) {
+			if (structure_static_properties_map.contains(instance.structure)) {
+				instance_map.put_all(structure_static_properties_map[instance.structure]);
+			} else {
+				val structure_map = map_structure(instance.structure, [
+					map_(properties(static_properties), direct())		
+				]);
+				structure_static_properties_map[instance.structure] = structure_map;
+				instance_map.put_all(structure_map);
+			}
+		}
+
+		instance_map_list.add(instance_map);
+	}
+		
+	return instance_map_list;
+}
+
+query find_original_instance_by_interface_and_id(
+	interface: name,
+	id: byte_array,
+	properties: list<name>, 
+	static_properties: list<name>
+) {
+	val instance = require(
+		original.find_original_instance_by_interface_and_id(Interface(interface), id),
+		"Instance not found"		
+	);
+	
+	val instance_map = map_instance(instance, 
+		[map_(properties(properties), direct())], list<instance_map_rule>()
+	);
+	
+	if (static_properties.size() > 0) {
+		val structure_map = map_structure(instance.structure, [
+			map_(properties(static_properties), direct())		
+		]);
+		instance_map.put_all(structure_map);
+	}
+		
+	return instance;
+}
+
+query find_original_by_id(
+	id: byte_array,
+	properties: list<name>,
+	static_properties: list<name>
+) {
+	val instance = require(
+		find_by_id(id),
+		"Instance not found"
+	);
+	
+	val instance_map = map_instance(instance, 
+		[
+			map_(struct_details(), to_map("_structure")),
+			map_(properties(properties), direct())
+		],
+		list<instance_map_rule>()
+	);
+	
+	if (static_properties.size() > 0) {
+		val structure_map = map_structure(instance.structure, [
+			map_(properties(static_properties), direct())		
+		]);
+		instance_map.put_all(structure_map);
+	}
+
+	return instance_map;
+}

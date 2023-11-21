@@ -1,0 +1,3 @@
+abstract module;
+
+import ^.core.*;

@@ -1,0 +1,76 @@
+
+entity chain_oracle {
+	key brid: byte_array;
+	location: text;
+	owner_id: byte_array;
+	index brid, location;
+}
+
+entity chain_oracle_history {
+	key brid: byte_array;
+	mutable chain_oracle;
+}
+
+function publish_chain(
+	brid: byte_array, 
+	location: text, 
+	account_id: byte_array,
+	auth_descriptor_id: byte_array
+): chain_oracle {
+	ft3_acc.auth_and_log(account_id, auth_descriptor_id, ["A"]);
+	
+	require(not exists(chain_oracle @? {brid}), "Chain id already published");
+	
+	return create chain_oracle (brid, location, owner_id = account_id);
+}
+
+function unpublish_chain(
+	brid: byte_array, 
+	account_id: byte_array,
+	auth_descriptor_id: byte_array
+) {
+	ft3_acc.auth_and_log(account_id, auth_descriptor_id, ["A"]);
+	
+	require(exists(chain_oracle @? {brid}), "Chain id is not published");
+	
+	val chain = chain_oracle @ {brid, .owner_id == account_id};
+	
+	delete chain_oracle_history @* {chain};
+	delete chain;
+}
+
+function update_chain(
+	brid: byte_array, 
+	new_brid: byte_array, 
+	new_location: text, 
+	account_id: byte_array,
+	auth_descriptor_id: byte_array
+) {
+	ft3_acc.auth_and_log(account_id, auth_descriptor_id, ["A"]);
+	
+	val old_entry = chain_oracle @? {brid};
+	require(old_entry, "Chain id is not published");
+	
+	val new_entry = publish_chain(new_brid, new_location, account_id, auth_descriptor_id);
+	
+	for (history in chain_oracle_history @* {old_entry}) {
+		history.chain_oracle = new_entry;
+	}
+	
+	create chain_oracle_history (old_entry.brid, new_entry);
+	unpublish_chain(brid, account_id, auth_descriptor_id);
+}
+
+function get_chain(
+	brid: byte_array
+): (brid: byte_array, location: text)? {
+	var entry = chain_oracle @? {brid};
+	if (entry == null) {
+		entry = chain_oracle_history @? {brid}.chain_oracle;
+	}
+	
+	return if (entry??) (
+		brid = entry.brid,
+		location = entry.location
+	) else null;
+}

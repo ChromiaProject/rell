@@ -1,0 +1,46 @@
+
+function _require_static_property_not_readonly(static_property) {
+	require(
+		not static_property.readonly,
+		"Static property '" + static_property.name + "' is read-only"
+	);
+}
+
+function _require_static_property_structure_or_interface(static_property) {
+	require(
+		static_property.type == property_type.structure 
+			or 
+		static_property.type == property_type.interface,
+		"Static property '" + static_property.name + "' is not an interface or a structure"
+	);
+}
+
+function _require_instance_is_of_valid_type(static_property, instance) {	
+	_require_static_property_structure_or_interface(static_property);
+	
+	val name = static_property.name;
+	val type = static_property.type;
+	
+	when(type) {
+		property_type.interface -> {
+			val interface = static_property_interface @ { 
+				static_property
+			}.interface;
+			
+			require(
+				structure_implements_interface(instance.structure, interface),
+				"Static property '" + name + "' is not of '" + interface.name + "' type."
+			);
+		}
+		property_type.structure -> {
+			val structure = static_property_structure @ { 
+				static_property
+			}.structure;
+			
+			require(
+				instance.structure == structure,
+				"Static property '" + name + "' is not of '" + structure.name + "' type."
+			);
+		}
+	}
+}

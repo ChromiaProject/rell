@@ -1,0 +1,97 @@
+
+function find_original_instances_by_owner_id(
+	owner_id: byte_array, 
+	after_rowid: rowid, 
+	page_size: integer
+): list<instance> {
+	return (
+		i: instance, 
+		ip: instance_property, 
+		ipva: instance_property_value_account, 
+		si: structure_interface,
+		a: ft3.account
+	) @* {
+		si.interface == Interface("ITradeableOriginal"),
+		i.structure == si.structure,
+		ip.structure_property.name == "owner",
+		ip.instance == i,
+		ipva.instance_property == ip,
+		ipva.value == a,
+		a.id == owner_id,
+		i.rowid > after_rowid
+	} ( @sort i ) limit page_size;
+}
+
+function find_original_instances_by_owner_id_and_status(
+	owner_id: byte_array, 
+	listed_state: boolean, 
+	after_rowid: rowid, 
+	page_size: integer
+): list<instance> {
+	return (
+		i: instance, 
+		ip1: instance_property, 
+		ip2: instance_property, 
+		ipva: instance_property_value_account, 
+		ipvb: instance_property_value_boolean,
+		si: structure_interface,
+		a: ft3.account
+	) @* {
+		si.interface == Interface("ITradeableOriginal"),
+		i.structure == si.structure,
+		ip1.structure_property.name == "owner",
+		ip1.instance == i,
+		ip2.structure_property.name == "is_listed",
+		ip2.instance == i,
+		ipva.instance_property == ip1,
+		ipva.value == a,
+		ipvb.instance_property == ip2,
+		ipvb.value == listed_state,
+		a.id == owner_id,
+		i.rowid > after_rowid
+	} ( @sort i ) limit page_size;
+}
+
+function find_original_instances_by_interface_and_owner_id(interface, owner_id: byte_array): list<instance> {
+	return (
+		i: instance, 
+		ip: instance_property, 
+		ipva: instance_property_value_account, 
+		si: structure_interface,
+		a: ft3.account
+	) @* {
+		si.interface == interface,
+		i.structure == si.structure,
+		ip.structure_property.name == "owner",
+		ip.instance == i,
+		ipva.instance_property == ip,
+		ipva.value == a,
+		a.id == owner_id
+	} ( @sort i );
+}
+
+function find_original_instance_by_interface_and_id(interface, id: byte_array): instance? {
+	return (
+		i: instance, 
+		ip: instance_property, 
+		ipvi: instance_property_value_id, 
+		si: structure_interface
+	) @? {
+		si.interface == interface,
+		i.structure == si.structure,
+		ip.structure_property.name == "id",
+		ip.instance == i,
+		ipvi.instance_property == ip,
+		ipvi.value == id
+	} ( i );
+}
+
+function find_original_instances_by_interface(interface): list<instance> {
+	return (
+		i: instance,
+		si: structure_interface
+	) @* {
+		si.interface == interface,
+		i.structure == si.structure
+	} ( @sort i );
+}

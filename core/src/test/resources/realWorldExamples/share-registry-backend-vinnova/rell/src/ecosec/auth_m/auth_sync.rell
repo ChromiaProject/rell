@@ -1,0 +1,192 @@
+// Authorization handling
+//
+// - All authorization sync functions
+//     * All agent/persona changes to identity_type / identity_nr
+//       must call the authorization sync functions to ensure
+//       only correct agents are authorized for each persona
+//     * Authorize / de-authorize agents when
+//       identity_type/identity_nr change
+//     * Name functions "auth_sync_...."
+
+//  TODO: Authorization, move to auth module
+
+import ecosec.appmsg_m;
+import ecosec.identity_m;
+import ecosec.agent_m;
+import ecosec.persona_m;
+import ecosec.history_m;
+
+// Agent identity change, autoconnect personas
+// LIMITATIONS
+// - Authorization must be checked by caller
+function auth_sync_agent_identity_change(agent_pubkey: pubkey, agent_id: text,
+				changed_agent: agent_m.agent,
+				old_identity_type_id: identity_m.id_type_enum, old_identity_nr: text,
+				new_identity_type_id: identity_m.id_type_enum, new_identity_nr: text){
+	
+	if(old_identity_type_id == new_identity_type_id and old_identity_nr == new_identity_nr){
+		return; // No changes to identity		
+	}
+	
+	// Remove any authorizations based on old identity
+	val orig_auths = persona_m.persona_agent @* { .agent == changed_agent,
+			.persona.identity_type.id == old_identity_type_id,
+			.persona.identity_nr == old_identity_nr }(
+				.agent,
+				.persona
+			);
+	for(old_auth in orig_auths){
+		// Un-authorize agent for persona
+		auth_agent_persona_auth_remove(agent_pubkey, agent_id,
+			old_auth.agent,
+			old_auth.persona);
+	}
+	
+	if(new_identity_type_id == identity_m.id_type_enum.NO_ID or new_identity_nr == ''){
+		return; // No new identity
+	}
+	
+	// Add authorization based on new identity
+	val matched_personas = persona_m.persona @* {
+			.identity_type.id == new_identity_type_id,
+			.identity_nr == new_identity_nr };
+	for(p in matched_personas){
+		if(persona_m.persona_agent @? { .persona == p } == null){ // Only if persona does NOT have an authorized Agent already
+			// Authorize agent for persona
+			auth_agent_persona_auth_add(agent_pubkey, agent_id,
+				changed_agent,
+				p);
+		}
+	}
+}
+
+// Persona identity change, autoconnect agent
+// LIMITATIONS
+// - Authorization must be checked by caller
+function auth_sync_persona_identity_change(agent_pubkey: pubkey, agent_id: text,
+				changed_persona: persona_m.persona,
+				old_identity_type_id: identity_m.id_type_enum, old_identity_nr: text,
+				new_identity_type_id: identity_m.id_type_enum, new_identity_nr: text){
+	
+	if(old_identity_type_id == new_identity_type_id and old_identity_nr == new_identity_nr){
+		return; // No changes to identity		
+	}
+	
+	// Remove any authorizations based on old persona identity
+	val orig_auths = (pa: persona_m.persona_agent, c: agent_m.cert, cs: agent_m.cert_status) @* {
+			c.agent == pa.agent,
+			cs.cert == c,
+			pa.persona == changed_persona,
+			cs.cert_status_type.id == agent_m.cert_status_type_enum.ACTIVE,
+			c.identity_type.id == old_identity_type_id,
+			c.identity_nr == old_identity_nr }(
+				agent = pa.agent,
+				persona = pa.persona
+			);
+	for(old_auth in orig_auths){
+		// Un-authorize agent for persona
+		auth_agent_persona_auth_remove(agent_pubkey, agent_id,
+			old_auth.agent,
+			old_auth.persona);
+	}
+	
+	if(new_identity_type_id == identity_m.id_type_enum.NO_ID or new_identity_nr == ''){
+		return; // No new identity
+	}
+	
+	// Add authorization based on new identity
+	val matched_agents = agent_m.cert_status @* {
+			.cert_status_type.id == agent_m.cert_status_type_enum.ACTIVE,
+			.cert.identity_type.id == new_identity_type_id,
+			.cert.identity_nr == new_identity_nr }(
+				agent = .cert.agent
+			);
+			
+	require(matched_agents.size()<=1, appmsg_m.msg('MSGE0106', 'Persona', 'auth_sync_persona_identity_change')); // Multiple Agent with same identity as Persona
+	
+	for(a in matched_agents){
+		if(persona_m.persona_agent @? { .persona == changed_persona } == null){ // Only if no one else is authorized for the persona
+			// Authorize agent for persona
+			auth_agent_persona_auth_add(agent_pubkey, agent_id,
+				a.agent,
+				changed_persona);
+		}
+	}
+}
+
+// Remove agents authorization for a persona
+// LIMTATIONS
+// - Authorization check must be done by caller
+// - Authorization (class persona_agent) should be known to exist
+function auth_agent_persona_auth_remove(agent_pubkey: pubkey, agent_id: text,
+			for_agent: agent_m.agent,
+			persona: persona_m.persona){
+	
+	delete persona_m.persona_agent @ { .agent == for_agent, .persona == persona};
+		
+	// History log - Agent authorization removed
+	val a_identity = (cs: agent_m.cert_status, c: agent_m.cert) @ {
+		cs.cert == c, c.agent == for_agent,
+		cs.cert_status_type.id == agent_m.cert_status_type_enum.ACTIVE
+		}(
+		identity_type = c.identity_type,
+		identity_nr = c.identity_nr
+	);
+	val agent_old = history_m.agent_json(id = for_agent.id, first_name = for_agent.first_name, last_name = for_agent.last_name,
+	    address1 = for_agent.address1, address2 = for_agent.address2, postal_code = for_agent.postal_code, city = for_agent.city, country = for_agent.country,
+	    phone = for_agent.phone, email = for_agent.email,
+	    identity_type_id = a_identity.identity_type.id, identity_nr = a_identity.identity_nr);
+	history_m.add(
+		persona.company.org_nr,
+		op_context.last_block_time,
+		agent_id,
+		agent_pubkey,
+		history_m.object_type_enum.PERSONA,
+		history_m.event_type_enum.PERSONA_LOSTAGENT,
+		agent_old.to_gtv_pretty().to_json(),
+		history_m.empty_json(),
+		persona.id,
+		persona.first_name + ' ' + persona.last_name + ' (' + persona.identity_nr + ')',
+		persona.id
+	);
+}
+
+// Add agents authorization for a persona
+// LIMTATIONS
+// - Authorization check must be done by caller
+// - Authorization (class persona_agent) should be known NOT to exist
+function auth_agent_persona_auth_add(agent_pubkey: pubkey, agent_id: text,
+			for_agent: agent_m.agent,
+			persona: persona_m.persona){
+	
+	create persona_m.persona_agent(
+		for_agent,
+		persona
+	);
+		
+	// History log - Agent authorization removed
+	val a_identity = (cs: agent_m.cert_status, c: agent_m.cert) @ {
+		cs.cert == c, c.agent == for_agent,
+		cs.cert_status_type.id == agent_m.cert_status_type_enum.ACTIVE
+		}(
+		identity_type = c.identity_type,
+		identity_nr = c.identity_nr
+	);
+	val agent_new = history_m.agent_json(id = for_agent.id, first_name = for_agent.first_name, last_name = for_agent.last_name,
+	    address1 = for_agent.address1, address2 = for_agent.address2, postal_code = for_agent.postal_code, city = for_agent.city, country = for_agent.country,
+	    phone = for_agent.phone, email = for_agent.email,
+	    identity_type_id = a_identity.identity_type.id, identity_nr = a_identity.identity_nr);
+	history_m.add(
+		persona.company.org_nr,
+		op_context.last_block_time,
+		agent_id,
+		agent_pubkey,
+		history_m.object_type_enum.PERSONA,
+		history_m.event_type_enum.PERSONA_GAINEDAGENT,
+		history_m.empty_json(),
+		agent_new.to_gtv_pretty().to_json(),
+		persona.id,
+		persona.first_name + ' ' + persona.last_name + ' (' + persona.identity_nr + ')',
+		persona.id
+	);
+}

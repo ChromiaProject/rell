@@ -1,0 +1,73 @@
+
+struct category_node {
+	name;
+	interfaces: list<text>;
+	subcategories: list<category_node>;
+}
+
+
+function _category_node(
+	name, 
+	interface_map: map<name, list<name>>, 
+	category_names: map<name, name>
+): category_node {
+	val category_nodes = list<category_node>();
+	
+	if (not interface_map.contains(name)) {
+		return category_node(
+			name = if (category_names.contains(name)) category_names[name] else name,
+			interfaces = [name],
+			subcategories = list<category_node>()
+		);
+	}
+	
+	for (child in interface_map[name]) {
+		category_nodes.add(_category_node(child, interface_map, category_names));
+	}
+	
+	return category_node(
+		name = if (category_names.contains(name)) category_names[name] else name,
+		interfaces = [name],
+		subcategories = category_nodes
+	);
+}
+
+function get_categories(): list<category_node> {
+	val ITradeableOriginal = Interface('ITradeableOriginal');
+	
+	val tags = (
+		imt: interface_meta_tag,
+		ei: extended_interface
+	) @* {
+		imt.name == "marketplace_category",
+		imt.interface == ei.extended,
+		ei.base == ITradeableOriginal
+	} (
+		name = imt.value,
+		imt.interface
+	);
+	
+	val category_names = map<name, name>();
+	
+	for ((name, interface) in tags) {
+		category_names[interface.name] = name;
+	}
+	
+	val interfaces = get_interfaces_extending_interface(
+		ITradeableOriginal
+	);
+	
+	val interface_map = map<name, list<name>>();
+	
+	for ((interface, base) in interfaces) {
+		if (interface_map.contains(base)) {
+			interface_map[base].add(interface);
+		} else {
+			interface_map[base] = [interface];
+		}
+	}
+	
+	return _category_node(
+		ITradeableOriginal.name, interface_map, category_names
+	).subcategories;
+}

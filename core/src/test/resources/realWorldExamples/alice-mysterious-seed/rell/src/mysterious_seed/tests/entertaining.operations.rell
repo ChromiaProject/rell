@@ -1,0 +1,101 @@
+function test_entertain_plant() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+		
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.op(mysterious_seed.entertain_plant(alice.account.id, alice.auth_descriptor, 5))
+		.sign(alice.keypair);
+	
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+		
+	val happiness_level = mysterious_seed.retrieve_happiness_level(alice.account, time.now());
+	
+	assert_gt_lt(happiness_level.level, 0.49, 0.5);
+}
+
+function test_happiness_drops_by_1_percent_unit_every_864_seconds() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+		
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.op(mysterious_seed.entertain_plant(alice.account.id, alice.auth_descriptor, 5))
+		.sign(alice.keypair);
+	
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+		
+	val happiness_meter1 = mysterious_seed.retrieve_happiness_level(alice.account, time.now());
+	assert_gt_lt(happiness_meter1.level, 0.49, 0.5);
+	
+	val happiness_meter2 = mysterious_seed.retrieve_happiness_level(alice.account, time.seconds_from_now(864));
+	assert_gt_lt(happiness_meter2.level, 0.48, 0.49);
+}
+
+function test_happiness_reset_after_replanting() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+		
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.op(mysterious_seed.entertain_plant(alice.account.id, alice.auth_descriptor, 5))
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.sign(alice.keypair);
+	
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+		
+	val happiness_level = mysterious_seed.retrieve_happiness_level(alice.account, time.now());
+	
+	assert_equals(happiness_level.level, 0);
+}

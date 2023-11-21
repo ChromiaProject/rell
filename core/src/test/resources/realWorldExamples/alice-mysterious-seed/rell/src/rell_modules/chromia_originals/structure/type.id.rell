@@ -1,0 +1,15 @@
+
+function _create_structure_property_id(structure, name, prop): structure_property {
+	val property = create structure_property(
+		structure,
+		name = name,
+		optional = false,
+		mutation = mutation_type.readonly,
+		type = property_type.id,
+		value = x""
+	);
+	
+	_create_structure_property_meta_tags(property, prop.meta.tags);
+	
+	return property;
+}

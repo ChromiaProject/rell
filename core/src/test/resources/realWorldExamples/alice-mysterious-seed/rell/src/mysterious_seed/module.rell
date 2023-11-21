@@ -1,0 +1,37 @@
+@mount("mysterious_seed")
+module;
+
+import rell_modules.chromia_originals.interface.*;
+import rell_modules.chromia_originals.structure;
+import rell_modules.chromia_originals.instance;
+import rell_modules.chromia_originals.original.*;
+import rell_modules.chromia_originals.marketplace.*;
+import rell_modules.chromia_originals.marketplace.queries;
+import rell_modules.chromia_originals.marketplace.operations;
+import rell_modules.chromia_originals.structure.operations.dev;
+
+namespace original {
+	import rell_modules.chromia_originals.original.operations;
+	import rell_modules.chromia_originals.original.operations.dev;
+	import rell_modules.chromia_originals.original.queries;
+}
+
+namespace ft3 {
+	import rell_modules.ft3.core.*;
+	import rell_modules.ft3.operations.dev_op_asset;
+	import rell_modules.ft3.operations.dev_op_account;
+	import rell_modules.ft3.account.operations;
+	import rell_modules.ft3.core.operations.transfer;
+	import rell_modules.ft3.operations.dev_op_balance;
+	import rell_modules.ft3.operations.dev_op_rate_limit;
+}
+
+namespace time {
+	import rell_modules.time.*;
+}
+
+struct module_args {
+	admin_pubkey: pubkey;
+	day_in_millis: integer;
+	seed_to_fruit_days: integer;
+}

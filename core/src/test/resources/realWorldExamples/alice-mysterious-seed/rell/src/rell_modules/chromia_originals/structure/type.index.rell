@@ -1,0 +1,29 @@
+
+entity structure_property_index_max_count {
+	key structure_property;
+	value: integer;
+}
+
+function _create_structure_property_index(structure, name, prop): structure_property {
+	val property = create structure_property(
+		structure,
+		name = name,
+		optional = false,
+		mutation = mutation_type.readonly,
+		type = property_type.indx,
+		value = x""
+	);
+	
+	_create_structure_property_meta_tags(property, prop.meta.tags);
+	
+	val max_count = indx.from_gtv(prop.prop_type_struct.type_gtv).max_count;
+	
+	if (max_count??) {
+		create structure_property_index_max_count(
+			property,
+			max_count
+		);
+	}
+	
+	return property;
+}

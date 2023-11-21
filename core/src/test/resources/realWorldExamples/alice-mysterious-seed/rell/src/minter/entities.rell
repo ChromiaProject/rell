@@ -1,0 +1,35 @@
+entity sync_status {
+	key blockchain: name;
+	mutable block_height: integer = 0;
+}
+
+entity external_account {
+	key address: text;
+	mutable ft3.acc.account;
+	
+	index account;
+}
+
+entity external_account_link_updated {
+	key address: text, timestamp;
+	account_id: byte_array = byte_array("00");
+}
+
+entity minted_seed_log {
+  key tx_id: text;
+  external_account; 
+  chain_name: name;
+  index type: name;
+}
+
+entity minted_bnft_seed {
+  key token_id: integer;
+  account_id: byte_array;
+  timestamp;
+}
+
+// @deprecated - same account can have multiple purchases in the same block
+entity minted_seed {
+  key external_account, chain_name: name, block: integer;
+  index type: name;
+}

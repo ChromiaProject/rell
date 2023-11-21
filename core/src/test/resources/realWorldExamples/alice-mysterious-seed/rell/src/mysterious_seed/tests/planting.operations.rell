@@ -1,0 +1,92 @@
+function test_plant_seed_successfully() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+		
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.sign(alice.keypair);
+		
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+		
+	val plant = mysterious_seed.plant @? { alice.account } ( .id );
+	assert_equals(plant, original_id);
+}
+
+function test_able_to_switch_planted_seed_if_not_yet_completed() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+	
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+	
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.sign(alice.keypair);
+}
+
+function test_unable_to_override_completed_plant() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+	
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	var original_id = byte_array.from_gtv(originals[0].get("id")!!);
+	
+	val tx2 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.sign(alice.keypair);
+		
+	rell.test
+		.block()
+		.tx(tx2)
+		.run();
+		
+	val tx3 = rell.test
+		.tx()
+		.op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, original_id))
+		.sign(alice.keypair);
+		
+	rell.test
+		.block()
+		.tx(tx3)
+		.run_must_fail();
+}

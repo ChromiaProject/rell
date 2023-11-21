@@ -1,0 +1,30 @@
+module;
+
+import wallet;
+import wallet.account;
+
+entity payment_history_entry (log) {
+    index account.account, wallet.asset, block_height: integer;
+    delta: integer;
+    chain_id: integer; // TOREMOVE
+
+    // helps to locate exact position of payment entry in transaction
+    op_index: integer;
+    is_input: boolean;
+    entry_index: integer;
+}
+
+query get_payment_history(id: byte_array, chain_id: integer) {
+    return payment_history_entry@*{
+        .account == account.account@{id, chain_id },
+        .chain_id == chain_id
+    }(
+        name = .account.id,
+        asset = .asset.name,
+        chain_id = .chain_id,
+        delta = .delta,
+        block_height = .block_height,
+        tx_rid = .transaction.tx_rid,
+        timestamp = .transaction.block.timestamp
+    );
+}

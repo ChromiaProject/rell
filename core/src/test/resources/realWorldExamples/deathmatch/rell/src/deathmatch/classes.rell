@@ -1,0 +1,89 @@
+entity lobby {
+	mutable name;
+	created: timestamp;
+	mutable max_players_count: integer;
+}
+
+entity battle {
+	index lobby;
+	created: timestamp;
+}
+
+entity battlefield_map {
+	index type: integer;
+	field_max_x: integer;
+	filed_max_y: integer;
+}
+
+entity battle_hero {
+	index battle, owner: user;
+	type: integer;
+	x: integer;
+	y: integer;
+}
+
+entity user_hero {
+	index user, hero;
+	mutable pos_x: integer;
+	mutable pos_y: integer;
+}
+
+entity hero {
+	name: text;
+	type: integer;
+	max_health: integer;
+	step: integer;
+	damage: integer;
+	attack_range: integer;
+	mutable health: integer;
+	price: integer;
+}
+
+entity user_lobby {
+	index lobby, user;
+	mutable is_ready: boolean = false;
+	mutable is_player: boolean;
+  mutable coins_amount: integer;
+}
+
+entity lobby_battlefield_map {
+	index lobby, battlefield_map;
+}
+
+entity lobby_battle {
+	key lobby;
+	index battle;
+}
+
+entity user_battle {
+	key user;
+	index battle;
+}
+
+entity battle_unit {
+	index battle, owner: user;
+	type: integer;
+	x: integer;
+	y: integer;
+}
+
+entity chat {
+	key lobby;
+}
+
+entity chat_member {
+	index chat;
+	key user;
+	mutable is_muted: boolean;
+}
+
+entity mute_member {
+	index chat_member;
+	muted_chat_member: chat_member;
+}
+
+entity message {
+	index chat_member;
+	text;
+	key created: timestamp;
+}

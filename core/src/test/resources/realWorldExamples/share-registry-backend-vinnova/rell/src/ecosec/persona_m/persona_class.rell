@@ -1,0 +1,43 @@
+
+//****************************************
+// entity - class
+
+import ecosec.company_m;
+import ecosec.identity_m;
+
+entity persona {
+	key id: text;	// Unique id set by front-end at creation
+	
+	index company_m.company;	// Each persona belongs to only one company
+	
+	// We cannot have a link to the authorized end-user here (pubkey or user_data link), since we then need index and mutable
+	
+    mutable first_name: text;
+    mutable last_name: text;
+    mutable address1: text = '';
+    mutable address2: text = ''; // TODO: Make sure this implemented in persona APIs, request classes, request APIs and address request frontend 
+    mutable postal_code: text = '';
+    mutable city: text = '';
+    mutable country: text = '';
+    
+    mutable phone: text = '';
+    mutable email: text = '';
+    
+    mutable type: persona_type_enum; // Person / Company
+    
+    mutable identity_type: identity_m.id_type;
+    mutable identity_nr: text = '';
+    
+    mutable trustee: boolean = false; // Trustee exists for Persona
+	
+	created_time_stamp: timestamp;
+	mutable changed_time_stamp: timestamp;
+	
+	index identity_type, identity_nr; // Identity searches
+}
+
+enum persona_type_enum {
+	PERSON,
+	COMPANY
+}
+

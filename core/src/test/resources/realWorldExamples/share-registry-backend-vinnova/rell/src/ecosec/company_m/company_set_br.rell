@@ -1,0 +1,84 @@
+
+//****************************************
+// company_set_br - business logic
+//
+// - Switch the company BR from one Persona to another Persona
+// - If no BR exists, old_br_persona_id must be empty string
+//
+// LIMITATIONS
+// - Enforces "there can be only one" for company BR
+
+import ecosec.extlib_m;
+import ecosec.appmsg_m;
+import ecosec.auth_m;
+import ecosec.persona_m;
+import ecosec.history_m;
+
+// Switch company board representative (from, to)
+function company_set_br(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text, old_br_persona_id: text, new_br_persona_id: text) {
+	// old_br_persona_id : Must be empty string if no BR exists
+		
+	// Check authorization for self
+	require(auth_m.have_auth_agent(agent_pubkey, agent_id), appmsg_m.msg('MSGE0101', 'agent', 'company_set_br')); // Supplied pubkey not signer?
+	
+	// Check authorization for action
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'company_set_br')); // Not board representative?
+	
+	// Check that that current state is as expected
+	if(old_br_persona_id == ''){ // There must not be a current BR Persona
+		require((persona_m.persona_role @* { .persona.company.org_nr == org_nr, .role_type.id == persona_m.role_type_enum.BOARD_REP } ).size() == 0, appmsg_m.msg('MSGE0201', 'Persona', 'company_set_br')); // Persona changed by someone else?
+	}
+	else { // Current BR must be old_br_persona_id
+		require((persona_m.persona_role @* { .persona.company.org_nr == org_nr, .persona.id == old_br_persona_id, .role_type.id == persona_m.role_type_enum.BOARD_REP } ).size() == 1, appmsg_m.msg('MSGE0201', 'Board representative', 'company_set_br')); // Changed by someone else?
+	}
+	
+	// Setup correct BR
+	
+	// Delete current BR
+	if(old_br_persona_id != ''){
+		delete persona_m.persona_role @ { .persona.company.org_nr == org_nr, .persona.id == old_br_persona_id, .role_type.id == persona_m.role_type_enum.BOARD_REP };
+		
+		// History log - BR role removed
+		val old_persona = persona_m.persona @ { .id == old_br_persona_id } (
+			.first_name, .last_name, .identity_type, .identity_nr
+		);
+		history_m.add(
+			org_nr,
+			op_context.last_block_time,
+			agent_id,
+			agent_pubkey,
+			history_m.object_type_enum.PERSONA,
+			history_m.event_type_enum.PERSONA_LOSTBR,
+			history_m.empty_json(),
+			history_m.empty_json(),
+			old_br_persona_id,
+			old_persona.first_name + ' ' + old_persona.last_name + ' (' + old_persona.identity_nr + ')',
+			old_br_persona_id
+		);
+	}
+	
+	// Add new BR
+	create persona_m.persona_role (
+		persona = persona_m.persona @ { .company.org_nr == org_nr, .id == new_br_persona_id },
+		role_type = persona_m.role_type @ { .id == persona_m.role_type_enum.BOARD_REP }
+	);
+	
+	// History log - BR role added
+	val new_persona = persona_m.persona @ { .id == new_br_persona_id } (
+		.first_name, .last_name, .identity_type, .identity_nr
+	);
+	history_m.add(
+		org_nr,
+		op_context.last_block_time,
+		agent_id,
+		agent_pubkey,
+		history_m.object_type_enum.PERSONA,
+		history_m.event_type_enum.PERSONA_GAINEDBR,
+		history_m.empty_json(),
+		history_m.empty_json(),
+		new_br_persona_id,
+		new_persona.first_name + ' ' + new_persona.last_name + ' (' + new_persona.identity_nr + ')',
+		new_br_persona_id
+	);	
+}

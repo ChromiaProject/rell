@@ -1,0 +1,120 @@
+entity instance_property_value_integer {
+	key instance_property;
+	mutable value: integer;
+}
+
+/*
+ * Get & Set functions
+ */
+ 
+function set_property_integer(instance, path: text, value: integer) {
+	_set_property_integer(_instance_property_of_path(instance, path), value);
+}
+
+function _set_property_integer(instance_property, value: integer?) {	
+	require_instance_property_not_readonly(instance_property);
+	
+	if (empty(value)) {
+		require_instance_property_optional(instance_property);
+		delete instance_property_value_integer @? { instance_property };
+		return;
+	}
+	
+	val property_value = instance_property_value_integer @? { instance_property };
+	
+	if (property_value??) {
+		property_value.value = value;
+	} else {
+		create instance_property_value_integer(
+			instance_property,
+			value = value
+		);
+	}
+}
+
+function get_property_integer(instance, path: text): integer? {
+	return _get_property_integer(_instance_property_of_path(instance, path));
+}
+
+function _get_property_integer(instance_property): integer? {
+	require(
+		instance_property_type(instance_property) == property_type.integer
+	);
+	
+	return instance_property_value_integer @? { instance_property }.value;
+}
+
+function _unset_instance_property_integer(instance_property) {
+	require_instance_property_not_readonly(instance_property);
+	require_instance_property_optional(instance_property);
+	
+	delete instance_property_value_integer @? {
+		instance_property
+	};
+}
+
+/*
+ * Query functions
+ */
+
+function find_one_integer(structure, property_name: text, value: integer): instance? {
+	val instances = instance_property_value_integer @* {
+		.instance_property.instance.structure == structure,
+		.instance_property.structure_property.name == property_name,
+		.value == value
+	} ( .instance_property.instance ) limit 1;
+	
+	return if (instances.size() > 0) instances[0] else null;
+}
+
+function find_all_integer(structure, property_name: text, value: integer): list<instance> {
+	return instance_property_value_integer @* {
+		.instance_property.instance.structure == structure,
+		.instance_property.structure_property.name == property_name,
+		.value == value
+	} ( .instance_property.instance );
+}
+
+/*
+ * Initialization
+ */
+
+function _initialize_integer_property(instance_property, init_value: gtv?) {
+	val prop = instance_property.structure_property;
+	val init_value_integer = if (init_value??) integer.from_gtv(init_value) else null;
+	
+	val default_value = 
+		if (instance_property.structure_property.value.size() != 0) 
+			integer.from_gtv(gtv.from_bytes(instance_property.structure_property.value)) 
+		else 
+			null;
+
+	require(
+		default_value != null 
+			or 
+		init_value_integer != null 
+			or 
+		prop.optional == true,
+		"Non-optional property '" + prop.name + "' is not initialized"
+	); 
+	
+	require(
+		prop.mutation != mutation_type.readonly
+			or
+		(
+			(default_value == null or init_value_integer == null) 
+				and 
+			prop.mutation == mutation_type.readonly
+		),
+		"Read-only property '" + prop.name + "' can be initialized only once"
+	);
+	
+	val v = init_value_integer ?: default_value;
+	
+	if (v??) {
+		create instance_property_value_integer(
+			instance_property,
+			v
+		);
+	}
+}

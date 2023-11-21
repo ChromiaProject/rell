@@ -1,0 +1,7 @@
+query get_account(id: text, chain_id: integer) {
+    return account@?{.id == byte_array(id), .chain_id == chain_id}(.id, .account_type, .args, mother_chain = .mother_chain.blockchain_rid, .chain_id);
+}
+
+query get_registered_accounts(chain_id: integer) {
+    return account@*{.chain_id == chain_id}(.id, .account_type, .args, mother_chain = .mother_chain.blockchain_rid, .chain_id);
+}

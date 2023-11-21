@@ -1,0 +1,143 @@
+
+function map_structure(structure, map_definitions: list<map_>): map<text, gtv?> {
+	val structure_map = map<text, gtv?>();
+	
+	for (map_definition in map_definitions) {
+		var m = map<name, gtv?>();
+		
+		when (map_definition.map_type.type) {
+			mapper_type.property_list -> 
+				m = __structure.handle_property_list_mapping(structure, map_definition.map_type);
+			mapper_type.all_properties ->
+				m = __structure.handle_all_properties_mapping(structure, map_definition.map_type);
+			mapper_type.interface ->
+				m = __structure.handle_interfaces_mapping(structure, map_definition.map_type);
+			mapper_type.instance_count ->
+				m = __structure.handle_instance_count_mapping(structure);
+			else -> {
+				throw("Mapping '" + map_definition.map_type.type.name + "' not implemented");
+			}
+		}
+		
+		when (map_definition.map_property_type.type) {
+			mapper_property_type.direct -> 
+				structure_map.put_all(m);
+			mapper_property_type.dict ->
+				structure_map[map_definition.map_property_type.name] 
+					= m.to_gtv();
+			mapper_property_type.array ->
+				structure_map[map_definition.map_property_type.name] 
+					= _dict_to_array(m).to_gtv();
+		}
+	}
+	
+	return structure_map;
+}
+
+namespace __structure {
+	function handle_property_list_mapping(structure, map_type): map<name, gtv?> {
+		require(map_type.type == mapper_type.property_list);
+		val properties_map = map<name, gtv?>();
+		
+		for (property_name in map_type.names) {
+			if (not properties_map.contains(property_name)) {
+				properties_map[property_name] = get_static_property_serialized(structure, property_name); 
+			}
+		}
+		
+		return properties_map;
+	}
+	
+	function handle_all_properties_mapping(structure, map_type): map<name, gtv?> {
+		require(map_type.type == mapper_type.all_properties);
+		
+		val properties = static_property @* { structure };
+
+		val properties_map = map<name, gtv?>();
+		for (property in properties) {
+			properties_map[property.name] = _get_static_property_serialized(property);
+		}
+		return properties_map;
+	}
+	
+	function handle_interfaces_mapping(structure, map_type): map<name, gtv?> {
+		require(map_type.type == mapper_type.interface);
+		
+		val properties = _get_static_properties_of_interfaces(
+			structure, 
+			Interfaces(map_type.names)
+		);
+		
+		val properties_map = map<name, gtv?>();
+		for (property in properties) {
+			properties_map[property.name] = _get_static_property_serialized(property);
+		} 
+		return properties_map;
+	}
+	
+	function handle_instance_count_mapping(structure): map<name, gtv?> {
+		val count = get_instances_count(structure);
+		val max_count = get_instances_max_count(structure);
+		
+		val count_map = map<text, gtv?>();
+		count_map["count"] = count.to_gtv();
+		
+		if (max_count??) {
+			count_map["max"] = max_count.to_gtv();
+		}
+		
+		return count_map;
+	}
+}
+
+function structure_values_integer(structure): map<text, gtv?> {
+	val properties = static_property @* {
+		structure,
+		.type == property_type.integer
+	};
+	
+	val property_value_map = map<text, gtv?>();
+	for (property in properties) {
+		val value = static_property_value_integer @? { property }.value?.to_gtv();
+		property_value_map[property.name] = value;
+	}
+	return property_value_map;
+}
+
+function structure_values_text(structure): map<text, gtv?> {
+	val properties = static_property @* {
+		structure,
+		.type == property_type.text
+	};
+	
+	val property_value_map = map<text, gtv?>();
+	for (property in properties) {
+		val value = static_property_value_text @? { property }.value?.to_gtv();
+		property_value_map[property.name] = value;
+	}
+	return property_value_map;
+}
+
+function structure_values_byte_array(structure): map<text, gtv?> {
+	val properties = static_property @* {
+		structure,
+		.type == property_type.byte_array
+	};
+	
+	val property_value_map = map<text, gtv?>();
+	for (property in properties) {
+		val value = static_property_value_byte_array @? { property }.value?.to_gtv();
+		property_value_map[property.name] = value;
+	}
+	return property_value_map;
+}
+
+function structure_value_count(structure): map<text, gtv> {
+	val count_map = map<text, gtv>();
+	val values = map<text, gtv?>();
+	
+	values["count"] = get_instances_count(structure).to_gtv();
+	
+	count_map["_count"] = values.to_gtv();
+	return count_map;
+}

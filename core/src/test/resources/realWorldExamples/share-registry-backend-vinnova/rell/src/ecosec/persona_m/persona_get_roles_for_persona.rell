@@ -1,0 +1,17 @@
+
+//****************************************
+// get_roles_for_persona - business logic
+//
+// - Gets all roles of a persona
+// -
+//
+// LIMITATIONS
+// -
+
+
+function get_roles_for_persona(persona): list<(id: integer, name: text)> {
+	return persona_role @* { .persona == persona }(
+		@sort id=.role_type.id.value,
+		name=.role_type.name
+	);
+}

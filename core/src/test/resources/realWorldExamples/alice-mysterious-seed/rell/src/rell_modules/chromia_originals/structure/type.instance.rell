@@ -1,0 +1,62 @@
+entity static_property_value_instance {
+	key static_property;
+	mutable value: instance;
+}
+
+function set_static_property_instance(structure, property_name: name, value: instance) {
+	_set_static_property_instance(_static_property(structure, property_name), value);
+}
+
+function _set_static_property_instance(static_property, value: instance) {	
+	_require_static_property_not_readonly(static_property);
+	_require_instance_is_of_valid_type(static_property, value);
+	
+	val instance_value = 
+		if (value.structure.is_entity)
+			value
+		else 
+			deep_copy(value);
+	
+	val property_value = static_property_value_instance @? { static_property };
+	
+	if (property_value??) {
+		val old_value = property_value.value;
+		
+		property_value.value = instance_value;
+		
+		if (not old_value.structure.is_entity) {
+			_delete_instance(old_value);
+		}	
+	} else {
+		create static_property_value_instance(
+			static_property,
+			value = instance_value
+		);
+	}
+}
+
+function get_static_property_instance(structure, property_name: name): instance? {
+	return _get_static_property_instance(
+		_static_property(structure, property_name)
+	);
+}
+
+function _get_static_property_instance(static_property): instance? {
+	_require_static_property_structure_or_interface(static_property);
+	
+	return static_property_value_instance @? { static_property }.value;
+}
+
+function _get_static_property_instance_serialized(static_property): gtv? {
+	val instance = _get_static_property_instance(static_property);
+	
+	return if (instance??) 
+			map_instance(instance, 
+				[
+					map_(all_properties(), direct())
+				],
+				all()
+			).to_gtv()
+		else
+			null;
+}

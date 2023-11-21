@@ -1,0 +1,33 @@
+import wallet.blockchain;
+
+enum account_type {
+  single_key_account,
+  multi_sig_account
+}
+
+struct single_key_account_args { pubkey; }
+struct multi_sig_account_args { signatures_required: integer; pubkeys: list<pubkey>;}
+
+
+entity account {
+  chain_id: integer; // TOREMOVE
+
+  key id: byte_array, chain_id; // TOREMOVE chain_id
+  mutable account_type;
+  mutable args: byte_array;
+  mother_chain: blockchain.blockchain;
+}
+
+struct account_descriptor {
+  account_type;
+  args: gtv;
+}
+
+struct xc_account  {
+    id: byte_array;
+    account_type;
+    args: byte_array;
+    mother_chain: blockchain.blockchain;
+
+    chain_id: integer;
+}

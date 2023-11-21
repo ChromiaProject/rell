@@ -1,0 +1,17 @@
+
+//****************************************
+// cert_status_type - class
+//
+// Table naming the different possible type of status a cert can have (New, Active, Revoked, ...)
+
+entity cert_status_type {
+	index id: cert_status_type_enum;
+	name: text;
+}
+
+enum cert_status_type_enum {
+	FOUNDER,
+	NEW,
+	ACTIVE,
+	REVOKED
+}

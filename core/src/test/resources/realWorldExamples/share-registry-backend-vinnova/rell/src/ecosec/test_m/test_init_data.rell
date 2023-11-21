@@ -1,0 +1,504 @@
+
+/////////////////////////////////
+// function - test_init_data
+//
+// PURPOSE
+// - Fills the system with test data
+//
+
+import ecosec.identity_m;
+import ecosec.agent_m;
+import ecosec.persona_m;
+import ecosec.company_m;
+import ecosec.share_block_m;
+
+function test_init_data (founder_pubkey: pubkey, agent1_pubkey: pubkey, agent2_pubkey: pubkey,
+	agent3_pubkey: pubkey, agent4_pubkey: pubkey) {
+		
+	require( (company_m.company@*{} limit 1).size() == 0 ); // Require that test data has not yet been created
+	
+	require( is_signer(founder_pubkey) ); // Require that supplied pubkey is same as signing pubkey
+	
+	require( agent_m.cert_status@?{.cert_status_type.id == agent_m.cert_status_type_enum.FOUNDER, .cert.pubkey == founder_pubkey} !=null); // Require signer to be founder
+	
+	// Default agent pubkeys
+	var f_pubkey: 	pubkey = byte_array("022040f259776899253ab6e4cd00fd2a7b683e6608decfc791a2365c5b87e49e70"); // Based on privKey from "999999-9999"
+	var a1_pubkey: 	pubkey = byte_array("02758a47c6da7a6e4cec3dc34deda0a1c19fc56b30a3f00c4d36f1134bfed541bd"); // Based on privKey from "111111-1111"
+	var a2_pubkey: 	pubkey = byte_array("02b39d53c20d935b4ba7698739d9812c972279d58d5f06a606bbbfc4c72ee6e450"); // Based on privKey from "222222-2222"
+	var a3_pubkey: 	pubkey = byte_array("02eaa13709b105203761a0dc64e2d2cfa463a1686e42451ec4eea85045f8855721"); // Based on privKey from "212121-2121"
+	var a4_pubkey: 	pubkey = byte_array("0232a9fef0c9bacf082481dc915f8f8706e991975564bb15ba31e28953d24004c6"); // Based on privKey from "313131-3131"
+	//var a5_pubkey: 	pubkey = byte_array("03ed6dd3b5bc5d9f3491d792cf8b21e753ad41cdbb479094fa316ca2f72cd47bb3"); // Based on privKey from "555555-5555" 
+	
+
+	// Replace default, if "not zero" pubkeys supplied	
+	if(not founder_pubkey.to_hex().starts_with("0000000000000000000000000000000000000000000000000000000000000000")){ f_pubkey = founder_pubkey; }
+	if(not agent1_pubkey.to_hex().starts_with("0000000000000000000000000000000000000000000000000000000000000000")){ a1_pubkey = agent1_pubkey; }
+	if(not agent2_pubkey.to_hex().starts_with("0000000000000000000000000000000000000000000000000000000000000000")){ a2_pubkey = agent2_pubkey; }
+	if(not agent3_pubkey.to_hex().starts_with("0000000000000000000000000000000000000000000000000000000000000000")){ a3_pubkey = agent3_pubkey; }
+	if(not agent4_pubkey.to_hex().starts_with("0000000000000000000000000000000000000000000000000000000000000000")){ a4_pubkey = agent4_pubkey; }
+	//if(agent5_pubkey.to_hex().starts_with("0000000000000000000000000000000000000000000000000000000000000000")){ a5_pubkey = agent5_pubkey; }
+	
+	// Create test data
+	////
+	
+	val company1_org_nr = "919191-9191";
+	val company2_org_nr = "929292-9292";
+	
+	val persona1_id = "TestRandomPersonaId1";
+	val persona2_id = "TestRandomPersonaId2";
+	val persona3_id = "TestRandomPersonaId3";
+	val persona4_id = "TestRandomPersonaId4";
+	val persona5_id = "TestRandomPersonaId5";
+	val persona6_id = "TestRandomPersonaId6";
+
+	val agent1_id = "TestRandomAgentId1";
+	val agent2_id = "TestRandomAgentId2";
+	val agent3_id = "TestRandomAgentId3";
+	val agent4_id = "TestRandomAgentId4";
+	val agent5_id = "TestRandomAgentId5";
+	
+	//val tmp_company: company;
+	//val tmp_share_block: share_block;
+	//val tmp_persona: persona;
+	//val tmp_share_block: share_block;
+	
+	// Company
+	create company_m.company ( // Company
+		org_nr = company1_org_nr,
+		name = "Kalles Livs AB",
+		address1 = "Livstgatan 91",
+		address2 = "",
+		postal_code = "919 191",
+		city = "Stockholm",
+		country = "Sweden",
+		visit_address1 = "",
+		visit_address2 = "",
+		visit_postal_code = "",
+		visit_city = "",
+		visit_country = "",
+		email = "info@klivs.se",
+		phone = "+46 8 91 91 91",
+		summons = company_m.company_summons_enum.EMAIL,
+		share_count = 100000,
+		share_value = 500,
+		clause_conversion = true,
+    	clause_consent = true,
+    	clause_purchase_right = false,
+    	clause_refusal = false,
+    	clause_redemption = true, 
+		created_time_stamp = 0,
+		changed_time_stamp = 0
+	);
+	create company_m.company ( // Company
+		org_nr = company2_org_nr,
+		name = "Lenas programmering AB",
+		address1 = "Programmeringsgatan 92",
+		address2 = "",
+		postal_code = "929 292",
+		city = "Lund",
+		country = "Sweden",
+		visit_address1 = "",
+		visit_address2 = "",
+		visit_postal_code = "",
+		visit_city = "",
+		visit_country = "",
+		email = "info@lenaprog.se",
+		phone = "+46 8 92 92 92",
+		summons = company_m.company_summons_enum.EMAIL,
+		share_count = 100000,
+		share_value = 500,
+		clause_conversion = false,
+    	clause_consent = false,
+    	clause_purchase_right = false,
+    	clause_refusal = false,
+    	clause_redemption = true, 
+		created_time_stamp = 0,
+		changed_time_stamp = 0
+	);
+	
+	// Persona with role
+	create persona_m.persona ( // Persona
+		id = persona1_id,
+		company = company_m.company@{.org_nr == company1_org_nr },
+		first_name = "Karl",
+		last_name = "Own",
+		address1 = "Gatan 11",
+		address2 = "",
+		postal_code = "111 111",
+		city = "Kiruna",
+		country = "Sweden",
+		phone = "+46 8 11 11 11",
+		email = "kalleo@nonomail.com",
+		type = persona_m.persona_type_enum.PERSON,
+		identity_type = identity_m.id_type @ {identity_m.id_type_enum.SWE_ID},
+		identity_nr = "111111-1111",
+		trustee = false,
+		created_time_stamp = 0,
+		changed_time_stamp = 0
+	);
+	create persona_m.persona_role ( // Give role
+		persona_m.persona@{.id == persona1_id},
+		persona_m.role_type@{persona_m.role_type_enum.SHARE_HOLDER}
+	);
+	
+	create persona_m.persona ( // Persona
+		id = persona2_id,
+		company = company_m.company@{.org_nr == company2_org_nr },
+		first_name = "Lena",
+		last_name = "Owl",
+		address1 = "Gatan 12",
+		address2 = "",
+		postal_code = "121 212",
+		city = "Trosa",
+		country = "Sweden",
+		phone = "+46 8 12 12 12",
+		email = "lenao@nonomail.com",
+		type = persona_m.persona_type_enum.PERSON,
+		identity_type = identity_m.id_type @ {identity_m.id_type_enum.SWE_ID},
+		identity_nr = "121212-1212",
+		trustee = false,
+		created_time_stamp = 0,
+		changed_time_stamp = 0
+	);
+	create persona_m.persona_role ( // Give role
+		persona_m.persona@{.id == persona2_id},
+		persona_m.role_type@{persona_m.role_type_enum.SHARE_HOLDER}
+	);
+	
+	create persona_m.persona ( // Persona
+		id = persona3_id,
+		company = company_m.company@{.org_nr == company1_org_nr },
+		first_name = "Eva",
+		last_name = "Styr",
+		address1 = "Gatan 21",
+		address2 = "",
+		postal_code = "212 121",
+		city = "Sveg",
+		country = "Sweden",
+		phone = "+46 8 21 21 21",
+		email = "evas@nonomail.com",
+		type = persona_m.persona_type_enum.PERSON,
+		identity_type = identity_m.id_type @ {identity_m.id_type_enum.SWE_ID},
+		identity_nr = "212121-2121",
+		trustee = false,
+		created_time_stamp = 0,
+		changed_time_stamp = 0
+	);
+	create persona_m.persona_role ( // Give role
+		persona_m.persona@{.id == persona3_id},
+		persona_m.role_type@{persona_m.role_type_enum.BOARD_REP}
+	);
+	
+	create persona_m.persona ( // Persona
+		id = persona4_id,
+		company = company_m.company@{.org_nr == company2_org_nr },
+		first_name = "Lars",
+		last_name = "Board",
+		address1 = "Gatan 22",
+		address2 = "",
+		postal_code = "222 222",
+		city = "Nora",
+		country = "Sweden",
+		phone = "+46 8 22 22 22",
+		email = "larsb@nonomail.com",
+		type = persona_m.persona_type_enum.PERSON,
+		identity_type = identity_m.id_type @ {identity_m.id_type_enum.SWE_ID},
+		identity_nr = "222222-2222",
+		trustee = false,
+		created_time_stamp = 0,
+		changed_time_stamp = 0
+	);
+	create persona_m.persona_role ( // Give role
+		persona_m.persona@{.id == persona4_id},
+		persona_m.role_type@{persona_m.role_type_enum.BOARD_REP}
+	);
+	create persona_m.persona_role ( // Give role
+		persona_m.persona@{.id == persona4_id},
+		persona_m.role_type@{persona_m.role_type_enum.SHARE_HOLDER}
+	);
+	
+	create persona_m.persona ( // Persona
+		id = persona5_id,
+		company = company_m.company@{.org_nr == company2_org_nr },
+		first_name = "Karl",
+		last_name = "Own",
+		address1 = "Gatan 11",
+		address2 = "",
+		postal_code = "111 111",
+		city = "Kiruna",
+		country = "Sweden",
+		phone = "+46 8 11 11 11",
+		email = "kalleo@nonomail.com",
+		type = persona_m.persona_type_enum.PERSON,
+		identity_type = identity_m.id_type @ {identity_m.id_type_enum.SWE_ID},
+		identity_nr = "111111-1111",
+		trustee = false,
+		created_time_stamp = 0,
+		changed_time_stamp = 0
+	);
+	create persona_m.persona_role ( // Give role
+		persona_m.persona@{.id == persona5_id},
+		persona_m.role_type@{persona_m.role_type_enum.SHARE_HOLDER}
+	);
+
+	create persona_m.persona ( // Persona
+		id = persona6_id,
+		company = company_m.company@{.org_nr == company2_org_nr },
+		first_name = "Eva",
+		last_name = "Styr",
+		address1 = "Gatan 21",
+		address2 = "",
+		postal_code = "212 121",
+		city = "Sveg",
+		country = "Sweden",
+		phone = "+46 8 21 21 21",
+		email = "evas@nonomail.com",
+		type = persona_m.persona_type_enum.PERSON,
+		identity_type = identity_m.id_type @ {identity_m.id_type_enum.SWE_ID},
+		identity_nr = "212121-2121",
+		trustee = false,
+		created_time_stamp = 0,
+		changed_time_stamp = 0
+	);
+	create persona_m.persona_role ( // Give role
+		persona_m.persona@{.id == persona6_id},
+		persona_m.role_type@{persona_m.role_type_enum.BOARD_REP}
+	);
+	
+	// Share blocks
+	val tmp_share_block1 = create share_block_m.share_block ( // Share block
+		company = company_m.company@{.org_nr == company1_org_nr },
+		share_from = 1,
+		share_to = 50000,
+		share_type = "A",
+		pledging = false,
+		certificate = false,
+		recalled = false,
+		created_time_stamp = 0,
+		changed_time_stamp = 0
+	);
+	create share_block_m.share_block_persona ( // Share block owner
+		tmp_share_block1,
+		persona_m.persona@{.id == persona1_id}
+	);
+	
+	val tmp_share_block2 = create share_block_m.share_block ( // Share block
+		company = company_m.company@{.org_nr == company1_org_nr },
+		share_from = 50001,
+		share_to = 100000,
+		share_type = "A",
+		pledging = false,
+		certificate = false,
+		recalled = false,
+		created_time_stamp = 0,
+		changed_time_stamp = 0
+	);
+	create share_block_m.share_block_persona ( // Share block owner
+		tmp_share_block2,
+		persona_m.persona@{.id == persona1_id}
+	);
+	
+	val tmp_share_block3 = create share_block_m.share_block ( // Share block
+		company = company_m.company@{.org_nr == company2_org_nr },
+		share_from = 1,
+		share_to = 50000,
+		share_type = "A",
+		pledging = false,
+		certificate = false,
+		recalled = false,
+		created_time_stamp = 0,
+		changed_time_stamp = 0
+	);
+	create share_block_m.share_block_persona ( // Share block owner
+		tmp_share_block3,
+		persona_m.persona@{.id == persona2_id}
+	);
+	
+	val tmp_share_block4 = create share_block_m.share_block ( // Share block
+		company = company_m.company@{.org_nr == company2_org_nr },
+		share_from = 50001,
+		share_to = 80000,
+		share_type = "A",
+		pledging = false,
+		certificate = false,
+		recalled = false,
+		created_time_stamp = 0,
+		changed_time_stamp = 0
+	);
+	create share_block_m.share_block_persona ( // Share block owner
+		tmp_share_block4,
+		persona_m.persona@{.id == persona2_id}
+	);
+	
+	val tmp_share_block5 = create share_block_m.share_block ( // Share block
+		company = company_m.company@{.org_nr == company2_org_nr },
+		share_from = 80001,
+		share_to = 90000,
+		share_type = "A",
+		pledging = false,
+		certificate = false,
+		recalled = false,
+		created_time_stamp = 0,
+		changed_time_stamp = 0
+	);
+	create share_block_m.share_block_persona ( // Share block owner
+		tmp_share_block5,
+		persona_m.persona@{.id == persona4_id}
+	);
+	
+	val tmp_share_block6 = create share_block_m.share_block ( // Share block
+		company = company_m.company@{.org_nr == company2_org_nr },
+		share_from = 90001,
+		share_to = 100000,
+		share_type = "A",
+		pledging = false,
+		certificate = false,
+		recalled = false,
+		created_time_stamp = 0,
+		changed_time_stamp = 0
+	);
+	create share_block_m.share_block_persona ( // Share block owner
+		tmp_share_block6,
+		persona_m.persona@{.id == persona5_id}
+	);
+	
+	// Agents with cert and persona
+	val tmp_agent1 = create agent_m.agent (  // Agent
+		id = agent1_id,
+		//identity_type_id = 0,
+		//identity_nr = "111111-1111",
+		first_name = "Karl",
+		last_name = "Own",
+		address1 = "Gatan 11",
+		address2 = "",
+		postal_code = "111 111",
+		city = "Kiruna",
+		country = "Sweden",
+		phone = "+46 8 11 11 11",
+		email = "karlo@nonomail.com",
+		created_time_stamp = op_context.last_block_time,
+		changed_time_stamp = op_context.last_block_time
+	);
+	val agent1_cert = create agent_m.cert ( // Cert
+		tmp_agent1,
+	    identity_type = identity_m.id_type @ {identity_m.id_type_enum.SWE_ID},
+	    identity_nr = "111111-1111",
+	    pubkey=a1_pubkey,
+	    signer_pubkey=f_pubkey
+	); 
+	create agent_m.cert_status ( // Cert Status (active)
+		agent1_cert,
+		agent_m.cert_status_type@{agent_m.cert_status_type_enum.ACTIVE},
+		valid_from = op_context.last_block_time,
+		expire_at = integer.MAX_VALUE
+	); 
+	create persona_m.persona_agent ( // Agent represents persona
+		persona_m.persona@{.id == persona1_id},
+		tmp_agent1
+	);
+	create persona_m.persona_agent ( // Agent represents persona
+		persona_m.persona@{.id == persona5_id},
+		tmp_agent1
+	);
+	
+	val tmp_agent2 = create agent_m.agent (  // Agent
+		id = agent2_id,
+		//identity_type_id = 0,
+		//identity_nr = "222222-2222",
+		first_name = "Lars",
+		last_name = "Board",
+		address1 = "Gatan 22",
+		address2 = "",
+		postal_code = "222 222",
+		city = "Nora",
+		country = "Sweden",
+		phone = "+46 8 22 22 22",
+		email = "larsb@nonomail.com",
+		created_time_stamp = op_context.last_block_time,
+		changed_time_stamp = op_context.last_block_time
+	);
+	val agent2_cert = create agent_m.cert ( // Cert
+		tmp_agent2,
+	    identity_type = identity_m.id_type @ {identity_m.id_type_enum.SWE_ID},
+	    identity_nr = "222222-2222",
+	    pubkey=a2_pubkey,
+	    signer_pubkey=f_pubkey
+	); 
+	create agent_m.cert_status ( // Cert Status (active)
+		agent2_cert,
+		agent_m.cert_status_type@{agent_m.cert_status_type_enum.ACTIVE},
+		valid_from = op_context.last_block_time,
+		expire_at = integer.MAX_VALUE
+	); 
+	create persona_m.persona_agent ( // Agent represents persona
+		persona_m.persona@{.id == persona4_id},
+		tmp_agent2
+	);
+
+	val tmp_agent3 = create agent_m.agent (  // Agent
+		id = agent3_id,
+		//identity_type_id = 0,
+		//identity_nr = "212121-2121",
+		first_name = "Eva",
+		last_name = "Styr",
+		address1 = "Gatan 21",
+		address2 = "",
+		postal_code = "212 121",
+		city = "Sveg",
+		country = "Sweden",
+		phone = "+46 8 21 21 21",
+		email = "evas@nonomail.com",
+		created_time_stamp = op_context.last_block_time,
+		changed_time_stamp = op_context.last_block_time
+	);
+	val agent3_cert = create agent_m.cert ( // Cert
+		tmp_agent3,
+	    identity_type = identity_m.id_type @ {identity_m.id_type_enum.SWE_ID},
+	    identity_nr = "212121-2121",
+	    pubkey=a3_pubkey,
+	    signer_pubkey=f_pubkey
+	); 
+	create agent_m.cert_status ( // Cert Status (active)
+		agent3_cert,
+		agent_m.cert_status_type@{agent_m.cert_status_type_enum.ACTIVE},
+		valid_from = op_context.last_block_time,
+		expire_at = integer.MAX_VALUE
+	); 
+	create persona_m.persona_agent ( // Agent represents persona
+		persona_m.persona@{.id == persona3_id},
+		tmp_agent3
+	);
+	create persona_m.persona_agent ( // Agent represents persona
+		persona_m.persona@{.id == persona6_id},
+		tmp_agent3
+	);
+	
+	val tmp_agent4 = create agent_m.agent (  // Agent
+		id = agent4_id,
+		first_name = "Stor-Maggan",
+		last_name = "Admina",
+		address1 = "Gatan 31",
+		address2 = "",
+		postal_code = "313 131",
+		city = "Rimbo",
+		country = "Sweden",
+		phone = "+46 8 31 31 31",
+		email = "stor@nonomail.com",
+		administrator = 1,
+		created_time_stamp = op_context.last_block_time,
+		changed_time_stamp = op_context.last_block_time
+	);
+	val agent4_cert = create agent_m.cert ( // Cert
+		tmp_agent4,
+	    identity_type = identity_m.id_type @ {identity_m.id_type_enum.SWE_ID},
+	    identity_nr = "313131-3131",
+	    pubkey=a4_pubkey,
+	    signer_pubkey=f_pubkey
+	); 
+	create agent_m.cert_status ( // Cert Status (active)
+		agent4_cert,
+		agent_m.cert_status_type@{agent_m.cert_status_type_enum.ACTIVE},
+		valid_from = op_context.last_block_time,
+		expire_at = integer.MAX_VALUE
+	); 
+}

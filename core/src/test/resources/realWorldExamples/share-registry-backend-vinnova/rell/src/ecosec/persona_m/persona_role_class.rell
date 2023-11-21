@@ -1,0 +1,9 @@
+
+//****************************************
+// entity_role - class
+
+entity persona_role {
+	key persona,
+		role_type; 
+}
+

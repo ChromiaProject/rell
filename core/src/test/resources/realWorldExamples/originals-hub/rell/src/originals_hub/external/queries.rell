@@ -1,0 +1,6 @@
+
+function get_chain_q(
+	brid: byte_array
+): (brid: byte_array, location: text)? {
+	return get_chain(brid);
+}

@@ -1,0 +1,307 @@
+
+import ^.collections.*;
+import ^.structure.*;
+import ^.component_definition.{
+	property_type
+};
+import ^.original;
+
+entity instance {
+	index structure;
+}
+
+entity instance_property {
+	index instance;
+	key instance, structure_property;
+}
+
+/*
+ * Instantiation
+ */
+
+struct instance_ {
+	structure;
+	init = init(map<text, gtv>());
+}
+
+function new_(instance_): instance {
+	val instance = create instance(instance_.structure);	
+	_create_properties(instance, instance_.init);
+	return instance;
+}
+
+/*
+ * Get & Set
+ */
+
+function set_property(instance, path: text, value: gtv) {
+	val property = _instance_property_of_path(instance, path);
+	_set_property(property, value);
+}
+
+function _set_property(property: instance_property, value: gtv?) {
+	require(
+		property.structure_property.mutation != mutation_type.readonly ,
+		"Property '" + instance_property_name(property) + "' is read-only property"
+	);
+	
+	when(instance_property_type(property)) {
+		property_type.integer -> 
+			_set_property_integer(property, if (value??) integer.from_gtv(value) else null);	
+		property_type.text -> 
+			_set_property_text(property, if (value??) text.from_gtv(value) else null);	
+		property_type.byte_array -> 
+			_set_property_byte_array(property, if (value??) byte_array.from_gtv(value) else null);
+		property_type.boolean ->
+			_set_property_boolean(property, if (value??) boolean.from_gtv(value) else null);
+		property_type._enum ->
+			_set_property_enum(property, if (value??) enum_value.from_gtv(value) else null);
+		property_type.account ->
+			_set_property_account(property, if (value??) ft3.account.from_gtv(value) else null);
+		property_type.interface,
+		property_type.structure ->
+			_set_property_instance(property, if (value??) Instance(value) else null);			
+	}
+}
+
+function get_property(instance, path: text): gtv? {
+	val instance_property = _instance_property_of_path(instance, path);
+	
+	return _get_property(instance_property);
+}
+
+function _get_property(instance_property): gtv? {
+	when (instance_property_type(instance_property)) {
+		property_type.integer -> 
+			return _get_property_integer(instance_property)?.to_gtv();
+		property_type.text ->
+			return _get_property_text(instance_property)?.to_gtv();
+		property_type.byte_array -> 
+			return _get_property_byte_array(instance_property)?.to_gtv();
+		property_type.boolean ->
+			return _get_property_boolean(instance_property)?.to_gtv();
+		property_type.id ->
+			return _get_property_id(instance_property).to_gtv();
+		property_type.indx ->
+			return _get_property_index(instance_property).to_gtv();
+		property_type.account -> 
+			return _get_property_account(instance_property)?.to_gtv();
+		property_type._enum ->
+			return _get_property_enum(instance_property)?.to_gtv();
+		property_type.interface,
+		property_type.structure ->
+			return _get_property_instance(instance_property)?.to_gtv();
+		property_type._set ->
+			return null;
+	}
+}
+
+function get_property_serialized(instance, path: text): gtv? {
+	val instance_property = _instance_property_of_path(instance, path);
+	
+	return _get_property_serialized(instance_property);
+}
+
+function _get_property_serialized(instance_property): gtv? {
+	return _get_property_serialized_with_rules(
+		instance_property,
+		all()
+	);
+}
+
+function _get_property_serialized_with_rules(
+	instance_property, 
+	property_rules: list<instance_map_rule>
+): gtv? {
+		when (instance_property_type(instance_property)) {
+		property_type.integer -> 
+			return _get_property_integer(instance_property)?.to_gtv();
+		property_type.text ->
+			return _get_property_text(instance_property)?.to_gtv();
+		property_type.byte_array -> 
+			return _get_property_byte_array(instance_property)?.to_gtv();
+		property_type.boolean ->
+			return _get_property_boolean(instance_property)?.to_gtv();
+		property_type.id ->
+			return _get_property_id(instance_property).to_gtv();
+		property_type.indx ->
+			return _get_property_index(instance_property).to_gtv();
+		property_type.account -> 
+			return _get_property_account_serialized(instance_property);
+		property_type._enum ->
+			return _get_property_enum_serialized(instance_property);
+		property_type.interface,
+		property_type.structure ->
+			return _get_property_instance_serialized_with_rules(
+				instance_property, 
+				property_rules
+			);
+		property_type._set ->
+			return null;
+	}
+}
+
+function set_properties(instance, properties: map<name, gtv>) {
+	for ((name, value) in properties) {
+		set_property(instance, name, value);
+	}
+}
+
+function unset_instance_property(instance, name) {
+	val property = instance_property @ {
+		instance,
+		.structure_property.name == name
+	};
+	
+	require(
+		is_instance_property_readonly(property) == false,
+		"Trying to unset readonly property '" + name + "'"
+	);
+	
+	require(
+		is_instance_property_optional(property) == true,
+		"Trying to unset non-optional property '" + name + "'"
+	);
+	
+	when(property.structure_property.type) {
+		property_type.integer -> 
+			_unset_instance_property_integer(property);
+		property_type.text -> 
+			_unset_instance_property_text(property);
+		property_type.byte_array -> 
+			_unset_instance_property_byte_array(property);
+		property_type.boolean ->
+			_unset_instance_property_boolean(property);
+	}
+}
+
+/*
+ * Query functions
+ */
+
+function get_first(structure, where): instance? {
+	return find_one(structure, where.name, where.value);
+}
+
+function get_all(structure, where): list<instance> {
+	return find_all(structure, where.name, where.value);
+}
+
+function find_by_id(id: byte_array): instance? {
+	return (
+		i: instance, 
+		ip: instance_property, 
+		ipvi: instance_property_value_id
+	) @? { 
+		ipvi.value == id,
+		ipvi.instance_property == ip,
+		ip.instance == i
+	} ( i );
+}
+
+function find_one(structure, property_name: text, value: gtv): instance? {
+	val type = structure_property @ { structure, property_name }.type;
+	
+	when (type) {
+		property_type.id ->
+			return find_one_id(structure, property_name, byte_array.from_gtv(value));
+		property_type.integer -> 
+			return find_one_integer(structure, property_name, integer.from_gtv(value));
+		property_type.text -> 
+			return find_one_text(structure, property_name, text.from_gtv(value));
+		property_type.indx -> 
+			return find_one_index(structure, property_name, integer.from_gtv(value));
+		property_type.byte_array -> 
+			return find_one_byte_array(structure, property_name, byte_array.from_gtv(value));
+		property_type.boolean ->
+			return find_one_boolean(structure, property_name, boolean.from_gtv(value));
+		property_type._enum -> 
+			return find_one_enum(structure, property_name, enum_value.from_gtv(value));
+		property_type.account ->
+			return find_one_account(structure, property_name, ft3.account.from_gtv(value));
+		property_type.structure,
+		property_type.interface ->
+			return find_one_instance(structure, property_name, instance.from_gtv(value));
+		property_type._set ->
+			return null;
+	}
+}
+
+function find_all(structure, property_name: text, value: gtv): list<instance> {
+	val type = structure_property @ { structure, property_name }.type;
+	
+	when (type) {
+		property_type.id ->
+			return find_all_id(structure, property_name, byte_array.from_gtv(value));
+		property_type.integer -> 
+			return find_all_integer(structure, property_name, integer.from_gtv(value));
+		property_type.text -> 
+			return find_all_text(structure, property_name, text.from_gtv(value));
+		property_type.indx -> 
+			return find_all_index(structure, property_name, integer.from_gtv(value));	
+		property_type.byte_array -> 
+			return find_all_byte_array(structure, property_name, byte_array.from_gtv(value));
+		property_type.boolean ->
+			return find_all_boolean(structure, property_name, boolean.from_gtv(value));
+		property_type._enum -> 
+			return find_all_enum(structure, property_name, enum_value.from_gtv(value));
+		property_type.account ->
+			return find_all_account(structure, property_name, ft3.account.from_gtv(value));
+		property_type.interface,
+		property_type.structure ->
+			return find_all_instance(structure, property_name, instance.from_gtv(value));
+		property_type._set ->
+			return list<instance>();			
+	}
+}
+
+/*
+ * Private functions
+ */
+
+function _create_properties(instance, init) {
+	val properties = structure_property @* {
+		instance.structure
+	};
+	
+	for (property in properties) {
+		val instance_property = create instance_property(
+			instance,
+			property
+		);
+		
+		val init_value = 
+			if (init.properties.contains(property.name))
+				init.properties[property.name] 
+			else 
+				null;
+			
+		_initialze_property(instance_property, init_value);
+	}
+}
+
+function _initialze_property(instance_property, init_value: gtv?) {
+	when (instance_property_type(instance_property)) {
+		property_type.integer -> 
+			_initialize_integer_property(instance_property, init_value);
+		property_type.text -> 
+			_initialize_text_property(instance_property, init_value);
+		property_type.indx -> 
+			_initialize_index_property(instance_property, null);
+		property_type.byte_array -> 
+			_initialize_byte_array_property(instance_property, init_value);
+		property_type.structure,
+		property_type.interface -> 
+			_initialize_instance_property(instance_property, init_value);
+		property_type.account -> 
+			_initialize_ft3_account_property(instance_property, init_value);
+		property_type.boolean -> 
+			_initialize_boolean_property(instance_property, init_value);
+		property_type.id ->
+			_initialize_id_property(instance_property, init_value);
+		property_type._enum ->
+			_initialize_enum_property(instance_property, init_value);
+		property_type._set ->
+			_initialize_set_property(instance_property, init_value);
+	}
+}

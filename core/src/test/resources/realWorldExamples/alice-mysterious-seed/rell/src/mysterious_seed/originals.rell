@@ -1,0 +1,35 @@
+function initialize_mysterious_seed() {
+	initialize_originals();
+	init_structures();
+}
+
+function create_seed(ft3.acc.account, type: text) {
+	new_(instance_(Structure(type), 
+		init([
+			"id": (type, op_context.last_block_time, account.id).hash().to_gtv(),
+			"owner": account.to_gtv(),
+			"type": type.to_gtv(),
+			"created_at": op_context.last_block_time.to_gtv()
+		])
+	));
+}
+
+function transfer(interface_name: name, ft3.acc.account, id: byte_array, target_account_id: byte_array) {
+  val original = require(find_by_id(id));
+  val owner = get_property_account(original, "owner");
+  require(owner != null and owner == account);
+  
+  require_structure_to_be_of_interface(original.structure, interface_name);
+  
+  val target_account = ft3.acc.account @ { .id == target_account_id };
+  set_property(original, "owner", target_account.to_gtv());
+}
+
+function require_structure_to_be_of_interface(structure, name) {
+  val interfaces = _get_structure_direct_interfaces(structure);
+  for (interface in interfaces) {
+    if (interface.name == name) return true;
+  }
+  
+  return false;
+}

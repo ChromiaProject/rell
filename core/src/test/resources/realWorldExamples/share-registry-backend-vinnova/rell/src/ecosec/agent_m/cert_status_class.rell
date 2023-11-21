@@ -1,0 +1,12 @@
+
+//****************************************
+// cert_status - class
+
+entity cert_status {
+	key cert;
+	index cert_status_type; 
+	
+	valid_from: timestamp;	// Time when this state begun (used to find the latest = current state)
+	expire_at: timestamp;		// Time when this state / pubkey expire (we need to handle expiry here or in table cert)
+}
+

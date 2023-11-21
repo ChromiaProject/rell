@@ -1,0 +1,96 @@
+
+entity structure_property_enum {
+	key structure_property;
+	_enum;
+}
+
+function _create_property_enum(structure, name, prop): structure_property {
+	val enum_prop = enm.from_gtv(prop.prop_type_struct.type_gtv);
+		
+	val property = create structure_property(
+		structure,
+		name = name,
+		optional = prop.optional.value,
+		mutation = prop.mutation.value,
+		type = property_type._enum,
+		value = x""
+	);
+	
+	_create_structure_property_meta_tags(property, prop.meta.tags);
+	
+	create structure_property_enum(property, enum_prop._enum);
+	
+	return property;
+}
+
+function set_static_property_enum(structure, property_name: name, value: enum_value) {
+	val static_property = _static_property(structure, property_name);
+	_set_static_property_enum(static_property, value);
+}
+
+function _set_static_property_enum(static_property, value: enum_value) {
+	val property_value = static_property_value_enum @? { static_property };
+	
+	if (property_value??) {
+		property_value.value = value;
+	} else {
+		create static_property_value_enum(
+			static_property,
+			value
+		);
+	}
+}
+
+function get_static_property_enum(structure, property_name: name): enum_value? {
+	return _get_static_property_enum(
+		_static_property(structure, property_name)
+	);
+}
+
+function _get_static_property_enum(static_property): enum_value? {
+	return static_property_value_enum @? { 
+		static_property
+	}.value;
+}
+
+function _get_static_property_enum_serialized(static_property): gtv? {
+	return _get_static_property_enum(static_property)?.value?.to_gtv();
+}
+
+entity static_property_value_enum {
+	key static_property;
+	mutable value: enum_value;
+}
+
+function _create_static_property_enum(
+	structure, 
+	name, 
+	prop, 
+	init_value: gtv?
+): static_property {
+	val property = create static_property(
+		structure,
+		name = name,
+		readonly = prop.mutation.value == mutation_type.readonly,
+		optional = prop.optional.value,
+		type = property_type._enum
+	);
+	
+	_create_static_property_meta_tags(property, prop.meta.tags);
+	
+	val init_value_enum = if (init_value??) enum_value.from_gtv(init_value) else null;
+	
+	require(
+		init_value_enum != null or prop.optional.value == true,
+		"Non-optional enum property '" + name + "' is not initialized"
+	); 
+	
+	if (init_value_enum??) {
+		create static_property_value_enum(
+			property,
+			init_value_enum
+		);
+	}
+	
+	return property;
+}

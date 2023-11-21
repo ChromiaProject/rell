@@ -1,0 +1,8 @@
+import .crosschain_history;
+
+query get_linked_applications(account_id: byte_array, chain_id: integer) {
+    return set(crosschain_history.crosschain_history_entry@*{
+        .payment_history_entry.account.id == account_id,
+        .payment_history_entry.chain_id == chain_id
+    } ( .blockchain.blockchain_rid ));
+}

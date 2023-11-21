@@ -1,0 +1,129 @@
+import wallet;
+import wacc: wallet.account;
+import wallet.blockchain;
+import wallet.crosschain_history;
+import wallet.chain_balance;
+import wallet.master_account;
+import wallet.payment_history;
+
+function xc_init_ft3_deposit(xc_ft_entry) { // TOREMOVE
+  print("from account ", xc_ft_entry.from_account);
+  print("from asset ", xc_ft_entry.asset_id);
+  val account = wacc.account@{ .id == xc_ft_entry.from_account };
+  val asset = wallet.asset@{ .id == xc_ft_entry.asset_id };
+  val to_blockchain = blockchain.blockchain@{.blockchain_rid == xc_ft_entry.to_blockchain};
+  wacc.tkl_require_auth(account);
+  // Sender has control over the pubkey that will receive money
+  //require(is_signer(xc_ft_entry.to));
+  require(xc_ft_entry.amount > 0);
+  val balance = wallet.balance@{ account, asset };
+  require(balance.amount >= xc_ft_entry.amount);
+  //TODO if balance doesn't exist, create it
+  //update balance@{account, asset}(.amount = u_balance - xc_ft_entry.amount);
+  balance.amount -= xc_ft_entry.amount;
+  val payment_entry = create payment_history.payment_history_entry(
+      .chain_id = 1,
+      account,
+      asset,
+      .block_height = op_context.transaction.block.block_height,
+      .delta = -xc_ft_entry.amount,
+      .is_input = true,
+
+      .op_index = 0, // TODO
+      .entry_index = 0 // decouple this from payment_history_entry to something optional
+    );
+  create crosschain_history.crosschain_history_entry (
+    /*payment_history_entry@{
+        .chain_id == 1,
+        account,
+        asset,
+        .block_height == op_context.transaction.block.block_height,
+        .delta == -xc_ft_entry.amount
+     }, */ // this stuff might not be deterministic (same account, chain_id, asset, amount etc. There are 2 payment_history entry which are the same)
+    .payment_history_entry = payment_entry,
+    .blockchain = to_blockchain,
+    .to = xc_ft_entry.to_account
+  );
+
+  val account_chain_balance = chain_balance.create_chain_balance_if_not_exists(asset, to_blockchain, 1);
+  account_chain_balance.amount += xc_ft_entry.amount;
+}
+
+
+//function xc_apply_ft3_deposit(proof<xc_ft_entry>) {
+//  val xc_ft_entry = verify_proof(proof);
+function xc_apply_ft3_deposit(xc_ft_entry, this_chain_id: integer) { // TODO REMOVE from_blockchain_rid
+  // val = verify_proof(proof);
+
+  //require(op_context.transaction.hash() == proof.tx_rid); // TODO UNCOMMENT
+
+  // check if the account exists in dapp, if not create it
+  // TOREMOVE TODO this code can be greatly simplified without chain_id
+
+
+  // val account = account@{.id == xc_ft_entry.from_account};
+  print("blockchain id", xc_ft_entry.from_blockchain);
+  val blockchain = blockchain.blockchain@{.blockchain_rid == xc_ft_entry.from_blockchain};
+  print("Asset id", xc_ft_entry.asset_id);
+  val asset = wallet.asset@{.id == xc_ft_entry.asset_id};
+
+
+  print("Create sender representation");
+  val sender_account = wacc.create_account_if_not_exists(xc_ft_entry.from_account, wacc.account_type.single_key_account, xc_ft_entry.args.to_bytes(), xc_ft_entry.from_blockchain, 1);
+
+  val chain_balance = chain_balance.create_chain_balance_if_not_exists(asset, blockchain, 1);
+
+
+  chain_balance.amount += xc_ft_entry.amount;
+
+    print("Query receiver account", xc_ft_entry.to_account);
+  val receiver_account = wacc.account@{.id == xc_ft_entry.to_account};
+
+  // check if receiver accounts exists or needs to be created
+  //val receiver_account = create_account_if_not_exists(xc_ft_entry.to_account, account_type.single_key_account, single_key_account_args(xc_ft_entry.to_account).toBytes(), _this_blockchain@{this_chain_id}.blockchain, this_chain_id);
+  print("Query receiver balance");
+  val receiver_balance = wallet.create_balance_if_not_exists(receiver_account, asset, this_chain_id);
+  receiver_balance.amount += xc_ft_entry.amount;
+    // TODO: what id xc_ft_entry.to is not a single key account? tk_auth(receiver_account)
+
+  print("Receivers pubkey:", wacc.single_key_account_args.from_bytes(receiver_account.args).pubkey);
+  if (is_signer(wacc.single_key_account_args.from_bytes(receiver_account.args).pubkey)) {
+       master_account.create_master_account_if_not_exists(sender_account, receiver_account, this_chain_id);
+  }
+}
+
+/*
+//function xc_apply_ft3_deposit(proof<xc_ft_entry>) {
+//  val xc_ft_entry = verify_proof(proof);
+function xc_apply_ft3_deposit(xc_ft_entry) { // TODO REMOVE from_blockchain_rid
+  // val = verify_proof(proof);
+
+  //require(op_context.transaction.hash() == proof.tx_rid); // TODO UNCOMMENT
+
+  // check if the account exists in dapp, if not create it
+  // TOREMOVE TODO this code can be greatly simplified without chain_id
+
+
+  val account = account@{.id == xc_ft_entry.from_account};
+  val blockchain = blockchain@{.blockchain_rid == xc_ft_entry.from_blockchain};
+  print("Asset id", xc_ft_entry.asset_id);
+  val asset = asset@{.id == xc_ft_entry.asset_id};
+  val sender_account = create_account_if_not_exists(xc_ft_entry.from_account, account_type.single_key_account, account.args, account.mother_chain, 1);
+
+  val chain_balance = create_chain_balance_if_not_exists(asset, blockchain, this_chain_id);
+  chain_balance.amount += xc_ft_entry.amount;
+
+  // check if receiver accounts exists or needs to be created
+  val receiver_account = create_account_if_not_exists(xc_ft_entry.to, account_type.single_key_account, single_key_account_args(xc_ft_entry.to).toBytes(), _this_blockchain@{this_chain_id}.blockchain);
+  val receiver_balance = create_balance_if_not_exists(receiver_account, asset);
+  receiver_balance.amount += xc_ft_entry.amount;
+
+    // TODO: what id xc_ft_entry.to is not a single key account? tk_auth(receiver_account)
+
+  //if (is_signer(xc_ft_entry.to)) {
+  //    create_master_account_if_not_exists(sender_account, receiver_account);
+  //}
+
+
+}
+  */

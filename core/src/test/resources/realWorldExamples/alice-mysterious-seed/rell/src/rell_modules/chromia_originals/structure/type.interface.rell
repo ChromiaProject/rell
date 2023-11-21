@@ -1,0 +1,32 @@
+
+entity structure_property_interface {
+	key structure_property;
+	interface;
+}
+
+entity static_property_interface {
+	key static_property;
+	interface;
+}
+
+function _create_structure_property_interface(structure, name, prop): structure_property {	
+	val interface_prop = inf.from_gtv(prop.prop_type_struct.type_gtv);
+	
+	val property = create structure_property(
+		structure,
+		name = name,
+		optional = prop.optional.value,
+		mutation = prop.mutation.value,
+		type = property_type.interface,
+		value = x""
+	);
+	
+	create structure_property_interface(
+		property,
+		interface_prop.interface
+	);
+
+	_create_structure_property_meta_tags(property, prop.meta.tags);
+	
+	return property;
+}

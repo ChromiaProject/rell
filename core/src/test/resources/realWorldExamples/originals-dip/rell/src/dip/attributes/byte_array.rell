@@ -1,0 +1,107 @@
+entity byte_array_attribute {
+	index instance, attribute, value;
+	index instance, attribute;
+	index attribute, value;
+	mutable value: byte_array;
+}
+
+function get_byte_array_attribute (instance, attribute): byte_array? {
+	var attr = byte_array_attribute @? { instance, attribute };
+ 	
+ 	if(attr??) {
+ 		return attr.value;
+ 	} else {
+ 		val prototypes = get_prototypes(instance);
+ 		for (p in prototypes) {
+ 			attr = byte_array_attribute @? { p, attribute };
+ 			if(attr??) {
+ 				return attr.value;
+ 			}
+ 		}
+ 	}
+ 	
+ 	return null;
+}
+
+function get_byte_array_attributes (instance, attribute): list<byte_array> {
+	var attrs = byte_array_attribute @* { instance, attribute } (.value);
+ 	
+ 	if(not empty(attrs)) {
+ 		return attrs;
+ 	} else {
+ 		val prototypes = get_prototypes(instance);
+ 		
+ 		for (p in prototypes) {
+ 			attrs = byte_array_attribute @* { p, attribute } (.value);
+ 			if(not empty(attrs)) {
+ 				return attrs;
+ 			}
+ 		}
+ 	}
+ 	
+ 	return list<byte_array>();
+}
+
+function set_byte_array_attribute (instance, attribute, value: byte_array) {
+	util.ensure_type(a_type.byte_array, attribute.a_type);
+	update byte_array_attribute @ { instance, attribute } (.value = value);
+}
+
+function add_byte_array_attribute (instance, attribute, value: byte_array) {
+	util.ensure_type(a_type.byte_array, attribute.a_type);
+	create byte_array_attribute ( instance, attribute, value );
+}
+
+function remove_byte_array_attribute (instance, attribute): gtv {	
+	val i = byte_array_attribute @ {instance, attribute};
+	val value = i.value;
+	
+	delete i;
+	
+	return value.to_gtv();
+}
+
+function _fetch_byte_array_range_from(attribute, value: byte_array, from: rowid) {
+	return byte_array_attribute @* {
+		attribute, .value == value, .instance.rowid > from
+	} (.instance) limit 100;
+}
+
+function apply_byte_array_filter(instances: list<instance>, filter, from: p_from):
+ (results: list<instance>, from: p_from?) {
+	val limit_count = 100;
+	val attribute = filter.attribute;
+	val value = byte_array.from_gtv(filter.parameter);
+	
+	if(instances.empty()) {
+		return find_instances_by_type_attribute(attribute, value.to_gtv(), from, limit_count);
+	};
+	
+	var res = list<instance>();
+	
+	val first = instances[0];
+	val last = instances[instances.size() - 1];
+	
+	val in_prototype = (a: byte_array_attribute, ip: instance_prototype) @* {
+		a.attribute == attribute, a.value == value,
+		ip.prototype == a.instance,
+		ip.instance >= first, ip.instance <= last
+	} (ip.instance) limit limit_count;
+	
+	res.add_all(in_prototype);
+	
+	val in_attribute = (a: byte_array_attribute) @* {
+			attribute,
+			a.value == value,
+			a.instance >= first, a.instance <= last
+	} (a.instance) limit limit_count;
+	
+	res.add_all(in_attribute);
+	
+	val prior_instances = set(instances);
+	res = res @* {prior_instances.contains($)};
+	
+	return (results = res, from = null);
+
+}
+

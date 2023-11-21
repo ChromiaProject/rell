@@ -1,0 +1,74 @@
+
+//****************************************
+// company_set_clause_info - business logic
+//
+// - Sets the company clauses
+// - Requires that time stamp has NOT changed
+// - 
+//
+// LIMITATIONS
+// - 
+
+import ecosec.extlib_m;
+import ecosec.appmsg_m;
+import ecosec.auth_m;
+import ecosec.history_m;
+
+function company_set_clause_info(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				clause_conversion: boolean, clause_consent: boolean,
+				clause_purchase_right: boolean, clause_refusal: boolean,
+				clause_redemption: boolean,
+				orig_time_stamp: integer) {
+		
+	// Check authorization for self
+	require(auth_m.have_auth_agent(agent_pubkey, agent_id), appmsg_m.msg('MSGE0101', 'agent', 'company_set_clause_info')); // Supplied pubkey not signer?
+	
+	// Check authorization for action
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'company_set_clause_info')); // Not board representative?
+	
+	// Check that that current state is as expected
+	val orig_company = company @? { .org_nr == org_nr, .changed_time_stamp == orig_time_stamp }(
+		.rowid,
+		.name,
+		.clause_conversion, .clause_consent,
+		.clause_refusal, .clause_purchase_right,
+		.clause_redemption
+	);
+	require( orig_company != null, appmsg_m.msg('MSGE0201', 'Company', 'company_set_clause_info')); // Company changed by someone else?
+	
+	// update share count / quota
+	update company @ { orig_company!!.rowid }(
+		.clause_conversion = clause_conversion,
+		.clause_consent = clause_consent,
+		.clause_purchase_right = clause_purchase_right,
+		.clause_refusal = clause_refusal,
+		.clause_redemption = clause_redemption,
+		changed_time_stamp = op_context.last_block_time
+	);
+	
+	// History log - Company Clauses
+	val company_old = history_m.company_clauses_json(
+		clause_conversion = orig_company.clause_conversion, clause_consent = orig_company.clause_consent,
+		clause_refusal = orig_company.clause_refusal, clause_purchase_right = orig_company.clause_purchase_right,
+		clause_redemption = orig_company.clause_redemption
+	);
+	val company_new = history_m.company_clauses_json(
+		clause_conversion = clause_conversion, clause_consent = clause_consent,
+		clause_refusal = clause_refusal, clause_purchase_right = clause_purchase_right,
+		clause_redemption = clause_redemption
+	);
+	history_m.add(
+		org_nr,
+		op_context.last_block_time,
+		agent_id,
+		agent_pubkey,
+		history_m.object_type_enum.COMPANY,
+		history_m.event_type_enum.COMPANY_CLAUSES,
+		company_old.to_gtv_pretty().to_json(),
+		company_new.to_gtv_pretty().to_json(),
+		org_nr,
+		orig_company.name + ' (' + org_nr + ')',
+		''
+	);
+}

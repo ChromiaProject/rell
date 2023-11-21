@@ -1,0 +1,110 @@
+
+//****************************************
+// agent_request_address_change - business logic
+//
+// - Store new address on agent and create requests
+//   for each authorized persona
+//
+// LIMITATIONS
+// - random_seed text must be supplied to create unique request id
+// - Currently no check is done for if the requested address is
+//   already set for a persona. Request is always created.
+// - This implementation requires that an agent
+//   is only authorized for personas that is him/her.
+//   (Ie agent cannot be changing address for an organization which is
+//   share holder)
+
+import ecosec.extlib_m;
+import ecosec.auth_m;
+import ecosec.appmsg_m;
+import ecosec.agent_m;
+import ecosec.persona_m;
+import ecosec.request_m;
+import ecosec.history_m;
+
+function agent_request_address_change(agent_pubkey: pubkey, agent_id: text, //agent_first_name: text, agent_last_name: text,
+				agent_address1: text, agent_address2: text, agent_postal_code: text, agent_city: text, agent_country: text,
+				agent_phone: text, agent_email: text) {
+					
+	// Check authorization for self
+	require(auth_m.have_auth_agent(agent_pubkey, agent_id), appmsg_m.msg('MSGE0101', 'agent', 'agent_request_address_change')); // Supplied pubkey not signer?
+	
+	// TODO: agent_request_address_change, Include also phone and email?
+	// TODO: agent_request_address_change, Stop / replace new request if there is a pending request for a persona?
+	
+	// Update agent's own address
+	update agent @ { .id == agent_id } (
+		//first_name = agent_first_name,
+		//last_name = agent_last_name,
+		address1 = agent_address1,
+		address2 = agent_address2,
+		postal_code = agent_postal_code,
+		city = agent_city,
+		country = agent_country,
+		phone = agent_phone,
+		email = agent_email,
+		changed_time_stamp = op_context.last_block_time
+	);
+	
+	// History log - Agent address change
+	// TODO: agent_request_address_change, Log global history of agent address change?
+	
+	// Create request for each authorized persona
+	//val tmp_agent = agent @ { .id == agent_id };
+	for (pa in persona_m.persona_agent@*{agent_m.agent @ { .id == agent_id }}){
+		// Request
+		val new_request = create request_m.request (
+		    //id = req_id, // 20191105 MK Replaced by rowid
+			pa.agent,
+			agent_pubkey,
+			pa.persona,
+			//first_name = agent_first_name,
+			//last_name = agent_last_name,
+			address1 = agent_address1,
+			address2 = agent_address2,
+			postal_code = agent_postal_code,
+			city = agent_city,
+			country = agent_country,
+			phone = agent_phone,
+			email = agent_email,
+			created_time_stamp = op_context.last_block_time
+		);
+		val req_id_text = extlib_m.rowid_to_text(new_request.rowid);
+		
+		// Request state
+		create request_m.request_state (
+			new_request,
+			request_m.request_state_type@{request_m.request_state_type_enum.PENDING} // 0: Pending
+		);
+		
+		// History log - Persona request address change (one entry of each persona)
+		val persona_old = history_m.persona_addrreq_json(
+			first_name = pa.persona.first_name, last_name = pa.persona.last_name,
+			address1 = pa.persona.address1, address2 = pa.persona.address2,
+			postal_code = pa.persona.postal_code, city = pa.persona.city,
+			country = pa.persona.country,
+			phone = pa.persona.phone, email = pa.persona.email
+		);
+		val persona_new = history_m.persona_addrreq_json(
+			first_name =pa.persona.first_name, last_name = pa.persona.last_name,
+			address1 = agent_address1, address2 = agent_address2,
+			postal_code = agent_postal_code, city = agent_city,
+			country = agent_country,
+			phone = agent_phone, email = agent_email
+		);
+		history_m.add(
+			pa.persona.company.org_nr,
+			op_context.last_block_time,
+			agent_id,
+			agent_pubkey,
+			history_m.object_type_enum.REQUEST,
+			history_m.event_type_enum.REQ_ADDR_REQUEST,
+			persona_old.to_gtv_pretty().to_json(),
+			persona_new.to_gtv_pretty().to_json(),
+			req_id_text,
+			req_id_text,
+			pa.persona.id
+		);
+	}
+}
+

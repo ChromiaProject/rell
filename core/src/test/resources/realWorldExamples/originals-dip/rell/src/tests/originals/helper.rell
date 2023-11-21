@@ -1,0 +1,67 @@
+function Initialize_original_interfaces() {
+	rell.test.tx()
+        .op(test.originals.op.init_originals_interface())
+        .nop()
+        .run();
+}
+
+function MintNonFungibleOriginal(original_type, creator_id: byte_array, creator_auth: byte_array) {
+	return rell.test.tx()
+        .op(test.originals.op.mint_non_fungible_original_(original_type, creator_id, creator_auth))
+        .nop();
+}
+
+function MintNonFungibleOriginalToAccount(original_type, 
+	creator_id: byte_array, creator_auth: byte_array,
+	to_account_id: byte_array) {
+	return rell.test.tx()
+        .op(test.originals.op.mint_non_fungible_original_to_account_(original_type, creator_id, creator_auth, to_account_id))
+        .nop();
+}
+
+function MintFungibleOriginal(original_type? = null, fungible_id: byte_array? = null, creator_id: byte_array, creator_auth: byte_array, quantity: integer = 1) {
+	return rell.test.tx()
+        .op(test.originals.op.mint_fungible_original_(original_type, fungible_id, creator_id, creator_auth, quantity))
+        .nop();
+}
+
+function MintFungibleOriginalToAccount(original_type?, fungible_id: byte_array?, 
+	creator_id: byte_array, creator_auth: byte_array,
+	to_account_id: byte_array,
+	quantity: integer = 1) {
+	return rell.test.tx()
+        .op(test.originals.op.mint_fungible_original_to_account_(original_type, fungible_id, creator_id, creator_auth, to_account_id, quantity))
+        .nop();
+}
+
+function LinkInstance(account_id: byte_array, auth_id: byte_array, attr_name: text, base_id: byte_array, child_id: byte_array) {
+	return rell.test.tx()
+        .op(test.originals.op.link_instance_(account_id, auth_id, attr_name, base_id, child_id))
+        .nop();
+}
+
+function UnlinkInstance(account_id: byte_array, auth_id: byte_array, attr_name: text, base_id: byte_array) {
+	return rell.test.tx()
+        .op(test.originals.op.unlink_instance_(account_id, auth_id, attr_name, base_id))
+        .nop();
+}
+
+function Transfer(original_id: byte_array,
+	from_id: byte_array, from_auth_desc: byte_array,
+	to_id: byte_array, quantity: integer = 1
+) {
+	return rell.test.tx()
+        .op(test.originals.op.transfer_(original_id, from_id, from_auth_desc, to_id, quantity))
+        .nop();
+}
+
+function Fractionalize(id: byte_array, owner_id: byte_array, owner_auth_desc: byte_array, fractions: integer) {
+	return rell.test.tx()
+        .op(test.originals.op.fractionalize_(id, owner_id, owner_auth_desc, fractions))
+        .nop();
+}
+
+/* Query Helper */
+function get_last_id() {
+	return id_attribute @ {} (.value, @omit @sort_desc .rowid) limit 1;
+}

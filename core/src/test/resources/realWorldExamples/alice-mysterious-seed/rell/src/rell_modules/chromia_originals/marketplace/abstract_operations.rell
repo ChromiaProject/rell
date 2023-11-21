@@ -1,0 +1,160 @@
+@mount("marketplace")
+abstract module;
+
+import ^^.marketplace;
+
+abstract function a_buy_original_instance(
+	structure_name: name, 
+	instance_id: byte_array, 
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+);
+
+operation buy_original_instance(
+	structure_name: name, 
+	instance_id: byte_array, 
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	a_buy_original_instance(
+		structure_name, 
+		instance_id, 
+		account_id, 
+		auth_descriptor_id
+	);
+}
+
+abstract function a_set_original_instance_trade_info(
+	structure_name: name, 
+	instance_id: byte_array, 
+	marketplace.trade_info,
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+);
+
+operation set_original_instance_trade_info(
+	structure_name: name, 
+	instance_id: byte_array, 
+	marketplace.trade_info,
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	a_set_original_instance_trade_info(
+		structure_name, 
+		instance_id, 
+		trade_info,
+		account_id, 
+		auth_descriptor_id
+	);
+}
+
+abstract function a_list_original_instance_for_sale(
+	structure_name: name, 
+	instance_id: byte_array, 
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+);
+
+operation list_original_instance_for_sale(
+	structure_name: name, 
+	instance_id: byte_array, 
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	a_list_original_instance_for_sale(
+		structure_name,
+		instance_id,
+		account_id,
+		auth_descriptor_id
+	);
+}
+
+abstract function a_remove_original_instance_from_sale(
+	structure_name: name, 
+	instance_id: byte_array, 
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+);
+
+operation remove_original_instance_from_sale(
+	structure_name: name, 
+	instance_id: byte_array, 
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	a_remove_original_instance_from_sale(
+		structure_name,
+		instance_id,
+		account_id,
+		auth_descriptor_id
+	);
+}
+
+abstract function a_def_original(
+	structure_name: name, 
+	interface_names: list<name>,
+	def_property_list: list<marketplace.property_def>,
+	init_property_list: list<marketplace.property>,
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+);
+
+operation def_original(
+	structure_name: name, 
+	interface_names: list<name>,
+	def_property_list: list<marketplace.property_def>,
+	init_property_list: list<marketplace.property>,
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	a_def_original(
+		structure_name, 
+		interface_names,
+		def_property_list, 
+		init_property_list, 
+		account_id, 
+		auth_descriptor_id
+	);
+}
+
+abstract function a_def_structure(
+	structure_name: name, 
+	interface_names: list<name>, 
+	property_list: list<marketplace.property>,
+	account_id: byte_array,
+	auth_descriptor_id: byte_array
+);
+
+operation def_structure(
+	structure_name: name, 
+	interface_names: list<name>, 
+	property_list: list<marketplace.property>,
+	account_id: byte_array,
+	auth_descriptor_id: byte_array
+) {
+	marketplace.def_structure(
+		structure_name,
+		interface_names,
+		property_list,
+		account_id,
+		auth_descriptor_id
+	);
+}
+
+abstract function a_new_instance(
+	structure_name: name, 
+	properties: list<marketplace.property>, 
+	auth_descriptor_id: byte_array
+);
+
+operation new_instance(
+	structure_name: name, 
+	properties: list<marketplace.property>, 
+	auth_descriptor_id: byte_array
+) {
+	a_new_instance(
+		structure_name, 
+		properties, 
+		auth_descriptor_id
+	);
+}

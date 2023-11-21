@@ -1,0 +1,85 @@
+/* instance properties */
+
+entity structure_property_structure {
+	key structure_property, structure;
+}
+
+function _create_structure_property_structure(structure, name, prop): structure_property {	
+	val structure_prop = strct.from_gtv(prop.prop_type_struct.type_gtv);
+	
+	val property = create structure_property(
+		structure,
+		name = name,
+		optional = prop.optional.value,
+		mutation = prop.mutation.value,
+		type = property_type.structure,
+		value = x""
+	);
+	
+	create structure_property_structure(
+		property,
+		structure_prop.structure
+	);
+
+	_create_structure_property_meta_tags(property, prop.meta.tags);
+	
+	return property;
+}
+
+/* static properties */
+
+entity static_property_structure {
+	key static_property, structure;
+}
+
+function _create_static_property_structure(structure, name, prop, init_value: gtv?) {
+	val structure_prop = strct.from_gtv(prop.prop_type_struct.type_gtv);
+	
+	val property = create static_property(
+		structure,
+		name = name,
+		readonly = prop.mutation.value == mutation_type.readonly,
+		optional = prop.optional.value,
+		type = property_type.structure
+	);
+	
+	_create_static_property_meta_tags(property, prop.meta.tags);
+	
+	create static_property_structure(
+		property,
+		structure_prop.structure		
+	);
+	
+	
+	require(
+		prop.optional.value == true or init_value != null,
+		"Non-optional '" + structure_prop.structure.name +"' type property '" + name + "' is not initialized"
+	); 
+	
+	if (init_value??) {
+		if (is_integer(init_value)) {
+			val instance = instance @ { rowid.from_gtv(init_value) };
+			
+			require(
+				instance.structure == structure_prop.structure,
+				"Trying to assign an instance of type '" + instance.structure.name + 
+				"' to a property '" + name + "' of type '" + structure_prop.structure.name + "'"
+			);
+			
+			create static_property_value_instance(
+				property,
+				instance
+			);
+		} else if(is_map(init_value)) {
+			val properties = map<text, gtv>.from_gtv(init_value);
+			val s = static_property_structure @ { property }.structure;
+			val instance = new_(instance_(s, init(properties)));
+			create static_property_value_instance(
+				property,
+				instance
+			);
+		} else {
+			throw("Unsupported argument type");
+		}
+	}
+}

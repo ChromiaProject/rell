@@ -1,0 +1,104 @@
+@test module;
+import ^^^.dip.*;
+
+function test_instance_can_implement_prototype() {
+	Interface_("ITest", ["id": Type(Integer())]).run();
+	
+	Prototype_(
+		["ITest"],
+		["id": Integer(2)],
+		"PrototypeName1"
+	).run();
+	val prototype = get_prototype_by_dclass_name("ITest", "PrototypeName1")!!;
+
+	Instance_(
+		[],
+		[:],
+		"ITest.PrototypeName1"
+	).run();
+	val instance = get_last_instance();
+	
+	assert_true( get_prototypes(instance).contains_all( [prototype] ) );
+	assert_equals(instance_prototype @ {.instance == instance, .prototype == prototype}.p_index, 0);
+}
+
+function test_instance_can_implement_n_linear_prototype() {
+	Interface_("ITest", ["id": Type(Integer())]).run();
+	
+	Prototype_(
+		["ITest"],
+		[:],
+		"GrandPrototypeName"
+	).run();
+	val grand_prototype = get_prototype_by_dclass_name("ITest", "GrandPrototypeName")!!;
+	
+	Prototype_(
+		[],
+		["id": Integer(2)],
+		"PrototypeName",
+		"ITest.GrandPrototypeName"
+	).run();
+	val prototype = get_prototype_by_dclass_name("ITest", "PrototypeName")!!;
+	
+	Instance_(
+		[],
+		[:],
+		"ITest.PrototypeName"
+	).run();
+	val instance = get_last_instance();
+	
+	
+	assert_true( get_prototypes(prototype).contains_all( [grand_prototype] ) );
+	assert_true( get_prototypes(instance).contains_all( [prototype, grand_prototype] ) );
+	assert_equals(instance_prototype @ {.instance == instance, .prototype == prototype}.p_index, 0);
+	assert_equals(instance_prototype @ {.instance == instance, .prototype == grand_prototype}.p_index, 1);
+	
+}
+
+function test_instances_can_implement_branching_prototypes() {
+	Interface_("ITest", ["id": Type(Integer())]).run();
+	
+	Prototype_(
+		["ITest"],
+		[:],
+		"GrandPrototypeName"
+	).run();
+	val grand_prototype = get_prototype_by_dclass_name("ITest", "GrandPrototypeName")!!;
+	
+	Prototype_(
+		[],
+		["id": Integer(2)],
+		"PrototypeName1",
+		"ITest.GrandPrototypeName"
+	).run();
+	val prototype1 = get_prototype_by_dclass_name("ITest", "PrototypeName1")!!;
+	
+	Prototype_(
+		[],
+		["id": Integer(2)],
+		"PrototypeName2",
+		"ITest.GrandPrototypeName"
+	).run();
+	val prototype2 = get_prototype_by_dclass_name("ITest", "PrototypeName2")!!;
+	
+	Instance_(
+		[],
+		[:],
+		"ITest.PrototypeName1"
+	).run();
+	val instance1 = get_last_instance();
+	
+	Instance_(
+		[],
+		[:],
+		"ITest.PrototypeName2"
+	).run();
+	val instance2 = get_last_instance();
+	
+	assert_true( get_prototypes(prototype1).contains_all( [grand_prototype] ) );
+	assert_true( get_prototypes(prototype2).contains_all( [grand_prototype] ) );
+	assert_true( get_prototypes(instance1).contains_all( [prototype1, grand_prototype] ) );
+	assert_true( get_prototypes(instance2).contains_all( [prototype2, grand_prototype] ) );
+	
+	assert_equals(instance_prototype @ {.prototype == grand_prototype} (@sum 1), 4);
+}

@@ -1,0 +1,102 @@
+
+//****************************************
+// add - share_block
+//
+// - Add a new share block with persona owner as cross ref
+// -
+//
+// LIMITATIONS
+// - Caller must have done the authorization check
+// - Caller must check that company share count is consistent after the change
+
+import ecosec.appmsg_m;
+import ecosec.company_m;
+import ecosec.persona_m;
+import ecosec.history_m;
+
+function add(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				share_from: integer, share_to: integer,
+				persona_id: text, share_type: text,
+				pledging: boolean, certificate: boolean
+				){
+
+	// Verify that share interval is correct
+	require(share_from > 0 and share_to > 0 and share_to >= share_from, appmsg_m.msg('MSGE0303', 'share block', 'share_block.add')); // Incorrect interval
+
+	// Verify that new share block is in a correct series
+	val last_sb = share_block @? { .company.org_nr == org_nr} (
+		@sort_desc .company, // To match index
+		@sort_desc .share_from,
+		.share_to
+	) limit 1;
+	if(last_sb != null){ // We have existing share blocks
+		require(share_from == last_sb.share_to + 1, appmsg_m.msg('MSGE0304', 'share block', 'share_block.add')); // Incorrect interval. Not next available share number
+	}
+	else { // No existing share blocks
+		require(share_from == 1, appmsg_m.msg('MSGE0304', 'share block', 'share_block.add')); // Incorrect interval. Not next available share number
+	}
+
+	// Create share block
+	val sb = create share_block (
+		share_from = share_from,
+		share_to = share_to,
+
+		company = company_m.company @ { .org_nr == org_nr },
+
+		share_type = share_type,
+		pledging = pledging,
+		certificate = certificate,
+		recalled = false, // Default to active (new share block is not recalled)
+
+		created_time_stamp = op_context.last_block_time,
+		changed_time_stamp = op_context.last_block_time
+	);
+
+	// Set share block owner
+	val new_sb_persona = create share_block_persona (
+		share_block = sb,
+		persona = persona_m.persona @ { .id == persona_id }
+	);
+
+	// History log - Share block added
+	val share_block_new = history_m.share_block_json(
+		share_from = share_from, share_to=share_to,
+		persona_id = persona_id, share_type = share_type,
+		pledging = pledging, certificate = certificate,
+		recalled = false
+	);
+	history_m.add(
+		org_nr,
+		sb.changed_time_stamp,
+		agent_id,
+		agent_pubkey,
+		history_m.object_type_enum.SHAREBLOCK,
+		history_m.event_type_enum.ADDED,
+		history_m.empty_json(),
+		share_block_new.to_gtv_pretty().to_json(),
+		'['+share_from+','+share_to+']',
+		share_from + ' - ' + share_to,
+		persona_id
+	);
+
+	// History log - share block owner
+	history_m.add(
+		org_nr,
+		sb.changed_time_stamp,
+		agent_id,
+		agent_pubkey,
+		history_m.object_type_enum.SHAREBLOCK,
+		history_m.event_type_enum.SB_OWNERSHIP_GAINED,
+		history_m.empty_json(),
+		share_block_new.to_gtv_pretty().to_json(),
+		'['+share_from+','+share_to+']',
+		share_from + ' - ' + share_to,
+		persona_id
+	);
+
+	// Ensure that owner role is correct for persona after change
+	persona_m.persona_sync_owner_role(agent_pubkey, agent_id,
+				org_nr,
+				new_sb_persona.persona);
+}

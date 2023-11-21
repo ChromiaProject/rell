@@ -1,0 +1,59 @@
+
+//****************************************
+// company_create_initial - business logic
+//
+// - Onboard / Create the first record for a company
+//   only containing orgNr and Name
+//
+// LIMITATIONS
+// -  OrgNr must not exist in the blockchain
+//
+
+import ecosec.extlib_m;
+import ecosec.appmsg_m;
+import ecosec.auth_m;
+import ecosec.history_m;
+
+function company_onboard(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text, name: text,
+				email: text, phone: text) {
+					
+	// Check authorization for self
+	require(auth_m.have_auth_agent(agent_pubkey, agent_id), appmsg_m.msg('MSGE0101', 'agent', 'company_onboard')); // Supplied pubkey not signer?
+	
+	// Check authorization role
+	require(auth_m.have_auth_admin(agent_id), appmsg_m.msg('MSGE0103', 'Admin', 'company_onboard')); // Not admin?
+	
+	// TODO: company_onboard, Require() that org_nr does not exist to return better error message?
+	
+	// Create initial company record
+	create company (
+		org_nr = org_nr,
+		name = name,
+		email = email,
+		phone = phone,
+		summons = company_summons_enum.EMAIL,
+		created_time_stamp = op_context.last_block_time,
+		changed_time_stamp = op_context.last_block_time
+	);
+	
+	// History log - Company onboard
+	val company_new = history_m.company_onboard_json(
+		org_nr = org_nr, name = name,
+		email = email, phone = phone
+	);
+	history_m.add(
+		org_nr,
+		op_context.last_block_time,
+		agent_id,
+		agent_pubkey,
+		history_m.object_type_enum.COMPANY,
+		history_m.event_type_enum.COMPANY_ONBOARD,
+		history_m.empty_json(),
+		company_new.to_gtv_pretty().to_json(),
+		org_nr,
+		name + ' (' + org_nr + ')',
+		''
+	);	
+}
+

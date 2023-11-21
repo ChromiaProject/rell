@@ -1,0 +1,120 @@
+
+//****************************************
+// history_add - Function to log a history record of a system change
+//
+// - All changes to a company must be logged through this function
+// - (Possibly non company specific changes might also be logged here in the future)
+// - The logging is meant to be "stand alone", to be readable no matter
+//   what changes are done to the data or the blokchain definitions
+//
+// LIMITATIONS
+// - Main rule: Create history log after action is done
+// - When create/change is on a PERSONA record:
+//		=> Must be called AFTER a new persona record is created
+//		=> Must be called BEFORE a persona record is changed
+// - When create/change is on a AGENT record:
+//		=> Must be called AFTER a new agent record is created
+//		=> Must be called BEFORE a agent record is changed
+// - Data adoption is required by the caller
+// - This function does not check authorization.
+//   Authorization checks MUST have been done by the caller.
+
+import ecosec.config_m;
+import ecosec.identity_m;
+import ecosec.agent_m;
+import ecosec.persona_m;
+
+function add (
+			org_nr: text, // Can be 000000-0000 for system wide change
+			created_time_stamp: timestamp,
+			
+			agent_id: text, // Existing agent will be fetched
+			agent_pubkey: pubkey, // Existing agent will be fetched
+
+			object_type_id: object_type_enum, // As per history_object_type_enum
+			event_type_id: event_type_enum, // As per history_event_type_enum
+			
+			// State (old and new) in matched JSON
+			old: json, // JSON of previous state. <obj>.to_gtv_pretty().to_json().to_text()
+			new: json, // JSON of next state <obj>.to_gtv_pretty().to_json().to_text()
+			
+			object_id: text, // Technical unique ID of the record
+			object_text: text, // Human readable "unique" ID of the record
+			
+			persona_id: text // Existing persona info will be fetched
+		){
+	
+	// Related agent (always available)
+	val orig_agent = agent_m.cert @ { .pubkey == agent_pubkey, .agent.id == agent_id  }(
+					agent_first_name = .agent.first_name,
+					agent_last_name = .agent.last_name,
+					agent_identity_type_id = .identity_type.id,
+					agent_identity_nr = .identity_nr
+				);
+	
+	// Related persona (sometimes not relevant)
+	var persona_first_name = "";
+	var persona_last_name = "";
+	var persona_identity_type_id = identity_m.id_type_enum.NO_ID;
+	var persona_identity_nr = "";
+
+	if(persona_id != ""){ // Create with Persona info
+		val orig_persona = persona_m.persona @ { .id == persona_id, .company.org_nr == org_nr} (
+						persona_first_name = .first_name,
+						persona_last_name = .last_name,
+						persona_identity_type_id = .identity_type.id,
+						persona_identity_nr = .identity_nr
+					);
+					
+		persona_first_name = orig_persona.persona_first_name;
+		persona_last_name = orig_persona.persona_last_name;
+		persona_identity_type_id = orig_persona.persona_identity_type_id;
+		persona_identity_nr = orig_persona.persona_identity_nr;
+	 }
+	 
+	 // Blockchain settings
+	 val cnfg = config_m.settings();
+	 
+	 create history (
+		company_org_nr = org_nr,
+		created_time_stamp = op_context.last_block_time,
+		
+		
+		// Agent acting in the solution
+		agent_id = agent_id,
+		agent_pubkey = agent_pubkey,
+		agent_first_name = orig_agent.agent_first_name,
+		agent_last_name = orig_agent.agent_last_name,
+		agent_identity_type_id = orig_agent.agent_identity_type_id,
+		agent_identity_nr = orig_agent.agent_identity_nr,
+		
+		// Changes
+		object_type_id = object_type_id.value,
+		object_type_text = object_type_text(object_type_id),
+		
+		event_type_id = event_type_id.value,
+		event_type_text = event_type_text(event_type_id),
+		
+		old = old.to_text(), // TODO: history_add, Check if this can handle "empty" json
+		new = new.to_text(),
+		
+		// Allow search based on affected object
+		object_id = object_id,
+		object_text = object_text,
+		
+		// Allow search based on affected persona
+		persona_id = persona_id, 
+		persona_first_name = persona_first_name,
+		persona_last_name = persona_last_name,
+		persona_identity_type_id = persona_identity_type_id,
+		persona_identity_nr = persona_identity_nr,
+		
+		// Allow mapping to blockchain block
+		block_height = op_context.block_height,
+		
+		// Blockchain version at the time of the record
+		major_version = cnfg.major_version,
+		minor_version = cnfg.minor_version
+	 );
+	 
+}

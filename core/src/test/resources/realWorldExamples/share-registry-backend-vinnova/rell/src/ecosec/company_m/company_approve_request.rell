@@ -1,0 +1,137 @@
+
+//****************************************
+// company_approve_request - business logic
+//
+// - Approve request_id setting new persona address, etc
+//
+// LIMITATIONS
+// -
+
+// TODO: company_approve_request, Include also phone and email?
+// TODO: company_approve_request, In the future, if request can change, check that request is the same (ex timestamp)
+
+import ecosec.extlib_m;
+import ecosec.appmsg_m;
+import ecosec.auth_m;
+import ecosec.request_m;
+import ecosec.persona_m;
+import ecosec.history_m;
+
+function company_approve_request(agent_pubkey: pubkey, agent_id: text, org_nr: text, request_id: rowid) {
+
+	// Check authorization for self
+	require(auth_m.have_auth_agent(agent_pubkey, agent_id), appmsg_m.msg('MSGE0101', 'agent', 'company_approve_request')); // Supplied pubkey not signer?
+
+	// Check authorization for action
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'company_approve_request')); // Not board representative?
+
+	// Get request
+	val approve_request = request_m.request_state @ { .request.rowid == request_id, .request_state_type.id == request_m.request_state_type_enum.PENDING}(
+	    id= .request.rowid,
+	    agent_id = .request.agent.id,
+	    agent_pubkey = .request.agent_pubkey,
+	    org_nr= .request.persona.company.org_nr,
+	    persona_id= .request.persona.id,
+	    persona= .request.persona,
+	    //first_name= .request.first_name,
+	    //last_name= .request.last_name,
+	    address1= .request.address1,
+	    address2= .request.address2,
+	    postal_code= .request.postal_code,
+	    city= .request.city,
+	    country= .request.country,
+	    phone = .request.phone,
+	    email = .request.email
+	);
+
+	// Check that request belongs to org_nr
+	require(approve_request.org_nr == org_nr, appmsg_m.msg('MSGE0310', 'Request', 'company_approve_request')); // Request does not belong to org_nr?
+
+	// Check that request is oldest for persona
+    val oldest_request = request_m.request_state @ { .request.persona.id == approve_request.persona_id, .request_state_type.id == request_m.request_state_type_enum.PENDING} (
+		id= .request.rowid,
+		@sort .request.created_time_stamp
+	) limit 1;
+	require(oldest_request.id == approve_request.id, appmsg_m.msg('MSGE0311', 'Request', 'company_approve_request')); // There is an older request that needs to be handled first
+
+	// Set request to approved
+	delete request_m.request_state @ {.request.rowid == approve_request.id };
+	create request_m.request_state (
+		request = request_m.request @ { approve_request.id },
+		request_state_type = request_m.request_state_type @ {.id == request_m.request_state_type_enum.APPROVED }
+	);
+
+	// History log - Request approved
+	val orig_persona = persona_m.persona @ { .id == approve_request.persona_id }(
+		.id,
+		.first_name, .last_name,
+		.address1, .address2,
+		.postal_code, .city, .country,
+		.phone, .email,
+		.type,
+		.identity_type, .identity_nr,
+		.trustee
+	);
+	val persona_old = history_m.persona_json(
+		id = orig_persona.id,
+		first_name = orig_persona.first_name, last_name = orig_persona.last_name,
+		address1 = orig_persona.address1, address2 = orig_persona.address2,
+		postal_code = orig_persona.postal_code, city = orig_persona.city, country = orig_persona.country,
+		phone = orig_persona.phone, email = orig_persona.email,
+		type = orig_persona.type.value,
+		identity_type_id = orig_persona.identity_type.id, identity_nr = orig_persona.identity_nr,
+		trustee = orig_persona.trustee
+	);
+	val persona_new = history_m.persona_json(
+		id = approve_request.persona_id,
+		first_name =orig_persona.first_name, last_name = orig_persona.last_name,
+		address1 = approve_request.address1, address2 = approve_request.address2,
+		postal_code = approve_request.postal_code, city = approve_request.city, country = approve_request.country,
+		phone = approve_request.phone, email = approve_request.email,
+		type = orig_persona.type.value,
+		identity_type_id = orig_persona.identity_type.id, identity_nr = orig_persona.identity_nr,
+		trustee = orig_persona.trustee
+	);
+	history_m.add(
+		org_nr,
+		op_context.last_block_time,
+		agent_id,
+		agent_pubkey,
+		history_m.object_type_enum.REQUEST,
+		history_m.event_type_enum.REQ_ADDR_APPROVE,
+		persona_old.to_gtv_pretty().to_json(),
+		persona_new.to_gtv_pretty().to_json(),
+		extlib_m.rowid_to_text(approve_request.id), // Possible addition: For rowid to be Rell searchable, a history rowid field needs to be added
+		extlib_m.rowid_to_text(approve_request.id),
+		orig_persona.id
+	);
+
+	// History log - Persona updated (by persona authorized agent!) (Special case: Persona change should be written to history log before actual persona update)
+	history_m.add(
+		org_nr,
+		op_context.last_block_time,
+		approve_request.agent_id,
+		approve_request.agent_pubkey,
+		history_m.object_type_enum.PERSONA,
+		history_m.event_type_enum.CHANGED,
+		persona_old.to_gtv_pretty().to_json(),
+		persona_new.to_gtv_pretty().to_json(),
+		orig_persona.id,
+		orig_persona.first_name + ' ' + orig_persona.last_name + ' (' + orig_persona.identity_nr + ')',
+		orig_persona.id
+	);
+
+	// Update persona address
+	update persona_m.persona @ { .id == approve_request.persona_id } (
+		//.first_name = approve_request.first_name,
+		//.last_name = approve_request.last_name,
+		.address1 = approve_request.address1,
+		.address2 = approve_request.address2,
+		.postal_code = approve_request.postal_code,
+		.city = approve_request.city,
+		.country = approve_request.country,
+		.phone = approve_request.phone,
+		.email = approve_request.email,
+		.changed_time_stamp = op_context.last_block_time
+	);
+}

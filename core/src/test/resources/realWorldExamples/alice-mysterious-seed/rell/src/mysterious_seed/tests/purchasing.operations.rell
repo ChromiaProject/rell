@@ -1,0 +1,89 @@
+function test_purchase_alice_seed_via_ethereum() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+	
+	assert_equals(originals.size(), 1);
+	assert_true(minter.alice_seeds().contains(text.from_gtv(originals[0].get("name")!!)));
+}
+
+function test_purchase_alice_seed_via_bsc() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_alice_seed(alice.address, "BSC", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+		
+	assert_equals(originals.size(), 1);
+	assert_true(minter.alice_seeds().contains(text.from_gtv(originals[0].get("name")!!)));
+}
+
+function test_unable_to_purchase_alice_seed_via_unknown_chain() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test.tx()
+		.op(minter.mint_alice_seed(alice.address, "BTC", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test.block().tx(tx1).run_must_fail();
+}
+
+function test_purchase_chromia_seed_via_ethereum() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_chromia_seed(alice.address, "Ethereum", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+	
+	val originals = get_originals_for_account(alice.account.id);
+	
+	assert_equals(originals.size(), 1);
+	assert_true(minter.chromia_seeds().contains(text.from_gtv(originals[0].get("name")!!)));
+}
+
+function test_purchase_chromia_seed_via_bsc() {
+	val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+		
+	val tx1 = rell.test
+		.tx()
+		.op(minter.mint_chromia_seed(alice.address, "BSC", "1"))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val originals = get_originals_for_account(alice.account.id);
+		
+	assert_equals(originals.size(), 1);
+	assert_true(minter.chromia_seeds().contains(text.from_gtv(originals[0].get("name")!!)));
+}

@@ -1,0 +1,241 @@
+@test module;
+import ^^^.dip.*;
+
+function test_simple_filter() {
+	Interface_("ITest", [
+		"integer": Type(Integer()),
+		"text": Type(Text())
+	]).run();
+
+	Instance_(
+		["ITest"],
+		["integer": Integer(42), "text": Text("Hello")]
+	).run();
+	
+	val instance = get_last_instance();
+	
+	Instance_(
+		["ITest"],
+		["integer": Integer(1), "text": Text("Hello")]
+	).run();
+	
+	val attr_integer = get_attribute_by_dclass_name("ITest", "integer");
+	val attr_name  = get_attribute_by_dclass_name("ITest", "text");
+	
+	val apply_filter = [
+		filter(attr_integer, integer(42).to_gtv()),
+		filter(attr_name, "Hello".to_gtv())
+	];
+	
+	val res = find_instances(apply_filter, p_from(), integer.MAX_VALUE);
+	assert_true( res.results.contains(instance) );	
+}
+
+function test_multi_filter_with_prototype() {
+	Interface_("ITest", [
+		"integer": Type(Integer()),
+		"text": Type(Text())
+	]).run();
+	
+	Prototype_(
+		["ITest"],
+		["integer": Integer(42)],
+		"PrototypeName"
+	).run();
+	
+	val first = list<instance>();
+	for(i in range(0, 5)) {
+		Instance_(
+			[],
+			["text": Text("first")],
+			"ITest.PrototypeName"
+		).run();
+		
+		first.add(get_last_instance());
+	}
+	
+	val second = list<instance>();
+	for(i in range(0, 5)) {
+		Instance_(
+			[],
+			["text": Text("second")],
+			"ITest.PrototypeName"
+		).run();
+		
+		second.add(get_last_instance());
+	}
+	
+	val attr_integer = get_attribute_by_dclass_name("ITest", "integer");
+	val attr_name  = get_attribute_by_dclass_name("ITest", "text");
+	
+	var apply_filter = [
+		filter(attr_integer, integer(42).to_gtv()),
+		filter(attr_name, "first".to_gtv())
+	];
+	var res = find_instances(apply_filter, p_from(), integer.MAX_VALUE);
+	assert_true( res.results.contains_all(first) );
+	
+	apply_filter = [
+		filter(attr_name, "first".to_gtv()),
+		filter(attr_integer, integer(42).to_gtv())
+	];
+	res = find_instances(apply_filter, p_from(), integer.MAX_VALUE);
+	assert_true( res.results.contains_all(first) );	
+		
+	apply_filter = [
+		filter(attr_integer, integer(42).to_gtv()),
+		filter(attr_name, "second".to_gtv())
+	];
+	res = find_instances(apply_filter, p_from(), integer.MAX_VALUE);
+	assert_true( res.results.contains_all(second) );	
+	
+	apply_filter = [
+		filter(attr_name, "second".to_gtv()),
+		filter(attr_integer, integer(42).to_gtv())
+	];
+	res = find_instances(apply_filter, p_from(), integer.MAX_VALUE);
+	assert_true( res.results.contains_all(second) );
+}
+
+
+function test_multi_filter_with_prototype_paginated() {
+	Interface_("ITest", [
+		"integer": Type(Integer()),
+		"text": Type(Text())
+	]).run();
+	
+	Prototype_(
+		["ITest"],
+		["integer": Integer(42)],
+		"PrototypeName"
+	).run();
+	
+	val instances = list<instance>();
+	for(i in range(0, 5)) {
+		Instance_(
+			[],
+			["text": Text("first")],
+			"ITest.PrototypeName"
+		).run();
+		
+		instances.add(get_last_instance());
+	}
+	
+	val attr_integer = get_attribute_by_dclass_name("ITest", "integer");
+	val attr_name  = get_attribute_by_dclass_name("ITest", "text");
+	
+	var apply_filter = [
+		filter(attr_integer, integer(42).to_gtv()),
+		filter(attr_name, "first".to_gtv())
+	];
+	
+	var res = find_instances(apply_filter, p_from(), 5);
+	assert_true( res.results.contains_all( instances ) );
+	
+	res = find_instances(apply_filter, res.from, 2);
+	assert_true( res.results.contains_all( instances.sub(0, 2) ) );
+	
+	res = find_instances(apply_filter, res.from, 2 );
+	assert_true( res.results.contains_all( instances.sub(2, 4) ) );
+	
+	res = find_instances(apply_filter, res.from, 2);
+	assert_true( res.results.contains_all( instances.sub(4, 5) ) );
+}
+
+function test_complex_multi_filter() {
+	Interface_("ITest", [
+		"integer": Type(Integer()),
+		"text": Type(Text()),
+		"boolean": Type(Boolean())
+	]).run();
+	
+	Prototype_(
+		["ITest"],
+		["text": Text("GrandPrototype")],
+		"GrandPrototype"
+	).run();
+	
+	Prototype_(
+		[],
+		["integer": Integer(42)],
+		"PrototypeBranch1",
+		"ITest.GrandPrototype"
+	).run();
+	
+	Prototype_(
+		[],
+		["integer": Integer(84)],
+		"PrototypeBranch2",
+		"ITest.GrandPrototype"
+	).run();
+	
+	val instances_branch1 = list<instance>();
+	for(i in range(0, 5)) {
+		Instance_(
+			[],
+			["boolean": Boolean(true)],
+			"ITest.PrototypeBranch1"
+		).run();
+		
+		instances_branch1.add(get_last_instance());
+	}
+	
+	val instances_branch2 = list<instance>();
+	for(i in range(0, 5)) {
+		Instance_(
+			[],
+			["boolean": Boolean(false)],
+			"ITest.PrototypeBranch2"
+		).run();
+		
+		instances_branch2.add(get_last_instance());
+	}
+	
+	val attr_integer = get_attribute_by_dclass_name("ITest", "integer");
+	val attr_name  = get_attribute_by_dclass_name("ITest", "text");
+	val attr_bool = get_attribute_by_dclass_name("ITest", "boolean");
+	
+	var apply_filter = [
+		filter(attr_name, "GrandPrototype".to_gtv()),
+		filter(attr_integer, integer(42).to_gtv()),
+		filter(attr_bool, true.to_gtv())
+	];
+	
+	var res = find_instances(apply_filter, p_from(), integer.MAX_VALUE);
+	assert_true( res.results.contains_all(instances_branch1) );
+	//
+	apply_filter = [
+		filter(attr_name, "GrandPrototype".to_gtv()),
+		filter(attr_bool, true.to_gtv())
+	];
+	
+	res = find_instances(apply_filter, p_from(), integer.MAX_VALUE);
+	assert_true( res.results.contains_all(instances_branch1) );
+	//
+	apply_filter = [
+		filter(attr_name, "GrandPrototype".to_gtv()),
+		filter(attr_integer, integer(84).to_gtv()),
+		filter(attr_bool, false.to_gtv())
+	];
+	
+	res = find_instances(apply_filter, p_from(), integer.MAX_VALUE);
+	assert_true( res.results.contains_all(instances_branch2) );
+	//
+	apply_filter = [
+		filter(attr_name, "GrandPrototype".to_gtv()),
+		filter(attr_integer, integer(84).to_gtv())
+	];
+	
+	res = find_instances(apply_filter, p_from(), integer.MAX_VALUE);
+	assert_true( res.results.contains_all(instances_branch2) );
+	//
+	apply_filter = [
+		filter(attr_name, "GrandPrototype".to_gtv()),
+		filter(attr_integer, integer(84).to_gtv()),
+		filter(attr_bool, false.to_gtv())
+	];
+	
+	res = find_instances(apply_filter, p_from(), integer.MAX_VALUE);
+	assert_true( res.results.contains_all([]) );
+}
+
