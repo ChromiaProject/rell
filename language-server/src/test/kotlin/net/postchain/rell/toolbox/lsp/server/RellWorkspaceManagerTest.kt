@@ -368,12 +368,8 @@ class RellWorkspaceManagerTest {
         val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
         workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
         workspaceManager.didOpen(importerFileUri, 1, rellFileContent)
-
-        val indexer = workspaceManager.indexers[srcDir.toURI()]!!
-
         val candidate = workspaceManager.getDefinitionCandidates(importerFileUri, Position(3,15))
-
-        //assertThat(indexer.fileUriResourceMap[importerFileUri]!!.semanticErrors).isNotEmpty()
-        //assertThat(indexer.fileUriResourceMap[rellFileUri]!!.parseTree.text).contains(newContent)
+        assertThat(candidate.left!![0].uri.contains("importer.rell")).isTrue()
+        assertThat(candidate.left!![0].range.start).isEqualTo(Position(2,10))
     }
 }
