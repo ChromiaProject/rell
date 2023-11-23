@@ -3,8 +3,8 @@ package net.postchain.rell.toolbox.core.tokens
 
 import com.google.common.collect.ImmutableList
 import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.toolbox.core.indexer.NodeInterval
 import net.postchain.rell.toolbox.core.indexer.Resource
-import java.util.*
 
 
 class RellSemanticTokensManager {
@@ -20,7 +20,7 @@ class RellSemanticTokensManager {
 
         val tokens = mutableListOf<Token>()
         for (node in tokenNodes) {
-            val symbolKind = resource.getSymbolKindForInterval(node.sourceInterval)
+            val symbolKind = resource.getSymbolKindForInterval(NodeInterval(node))
             if (symbolKind != null) {
                 tokens.add(Token(symbolKind, node))
             }

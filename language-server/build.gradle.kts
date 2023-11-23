@@ -37,6 +37,7 @@ dependencies {
     implementation(libs.bundles.logging)
     implementation(libs.bundles.koin)
     implementation(project(":core"))
+    implementation(libs.bundles.rell)
 
     testImplementation(libs.bundles.testcontainers)
     testImplementation(libs.bundles.testing)

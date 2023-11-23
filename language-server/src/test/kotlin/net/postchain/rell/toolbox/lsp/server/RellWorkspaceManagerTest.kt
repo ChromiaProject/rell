@@ -1,16 +1,7 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
-import assertk.assertions.contains
-import assertk.assertions.containsAll
-import assertk.assertions.containsOnly
-import assertk.assertions.doesNotContain
-import assertk.assertions.hasSize
-import assertk.assertions.isEmpty
-import assertk.assertions.isEqualTo
-import assertk.assertions.isNotEmpty
-import assertk.assertions.isNull
-import assertk.assertions.isTrue
+import assertk.assertions.*
 import net.postchain.rell.toolbox.core.indexer.RellIssue
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
@@ -350,5 +341,39 @@ class RellWorkspaceManagerTest {
 
         assertThat(indexer.fileUriResourceMap[importerFileUri]!!.semanticErrors).isNotEmpty()
         assertThat(indexer.fileUriResourceMap[rellFileUri]!!.parseTree.text).contains(newContent)
+    }
+
+    @Test
+    fun `Go to definition for imported object`(@TempDir tempDir: File) {
+        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
+        val rellFileContent = """
+                module;
+                import importer.*;
+                function main() {
+                    return some_function();
+                }
+            """.trimIndent()
+        val importerFileUri =  File(srcDir, "rell_file.rell").apply {
+            writeText(rellFileContent)
+        }.toURI()
+
+        File(srcDir, "importer.rell").apply {
+            writeText("""
+            module;
+            function some_function() {
+                return "main";
+            }
+            """.trimIndent())
+        }.toURI()
+        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
+        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        workspaceManager.didOpen(importerFileUri, 1, rellFileContent)
+
+        val indexer = workspaceManager.indexers[srcDir.toURI()]!!
+
+        val candidate = workspaceManager.getDefinitionCandidates(importerFileUri, Position(3,15))
+
+        //assertThat(indexer.fileUriResourceMap[importerFileUri]!!.semanticErrors).isNotEmpty()
+        //assertThat(indexer.fileUriResourceMap[rellFileUri]!!.parseTree.text).contains(newContent)
     }
 }

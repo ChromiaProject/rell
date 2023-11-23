@@ -5,8 +5,9 @@ import net.postchain.rell.toolbox.core.indexer.RellIssue
 import net.postchain.rell.toolbox.core.indexer.Resource
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.editing.Document
-import org.eclipse.lsp4j.TextDocumentContentChangeEvent
-import org.eclipse.lsp4j.WorkspaceFolder
+import org.antlr.v4.runtime.misc.Interval
+import org.eclipse.lsp4j.*
+import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.io.File
 import java.net.URI
 
@@ -183,5 +184,37 @@ class RellWorkspaceManager {
     fun getResource(fileUri: URI): Resource? {
         val indexer = getIndexerFor(fileUri)
         return indexer.getResource(fileUri)
+    }
+
+    fun getDefinitionCandidates (fileUri: URI, position: Position) : Either<MutableList<out Location>, MutableList<out LocationLink>> {
+        val indexer = getIndexerFor(fileUri)
+        val ws = indexer.workspaceUri
+        val document = openDocuments[fileUri]!! //TODO FIX Fallback
+        val resource = indexer.getResource(fileUri)!! //TODO FIX Fallback
+        val offset = document.getOffSet(position) - 1 // line starts on 0
+        val results = resource.locationInfo
+            .filter { it.key.properlyContains(Interval.of(offset, offset)) }
+            .values
+            .toList()
+
+        val returnValue: MutableList<Location> = mutableListOf()
+        results.forEach {
+            val link = it.link ?: return@forEach
+            val globalId = link.globalId()
+            if (globalId != null) {
+                val file = globalId.file
+                val symId = globalId.symId
+                var uri = URI(file.toString())
+
+                if (uri != null) {
+                    uri = URI(ws.toString() + uri.toString())
+                    val pos = getResource(uri)!!.symbolInfos.entries.find { it.value.defId == symId }!!.key //TODO fix fallback
+                    returnValue.add(Location(uri.toString(), Range(Position(pos.line(), pos.column()), Position(pos.line(), pos.column())))) //TODO make preatty
+                }
+
+            }
+        }
+
+        return Either.forLeft(returnValue)
     }
 }

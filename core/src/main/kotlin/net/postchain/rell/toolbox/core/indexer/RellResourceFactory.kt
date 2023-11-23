@@ -22,7 +22,7 @@ import net.postchain.rell.toolbox.core.parser.SyntaxErrorCollector
 import org.antlr.v4.runtime.misc.Interval
 import java.io.File
 import java.net.URI
-import java.util.TreeMap
+import java.util.*
 
 
 class RellResourceFactory(private val workspaceUri: URI, private val parser: AntlrRellParser) {
@@ -52,7 +52,8 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
 
     private fun createLocationInfo(symbolInfos: Map<S_Pos, IdeSymbolInfo>): Map<Interval, IdeSymbolInfo> {
         val intervalMap = symbolInfos.map {
-            (it.key as AntlrPos).node.sourceInterval to it.value
+            val node = (it.key as AntlrPos).node
+            NodeInterval(node) to it.value
         }
         val locationInfo = TreeMap<Interval, IdeSymbolInfo>(::intervalCompare)
         locationInfo.putAll(intervalMap)
