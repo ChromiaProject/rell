@@ -10,6 +10,7 @@ import net.postchain.rell.toolbox.core.parser.RellParser
 import net.postchain.rell.toolbox.core.parser.SyntaxError
 import org.antlr.v4.runtime.misc.Interval
 import java.net.URI
+import java.util.*
 
 data class Resource(
     val parseTree: RellParser.RuleX_RootParserContext,
@@ -20,7 +21,8 @@ data class Resource(
     val syntaxErrors: List<SyntaxError> = listOf(),
     val semanticErrors: List<C_Message> = listOf(),
     val symbolInfos: Map<S_Pos, IdeSymbolInfo>,
-    val locationInfo: Map<Interval, IdeSymbolInfo>
+    val locationInfo: Map<Interval, IdeSymbolInfo>,
+    val locationInfo2: TreeMap<Interval, IdeSymbolInfo>
 ) {
     fun getSymbolKindForInterval(interval: Interval): IdeSymbolKind? {
         val symbolInfo = locationInfo[interval]

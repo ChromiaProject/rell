@@ -1,7 +1,16 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
-import assertk.assertions.*
+import assertk.assertions.contains
+import assertk.assertions.containsAll
+import assertk.assertions.containsOnly
+import assertk.assertions.doesNotContain
+import assertk.assertions.hasSize
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNotEmpty
+import assertk.assertions.isNull
+import assertk.assertions.isTrue
 import net.postchain.rell.toolbox.core.indexer.RellIssue
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
@@ -320,13 +329,15 @@ class RellWorkspaceManagerTest {
         }
         val rellFileUri = rellFile.toURI()
         val importerFileUri = File(srcDir, "importer.rell").apply {
-            writeText("""
+            writeText(
+                """
                 module;
                 import rell_file.*;
                 function main() {
                     return some_function();
                 }
-            """.trimIndent())
+            """.trimIndent()
+            )
         }.toURI()
         val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
         workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
@@ -346,6 +357,69 @@ class RellWorkspaceManagerTest {
     @Test
     fun `Go to definition for imported object`(@TempDir tempDir: File) {
         val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
+        val rellFile = File(srcDir, "rell_file.rell").apply {
+            writeText(
+                """
+                    module;
+                    import imported.*;
+                    function main() {
+                        return some_function();
+                    }
+            """.trimIndent()
+            )
+        }
+
+        val importedFileUri = File(srcDir, "imported.rell").apply {
+            writeText(
+                """
+                    module;
+                    function some_function() {
+                        return "main";
+                    }
+            """.trimIndent()
+            )
+        }.toURI()
+
+        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
+        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        workspaceManager.didOpen(rellFile.toURI(), 1, rellFile.readText())
+        val candidate = workspaceManager.getDefinitionCandidates(rellFile.toURI(), Position(3, 15))
+        assertThat(candidate.left!![0].uri.contains("imported.rell")).isTrue()
+        assertThat(candidate.left!![0].range.start).isEqualTo(Position(2, 10))
+    }
+
+    @Test
+    fun `Go to definition for local link`(@TempDir tempDir: File) {
+        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
+        val localLinkFile = File(srcDir, "local_link.rell").apply {
+            writeText(
+                """
+                module;
+                function foo() {
+                    val a_long_val_name = 2;
+                    val b = a_long_val_name;
+                }
+            """.trimIndent()
+            )
+        }
+
+
+        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
+        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        workspaceManager.didOpen(localLinkFile.toURI(), 1, localLinkFile.readText())
+        val candidate = workspaceManager.getDefinitionCandidates(
+            localLinkFile.toURI(),
+            Position(3, 20)
+        ) //TODO: Believe we are off with one line here
+
+        assertThat(candidate.left!![0].uri.contains(localLinkFile.toString())).isTrue()
+        assertThat(candidate.left!![0].range.start).isEqualTo(Position(2, 8))
+        assertThat(candidate.left!![0].range.end).isEqualTo(Position(2, 23))
+    }
+
+    @Test
+    fun `Go to definition for module file`(@TempDir tempDir: File) {
+        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
         val rellFileContent = """
                 module;
                 import importer.*;
@@ -353,23 +427,26 @@ class RellWorkspaceManagerTest {
                     return some_function();
                 }
             """.trimIndent()
-        val importerFileUri =  File(srcDir, "rell_file.rell").apply {
+        val importerFileUri = File(srcDir, "rell_file.rell").apply {
             writeText(rellFileContent)
         }.toURI()
 
-        File(srcDir, "importer.rell").apply {
-            writeText("""
+        val importerFile = File(srcDir, "importer.rell").apply {
+            writeText(
+                """
             module;
             function some_function() {
                 return "main";
             }
-            """.trimIndent())
+            """.trimIndent()
+            )
         }.toURI()
         val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
         workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
         workspaceManager.didOpen(importerFileUri, 1, rellFileContent)
-        val candidate = workspaceManager.getDefinitionCandidates(importerFileUri, Position(3,15))
-        assertThat(candidate.left!![0].uri.contains("importer.rell")).isTrue()
-        assertThat(candidate.left!![0].range.start).isEqualTo(Position(2,10))
+
+        val candidate = workspaceManager.getDefinitionCandidates(importerFileUri, Position(1, 11))
+        assertThat(candidate.left!![0].uri).isEqualTo(importerFile.toString())
+        assertThat(candidate.left!![0].range.start).isEqualTo(Position(0, 1))
     }
 }

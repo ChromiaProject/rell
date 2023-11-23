@@ -6,7 +6,12 @@ import net.postchain.rell.toolbox.core.indexer.Resource
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.editing.Document
 import org.antlr.v4.runtime.misc.Interval
-import org.eclipse.lsp4j.*
+import org.eclipse.lsp4j.Location
+import org.eclipse.lsp4j.LocationLink
+import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.Range
+import org.eclipse.lsp4j.TextDocumentContentChangeEvent
+import org.eclipse.lsp4j.WorkspaceFolder
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.io.File
 import java.net.URI
@@ -186,20 +191,31 @@ class RellWorkspaceManager {
         return indexer.getResource(fileUri)
     }
 
-    fun getDefinitionCandidates (fileUri: URI, position: Position) : Either<MutableList<out Location>, MutableList<out LocationLink>> {
+    fun getDefinitionCandidates(
+        fileUri: URI,
+        position: Position
+    ): Either<MutableList<out Location>, MutableList<out LocationLink>> {
         val indexer = getIndexerFor(fileUri)
-        val ws = indexer.workspaceUri
         val document = openDocuments[fileUri]!! //TODO FIX Fallback
         val resource = indexer.getResource(fileUri)!! //TODO FIX Fallback
         val offset = document.getOffSet(position) - 1 // line starts on 0
-        val results = resource.locationInfo
+        val results = resource.locationInfo //TODO: Use resource.getSymbolKindForInterval(Interval)
             .filter { it.key.properlyContains(Interval.of(offset, offset)) }
             .values
             .toList()
 
+        //TODO: Hande this prettier
+        val ws = if (indexer.workspaceUri.toString().endsWith("/")) {
+            indexer.workspaceUri
+        } else {
+            URI(indexer.workspaceUri.toString() + "/")
+        }
+
         val returnValue: MutableList<Location> = mutableListOf()
         results.forEach {
             val link = it.link ?: return@forEach
+
+            //Global
             val globalId = link.globalId()
             if (globalId != null) {
                 val file = globalId.file
@@ -208,10 +224,48 @@ class RellWorkspaceManager {
 
                 if (uri != null) {
                     uri = URI(ws.toString() + uri.toString())
-                    val pos = getResource(uri)!!.symbolInfos.entries.find { it.value.defId == symId }!!.key //TODO fix fallback
-                    returnValue.add(Location(uri.toString(), Range(Position(pos.line(), pos.column()), Position(pos.line(), pos.column())))) //TODO make preatty
+                    val pos =
+                        getResource(uri)!!.symbolInfos.entries.find { it.value.defId == symId }!!.key //TODO fix fallback
+                    returnValue.add(
+                        Location(
+                            uri.toString(),
+                            Range(Position(pos.line(), pos.column()), Position(pos.line(), pos.column()))
+                        )
+                    ) //TODO make preatty
                 }
+            }
 
+            //ModuleFile
+            val moduleFile = link.moduleFile()
+            if (moduleFile != null) {
+                var uri = URI(moduleFile.toString())
+                if (uri != null) {
+                    uri = URI(ws.toString() + uri.toString())
+                    returnValue.add(
+                        Location(
+                            uri.toString(),
+                            Range(Position(0, 1), Position(100, 1))
+                        )
+                    ) //TODO make preatty
+                }
+            }
+
+            //Local
+            val localPos = link.localPos()
+            if (localPos != null) {
+                val linkNodeOffset = document.getOffSet(Position(localPos.line() - 1, localPos.column()))
+                val nodePositionInterval =
+                    resource.locationInfo2.ceilingEntry(Interval.of(linkNodeOffset, linkNodeOffset))
+
+                val startPos = document.getPosition(nodePositionInterval.key.a)
+                val endPos = document.getPosition(nodePositionInterval.key.b + 1)
+
+                returnValue.add(
+                    Location(
+                        fileUri.toString(),
+                        Range(startPos, endPos)
+                    )
+                ) //TODO make preatty
             }
         }
 
