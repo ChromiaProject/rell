@@ -36,7 +36,6 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
         val compilationResult = compileResult(rellCompilerSourcePath, ast.first)
         val symbolInfo = compilationResult.symbolInfos
         val locationInfo = createLocationInfo(symbolInfo)
-        val locationInfo2 = createLocationInfo2(symbolInfo)
 
         return Resource(
             antlrParseTree.first,
@@ -47,27 +46,16 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
             antlrParseTree.second,
             compilationResult.messages,
             symbolInfo,
-            locationInfo,
-            locationInfo2
+            locationInfo
         )
     }
 
-    private fun createLocationInfo(symbolInfos: Map<S_Pos, IdeSymbolInfo>): Map<Interval, IdeSymbolInfo> {
+    private fun createLocationInfo(symbolInfos: Map<S_Pos, IdeSymbolInfo>): Map<Interval, IdeSymbolInfoWithInterval> {
         val intervalMap = symbolInfos.map {
-            val node = (it.key as AntlrPos).node
-            NodeInterval(node) to it.value
+            val node = NodeInterval((it.key as AntlrPos).node)
+            node to IdeSymbolInfoWithInterval(it.value, node)
         }
-        val locationInfo = TreeMap<Interval, IdeSymbolInfo>(::intervalCompare)
-        locationInfo.putAll(intervalMap)
-        return locationInfo
-    }
-
-    private fun createLocationInfo2(symbolInfos: Map<S_Pos, IdeSymbolInfo>): TreeMap<Interval, IdeSymbolInfo> {
-        val intervalMap = symbolInfos.map {
-            val node = (it.key as AntlrPos).node
-            NodeInterval(node) to it.value
-        }
-        val locationInfo = TreeMap<Interval, IdeSymbolInfo>(::intervalCompare)
+        val locationInfo = TreeMap<Interval, IdeSymbolInfoWithInterval>(::intervalCompare)
         locationInfo.putAll(intervalMap)
         return locationInfo
     }
@@ -95,7 +83,6 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
         val compilationResult = compileResult(rellCompilerSourcePath, resource.ast)
         val symbolInfo = compilationResult.symbolInfos
         val locationInfo = createLocationInfo(symbolInfo)
-        val locationInfo2 = createLocationInfo2(symbolInfo)
 
         return Resource(
             resource.parseTree,
@@ -106,8 +93,7 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
             resource.syntaxErrors,
             compilationResult.messages,
             symbolInfo,
-            locationInfo,
-            locationInfo2
+            locationInfo
         )
     }
 

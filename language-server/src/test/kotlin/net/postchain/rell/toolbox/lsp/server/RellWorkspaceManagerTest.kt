@@ -1,7 +1,16 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
-import assertk.assertions.*
+import assertk.assertions.contains
+import assertk.assertions.containsAll
+import assertk.assertions.containsOnly
+import assertk.assertions.doesNotContain
+import assertk.assertions.hasSize
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNotEmpty
+import assertk.assertions.isNull
+import assertk.assertions.isTrue
 import net.postchain.rell.toolbox.core.indexer.RellIssue
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
@@ -374,7 +383,7 @@ class RellWorkspaceManagerTest {
         val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
         workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
         workspaceManager.didOpen(rellFile.toURI(), 1, rellFile.readText())
-        val candidate = workspaceManager.getDefinitionCandidates(rellFile.toURI(), Position(3, 15))
+        val candidate = workspaceManager.getDefinitionLocations(rellFile.toURI(), Position(3, 15))
         assertThat(candidate.left!![0].uri).isEqualTo(importedFileUri.toString())
         assertThat(candidate.left!![0].range.start).isEqualTo(Position(2, 10))
         assertThat(candidate.left!![0].range.end).isEqualTo(Position(2, 23))
@@ -399,7 +408,7 @@ class RellWorkspaceManagerTest {
         val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
         workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
         workspaceManager.didOpen(localLinkFile.toURI(), 1, localLinkFile.readText())
-        val candidate = workspaceManager.getDefinitionCandidates(
+        val candidate = workspaceManager.getDefinitionLocations(
             localLinkFile.toURI(),
             Position(3, 20)
         ) //TODO: Believe we are off with one line here
@@ -437,7 +446,7 @@ class RellWorkspaceManagerTest {
         workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
         workspaceManager.didOpen(importerFileUri, 1, rellFileContent)
 
-        val candidate = workspaceManager.getDefinitionCandidates(importerFileUri, Position(1, 11))
+        val candidate = workspaceManager.getDefinitionLocations(importerFileUri, Position(1, 11))
         assertThat(candidate.left!![0].uri).isEqualTo(importerFile.toString())
         assertThat(candidate.left!![0].range.start).isEqualTo(Position(0, 1))
     }

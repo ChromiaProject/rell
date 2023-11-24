@@ -5,9 +5,10 @@ import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import org.eclipse.lsp4j.TextEdit
+import java.net.URI
 
 
-class Document(val version: Int, val contents: String) {
+class Document(val fileUri: URI, val version: Int, val contents: String) {
 
     fun getOffSet(position: Position): Int {
         val l = contents.length
@@ -121,7 +122,7 @@ class Document(val version: Int, val contents: String) {
                 (currentDocument.contents!!.substring(0, start) + change.text
                         + currentDocument.contents!!.substring(end))
             }
-            currentDocument = Document(newVersion ?: 0, newContent)
+            currentDocument = Document(fileUri, newVersion ?: 0, newContent)
         }
         return currentDocument
     }
@@ -144,6 +145,6 @@ class Document(val version: Int, val contents: String) {
             }
         }
         val newVersion = Integer.valueOf(version + 1)
-        return Document(newVersion, newContent)
+        return Document(fileUri, newVersion, newContent)
     }
 }
