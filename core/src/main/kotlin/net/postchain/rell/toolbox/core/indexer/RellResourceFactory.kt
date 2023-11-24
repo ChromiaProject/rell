@@ -73,12 +73,15 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
     }
 
     private fun intervalCompare(intervalA: Interval, intervalB: Interval): Int {
-        if (intervalA.properlyContains(intervalB)) {
-            return 0
+        return if (intervalA == intervalB ||
+            intervalA.properlyContains(intervalB) ||
+            intervalB.properlyContains(intervalA)
+        ) {
+            0
         } else if (intervalA.startsAfter(intervalB)) {
-            return -1
+            -1
         } else {
-            return 1
+            1
         }
     }
 

@@ -1,16 +1,7 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
-import assertk.assertions.contains
-import assertk.assertions.containsAll
-import assertk.assertions.containsOnly
-import assertk.assertions.doesNotContain
-import assertk.assertions.hasSize
-import assertk.assertions.isEmpty
-import assertk.assertions.isEqualTo
-import assertk.assertions.isNotEmpty
-import assertk.assertions.isNull
-import assertk.assertions.isTrue
+import assertk.assertions.*
 import net.postchain.rell.toolbox.core.indexer.RellIssue
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
@@ -384,8 +375,9 @@ class RellWorkspaceManagerTest {
         workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
         workspaceManager.didOpen(rellFile.toURI(), 1, rellFile.readText())
         val candidate = workspaceManager.getDefinitionCandidates(rellFile.toURI(), Position(3, 15))
-        assertThat(candidate.left!![0].uri.contains("imported.rell")).isTrue()
+        assertThat(candidate.left!![0].uri).isEqualTo(importedFileUri.toString())
         assertThat(candidate.left!![0].range.start).isEqualTo(Position(2, 10))
+        assertThat(candidate.left!![0].range.end).isEqualTo(Position(2, 23))
     }
 
     @Test

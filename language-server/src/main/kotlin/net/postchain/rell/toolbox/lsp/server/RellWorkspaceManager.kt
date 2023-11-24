@@ -1,20 +1,18 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import net.postchain.rell.base.compiler.ast.S_Pos
+import net.postchain.rell.base.utils.ide.*
 import net.postchain.rell.toolbox.core.indexer.RellIssue
 import net.postchain.rell.toolbox.core.indexer.Resource
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.editing.Document
 import org.antlr.v4.runtime.misc.Interval
-import org.eclipse.lsp4j.Location
-import org.eclipse.lsp4j.LocationLink
-import org.eclipse.lsp4j.Position
-import org.eclipse.lsp4j.Range
-import org.eclipse.lsp4j.TextDocumentContentChangeEvent
-import org.eclipse.lsp4j.WorkspaceFolder
+import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.io.File
 import java.net.URI
+import java.util.*
 
 
 class RellWorkspaceManager {
@@ -191,84 +189,96 @@ class RellWorkspaceManager {
         return indexer.getResource(fileUri)
     }
 
+    private fun getGlobalLink(globalId: IdeSymbolGlobalId, workspaceUri: URI): MutableList<Location> {
+        val file = globalId.file
+        val symId = globalId.symId
+        var uri = URI(file.toString())
+
+        uri = URI(workspaceUri.toString() + uri.toString())
+
+        val symbolInfo = getResource(uri)!!.symbolInfos.entries.find { it.value.defId == symId }!!
+        val pos = symbolInfo.key
+        val symbolLength = getLengthOfSymbol(symbolInfo.value.defId!!.encode())
+
+        val startPosition = Position(pos.line(), pos.column())
+        val endPosition = Position(pos.line(), pos.column() + symbolLength)
+        return mutableListOf(Location(uri.toString(), Range(startPosition, endPosition)))
+    }
+
+    private fun getLengthOfSymbol(input: String): Int {
+        val regex = Regex("(?<=\\[)(.+?)(?=\\])")
+        val matchResult = regex.find(input)?.value
+
+        if (matchResult != null) {
+            return matchResult.length
+        }
+        return 0
+    }
+
+    private fun getModuleLink(moduleFile: IdeFilePath, workspaceUri: URI): MutableList<Location> {
+        var uri = URI(moduleFile.toString())
+        uri = URI(workspaceUri.toString() + uri.toString())
+        return mutableListOf(Location(uri.toString(), Range(Position(0, 1), Position(100, 1))))
+    }
+
+    private fun getLocalLink(localPos: S_Pos, resource: Resource, fileUri: URI): MutableList<Location> {
+        val document = openDocuments[fileUri]!!
+        val nodePositionInterval =
+            getClickedSymbolForDocument(resource, Position(localPos.line() - 1, localPos.column()), document)!!.key
+        val startPos = document.getPosition(nodePositionInterval.a)
+        val endPos = document.getPosition(nodePositionInterval.b + 1)
+
+        return mutableListOf(Location(fileUri.toString(), Range(startPos, endPos)))
+    }
+
+
+    //TODO maybe move out to utils if needed elsewhere
+    fun formatWorkspaceUri(workspaceUri: URI): URI {
+        return if (workspaceUri.toString().endsWith("/")) {
+            workspaceUri
+        } else {
+            URI("$workspaceUri/")
+        }
+    }
+
     fun getDefinitionCandidates(
         fileUri: URI,
         position: Position
     ): Either<MutableList<out Location>, MutableList<out LocationLink>> {
         val indexer = getIndexerFor(fileUri)
-        val document = openDocuments[fileUri]!! //TODO FIX Fallback
-        val resource = indexer.getResource(fileUri)!! //TODO FIX Fallback
+        val resource = indexer.getResource(fileUri) ?: return Either.forLeft(mutableListOf())
+
+        val workspaceUri = formatWorkspaceUri(indexer.workspaceUri)
+        val symbol = getClickedSymbolForDocument(fileUri, resource, position)?.value
+
+        val link = symbol?.link ?: return Either.forLeft(mutableListOf())
+
+        return when (link) {
+            is IdeGlobalSymbolLink -> Either.forLeft(getGlobalLink(link.globalId(), workspaceUri))
+            is IdeModuleSymbolLink -> Either.forLeft(getModuleLink(link.moduleFile(), workspaceUri))
+            is IdeLocalSymbolLink -> Either.forLeft(getLocalLink(link.localPos(), resource, fileUri))
+
+            else -> {
+                Either.forLeft(mutableListOf())
+            }
+        }
+    }
+
+    private fun getClickedSymbolForDocument(
+        fileUri: URI,
+        resource: Resource,
+        position: Position
+    ): MutableMap.MutableEntry<Interval, IdeSymbolInfo>? {
+        val document = openDocuments[fileUri]!!
+        return getClickedSymbolForDocument(resource, position, document)
+    }
+
+    private fun getClickedSymbolForDocument(
+        resource: Resource,
+        position: Position,
+        document: Document
+    ): MutableMap.MutableEntry<Interval, IdeSymbolInfo>? {
         val offset = document.getOffSet(position) - 1 // line starts on 0
-        val results = resource.locationInfo //TODO: Use resource.getSymbolKindForInterval(Interval)
-            .filter { it.key.properlyContains(Interval.of(offset, offset)) }
-            .values
-            .toList()
-
-        //TODO: Hande this prettier
-        val ws = if (indexer.workspaceUri.toString().endsWith("/")) {
-            indexer.workspaceUri
-        } else {
-            URI(indexer.workspaceUri.toString() + "/")
-        }
-
-        val returnValue: MutableList<Location> = mutableListOf()
-        results.forEach {
-            val link = it.link ?: return@forEach
-
-            //Global
-            val globalId = link.globalId()
-            if (globalId != null) {
-                val file = globalId.file
-                val symId = globalId.symId
-                var uri = URI(file.toString())
-
-                if (uri != null) {
-                    uri = URI(ws.toString() + uri.toString())
-                    val pos =
-                        getResource(uri)!!.symbolInfos.entries.find { it.value.defId == symId }!!.key //TODO fix fallback
-                    returnValue.add(
-                        Location(
-                            uri.toString(),
-                            Range(Position(pos.line(), pos.column()), Position(pos.line(), pos.column()))
-                        )
-                    ) //TODO make preatty
-                }
-            }
-
-            //ModuleFile
-            val moduleFile = link.moduleFile()
-            if (moduleFile != null) {
-                var uri = URI(moduleFile.toString())
-                if (uri != null) {
-                    uri = URI(ws.toString() + uri.toString())
-                    returnValue.add(
-                        Location(
-                            uri.toString(),
-                            Range(Position(0, 1), Position(100, 1))
-                        )
-                    ) //TODO make preatty
-                }
-            }
-
-            //Local
-            val localPos = link.localPos()
-            if (localPos != null) {
-                val linkNodeOffset = document.getOffSet(Position(localPos.line() - 1, localPos.column()))
-                val nodePositionInterval =
-                    resource.locationInfo2.ceilingEntry(Interval.of(linkNodeOffset, linkNodeOffset))
-
-                val startPos = document.getPosition(nodePositionInterval.key.a)
-                val endPos = document.getPosition(nodePositionInterval.key.b + 1)
-
-                returnValue.add(
-                    Location(
-                        fileUri.toString(),
-                        Range(startPos, endPos)
-                    )
-                ) //TODO make preatty
-            }
-        }
-
-        return Either.forLeft(returnValue)
+        return (resource.locationInfo as TreeMap).ceilingEntry(Interval.of(offset, offset))
     }
 }
