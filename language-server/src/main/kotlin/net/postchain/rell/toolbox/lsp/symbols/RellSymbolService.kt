@@ -19,7 +19,7 @@ import java.net.URI
 class RellSymbolService {
 
     fun getSymbolLocations(document: Document, indexer: WorkspaceIndexer, position: Position): MutableList<Location> {
-        val resource = indexer.getResource(document.fileUri)!!
+        val resource = indexer.getResource(document.fileUri) ?: return mutableListOf()
         val workspaceUri = formatWorkspaceUri(indexer.workspaceUri)
         val symbol = getSymbolForDocument(document, resource, position)?.ideSymbolInfo
 
@@ -55,7 +55,7 @@ class RellSymbolService {
         return mutableListOf(Location(targetFileUri.toString(), Range(startPosition, endPosition)))
     }
 
-    private fun getLengthOfSymbol(input: String): Int {
+    fun getLengthOfSymbol(input: String): Int {
         val regex = Regex("(?<=\\[)(.+?)(?=\\])")
         val matchResult = regex.find(input)?.value
 
