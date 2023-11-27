@@ -11,7 +11,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 class RellSymbolServiceTest {
-    val rellSymbolService = RellSymbolService()
+    private val rellSymbolService = RellSymbolService()
 
     @Test
     fun `test for getLengthOfSymbol`() {

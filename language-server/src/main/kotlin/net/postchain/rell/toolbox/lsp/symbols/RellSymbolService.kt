@@ -77,7 +77,7 @@ class RellSymbolService {
                 document,
                 resource,
                 Position(localPos.line() - 1, localPos.column())
-            )!!.interval //TODO: Fix fallback if not defined
+            )?.interval ?: return mutableListOf()
 
         val startPos = document.getPosition(nodePositionInterval.a)
         val endPos = document.getPosition(nodePositionInterval.b + 1) //column starts at value 1
