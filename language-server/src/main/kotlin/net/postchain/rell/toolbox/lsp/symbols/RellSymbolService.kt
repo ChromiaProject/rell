@@ -6,6 +6,7 @@ import net.postchain.rell.base.utils.ide.IdeGlobalSymbolLink
 import net.postchain.rell.base.utils.ide.IdeLocalSymbolLink
 import net.postchain.rell.base.utils.ide.IdeModuleSymbolLink
 import net.postchain.rell.base.utils.ide.IdeSymbolGlobalId
+import net.postchain.rell.toolbox.core.compiler.AntlrPos
 import net.postchain.rell.toolbox.core.indexer.IdeSymbolInfoWithInterval
 import net.postchain.rell.toolbox.core.indexer.Resource
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
@@ -46,24 +47,16 @@ class RellSymbolService {
 
         targetFileUri = URI(workspaceUri.toString() + targetFileUri.toString())
 
+        // TODO: optimization opportunity. lookup instead of iterating
         val symbolInfo = indexer.getResource(targetFileUri)!!.symbolInfos.entries.find { it.value.defId == symId }!!
-        val pos = symbolInfo.key
-        val symbolLength = getLengthOfSymbol(symbolInfo.value.defId!!.encode())
+        val pos = symbolInfo.key as AntlrPos
+        val symbolLength = pos.node.text.length
 
-        val startPosition = Position(pos.line(), pos.column())
-        val endPosition = Position(pos.line(), pos.column() + symbolLength)
+        val startPosition = Position(pos.line() - 1, pos.column() - 1)
+        val endPosition = Position(pos.line() - 1, pos.column() - 1 + symbolLength)
         return mutableListOf(Location(targetFileUri.toString(), Range(startPosition, endPosition)))
     }
 
-    fun getLengthOfSymbol(input: String): Int {
-        val regex = Regex("(?<=\\[)(.+?)(?=\\])")
-        val matchResult = regex.find(input)?.value
-
-        if (matchResult != null) {
-            return matchResult.length
-        }
-        return 0
-    }
 
     private fun getModuleLink(moduleFile: IdeFilePath, workspaceUri: URI): MutableList<Location> {
         var uri = URI(moduleFile.toString())

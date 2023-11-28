@@ -385,8 +385,8 @@ class RellWorkspaceManagerTest {
         workspaceManager.didOpen(rellFile.toURI(), 1, rellFile.readText())
         val candidate = workspaceManager.getDefinitionLocations(rellFile.toURI(), Position(3, 15))
         assertThat(candidate.left!![0].uri).isEqualTo(importedFileUri.toString())
-        assertThat(candidate.left!![0].range.start).isEqualTo(Position(2, 10))
-        assertThat(candidate.left!![0].range.end).isEqualTo(Position(2, 23))
+        assertThat(candidate.left!![0].range.start).isEqualTo(Position(1, 9))
+        assertThat(candidate.left!![0].range.end).isEqualTo(Position(1, 22))
     }
 
     @Test

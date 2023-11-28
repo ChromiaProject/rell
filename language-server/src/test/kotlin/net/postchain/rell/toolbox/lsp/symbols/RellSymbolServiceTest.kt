@@ -14,13 +14,6 @@ class RellSymbolServiceTest {
     private val rellSymbolService = RellSymbolService()
 
     @Test
-    fun `test for getLengthOfSymbol`() {
-        val definitionId = "function[foo]"
-        val res = rellSymbolService.getLengthOfSymbol(definitionId)
-        assertThat(res).isEqualTo(3)
-    }
-
-    @Test
     fun `Returns empty list when resource does not exist`(@TempDir dir: File) {
         val rellFile = File(dir, "rell_file.rell").apply {
             writeText(
