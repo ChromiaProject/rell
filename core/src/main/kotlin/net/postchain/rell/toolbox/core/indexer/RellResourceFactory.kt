@@ -50,22 +50,26 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
         )
     }
 
-    private fun createLocationInfo(symbolInfos: Map<S_Pos, IdeSymbolInfo>): Map<Interval, IdeSymbolInfo> {
+    private fun createLocationInfo(symbolInfos: Map<S_Pos, IdeSymbolInfo>): Map<Interval, IdeSymbolInfoWithInterval> {
         val intervalMap = symbolInfos.map {
-            (it.key as AntlrPos).node.sourceInterval to it.value
+            val node = NodeInterval((it.key as AntlrPos).node)
+            node to IdeSymbolInfoWithInterval(it.value, node)
         }
-        val locationInfo = TreeMap<Interval, IdeSymbolInfo>(::intervalCompare)
+        val locationInfo = TreeMap<Interval, IdeSymbolInfoWithInterval>(::intervalCompare)
         locationInfo.putAll(intervalMap)
         return locationInfo
     }
 
     private fun intervalCompare(intervalA: Interval, intervalB: Interval): Int {
-        if (intervalA.properlyContains(intervalB)) {
-            return 0
+        return if (intervalA == intervalB ||
+            intervalA.properlyContains(intervalB) ||
+            intervalB.properlyContains(intervalA)
+        ) {
+            0
         } else if (intervalA.startsAfter(intervalB)) {
-            return -1
+            -1
         } else {
-            return 1
+            1
         }
     }
 

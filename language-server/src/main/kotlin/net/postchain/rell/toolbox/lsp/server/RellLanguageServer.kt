@@ -6,6 +6,7 @@ import net.postchain.rell.toolbox.core.RellVersionInfo
 import net.postchain.rell.toolbox.core.indexer.RellIssue
 import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsConverter
+import org.eclipse.lsp4j.DefinitionParams
 import org.eclipse.lsp4j.DidChangeConfigurationParams
 import org.eclipse.lsp4j.DidChangeTextDocumentParams
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams
@@ -16,12 +17,11 @@ import org.eclipse.lsp4j.FileChangeType
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.InitializeResult
 import org.eclipse.lsp4j.InitializedParams
+import org.eclipse.lsp4j.Location
+import org.eclipse.lsp4j.LocationLink
 import org.eclipse.lsp4j.PublishDiagnosticsParams
 import org.eclipse.lsp4j.SemanticTokens
-import org.eclipse.lsp4j.SemanticTokensDelta
-import org.eclipse.lsp4j.SemanticTokensDeltaParams
 import org.eclipse.lsp4j.SemanticTokensParams
-import org.eclipse.lsp4j.SemanticTokensRangeParams
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest
@@ -169,6 +169,14 @@ class RellLanguageServer(
             } else {
                 SemanticTokens()
             }
+        }
+    }
+
+    override fun definition(params: DefinitionParams): CompletableFuture<Either<MutableList<out Location>, MutableList<out LocationLink>>> {
+        val fileUri = URI(params.textDocument.uri)
+
+        return requestManager.runRead {
+            workspaceManager.getDefinitionLocations(fileUri, params.position)
         }
     }
 }

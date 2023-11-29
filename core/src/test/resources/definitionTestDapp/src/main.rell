@@ -1,0 +1,14 @@
+module;
+import ^.directory.methods.*;
+
+function call_create_obj() {
+    change_obj(name = "");
+}
+
+function create_x() {
+    create x("");
+}
+
+function create_long_name() {
+    create long_name("");
+}

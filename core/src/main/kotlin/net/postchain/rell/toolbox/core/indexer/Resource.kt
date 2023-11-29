@@ -20,11 +20,11 @@ data class Resource(
     val syntaxErrors: List<SyntaxError> = listOf(),
     val semanticErrors: List<C_Message> = listOf(),
     val symbolInfos: Map<S_Pos, IdeSymbolInfo>,
-    val locationInfo: Map<Interval, IdeSymbolInfo>
+    val locationInfo: Map<Interval, IdeSymbolInfoWithInterval>
 ) {
     fun getSymbolKindForInterval(interval: Interval): IdeSymbolKind? {
-        val symbolInfo = locationInfo[interval]
-        return symbolInfo?.kind
+        val symbolInfoWithInterval = locationInfo[interval]
+        return symbolInfoWithInterval?.ideSymbolInfo?.kind
     }
 
     val rName = moduleInfo?.name

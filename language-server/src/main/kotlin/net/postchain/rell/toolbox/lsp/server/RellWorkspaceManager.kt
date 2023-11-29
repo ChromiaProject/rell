@@ -5,8 +5,13 @@ import net.postchain.rell.toolbox.core.indexer.RellIssue
 import net.postchain.rell.toolbox.core.indexer.Resource
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.editing.Document
+import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
+import org.eclipse.lsp4j.Location
+import org.eclipse.lsp4j.LocationLink
+import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import org.eclipse.lsp4j.WorkspaceFolder
+import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.io.File
 import java.net.URI
 
@@ -19,6 +24,7 @@ class RellWorkspaceManager {
     private lateinit var diagnosticsPublisher: (uri: URI, List<RellIssue>) -> Unit
     val indexers: MutableMap<URI, WorkspaceIndexer> = mutableMapOf()
     val openDocuments: MutableMap<URI, Document> = mutableMapOf()
+    val rellSymbolService = RellSymbolService()
     private val workspaceFolderUris get() = workspaceFolders.map { URI(it.uri) }
 
     //TODO: Should we have this the contractor or a init{} constructor
@@ -80,7 +86,7 @@ class RellWorkspaceManager {
     }
 
     fun didOpen(fileUri: URI, version: Int, content: String) {
-        openDocuments[fileUri] = Document(version, content)
+        openDocuments[fileUri] = Document(fileUri, version, content)
         val indexer = getIndexerFor(fileUri)
         indexer.updateFileUriResourceMap(fileUri, content)
         reportDiagnostics(indexer, listOf(fileUri))
@@ -183,5 +189,15 @@ class RellWorkspaceManager {
     fun getResource(fileUri: URI): Resource? {
         val indexer = getIndexerFor(fileUri)
         return indexer.getResource(fileUri)
+    }
+
+
+    fun getDefinitionLocations(
+        fileUri: URI,
+        position: Position
+    ): Either<MutableList<out Location>, MutableList<out LocationLink>> {
+        val indexer = getIndexerFor(fileUri)
+        val document = openDocuments[fileUri]!!
+        return Either.forLeft(rellSymbolService.getSymbolLocations(document, indexer, position))
     }
 }
