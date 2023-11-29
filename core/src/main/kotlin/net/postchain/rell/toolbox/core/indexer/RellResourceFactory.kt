@@ -22,7 +22,7 @@ import net.postchain.rell.toolbox.core.parser.SyntaxErrorCollector
 import org.antlr.v4.runtime.misc.Interval
 import java.io.File
 import java.net.URI
-import java.util.*
+import java.util.TreeMap
 
 
 class RellResourceFactory(private val workspaceUri: URI, private val parser: AntlrRellParser) {
