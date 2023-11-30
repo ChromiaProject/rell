@@ -18,7 +18,7 @@ class CapabilitiesProvider {
         //serverCapabilities.setHoverProvider(true)
         serverCapabilities.setDefinitionProvider(true)
         serverCapabilities.setReferencesProvider(true)
-        //serverCapabilities.setDocumentSymbolProvider(true)
+        serverCapabilities.setDocumentSymbolProvider(true)
         serverCapabilities.setWorkspaceSymbolProvider(true)
         serverCapabilities.signatureHelpProvider = SignatureHelpOptions(listOf("(", ","))
         serverCapabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental)

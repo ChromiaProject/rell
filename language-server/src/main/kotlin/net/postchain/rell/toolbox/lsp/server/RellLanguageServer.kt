@@ -13,6 +13,8 @@ import org.eclipse.lsp4j.DidChangeWatchedFilesParams
 import org.eclipse.lsp4j.DidCloseTextDocumentParams
 import org.eclipse.lsp4j.DidOpenTextDocumentParams
 import org.eclipse.lsp4j.DidSaveTextDocumentParams
+import org.eclipse.lsp4j.DocumentSymbol
+import org.eclipse.lsp4j.DocumentSymbolParams
 import org.eclipse.lsp4j.FileChangeType
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.InitializeResult
@@ -22,6 +24,7 @@ import org.eclipse.lsp4j.LocationLink
 import org.eclipse.lsp4j.PublishDiagnosticsParams
 import org.eclipse.lsp4j.SemanticTokens
 import org.eclipse.lsp4j.SemanticTokensParams
+import org.eclipse.lsp4j.SymbolInformation
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest
@@ -107,19 +110,15 @@ class RellLanguageServer(
     override fun didOpen(params: DidOpenTextDocumentParams) {
         val textDocument = params.textDocument
         val uri = URI(textDocument.uri)
-        requestManager.runWrite {
-            workspaceManager.didOpen(uri, textDocument.version, textDocument.text)
-        }
+        workspaceManager.didOpen(uri, textDocument.version, textDocument.text)
     }
 
     override fun didChange(params: DidChangeTextDocumentParams) {
         val textDocument: VersionedTextDocumentIdentifier = params.textDocument
         val uri = URI(textDocument.uri)
-        requestManager.runWrite {
-            workspaceManager.didChangeTextDocumentContent(
-                uri, textDocument.version, params.contentChanges
-            )
-        }
+        workspaceManager.didChangeTextDocumentContent(
+            uri, textDocument.version, params.contentChanges
+        )
     }
 
     override fun didClose(params: DidCloseTextDocumentParams) {
@@ -177,6 +176,13 @@ class RellLanguageServer(
 
         return requestManager.runRead {
             workspaceManager.getDefinitionLocations(fileUri, params.position)
+        }
+    }
+
+    override fun documentSymbol(params: DocumentSymbolParams): CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> {
+        val fileUri = URI(params.textDocument.uri)
+        return requestManager.runRead {
+            workspaceManager.getDocumentSymbols(fileUri)
         }
     }
 }
