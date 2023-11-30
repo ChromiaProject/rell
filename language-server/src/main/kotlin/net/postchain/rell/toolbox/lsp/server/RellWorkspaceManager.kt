@@ -6,9 +6,11 @@ import net.postchain.rell.toolbox.core.indexer.Resource
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
+import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.LocationLink
 import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.SymbolInformation
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import org.eclipse.lsp4j.WorkspaceFolder
 import org.eclipse.lsp4j.jsonrpc.messages.Either
@@ -199,5 +201,11 @@ class RellWorkspaceManager {
         val indexer = getIndexerFor(fileUri)
         val document = openDocuments[fileUri]!!
         return Either.forLeft(rellSymbolService.getSymbolLocations(document, indexer, position))
+    }
+
+    fun getDocumentSymbols(fileUri: URI): List<Either<SymbolInformation, DocumentSymbol>> {
+        val resource = getResource(fileUri) ?: return listOf()
+        val document = openDocuments[fileUri] ?: return listOf()
+        return rellSymbolService.getDocumentSymbols(fileUri, document, resource)
     }
 }
