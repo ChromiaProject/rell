@@ -7,12 +7,14 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import kotlin.io.path.createDirectory
 
 class WorkspaceIndexerAffectedFilesTest {
     @TempDir
     lateinit var tempDir: File
     private lateinit var mainFile: File
     private lateinit var importFileDepth1: File
+    private lateinit var implicitlyImporting: File
 
 
     @BeforeEach
@@ -33,6 +35,25 @@ class WorkspaceIndexerAffectedFilesTest {
             """.trimIndent()
             )
         }
+
+        val submoduleFolder = File(tempDir, "submodule")
+        submoduleFolder.toPath().createDirectory()
+        File(submoduleFolder, "module.rell").apply {
+            writeText(
+                """
+                module;
+                import ^.imported_module.*;
+            """.trimIndent()
+            )
+        }
+
+        implicitlyImporting = File(submoduleFolder, "implicitly_importing.rell").apply {
+            writeText(
+                """
+                fun no_imports_inside_file() {}
+            """.trimIndent()
+            )
+        }
     }
 
     @Test
@@ -40,7 +61,7 @@ class WorkspaceIndexerAffectedFilesTest {
         val workspaceIndexer = WorkspaceIndexer(tempDir.toURI())
         workspaceIndexer.initialFileIndexBuild()
         val files = workspaceIndexer.findAffectedFiles(importFileDepth1.toURI())
-        assertThat(files.size).isEqualTo(2)
+        assertThat(files.size).isEqualTo(4)
         assertThat(files.containsAll(listOf(importFileDepth1.toURI(), mainFile.toURI()))).isTrue()
     }
 

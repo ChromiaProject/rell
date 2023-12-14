@@ -1,6 +1,7 @@
 package net.postchain.rell.toolbox.core.indexer
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import java.io.File
 import java.net.URI
@@ -91,17 +92,27 @@ class WorkspaceIndexer(val workspaceUri: URI) {
         shallowCopy.remove(fileUri)
         var filesToUpdate: MutableSet<URI> = mutableSetOf(fileUri)
 
+        val implicitImports = calculateImplicitImports(shallowCopy)
+
         shallowCopy.forEach { (key, value) ->
-            if (value.imports.isNullOrEmpty()) {
-                //
-            } else {
-                if (value.imports.contains(changedFileResource.rName)) {
-                    filesToUpdate.add(key)
-                }
+            if (value.imports.contains(changedFileResource.rName) ||
+                implicitImports[value.rName]?.contains(changedFileResource.rName) == true
+            ) {
+                filesToUpdate.add(key)
             }
         }
         return filesToUpdate.toSet()
 
+    }
+
+    private fun calculateImplicitImports(resourceMap: Map<URI, Resource>): Map<R_ModuleName, Collection<R_ModuleName>> {
+        val implicitImports: MutableMap<R_ModuleName, Collection<R_ModuleName>> = mutableMapOf()
+        resourceMap.forEach { (key, value) ->
+            if (key.toString().endsWith("/module.rell") && value.rName != null) {
+                implicitImports[value.rName] = value.imports
+            }
+        }
+        return implicitImports
     }
 
     fun addRellFilesUri(): List<URI> {
