@@ -1,6 +1,7 @@
 package net.postchain.rell.toolbox.core.compiler;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.ObjectUtils;
 
@@ -1264,7 +1265,7 @@ public final class AntlrToRell {
             default: {
                 if (node.children != null) {
                     for (var child : node.children) {
-                        if (child != null) {
+                        if (child != null && !(child instanceof ErrorNode)) {
                             if (child instanceof TerminalNode) {
                                 Object a = RellcUtils.token(node);
                                 return RellcUtils.tuple(a);

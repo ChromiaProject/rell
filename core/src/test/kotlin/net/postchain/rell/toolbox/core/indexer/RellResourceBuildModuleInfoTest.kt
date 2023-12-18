@@ -37,7 +37,7 @@ class RellResourceBuildModuleInfoTest {
             sRellFile,
         )
 
-        val errorMessages = filterMessages(rellCompileResult.messages, fileUri)
+        val errorMessages = filterMessages(rellCompileResult!!.messages, fileUri)
         assertThat(errorMessages).isEmpty()
     }
 
@@ -58,7 +58,7 @@ class RellResourceBuildModuleInfoTest {
             sRellFile
         )
 
-        val errorMessages = filterMessages(rellCompileResult.messages, fileUri)
+        val errorMessages = filterMessages(rellCompileResult!!.messages, fileUri)
 
         assertThat(errorMessages.size).isEqualTo(3)
         assertThat(errorMessages).extracting(C_Message::code).containsAll(

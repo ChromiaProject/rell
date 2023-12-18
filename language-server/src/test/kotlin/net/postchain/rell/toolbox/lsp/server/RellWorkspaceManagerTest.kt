@@ -12,6 +12,8 @@ import assertk.assertions.isNotEmpty
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import net.postchain.rell.toolbox.core.indexer.RellIssue
+import net.postchain.rell.toolbox.lsp.references.RellReferenceService
+import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
@@ -30,7 +32,9 @@ class RellWorkspaceManagerTest {
 
     @BeforeEach
     fun setup() {
-        workspaceManager = RellWorkspaceManager()
+        val symbolService = RellSymbolService()
+        val referenceService = RellReferenceService(symbolService)
+        workspaceManager = RellWorkspaceManager(symbolService, referenceService)
         diagnostics.clear()
     }
 
@@ -449,5 +453,17 @@ class RellWorkspaceManagerTest {
         val candidate = workspaceManager.getDefinitionLocations(importerFileUri, Position(1, 11))
         assertThat(candidate.left!![0].uri).isEqualTo(importerFile.toString())
         assertThat(candidate.left!![0].range.start).isEqualTo(Position(0, 1))
+    }
+
+    @Test
+    fun `Find all references`() {
+        val classLoader = javaClass.getClassLoader()
+        val workspaceFile = File(classLoader.getResource("rellReferences")!!.file)
+        val mainFile = File(workspaceFile, "src/main.rell")
+        val workspaceFolders = listOf(WorkspaceFolder(workspaceFile.toURI().toString()))
+        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        workspaceManager.didOpen(mainFile.toURI(), 1, mainFile.readText())
+        val references = workspaceManager.getReferenceLocations(mainFile.toURI(), Position(2, 16))
+        assertThat(references).hasSize(3)
     }
 }

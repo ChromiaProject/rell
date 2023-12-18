@@ -37,7 +37,6 @@ dependencies {
     implementation(libs.antlr)
     implementation(libs.bundles.rell)
     implementation(libs.bundles.koin)
-    implementation(libs.bundles.rell)
     implementation(libs.bundles.jackson)
     implementation(libs.bundles.logging)
 

@@ -22,6 +22,7 @@ import org.eclipse.lsp4j.InitializedParams
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.LocationLink
 import org.eclipse.lsp4j.PublishDiagnosticsParams
+import org.eclipse.lsp4j.ReferenceParams
 import org.eclipse.lsp4j.SemanticTokens
 import org.eclipse.lsp4j.SemanticTokensParams
 import org.eclipse.lsp4j.SymbolInformation
@@ -183,6 +184,13 @@ class RellLanguageServer(
         val fileUri = URI(params.textDocument.uri)
         return requestManager.runRead {
             workspaceManager.getDocumentSymbols(fileUri)
+        }
+    }
+
+    override fun references(params: ReferenceParams): CompletableFuture<List<Location>> {
+        val fileUri = URI(params.textDocument.uri)
+        return requestManager.runRead {
+            workspaceManager.getReferenceLocations(fileUri, params.position)
         }
     }
 }

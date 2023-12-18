@@ -48,7 +48,7 @@ log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "lo
 [bundles]
 testcontainers = ["testcontainers-base", "testcintainers-junit"]
 logging = ["oshai", "log4j", "log4j-core"]
-rell = ["rell", "rell-base", "rell-api-base", "rell-tools"]
+rell = ["rell", "rell-base"] # "rell-api-base", "rell-tools"
 lsp4j = ["lsp4j", "lsp4j-debug", "lsp4j-websocket"]
 koin = ["koin-core", "koin-logger"]
 jackson = ["jackson", "jackson-yml", "jackson-kotlin"]

@@ -5,6 +5,7 @@ import net.postchain.rell.toolbox.core.indexer.RellIssue
 import net.postchain.rell.toolbox.core.indexer.Resource
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.editing.Document
+import net.postchain.rell.toolbox.lsp.references.RellReferenceService
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.Location
@@ -18,7 +19,9 @@ import java.io.File
 import java.net.URI
 
 
-class RellWorkspaceManager {
+class RellWorkspaceManager(
+    val rellSymbolService: RellSymbolService,
+    val rellReferenceService: RellReferenceService) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -26,7 +29,7 @@ class RellWorkspaceManager {
     private lateinit var diagnosticsPublisher: (uri: URI, List<RellIssue>) -> Unit
     val indexers: MutableMap<URI, WorkspaceIndexer> = mutableMapOf()
     val openDocuments: MutableMap<URI, Document> = mutableMapOf()
-    val rellSymbolService = RellSymbolService()
+
     private val workspaceFolderUris get() = workspaceFolders.map { URI(it.uri) }
 
     //TODO: Should we have this the contractor or a init{} constructor
@@ -207,5 +210,11 @@ class RellWorkspaceManager {
         val resource = getResource(fileUri) ?: return listOf()
         val document = openDocuments[fileUri] ?: return listOf()
         return rellSymbolService.getDocumentSymbols(fileUri, document, resource)
+    }
+
+    fun getReferenceLocations(fileUri: URI, position: Position?): List<Location> {
+        val indexer = getIndexerFor(fileUri)
+        val document = openDocuments[fileUri] ?: return listOf()
+        return rellReferenceService.getReferenceLocations(fileUri, document, indexer, position)
     }
 }
