@@ -34,7 +34,7 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
         val antlrParseTree = buildParseTreeWithSyntaxErrors(fileContent)
         val ast = buildRellAstWithCompilerErrors(rellCompilerSourcePath, antlrParseTree.first)
         val compilationResult = compileResult(rellCompilerSourcePath, ast.first)
-        val symbolInfo = compilationResult.symbolInfos
+        val symbolInfo = compilationResult?.symbolInfos ?: mapOf()
         val locationInfo = createLocationInfo(symbolInfo)
 
         return Resource(
@@ -44,7 +44,7 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
             workspaceUri,
             ast.first,
             antlrParseTree.second,
-            compilationResult.messages,
+            compilationResult?.messages ?: listOf(),
             symbolInfo,
             locationInfo
         )
@@ -81,7 +81,7 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
     fun buildRellResource(resource: Resource, fileUri: URI): Resource {
         val rellCompilerSourcePath = rellCompilerPaths.createCompilerSourcePath(fileUri)
         val compilationResult = compileResult(rellCompilerSourcePath, resource.ast)
-        val symbolInfo = compilationResult.symbolInfos
+        val symbolInfo = compilationResult?.symbolInfos ?: mapOf()
         val locationInfo = createLocationInfo(symbolInfo)
 
         return Resource(
@@ -91,7 +91,7 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
             workspaceUri,
             resource.ast,
             resource.syntaxErrors,
-            compilationResult.messages,
+            compilationResult?.messages ?: listOf(),
             symbolInfo,
             locationInfo
         )
@@ -99,7 +99,7 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
 
     fun compileResult(
         compilerSrcPath: C_SourcePath, ast: S_RellFile
-    ): IdeCompilationResult {
+    ): IdeCompilationResult? {
         val options = C_CompilerOptions.builder().symbolInfoFile(compilerSrcPath).ide(true).build()
         val commonSourceDir: C_SourceDir = C_SourceDir.diskDir(File(workspaceUri))
         val moduleName = IdeApi.getModuleName(compilerSrcPath, ast)
@@ -110,9 +110,14 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
         val fileMap = ImmutableMap.of(compilerSrcPath, mainFile)
         val selfDir = IdeDirApi.mapDir(fileMap)
 
-        return IdeApi.compile(
-            CompoundSourceDir(selfDir, commonSourceDir), listOf(moduleName), options
-        )
+        return try {
+            IdeApi.compile(
+                CompoundSourceDir(selfDir, commonSourceDir), listOf(moduleName), options
+            )
+        } catch (e: Throwable) {
+            logger.error(e) { "Compilation failed for file: ${compilerSrcPath.str()}" }
+            null
+        }
     }
 
     fun buildParseTreeWithSyntaxErrors(fileContent: String): Pair<RellParser.RuleX_RootParserContext, MutableList<SyntaxError>> {

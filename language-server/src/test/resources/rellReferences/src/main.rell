@@ -1,0 +1,14 @@
+module;
+
+function better_addition(paramA: integer, paramB: integer): integer {
+    val localA = paramA;
+    val localB = paramB;
+
+    val localC = localA + paramA;
+
+    return localC;
+}
+
+function local_reference() {
+    val result = better_addition(4, 6);
+}

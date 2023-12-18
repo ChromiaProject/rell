@@ -1,9 +1,11 @@
 package net.postchain.rell.toolbox.core.compiler
 
+import net.postchain.rell.base.compiler.ast.S_BasicPos
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.utils.ide.IdeFilePath
 import org.antlr.v4.runtime.ParserRuleContext
+import java.util.*
 
 class AntlrPos(val node: ParserRuleContext, val path: C_SourcePath, val idePath: IdeFilePath) : S_Pos() {
 
@@ -21,5 +23,13 @@ class AntlrPos(val node: ParserRuleContext, val path: C_SourcePath, val idePath:
 
     override fun column(): Int {
         return node.start.charPositionInLine + 1
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is AntlrPos && line() == other.line() && column() == other.column() && idePath == other.idePath
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hash(line(), column(), idePath)
     }
 }
