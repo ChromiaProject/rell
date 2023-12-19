@@ -6,12 +6,13 @@ import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.misc.Interval
 import org.antlr.v4.runtime.tree.TerminalNode
 
-class RootFormattableDocument(val formatter: RellFormatter) : FormattableDocument {
+class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions: FormatterOptions) :
+    FormattableDocument {
     private val changes = mutableListOf<Changes>()
 
     override fun append(appendAfterNode: ParserRuleContext?, changeModifier: (Changes) -> Unit) {
         if (appendAfterNode == null) return
-        val change = Changes(appendAfterNode.stop.stopIndex + 1, appendAfterNode.stop.stopIndex + 1)
+        val change = Changes(appendAfterNode.stop.stopIndex + 1, appendAfterNode.stop.stopIndex + 1, formatterOptions)
         changeModifier(change)
         hiddenRegionChangeAppendModifier(change, appendAfterNode.stop)
         changes.add(change)
@@ -19,7 +20,8 @@ class RootFormattableDocument(val formatter: RellFormatter) : FormattableDocumen
 
     override fun append(appendAfterNode: TerminalNode?, changeModifier: (Changes) -> Unit) {
         if (appendAfterNode == null) return
-        val change = Changes(appendAfterNode.symbol.stopIndex + 1, appendAfterNode.symbol.stopIndex + 1)
+        val change =
+            Changes(appendAfterNode.symbol.stopIndex + 1, appendAfterNode.symbol.stopIndex + 1, formatterOptions)
         changeModifier(change)
         hiddenRegionChangeAppendModifier(change, appendAfterNode.symbol)
         changes.add(change)
@@ -28,7 +30,7 @@ class RootFormattableDocument(val formatter: RellFormatter) : FormattableDocumen
 
     override fun prepend(prependBeforeNode: ParserRuleContext?, changeModifier: (Changes) -> Unit) {
         if (prependBeforeNode == null) return
-        val change = Changes(prependBeforeNode.start.startIndex, prependBeforeNode.start.startIndex)
+        val change = Changes(prependBeforeNode.start.startIndex, prependBeforeNode.start.startIndex, formatterOptions)
         changeModifier(change)
         hiddenRegionChangePrependModifier(change, prependBeforeNode.start)
         changes.add(change)
@@ -36,7 +38,7 @@ class RootFormattableDocument(val formatter: RellFormatter) : FormattableDocumen
 
     override fun prepend(prependBeforeNode: TerminalNode?, changeModifier: (Changes) -> Unit) {
         if (prependBeforeNode == null) return
-        val change = Changes(prependBeforeNode.symbol.startIndex, prependBeforeNode.symbol.startIndex)
+        val change = Changes(prependBeforeNode.symbol.startIndex, prependBeforeNode.symbol.startIndex, formatterOptions)
         changeModifier(change)
         hiddenRegionChangePrependModifier(change, prependBeforeNode.symbol)
         changes.add(change)
@@ -72,7 +74,14 @@ class RootFormattableDocument(val formatter: RellFormatter) : FormattableDocumen
         }
 
         if (interiorStartToken != null && interiorStopToken != null) {
-            changes.add(Changes(interiorStartToken.startIndex, interiorStopToken.stopIndex, blockIndent = true))
+            changes.add(
+                Changes(
+                    interiorStartToken.startIndex,
+                    interiorStopToken.stopIndex,
+                    formatterOptions,
+                    blockIndent = true
+                )
+            )
         }
     }
 
@@ -85,7 +94,14 @@ class RootFormattableDocument(val formatter: RellFormatter) : FormattableDocumen
         val interiorStopToken = formatter.previousSemanticRegion(nodeStopToken)
 
         if (interiorStartToken != null && interiorStopToken != null) {
-            changes.add(Changes(interiorStartToken.startIndex, interiorStopToken.stopIndex, blockIndent = true))
+            changes.add(
+                Changes(
+                    interiorStartToken.startIndex,
+                    interiorStopToken.stopIndex,
+                    formatterOptions,
+                    blockIndent = true
+                )
+            )
         }
     }
 
@@ -96,7 +112,14 @@ class RootFormattableDocument(val formatter: RellFormatter) : FormattableDocumen
 
         val interiorStartToken = formatter.nextSemanticRegion(nodeStartToken)
         if (interiorStartToken != null) {
-            changes.add(Changes(interiorStartToken.startIndex, nodeStopToken.stopIndex, blockIndent = true))
+            changes.add(
+                Changes(
+                    interiorStartToken.startIndex,
+                    nodeStopToken.stopIndex,
+                    formatterOptions,
+                    blockIndent = true
+                )
+            )
         }
     }
 
@@ -121,12 +144,14 @@ class RootFormattableDocument(val formatter: RellFormatter) : FormattableDocumen
             val interval = Interval.of(resolvedChange.startOffset, resolvedChange.stopOffset)
             val indentCount = countIndents(interval, blockIndents)
             if (indentCount > 0) {
-                val indentText = " ".repeat(4 * indentCount)
                 var replacementText = resolvedChange.getTextChanges()
-                val lastNewLineIndex = replacementText.lastIndexOf("\n")
+                val lastNewLineIndex = replacementText.lastIndexOf(formatterOptions.newLineString)
                 if (lastNewLineIndex >= 0 && resolvedChange.newLineCount != null) {
                     val replacement = replacementText.substring(lastNewLineIndex + 1, replacementText.length)
-                    replacementText = "\n".repeat(resolvedChange.newLineCount!!) + replacement + indentText
+                    replacementText =
+                        formatterOptions.newLineString.repeat(resolvedChange.newLineCount!!) + replacement + getIndentText(
+                            indentCount
+                        )
                     resolvedChange.setTextChanges(replacementText)
                 }
             }
@@ -145,6 +170,14 @@ class RootFormattableDocument(val formatter: RellFormatter) : FormattableDocumen
             }
         }
         return count
+    }
+
+    private fun getIndentText(indentCount: Int): String {
+        return if (formatterOptions.insertSpaces) {
+            " ".repeat(formatterOptions.tabSize * indentCount)
+        } else {
+            "\t".repeat(indentCount)
+        }
     }
 
     private fun hiddenRegionChangeAppendModifier(change: Changes, appendAfterToken: Token) {

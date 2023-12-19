@@ -10,7 +10,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
 abstract class RellAbstractFormatter(
     val parser: RellParser,
     private val source: String,
-    private val formatterRequest: FormatterRequest
+    private val formatterOptions: FormatterOptions
 ) {
 
     fun formatExprTailMultiline(
@@ -103,7 +103,7 @@ abstract class RellAbstractFormatter(
         val currentExprLineNr = currentExpr.stop.line
         val isLineSeparated = previousExprLineNr != currentExprLineNr
 
-        return if (getLineLength(currentExpr) > formatterRequest.maxLineWidth || isLineSeparated) {
+        return if (getLineLength(currentExpr) > formatterOptions.maxLineWidth || isLineSeparated) {
             true
         } else {
             false
@@ -114,7 +114,7 @@ abstract class RellAbstractFormatter(
         val previousExprLineNr = previousExp.line
         val currentExprLineNr = currentExpr.line
         val isLineSeperated = previousExprLineNr != currentExprLineNr
-        return if (getLineLength(currentExpr) > formatterRequest.maxLineWidth || isLineSeperated) {
+        return if (getLineLength(currentExpr) > formatterOptions.maxLineWidth || isLineSeperated) {
             true
         } else {
             false
@@ -130,11 +130,7 @@ abstract class RellAbstractFormatter(
             val closingLine = bracketClosing.symbol.line
             isLineSeperated = openingLine != closingLine
         }
-        return if (getLineLength(methodDef) > formatterRequest.maxLineWidth || isLineSeperated) {
-            true
-        } else {
-            false
-        }
+        return getLineLength(methodDef) > formatterOptions.maxLineWidth || isLineSeperated
     }
 
     fun getLineLength(node: ParserRuleContext): Int {
@@ -165,9 +161,7 @@ abstract class RellAbstractFormatter(
             val defEndLine = args[nrOfArgs - 1].stop.line
             isMultiLine = defStartLine != defEndLine
         }
-        return if (length > formatterRequest.maxLineWidth || isMultiLine) {
-            true
-        } else false
+        return length > formatterOptions.maxLineWidth || isMultiLine
     }
 
     fun formatParametersType(params: List<RellParser.RuleX_FormalParameterContext>, doc: FormattableDocument) {

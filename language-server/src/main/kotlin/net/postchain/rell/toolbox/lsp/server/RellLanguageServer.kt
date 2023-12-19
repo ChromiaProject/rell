@@ -14,6 +14,7 @@ import org.eclipse.lsp4j.DidCloseTextDocumentParams
 import org.eclipse.lsp4j.DidOpenTextDocumentParams
 import org.eclipse.lsp4j.DidSaveTextDocumentParams
 import org.eclipse.lsp4j.DocumentFormattingParams
+import org.eclipse.lsp4j.DocumentRangeFormattingParams
 import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.DocumentSymbolParams
 import org.eclipse.lsp4j.FileChangeType
@@ -195,6 +196,13 @@ class RellLanguageServer(
         val fileUri = URI(params.textDocument.uri)
         return requestManager.runRead {
             formattingManager.format(fileUri, params.options)
+        }
+    }
+
+    override fun rangeFormatting(params: DocumentRangeFormattingParams): CompletableFuture<List<TextEdit>> {
+        val fileUri = URI(params.textDocument.uri)
+        return requestManager.runRead {
+            formattingManager.rangeFormat(fileUri, params.range, params.options)
         }
     }
 

@@ -10,6 +10,7 @@ enum class ChangePriority(val priority: Int) {
 class Changes(
     var startOffset: Int,
     var stopOffset: Int,
+    val formatterOptions: FormatterOptions,
     var priority: ChangePriority = ChangePriority.DEFAULT,
     var indentationIncrease: Int? = null,
     var newLineDefault: Int? = null,
@@ -72,11 +73,16 @@ class Changes(
         }
 
         if (newLineCount != null && newLineCount!! > 0) {
-            textChange = textChange.plus("\n".repeat(newLineCount!!))
+            textChange = textChange.plus(formatterOptions.newLineString.repeat(newLineCount!!))
         }
 
         if (indentationIncrease != null) {
-            textChange = textChange.plus(" ".repeat(4 * indentationIncrease!!))
+            val indentationString = if (formatterOptions.insertSpaces) {
+                " ".repeat(formatterOptions.tabSize * indentationIncrease!!)
+            } else {
+                "\t".repeat(indentationIncrease!!)
+            }
+            textChange = textChange.plus(indentationString)
         }
 
         return textChange

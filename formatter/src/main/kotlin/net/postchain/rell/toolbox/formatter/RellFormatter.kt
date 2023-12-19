@@ -9,7 +9,7 @@ import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.ParserRuleContext
 
-class RellFormatter(parser: RellParser, source: String, formatterRequest: FormatterRequest) :
+class RellFormatter(parser: RellParser, source: String, formatterRequest: FormatterOptions) :
     RellAbstractFormatter(parser, source, formatterRequest) {
 
     private val logger = KotlinLogging.logger {}
@@ -677,19 +677,19 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
 
     companion object {
 
-        fun formatString(source: String, formatterRequest: FormatterRequest): String {
+        fun formatString(source: String, formatterRequest: FormatterOptions): String {
             val formatterChanges = getFormattingChanges(source, formatterRequest)
             return applyTextReplacements(source, formatterChanges)
         }
 
-        fun getFormattingChanges(source: String, formatterRequest: FormatterRequest): List<TextReplacement> {
+        fun getFormattingChanges(source: String, formatterRequest: FormatterOptions): List<TextReplacement> {
             val input: CharStream = CharStreams.fromString(source)
             val lexer = RellLexer(input)
             val tokens = CommonTokenStream(lexer)
             val parser = RellParser(tokens)
 
             val formatter = RellFormatter(parser, source, formatterRequest)
-            val doc = RootFormattableDocument(formatter)
+            val doc = RootFormattableDocument(formatter, formatterRequest)
             formatter.format(parser.ruleX_RootParser(), doc)
             val replacements = doc.createReplacements()
             return replacements
