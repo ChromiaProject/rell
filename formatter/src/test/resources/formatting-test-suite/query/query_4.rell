@@ -1,0 +1,12 @@
+module;
+
+query get_parents(org_number: text, skip: integer, take: integer): PagedResponse {
+    val parents = parent_event  @*  {   .company.org_number     ==   org_number     }   (
+            @sort_desc  @omit    $  ,
+       
+        gtv.from_json(.payload)
+    )offset
+     skip            limit 
+     take   
+     + 1;
+}

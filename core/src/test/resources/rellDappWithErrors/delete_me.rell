@@ -1,0 +1,15 @@
+module;
+
+/*NOW?*/
+entity foo {    
+    name;
+}
+
+entity bar {    
+    name;    
+    age: integer;
+}
+
+entity foobar (rae) {    
+    name;
+}

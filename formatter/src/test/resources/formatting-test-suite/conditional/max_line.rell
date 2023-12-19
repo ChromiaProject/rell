@@ -1,0 +1,83 @@
+
+// Seperate logical operators with line break when of control statements when line length is above max line width
+// or when user defines them with line break
+function showMaxLineWidthControll() {
+    if (
+        "This Is A Long String To Go Above Max Line Width" == "This Is A Long String To Go Above Max Line Width"
+        and
+        1000 == 1000
+        and
+        "a" == "a"
+    ) {}
+
+    if (
+        true
+        and
+        false
+    ) {}
+
+    while (
+        "This Is A Long String To Go Above Max Line Width" == "This Is A Long String To Go Above Max Line Width"
+        and
+        1000 == 1000
+        and
+        "a" == "a"
+    ) {}
+
+    when (attribute.type) {
+        // User defined line seperation stays seperated
+        type.boolean -> Boolean
+            .create_value(
+                i,
+                attribute_name,
+                boolean.from_gtv(value),
+                access
+            );
+        // Too long length of line, gets line seperation
+        // type.byte_array -> ByteArray.create_value(input1, attribute_name, a_method_call_as_arg(value), access, "A input to make the this case above 120 in line width");
+        type.byte_array -> ByteArray
+            .create_value(
+                input1,
+                attribute_name,
+                a_method_call_as_arg(value),
+                access,
+                "A input to make the this case above 120 in line width"
+            );
+        // If argument is to loong, seperate it further if possible, here an example of nester line seperation of nested method call
+        // type.decimal -> Decimal.create_value(i, attribute_name, from_gtv("First a Argument call", "A very long input to make this part of the token to be above the lenght of the defined max line width"), access);
+        type.decimal -> Decimal
+            .create_value(
+                i,
+                attribute_name,
+                from_gtv(
+                    "First a Argument call",
+                    "A very long input to make this part of the token to be above the lenght of the defined max line width"
+                ),
+                access
+            );
+        // Line seperation on method/value chaining if that argument itself is too long.
+        // User can also choose how to seperate expressions
+        // type.instance -> Instance.create_value(i, attribute_name.we_can_also.seperate_on.chaining_methods_or_values.if_this_token_chaining.is_too_long.but_it_takes_quite_a_lot_to_of_text.to_get_above_max_line_width.when_it_is_set_to_120_as_default, instance.from_gtv(value), access);
+        type.instance -> Instance
+            .create_value(
+                i,
+                attribute_name
+                    .we_can_also
+                    .seperate_on
+                    .chaining_methods_or_values
+                    .if_this_token_chaining
+                    .is_too_long
+                    .but_it_takes_quite_a_lot_of_text
+                    .to_get_above_max_line_width
+                    .when_it_is_set_to_120_as_default,
+                user_seperation.user_can_also.seperate_on.chaining_methods_or_values
+                    .if_this_token_chaining.is_too_long
+                    .but_it_takes_quite_a_lot_of_text
+                    .to_get_above_max_line_width
+                    .when_it_is_set_to_120_as_default,
+                instance.from_gtv(value),
+                access
+            );
+        else -> require(false, "Unimplemented path");
+    }
+}

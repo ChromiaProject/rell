@@ -1,0 +1,25 @@
+function showIfControll() {
+    // If with code block, else without code block
+    if (2 > 1) {
+
+        var is = true;
+    } else var is = false;
+
+    // If / Else with code block
+    if (2 > 1) {
+        var is2 = true;
+    } else {
+        var is2 = false;
+    }
+
+    // Else If
+    if (true) {
+        var is3 = true;
+    } else if (false) {
+        var is3 = false;
+    }
+
+    // If expression
+    var max = if (2 >= 1) true else false;
+    return "end of function";
+}

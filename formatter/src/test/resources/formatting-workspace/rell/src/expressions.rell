@@ -1,0 +1,124 @@
+module;
+
+import ^.data_types.*;
+
+function foo() {
+    val user1 = user1 @? { } ( @group @sort .salary, @sum 1 );
+
+    val user4 = user4 @* {
+        .first_name == "",
+        .last_name == "",
+        .salary == 2,
+        .age == 2
+    } (
+        @sort .salary,
+        .first_name,
+        .last_name,
+        .age
+    );
+}
+
+function varVal() {
+    var var1 = "var1";
+    var var2: integer = 2;
+
+    ++var2;
+
+    var2 = var2 + 1;
+
+    val (a, b, c) = (1, 2, 3);
+    val ((d, e), f, g) = ((1, 2), 2, 3);
+
+    val h = 2 / 6;
+    val i = 2 == 4;
+    val j: integer = 2 * 2;
+    val k = true and false;
+}
+
+function exprHeader() {
+    val a = map<text, text>();
+
+    val b = ["a": 2, "b": 1];
+
+    val c = (z = 2);
+
+    val d = [
+        1,
+        2,
+        3,
+        4
+    ];
+    val e = [1, 2, 3];
+
+    val f = struct<mutable user1>(first_name = "name", salary = 1);
+    val g = struct<user4>(
+        first_name = "name",
+        last_name = "name",
+        age = 99,
+        salary = 1
+    );
+}
+
+namespace bar {
+    val a = 2 / 6;
+    val b = 2 == 4;
+    val c: integer = 2 * 2;
+    val d = true and false;
+
+    function foo() {
+        var a = 1;
+        ++a;
+        a = a + 2 - 1;
+        var b = [
+            1,
+            2,
+            3,
+            4
+        ];
+        var c = 99 not in b;
+    }
+}
+
+//Uses line break formatting when line length is above maxLineWidth (120 default)
+// or when user already defined expressions with line break
+namespace maxLineWidth {
+    function foo() {
+        var a = [1, 2, 3, 4];
+
+        var b = [
+            1,
+            2
+        ];
+
+        // var c = ["This is a very long string to make this line length be above 120", "second value to make this line > 120"];
+        var c = [
+            "This is a very long string to make this line length be above 120",
+            "second value to make this line > 120"
+        ];
+
+        // Line length above 120
+        // val user4 = user4 @* {.first_name == "",.last_name == "",.salary == 2,.age == 2} (@sort .salary,.first_name,.last_name,.age);
+        val user4a = user4 @* {
+            .first_name == "",
+            .last_name == "",
+            .salary == 2,
+            .age == 2
+        } (
+            @sort .salary,
+            .first_name,
+            .last_name,
+            .age
+        );
+
+        val user4b = user4 @* { .first_name == "", .age == 2 } ( @sort .salary, .first_name );
+
+        // Line break remains if user defined expression using line break
+        val user4c = user4 @* {
+            .first_name == "",
+            .age == 2
+        } (
+            @sort .salary,
+            .first_name
+        );
+    }
+}

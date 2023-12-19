@@ -1,0 +1,4 @@
+enum account_type {
+    single_key_account,
+    multi_sig_account
+}

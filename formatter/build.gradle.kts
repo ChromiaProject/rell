@@ -1,4 +1,5 @@
 plugins {
+    id("java")
     kotlin("jvm") version "1.9.10"
     application
 }
@@ -31,23 +32,21 @@ repositories {
     }
 }
 
-
 dependencies {
-    implementation(libs.bundles.lsp4j)
+    implementation(libs.antlr)
     implementation(libs.bundles.logging)
-    implementation(libs.bundles.koin)
-    implementation(project(":core"))
-    implementation(project(":formatter"))
-    implementation(libs.bundles.rell)
-
-    testImplementation(libs.bundles.testcontainers)
     testImplementation(libs.bundles.testing)
+    implementation(project(":core"))
 }
 
 tasks.test {
     useJUnitPlatform()
 }
 
+tasks.processTestResources {
+    dependsOn(tasks.compileTestKotlin)
+}
+
 application {
-    mainClass.set("net.postchain.rell.toolbox.lsp.MainKt")
+    mainClass.set("net.postchain.rell.toolbox.formatter.MainKt")
 }

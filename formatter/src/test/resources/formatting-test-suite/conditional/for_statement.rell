@@ -1,0 +1,6 @@
+function showForControll() {
+    val numbers = [1, 2, 3];
+    for (number in numbers) {
+        val oneHigher = number + 1;
+    }
+}

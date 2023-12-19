@@ -1,0 +1,4 @@
+function exprHeader() {
+    val f = struct
+<   mutable  user1      >   (   first_name = "name" ,  salary =   1   )    ;
+}

@@ -1,0 +1,11 @@
+function filter(
+
+    values: list<integer>,
+    predicate:
+    (integer) -> boolean)      :      list<integer>
+
+
+    {
+
+        return values @* { predicate($) };
+}

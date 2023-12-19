@@ -1,0 +1,19 @@
+query foo() {return 
+"2";}
+
+query foo2() 
+{return         "2"     
+;}
+
+query foo3() 
+{
+    
+
+
+
+
+
+return         "2"     
+;}
+
+

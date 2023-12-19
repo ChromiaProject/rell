@@ -1,0 +1,38 @@
+module;
+
+import ^.data_types.*;
+
+operation typedOperation(arg1: integer, arg2: text) {
+    val val1 = 1;
+    val val2 = "val2";
+}
+
+//Sets arguments on new line when operation definition is above maxLineWidth (120 standard)
+//operation maxLineWidthOperaton(arg1: integer,arg2: text,arg3: text,arg4: integer,extraLongArgument1: text,extraLongArgument2: text) {
+operation maxLineWidthOperation(
+arg1: integer,
+arg2: text,
+arg3: text,
+arg4: integer,
+extraLongArgument1: text,
+extraLongArgument2: text
+) {
+    val val1 = 1;
+    val val2 = "val2";
+}
+
+//Arguments of operation remains on new line if they are defined by the user with line seperator
+//even though line width is smaller than max line width
+operation multiLineUserDefinedOperation(
+arg1: integer,
+arg2: text
+) {
+    val val1 = 1;
+    val val2 = "val2";
+}
+
+operation multiLineUserDefinedSingleArg(
+arg1: integer
+) {
+    val foo = "foo";
+}

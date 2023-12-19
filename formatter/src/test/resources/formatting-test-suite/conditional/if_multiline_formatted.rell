@@ -1,0 +1,7 @@
+function a() {
+    if (
+        true
+        and
+        false
+    ) {}
+}

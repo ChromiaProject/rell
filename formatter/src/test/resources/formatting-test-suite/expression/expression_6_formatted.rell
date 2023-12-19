@@ -1,0 +1,50 @@
+operation defaultoperation() {
+    val val1 = 1;
+    val val2 = "val2";
+
+    create user1 ( first_name = "name", salary = 1 );
+    create user4 (
+        first_name = "name",
+        last_name = "last",
+        salary = 1,
+        age = 1
+    )      
+     ;
+
+    create single_field (
+        name = "A long string to have a single line just above max line width........................."
+    );
+
+    update user1 @? { .first_name == "Chromia", .salary == 0 } ( salary = 100 );
+    update user4 @ {
+        .first_name == "Chromia",
+        .last_name == "last",
+        .salary == 1,
+        .age == 100
+    } (
+        first_name = "name",
+        last_name = "last",
+        salary = 1,
+        age = 1
+    );
+    update single_field @ {
+        .name == "A string to make single line equal to max line width.........."
+    } (
+        name = "2"
+    );
+
+    delete user1 @* { .first_name == "name" };
+    delete user4 @? {
+        .first_name == "Chromia",
+        .last_name == "last",
+        .salary == 1,
+        .age == 100
+    };
+    delete single_field @ {
+        .name == "A long string to have a single value just above max line width..................."
+    };
+
+    delete single_field @ {
+        .name == "A short string"
+    };
+}

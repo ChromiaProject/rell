@@ -1,0 +1,46 @@
+module;
+
+object event_stats {
+    mutable event_count: integer = 0;
+    last_event: text = 'n/a';
+}
+
+struct user_struct {
+    name: text;
+    address: text;
+    mutable balance: integer = 0;
+}
+
+entity user1 {
+    first_name: text;
+    key mutable salary: integer;
+}
+
+@log
+entity user2 {
+    key first_name, last_name;
+    first_name: text;
+    last_name: text;
+}
+
+entity user3 {
+    key first_name: text, last_name: text;
+    salary: integer;
+}
+
+entity user4 {
+    mutable salary: integer;
+    mutable first_name: text;
+    mutable last_name: text;
+    mutable age: integer;
+}
+
+entity single_field {
+    mutable name: text;
+}
+
+enum currency {
+    USD,
+    EUR,
+    GBP,
+}
