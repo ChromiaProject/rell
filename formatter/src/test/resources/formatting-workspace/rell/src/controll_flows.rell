@@ -1,0 +1,163 @@
+module;
+
+function showIfControll() {
+    // If with code block, else without code block
+    if (2 > 1) {
+        var is = true;
+    } else var is = false;
+
+    // If / Else with code block
+    if (2 > 1) {
+        var is2 = true;
+    } else {
+        var is2 = false;
+    }
+
+    // Else If
+    if (true) {
+        var is3 = true;
+    } else if (false) {
+        var is3 = false;
+    }
+
+    // If expression
+    var max = if (2 >= 1) true else false;
+    return "end of function";
+}
+
+namespace foo {
+    function showWhileControll() {
+        var i = 1;
+
+        while (i <= 5) {
+            var j = 0;
+            if (j == 3) break;
+            while (j < 4) {
+                j++;
+                break;
+            }
+            i++;
+        }
+    }
+}
+
+function showForControll() {
+    val numbers = [1, 2, 3];
+    for (number in numbers) {
+        val oneHigher = number + 1;
+    }
+}
+
+function showWhenControll1(x: integer) {
+    when (x) {
+        1 -> return 'One';
+        2, 3, 34 -> return 'Few';
+        else -> {
+            val res = 'Many: ' + x;
+            return res;
+        }
+    }
+}
+
+function showWhenControll2() {
+    val x = 5;
+
+    val y = when (true) {
+        x == 1 -> 'One';
+        x >= 2 and x <= 7 -> 'Several';
+        x == 11, x == 111 -> 'Magic number';
+        x > 1000 -> 'Special case';
+        else -> 'Unknown';
+    };
+
+    when {
+        x == 1 -> return 'One';
+        x >= 2 and x <= 7 -> return 'Several';
+        x == 11, x == 111 -> return 'Magic number';
+        x > 1000 -> return 'Special case';
+        else -> return 'Unknown';
+    }
+}
+
+// Seperate logical operators with line break when of control statements when line length is above max line width
+// or when user defines them with line break
+function showMaxLineWidthControll() {
+    if (
+        "This Is A Long String To Go Above Max Line Width" == "This Is A Long String To Go Above Max Line Width"
+        and
+        1000 == 1000
+        and
+        "a" == "a"
+    ) {}
+
+    if (
+        true
+        and
+        false
+    ) {}
+
+    while (
+        "This Is A Long String To Go Above Max Line Width" == "This Is A Long String To Go Above Max Line Width"
+        and
+        1000 == 1000
+        and
+        "a" == "a"
+    ) {}
+
+    when (attribute.type) {
+        // User defined line seperation stays seperated
+        type.boolean -> Boolean
+            .create_value(
+                i,
+                attribute_name,
+                boolean.from_gtv(value),
+                access
+            );
+        // Too long length of line, gets line seperation
+        // type.byte_array -> ByteArray.create_value(input1, attribute_name, a_method_call_as_arg(value), access, "A input to make the this case above 120 in line width");
+        type.byte_array -> ByteArray
+            .create_value(
+                input1,
+                attribute_name,
+                a_method_call_as_arg(value),
+                access,
+                "A input to make the this case above 120 in line width"
+            );
+        // If argument is to loong, seperate it further if possible, here an example of nester line seperation of nested method call
+        // type.decimal -> Decimal.create_value(i, attribute_name, from_gtv("First a Argument call", "A very long input to make this part of the token to be above the lenght of the defined max line width"), access);
+        type.decimal -> Decimal
+            .create_value(
+                i,
+                attribute_name,
+                from_gtv(
+                    "First a Argument call",
+                    "A very long input to make this part of the token to be above the lenght of the defined max line width"
+                ),
+                access
+            );
+        // Line seperation on method/value chaining if that argument itself is too long.
+        // User can also choose how to seperate expressions
+        // type.instance -> Instance.create_value(i, attribute_name.we_can_also.seperate_on.chaining_methods_or_values.if_this_token_chaining.is_too_long.but_it_takes_quite_a_lot_to_of_text.to_get_above_max_line_width.when_it_is_set_to_120_as_default, instance.from_gtv(value), access);
+        type.instance -> Instance
+            .create_value(
+                i,
+                attribute_name
+                    .we_can_also
+                    .seperate_on
+                    .chaining_methods_or_values
+                    .if_this_token_chaining
+                    .is_too_long
+                    .but_it_takes_quite_a_lot_of_text
+                    .to_get_above_max_line_width
+                    .when_it_is_set_to_120_as_default,
+                user_seperation.user_can_also.seperate_on.chaining_methods_or_values
+                    .if_this_token_chaining.is_too_long
+                    .but_it_takes_quite_a_lot_of_text
+                    .to_get_above_max_line_width
+                    .when_it_is_set_to_120_as_default,
+                instance.from_gtv(value),
+                access
+            );
+        else -> require(false, "Unimplemented path");
+    }
+}

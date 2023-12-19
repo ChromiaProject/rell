@@ -1,0 +1,136 @@
+package net.postchain.rell.toolbox.formatter
+
+enum class ChangePriority(val priority: Int) {
+    HIGH(1),
+    DEFAULT(0),
+    LOW(-1),
+    SUPER_HIGH(2)
+}
+
+class Changes(
+    var startOffset: Int,
+    var stopOffset: Int,
+    var priority: ChangePriority = ChangePriority.DEFAULT,
+    var indentationIncrease: Int? = null,
+    var newLineDefault: Int? = null,
+    var newLineMax: Int? = null,
+    var newLineMin: Int? = null,
+    var space: String? = null,
+    var previousHiddenText: String? = null,
+    val blockIndent: Boolean = false,
+    var indentedText: String? = null,
+    var newLineCount: Int? = null
+) {
+
+    fun setNewLines(newLines: Int) {
+        setNewLines(newLines, newLines, newLines)
+    }
+
+    fun setNewLines(minNewLines: Int, defaultNewLines: Int, maxNewLines: Int) {
+        newLineMin = minNewLines
+        newLineDefault = defaultNewLines
+        newLineMax = maxNewLines
+    }
+
+    fun noSpace() {
+        setSpaces("")
+    }
+
+    fun oneSpace() {
+        setSpaces(" ")
+    }
+
+    fun setSpaces(spaces: String) {
+        space = spaces
+    }
+
+    fun superHighPriority() {
+        priority = ChangePriority.SUPER_HIGH
+    }
+
+    fun highPriority() {
+        priority = ChangePriority.HIGH
+    }
+
+    fun indent(indentation: Int? = null) {
+        val inc = indentationIncrease
+        indentationIncrease = if (inc == null) 1 else inc + 1
+        if (indentation != null) {
+            indentationIncrease = indentationIncrease?.plus(indentation)
+        }
+    }
+
+    fun getTextChanges(): String {
+        if (indentedText != null) {
+            return indentedText!!
+        }
+        newLineCount = calculateNewLines()
+
+        var textChange = ""
+        if (space != null) {
+            textChange = textChange.plus(space)
+        }
+
+        if (newLineCount != null && newLineCount!! > 0) {
+            textChange = textChange.plus("\n".repeat(newLineCount!!))
+        }
+
+        if (indentationIncrease != null) {
+            textChange = textChange.plus(" ".repeat(4 * indentationIncrease!!))
+        }
+
+        return textChange
+    }
+
+    fun calculateNewLines(): Int? {
+        val hiddenRegionNewLines = previousHiddenText?.count { it == '\n' } ?: return newLineDefault
+
+        return if (newLineMax != null && hiddenRegionNewLines >= newLineMax!!) {
+            newLineMax
+        } else if (newLineMin != null && hiddenRegionNewLines < newLineMin!!) {
+            newLineMin
+        } else {
+            newLineDefault
+        }
+    }
+
+    private fun <T> merge(first: T?, second: T?, strategy: Int, propertyname: String): T? {
+        if (first != null && second != null) {
+            if (first == second || strategy < 0) {
+                return first
+            }
+            if (strategy > 0) {
+                return second
+            }
+            val message = "Conflicting values for '$propertyname': '$first' and '$second'."
+            throw RellFormatterException(message)
+        }
+        return first ?: second
+    }
+
+    fun mergeValuesFrom(other: Changes) {
+        val strategy = other.priority.priority.compareTo(priority.priority)
+        space = merge(space, other.space, strategy, "space")
+        newLineMin = merge(newLineMin, other.newLineMin, strategy, "newLineMin")
+        newLineDefault = merge(newLineDefault, other.newLineDefault, strategy, "newLineDefault")
+        newLineMax = merge(newLineMax, other.newLineMax, strategy, "newLineMax")
+        priority = merge(priority, other.priority, strategy, "priority") ?: ChangePriority.DEFAULT
+
+        if (indentationIncrease != null && other.indentationIncrease != null) {
+            indentationIncrease = indentationIncrease!! + other.indentationIncrease!!
+        } else {
+            indentationIncrease = if (indentationIncrease != null) indentationIncrease else other.indentationIncrease
+        }
+
+        startOffset = Math.min(startOffset, other.startOffset)
+        stopOffset = Math.max(stopOffset, other.stopOffset)
+    }
+
+    fun newLine() {
+        setNewLines(1)
+    }
+
+    fun setTextChanges(indentedText: String?) {
+        this.indentedText = indentedText
+    }
+}

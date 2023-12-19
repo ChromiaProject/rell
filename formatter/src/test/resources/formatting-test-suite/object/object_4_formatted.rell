@@ -1,0 +1,8 @@
+object foo {
+    a: integer = 2;
+    a: integer = 2;
+    a: integer = 2;
+    a: integer = 2;
+    a: integer = 2;
+    a: integer = 2;
+}

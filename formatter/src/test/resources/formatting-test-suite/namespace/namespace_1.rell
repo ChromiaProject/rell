@@ -1,0 +1,8 @@
+namespace ns {
+    val a = 2;
+val b = 2;
+
+            val c = 2;
+
+    function foo() {val b = 2;
+        return "";}}

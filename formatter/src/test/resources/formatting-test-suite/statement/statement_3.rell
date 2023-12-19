@@ -1,0 +1,11 @@
+function foo() {
+        var a = 
+        [   1,  2 ,  3 ,  4 ];
+
+        var b = [
+                    1,
+                    2
+        ];
+
+        var c = ["This is a very long string to make this line length be above 120", "second value to make this line > 120"];
+}

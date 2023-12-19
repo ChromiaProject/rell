@@ -1,0 +1,1 @@
+namespace ns2 {function a()=2; val b=2; val c    = 2; query d() = "foo";}

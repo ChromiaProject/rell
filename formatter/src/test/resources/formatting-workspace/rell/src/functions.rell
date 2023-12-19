@@ -1,0 +1,45 @@
+abstract module;
+
+function typedFunction(arg1: integer, arg2: text): text {
+    val val1 = 1;
+    val val2 = "val2";
+    return val2;
+}
+
+//Sets arguments on new line when function definition is above maxLineWidth (120 standard)
+//function maxLineWidthFunction(arg1: integer, arg2: text, arg3: text, arg4: integer,extraLongArgument1: integer, extraLongArgument2: integer): text {
+function maxLineWidthFunction(
+    arg1: integer,
+    arg2: text,
+    arg3: text,
+    arg4: integer,
+    extraLongArgument1: text,
+    extraLongArgument2: text
+): text {
+    val val1 = 1;
+    val val2 = "val2";
+    return val2;
+}
+
+//Arguments of function remains on new line if they are defined by the user with line seperator
+//even though line width is smaller than max line width
+function multiLineUserDefinedFunction(
+    arg1: integer,
+    arg2: text
+): text {
+    val val1 = 1;
+    val val2 = "val2";
+    return val2;
+}
+
+function multiLineUserDefinedSingleArg(
+    arg1: integer
+): text {
+    return "foo";
+}
+
+abstract function defaultFunction() {
+    val val1 = 1;
+    val val2 = "val2";
+    return val2;
+}

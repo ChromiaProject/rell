@@ -1,0 +1,32 @@
+module;
+
+function showWhenControll1(x: integer) {
+    when (x) {
+        1 -> return 'One';
+        2, 3, 34 -> return 'Few';
+        else -> {
+            val res = 'Many: ' + x;
+            return res;
+        }
+    }
+}
+
+function showWhenControll2() {
+    val x = 5;
+
+    val y = when (true) {
+        x == 1 -> 'One';
+        x >= 2 and x <= 7 -> 'Several';
+        x == 11, x == 111 -> 'Magic number';
+        x > 1000 -> 'Special case';
+        else -> 'Unknown';
+    };
+
+    when {
+        x == 1 -> return 'One';
+        x >= 2 and x <= 7 -> return 'Several';
+        x == 11, x == 111 -> return 'Magic number';
+        x > 1000 -> return 'Special case';
+        else -> return 'Unknown';
+    }
+}

@@ -13,6 +13,7 @@ import org.eclipse.lsp4j.DidChangeWatchedFilesParams
 import org.eclipse.lsp4j.DidCloseTextDocumentParams
 import org.eclipse.lsp4j.DidOpenTextDocumentParams
 import org.eclipse.lsp4j.DidSaveTextDocumentParams
+import org.eclipse.lsp4j.DocumentFormattingParams
 import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.DocumentSymbolParams
 import org.eclipse.lsp4j.FileChangeType
@@ -26,6 +27,7 @@ import org.eclipse.lsp4j.ReferenceParams
 import org.eclipse.lsp4j.SemanticTokens
 import org.eclipse.lsp4j.SemanticTokensParams
 import org.eclipse.lsp4j.SymbolInformation
+import org.eclipse.lsp4j.TextEdit
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest
@@ -43,7 +45,8 @@ class RellLanguageServer(
     private val requestManager: RellRequestManager,
     private val languageServerTerminator: RellLanguageServerTerminator,
     private val capabilitiesProvider: CapabilitiesProvider,
-    private val semanticTokensManager: RellSemanticTokensManager
+    private val semanticTokensManager: RellSemanticTokensManager,
+    private val formattingManager: RellFormattingManager
 ) : LanguageServer, LanguageClientAware, TextDocumentService, WorkspaceService {
 
     private val logger = KotlinLogging.logger {}
@@ -184,6 +187,14 @@ class RellLanguageServer(
         val fileUri = URI(params.textDocument.uri)
         return requestManager.runRead {
             workspaceManager.getDocumentSymbols(fileUri)
+        }
+    }
+
+
+    override fun formatting(params: DocumentFormattingParams): CompletableFuture<List<TextEdit>> {
+        val fileUri = URI(params.textDocument.uri)
+        return requestManager.runRead {
+            formattingManager.format(fileUri, params.options)
         }
     }
 

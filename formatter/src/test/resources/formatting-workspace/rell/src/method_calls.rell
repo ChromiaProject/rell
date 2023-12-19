@@ -1,0 +1,115 @@
+module;
+
+import ^.functions.*;
+
+/*Formatting on method calls:
+ *         -Placement of opening and closing '()'
+ *         -Placement of args
+ */
+function showCalls() {
+    require(false, "set get_value_as_text: Not implementation");
+
+    typedFunction(1, "arg2");
+
+    // Arguments on same line if line length is less then max line width (120 default)
+    maxLineWidthFunction(1, "arg2", "arg3", 4, "arg5", "arg5");
+
+    // Arguments stays on new lines if user defined them with line seperation
+    typedFunction(
+        1,
+        "arg2"
+    );
+
+    // Arguments on new line if line length is above max line width (120 default)
+    // maxLineWidthFunction(1, "arg2", "arg3", 4, "LONG STRING TO MAKE LINE LENGTH GO ABOVEs MAX LINE LENGTH", "A second long string");
+    maxLineWidthFunction(
+        1,
+        "arg2",
+        "arg3",
+        4,
+        "LONG STRING TO MAKE LINE LENGTH GO ABOVE MAX LINE LENGTH",
+        "A second long string"
+    );
+
+    defaultFunction();
+
+    // Line seperation on chains of max line width
+    // attribute_name.we_can_also.seperate_on.chaining_methods_or_values.if_this_token_chaining.is_too_long.but_it_takes_quite_a_lot_to_of_text.to_get_above_max_line_width.when_it_is_set_to_120_as_default();
+    attribute_name
+        .we_can_also
+        .seperate_on
+        .chaining_methods_or_values
+        .if_this_token_chaining
+        .is_too_long
+        .but_it_takes_quite_a_lot_to_of_text
+        .to_get_above_max_line_width
+        .when_it_is_set_to_120_as_default();
+
+    // Line seperation on chainng made by user stays line seperated
+    a_chain
+        .seperated
+        .by_user;
+    // Method chaining gets line seperatede on method args if that token is too long
+    a_chain
+        .that_ends
+        .with_a_too_loong_method_call(
+            "This Is an argument to make this token too long",
+            "This argument serves the same purpose as the first argument",
+            "Unsure if this will be the last argument or not"
+        );
+
+    // Nested methods calls as part of method chaining
+    a_chain
+        .that_ends
+        .with_a_too_loong_method_call(
+            "a",
+            "b",
+            nested_callA(
+                "a",
+                "b",
+                nested_callB(
+                    "a",
+                    "b"
+                )
+            )
+        );
+    // Method chaning oneline when line width is less the max line width
+    a_chain.with_method_calls.call0("arg0").call1("arg1", "arg2").call2("arg1, arg2").call3().call4("arg1", "arg2");
+
+    // Default lineseperation on method chaining when line width is less the max line width
+    // a_chain.with_method_calls.call0("arg0").call1("arg1", "arg2").call2("arg1, arg2").call3().call4("arg1", "arg2").call5("arg1", "arg2");
+    a_chain
+        .with_method_calls
+        .call0("arg0")
+        .call1(
+            "arg1",
+            "arg2"
+        )
+        .call2(
+            "arg1",
+            "arg2"
+        )
+        .call3()
+        .call4(
+            "arg1",
+            "arg2"
+        )
+        .call5(
+            "arg1",
+            "arg2"
+        );
+
+    // User defined lineseperation
+    a_chain.with_method_calls
+        .call0("arg0")
+        .call1(
+            "arg1",
+            "arg2"
+        )
+        .call2("arg1", "arg2")
+        .call3()
+        .call4(
+            "arg1",
+            "arg2"
+        );
+}

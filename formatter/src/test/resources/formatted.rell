@@ -1,0 +1,7 @@
+module;
+
+//this is a comment
+/*multi comment*/
+entity foo {
+    name = "foo";
+}

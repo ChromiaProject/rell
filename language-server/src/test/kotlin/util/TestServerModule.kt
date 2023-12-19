@@ -7,11 +7,11 @@ import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
 import net.postchain.rell.toolbox.lsp.server.CapabilitiesProvider
 import net.postchain.rell.toolbox.lsp.server.LauncherType
-import net.postchain.rell.toolbox.lsp.server.RellDocumentService
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServerTerminator
 import net.postchain.rell.toolbox.lsp.server.RellRequestManager
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
+import net.postchain.rell.toolbox.lsp.server.RellFormattingManager
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import org.eclipse.lsp4j.services.TextDocumentService
 import org.eclipse.lsp4j.services.WorkspaceService
@@ -47,6 +47,7 @@ class TestServerModule {
         single { RellSemanticTokensManager() }
 
         singleOf(::RellLanguageServer)
+        singleOf(::RellFormattingManager)
         
         single { params ->
             StdioServerLauncher(

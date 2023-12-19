@@ -212,6 +212,10 @@ class RellWorkspaceManager(
         return rellSymbolService.getDocumentSymbols(fileUri, document, resource)
     }
 
+    fun getDocument(uri: URI): Document? {
+        return openDocuments[uri]
+    }
+
     fun getReferenceLocations(fileUri: URI, position: Position?): List<Location> {
         val indexer = getIndexerFor(fileUri)
         val document = openDocuments[fileUri] ?: return listOf()

@@ -1,0 +1,14 @@
+function foo() {
+
+    val user4 = user4 @* {
+        .first_name == "",
+        .last_name   == "",
+        .salary == 2,
+        .age == 2
+    } (
+        @sort .salary,
+        .first_name,
+        .last_name,
+        .age
+    );
+}

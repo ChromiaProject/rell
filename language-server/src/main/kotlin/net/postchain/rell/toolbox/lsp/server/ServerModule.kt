@@ -24,6 +24,7 @@ val serverModule = module {
     single { RellSemanticTokensManager() }
 
     singleOf(::RellLanguageServer)
+    singleOf(::RellFormattingManager)
 
     single(named(LauncherType.STDIO)) {
         StdioServerLauncher(
