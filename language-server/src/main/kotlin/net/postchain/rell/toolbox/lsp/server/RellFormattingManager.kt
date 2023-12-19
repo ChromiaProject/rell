@@ -1,6 +1,6 @@
 package net.postchain.rell.toolbox.lsp.server
 
-import net.postchain.rell.toolbox.formatter.FormatterRequest
+import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.formatter.RellFormatter
 import net.postchain.rell.toolbox.formatter.TextReplacement
 import net.postchain.rell.toolbox.lsp.editing.Document
@@ -14,14 +14,33 @@ class RellFormattingManager(
     private val workspaceManager: RellWorkspaceManager
 ) {
     fun format(fileUri: URI, options: FormattingOptions?): List<TextEdit> {
+        val (fileDocument, replacements) = getDocumentReplacements(fileUri, options)
+        return toTextEdits(fileDocument, replacements)
+    }
+
+    fun rangeFormat(fileUri: URI, range: Range, options: FormattingOptions?): List<TextEdit> {
+        val (fileDocument, replacements) = getDocumentReplacements(fileUri, options)
+
+        val rangeStartOffset = fileDocument.getOffSet(range.start)
+        val rangeEndOffset = fileDocument.getOffSet(range.end)
+        val rangeReplacements =
+            replacements.filter { it.stopOffset in rangeStartOffset..rangeEndOffset }
+
+        return toTextEdits(fileDocument, rangeReplacements)
+    }
+
+    private fun getDocumentReplacements(
+        fileUri: URI,
+        options: FormattingOptions?
+    ): Pair<Document, List<TextReplacement>> {
         val formatterRequest = setUserOptions(options)
         val document = workspaceManager.getDocument(fileUri)
         val fileDocument = document ?: Document(fileUri, 1, File(fileUri).readText())
         val replacements = RellFormatter.getFormattingChanges(fileDocument.contents, formatterRequest)
-        return toTextEdits(replacements, fileDocument)
+        return fileDocument to replacements
     }
 
-    private fun toTextEdits(replacements: List<TextReplacement>, fileDocument: Document): List<TextEdit> {
+    private fun toTextEdits(fileDocument: Document, replacements: List<TextReplacement>): List<TextEdit> {
         return replacements.map { textReplacement ->
             val startPosition = fileDocument.getPosition(textReplacement.startOffset)
             val endPosition = fileDocument.getPosition(textReplacement.stopOffset)
@@ -31,8 +50,8 @@ class RellFormattingManager(
         }
     }
 
-    private fun setUserOptions(options: FormattingOptions?): FormatterRequest {
-        val formatterRequest = FormatterRequest()
+    private fun setUserOptions(options: FormattingOptions?): FormatterOptions {
+        val formatterRequest = FormatterOptions()
         if (options == null) return formatterRequest
 
         if (options["maxLineWidth"] != null) {
