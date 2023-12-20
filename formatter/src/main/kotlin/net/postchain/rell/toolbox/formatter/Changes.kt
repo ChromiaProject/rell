@@ -53,6 +53,10 @@ class Changes(
         priority = ChangePriority.HIGH
     }
 
+    fun lowPriority() {
+        priority = ChangePriority.LOW
+    }
+
     fun indent(indentation: Int? = null) {
         val inc = indentationIncrease
         indentationIncrease = if (inc == null) 1 else inc + 1

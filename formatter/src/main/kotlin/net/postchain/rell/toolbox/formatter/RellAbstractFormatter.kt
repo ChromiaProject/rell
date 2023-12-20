@@ -71,6 +71,7 @@ abstract class RellAbstractFormatter(
             if (xBaseExprTail.ruleX_BaseExprTailCall() != null) {
                 formatExprTailSingleline(xBaseExprTail.ruleX_BaseExprTailCall(), doc)
             }
+            doc.format(xBaseExprTail)
         } else {
             doc.format(xBaseExprTail)
         }
@@ -211,9 +212,15 @@ abstract class RellAbstractFormatter(
             }
 
             val assignToken = tokenFor(arg, "=")
+            val equalsToken = tokenFor(arg, "==")
             if (assignToken != null) {
                 doc.surround(assignToken) { p -> p.oneSpace() }
             }
+            if (equalsToken != null) {
+                doc.surround(equalsToken) { p -> p.oneSpace() }
+            }
+
+
         }
     }
 
@@ -310,10 +317,22 @@ abstract class RellAbstractFormatter(
 
 
     fun formatSemicolon(node: ParserRuleContext, doc: FormattableDocument) {
-        val semiColon = tokenFor(node, ";") ?: throw RellFormatterException("No semicolon")
-        doc.prepend(semiColon) {
-            it.noSpace()
-            it.highPriority()
+        val semiColon = tokenFor(node, ";")
+        if (semiColon != null) {
+            doc.prepend(semiColon) {
+                it.noSpace()
+                it.highPriority()
+            }
+        }
+    }
+
+    fun formatEqualSign(node: ParserRuleContext, doc: FormattableDocument) {
+        val equalSign = tokenFor(node, "=")
+        if (equalSign != null) {
+            doc.surround(equalSign) {
+                it.oneSpace()
+                it.highPriority()
+            }
         }
     }
 

@@ -1,4 +1,4 @@
 object event_stats {
     mutable event_count: integer = 0;
-    last_event: text= 'n/a';
+    last_event: text = 'n/a';
 }
