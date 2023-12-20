@@ -74,6 +74,7 @@ abstract class RellAbstractFormatter(
         } else {
             doc.format(xBaseExprTail)
         }
+        doc.format(xBaseExprTail)
     }
 
     fun formatMultiLineStmts(
@@ -316,10 +317,12 @@ abstract class RellAbstractFormatter(
 
 
     fun formatSemicolon(node: ParserRuleContext, doc: FormattableDocument) {
-        val semiColon = tokenFor(node, ";") ?: throw RellFormatterException("No semicolon")
-        doc.prepend(semiColon) {
-            it.noSpace()
-            it.highPriority()
+        val semiColon = tokenFor(node, ";")
+        if (semiColon != null) {
+            doc.prepend(semiColon) {
+                it.noSpace()
+                it.highPriority()
+            }
         }
     }
 

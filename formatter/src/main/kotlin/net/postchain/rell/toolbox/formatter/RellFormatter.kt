@@ -111,6 +111,10 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         var shouldLineSeparateExpression: Boolean
         var previousExpr: RuleX_BaseExprTailContext? = null
 
+        doc.append(exprHead) {
+            it.noSpace()
+            it.lowPriority()
+        }
         //Handle internal blockindents for expression tail
         if (exprTailList.isNotEmpty()) {
             val shouldLineSeparateTail = lineSeparateExpr(exprHead, exprTailList.last())

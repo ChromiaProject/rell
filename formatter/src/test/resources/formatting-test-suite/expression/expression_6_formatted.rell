@@ -8,8 +8,7 @@ operation defaultoperation() {
         last_name = "last",
         salary = 1,
         age = 1
-    )      
-     ;
+    );
 
     create single_field (
         name = "A long string to have a single line just above max line width........................."

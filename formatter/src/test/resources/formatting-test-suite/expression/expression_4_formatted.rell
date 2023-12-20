@@ -1,11 +1,10 @@
 function showCalls() {
-    require
-    (false, "set get_value_as_text: Not implementation");
+    require(false, "set get_value_as_text: Not implementation");
 
-    typedFunction   (1, "arg2");
+    typedFunction(1, "arg2");
 
     // Arguments on same line if line length is less then max line width (120 default)
-    maxLineWidthFunction    (1, "arg2", "arg3", 4, "arg5", "arg5");
+    maxLineWidthFunction(1, "arg2", "arg3", 4, "arg5", "arg5");
 
     // Arguments stays on new lines if user defined them with line seperation
     typedFunction(
@@ -23,5 +22,5 @@ function showCalls() {
         "A second long string"
     );
 
-    defaultFunction   ();
+    defaultFunction();
 }
