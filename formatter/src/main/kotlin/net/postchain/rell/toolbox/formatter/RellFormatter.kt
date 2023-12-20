@@ -341,6 +341,11 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
 
         for (xAttriDef in xObjectDef.ruleX_AttributeDefinition()) {
             formatSemicolon(xObjectDef, doc)
+            formatEqualSign(xObjectDef, doc)
+            doc.append(xAttriDef.ruleX_BaseAttributeDefinition().ruleX_AttrHeader()) {
+                it.setNewLines(0)
+                it.oneSpace()
+            }
             doc.format(xAttriDef)
         }
 

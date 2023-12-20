@@ -326,6 +326,16 @@ abstract class RellAbstractFormatter(
         }
     }
 
+    fun formatEqualSign(node: ParserRuleContext, doc: FormattableDocument) {
+        val equalSign = tokenFor(node, "=")
+        if (equalSign != null) {
+            doc.surround(equalSign) {
+                it.oneSpace()
+                it.highPriority()
+            }
+        }
+    }
+
     fun tokenFor(node: ParserRuleContext, tokenText: String): TerminalNode? {
         for (i in 0 until node.childCount) {
             val child = node.getChild(i)

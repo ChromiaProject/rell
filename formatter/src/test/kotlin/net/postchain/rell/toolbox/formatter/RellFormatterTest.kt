@@ -12,7 +12,6 @@ class RellFormatterTest {
     fun `Format whole test suite`() {
         val testFolderUri = javaClass.classLoader.getResource("formatting-test-suite").toURI()
 
-        //namespace_1
         val files =
             File(testFolderUri).walkTopDown().filter { it.isFile && it.name.endsWith(".rell") }
                 .map { it.path to it.readText() }.toMap()
