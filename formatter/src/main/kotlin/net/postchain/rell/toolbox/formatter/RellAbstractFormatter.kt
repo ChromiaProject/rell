@@ -71,10 +71,10 @@ abstract class RellAbstractFormatter(
             if (xBaseExprTail.ruleX_BaseExprTailCall() != null) {
                 formatExprTailSingleline(xBaseExprTail.ruleX_BaseExprTailCall(), doc)
             }
+            doc.format(xBaseExprTail)
         } else {
             doc.format(xBaseExprTail)
         }
-        doc.format(xBaseExprTail)
     }
 
     fun formatMultiLineStmts(
