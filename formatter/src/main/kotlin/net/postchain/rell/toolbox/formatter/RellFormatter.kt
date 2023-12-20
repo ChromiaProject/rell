@@ -428,19 +428,30 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         doc.surround(xNamespaceDef) { it.setNewLines(2) }
         doc.append(xNamespaceDef.ruleX_tkNAMESPACE()) { it.oneSpace() }
         doc.append(xNamespaceDef.ruleX_QualifiedName()) { it.oneSpace() }
-        val openingCurly = tokenFor(xNamespaceDef, "{") ?: throw RellFormatterException("No opening curly")
-        doc.append(openingCurly) {
-            it.setNewLines(1, 1, 2)
-            it.highPriority()
+        val openingCurly = tokenFor(xNamespaceDef, "{")
+        if (openingCurly != null) {
+            doc.append(openingCurly) {
+                it.setNewLines(1, 1, 2)
+                it.highPriority()
+            }
         }
         doc.interiorIndent(xNamespaceDef)
         for (xAnnotDef in xNamespaceDef.ruleX_AnnotatedDef()) {
             doc.format(xAnnotDef)
         }
-        val closingCurly = tokenFor(xNamespaceDef, "}") ?: throw RellFormatterException("No closing curly")
-        doc.prepend(closingCurly) {
-            it.setNewLines(1, 1, 2)
-            it.highPriority()
+        val closingCurly = tokenFor(xNamespaceDef, "}")
+        if (closingCurly != null) {
+            doc.prepend(closingCurly) {
+                it.setNewLines(1, 1, 2)
+                it.highPriority()
+            }
+        }
+
+        xNamespaceDef.ruleX_AnnotatedDef().forEach {
+            doc.prepend(it) {
+                it.setNewLines(1, 1, 2)
+                it.highPriority()
+            }
         }
     }
 
