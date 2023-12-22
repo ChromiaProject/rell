@@ -27,21 +27,7 @@ abstract class RellAbstractFormatter(
 
             is RellParser.RuleX_BaseExprTailContext -> {
                 if (currentExpr.ruleX_BaseExprTailCall() != null) {
-                    if (previousExpr is RellParser.RuleX_BaseExprTailContext) {
-                        doc.interiorIndent(currentExpr)
-                    }
-                    formatBracePairWithoutSpace(
-                        currentExpr.ruleX_BaseExprTailCall().ruleX_CallArgs(),
-                        doc,
-                        BracePairTypes.PARENTHESES
-                    )
-                    formatArguments(
-                        currentExpr.ruleX_BaseExprTailCall().ruleX_CallArgs().ruleX_CallArg(),
-                        doc,
-                        indent = false
-                    )
-                    doc.format(currentExpr.ruleX_BaseExprTailCall().ruleX_CallArgs())
-
+                    formatExprTailCall(currentExpr, previousExpr, doc, false)
                 } else {
                     if (currentExpr.ruleX_BaseExprTailMember() != null) {
                         formatExprTailMultiline(currentExpr.ruleX_BaseExprTailMember(), currentExpr, doc)
@@ -56,6 +42,29 @@ abstract class RellAbstractFormatter(
             }
         }
     }
+
+    fun formatExprTailCall(
+        currentExpr: RellParser.RuleX_BaseExprTailContext,
+        previousExpr: ParserRuleContext?,
+        doc: FormattableDocument,
+        indent: Boolean = true
+    ) {
+        if (previousExpr is RellParser.RuleX_BaseExprTailContext) {
+            doc.interiorIndent(currentExpr)
+        }
+        formatBracePairWithoutSpace(
+            currentExpr.ruleX_BaseExprTailCall().ruleX_CallArgs(),
+            doc,
+            BracePairTypes.PARENTHESES
+        )
+        formatArguments(
+            currentExpr.ruleX_BaseExprTailCall().ruleX_CallArgs().ruleX_CallArg(),
+            doc,
+            indent = indent
+        )
+        doc.format(currentExpr.ruleX_BaseExprTailCall().ruleX_CallArgs())
+    }
+
 
     fun formatExprTailSingleline(xBaseExprTail: ParserRuleContext, doc: FormattableDocument) {
         if (xBaseExprTail is RellParser.RuleX_BaseExprTailMemberContext) {
