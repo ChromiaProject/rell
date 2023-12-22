@@ -1,7 +1,10 @@
 function exprHeader() {
     val a = map<text, text> ();
 
-    val b = ["a": 2, "b": 1];
+    val b = [
+        "a": 2,
+        "b": 1
+    ];
 
     val c = (
         z = 2

@@ -535,12 +535,29 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         doc.prepend(xAtExprWhatCmplx) { it.oneSpace() }
         formatBracePairWithSpace(xAtExprWhatCmplx, doc, BracePairTypes.PARENTHESES)
         val items = xAtExprWhatCmplx.ruleX_AtExprWhatComplexItem()
+        val formatAsMulti = lineSeparateArguments(xAtExprWhatCmplx, BracePairTypes.PARENTHESES)
+
         formatArguments(
             items,
             doc,
-            formatAsMultiLine = lineSeparateArguments(xAtExprWhatCmplx, BracePairTypes.PARENTHESES)
+            formatAsMultiLine = formatAsMulti
         )
         items.forEach { item ->
+            val baseExpr =
+                item.ruleX_ExpressionRef()?.ruleX_Expression()?.ruleX_UnaryExpr()?.ruleX_OperandExpr()?.ruleX_BaseExpr()
+
+            if (baseExpr != null && baseExpr.ruleX_BaseExprTail().isNotEmpty()) {
+                val tailCall = baseExpr.ruleX_BaseExprTail().first().ruleX_BaseExprTailCall()
+                if (tailCall != null) {
+                    doc.prepend(tailCall) { it.oneSpace() }
+                    doc.interiorIndentRangeIncludeLast(baseExpr, tailCall)
+                    formatExprTailCall(
+                        baseExpr.ruleX_BaseExprTail().first(),
+                        null,
+                        doc
+                    )
+                }
+            }
             doc.format(item)
         }
     }
@@ -586,11 +603,26 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
 
     fun format(xMapExpr: RuleX_NonEmptyMapLiteralExprContext, doc: FormattableDocument) {
         formatSkewedOpeningClosing(xMapExpr.ruleX_tkLBRACK(), xMapExpr, doc, BracePairTypes.BRACKETS)
-        xMapExpr.ruleX_MapLiteralExprEntry().forEach { mapEntry ->
+        val shouldLineSeparate = lineSeparateArguments(xMapExpr, BracePairTypes.BRACKETS)
+
+        val mapExprEntries = xMapExpr.ruleX_MapLiteralExprEntry()
+        mapExprEntries.forEachIndexed { index, mapEntry ->
             doc.prepend(mapEntry) { it.oneSpace() }
             doc.append(mapEntry) { it.noSpace() }
             doc.append(mapEntry.ruleX_ExpressionRef(0)) { it.noSpace() }
             doc.prepend(mapEntry.ruleX_ExpressionRef(1)) { it.oneSpace() }
+
+            if (shouldLineSeparate) {
+                doc.prepend(mapEntry) {
+                    it.newLine()
+                    it.indent()
+                }
+                if (index == mapExprEntries.lastIndex) {
+                    doc.append(mapEntry) {
+                        it.newLine()
+                    }
+                }
+            }
             doc.format(mapEntry)
         }
     }
@@ -687,6 +719,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
                 try {
                     val formatMethod =
                         javaClass.getDeclaredMethod("format", child.javaClass, FormattableDocument::class.java)
+                    println("Format Child by analysis ${child.javaClass.simpleName}")
                     formatMethod.invoke(this, child, doc)
                 } catch (e: NoSuchMethodException) {
                     format(child, doc)

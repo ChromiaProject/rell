@@ -1,0 +1,29 @@
+function mint_avatar_original(
+  face: integer,
+  hair: integer,
+  skin_color: integer,
+  hair_color: integer,
+  account_id: byte_array
+) {
+  val account = ft3.acc.account @ { account_id };
+
+  val avatar_minted_original = Minter
+    .mint_non_fungible_original(
+      account,
+      Minter
+        .I(
+          interface_name = assets.IAvatar.interface,
+          [
+            assets.IAvatar.skin_color: Integer.T(skin_color),
+            assets.IAvatar.hair_color: Integer.T(hair_color),
+            assets.IAvatar.face: Integer.T(face),
+            assets.IAvatar.hair: Integer.T(hair),
+            assets.IAvatar.equippables: List.T(Attribute.type.instance, list<instance>().to_gtv()),
+            assets.ISingleton.account_owner: Dip.ByteArray.T(account_id)
+          ],
+          prototype_name = "Avatar"
+        )
+    );
+
+  return avatar_minted_original;
+}
