@@ -22,15 +22,15 @@ import net.postchain.rell.toolbox.core.parser.SyntaxErrorCollector
 import org.antlr.v4.runtime.misc.Interval
 import java.io.File
 import java.net.URI
-import java.util.TreeMap
+import java.util.*
 
 
 class RellResourceFactory(private val workspaceUri: URI, private val parser: AntlrRellParser) {
-    val rellCompilerPaths = RellCompilerPaths(workspaceUri)
+    val rellCompilerUtils = RellCompilerUtils()
     private val logger = KotlinLogging.logger {}
 
     fun buildRellResource(fileUri: URI, fileContent: String): Resource {
-        val rellCompilerSourcePath = rellCompilerPaths.createCompilerSourcePath(fileUri)
+        val rellCompilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
         val antlrParseTree = buildParseTreeWithSyntaxErrors(fileContent)
         val ast = buildRellAstWithCompilerErrors(rellCompilerSourcePath, antlrParseTree.first)
         val compilationResult = compileResult(rellCompilerSourcePath, ast.first)
@@ -79,7 +79,7 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
     }
 
     fun buildRellResource(resource: Resource, fileUri: URI): Resource {
-        val rellCompilerSourcePath = rellCompilerPaths.createCompilerSourcePath(fileUri)
+        val rellCompilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
         val compilationResult = compileResult(rellCompilerSourcePath, resource.ast)
         val symbolInfo = compilationResult?.symbolInfos ?: mapOf()
         val locationInfo = createLocationInfo(symbolInfo)
@@ -100,11 +100,21 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
     fun compileResult(
         compilerSrcPath: C_SourcePath, ast: S_RellFile
     ): IdeCompilationResult? {
-        val options = C_CompilerOptions.builder().symbolInfoFile(compilerSrcPath).ide(true).build()
-        val commonSourceDir: C_SourceDir = C_SourceDir.diskDir(File(workspaceUri))
+        // Having a workspace uri that ends with rell means we have a single file indexer.
+        // Similar to java we have decided to not compile single file,
+        // because how it will affect context awareness of imported modules.
+        if (workspaceUri.path.endsWith(".rell")) {
+            return null
+        }
+        if (compilerSrcPath.str().contains("-")) {
+            return rellCompilerUtils.createInvalidFileCompilationResult(compilerSrcPath)
+        }
+
         val moduleName = IdeApi.getModuleName(compilerSrcPath, ast)
             ?: throw Exception("Can not find the moduleName for $compilerSrcPath")
 
+        val options = C_CompilerOptions.builder().symbolInfoFile(compilerSrcPath).ide(true).build()
+        val commonSourceDir: C_SourceDir = C_SourceDir.diskDir(File(workspaceUri))
         val idePath = IdeSourcePathFilePath(compilerSrcPath)
         val mainFile = AstSourceFile.make(ast, idePath)
         val fileMap = ImmutableMap.of(compilerSrcPath, mainFile)
@@ -137,7 +147,7 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
     fun buildRellAstWithCompilerErrors(
         rellCompilerSourcePath: C_SourcePath, parseTree: RellParser.RuleX_RootParserContext
     ): Pair<S_RellFile, List<C_Error>> {
-        val rellCompilerFilePath = rellCompilerPaths.createRellCompilerFilePath(rellCompilerSourcePath)
+        val rellCompilerFilePath = rellCompilerUtils.createRellCompilerFilePath(rellCompilerSourcePath)
         return RellcAPI.antlrToRellAst(rellCompilerFilePath, parseTree)
     }
 }

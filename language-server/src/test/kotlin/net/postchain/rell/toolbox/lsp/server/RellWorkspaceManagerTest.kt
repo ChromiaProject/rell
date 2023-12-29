@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.net.URI
+import kotlin.io.path.createDirectories
 import kotlin.io.path.createDirectory
 
 class RellWorkspaceManagerTest {
@@ -79,6 +80,78 @@ class RellWorkspaceManagerTest {
         assertThat(indexers.keys.first()).isEqualTo(srcDirUri)
         assertThat(indexers[srcDirUri]!!.fileUriResourceMap).hasSize(1)
         assertThat(indexers[srcDirUri]!!.fileUriResourceMap.keys).containsOnly(rellFile.toURI())
+    }
+
+    @Test
+    fun `Initialization correctly index for single file`(@TempDir tempDir: File) {
+        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
+        val mainFile = File(srcDir, "main.rell").apply {
+            writeText(
+                """
+                module;
+                import import_file2.*;
+                function main() {
+                    return "main";
+                }
+            """.trimIndent()
+            )
+        }
+        File(srcDir, "import_file.rell").apply {
+            writeText(
+                """
+                module;
+                function foo() {
+                    return "foo";
+                }
+            """.trimIndent()
+            )
+        }
+
+        val workspaceFolders = listOf(WorkspaceFolder(mainFile.toURI().toString()))
+        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+
+        val indexers = workspaceManager.indexers
+        val srcDirUri = srcDir.toURI()
+
+        assertThat(indexers).hasSize(1)
+        assertThat(indexers.keys.first()).isEqualTo(srcDirUri)
+        assertThat(indexers[srcDirUri]!!.fileUriResourceMap).hasSize(2)
+    }
+
+    @Test
+    fun `Initialization correctly index for single file src out of depth search`(@TempDir tempDir: File) {
+        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
+        val childDirs =File(srcDir, "one/two/three/four/five").toPath().createDirectories().toFile()
+        val mainFile = File(childDirs, "main.rell").apply {
+            writeText(
+                """
+                module;
+                import import_file2.*;
+                function main() {
+                    return "main";
+                }
+            """.trimIndent()
+            )
+        }
+        File(childDirs, "import_file.rell").apply {
+            writeText(
+                """
+                module;
+                function foo() {
+                    return "foo";
+                }
+            """.trimIndent()
+            )
+        }
+
+        val workspaceFolders = listOf(WorkspaceFolder(mainFile.toURI().toString()))
+        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+
+        val indexers = workspaceManager.indexers
+
+        assertThat(indexers).hasSize(1)
+        assertThat(indexers.keys.first()).isEqualTo(mainFile.toURI())
+        assertThat(indexers[mainFile.toURI()]!!.fileUriResourceMap).hasSize(1)
     }
 
     @Test

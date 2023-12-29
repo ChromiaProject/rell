@@ -17,11 +17,14 @@ import org.eclipse.lsp4j.WorkspaceFolder
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.io.File
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Paths
 
 
 class RellWorkspaceManager(
     val rellSymbolService: RellSymbolService,
-    val rellReferenceService: RellReferenceService) {
+    val rellReferenceService: RellReferenceService
+) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -64,14 +67,31 @@ class RellWorkspaceManager(
         val rellSrcFolder = workspaceFolder.resolve("rell/src")
         val rellFolder = workspaceFolder.resolve("rell")
         val srcFolder = workspaceFolder.resolve("src")
+        val parentSrcFolder = findSrcParentDirectory(workspaceUri)
 
         val sourceFolder = when {
             rellSrcFolder.exists() && rellFolder.isDirectory -> rellSrcFolder
             rellFolder.exists() && rellFolder.isDirectory -> rellFolder
             srcFolder.exists() && srcFolder.isDirectory -> srcFolder
+            parentSrcFolder != null -> parentSrcFolder
             else -> null
         }
         return sourceFolder?.toURI() ?: workspaceUri
+    }
+
+    private fun findSrcParentDirectory(uri: URI): File? {
+        val path = Paths.get(uri)
+        var depth = 0
+        var currentPath = path
+        while (currentPath.parent != null && depth < 5) { // todo make this variable configurable
+            depth++
+            val srcDirectory = currentPath.resolve("src")
+            if (Files.exists(srcDirectory) && Files.isDirectory(srcDirectory)) {
+                return srcDirectory.toFile()
+            }
+            currentPath = currentPath.parent
+        }
+        return null
     }
 
     private fun reportDiagnostics(indexer: WorkspaceIndexer, fileUris: List<URI> = listOf()) {
@@ -100,26 +120,19 @@ class RellWorkspaceManager(
     //TODO: Revisit how we get the indexer. Would this approach work if the have two indexer active where one
     // is indexed from from a child folder from the other indexer.
     fun getIndexerFor(fileUri: URI): WorkspaceIndexer {
-//        for (indexer in indexers.values) {
-//            if (indexer.hasFile(uri)) {
-//                return indexer
-//            }
-//        }
-
         for (indexer in indexers.entries) {
             if (fileUri.path.startsWith(indexer.key.path)) {
                 return indexer.value
             }
         }
-
         return doSingleFileIndex(fileUri)
     }
 
     private fun doSingleFileIndex(fileUri: URI): WorkspaceIndexer {
-        val parentUri = File(fileUri).parentFile.toURI()
-        val indexer = WorkspaceIndexer(parentUri)
+        val workspace = findSourceDirURI(fileUri)
+        val indexer = WorkspaceIndexer(workspace)
         indexer.initialFileIndexBuild()
-        indexers[parentUri] = indexer
+        indexers[workspace] = indexer
         reportDiagnostics(indexer)
         return indexer
     }

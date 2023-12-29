@@ -20,13 +20,14 @@ class RellResourceBuildModuleInfoTest {
             fileUri.path == workspaceError.toURI().path + it.pos.path().str()
         }
     }
+
     //TODO make it so a compiler can take in one file without ws defined
     @Test
     fun `compiler finds errors in from imported file`() {
         val fileUri = rellFilesErrors.find { it.toString().endsWith("import.rell") }!!
         val fileContent = File(fileUri).readText()
-        val rellCompilerPaths = RellCompilerPaths(workspaceError.toURI())
-        val compilerSourcePath = rellCompilerPaths.createCompilerSourcePath(fileUri)
+        val rellCompilerUtils = RellCompilerUtils()
+        val compilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceError.toURI())
 
         val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser())
         val parseTree = rellDesc.buildParseTreeWithSyntaxErrors(fileContent).first
@@ -46,8 +47,8 @@ class RellResourceBuildModuleInfoTest {
     fun `compiler finds single errors in single rell file`() {
         val fileUri = rellFilesErrors.find { it.toString().endsWith("semantic_error.rell") }!!
         val fileContent = File(fileUri).readText()
-        val rellCompilerPaths = RellCompilerPaths(workspaceError.toURI())
-        val compilerSourcePath = rellCompilerPaths.createCompilerSourcePath(fileUri)
+        val rellCompilerUtils = RellCompilerUtils()
+        val compilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceError.toURI())
 
         val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser())
         val parseTree = rellDesc.buildParseTreeWithSyntaxErrors(fileContent).first
