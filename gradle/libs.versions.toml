@@ -9,7 +9,7 @@ assertk = "0.27.0"
 kotlin-test = "1.9.10"
 oshai = "5.1.0"
 log4j = "2.20.0"
-
+mockk = "1.13.8"
 
 [libraries]
 rell = { module = "net.postchain.rell:rell", version.ref = "rell" }
@@ -33,6 +33,7 @@ antlr = { module = "org.antlr:antlr4", version.ref = "antlr" }
 
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin-test" }
 assertk = { module = "com.willowtreeapps.assertk:assertk-jvm", version.ref = "assertk" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 #Testing
 testcontainers-base = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
@@ -52,4 +53,4 @@ rell = ["rell", "rell-base"] # "rell-api-base", "rell-tools"
 lsp4j = ["lsp4j", "lsp4j-debug", "lsp4j-websocket"]
 koin = ["koin-core", "koin-logger"]
 jackson = ["jackson", "jackson-yml", "jackson-kotlin"]
-testing = ["kotlin-test-junit", "assertk"]
+testing = ["kotlin-test-junit", "assertk", "mockk"]

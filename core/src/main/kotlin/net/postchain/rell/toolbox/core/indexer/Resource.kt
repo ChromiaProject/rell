@@ -20,7 +20,8 @@ data class Resource(
     val syntaxErrors: List<SyntaxError> = listOf(),
     val semanticErrors: List<C_Message> = listOf(),
     val symbolInfos: Map<S_Pos, IdeSymbolInfo>,
-    val locationInfo: Map<Interval, IdeSymbolInfoWithInterval>
+    val locationInfo: Map<Interval, IdeSymbolInfoWithInterval>,
+    val checksum: String? = null
 ) {
     fun getSymbolKindForInterval(interval: Interval): IdeSymbolKind? {
         val symbolInfoWithInterval = locationInfo[interval]

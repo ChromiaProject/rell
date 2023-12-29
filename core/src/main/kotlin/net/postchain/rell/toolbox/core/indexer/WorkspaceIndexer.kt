@@ -5,16 +5,25 @@ import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import java.io.File
 import java.net.URI
+import java.util.concurrent.ConcurrentHashMap
 
 class WorkspaceIndexer(val workspaceUri: URI) {
     private val logger = KotlinLogging.logger {}
     private val resourceFactory = RellResourceFactory(workspaceUri, AntlrRellParser())
-    var fileUriResourceMap = mutableMapOf<URI, Resource>()
-    fun initialFileIndexBuild() {
+    var fileUriResourceMap = ConcurrentHashMap<URI, Resource>()
+    fun initialFileIndexBuild(cachedIndexer: WorkspaceIndexer? = null) {
         val dirtyFiles: MutableList<URI> = mutableListOf()
         val rellUris = addRellFilesUri()
         rellUris.forEach { fileUri ->
-            val resource = resourceFactory.buildRellResource(fileUri)
+            val fileContent = File(fileUri).readText()
+            val checksum = calculateChecksum(fileContent)
+            val cachedResource = cachedIndexer?.getResource(fileUri)
+
+            val resource = if (cachedResource != null && cachedResource.checksum == checksum) {
+                cachedResource
+            } else {
+                resourceFactory.buildRellResource(fileUri, fileContent)
+            }
 
             if (resource.imports.isNotEmpty()) {
                 dirtyFiles.add(fileUri)
@@ -23,8 +32,13 @@ class WorkspaceIndexer(val workspaceUri: URI) {
         }
 
         dirtyFiles.forEach { fileUri ->
-            val resource =
+            val checksum = calculateChecksum(fileUri)
+            val cachedResource = cachedIndexer?.getResource(fileUri)
+            val resource = if (cachedResource != null && cachedResource.checksum == checksum) {
+                cachedResource
+            } else {
                 resourceFactory.buildRellResource(fileUriResourceMap[fileUri]!!, fileUri)
+            }
             fileUriResourceMap[fileUri] = resource
         }
 

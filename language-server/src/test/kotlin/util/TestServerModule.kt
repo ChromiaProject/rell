@@ -1,6 +1,7 @@
 package util
 
 import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
+import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
@@ -39,6 +40,7 @@ class TestServerModule {
 
     private val serverModule = module {
         single { RellSymbolService() }
+        single { RellIndexCachingService() }
         single { RellReferenceService(get()) }
         singleOf(::RellWorkspaceManager)
         single { RellRequestManager() }
