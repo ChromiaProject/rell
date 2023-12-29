@@ -86,7 +86,6 @@ class WorkspaceIndexer(val workspaceUri: URI) {
     }
 
     fun findAffectedFiles(fileUri: URI): Set<URI> {
-        //TODO make it so it can find affected files that are importing an affected file
         var shallowCopy = fileUriResourceMap.toMutableMap()
         val changedFileResource: Resource = fileUriResourceMap[fileUri]!!
         shallowCopy.remove(fileUri)
