@@ -2,7 +2,6 @@ package net.postchain.rell.toolbox.core.indexer
 
 import com.google.common.collect.ImmutableMap
 import io.github.oshai.kotlinlogging.KotlinLogging
-import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_Error
@@ -12,14 +11,11 @@ import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeCompilationResult
 import net.postchain.rell.base.utils.ide.IdeDirApi
-import net.postchain.rell.base.utils.ide.IdeSymbolInfo
-import net.postchain.rell.toolbox.core.compiler.AntlrPos
 import net.postchain.rell.toolbox.core.compiler.RellcAPI
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import net.postchain.rell.toolbox.core.parser.RellParser
 import net.postchain.rell.toolbox.core.parser.SyntaxError
 import net.postchain.rell.toolbox.core.parser.SyntaxErrorCollector
-import org.antlr.v4.runtime.misc.Interval
 import java.io.File
 import java.net.URI
 import java.util.*
@@ -27,7 +23,6 @@ import java.util.*
 
 class RellResourceFactory(private val workspaceUri: URI, private val parser: AntlrRellParser) {
     val rellCompilerUtils = RellCompilerUtils()
-    private val logger = KotlinLogging.logger {}
 
     fun buildRellResource(fileUri: URI, fileContent: String): Resource {
         val rellCompilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
@@ -48,29 +43,6 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
             symbolInfo,
             locationInfo
         )
-    }
-
-    private fun createLocationInfo(symbolInfos: Map<S_Pos, IdeSymbolInfo>): Map<Interval, IdeSymbolInfoWithInterval> {
-        val intervalMap = symbolInfos.map {
-            val node = NodeInterval((it.key as AntlrPos).node)
-            node to IdeSymbolInfoWithInterval(it.value, node)
-        }
-        val locationInfo = TreeMap<Interval, IdeSymbolInfoWithInterval>(::intervalCompare)
-        locationInfo.putAll(intervalMap)
-        return locationInfo
-    }
-
-    private fun intervalCompare(intervalA: Interval, intervalB: Interval): Int {
-        return if (intervalA == intervalB ||
-            intervalA.properlyContains(intervalB) ||
-            intervalB.properlyContains(intervalA)
-        ) {
-            0
-        } else if (intervalA.startsAfter(intervalB)) {
-            -1
-        } else {
-            1
-        }
     }
 
     fun buildRellResource(fileUri: URI): Resource {
@@ -149,5 +121,9 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
     ): Pair<S_RellFile, List<C_Error>> {
         val rellCompilerFilePath = rellCompilerUtils.createRellCompilerFilePath(rellCompilerSourcePath)
         return RellcAPI.antlrToRellAst(rellCompilerFilePath, parseTree)
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }

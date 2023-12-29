@@ -40,6 +40,8 @@ dependencies {
     implementation(project(":formatter"))
     implementation(libs.bundles.rell)
 
+    implementation("org.furyio:fury-core:0.4.1")
+
     testImplementation(libs.bundles.testcontainers)
     testImplementation(libs.bundles.testing)
 }

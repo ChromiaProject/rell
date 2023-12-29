@@ -4,6 +4,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.toolbox.core.indexer.RellIssue
 import net.postchain.rell.toolbox.core.indexer.Resource
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
@@ -17,20 +18,23 @@ import org.eclipse.lsp4j.WorkspaceFolder
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.io.File
 import java.net.URI
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.time.Duration.Companion.minutes
 import java.nio.file.Files
 import java.nio.file.Paths
 
 
+
 class RellWorkspaceManager(
     val rellSymbolService: RellSymbolService,
-    val rellReferenceService: RellReferenceService
-) {
+    val rellReferenceService: RellReferenceService,
+    val indexCachingService: RellIndexCachingService) {
 
-    private val logger = KotlinLogging.logger {}
+    var indexCachingEnabled: Boolean = false
 
     private lateinit var workspaceFolders: List<WorkspaceFolder>
     private lateinit var diagnosticsPublisher: (uri: URI, List<RellIssue>) -> Unit
-    val indexers: MutableMap<URI, WorkspaceIndexer> = mutableMapOf()
+    val indexers: MutableMap<URI, WorkspaceIndexer> = ConcurrentHashMap()
     val openDocuments: MutableMap<URI, Document> = mutableMapOf()
 
     private val workspaceFolderUris get() = workspaceFolders.map { URI(it.uri) }
@@ -52,12 +56,18 @@ class RellWorkspaceManager(
         }
         indexers.clear()
         indexers.putAll(newIndexers)
+
+        if (indexCachingEnabled) {
+            indexCachingService.persistOnDiskPeriodically(indexers.values, 1.minutes)
+        }
+        indexCachingService.cleanupOldCaches()
     }
 
     private fun doIndex(workspaceFolderUri: URI): WorkspaceIndexer {
         val resolvedSourceDirUri = findSourceDirURI(workspaceFolderUri)
+        val cachedIndexer = if (indexCachingEnabled) indexCachingService.getWorkspaceIndexer(resolvedSourceDirUri) else null
         val indexer = WorkspaceIndexer(resolvedSourceDirUri)
-        indexer.initialFileIndexBuild()
+        indexer.initialFileIndexBuild(cachedIndexer)
         return indexer
     }
 
@@ -131,7 +141,9 @@ class RellWorkspaceManager(
     private fun doSingleFileIndex(fileUri: URI): WorkspaceIndexer {
         val workspace = findSourceDirURI(fileUri)
         val indexer = WorkspaceIndexer(workspace)
-        indexer.initialFileIndexBuild()
+        val cachedIndexer = if (indexCachingEnabled) indexCachingService.getWorkspaceIndexer(workspace) else null
+
+        indexer.initialFileIndexBuild(cachedIndexer)
         indexers[workspace] = indexer
         reportDiagnostics(indexer)
         return indexer
@@ -233,5 +245,9 @@ class RellWorkspaceManager(
         val indexer = getIndexerFor(fileUri)
         val document = openDocuments[fileUri] ?: return listOf()
         return rellReferenceService.getReferenceLocations(fileUri, document, indexer, position)
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }

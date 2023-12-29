@@ -1,10 +1,12 @@
 package net.postchain.rell.toolbox.lsp.server
 
+import com.google.gson.JsonObject
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.toolbox.core.RellAbout
 import net.postchain.rell.toolbox.core.RellVersionInfo
 import net.postchain.rell.toolbox.core.indexer.RellIssue
 import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
+import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsConverter
 import org.eclipse.lsp4j.DefinitionParams
 import org.eclipse.lsp4j.DidChangeConfigurationParams
@@ -27,6 +29,7 @@ import org.eclipse.lsp4j.PublishDiagnosticsParams
 import org.eclipse.lsp4j.ReferenceParams
 import org.eclipse.lsp4j.SemanticTokens
 import org.eclipse.lsp4j.SemanticTokensParams
+import org.eclipse.lsp4j.SetTraceParams
 import org.eclipse.lsp4j.SymbolInformation
 import org.eclipse.lsp4j.TextEdit
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier
@@ -47,7 +50,8 @@ class RellLanguageServer(
     private val languageServerTerminator: RellLanguageServerTerminator,
     private val capabilitiesProvider: CapabilitiesProvider,
     private val semanticTokensManager: RellSemanticTokensManager,
-    private val formattingManager: RellFormattingManager
+    private val formattingManager: RellFormattingManager,
+    private val indexCachingService: RellIndexCachingService
 ) : LanguageServer, LanguageClientAware, TextDocumentService, WorkspaceService {
 
     private val logger = KotlinLogging.logger {}
@@ -66,9 +70,17 @@ class RellLanguageServer(
 
         result.capabilities = capabilitiesProvider.createServerCapabilities(params)
 
+        processInitializationOptions(params.initializationOptions)
+
         return requestManager.runWrite {
             workspaceManager.initialize(workspaceFolders, ::publishDiagnostics)
             result
+        }
+    }
+
+    private fun processInitializationOptions(initializationOptions: Any?) {
+        if (initializationOptions != null && initializationOptions is JsonObject) {
+            workspaceManager.indexCachingEnabled = initializationOptions.get("indexCaching")?.asBoolean ?: false
         }
     }
 
@@ -89,6 +101,20 @@ class RellLanguageServer(
     @JsonRequest(useSegment = false, value = "rell/about")
     fun about(): CompletableFuture<RellAbout> {
         return CompletableFuture.completedFuture(RellVersionInfo.getAbout())
+    }
+
+    @JsonRequest(useSegment = false, value = "rell/invalidateCaches")
+    fun invalidateCaches(): CompletableFuture<Boolean> {
+        return requestManager.runWrite {
+            indexCachingService.invalidateCaches()
+        }
+    }
+
+    @JsonRequest(useSegment = false, value = "rell/cacheFolder")
+    fun cacheFolder(): CompletableFuture<String> {
+        return requestManager.runRead {
+            indexCachingService.getCacheFolder().toString()
+        }
     }
 
     override fun shutdown(): CompletableFuture<Any> {
@@ -211,5 +237,9 @@ class RellLanguageServer(
         return requestManager.runRead {
             workspaceManager.getReferenceLocations(fileUri, params.position)
         }
+    }
+
+    override fun setTrace(params: SetTraceParams?) {
+        logger.info { "Trace level set to ${params?.value}" }
     }
 }

@@ -12,6 +12,7 @@ import assertk.assertions.isNotEmpty
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import net.postchain.rell.toolbox.core.indexer.RellIssue
+import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import org.eclipse.lsp4j.Position
@@ -35,7 +36,8 @@ class RellWorkspaceManagerTest {
     fun setup() {
         val symbolService = RellSymbolService()
         val referenceService = RellReferenceService(symbolService)
-        workspaceManager = RellWorkspaceManager(symbolService, referenceService)
+        val indexCachingService = RellIndexCachingService()
+        workspaceManager = RellWorkspaceManager(symbolService, referenceService, indexCachingService)
         diagnostics.clear()
     }
 
