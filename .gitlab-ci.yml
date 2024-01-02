@@ -2,7 +2,7 @@ image: gradle:8.4.0-jdk17
 
 include:
   - project: chromaway/core-infra/gitlab-automation
-    ref: 1.0.1
+    ref: 1.1.6
     file: templates/release.yml
 
 .setup:
