@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "1.9.10"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     application
 }
 
@@ -51,5 +52,9 @@ tasks.test {
 }
 
 application {
-    mainClass.set("net.postchain.rell.toolbox.lsp.MainKt")
+    mainClass.set("net.postchain.rell.toolbox.lsp.StdioMainKt")
+}
+
+tasks.jar {
+    manifest.attributes["Multi-Release"] = true
 }

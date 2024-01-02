@@ -17,12 +17,8 @@ fun initializeLogger(logLevel: Level, launcherType: LauncherType) {
 
     //Configure logger for STDIO launcher. For socket launcher it uses properties from log4j2.properties
     if (launcherType == LauncherType.STDIO) {
-        if (logLevel >= Level.DEBUG) {
-            rootLogger.removeAppender(appenders["ConsoleLogger"])
-            rootLogger.addAppender(appenders["RollingFile"])
-        } else {
-            rootLogger.level = Level.OFF
-        }
+        rootLogger.removeAppender(appenders["ConsoleLogger"])
+        rootLogger.addAppender(appenders["RollingFile"])
     }
 }
 

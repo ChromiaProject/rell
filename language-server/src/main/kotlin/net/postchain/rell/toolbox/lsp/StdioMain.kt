@@ -9,10 +9,8 @@ import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
 
 fun main(args: Array<String>) {
-    //TODO: Should read from args. Keeping it simple now for development
-    // When releasing launcherType shall be STDIO
     val logLevel = Level.INFO
-    val launcherType = LauncherType.SOCKET
+    val launcherType = LauncherType.STDIO
 
     initializeLogger(logLevel, launcherType)
     val app = startKoin {
@@ -22,6 +20,5 @@ fun main(args: Array<String>) {
     }
 
     val server = app.koin.get<AbstractServerLauncher>(named(launcherType))
-    server.launch(args)
+    server.launch(arrayOf("-trace"))
 }
-

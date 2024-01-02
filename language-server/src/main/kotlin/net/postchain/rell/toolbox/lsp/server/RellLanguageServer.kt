@@ -8,6 +8,7 @@ import net.postchain.rell.toolbox.core.indexer.RellIssue
 import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsConverter
+import net.postchain.rell.toolbox.util.getCurrentLogFileName
 import org.eclipse.lsp4j.DefinitionParams
 import org.eclipse.lsp4j.DidChangeConfigurationParams
 import org.eclipse.lsp4j.DidChangeTextDocumentParams
@@ -25,6 +26,8 @@ import org.eclipse.lsp4j.InitializeResult
 import org.eclipse.lsp4j.InitializedParams
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.LocationLink
+import org.eclipse.lsp4j.MessageParams
+import org.eclipse.lsp4j.MessageType
 import org.eclipse.lsp4j.PublishDiagnosticsParams
 import org.eclipse.lsp4j.ReferenceParams
 import org.eclipse.lsp4j.SemanticTokens
@@ -40,6 +43,7 @@ import org.eclipse.lsp4j.services.LanguageClientAware
 import org.eclipse.lsp4j.services.LanguageServer
 import org.eclipse.lsp4j.services.TextDocumentService
 import org.eclipse.lsp4j.services.WorkspaceService
+import java.io.File
 import java.net.URI
 import java.util.concurrent.CompletableFuture
 
@@ -71,6 +75,14 @@ class RellLanguageServer(
         result.capabilities = capabilitiesProvider.createServerCapabilities(params)
 
         processInitializationOptions(params.initializationOptions)
+
+        val currentLogFileName = File(getCurrentLogFileName())
+        val message =
+            MessageParams(
+                MessageType.Info,
+                "Rell Language Server logs will be written in: ${currentLogFileName.parent}"
+            )
+        languageClient.logMessage(message)
 
         return requestManager.runWrite {
             workspaceManager.initialize(workspaceFolders, ::publishDiagnostics)
