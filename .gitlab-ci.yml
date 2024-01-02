@@ -23,6 +23,12 @@ build-and-test:
   stage: build-and-test
   interruptible: true
   script: ./gradlew build -x test
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - "**/build"
+      - .gradle
 
 publish:
   stage: publish
