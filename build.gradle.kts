@@ -10,7 +10,8 @@ group = "net.postchain.rell.toolbox"
 
 publishing {
     publications {
-        create<MavenPublication>("rell-toolbox") {
+        create<MavenPublication>("rell-language-server") {
+            artifactId = "rell-language-server"
             setArtifacts(listOf("./language-server/build/libs/language-server-dev-all.jar"))
         }
     }
