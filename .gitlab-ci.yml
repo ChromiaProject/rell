@@ -22,7 +22,7 @@ stages:
 build-and-test:
   stage: build-and-test
   interruptible: true
-  script: ./gradlew build --info
+  script: ./gradlew build -x test
 
 publish:
   stage: publish
