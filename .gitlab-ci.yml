@@ -13,15 +13,6 @@ include:
     - name: docker:23.0.4-dind
       alias: docker
       command: [ "--tls=false" , "--experimental" ]
-  artifacts:
-    when: always
-    paths:
-      - "**/*.log"
-    reports:
-      junit:
-        - "*/build/test-reports/test/TEST-*.xml"
-    expire_in: 1 week
-
 
 stages:
   - build-and-test
