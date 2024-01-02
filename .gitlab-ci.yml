@@ -1,9 +1,47 @@
 image: gradle:8.4.0-jdk17
 
+include:
+  - project: chromaway/core-infra/gitlab-automation
+    ref: 1.1.6
+    file: templates/release.yml
+
+.setup:
+  before_script:
+    - GRADLE_USER_HOME="$(pwd)/.gradle"
+    - export GRADLE_USER_HOME
+  services:
+    - name: docker:23.0.4-dind
+      alias: docker
+      command: [ "--tls=false" , "--experimental" ]
+  artifacts:
+    when: always
+    paths:
+      - "**/*.log"
+    reports:
+      junit:
+        - "*/build/test-reports/test/TEST-*.xml"
+    expire_in: 1 week
+
+
 stages:
   - build-and-test
+  - publish
+  - release
 
 build-and-test:
   stage: build-and-test
   interruptible: true
   script: ./gradlew build --info
+
+publish:
+  stage: publish
+  extends: .setup
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+$/
+  script: gradle --build-cache publish -Pversion=$CI_COMMIT_TAG
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - "**/build"
+      - .gradle
