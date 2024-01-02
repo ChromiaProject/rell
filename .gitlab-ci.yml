@@ -13,6 +13,8 @@ include:
     - name: docker:23.0.4-dind
       alias: docker
       command: [ "--tls=false" , "--experimental" ]
+  artifacts:
+    when: always
 
 stages:
   - build-and-test
@@ -25,7 +27,7 @@ build-and-test:
   script: ./gradlew build -x test
   cache:
     key: "$CI_COMMIT_REF_NAME"
-    policy: pull
+    policy: pull-push
     paths:
       - "**/build"
       - .gradle
