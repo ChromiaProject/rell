@@ -20,7 +20,7 @@ class CapabilitiesProvider {
         serverCapabilities.setReferencesProvider(true)
         serverCapabilities.setDocumentSymbolProvider(true)
         serverCapabilities.setWorkspaceSymbolProvider(true)
-        serverCapabilities.signatureHelpProvider = SignatureHelpOptions(listOf("(", ","))
+        //serverCapabilities.signatureHelpProvider = SignatureHelpOptions(listOf("(", ","))
         serverCapabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental)
 
         val semanticTokensOptions = SemanticTokensWithRegistrationOptions()
