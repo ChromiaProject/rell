@@ -112,6 +112,7 @@ enum class RellSymbolKind(
                 IdeSymbolKind.MOD_ANNOTATION -> return ANNOTATION
                 IdeSymbolKind.MOD_ANNOTATION_LEGACY -> return ANNOTATION
                 IdeSymbolKind.UNKNOWN -> return DEFAULT
+                IdeSymbolKind.MEM_SYS_PROPERTY_PURE -> return DEFAULT
             }
         }
     }
