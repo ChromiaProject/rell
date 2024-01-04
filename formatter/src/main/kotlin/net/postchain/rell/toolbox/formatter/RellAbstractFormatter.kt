@@ -398,7 +398,17 @@ abstract class RellAbstractFormatter(
 
     fun previousHiddenRegion(token: Token): Token? {
         val commonTokenStream = parser.tokenStream as CommonTokenStream
-        return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellLexer.HIDDEN)?.lastOrNull()
+        val hiddenRegion =
+            commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellLexer.HIDDEN)?.lastOrNull()
+        return hiddenRegion
+        val commentRegion = commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, 2)?.lastOrNull()
+
+        return commentRegion ?: hiddenRegion
+    }
+
+    fun previousCommentRegion(token: Token): Token? {
+        val commonTokenStream = parser.tokenStream as CommonTokenStream
+        return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, 2)?.lastOrNull()
     }
 
     fun previousHiddenRegionList(token: Token): List<Token> {

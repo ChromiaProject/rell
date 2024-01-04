@@ -1957,11 +1957,11 @@ ruleX_tkVAL:
 ;
 
 // RULE_ML_COMMENT : '/*' ( options {greedy=false;} : . )*'*/' {skip();};
-RULE_ML_COMMENT : '/*' .*? '*/'    -> channel(HIDDEN);
+RULE_ML_COMMENT : '/*' .*? '*/'    -> channel(2);
 
 // RULE_SL_COMMENT : '//' ~(('\n'|'\r'))* ('\r'? '\n')? {skip();};
 
-RULE_SL_COMMENT : '//' ~[\r\n]*    -> channel(HIDDEN);
+RULE_SL_COMMENT : '//' ~[\r\n]*    -> channel(2);
 
 //RULE_WS : (' '|'\t'|'\r'|'\n')+ {skip();};
 RULE_WS : (' '|'\t'|'\r'|'\n')+ -> channel(HIDDEN);
