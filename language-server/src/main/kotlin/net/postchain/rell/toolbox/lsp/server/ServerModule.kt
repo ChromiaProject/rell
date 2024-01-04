@@ -2,6 +2,7 @@ package net.postchain.rell.toolbox.lsp.server
 
 import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
+import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
@@ -15,11 +16,12 @@ import org.koin.dsl.module
 
 val serverModule = module {
     single { RellSymbolService() }
-    single { RellIndexCachingService() }
+    single { RellIndexSerializer() }
+    singleOf(::RellIndexCachingService)
     single { RellReferenceService(get()) }
     singleOf(::RellWorkspaceManager)
     single { RellRequestManager() }
-    single { RellLanguageServerTerminator() }
+    singleOf(::RellLanguageServerTerminator)
     single { CapabilitiesProvider() }
     single { RellSemanticTokensManager() }
 

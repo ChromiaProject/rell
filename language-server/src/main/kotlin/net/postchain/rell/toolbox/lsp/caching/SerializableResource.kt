@@ -16,5 +16,5 @@ class SerializableResource(val parseTree: RellParser.RuleX_RootParserContext,
                            val ast: S_RellFile,
                            val syntaxErrors: List<SyntaxError> = listOf(),
                            val semanticErrors: List<C_Message> = listOf(),
-                           val symbolInfos: Map<S_Pos, IdeSymbolInfo>,
+                           val symbolInfos: Map<S_Pos, SerializableSymbolInfo>,
                            val checksum: String)
