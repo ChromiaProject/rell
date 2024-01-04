@@ -364,7 +364,10 @@ abstract class RellAbstractFormatter(
         }
     }
 
-    fun tokenFor(node: ParserRuleContext, tokenText: String): TerminalNode? {
+    fun tokenFor(node: ParserRuleContext?, tokenText: String): TerminalNode? {
+        if (node == null) {
+            return null
+        }
         for (i in 0 until node.childCount) {
             val child = node.getChild(i)
             if (child is TerminalNode) {

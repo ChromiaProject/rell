@@ -190,8 +190,12 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         val offsetExpr = xAtExprMod.ruleX_AtExprOffset()
         val limit = tokenFor(xAtExprMod, "limit")
         val offset = tokenFor(offsetExpr, "offset")
-        if (limit != null) doc.surround(limit) { it.oneSpace() }
-        if (offset != null) doc.surround(offset) { it.oneSpace() }
+        if (limit != null) {
+            doc.surround(limit) { it.oneSpace() }
+        }
+        if (offset != null) {
+            doc.surround(offset) { it.oneSpace() }
+        }
         doc.format(xAtExprMod.ruleX_ExpressionRef())
         doc.format(xAtExprMod.ruleX_AtExprOffset())
     }
