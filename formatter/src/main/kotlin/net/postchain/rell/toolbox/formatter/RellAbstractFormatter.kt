@@ -316,11 +316,13 @@ abstract class RellAbstractFormatter(
 
     fun prependNodeList(
         firstNode: ParserRuleContext,
-        nodeList: List<ParserRuleContext>
+        nodeList: List<ParserRuleContext>?
     ): List<ParserRuleContext> {
         val expressions = mutableListOf<ParserRuleContext>()
         expressions.add(firstNode)
-        expressions.addAll(nodeList)
+        if (nodeList != null) {
+            expressions.addAll(nodeList)
+        }
         return expressions
     }
 

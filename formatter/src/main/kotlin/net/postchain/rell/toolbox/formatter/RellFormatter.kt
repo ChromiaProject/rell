@@ -177,11 +177,12 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             }
             doc.prepend(closing) { it.newLine() }
         } else {
-            val tempList = prependNodeList(
+            val exprTailFieldList = xParanthesesExpr.ruleX_TupleExprTail()?.ruleX_TupleExprField()
+            val exprFieldList = prependNodeList(
                 xParanthesesExpr.ruleX_TupleExprField(),
-                xParanthesesExpr.ruleX_TupleExprTail().ruleX_TupleExprField()
+                exprTailFieldList
             )
-            formatArguments(tempList, doc)
+            formatArguments(exprFieldList, doc)
         }
     }
 
