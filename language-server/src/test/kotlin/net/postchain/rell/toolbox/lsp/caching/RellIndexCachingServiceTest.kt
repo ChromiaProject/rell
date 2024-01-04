@@ -29,6 +29,7 @@ class SourceFile(val filePath: String, val fileContent: String)
 
 class RellIndexCachingServiceTest {
 
+    lateinit var indexSerializer: RellIndexSerializer
     lateinit var cachingService: RellIndexCachingService
     lateinit var workspaceFolderUri: URI
     lateinit var dummyWorkspaceIndexer: WorkspaceIndexer
@@ -36,7 +37,8 @@ class RellIndexCachingServiceTest {
 
     @BeforeEach
     fun setup(@TempDir tempDir: Path) {
-        cachingService = spyk<RellIndexCachingService>()
+        indexSerializer = spyk<RellIndexSerializer>()
+        cachingService = spyk(RellIndexCachingService(indexSerializer))
         workspaceFolderUri = Files.createDirectories(tempDir.resolve("src")).toUri()
         val sourceFiles = listOf(
             SourceFile("dummy.rell", "module; function dummy() {}"),
@@ -63,7 +65,7 @@ class RellIndexCachingServiceTest {
 
     @Test
     fun `Should delete cache file when deserialization fails`() {
-        every { cachingService.deserialize(any())} throws IOException()
+        every { indexSerializer.deserializeAsResourceMap(any())} throws IOException()
         cachingService.saveWorkspaceIndexers(listOf(dummyWorkspaceIndexer))
 
         assertThat(cacheFile.exists()).isTrue()
@@ -97,7 +99,7 @@ class RellIndexCachingServiceTest {
         withMockedStatic("kotlin.io.FilesKt__FileReadWriteKt") {
             val mockFile = mockk<File>()
             every { cachingService.getCacheFile(workspaceFolderUri) } returns mockFile
-            every { cachingService.serialize(any()) } returns byteArrayOf(1, 2, 3)
+            every { indexSerializer.serializeAsBytes(any()) } returns byteArrayOf(1, 2, 3)
             every { mockFile.writeBytes(any()) } throws IOException()
             cachingService.saveWorkspaceIndexers(listOf(dummyWorkspaceIndexer))
         }

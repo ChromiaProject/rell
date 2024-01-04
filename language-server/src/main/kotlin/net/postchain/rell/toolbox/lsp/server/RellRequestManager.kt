@@ -27,6 +27,11 @@ class RellRequestManager {
             logger.error(exception.cause) { "Error during request" }
         }
     }
+
+    fun shutdown() {
+        parallelExecutorService.shutdown()
+        queue.shutdown()
+    }
 }
 
 class RequestManagerThreadFactory : ThreadFactory {
