@@ -120,9 +120,12 @@ abstract class RellAbstractFormatter(
         }
     }
 
-    fun lineSeparateExpr(currentExpr: Token, previousExp: Token): Boolean {
-        val previousExprLineNr = previousExp.line
-        val currentExprLineNr = currentExpr.line
+    fun lineSeparateExpr(currentExpr: Token?, previousExp: Token?): Boolean {
+        if (currentExpr == null && previousExp == null) {
+            return false
+        }
+        val previousExprLineNr = previousExp!!.line
+        val currentExprLineNr = currentExpr!!.line
         val isLineSeperated = previousExprLineNr != currentExprLineNr
         return if (getLineLength(currentExpr) > formatterOptions.maxLineWidth || isLineSeperated) {
             true

@@ -150,8 +150,8 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
     fun format(xParanthesesExpr: RuleX_ParenthesesExprContext, doc: FormattableDocument) {
         val opening = xParanthesesExpr.ruleX_tkLPAR()
         val closing =
-            tokenFor(xParanthesesExpr, ")") ?: throw RellFormatterException("No closing parentheses found")
-        val lineSeperateExpression = lineSeparateExpr(opening.start, closing.symbol)
+            tokenFor(xParanthesesExpr, ")")
+        val lineSeperateExpression = lineSeparateExpr(opening?.start, closing?.symbol)
         formatSkewedOpeningClosing(opening, xParanthesesExpr, doc, BracePairTypes.PARENTHESES)
 
         if (lineSeperateExpression) {
@@ -234,7 +234,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             it.highPriority()
         }
         doc.format(xIfExpr.ruleX_ExpressionRef(1))
-        val elseKeyword = tokenFor(xIfExpr, "else") ?: throw RellFormatterException("No else keyword")
+        val elseKeyword = tokenFor(xIfExpr, "else")
         doc.surround(elseKeyword) { it.oneSpace() }
         doc.format(xIfExpr.ruleX_ExpressionRef(2))
     }
@@ -265,7 +265,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         doc.append(xWhenStmt.ruleX_tkWHEN()) { it.oneSpace() }
         doc.surround(xWhenStmt.ruleX_ExpressionRef()) { it.noSpace() }
         doc.format(xWhenStmt.ruleX_ExpressionRef())
-        val openingCurly = tokenFor(xWhenStmt, "{") ?: throw RellFormatterException("No opening curly")
+        val openingCurly = tokenFor(xWhenStmt, "{")
         doc.prepend(openingCurly) { it.oneSpace() }
         for (whenCase in xWhenStmt.ruleX_WhenStmtCase()) {
             doc.prepend(whenCase) { it.newLine() }
@@ -277,7 +277,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             doc.prepend(whenCase.ruleX_StatementRef()) { it.oneSpace() }
             doc.format(whenCase.ruleX_StatementRef())
         }
-        val closingCurly = tokenFor(xWhenStmt, "}") ?: throw RellFormatterException("No closing curly")
+        val closingCurly = tokenFor(xWhenStmt, "}")
         doc.prepend(closingCurly) { it.newLine() }
     }
 
@@ -286,9 +286,9 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         doc.append(xWhenExpr.ruleX_tkWHEN()) { it.oneSpace() }
         doc.surround(xWhenExpr.ruleX_ExpressionRef()) { it.noSpace() }
         doc.format(xWhenExpr.ruleX_ExpressionRef())
-        val openingCurly = tokenFor(xWhenExpr, "{") ?: throw RellFormatterException("No opening curly")
+        val openingCurly = tokenFor(xWhenExpr, "{")
         doc.prepend(openingCurly) { it.oneSpace() }
-        val closingCurly = tokenFor(xWhenExpr, "}") ?: throw RellFormatterException("No closing curly")
+        val closingCurly = tokenFor(xWhenExpr, "}")
         doc.prepend(closingCurly) { it.newLine() }
         doc.format(xWhenExpr.ruleX_WhenExprCases())
     }
@@ -350,7 +350,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             doc.format(xAttriDef)
         }
 
-        val closingCurly = tokenFor(xObjectDef, "}") ?: throw RellFormatterException("No closing curly")
+        val closingCurly = tokenFor(xObjectDef, "}")
         doc.prepend(closingCurly) { it.newLine() }
     }
 
@@ -362,7 +362,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             formatSemicolon(xObjectDef, doc)
             doc.format(xAttriDef)
         }
-        val closingCurly = tokenFor(xObjectDef, "}") ?: throw RellFormatterException("No closing curly")
+        val closingCurly = tokenFor(xObjectDef, "}")
         doc.prepend(closingCurly) { it.newLine() }
     }
 
@@ -375,7 +375,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             doc.surround(xName) { it.noSpace() }
             doc.prepend(xName) { it.indent() }
         }
-        val closingCurly = tokenFor(xEnumDef, "}") ?: throw RellFormatterException("No closing curly")
+        val closingCurly = tokenFor(xEnumDef, "}")
         doc.prepend(closingCurly) { it.newLine() }
     }
 
@@ -572,7 +572,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
 
     fun format(xVarStmt: RuleX_VarStmtContext, doc: FormattableDocument) {
         formatSemicolon(xVarStmt, doc)
-        val equalSign = tokenFor(xVarStmt, "=") ?: throw RellFormatterException("No equal sign")
+        val equalSign = tokenFor(xVarStmt, "=")
         doc.surround(equalSign) { it.oneSpace() }
         doc.surround(xVarStmt.ruleX_VarDeclarator()) { it.oneSpace() }
         doc.format(xVarStmt.ruleX_VarDeclarator())
@@ -589,7 +589,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
     }
 
     fun format(xConstantDef: RuleX_ConstantDefContext, doc: FormattableDocument) {
-        val equalSign = tokenFor(xConstantDef, "=") ?: throw RellFormatterException("No equal sign")
+        val equalSign = tokenFor(xConstantDef, "=")
         doc.surround(equalSign) { it.oneSpace() }
         doc.prepend(xConstantDef.ruleX_Name()) { it.oneSpace() }
         formatType(xConstantDef, doc)
@@ -640,8 +640,6 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
                 formatExprTailSingleline(tailCall, doc)
             }
             doc.format(tailCall)
-        } else {
-            throw RellFormatterException("No expression tail")
         }
     }
 
@@ -699,7 +697,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             }
             doc.format(xRelAnyClause)
         }
-        val closingCurly = tokenFor(xEntitybody, "}") ?: throw RellFormatterException("No closing curly")
+        val closingCurly = tokenFor(xEntitybody, "}")
         doc.prepend(closingCurly) { it.newLine() }
     }
 

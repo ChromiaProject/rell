@@ -1,0 +1,3 @@
+function a() {
+    val from_chain_rid: byte_array;
+}
