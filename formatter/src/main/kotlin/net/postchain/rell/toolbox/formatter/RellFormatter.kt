@@ -412,11 +412,13 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
     }
 
     fun format(xModifier: RuleX_ModifierContext, doc: FormattableDocument) {
-        doc.append(xModifier) {
-            it.setNewLines(0)
-            it.oneSpace()
+        val annotation = xModifier.ruleX_Annotation()
+        doc.append(annotation) {
+            it.newLine()
             it.highPriority()
         }
+        formatModifier(xModifier.ruleX_Modifier_0(), doc)
+        formatModifier(xModifier.ruleX_Modifier_1(), doc)
     }
 
     fun format(xAnnotation: RuleX_AnnotationContext, doc: FormattableDocument) {

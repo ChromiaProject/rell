@@ -1,0 +1,12 @@
+abstract module;
+
+@log
+entity promo_codes {
+    key code: text;
+    rules: byte_array;
+    visible: boolean;
+
+// from_date and to_date to determine a validity of promo_code
+    from_date: timestamp;
+    to_date: timestamp;
+}

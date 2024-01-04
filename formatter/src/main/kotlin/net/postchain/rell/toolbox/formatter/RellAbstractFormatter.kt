@@ -356,6 +356,14 @@ abstract class RellAbstractFormatter(
         }
     }
 
+    fun formatModifier(node: ParserRuleContext?, doc: FormattableDocument) {
+        doc.append(node) {
+            it.setNewLines(0)
+            it.oneSpace()
+            it.highPriority()
+        }
+    }
+
     fun tokenFor(node: ParserRuleContext, tokenText: String): TerminalNode? {
         for (i in 0 until node.childCount) {
             val child = node.getChild(i)
