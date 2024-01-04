@@ -1,0 +1,3 @@
+function check_single_sig_auth(participants: list<byte_array>) {
+    require(participants.size()    ==   1);
+}

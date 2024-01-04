@@ -223,10 +223,16 @@ abstract class RellAbstractFormatter(
             val assignToken = tokenFor(arg, "=")
             val equalsToken = tokenFor(arg, "==")
             if (assignToken != null) {
-                doc.surround(assignToken) { p -> p.oneSpace() }
+                doc.surround(assignToken) { p ->
+                    p.oneSpace()
+                    p.highPriority()
+                }
             }
             if (equalsToken != null) {
-                doc.surround(equalsToken) { p -> p.oneSpace() }
+                doc.surround(equalsToken) { p ->
+                    p.oneSpace()
+                    p.highPriority()
+                }
             }
 
 
