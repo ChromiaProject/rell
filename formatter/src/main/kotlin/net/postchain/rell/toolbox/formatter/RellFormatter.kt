@@ -370,11 +370,17 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         doc.surround(xEnumDef) { it.setNewLines(2, 2, 2) }
         doc.surround(xEnumDef.ruleX_Name(0)) { it.oneSpace() }
         val members = xEnumDef.ruleX_Name().subList(1, xEnumDef.ruleX_Name().size)
-        for (xName in members) {
+        members.forEachIndexed { index, xName ->
             doc.prepend(xName) { it.newLine() }
             doc.surround(xName) { it.noSpace() }
             doc.prepend(xName) { it.indent() }
+
+            if (index == members.lastIndex) {
+                doc.append(xName) { it.newLine() }
+            }
         }
+
+
         val closingCurly = tokenFor(xEnumDef, "}")
         doc.prepend(closingCurly) { it.newLine() }
     }
@@ -691,9 +697,11 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
     }
 
     fun format(xEntitybody: RuleX_EntityBodyFullContext, doc: FormattableDocument) {
-        for (xRelAnyClause in xEntitybody.ruleX_RelAnyClause()) {
-            doc.prepend(xRelAnyClause) {
-                it.newLine()
+        val anyClause = xEntitybody.ruleX_RelAnyClause()
+        anyClause.forEachIndexed { index, xRelAnyClause ->
+            doc.prepend(xRelAnyClause) { it.newLine() }
+            if (index == anyClause.lastIndex) {
+                doc.append(xRelAnyClause) { it.newLine() }
             }
             doc.format(xRelAnyClause)
         }
