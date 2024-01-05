@@ -4,6 +4,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import java.io.File
+import java.io.IOException
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 
@@ -14,8 +15,13 @@ class WorkspaceIndexer(val workspaceUri: URI) {
     fun initialFileIndexBuild(cachedIndexer: WorkspaceIndexer? = null) {
         val dirtyFiles: MutableList<URI> = mutableListOf()
         val rellUris = addRellFilesUri()
-        rellUris.forEach { fileUri ->
-            val fileContent = File(fileUri).readText()
+        for (fileUri in rellUris) {
+            val fileContent = try {
+                File(fileUri).readText()
+            } catch (e: IOException) {
+                logger.warn { "Could not read file $fileUri" }
+                continue
+            }
             val checksum = calculateChecksum(fileContent)
             val cachedResource = cachedIndexer?.getResource(fileUri)
 
