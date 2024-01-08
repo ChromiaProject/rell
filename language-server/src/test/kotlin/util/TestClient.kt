@@ -6,7 +6,6 @@ import org.eclipse.lsp4j.MessageParams
 import org.eclipse.lsp4j.PublishDiagnosticsParams
 import org.eclipse.lsp4j.ShowMessageRequestParams
 import org.eclipse.lsp4j.services.LanguageClient
-import java.net.URI
 import java.util.concurrent.CompletableFuture
 
 open class TestClient : LanguageClient {
@@ -34,6 +33,6 @@ open class TestClient : LanguageClient {
     }
 
     override fun logMessage(message: MessageParams?) {
-        TODO("Not yet implemented")
+        return
     }
 }
