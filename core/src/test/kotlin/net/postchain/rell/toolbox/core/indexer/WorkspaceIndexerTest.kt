@@ -47,13 +47,17 @@ class WorkspaceIndexerTest {
         val notAllowedFile = File(dir, "not_allowed.rell").apply {
             writeText("module;")
         }
-        val permissions = PosixFilePermissions.fromString("---------")
-        Files.setPosixFilePermissions(notAllowedFile.toPath(), permissions)
+        val notAllowedPermissions = PosixFilePermissions.fromString("---------")
+        Files.setPosixFilePermissions(notAllowedFile.toPath(), notAllowedPermissions)
 
         val workspaceIndexer = WorkspaceIndexer(dir.toURI())
         workspaceIndexer.initialFileIndexBuild()
 
         assertThat(workspaceIndexer.fileUriResourceMap.keys().toList()).containsOnly(allowedFile.toURI())
+
+        // Restore permissions
+        val allowedPermissions = PosixFilePermissions.fromString("rwxr-x---")
+        Files.setPosixFilePermissions(notAllowedFile.toPath(), allowedPermissions)
     }
 
     @Test
