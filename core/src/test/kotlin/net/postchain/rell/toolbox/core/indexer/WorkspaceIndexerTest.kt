@@ -1,12 +1,18 @@
 package net.postchain.rell.toolbox.core.indexer
 
 import assertk.assertThat
+import assertk.assertions.containsOnly
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.EnabledOnOs
+import org.junit.jupiter.api.condition.OS
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.createDirectory
+
 
 class WorkspaceIndexerTest {
     @Test
@@ -29,6 +35,25 @@ class WorkspaceIndexerTest {
         workspaceIndexer.fileUriResourceMap.forEach {
             assertThat(it.value.parseTree.children).isNotEmpty()
         }
+    }
+
+    @Test
+    @EnabledOnOs(OS.LINUX, OS.MAC)
+    fun `initialFileIndexBuild skips files not able to read`(@TempDir dir: File) {
+        val childDir = File(dir, "directory").toPath().createDirectory()
+        val allowedFile = File(childDir.toFile(), "rell_file.rell").apply {
+            writeText("module;")
+        }
+        val notAllowedFile = File(dir, "not_allowed.rell").apply {
+            writeText("module;")
+        }
+        val permissions = PosixFilePermissions.fromString("---------")
+        Files.setPosixFilePermissions(notAllowedFile.toPath(), permissions)
+
+        val workspaceIndexer = WorkspaceIndexer(dir.toURI())
+        workspaceIndexer.initialFileIndexBuild()
+
+        assertThat(workspaceIndexer.fileUriResourceMap.keys().toList()).containsOnly(allowedFile.toURI())
     }
 
     @Test
