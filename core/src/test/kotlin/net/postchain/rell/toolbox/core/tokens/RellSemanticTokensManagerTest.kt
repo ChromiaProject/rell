@@ -4,6 +4,8 @@ import assertk.assertThat
 import assertk.assertions.containsAll
 import assertk.assertions.containsExactly
 import assertk.assertions.extracting
+import net.postchain.rell.base.compiler.base.utils.C_SourceFile
+import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.toolbox.core.indexer.RellResourceFactory
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import org.junit.jupiter.api.Test
@@ -30,8 +32,9 @@ class RellSemanticTokensManagerTest {
             """.trimIndent()
             )
         }
+        val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
         val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser())
-        val resource = resourceFactory.buildRellResource(rellFile.toURI())
+        val resource = resourceFactory.buildRellResource(rellFile.toURI(), fileMap)
 
         val tokens = RellSemanticTokensManager().getSemanticTokens(resource)
 
@@ -61,7 +64,8 @@ class RellSemanticTokensManagerTest {
             )
         }
         val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser())
-        val resource = resourceFactory.buildRellResource(rellFile.toURI())
+        val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
+        val resource = resourceFactory.buildRellResource(rellFile.toURI(), fileMap)
 
         val relativeTokens = RellSemanticTokensManager().getRelativeSemanticTokens(resource)
 

@@ -1,7 +1,10 @@
 package net.postchain.rell.toolbox.core.indexer
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import net.postchain.rell.base.compiler.base.utils.C_SourceFile
+import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import java.io.File
 import java.net.URI
@@ -11,7 +14,13 @@ class WorkspaceIndexer(val workspaceUri: URI) {
     private val logger = KotlinLogging.logger {}
     private val resourceFactory = RellResourceFactory(workspaceUri, AntlrRellParser())
     var fileUriResourceMap = ConcurrentHashMap<URI, Resource>()
+    var fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
     fun initialFileIndexBuild(cachedIndexer: WorkspaceIndexer? = null) {
+
+        if (cachedIndexer != null) {
+            fileMap = cachedIndexer.fileMap
+        }
+
         val dirtyFiles: MutableList<URI> = mutableListOf()
         val rellUris = addRellFilesUri()
         rellUris.forEach { fileUri ->
@@ -22,10 +31,10 @@ class WorkspaceIndexer(val workspaceUri: URI) {
             val resource = if (cachedResource != null && cachedResource.checksum == checksum) {
                 cachedResource
             } else {
-                resourceFactory.buildRellResource(fileUri, fileContent)
+                resourceFactory.buildRellResource(fileUri, fileContent, fileMap)
             }
 
-            if (resource.imports.isNotEmpty()) {
+            if (resource.imports.isNotEmpty() || resource.locationInfo.filter { it.value.ideSymbolInfo.kind == IdeSymbolKind.UNKNOWN}.isNotEmpty()) {
                 dirtyFiles.add(fileUri)
             }
             fileUriResourceMap[fileUri] = resource
@@ -37,7 +46,7 @@ class WorkspaceIndexer(val workspaceUri: URI) {
             val resource = if (cachedResource != null && cachedResource.checksum == checksum) {
                 cachedResource
             } else {
-                resourceFactory.buildRellResource(fileUriResourceMap[fileUri]!!, fileUri)
+                resourceFactory.buildRellResource(fileUri, fileMap)
             }
             fileUriResourceMap[fileUri] = resource
         }
@@ -70,7 +79,7 @@ class WorkspaceIndexer(val workspaceUri: URI) {
 
     //Change in source code
     fun updateFileUriResourceMap(fileUri: URI) {
-        fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri)
+        fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileMap)
     }
 
     fun updateFileUriResourceMap(fileUri: URI, fileContent: String) {
@@ -78,7 +87,7 @@ class WorkspaceIndexer(val workspaceUri: URI) {
             logger.info { "Skipping indexing of file $fileUri because it is a git file" }
             return
         }
-        fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileContent)
+        fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileContent, fileMap)
     }
 
     //Rename and Move file

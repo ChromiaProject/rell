@@ -1,11 +1,10 @@
 package net.postchain.rell.toolbox.core.indexer
 
-import com.google.common.collect.ImmutableMap
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_Error
-import net.postchain.rell.base.compiler.base.utils.C_SourceDir
+import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
 import net.postchain.rell.base.utils.ide.IdeApi
@@ -18,17 +17,16 @@ import net.postchain.rell.toolbox.core.parser.SyntaxError
 import net.postchain.rell.toolbox.core.parser.SyntaxErrorCollector
 import java.io.File
 import java.net.URI
-import java.util.*
 
 
 class RellResourceFactory(private val workspaceUri: URI, private val parser: AntlrRellParser) {
     val rellCompilerUtils = RellCompilerUtils()
 
-    fun buildRellResource(fileUri: URI, fileContent: String): Resource {
+    fun buildRellResource(fileUri: URI, fileContent: String, fileMap:  MutableMap<C_SourcePath, C_SourceFile>): Resource {
         val rellCompilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
         val antlrParseTree = buildParseTreeWithSyntaxErrors(fileContent)
         val ast = buildRellAstWithCompilerErrors(rellCompilerSourcePath, antlrParseTree.first)
-        val compilationResult = compileResult(rellCompilerSourcePath, ast.first)
+        val compilationResult = compileResult(rellCompilerSourcePath, ast.first, fileMap)
         val symbolInfo = compilationResult?.symbolInfos ?: mapOf()
         val locationInfo = createLocationInfo(symbolInfo)
 
@@ -45,32 +43,14 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
         )
     }
 
-    fun buildRellResource(fileUri: URI): Resource {
+    fun buildRellResource(fileUri: URI, fileMap:  MutableMap<C_SourcePath, C_SourceFile>): Resource {
         val fileContent = File(fileUri).readText()
-        return buildRellResource(fileUri, fileContent)
-    }
-
-    fun buildRellResource(resource: Resource, fileUri: URI): Resource {
-        val rellCompilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
-        val compilationResult = compileResult(rellCompilerSourcePath, resource.ast)
-        val symbolInfo = compilationResult?.symbolInfos ?: mapOf()
-        val locationInfo = createLocationInfo(symbolInfo)
-
-        return Resource(
-            resource.parseTree,
-            resource.moduleInfo,
-            fileUri,
-            workspaceUri,
-            resource.ast,
-            resource.syntaxErrors,
-            compilationResult?.messages ?: listOf(),
-            symbolInfo,
-            locationInfo
-        )
+        return buildRellResource(fileUri, fileContent, fileMap)
     }
 
     fun compileResult(
-        compilerSrcPath: C_SourcePath, ast: S_RellFile
+        compilerSrcPath: C_SourcePath, ast: S_RellFile,
+        fileMap:  MutableMap<C_SourcePath, C_SourceFile>
     ): IdeCompilationResult? {
         // Having a workspace uri that ends with rell means we have a single file indexer.
         // Similar to java we have decided to not compile single file,
@@ -86,15 +66,13 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
             ?: throw Exception("Can not find the moduleName for $compilerSrcPath")
 
         val options = C_CompilerOptions.builder().symbolInfoFile(compilerSrcPath).ide(true).build()
-        val commonSourceDir: C_SourceDir = C_SourceDir.diskDir(File(workspaceUri))
         val idePath = IdeSourcePathFilePath(compilerSrcPath)
         val mainFile = AstSourceFile.make(ast, idePath)
-        val fileMap = ImmutableMap.of(compilerSrcPath, mainFile)
+        fileMap[compilerSrcPath] = mainFile
         val selfDir = IdeDirApi.mapDir(fileMap)
-
         return try {
             IdeApi.compile(
-                CompoundSourceDir(selfDir, commonSourceDir), listOf(moduleName), options
+                selfDir, listOf(moduleName), options
             )
         } catch (e: Throwable) {
             logger.error(e) { "Compilation failed for file: ${compilerSrcPath.str()}" }

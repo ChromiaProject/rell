@@ -1,0 +1,7 @@
+module;
+
+import ^.single_syntax_error.*;
+
+operation create_c() {
+    create c(name = "");
+}

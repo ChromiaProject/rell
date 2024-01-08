@@ -8,7 +8,7 @@ import net.postchain.rell.toolbox.core.indexer.Resource
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.core.indexer.calculateChecksum
 import net.postchain.rell.toolbox.core.indexer.createLocationInfo
-import java.net.URI
+import java.util.concurrent.ConcurrentHashMap
 
 class RellIndexSerializer {
     private val fury = Fury.builder().withLanguage(Language.JAVA)
@@ -18,14 +18,18 @@ class RellIndexSerializer {
         .withCodegen(false)
         .buildThreadSafeFury()
 
-    fun deserializeAsResourceMap(indexAsBytes: ByteArray): Map<URI, Resource> =
-        fromSerializableResources(deserialize(indexAsBytes))
+    fun deserializeAsWorkspaceIndexer(indexAsBytes: ByteArray): WorkspaceIndexer =
+        fromSerializableWorkspaceIndexer(deserialize(indexAsBytes))
 
-    fun serializeAsBytes(indexer: WorkspaceIndexer): ByteArray = serialize(toSerializableResources(indexer))
+    fun serializeAsBytes(indexer: WorkspaceIndexer): ByteArray = serialize(toSerializableWorkspaceIndexer(indexer))
 
-    private fun deserialize(indexAsBytes: ByteArray) = fury.deserialize(indexAsBytes) as List<SerializableResource>
+    private fun deserialize(indexAsBytes: ByteArray) = fury.deserialize(indexAsBytes) as SerializableWorkspaceIndexer
 
-    private fun serialize(serializableData: List<SerializableResource>): ByteArray = fury.serialize(serializableData)
+    private fun serialize(serializableData: SerializableWorkspaceIndexer): ByteArray = fury.serialize(serializableData)
+
+    private fun toSerializableWorkspaceIndexer(indexer: WorkspaceIndexer): SerializableWorkspaceIndexer {
+        return SerializableWorkspaceIndexer(indexer.workspaceUri, toSerializableResources(indexer), indexer.fileMap)
+    }
 
     private fun toSerializableResources(indexer: WorkspaceIndexer): List<SerializableResource> {
         val serializableData = indexer.fileUriResourceMap.map { (_, resource) ->
@@ -53,6 +57,13 @@ class RellIndexSerializer {
                 link = it.value.link
             )
         }
+    }
+
+    private fun fromSerializableWorkspaceIndexer(serializableWorkspaceIndexer: SerializableWorkspaceIndexer): WorkspaceIndexer {
+        val indexer = WorkspaceIndexer(serializableWorkspaceIndexer.workspaceUri)
+        indexer.fileUriResourceMap = ConcurrentHashMap(fromSerializableResources( serializableWorkspaceIndexer.serializableResources))
+        indexer.fileMap = serializableWorkspaceIndexer.fileMap
+        return indexer
     }
 
     private fun fromSerializableResources(serializedResources: List<SerializableResource>) =

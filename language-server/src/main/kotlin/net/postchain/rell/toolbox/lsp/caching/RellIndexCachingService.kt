@@ -6,7 +6,6 @@ import net.postchain.rell.toolbox.core.indexer.sha256
 import java.io.File
 import java.net.URI
 import java.nio.file.Files
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
@@ -22,12 +21,10 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
             return null
         }
 
-        try {
+        return try {
             val indexAsBytes = cacheFile.readBytes()
-            val fileUriResourceMap = indexSerializer.deserializeAsResourceMap(indexAsBytes)
-            val indexer = WorkspaceIndexer(workspaceFolderUri)
-            indexer.fileUriResourceMap = ConcurrentHashMap(fileUriResourceMap)
-            return indexer
+            indexSerializer.deserializeAsWorkspaceIndexer(indexAsBytes)
+
         } catch (e: Throwable) {
             logger.error(e) { "Failed to deserialize index cache file: $cacheFile" }
             try {
@@ -35,7 +32,7 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
             } catch (e: Throwable) {
                 logger.error(e) { "Failed to delete cache file: $cacheFile" }
             }
-            return null
+            null
         }
     }
 

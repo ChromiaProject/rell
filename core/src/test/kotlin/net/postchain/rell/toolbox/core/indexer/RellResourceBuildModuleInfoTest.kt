@@ -6,6 +6,8 @@ import assertk.assertions.extracting
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import net.postchain.rell.base.compiler.base.utils.C_Message
+import net.postchain.rell.base.compiler.base.utils.C_SourceFile
+import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -24,21 +26,41 @@ class RellResourceBuildModuleInfoTest {
     //TODO make it so a compiler can take in one file without ws defined
     @Test
     fun `compiler finds errors in from imported file`() {
-        val fileUri = rellFilesErrors.find { it.toString().endsWith("import.rell") }!!
-        val fileContent = File(fileUri).readText()
-        val rellCompilerUtils = RellCompilerUtils()
-        val compilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceError.toURI())
-
         val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser())
-        val parseTree = rellDesc.buildParseTreeWithSyntaxErrors(fileContent).first
-        val sRellFile = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePath, parseTree).first
+        val rellCompilerUtils = RellCompilerUtils()
+        val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
 
-        val rellCompileResult = rellDesc.compileResult(
-            compilerSourcePath,
-            sRellFile,
+        val fileUriImport = rellFilesErrors.find { it.toString().endsWith("import.rell") }!!
+        val fileUriSemanticError = rellFilesErrors.find { it.toString().endsWith("semantic_error.rell") }!!
+
+        val fileContentImport = File(fileUriImport).readText()
+        val fileContentSemanticError = File(fileUriSemanticError).readText()
+
+        val parseTreeImport = rellDesc.buildParseTreeWithSyntaxErrors(fileContentImport).first
+        val parseTreeSematicError = rellDesc.buildParseTreeWithSyntaxErrors(fileContentSemanticError).first
+
+        val compilerSourcePathImport = rellCompilerUtils.createCompilerSourcePath(fileUriImport, workspaceError.toURI())
+        val compilerSourcePathSemanticError = rellCompilerUtils.createCompilerSourcePath(fileUriSemanticError, workspaceError.toURI())
+
+        val sRellFileImport = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePathImport, parseTreeImport).first
+        val sRellFileSemanticError = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePathSemanticError, parseTreeSematicError).first
+
+        val rellCompileResultSemanticError = rellDesc.compileResult(
+            compilerSourcePathSemanticError,
+            sRellFileSemanticError,
+            fileMap
         )
 
-        val errorMessages = filterMessages(rellCompileResult!!.messages, fileUri)
+        val errorMessagesSemanticError = filterMessages(rellCompileResultSemanticError!!.messages, fileUriSemanticError)
+        assertThat(errorMessagesSemanticError.size).isEqualTo(3)
+
+        val rellCompileResultImport = rellDesc.compileResult(
+            compilerSourcePathImport,
+            sRellFileImport,
+            fileMap
+        )
+
+        val errorMessages = filterMessages(rellCompileResultImport!!.messages, fileUriImport)
         assertThat(errorMessages).isEmpty()
     }
 
@@ -53,10 +75,12 @@ class RellResourceBuildModuleInfoTest {
         val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser())
         val parseTree = rellDesc.buildParseTreeWithSyntaxErrors(fileContent).first
         val sRellFile = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePath, parseTree).first
+        val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
 
         val rellCompileResult = rellDesc.compileResult(
             compilerSourcePath,
-            sRellFile
+            sRellFile,
+            fileMap
         )
 
         val errorMessages = filterMessages(rellCompileResult!!.messages, fileUri)

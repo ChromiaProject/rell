@@ -17,7 +17,7 @@ import java.io.File
 import java.net.URI
 
 class ReferenceIndexer(private val workspaceUri: URI, fileUriResourceMap: MutableMap<URI, Resource>) {
-    private val globalGlobalReferenceMap = mutableMapOf<GlobalReference, MutableSet<S_Pos>>()
+    private val globalReferenceMap = mutableMapOf<GlobalReference, MutableSet<S_Pos>>()
     private val moduleReferenceMap = mutableMapOf<URI, MutableSet<URI>>()
     private val localReferenceMap = mutableMapOf<LocalReference, MutableSet<S_Pos>>()
 
@@ -59,7 +59,7 @@ class ReferenceIndexer(private val workspaceUri: URI, fileUriResourceMap: Mutabl
         val symbolFileUri = getSymbolUri(symbolInfo, fileUri, workspaceUri) ?: return listOf()
         val symbolId = getSymbolId(symbolInfo) ?: return listOf()
         val globalReference = GlobalReference(symbolFileUri, symbolId)
-        return toLocations(globalGlobalReferenceMap[globalReference])
+        return toLocations(globalReferenceMap[globalReference])
     }
 
     private fun findModuleReferences(symbolInfo: IdeSymbolInfo): List<Location> {
@@ -105,10 +105,10 @@ class ReferenceIndexer(private val workspaceUri: URI, fileUriResourceMap: Mutabl
     ) {
         val targetFileUri = URI(workspaceUri.toString() + link.globalId().file)
         val globalReference = GlobalReference(targetFileUri, link.globalId().symId)
-        if (globalGlobalReferenceMap.containsKey(globalReference)) {
-            globalGlobalReferenceMap[globalReference]?.add(position)
+        if (globalReferenceMap.containsKey(globalReference)) {
+            globalReferenceMap[globalReference]?.add(position)
         } else {
-            globalGlobalReferenceMap[globalReference] = mutableSetOf(position)
+            globalReferenceMap[globalReference] = mutableSetOf(position)
         }
     }
 
