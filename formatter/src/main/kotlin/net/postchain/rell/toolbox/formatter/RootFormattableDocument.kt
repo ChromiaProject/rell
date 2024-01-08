@@ -33,6 +33,7 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
         val change = Changes(prependBeforeNode.start.startIndex, prependBeforeNode.start.startIndex, formatterOptions)
         changeModifier(change)
         hiddenRegionChangePrependModifier(change, prependBeforeNode.start)
+        commentRegionChange(prependBeforeNode.start)
         changes.add(change)
     }
 
@@ -41,6 +42,7 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
         val change = Changes(prependBeforeNode.symbol.startIndex, prependBeforeNode.symbol.startIndex, formatterOptions)
         changeModifier(change)
         hiddenRegionChangePrependModifier(change, prependBeforeNode.symbol)
+        commentRegionChange(prependBeforeNode.symbol)
         changes.add(change)
     }
 
@@ -205,6 +207,17 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
             change.startOffset = prevHiddenRegion.startIndex
             change.stopOffset = prevHiddenRegion.startIndex + prevHiddenRegion.text.length
             change.previousHiddenText = prevHiddenRegion.text
+        }
+    }
+
+    private fun commentRegionChange(token: Token) {
+        val prevCommentRegion = formatter.previousCommentRegion(token)
+        if (prevCommentRegion != null) {
+            val change =
+                Changes(prevCommentRegion.stopIndex + 1, prevCommentRegion.stopIndex + 1, formatterOptions)
+            change.newLine()
+            change.superHighPriority()
+            changes.add(change)
         }
     }
 

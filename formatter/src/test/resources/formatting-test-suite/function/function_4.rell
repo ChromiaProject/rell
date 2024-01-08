@@ -1,0 +1,3 @@
+function require_ownership() {
+        ft3.acc.require_auth(ownership.account, auth_descriptor_id, list<text>());
+}

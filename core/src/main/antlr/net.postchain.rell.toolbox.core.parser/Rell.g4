@@ -1956,12 +1956,14 @@ ruleX_tkVAL:
 	'val'
 ;
 
-// RULE_ML_COMMENT : '/*' ( options {greedy=false;} : . )*'*/' {skip();};
-RULE_ML_COMMENT : '/*' .*? '*/'    -> channel(HIDDEN);
-
-// RULE_SL_COMMENT : '//' ~(('\n'|'\r'))* ('\r'? '\n')? {skip();};
-
-RULE_SL_COMMENT : '//' ~[\r\n]*    -> channel(HIDDEN);
+//Sets comment to hardcorded channel 2, since HIDDEN default gets value 1.
+//We also set this value in RellCustomTokenChannels
+//Do introduce channel names properly we would need to separate parser and lexer into
+//two different g4 files:
+//https://github.com/antlr/antlr4/issues/1555
+//https://stackoverflow.com/questions/28197609/extra-channels-in-antlr-4-5
+RULE_ML_COMMENT : '/*' .*? '*/'    -> channel(2);
+RULE_SL_COMMENT : '//' ~[\r\n]*    -> channel(2);
 
 //RULE_WS : (' '|'\t'|'\r'|'\n')+ {skip();};
 RULE_WS : (' '|'\t'|'\r'|'\n')+ -> channel(HIDDEN);

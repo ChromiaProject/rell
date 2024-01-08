@@ -2,6 +2,7 @@ package net.postchain.rell.toolbox.formatter
 
 import net.postchain.rell.toolbox.core.parser.RellLexer
 import net.postchain.rell.toolbox.core.parser.RellParser
+import net.postchain.rell.toolbox.core.tokens.RellCustomTokenChannels
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
@@ -120,9 +121,12 @@ abstract class RellAbstractFormatter(
         }
     }
 
-    fun lineSeparateExpr(currentExpr: Token, previousExp: Token): Boolean {
-        val previousExprLineNr = previousExp.line
-        val currentExprLineNr = currentExpr.line
+    fun lineSeparateExpr(currentExpr: Token?, previousExp: Token?): Boolean {
+        if (currentExpr == null && previousExp == null) {
+            return false
+        }
+        val previousExprLineNr = previousExp!!.line
+        val currentExprLineNr = currentExpr!!.line
         val isLineSeperated = previousExprLineNr != currentExprLineNr
         return if (getLineLength(currentExpr) > formatterOptions.maxLineWidth || isLineSeperated) {
             true
@@ -223,10 +227,16 @@ abstract class RellAbstractFormatter(
             val assignToken = tokenFor(arg, "=")
             val equalsToken = tokenFor(arg, "==")
             if (assignToken != null) {
-                doc.surround(assignToken) { p -> p.oneSpace() }
+                doc.surround(assignToken) { p ->
+                    p.oneSpace()
+                    p.highPriority()
+                }
             }
             if (equalsToken != null) {
-                doc.surround(equalsToken) { p -> p.oneSpace() }
+                doc.surround(equalsToken) { p ->
+                    p.oneSpace()
+                    p.highPriority()
+                }
             }
 
 
@@ -316,11 +326,13 @@ abstract class RellAbstractFormatter(
 
     fun prependNodeList(
         firstNode: ParserRuleContext,
-        nodeList: List<ParserRuleContext>
+        nodeList: List<ParserRuleContext>?
     ): List<ParserRuleContext> {
         val expressions = mutableListOf<ParserRuleContext>()
         expressions.add(firstNode)
-        expressions.addAll(nodeList)
+        if (nodeList != null) {
+            expressions.addAll(nodeList)
+        }
         return expressions
     }
 
@@ -345,7 +357,18 @@ abstract class RellAbstractFormatter(
         }
     }
 
-    fun tokenFor(node: ParserRuleContext, tokenText: String): TerminalNode? {
+    fun formatModifier(node: ParserRuleContext?, doc: FormattableDocument) {
+        doc.append(node) {
+            it.setNewLines(0)
+            it.oneSpace()
+            it.highPriority()
+        }
+    }
+
+    fun tokenFor(node: ParserRuleContext?, tokenText: String): TerminalNode? {
+        if (node == null) {
+            return null
+        }
         for (i in 0 until node.childCount) {
             val child = node.getChild(i)
             if (child is TerminalNode) {
@@ -388,6 +411,12 @@ abstract class RellAbstractFormatter(
     fun previousHiddenRegion(token: Token): Token? {
         val commonTokenStream = parser.tokenStream as CommonTokenStream
         return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellLexer.HIDDEN)?.lastOrNull()
+    }
+
+    fun previousCommentRegion(token: Token): Token? {
+        val commonTokenStream = parser.tokenStream as CommonTokenStream
+        return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellCustomTokenChannels.COMMENTS.channel)
+            ?.lastOrNull()
     }
 
     fun previousHiddenRegionList(token: Token): List<Token> {
