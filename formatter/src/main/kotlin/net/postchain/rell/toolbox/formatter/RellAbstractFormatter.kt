@@ -2,6 +2,7 @@ package net.postchain.rell.toolbox.formatter
 
 import net.postchain.rell.toolbox.core.parser.RellLexer
 import net.postchain.rell.toolbox.core.parser.RellParser
+import net.postchain.rell.toolbox.core.tokens.RellCustomTokenChannels
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
@@ -409,17 +410,13 @@ abstract class RellAbstractFormatter(
 
     fun previousHiddenRegion(token: Token): Token? {
         val commonTokenStream = parser.tokenStream as CommonTokenStream
-        val hiddenRegion =
-            commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellLexer.HIDDEN)?.lastOrNull()
-        return hiddenRegion
-        val commentRegion = commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, 2)?.lastOrNull()
-
-        return commentRegion ?: hiddenRegion
+        return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellLexer.HIDDEN)?.lastOrNull()
     }
 
     fun previousCommentRegion(token: Token): Token? {
         val commonTokenStream = parser.tokenStream as CommonTokenStream
-        return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, 2)?.lastOrNull()
+        return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellCustomTokenChannels.COMMENTS.channel)
+            ?.lastOrNull()
     }
 
     fun previousHiddenRegionList(token: Token): List<Token> {
