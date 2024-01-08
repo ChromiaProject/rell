@@ -109,12 +109,14 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         val exprHead = xBaseExpr.ruleX_BaseExprHead()
         val exprTailList = xBaseExpr.ruleX_BaseExprTail()
         var shouldLineSeparateExpression: Boolean
-        var previousExpr: RuleX_BaseExprTailContext? = null
+        var previousExpr: ParserRuleContext? = exprHead
 
         doc.append(exprHead) {
             it.noSpace()
             it.lowPriority()
         }
+
+        //TODO: We should refactor how we handle block indents for expressions to make the flow cleaner
         //Handle internal blockindents for expression tail
         if (exprTailList.isNotEmpty()) {
             val shouldLineSeparateTail = lineSeparateExpr(exprHead, exprTailList.last())
@@ -124,6 +126,10 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
                 //blockindent without including last token
                 if (exprTailList.size == 1 && exprTailList.first().ruleX_BaseExprTailCall() != null) {
                     doc.interiorIndentRange(exprHead, exprTailList.last())
+                } else if (exprTailList.size == 2 && exprTailList.last().ruleX_BaseExprTailCall() != null) {
+                    if (exprHead.stop.line != exprTailList.last().start.line) {
+                        doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
+                    }
                 } else {
                     doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
                 }
@@ -155,10 +161,8 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         formatSkewedOpeningClosing(opening, xParanthesesExpr, doc, BracePairTypes.PARENTHESES)
 
         if (lineSeperateExpression) {
-            doc.prepend(xParanthesesExpr.ruleX_TupleExprField()) {
-                it.newLine()
-                it.indent()
-            }
+            doc.interiorIndent(xParanthesesExpr)
+            doc.prepend(xParanthesesExpr.ruleX_TupleExprField()) { it.newLine() }
             doc.append(xParanthesesExpr.ruleX_TupleExprField()) { it.noSpace() }
             doc.format(xParanthesesExpr.ruleX_TupleExprField())
 
@@ -170,10 +174,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             val exprTail =
                 xParanthesesExpr.ruleX_TupleExprTail()?.children?.filterIsInstance<ParserRuleContext>() ?: listOf()
             exprTail.forEach {
-                doc.prepend(it) {
-                    it.newLine()
-                    it.indent()
-                }
+                doc.prepend(it) { it.newLine() }
             }
             doc.prepend(closing) { it.newLine() }
         } else {
