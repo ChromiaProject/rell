@@ -38,7 +38,7 @@ class WorkspaceIndexerTest {
     }
 
     @Test
-    @EnabledOnOs(OS.LINUX, OS.MAC)
+    @EnabledOnOs(OS.MAC)
     fun `initialFileIndexBuild skips files not able to read`(@TempDir dir: File) {
         val childDir = File(dir, "directory").toPath().createDirectory()
         val allowedFile = File(childDir.toFile(), "rell_file.rell").apply {
