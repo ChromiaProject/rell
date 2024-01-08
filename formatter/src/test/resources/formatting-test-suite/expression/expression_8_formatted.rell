@@ -18,7 +18,7 @@ function mint_avatar_original(
                         assets.IAvatar.hair_color: Integer.T(hair_color),
                         assets.IAvatar.face: Integer.T(face),
                         assets.IAvatar.hair: Integer.T(hair),
-                        assets.IAvatar.equippables: List.T(Attribute.type.instance, list<instance> ().to_gtv()),
+                        assets.IAvatar.equippables: List.T(Attribute.type.instance, list<instance>().to_gtv()),
                         assets.ISingleton.account_owner: Dip.ByteArray.T(account_id)
                     ],
                     prototype_name = "Avatar"

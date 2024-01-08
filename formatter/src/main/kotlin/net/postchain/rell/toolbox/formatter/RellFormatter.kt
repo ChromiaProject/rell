@@ -649,7 +649,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             val tailCall = xGenTypeExpr.ruleX_BaseExprTailCall()
             val callArg = tailCall.ruleX_CallArgs().ruleX_CallArg()
             if (callArg.isEmpty()) {
-                doc.prepend(tailCall) { it.oneSpace() }
+                doc.prepend(tailCall) { it.noSpace() }
                 formatExprTailSingleline(tailCall, doc)
             }
             doc.format(tailCall)
