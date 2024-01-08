@@ -14,7 +14,7 @@ class WorkspaceIndexer(val workspaceUri: URI) {
     private val logger = KotlinLogging.logger {}
     private val resourceFactory = RellResourceFactory(workspaceUri, AntlrRellParser())
     var fileUriResourceMap = ConcurrentHashMap<URI, Resource>()
-    var fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
+    var fileMap: ConcurrentHashMap<C_SourcePath, C_SourceFile> = ConcurrentHashMap()
     fun initialFileIndexBuild(cachedIndexer: WorkspaceIndexer? = null) {
 
         if (cachedIndexer != null) {
