@@ -11,6 +11,8 @@ import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import net.postchain.rell.base.compiler.base.utils.C_SourceFile
+import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.toolbox.core.indexer.RellResourceFactory
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
@@ -65,7 +67,7 @@ class RellIndexCachingServiceTest {
 
     @Test
     fun `Should delete cache file when deserialization fails`() {
-        every { indexSerializer.deserializeAsResourceMap(any())} throws IOException()
+        every { indexSerializer.deserializeAsWorkspaceIndexer(any())} throws IOException()
         cachingService.saveWorkspaceIndexers(listOf(dummyWorkspaceIndexer))
 
         assertThat(cacheFile.exists()).isTrue()
@@ -147,11 +149,12 @@ class RellIndexCachingServiceTest {
     private fun createDummyWorkspaceIndexer(workspaceFolderUri: URI, sourceFiles: List<SourceFile>): WorkspaceIndexer {
         val resourceFactory = RellResourceFactory(workspaceFolderUri, AntlrRellParser())
         val indexer = WorkspaceIndexer(workspaceFolderUri)
+        val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
 
         sourceFiles.forEach {
             val fileUri = workspaceFolderUri.resolve(it.filePath)
             File(fileUri).writeText(it.fileContent)
-            indexer.fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri)
+            indexer.fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileMap)
         }
 
         return indexer
