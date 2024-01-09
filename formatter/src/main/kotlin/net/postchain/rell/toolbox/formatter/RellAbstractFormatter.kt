@@ -2,6 +2,8 @@ package net.postchain.rell.toolbox.formatter
 
 import net.postchain.rell.toolbox.core.parser.RellLexer
 import net.postchain.rell.toolbox.core.parser.RellParser
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_BaseExprHeadContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_BaseExprTailContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_CallArgsContext
 import net.postchain.rell.toolbox.core.tokens.RellCustomTokenChannels
 import org.antlr.v4.runtime.CommonTokenStream
@@ -259,7 +261,47 @@ abstract class RellAbstractFormatter(
         }
     }
 
-    fun indentTailAtExpression(tailAt: RellParser.RuleX_BaseExprTailAtContext, doc: FormattableDocument) {
+    //Handle internal block indents for expression tail
+    fun indentExpressionTail(
+        exprHead: RuleX_BaseExprHeadContext,
+        exprTailList: List<RuleX_BaseExprTailContext>,
+        doc: FormattableDocument
+    ) {
+        val shouldLineSeparateTail = lineSeparateExpr(exprHead, exprTailList.last())
+        if (shouldLineSeparateTail && exprTailList.first().ruleX_BaseExprTailAt() == null) {
+            if (tailOnlyConsistOfOneTailCall(exprTailList)) {
+                doc.interiorIndentRange(exprHead, exprTailList.last())
+
+            } else if (tailHasMemberAndEndsWithTailCall(exprTailList)) {
+                if (exprHead.stop.line != exprTailList.last().start.line) {
+                    doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
+                } else if (exceedsMaxLineWidth(exprTailList.last())) {
+                    doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
+                }
+
+            } else {
+                if (tailEndsWithAtExpression(exprTailList)) {
+                    doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
+                } else {
+                    indentTailAtExpression(exprTailList.last().ruleX_BaseExprTailAt(), doc)
+                }
+            }
+        }
+    }
+
+    private fun tailOnlyConsistOfOneTailCall(exprTailList: List<RuleX_BaseExprTailContext>): Boolean {
+        return exprTailList.size == 1 && exprTailList.first().ruleX_BaseExprTailCall() != null
+    }
+
+    private fun tailHasMemberAndEndsWithTailCall(exprTailList: List<RuleX_BaseExprTailContext>): Boolean {
+        return exprTailList.size == 2 && exprTailList.last().ruleX_BaseExprTailCall() != null
+    }
+
+    private fun tailEndsWithAtExpression(exprTailList: List<RuleX_BaseExprTailContext>): Boolean {
+        return exprTailList.last().ruleX_BaseExprTailAt() == null
+    }
+
+    private fun indentTailAtExpression(tailAt: RellParser.RuleX_BaseExprTailAtContext, doc: FormattableDocument) {
         val whereExpr = tailAt.ruleX_AtExprWhere()
         if (formatAsMultiLine(whereExpr.ruleX_ExpressionRef())) {
             doc.interiorIndentRangeIncludeLast(whereExpr, whereExpr)

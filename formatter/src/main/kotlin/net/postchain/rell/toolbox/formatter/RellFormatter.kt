@@ -115,31 +115,9 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             it.noSpace()
             it.lowPriority()
         }
-
-        //TODO: We should refactor how we handle block indents for expressions to make the flow cleaner
-        //Handle internal blockindents for expression tail
+        
         if (exprTailList.isNotEmpty()) {
-            val shouldLineSeparateTail = lineSeparateExpr(exprHead, exprTailList.last())
-            if (shouldLineSeparateTail && exprTailList.first().ruleX_BaseExprTailAt() == null) {
-
-                // If expresiontaill call is part of nested a nested expressions call, we need to do internal
-                //blockindent without including last token
-                if (exprTailList.size == 1 && exprTailList.first().ruleX_BaseExprTailCall() != null) {
-                    doc.interiorIndentRange(exprHead, exprTailList.last())
-                } else if (exprTailList.size == 2 && exprTailList.last().ruleX_BaseExprTailCall() != null) {
-                    if (exprHead.stop.line != exprTailList.last().start.line) {
-                        doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
-                    } else if (exceedsMaxLineWidth(exprTailList.last())) {
-                        doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
-                    }
-                } else {
-                    if (exprTailList.last().ruleX_BaseExprTailAt() == null) {
-                        doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
-                    } else {
-                        indentTailAtExpression(exprTailList.last().ruleX_BaseExprTailAt(), doc)
-                    }
-                }
-            }
+            indentExpressionTail(exprHead, exprTailList, doc)
         }
 
         for (i in 0 until exprTailList.size) {
