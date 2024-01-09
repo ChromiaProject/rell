@@ -16,4 +16,10 @@ function foo() {
             )
         )
     );
+
+    var expected_result = assets.extract_data_from_transfer_history_list(
+        assets.transfer_history_entry @* {
+            acc.account @ { .id == alice.account.id }
+        } ( @sort_desc @omit .rowid, $ ) limit 2
+    );
 }

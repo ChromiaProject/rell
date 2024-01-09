@@ -259,6 +259,18 @@ abstract class RellAbstractFormatter(
         }
     }
 
+    fun indentTailAtExpression(tailAt: RellParser.RuleX_BaseExprTailAtContext, doc: FormattableDocument) {
+        val whereExpr = tailAt.ruleX_AtExprWhere()
+        if (formatAsMultiLine(whereExpr.ruleX_ExpressionRef())) {
+            doc.interiorIndentRangeIncludeLast(whereExpr, whereExpr)
+        }
+
+        val whatExpr = tailAt.ruleX_AtExprWhat()
+        if (whatExpr.start.line != whatExpr.stop.line || exceedsMaxLineWidth(whatExpr)) {
+            doc.interiorIndentRangeIncludeLast(whatExpr, whatExpr)
+        }
+    }
+
     fun formatType(node: ParserRuleContext, doc: FormattableDocument) {
         val paramTypeDef = tokenFor(node, ":")
         doc.prepend(paramTypeDef) { p -> p.noSpace() }

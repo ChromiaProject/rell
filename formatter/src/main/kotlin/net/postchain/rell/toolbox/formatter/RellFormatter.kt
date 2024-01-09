@@ -133,7 +133,11 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
                         doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
                     }
                 } else {
-                    doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
+                    if (exprTailList.last().ruleX_BaseExprTailAt() == null) {
+                        doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
+                    } else {
+                        indentTailAtExpression(exprTailList.last().ruleX_BaseExprTailAt(), doc)
+                    }
                 }
             }
         }
