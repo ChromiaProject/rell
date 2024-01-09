@@ -1,5 +1,8 @@
 function showCalls() {
-    require(false, "set get_value_as_text: Not implementation");
+    require(
+        false,
+        "set get_value_as_text: Not implementation"
+    );
 
     typedFunction(1, "arg2");
 

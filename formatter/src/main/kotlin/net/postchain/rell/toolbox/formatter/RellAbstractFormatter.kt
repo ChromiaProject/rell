@@ -2,6 +2,7 @@ package net.postchain.rell.toolbox.formatter
 
 import net.postchain.rell.toolbox.core.parser.RellLexer
 import net.postchain.rell.toolbox.core.parser.RellParser
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_CallArgsContext
 import net.postchain.rell.toolbox.core.tokens.RellCustomTokenChannels
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.ParserRuleContext
@@ -53,17 +54,20 @@ abstract class RellAbstractFormatter(
         if (previousExpr is RellParser.RuleX_BaseExprTailContext) {
             doc.interiorIndent(currentExpr)
         }
+
+        val callArgs = currentExpr.ruleX_BaseExprTailCall().ruleX_CallArgs()
         formatBracePairWithoutSpace(
-            currentExpr.ruleX_BaseExprTailCall().ruleX_CallArgs(),
+            callArgs,
             doc,
             BracePairTypes.PARENTHESES
         )
         formatArguments(
-            currentExpr.ruleX_BaseExprTailCall().ruleX_CallArgs().ruleX_CallArg(),
+            callArgs.ruleX_CallArg(),
             doc,
+            formatAsMultiLine = formatCallArgsAsMultiLine(callArgs),
             indent = indent
         )
-        doc.format(currentExpr.ruleX_BaseExprTailCall().ruleX_CallArgs())
+        doc.format(callArgs)
     }
 
 
@@ -183,6 +187,11 @@ abstract class RellAbstractFormatter(
             isMultiLine = defStartLine != defEndLine
         }
         return length > formatterOptions.maxLineWidth || isMultiLine
+    }
+
+    private fun formatCallArgsAsMultiLine(callArgs: RuleX_CallArgsContext): Boolean {
+        val args = callArgs.ruleX_CallArg()
+        return formatAsMultiLine(args) || callArgs.start.line != callArgs.stop.line
     }
 
     fun formatParametersType(params: List<RellParser.RuleX_FormalParameterContext>, doc: FormattableDocument) {
