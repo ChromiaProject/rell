@@ -18,8 +18,8 @@ function exprHeader() {
     ];
     val e = [1, 2, 3];
 
-    val f = struct<mutable user1> (first_name = "name", salary = 1);
-    val g = struct<user4> (
+    val f = struct<mutable user1>(first_name = "name", salary = 1);
+    val g = struct<user4>(
         first_name = "name",
         last_name = "name",
         age = 99,

@@ -80,8 +80,11 @@ abstract class RellAbstractFormatter(
         } else if (xBaseExprTail is RellParser.RuleX_BaseExprTailContext) {
             if (xBaseExprTail.ruleX_BaseExprTailCall() != null) {
                 formatExprTailSingleline(xBaseExprTail.ruleX_BaseExprTailCall(), doc)
+            } else if (xBaseExprTail.ruleX_BaseExprTailMember() != null) {
+                formatExprTailSingleline(xBaseExprTail.ruleX_BaseExprTailMember(), doc)
+            } else {
+                doc.format(xBaseExprTail)
             }
-            doc.format(xBaseExprTail)
         } else {
             doc.format(xBaseExprTail)
         }

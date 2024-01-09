@@ -681,7 +681,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
 
     fun format(xMirrorStruct: RuleX_MirrorStructType0Context, doc: FormattableDocument) {
         formatBracePairWithoutSpace(xMirrorStruct, doc, BracePairTypes.ANGLE)
-        doc.append(xMirrorStruct) { it.oneSpace() }
+        doc.append(xMirrorStruct) { it.noSpace() }
         doc.append(xMirrorStruct.ruleX_tkSTRUCT()) { it.noSpace() }
         doc.append(xMirrorStruct.ruleX_tkMUTABLE()) { it.oneSpace() }
     }
