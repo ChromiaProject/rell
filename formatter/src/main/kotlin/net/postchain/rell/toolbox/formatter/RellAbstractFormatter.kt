@@ -150,6 +150,10 @@ abstract class RellAbstractFormatter(
         return getLineLength(methodDef) > formatterOptions.maxLineWidth || isLineSeperated
     }
 
+    fun exceedsMaxLineWidth(node: ParserRuleContext): Boolean {
+        return getLineLength(node) > formatterOptions.maxLineWidth
+    }
+
     fun getLineLength(node: ParserRuleContext): Int {
         val lineStartOffset = node.start.startIndex - node.start.charPositionInLine
         val lineEndOffset = source.indexOf('\n', node.start.startIndex)

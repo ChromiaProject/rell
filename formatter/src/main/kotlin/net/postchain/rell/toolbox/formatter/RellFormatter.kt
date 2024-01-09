@@ -129,6 +129,8 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
                 } else if (exprTailList.size == 2 && exprTailList.last().ruleX_BaseExprTailCall() != null) {
                     if (exprHead.stop.line != exprTailList.last().start.line) {
                         doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
+                    } else if (exceedsMaxLineWidth(exprTailList.last())) {
+                        doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
                     }
                 } else {
                     doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())

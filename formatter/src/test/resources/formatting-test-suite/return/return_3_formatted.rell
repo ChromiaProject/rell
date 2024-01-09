@@ -1,0 +1,7 @@
+function foo() {
+    return utils
+        .invalid(
+            "Transaction must be signed by at least " + multi_sign_args
+                .signatures_required + " signers in the Auth Descriptor."
+        );
+}
