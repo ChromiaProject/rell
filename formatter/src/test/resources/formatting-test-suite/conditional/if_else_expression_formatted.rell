@@ -1,0 +1,28 @@
+function current_rate_limit_points(rate_limit_config, rl_state, current_timestamp: timestamp) {
+    val delta = current_timestamp - rl_state.last_update;
+    return if (delta > rate_limit_config.recovery_time)
+        min(rate_limit_config.max_points, rl_state.points + delta / rate_limit_config.recovery_time)
+    else
+        rl_state.points;
+}
+
+function current_rate_limit_points(rate_limit_config, rl_state, current_timestamp: timestamp) {
+    val delta = current_timestamp - rl_state.last_update;
+    return if (delta > rate_limit_config.recovery_time)
+        min(
+            rate_limit_config.max_points,
+            rl_state.points + delta / rate_limit_config.recovery_time
+        )
+    else
+        rl_state.points;
+}
+
+function current_rate_limit_points(rate_limit_config, rl_state, current_timestamp: timestamp) {
+    val delta = current_timestamp - rl_state.last_update;
+    if (delta > rate_limit_config.recovery_time) {
+        val a = 2;
+        min(rate_limit_config.max_points, rl_state.points + delta / rate_limit_config.recovery_time);
+    } else {
+        rl_state.points;
+    }
+}
