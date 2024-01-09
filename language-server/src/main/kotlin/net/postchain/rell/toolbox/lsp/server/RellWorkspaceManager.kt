@@ -1,6 +1,8 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import net.postchain.rell.base.utils.ide.IdeSymbolInfo
+import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.core.indexer.RellIssue
 import net.postchain.rell.toolbox.core.indexer.Resource
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
@@ -18,11 +20,10 @@ import org.eclipse.lsp4j.WorkspaceFolder
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.io.File
 import java.net.URI
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.time.Duration.Companion.minutes
 import java.nio.file.Files
 import java.nio.file.Paths
-
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.time.Duration.Companion.minutes
 
 
 class RellWorkspaceManager(
@@ -231,6 +232,15 @@ class RellWorkspaceManager(
         return Either.forLeft(rellSymbolService.getSymbolLocations(document, indexer, position))
     }
 
+    private fun getDefinitionLocationsAndSymbolInfo(
+        fileUri: URI,
+        position: Position
+    ): Pair<Location, IdeSymbolInfo>? {
+        val indexer = getIndexerFor(fileUri)
+        val document = openDocuments[fileUri]!!
+        return rellSymbolService.getSymbolLocationsWithSymbol(document, indexer, position)
+    }
+
     fun getDocumentSymbols(fileUri: URI): List<Either<SymbolInformation, DocumentSymbol>> {
         val resource = getResource(fileUri) ?: return listOf()
         val document = openDocuments[fileUri] ?: return listOf()
@@ -241,10 +251,19 @@ class RellWorkspaceManager(
         return openDocuments[uri]
     }
 
-    fun getReferenceLocations(fileUri: URI, position: Position?): List<Location> {
+    fun getReferenceLocations(fileUri: URI, position: Position?, includeDefinition: Boolean = true): List<Location> {
         val indexer = getIndexerFor(fileUri)
         val document = openDocuments[fileUri] ?: return listOf()
-        return rellReferenceService.getReferenceLocations(fileUri, document, indexer, position)
+
+        val result: MutableList<Location> = mutableListOf()
+        if (includeDefinition && position != null) {
+            val locationIdeSymbolInfoPair = getDefinitionLocationsAndSymbolInfo(fileUri, position)
+            if (locationIdeSymbolInfoPair != null && locationIdeSymbolInfoPair.second.kind != IdeSymbolKind.DEF_IMPORT_MODULE)
+                result.add(locationIdeSymbolInfoPair.first)
+        }
+
+        result.addAll(rellReferenceService.getReferenceLocations(fileUri, document, indexer, position))
+        return result
     }
 
     companion object {

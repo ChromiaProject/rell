@@ -7,6 +7,7 @@ import net.postchain.rell.base.utils.ide.IdeGlobalSymbolLink
 import net.postchain.rell.base.utils.ide.IdeLocalSymbolLink
 import net.postchain.rell.base.utils.ide.IdeModuleSymbolLink
 import net.postchain.rell.base.utils.ide.IdeSymbolGlobalId
+import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.toolbox.core.compiler.AntlrPos
 import net.postchain.rell.toolbox.core.indexer.IdeSymbolInfoWithInterval
 import net.postchain.rell.toolbox.core.indexer.Resource
@@ -37,6 +38,32 @@ class RellSymbolService {
             is IdeLocalSymbolLink -> getLocalLink(link.localPos(), resource, document)
             else -> {
                 mutableListOf()
+            }
+        }
+    }
+
+    fun getSymbolLocationsWithSymbol(document: Document, indexer: WorkspaceIndexer, position: Position): Pair<Location, IdeSymbolInfo>? {
+        val resource = indexer.getResource(document.fileUri) ?: return null
+        val workspaceUri = formatWorkspaceUri(indexer.workspaceUri)
+        val symbolWithInterval = getSymbolForDocument(document, resource, position)
+        val symbol = symbolWithInterval?.ideSymbolInfo
+
+        if (symbol?.defId != null) {
+            val startPos = document.getPosition(symbolWithInterval.interval.a)
+            val endPos = document.getPosition(symbolWithInterval.interval.b + 1)
+            return Pair(Location(document.fileUri.toString(), Range(startPos, endPos)), symbol)
+        }
+
+
+
+        val link = symbol?.link ?: return null
+
+        return when (link) {
+            is IdeGlobalSymbolLink -> Pair(getGlobalLink(link.globalId(), workspaceUri, indexer)[0], symbol)
+            is IdeModuleSymbolLink -> Pair(getModuleLink(link.moduleFile(), workspaceUri)[0], symbol)
+            is IdeLocalSymbolLink -> Pair(getLocalLink(link.localPos(), resource, document)[0], symbol)
+            else -> {
+                null
             }
         }
     }

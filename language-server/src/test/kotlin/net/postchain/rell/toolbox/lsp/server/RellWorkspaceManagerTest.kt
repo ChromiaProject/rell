@@ -540,6 +540,6 @@ class RellWorkspaceManagerTest {
         workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
         workspaceManager.didOpen(mainFile.toURI(), 1, mainFile.readText())
         val references = workspaceManager.getReferenceLocations(mainFile.toURI(), Position(2, 16))
-        assertThat(references).hasSize(3)
+        assertThat(references).hasSize(4)
     }
 }
