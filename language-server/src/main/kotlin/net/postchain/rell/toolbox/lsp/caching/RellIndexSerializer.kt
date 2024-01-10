@@ -28,7 +28,7 @@ class RellIndexSerializer {
     private fun serialize(serializableData: SerializableWorkspaceIndexer): ByteArray = fury.serialize(serializableData)
 
     private fun toSerializableWorkspaceIndexer(indexer: WorkspaceIndexer): SerializableWorkspaceIndexer {
-        return SerializableWorkspaceIndexer(indexer.workspaceUri, toSerializableResources(indexer), indexer.fileMap)
+        return SerializableWorkspaceIndexer(indexer.workspaceUri, toSerializableResources(indexer))
     }
 
     private fun toSerializableResources(indexer: WorkspaceIndexer): List<SerializableResource> {
@@ -62,7 +62,6 @@ class RellIndexSerializer {
     private fun fromSerializableWorkspaceIndexer(serializableWorkspaceIndexer: SerializableWorkspaceIndexer): WorkspaceIndexer {
         val indexer = WorkspaceIndexer(serializableWorkspaceIndexer.workspaceUri)
         indexer.fileUriResourceMap = ConcurrentHashMap(fromSerializableResources( serializableWorkspaceIndexer.serializableResources))
-        indexer.fileMap = serializableWorkspaceIndexer.fileMap
         return indexer
     }
 
