@@ -7,6 +7,7 @@ import net.postchain.rell.base.utils.ide.IdeGlobalSymbolLink
 import net.postchain.rell.base.utils.ide.IdeLocalSymbolLink
 import net.postchain.rell.base.utils.ide.IdeModuleSymbolLink
 import net.postchain.rell.base.utils.ide.IdeSymbolGlobalId
+import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.toolbox.core.compiler.AntlrPos
 import net.postchain.rell.toolbox.core.indexer.IdeSymbolInfoWithInterval
 import net.postchain.rell.toolbox.core.indexer.Resource
@@ -51,7 +52,10 @@ class RellSymbolService {
         targetFileUri = URI(workspaceUri.toString() + targetFileUri.toString())
 
         // TODO: optimization opportunity. lookup instead of iterating
-        val symbolInfo = indexer.getResource(targetFileUri)!!.symbolInfos.entries.find { it.value.defId == symId }!!
+        val symbolInfo = indexer.getResource(targetFileUri)!!.symbolInfos.entries.find { it.value.defId == symId }
+            // TODO: This is hiding a NullPointerException BUG. Fix it!!
+            // Go to definition fails as it.value.defId members have different structure then symId, causing ClassCastException
+            ?: return mutableListOf()
         val pos = symbolInfo.key as AntlrPos
         val symbolLength = pos.node.text.length
 

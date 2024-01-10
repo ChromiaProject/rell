@@ -17,10 +17,22 @@ import net.postchain.rell.toolbox.core.parser.SyntaxError
 import net.postchain.rell.toolbox.core.parser.SyntaxErrorCollector
 import java.io.File
 import java.net.URI
+import java.util.concurrent.ConcurrentHashMap
 
 
 class RellResourceFactory(private val workspaceUri: URI, private val parser: AntlrRellParser) {
     val rellCompilerUtils = RellCompilerUtils()
+
+    fun buildFileMap(sources: Map<URI, String>): ConcurrentHashMap<C_SourcePath, C_SourceFile> {
+        val fileMap = ConcurrentHashMap<C_SourcePath, C_SourceFile>()
+        sources.forEach { (fileUri, fileContent) ->
+            val rellCompilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
+            val antlrParseTree = buildParseTreeWithSyntaxErrors(fileContent)
+            val ast = buildRellAstWithCompilerErrors(rellCompilerSourcePath, antlrParseTree.first)
+            fileMap[rellCompilerSourcePath] = AstSourceFile.make(ast.first, IdeSourcePathFilePath(rellCompilerSourcePath))
+        }
+        return fileMap
+    }
 
     fun buildRellResource(fileUri: URI, fileContent: String, fileMap:  MutableMap<C_SourcePath, C_SourceFile>): Resource {
         val rellCompilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
