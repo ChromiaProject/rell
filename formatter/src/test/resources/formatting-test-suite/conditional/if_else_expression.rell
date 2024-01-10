@@ -25,3 +25,19 @@ function current_rate_limit_points(rate_limit_config, rl_state, current_timestam
         rl_state.points;
     }
 }
+
+function foo() {
+    if (auth_descriptor.auth_type in [accounts.auth_type.S, accounts.auth_type.ES])
+        _validate_evm_address(message, validated_args.signatures[0], auth_descriptor);
+    else
+        _validate_multiple_evm_addresses(message, validated_args.signatures, auth_descriptor);
+}
+
+function foo() {
+    if (auth_descriptor.auth_type in [accounts.auth_type.S, accounts.auth_type.ES])
+        _validate_evm_address(message,
+            validated_args.signatures[0], auth_descriptor);
+    else
+        _validate_multiple_evm_addresses(message,
+            validated_args.signatures, auth_descriptor);
+}

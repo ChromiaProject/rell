@@ -115,7 +115,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             it.noSpace()
             it.lowPriority()
         }
-        
+
         if (exprTailList.isNotEmpty()) {
             indentExpressionTail(exprHead, exprTailList, doc)
         }
@@ -204,14 +204,53 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         } else {
             doc.format(xExpression)
         }
-        doc.prepend(xIfStmt.ruleX_StatementRef()) { it.oneSpace() }
+
+        if (xIfStmt.ruleX_tkIF().stop.line != xIfStmt.ruleX_StatementRef().start.line) {
+            val openingCurly = tokenFor(xIfStmt.ruleX_StatementRef(), "{")
+            doc.prepend(openingCurly) {
+                it.oneSpace();
+                it.setNewLines(0)
+                it.highPriority();
+            }
+            doc.prepend(xIfStmt.ruleX_StatementRef()) {
+                it.newLine();
+            }
+            if (openingCurly == null) {
+                doc.prepend(xIfStmt.ruleX_StatementRef()) {
+                    it.indent();
+                }
+                doc.interiorIndentRangeIncludeLast(
+                    xIfStmt.ruleX_StatementRef(),
+                    xIfStmt.ruleX_StatementRef()
+                )
+            }
+        } else {
+            doc.prepend(xIfStmt.ruleX_StatementRef()) { it.oneSpace() }
+        }
+
+        val elseStatement = xIfStmt.ruleX_ElseStmt()
+        if (elseStatement?.ruleX_tkELSE() != null && elseStatement.ruleX_StatementRef() != null) {
+            if (elseStatement.ruleX_tkELSE().stop.line != elseStatement.ruleX_StatementRef().start.line) {
+                doc.prepend(elseStatement.ruleX_tkELSE()) { it.newLine() }
+                doc.prepend(elseStatement.ruleX_StatementRef()) {
+                    it.newLine();
+                    it.indent();
+                }
+                doc.interiorIndentRangeIncludeLast(
+                    elseStatement.ruleX_StatementRef(),
+                    elseStatement.ruleX_StatementRef()
+                )
+                doc.append(elseStatement.ruleX_StatementRef()) { it.noSpace() }
+            } else {
+                doc.prepend(elseStatement.ruleX_tkELSE()) { it.oneSpace() }
+                doc.prepend(elseStatement.ruleX_StatementRef()) {
+                    it.oneSpace()
+                    it.highPriority()
+                }
+            }
+        }
         doc.format(xIfStmt.ruleX_StatementRef())
         doc.format(xIfStmt.ruleX_ElseStmt())
-    }
-
-    fun format(xElseStmt: RuleX_ElseStmtContext, doc: FormattableDocument) {
-        doc.surround(xElseStmt.ruleX_tkELSE()) { it.oneSpace() }
-        doc.format(xElseStmt.ruleX_StatementRef())
     }
 
     fun format(xIfExpr: RuleX_IfExprContext, doc: FormattableDocument) {

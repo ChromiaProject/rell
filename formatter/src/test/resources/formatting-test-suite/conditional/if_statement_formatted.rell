@@ -12,6 +12,8 @@ function showIfControll() {
         var is2 = false;
     }
 
+    if (1 == 1)
+        val a = 2;
     // Else If
     if (true) {
         var is3 = true;
