@@ -16,14 +16,50 @@ class WorkspaceIndexer(val workspaceUri: URI) {
     private val resourceFactory = RellResourceFactory(workspaceUri, AntlrRellParser())
     var fileUriResourceMap = ConcurrentHashMap<URI, Resource>()
     var fileMap: ConcurrentHashMap<C_SourcePath, C_SourceFile> = ConcurrentHashMap()
-    fun initialFileIndexBuild(cachedIndexer: WorkspaceIndexer? = null) {
 
-        if (cachedIndexer != null) {
-            fileMap = cachedIndexer.fileMap
-        }
+    fun initialFileIndexBuild(cachedIndexer: WorkspaceIndexer? = null) {
+        val rellUris = addRellFilesUri()
+        val sources = readAllSource(rellUris)
+        fileMap = resourceFactory.buildFileMap(sources)
+
+        useDataFromCachedIndexer(cachedIndexer, sources)
 
         val dirtyFiles: MutableList<URI> = mutableListOf()
-        val rellUris = addRellFilesUri()
+
+        for (source in sources) {
+            val (fileUri, fileContent) = source
+            if (fileUriResourceMap.containsKey(fileUri)) {
+                continue
+            }
+            val resource = resourceFactory.buildRellResource(fileUri, fileContent, fileMap)
+            if (resource.imports.isNotEmpty() || hasImplicitImports(resource)) {
+                dirtyFiles.add(fileUri)
+            }
+            fileUriResourceMap[fileUri] = resource
+        }
+
+        for (fileUri in dirtyFiles) {
+            fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileMap)
+        }
+    }
+
+    private fun hasImplicitImports(resource: Resource) =
+        resource.locationInfo.filter { it.value.ideSymbolInfo.kind == IdeSymbolKind.UNKNOWN }.isNotEmpty()
+
+    private fun useDataFromCachedIndexer(cachedIndexer: WorkspaceIndexer?, sources: Map<URI, String>) {
+        if (cachedIndexer == null) return
+
+        sources.forEach { (fileUri, fileContent) ->
+            val checksum = calculateChecksum(fileContent)
+            val cachedResource = cachedIndexer.getResource(fileUri)
+            if (cachedResource != null && cachedResource.checksum == checksum) {
+                fileUriResourceMap[fileUri] = cachedResource
+            }
+        }
+    }
+
+    private fun readAllSource(rellUris: List<URI>): Map<URI, String> {
+        val sources = mutableMapOf<URI, String>()
         for (fileUri in rellUris) {
             val fileContent = try {
                 File(fileUri).readText()
@@ -31,32 +67,9 @@ class WorkspaceIndexer(val workspaceUri: URI) {
                 logger.warn { "Could not read file $fileUri" }
                 continue
             }
-            val checksum = calculateChecksum(fileContent)
-            val cachedResource = cachedIndexer?.getResource(fileUri)
-
-            val resource = if (cachedResource != null && cachedResource.checksum == checksum) {
-                cachedResource
-            } else {
-                resourceFactory.buildRellResource(fileUri, fileContent, fileMap)
-            }
-
-            if (resource.imports.isNotEmpty() || resource.locationInfo.filter { it.value.ideSymbolInfo.kind == IdeSymbolKind.UNKNOWN}.isNotEmpty()) {
-                dirtyFiles.add(fileUri)
-            }
-            fileUriResourceMap[fileUri] = resource
+            sources[fileUri] = fileContent
         }
-
-        dirtyFiles.forEach { fileUri ->
-            val checksum = calculateChecksum(fileUri)
-            val cachedResource = cachedIndexer?.getResource(fileUri)
-            val resource = if (cachedResource != null && cachedResource.checksum == checksum) {
-                cachedResource
-            } else {
-                resourceFactory.buildRellResource(fileUri, fileMap)
-            }
-            fileUriResourceMap[fileUri] = resource
-        }
-
+        return sources
     }
 
     fun hasFile(fileUri: URI): Boolean {
@@ -152,4 +165,5 @@ class WorkspaceIndexer(val workspaceUri: URI) {
     fun getResource(uri: URI): Resource? {
         return fileUriResourceMap[uri]
     }
+
 }

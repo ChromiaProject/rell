@@ -2,6 +2,9 @@ package net.postchain.rell.toolbox.formatter
 
 import net.postchain.rell.toolbox.core.parser.RellLexer
 import net.postchain.rell.toolbox.core.parser.RellParser
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_BaseExprHeadContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_BaseExprTailContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_CallArgsContext
 import net.postchain.rell.toolbox.core.tokens.RellCustomTokenChannels
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.ParserRuleContext
@@ -53,17 +56,20 @@ abstract class RellAbstractFormatter(
         if (previousExpr is RellParser.RuleX_BaseExprTailContext) {
             doc.interiorIndent(currentExpr)
         }
+
+        val callArgs = currentExpr.ruleX_BaseExprTailCall().ruleX_CallArgs()
         formatBracePairWithoutSpace(
-            currentExpr.ruleX_BaseExprTailCall().ruleX_CallArgs(),
+            callArgs,
             doc,
             BracePairTypes.PARENTHESES
         )
         formatArguments(
-            currentExpr.ruleX_BaseExprTailCall().ruleX_CallArgs().ruleX_CallArg(),
+            callArgs.ruleX_CallArg(),
             doc,
+            formatAsMultiLine = formatCallArgsAsMultiLine(callArgs),
             indent = indent
         )
-        doc.format(currentExpr.ruleX_BaseExprTailCall().ruleX_CallArgs())
+        doc.format(callArgs)
     }
 
 
@@ -80,8 +86,11 @@ abstract class RellAbstractFormatter(
         } else if (xBaseExprTail is RellParser.RuleX_BaseExprTailContext) {
             if (xBaseExprTail.ruleX_BaseExprTailCall() != null) {
                 formatExprTailSingleline(xBaseExprTail.ruleX_BaseExprTailCall(), doc)
+            } else if (xBaseExprTail.ruleX_BaseExprTailMember() != null) {
+                formatExprTailSingleline(xBaseExprTail.ruleX_BaseExprTailMember(), doc)
+            } else {
+                doc.format(xBaseExprTail)
             }
-            doc.format(xBaseExprTail)
         } else {
             doc.format(xBaseExprTail)
         }
@@ -147,6 +156,10 @@ abstract class RellAbstractFormatter(
         return getLineLength(methodDef) > formatterOptions.maxLineWidth || isLineSeperated
     }
 
+    fun exceedsMaxLineWidth(node: ParserRuleContext): Boolean {
+        return getLineLength(node) > formatterOptions.maxLineWidth
+    }
+
     fun getLineLength(node: ParserRuleContext): Int {
         val lineStartOffset = node.start.startIndex - node.start.charPositionInLine
         val lineEndOffset = source.indexOf('\n', node.start.startIndex)
@@ -176,6 +189,11 @@ abstract class RellAbstractFormatter(
             isMultiLine = defStartLine != defEndLine
         }
         return length > formatterOptions.maxLineWidth || isMultiLine
+    }
+
+    private fun formatCallArgsAsMultiLine(callArgs: RuleX_CallArgsContext): Boolean {
+        val args = callArgs.ruleX_CallArg()
+        return formatAsMultiLine(args) || callArgs.start.line != callArgs.stop.line
     }
 
     fun formatParametersType(params: List<RellParser.RuleX_FormalParameterContext>, doc: FormattableDocument) {
@@ -240,6 +258,62 @@ abstract class RellAbstractFormatter(
             }
 
 
+        }
+    }
+
+    //Handle internal block indents for expression tail
+    fun indentExpressionTail(
+        exprHead: RuleX_BaseExprHeadContext,
+        exprTailList: List<RuleX_BaseExprTailContext>,
+        doc: FormattableDocument
+    ) {
+        val shouldLineSeparateTail = lineSeparateExpr(exprHead, exprTailList.last())
+        if (shouldLineSeparateTail && exprTailList.first().ruleX_BaseExprTailAt() == null) {
+            if (tailOnlyConsistOfOneTailCall(exprTailList)) {
+                doc.interiorIndentRange(exprHead, exprTailList.last())
+
+            } else if (tailHasMemberAndEndsWithTailCall(exprTailList)) {
+                if (exprHead.stop.line != exprTailList.last().start.line) {
+                    doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
+                } else if (exceedsMaxLineWidth(exprTailList.last())) {
+                    doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
+                }
+
+            } else {
+                if (tailEndsWithAtExpression(exprTailList)) {
+                    doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
+                } else {
+                    indentTailAtExpression(exprTailList.last().ruleX_BaseExprTailAt(), doc)
+                }
+            }
+        }
+    }
+
+    private fun tailOnlyConsistOfOneTailCall(exprTailList: List<RuleX_BaseExprTailContext>): Boolean {
+        return exprTailList.size == 1 && exprTailList.first().ruleX_BaseExprTailCall() != null
+    }
+
+    private fun tailHasMemberAndEndsWithTailCall(exprTailList: List<RuleX_BaseExprTailContext>): Boolean {
+        return exprTailList.size == 2 && exprTailList.last().ruleX_BaseExprTailCall() != null
+    }
+
+    private fun tailEndsWithAtExpression(exprTailList: List<RuleX_BaseExprTailContext>): Boolean {
+        return exprTailList.last().ruleX_BaseExprTailAt() == null
+    }
+
+    private fun indentTailAtExpression(tailAt: RellParser.RuleX_BaseExprTailAtContext, doc: FormattableDocument) {
+        val whereExpr = tailAt.ruleX_AtExprWhere()
+        if (whereExpr != null) {
+            if (formatAsMultiLine(whereExpr.ruleX_ExpressionRef())) {
+                doc.interiorIndentRangeIncludeLast(whereExpr, whereExpr)
+            }
+        }
+
+        val whatExpr = tailAt.ruleX_AtExprWhat()
+        if (whatExpr != null) {
+            if (whatExpr.start.line != whatExpr.stop.line || exceedsMaxLineWidth(whatExpr)) {
+                doc.interiorIndentRangeIncludeLast(whatExpr, whatExpr)
+            }
         }
     }
 
