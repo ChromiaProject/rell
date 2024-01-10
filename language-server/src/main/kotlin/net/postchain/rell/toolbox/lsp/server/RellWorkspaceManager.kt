@@ -237,7 +237,8 @@ class RellWorkspaceManager(
         position: Position
     ): Pair<Location, IdeSymbolInfo>? {
         val indexer = getIndexerFor(fileUri)
-        val document = openDocuments[fileUri]!!
+        val document = openDocuments[fileUri] ?: return null
+
         return rellSymbolService.getSymbolLocationsWithSymbol(document, indexer, position)
     }
 
