@@ -115,25 +115,9 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             it.noSpace()
             it.lowPriority()
         }
-
-        //TODO: We should refactor how we handle block indents for expressions to make the flow cleaner
-        //Handle internal blockindents for expression tail
+        
         if (exprTailList.isNotEmpty()) {
-            val shouldLineSeparateTail = lineSeparateExpr(exprHead, exprTailList.last())
-            if (shouldLineSeparateTail && exprTailList.first().ruleX_BaseExprTailAt() == null) {
-
-                // If expresiontaill call is part of nested a nested expressions call, we need to do internal
-                //blockindent without including last token
-                if (exprTailList.size == 1 && exprTailList.first().ruleX_BaseExprTailCall() != null) {
-                    doc.interiorIndentRange(exprHead, exprTailList.last())
-                } else if (exprTailList.size == 2 && exprTailList.last().ruleX_BaseExprTailCall() != null) {
-                    if (exprHead.stop.line != exprTailList.last().start.line) {
-                        doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
-                    }
-                } else {
-                    doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
-                }
-            }
+            indentExpressionTail(exprHead, exprTailList, doc)
         }
 
         for (i in 0 until exprTailList.size) {
@@ -231,17 +215,49 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
     }
 
     fun format(xIfExpr: RuleX_IfExprContext, doc: FormattableDocument) {
+        val checkExpr = xIfExpr.ruleX_ExpressionRef(0)
+        val conditionalIfExpr = xIfExpr.ruleX_ExpressionRef(1)
+        val conditionalElseExpr = xIfExpr.ruleX_ExpressionRef(2)
+
         doc.surround(xIfExpr.ruleX_tkIF()) { it.oneSpace() }
-        doc.surround(xIfExpr.ruleX_ExpressionRef(0)) { it.noSpace() }
-        doc.format(xIfExpr.ruleX_ExpressionRef(0))
-        doc.surround(xIfExpr.ruleX_ExpressionRef(1)) {
-            it.oneSpace()
-            it.highPriority()
+        doc.surround(checkExpr) { it.noSpace() }
+
+        if (checkExpr.stop.line != conditionalIfExpr.start.line) {
+            doc.prepend(conditionalIfExpr) {
+                it.newLine();
+                it.indent();
+                it.highPriority()
+            }
+            doc.interiorIndentRangeIncludeLast(conditionalIfExpr, conditionalIfExpr)
+            doc.append(conditionalIfExpr) { it.newLine() }
+        } else {
+            doc.surround(conditionalIfExpr) {
+                it.oneSpace()
+                it.highPriority()
+            }
         }
-        doc.format(xIfExpr.ruleX_ExpressionRef(1))
+
+
         val elseKeyword = tokenFor(xIfExpr, "else")
-        doc.surround(elseKeyword) { it.oneSpace() }
-        doc.format(xIfExpr.ruleX_ExpressionRef(2))
+        if (elseKeyword != null) {
+            if (elseKeyword.symbol.line != conditionalElseExpr.start.line) {
+                doc.prepend(conditionalElseExpr) {
+                    it.newLine();
+                    it.indent();
+                    it.highPriority()
+                }
+                doc.append(conditionalElseExpr) { it.noSpace() }
+            } else {
+                doc.surround(elseKeyword) { it.oneSpace() }
+                doc.surround(conditionalElseExpr) {
+                    it.oneSpace()
+                    it.highPriority()
+                }
+            }
+        }
+
+        doc.format(conditionalIfExpr)
+        doc.format(conditionalElseExpr)
     }
 
     fun format(xWhileStmt: RuleX_WhileStmtContext, doc: FormattableDocument) {
@@ -681,7 +697,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
 
     fun format(xMirrorStruct: RuleX_MirrorStructType0Context, doc: FormattableDocument) {
         formatBracePairWithoutSpace(xMirrorStruct, doc, BracePairTypes.ANGLE)
-        doc.append(xMirrorStruct) { it.oneSpace() }
+        doc.append(xMirrorStruct) { it.noSpace() }
         doc.append(xMirrorStruct.ruleX_tkSTRUCT()) { it.noSpace() }
         doc.append(xMirrorStruct.ruleX_tkMUTABLE()) { it.oneSpace() }
     }

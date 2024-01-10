@@ -1,0 +1,2 @@
+val params = struct<delete_auth_descriptor>.from_gtv(gtv);
+val f = struct<mutable user1>(first_name = "name", salary = 1);

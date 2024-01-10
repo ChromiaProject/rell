@@ -134,7 +134,11 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
         var previous: Changes? = null
         sortedChanges.forEach { changes ->
             if (overlap(previous, changes)) {
-                previous?.mergeValuesFrom(changes)
+                try {
+                    previous?.mergeValuesFrom(changes)
+                } catch (e: RellFormatterException) {
+                    println("hello")
+                }
             } else {
                 resolvedChanges.add(changes)
                 previous = changes
