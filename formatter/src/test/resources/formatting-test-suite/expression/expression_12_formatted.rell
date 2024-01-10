@@ -53,4 +53,14 @@ function a() {
             )
         )
     );
+
+    assets
+        .transfer_history_entry @* {
+            .transaction.tx_rid == tx_rid,
+            op_index
+        } (
+            extract_details_from_transfer_history_entry (
+                $
+            )
+        );
 }

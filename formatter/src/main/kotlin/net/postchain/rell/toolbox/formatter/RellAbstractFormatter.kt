@@ -281,9 +281,12 @@ abstract class RellAbstractFormatter(
 
             } else {
                 if (tailEndsWithAtExpression(exprTailList)) {
-                    doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
-                } else {
                     indentTailAtExpression(exprTailList.last().ruleX_BaseExprTailAt(), doc)
+                    if (shouldIndentSecondLastExpression(exprTailList, exprHead)) {
+                        doc.prepend(exprTailList[exprTailList.lastIndex - 1]) { it.indent() }
+                    }
+                } else {
+                    doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
                 }
             }
         }
@@ -298,7 +301,18 @@ abstract class RellAbstractFormatter(
     }
 
     private fun tailEndsWithAtExpression(exprTailList: List<RuleX_BaseExprTailContext>): Boolean {
-        return exprTailList.last().ruleX_BaseExprTailAt() == null
+        return exprTailList.last().ruleX_BaseExprTailAt() != null
+    }
+
+    private fun shouldIndentSecondLastExpression(
+        exprTailList: List<RuleX_BaseExprTailContext>,
+        exprHead: RuleX_BaseExprHeadContext
+    ): Boolean {
+        return when (exprTailList.size) {
+            1 -> false
+            2 -> exprHead.stop.line != exprTailList.first().start.line
+            else -> exprTailList[exprTailList.lastIndex - 2].stop.line != exprTailList[exprTailList.lastIndex - 1].start.line
+        }
     }
 
     private fun indentTailAtExpression(tailAt: RellParser.RuleX_BaseExprTailAtContext, doc: FormattableDocument) {
