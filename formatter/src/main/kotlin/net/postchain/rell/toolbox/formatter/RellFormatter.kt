@@ -260,6 +260,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
 
         doc.surround(xIfExpr.ruleX_tkIF()) { it.oneSpace() }
         doc.surround(checkExpr) { it.noSpace() }
+        doc.format(checkExpr)
 
         if (checkExpr.stop.line != conditionalIfExpr.start.line) {
             doc.prepend(conditionalIfExpr) {
@@ -288,9 +289,13 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
                 doc.append(conditionalElseExpr) { it.noSpace() }
             } else {
                 doc.surround(elseKeyword) { it.oneSpace() }
-                doc.surround(conditionalElseExpr) {
+                doc.prepend(conditionalElseExpr) {
                     it.oneSpace()
                     it.highPriority()
+                }
+                doc.append(conditionalElseExpr) {
+                    it.oneSpace()
+                    it.lowPriority()
                 }
             }
         }

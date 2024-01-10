@@ -41,3 +41,7 @@ function foo() {
         _validate_multiple_evm_addresses(message,
             validated_args.signatures, auth_descriptor);
 }
+
+function foo() {
+    after_authenticate(account, if  ( auth_desc_after  in   deleted_descriptors )   null   else   auth_desc_after  );
+}
