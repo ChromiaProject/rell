@@ -273,21 +273,18 @@ abstract class RellAbstractFormatter(
                 doc.interiorIndentRange(exprHead, exprTailList.last())
 
             } else if (tailHasMemberAndEndsWithTailCall(exprTailList)) {
-                if (exprHead.stop.line != exprTailList.last().start.line) {
-                    doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
-                } else if (exceedsMaxLineWidth(exprTailList.last())) {
+                if (exprHead.stop.line != exprTailList.last().start.line || exceedsMaxLineWidth(exprTailList.last())) {
                     doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
                 }
 
-            } else {
-                if (tailEndsWithAtExpression(exprTailList)) {
-                    indentTailAtExpression(exprTailList.last().ruleX_BaseExprTailAt(), doc)
-                    if (shouldIndentSecondLastExpression(exprTailList, exprHead)) {
-                        doc.prepend(exprTailList[exprTailList.lastIndex - 1]) { it.indent() }
-                    }
-                } else {
-                    doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
+            } else if (tailEndsWithAtExpression(exprTailList)) {
+                indentTailAtExpression(exprTailList.last().ruleX_BaseExprTailAt(), doc)
+                if (shouldIndentBeforeAt(exprTailList, exprHead) || exceedsMaxLineWidth(exprTailList.last())) {
+                    doc.prepend(exprTailList[exprTailList.lastIndex - 1]) { it.indent() }
                 }
+
+            } else {
+                doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
             }
         }
     }
@@ -304,7 +301,7 @@ abstract class RellAbstractFormatter(
         return exprTailList.last().ruleX_BaseExprTailAt() != null
     }
 
-    private fun shouldIndentSecondLastExpression(
+    private fun shouldIndentBeforeAt(
         exprTailList: List<RuleX_BaseExprTailContext>,
         exprHead: RuleX_BaseExprHeadContext
     ): Boolean {
