@@ -3,6 +3,7 @@ package net.postchain.rell.toolbox.lsp.caching
 import io.fury.Fury
 import io.fury.config.Language
 import net.postchain.rell.base.compiler.ast.S_Pos
+import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.toolbox.core.indexer.Resource
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
@@ -11,21 +12,15 @@ import net.postchain.rell.toolbox.core.indexer.createLocationInfo
 import java.util.concurrent.ConcurrentHashMap
 
 class RellIndexSerializer {
-    private val fury = Fury.builder().withLanguage(Language.JAVA)
-        .requireClassRegistration(false)
-        .withRefTracking(true)
-        .suppressClassRegistrationWarnings(true)
-        .withCodegen(false)
-        .buildThreadSafeFury()
 
     fun deserializeAsWorkspaceIndexer(indexAsBytes: ByteArray): WorkspaceIndexer =
         fromSerializableWorkspaceIndexer(deserialize(indexAsBytes))
 
     fun serializeAsBytes(indexer: WorkspaceIndexer): ByteArray = serialize(toSerializableWorkspaceIndexer(indexer))
 
-    private fun deserialize(indexAsBytes: ByteArray) = fury.deserialize(indexAsBytes) as SerializableWorkspaceIndexer
+    private fun deserialize(indexAsBytes: ByteArray) = getFury().deserialize(indexAsBytes) as SerializableWorkspaceIndexer
 
-    private fun serialize(serializableData: SerializableWorkspaceIndexer): ByteArray = fury.serialize(serializableData)
+    private fun serialize(serializableData: SerializableWorkspaceIndexer): ByteArray = getFury().serialize(serializableData)
 
     private fun toSerializableWorkspaceIndexer(indexer: WorkspaceIndexer): SerializableWorkspaceIndexer {
         return SerializableWorkspaceIndexer(indexer.workspaceUri, toSerializableResources(indexer))
@@ -61,7 +56,7 @@ class RellIndexSerializer {
 
     private fun fromSerializableWorkspaceIndexer(serializableWorkspaceIndexer: SerializableWorkspaceIndexer): WorkspaceIndexer {
         val indexer = WorkspaceIndexer(serializableWorkspaceIndexer.workspaceUri)
-        indexer.fileUriResourceMap = ConcurrentHashMap(fromSerializableResources( serializableWorkspaceIndexer.serializableResources))
+        indexer.fileUriResourceMap = ConcurrentHashMap(fromSerializableResources(serializableWorkspaceIndexer.serializableResources))
         return indexer
     }
 
@@ -91,6 +86,19 @@ class RellIndexSerializer {
                 link = it.value.link,
                 null
             )
+        }
+    }
+
+    companion object {
+        fun getFury(): Fury {
+            val fury = Fury.builder().withLanguage(Language.JAVA)
+                .requireClassRegistration(false)
+                .withRefTracking(true)
+                .suppressClassRegistrationWarnings(true)
+                .withCodegen(false)
+                .build()
+            fury.registerSerializer(IdeSymbolId::class.java, IdeSymbolIdSerializer(fury))
+            return fury
         }
     }
 }
