@@ -273,18 +273,18 @@ abstract class RellAbstractFormatter(
                 doc.interiorIndentRange(exprHead, exprTailList.last())
 
             } else if (tailHasMemberAndEndsWithTailCall(exprTailList)) {
-                if (exprHead.stop.line != exprTailList.last().start.line) {
-                    doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
-                } else if (exceedsMaxLineWidth(exprTailList.last())) {
+                if (exprHead.stop.line != exprTailList.last().start.line || exceedsMaxLineWidth(exprTailList.last())) {
                     doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
                 }
 
-            } else {
-                if (tailEndsWithAtExpression(exprTailList)) {
-                    doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
-                } else {
-                    indentTailAtExpression(exprTailList.last().ruleX_BaseExprTailAt(), doc)
+            } else if (tailEndsWithAtExpression(exprTailList)) {
+                indentTailAtExpression(exprTailList.last().ruleX_BaseExprTailAt(), doc)
+                if (shouldIndentBeforeAt(exprTailList, exprHead) || exceedsMaxLineWidth(exprTailList.last())) {
+                    doc.prepend(exprTailList[exprTailList.lastIndex - 1]) { it.indent() }
                 }
+
+            } else {
+                doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
             }
         }
     }
@@ -298,7 +298,18 @@ abstract class RellAbstractFormatter(
     }
 
     private fun tailEndsWithAtExpression(exprTailList: List<RuleX_BaseExprTailContext>): Boolean {
-        return exprTailList.last().ruleX_BaseExprTailAt() == null
+        return exprTailList.last().ruleX_BaseExprTailAt() != null
+    }
+
+    private fun shouldIndentBeforeAt(
+        exprTailList: List<RuleX_BaseExprTailContext>,
+        exprHead: RuleX_BaseExprHeadContext
+    ): Boolean {
+        return when (exprTailList.size) {
+            1 -> false
+            2 -> exprHead.stop.line != exprTailList.first().start.line
+            else -> exprTailList[exprTailList.lastIndex - 2].stop.line != exprTailList[exprTailList.lastIndex - 1].start.line
+        }
     }
 
     private fun indentTailAtExpression(tailAt: RellParser.RuleX_BaseExprTailAtContext, doc: FormattableDocument) {
