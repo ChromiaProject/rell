@@ -1,5 +1,7 @@
 package net.postchain.rell.toolbox.formatter
 
+import io.github.oshai.kotlinlogging.KotlinLogging
+
 enum class ChangePriority(val priority: Int) {
     HIGH(1),
     DEFAULT(0),
@@ -112,8 +114,11 @@ class Changes(
             if (strategy > 0) {
                 return second
             }
-            val message = "Conflicting values for '$propertyname': '$first' and '$second'."
-            throw RellFormatterException(message)
+            logger.warn {
+                "Conflicting values for '$propertyname': '$first' and '$second'. " +
+                        "Offset region of conflict: $startOffset - $stopOffset."
+            }
+            return null
         }
         return first ?: second
     }
@@ -142,5 +147,9 @@ class Changes(
 
     fun setTextChanges(indentedText: String?) {
         this.indentedText = indentedText
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }
