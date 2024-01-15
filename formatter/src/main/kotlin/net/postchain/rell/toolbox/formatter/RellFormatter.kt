@@ -468,6 +468,8 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         doc.prepend(xBaseAttriDef) { it.newLine() }
         doc.append(xBaseAttriDef.ruleX_tkMUTABLE()) { it.oneSpace() }
         doc.format(xBaseAttriDef.ruleX_AttrHeader())
+        val equalSign = tokenFor(xBaseAttriDef, "=")
+        doc.surround(equalSign) { it.oneSpace() }
         doc.prepend(xBaseAttriDef.ruleX_ExpressionRef()) { it.oneSpace() }
     }
 
