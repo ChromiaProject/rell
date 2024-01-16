@@ -21,9 +21,8 @@ import java.io.IOException
 import java.net.Socket
 import java.net.SocketTimeoutException
 import java.net.URI
-import kotlin.test.assertEquals
 
-
+@Suppress("JAVA_CLASS_ON_COMPANION")
 class InitializationTest {
     private lateinit var thread: Thread
     private lateinit var client: LanguageServer
@@ -57,7 +56,7 @@ class InitializationTest {
     fun `Initializers are run and errors are populated`() {
         val initParams = InitializeParams()
         initParams.workspaceFolders = listOf(WorkspaceFolder(testWorkspaceFolder.toURI().toString()))
-        val serverResponse = client.initialize(initParams).get()
+        client.initialize(initParams).get()
         client.initialized(InitializedParams())
 
         Thread.sleep(500)
@@ -79,8 +78,8 @@ class InitializationTest {
     }
 
     companion object {
-        var testWorkspaceFileURIs: MutableList<URI> = mutableListOf()
-        val classLoader = javaClass.getClassLoader()
+        private var testWorkspaceFileURIs: MutableList<URI> = mutableListOf()
+        private val classLoader = javaClass.getClassLoader()
         val testWorkspaceFolder = File(classLoader.getResource("rellDappWithErrors").file)
 
         @JvmStatic

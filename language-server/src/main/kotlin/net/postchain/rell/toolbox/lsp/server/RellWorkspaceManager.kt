@@ -27,9 +27,9 @@ import kotlin.time.Duration.Companion.minutes
 
 
 class RellWorkspaceManager(
-    val rellSymbolService: RellSymbolService,
-    val rellReferenceService: RellReferenceService,
-    val indexCachingService: RellIndexCachingService) {
+    private val rellSymbolService: RellSymbolService,
+    private val rellReferenceService: RellReferenceService,
+    private val indexCachingService: RellIndexCachingService) {
 
     var indexCachingEnabled: Boolean = false
 
@@ -200,9 +200,6 @@ class RellWorkspaceManager(
         reportDiagnostics(allUris)
     }
 
-    private fun isDocumentOpen(fileUri: URI): Boolean {
-        return openDocuments.containsKey(fileUri)
-    }
 
     fun didSave(fileUri: URI) {
         val contents = openDocuments[fileUri]

@@ -15,6 +15,7 @@ import java.io.File
 import java.net.URI
 
 
+@Suppress("JAVA_CLASS_ON_COMPANION")
 class RellResourceBuildModuleInfoTest {
 
     private fun filterMessages(messageList: List<C_Message>, fileUri: URI): List<C_Message> {

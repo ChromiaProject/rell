@@ -1,7 +1,11 @@
 package net.postchain.rell.toolbox.core.parser
 
 import net.postchain.rell.base.compiler.ast.S_RellFile
-import net.postchain.rell.base.compiler.base.utils.*
+import net.postchain.rell.base.compiler.base.utils.C_CommonError
+import net.postchain.rell.base.compiler.base.utils.C_SourceDir
+import net.postchain.rell.base.compiler.base.utils.C_SourceFile
+import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
 import net.postchain.rell.base.utils.ide.IdeDirApi.mapDir
 import net.postchain.rell.base.utils.ide.IdeDirApi.parseSourcePath
 import net.postchain.rell.base.utils.ide.IdeFilePath
@@ -42,9 +46,7 @@ class TestSourceFile(private val parser: AntlrRellParser, private val path: C_So
         }
         val rcPath = RellcFilePath(path, idePath)
         val pair = RellcAPI.antlrToRellAst(rcPath, root)
-        val ast = pair.first
-        check(ast != null)
-        return ast
+        return pair.first
     }
 
     override fun readText(): String {
