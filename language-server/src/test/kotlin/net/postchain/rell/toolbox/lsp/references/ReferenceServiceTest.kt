@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.io.File
 
+@Suppress("JAVA_CLASS_ON_COMPANION")
 class ReferenceServiceTest {
 
     @Test
@@ -152,8 +153,8 @@ class ReferenceServiceTest {
     }
 
     companion object {
-        val classLoader = javaClass.getClassLoader()
-        val workspaceFile = File(classLoader.getResource("rellReferences")!!.file)
+        private val classLoader = javaClass.getClassLoader()
+        val workspaceFile = File(classLoader.getResource("rellReferences").file)
         val indexer = WorkspaceIndexer(workspaceFile.toURI())
 
         @JvmStatic

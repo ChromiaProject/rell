@@ -12,6 +12,7 @@ import java.io.File
 import java.net.URI
 
 
+@Suppress("JAVA_CLASS_ON_COMPANION")
 class RellResourceBuildParseTreeTest {
     private fun getFileContent(suffix: String): String {
         return File(rellFilesError.find { it.toString().endsWith(suffix) }!!).readText()
@@ -57,10 +58,10 @@ class RellResourceBuildParseTreeTest {
 
     companion object {
         var rellFilesError: MutableList<URI> = mutableListOf()
-        var rellFilesCorrect: MutableList<URI> = mutableListOf()
-        val classLoader = javaClass.getClassLoader()
-        val workspaceError = File(classLoader.getResource("rellDappWithErrors").file).absoluteFile
-        val workspaceCorrect = File(RellResourceBuildModuleInfoTest.classLoader.getResource("rellDapp").file)
+        private var rellFilesCorrect: MutableList<URI> = mutableListOf()
+        private val classLoader = javaClass.getClassLoader()
+        private val workspaceError = File(classLoader.getResource("rellDappWithErrors").file).absoluteFile
+        private val workspaceCorrect = File(RellResourceBuildModuleInfoTest.classLoader.getResource("rellDapp").file)
         val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser())
 
         @JvmStatic

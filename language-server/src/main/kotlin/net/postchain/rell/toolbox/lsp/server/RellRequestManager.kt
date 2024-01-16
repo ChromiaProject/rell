@@ -7,6 +7,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 
 
+@Suppress("UNUSED_PARAMETER")
 class RellRequestManager {
     private val logger = KotlinLogging.logger {}
     private val parallelExecutorService = Executors.newCachedThreadPool(RequestManagerThreadFactory())

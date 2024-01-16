@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import java.net.URI
 
+@Suppress("JAVA_CLASS_ON_COMPANION")
 class RellResourceBuildRellAstTest {
     @Test
     fun `buildRellAst returns S_RellFile with no errors`() {
@@ -56,7 +57,7 @@ class RellResourceBuildRellAstTest {
     companion object {
         var rellFilesErrors: MutableList<URI> = mutableListOf()
         var rellFilesCorrect: MutableList<URI> = mutableListOf()
-        val classLoader = javaClass.getClassLoader()
+        private val classLoader = javaClass.getClassLoader()
         val workspaceError = File(classLoader.getResource("rellDappWithErrors").file)
         val workspaceCorrect = File(classLoader.getResource("rellDapp").file)
         val parser = AntlrRellParser()

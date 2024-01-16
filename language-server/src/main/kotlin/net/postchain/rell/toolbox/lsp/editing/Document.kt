@@ -34,7 +34,7 @@ class Document(val fileUri: URI, val version: Int, val contents: String) {
     }
 
     fun getPosition(offset: Int): Position {
-        val l = contents!!.length
+        val l = contents.length
         if (offset < 0 || offset > l) {
             throw IndexOutOfBoundsException(offset.toString())
         }
@@ -65,7 +65,7 @@ class Document(val fileUri: URI, val version: Int, val contents: String) {
         }
         val NL = '\n'
         val LF = '\r'
-        val l = contents!!.length
+        val l = contents.length
         val lineContent = StringBuilder()
         var line = 0
         for (i in 0 until l) {
@@ -108,19 +108,15 @@ class Document(val fileUri: URI, val version: Int, val contents: String) {
      */
     fun applyTextDocumentChanges(changes: Iterable<TextDocumentContentChangeEvent>): Document {
         var currentDocument = this
-        var newVersion: Int? = null
-        if (currentDocument.version != null) {
-            newVersion = Integer.valueOf(currentDocument.version!! + 1)
-        }
+        val newVersion: Int? = Integer.valueOf(currentDocument.version + 1)
         for (change in changes) {
-            val newContent: String
-            newContent = if (change.range == null) {
+            val newContent: String = if (change.range == null) {
                 change.text
             } else {
                 val start = currentDocument.getOffSet(change.range.start)
                 val end = currentDocument.getOffSet(change.range.end)
-                (currentDocument.contents!!.substring(0, start) + change.text
-                        + currentDocument.contents!!.substring(end))
+                (currentDocument.contents.substring(0, start) + change.text
+                        + currentDocument.contents.substring(end))
             }
             currentDocument = Document(fileUri, newVersion ?: 0, newContent)
         }
