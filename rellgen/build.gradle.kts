@@ -6,6 +6,7 @@
 
 plugins {
     id("net.postchain.rell.codegen.kotlin-application-conventions")
+    id("jacoco-report-aggregation")
 }
 
 dependencies {
@@ -22,4 +23,8 @@ dependencies {
 application {
     // Define the main class for the application.
     mainClass.set("net.postchain.rell.codegen.app.AppKt")
+}
+
+tasks.check {
+    dependsOn(tasks.named<JacocoReport>("testCodeCoverageReport"))
 }
