@@ -1,8 +1,10 @@
 image: gradle:8.1.1-jdk17-alpine
 include:
   - project: chromaway/core-infra/gitlab-automation
-    ref: 1.0.1
-    file: templates/release.yml
+    ref: 1.1.6
+    file:
+      - templates/release.yml
+      - templates/report-code-coverage.yml
 
 # Disable the Gradle daemon for Continuous Integration servers as correctness
 # is usually a priority over speed in CI environments. Using a fresh
@@ -11,6 +13,7 @@ include:
 variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true"
   DOCKER_HOST: tcp://docker:2375
+  JACOCO_REPORT_DIR: rellgen/build/reports/jacoco/jacoco
 
 .setup:
   before_script:
@@ -24,6 +27,7 @@ variables:
     when: always
     paths:
       - "**/*.log"
+      - $JACOCO_REPORT_DIR/*
     reports:
       junit:
         - "*/build/test-reports/test/TEST-*.xml"
@@ -31,14 +35,17 @@ variables:
 
 stages:
   - build-and-test
+  - code-coverage
   - publish
   - release
 
 build-and-test:
   stage: build-and-test
-  extends: .setup
+  extends:
+    - .setup
+    - .visualise-test-coverage
   interruptible: true
-  script: gradle --build-cache check
+  script: gradle --build-cache check jacocoTestReport testCodeCoverageReport
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
@@ -58,3 +65,8 @@ publish:
     paths:
       - "**/build"
       - .gradle
+
+test-coverage-report:
+  stage: code-coverage
+  dependencies:
+    - build-and-test
