@@ -32,7 +32,7 @@ variables:
       - $JACOCO_REPORT_DIR/*
     reports:
       junit:
-        - "*/build/test-reports/test/TEST-*.xml"
+        - "*/build/test-results/test/**/TEST-*.xml"
     expire_in: 1 week
 
 stages:
