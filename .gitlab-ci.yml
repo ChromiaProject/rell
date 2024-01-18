@@ -1,7 +1,7 @@
 image: gradle:8.1.1-jdk17-alpine
 include:
   - project: chromaway/core-infra/gitlab-automation
-    ref: 1.1.6
+    ref: 1.1.9
     file:
       - templates/release.yml
       - templates/report-code-coverage.yml
@@ -13,7 +13,9 @@ include:
 variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true"
   DOCKER_HOST: tcp://docker:2375
-  JACOCO_REPORT_DIR: rellgen/build/reports/jacoco/jacoco
+  JACOCO_REPORT_DIR: rellgen/build/reports/jacoco/testCodeCoverageReport
+  JACOCO_REPORT_XML: testCodeCoverageReport.xml
+  JACOCO_REPORT_HTML: html/index.html
 
 .setup:
   before_script:

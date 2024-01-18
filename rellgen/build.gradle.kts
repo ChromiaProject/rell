@@ -25,14 +25,6 @@ application {
     mainClass.set("net.postchain.rell.codegen.app.AppKt")
 }
 
-reporting {
-    reports {
-        val jacoco by creating(JacocoCoverageReport::class) {
-            testType.set(TestSuiteType.UNIT_TEST)
-        }
-    }
-}
-
 tasks.check {
-    dependsOn(tasks.named<JacocoReport>("jacoco"))
+    dependsOn(tasks.named<JacocoReport>("testCodeCoverageReport"))
 }
