@@ -34,11 +34,5 @@ reporting {
 }
 
 tasks.check {
-    dependsOn(tasks.named<JacocoReport>("testCodeCoverageReport"))
-}
-
-tasks.testCodeCoverageReport {
-    reports {
-    }
-
+    dependsOn(tasks.named<JacocoReport>("jacoco"))
 }

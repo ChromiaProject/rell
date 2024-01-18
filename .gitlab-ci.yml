@@ -45,7 +45,7 @@ build-and-test:
     - .setup
     - .visualise-test-coverage
   interruptible: true
-  script: gradle --build-cache check jacocoTestReport testCodeCoverageReport
+  script: gradle --build-cache check
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
