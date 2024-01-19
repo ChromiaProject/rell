@@ -1,37 +1,7 @@
 plugins {
     id("java")
-    // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-    id("org.jetbrains.kotlin.jvm")
+    id("net.postchain.rell.toolbox.kotlin-common-conventions")
     antlr
-    id("jacoco")
-}
-
-version = rootProject.version
-group = rootProject.group
-
-repositories {
-    mavenCentral()
-    maven { url = uri("https://jitpack.io") }
-    maven {
-        name = "bintray"
-        url = uri("https://jcenter.bintray.com")
-    }
-    maven {
-        name = "etherjar"
-        url = uri("https://maven.emrld.io")
-    }
-    maven {
-        name = "Rell GitLab Registry"
-        url = uri("https://gitlab.com/api/v4/projects/32802097/packages/maven")
-    }
-    maven {
-        name = "Postchain GitLab Registry"
-        url = uri("https://gitlab.com/api/v4/projects/32294340/packages/maven")
-    }
-    maven {
-        name = "Chromia parent GitLab Registry"
-        url = uri("https://gitlab.com/api/v4/projects/50818999/packages/maven")
-    }
 }
 
 dependencies {
@@ -58,10 +28,6 @@ tasks.processTestResources {
     dependsOn(tasks.compileTestKotlin)
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
-
 tasks.generateGrammarSource {
     arguments = arguments + listOf(
         "-visitor",
@@ -70,7 +36,6 @@ tasks.generateGrammarSource {
     )
     outputDirectory = file("src/main/gen")
 }
-
 
 sourceSets.getByName("main") {
     java.srcDir("src/main/gen")

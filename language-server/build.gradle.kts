@@ -1,40 +1,9 @@
 plugins {
-    // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-    id("org.jetbrains.kotlin.jvm")
+    id("net.postchain.rell.toolbox.kotlin-common-conventions")
     id("com.github.johnrengelman.shadow") version "8.1.1"
     application
-    id("jacoco")
     id("jacoco-report-aggregation")
 }
-
-version = rootProject.version
-group = rootProject.group
-
-repositories {
-    mavenCentral()
-    maven { url = uri("https://jitpack.io") }
-    maven {
-        name = "bintray"
-        url = uri("https://jcenter.bintray.com")
-    }
-    maven {
-        name = "etherjar"
-        url = uri("https://maven.emrld.io")
-    }
-    maven {
-        name = "Rell GitLab Registry"
-        url = uri("https://gitlab.com/api/v4/projects/32802097/packages/maven")
-    }
-    maven {
-        name = "Postchain GitLab Registry"
-        url = uri("https://gitlab.com/api/v4/projects/32294340/packages/maven")
-    }
-    maven {
-        name = "Chromia parent GitLab Registry"
-        url = uri("https://gitlab.com/api/v4/projects/50818999/packages/maven")
-    }
-}
-
 
 dependencies {
     implementation(libs.bundles.lsp4j)
@@ -48,10 +17,6 @@ dependencies {
 
     testImplementation(libs.bundles.testcontainers)
     testImplementation(libs.bundles.testing)
-}
-
-tasks.test {
-    useJUnitPlatform()
 }
 
 tasks.check {
