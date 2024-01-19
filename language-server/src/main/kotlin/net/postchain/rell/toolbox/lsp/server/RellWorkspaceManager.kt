@@ -6,6 +6,7 @@ import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.core.indexer.RellIssue
 import net.postchain.rell.toolbox.core.indexer.Resource
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.core.indexer.findRellFilesInWorkspace
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
@@ -29,7 +30,8 @@ import kotlin.time.Duration.Companion.minutes
 class RellWorkspaceManager(
     private val rellSymbolService: RellSymbolService,
     private val rellReferenceService: RellReferenceService,
-    private val indexCachingService: RellIndexCachingService) {
+    private val indexCachingService: RellIndexCachingService
+) {
 
     var indexCachingEnabled: Boolean = false
 
@@ -66,7 +68,8 @@ class RellWorkspaceManager(
 
     private fun doIndex(workspaceFolderUri: URI): WorkspaceIndexer {
         val resolvedSourceDirUri = findSourceDirURI(workspaceFolderUri)
-        val cachedIndexer = if (indexCachingEnabled) indexCachingService.getWorkspaceIndexer(resolvedSourceDirUri) else null
+        val cachedIndexer =
+            if (indexCachingEnabled) indexCachingService.getWorkspaceIndexer(resolvedSourceDirUri) else null
         val indexer = WorkspaceIndexer(resolvedSourceDirUri)
         indexer.initialFileIndexBuild(cachedIndexer)
         return indexer
@@ -116,8 +119,10 @@ class RellWorkspaceManager(
     }
 
     private fun reportDiagnostics(fileUris: List<URI>) {
-        for (indexer in indexers.values) {
-            reportDiagnostics(indexer, fileUris)
+        if (fileUris.isNotEmpty()) {
+            for (indexer in indexers.values) {
+                reportDiagnostics(indexer, fileUris)
+            }
         }
     }
 
@@ -152,8 +157,6 @@ class RellWorkspaceManager(
 
     fun didClose(fileUri: URI) {
         openDocuments.remove(fileUri)
-        // TODO: Do we need to update on close?
-        didChangeFiles(listOf(fileUri), listOf())
     }
 
 
@@ -200,6 +203,21 @@ class RellWorkspaceManager(
         reportDiagnostics(allUris)
     }
 
+    fun didChangeFolders(dirtyFolders: List<URI>, deletedFolders: List<URI>) {
+        val deletedFiles = mutableListOf<URI>()
+        val dirtyFiles = mutableListOf<URI>()
+        deletedFolders.forEach { uri ->
+            getIndexerFor(uri).let { indexer ->
+                deletedFiles.addAll(indexer.getFileUrisWithPrefix(uri))
+            }
+        }
+
+        dirtyFolders.forEach { uri ->
+            findRellFilesInWorkspace(File(uri), dirtyFiles)
+        }
+
+        didChangeFiles(dirtyFiles, deletedFiles, true)
+    }
 
     fun didSave(fileUri: URI) {
         val contents = openDocuments[fileUri]

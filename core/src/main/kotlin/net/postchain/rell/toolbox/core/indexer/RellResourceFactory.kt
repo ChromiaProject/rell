@@ -26,12 +26,22 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
     fun buildFileMap(sources: Map<URI, String>): ConcurrentHashMap<C_SourcePath, C_SourceFile> {
         val fileMap = ConcurrentHashMap<C_SourcePath, C_SourceFile>()
         sources.forEach { (fileUri, fileContent) ->
-            val rellCompilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
-            val antlrParseTree = buildParseTreeWithSyntaxErrors(fileContent)
-            val ast = buildRellAstWithCompilerErrors(rellCompilerSourcePath, antlrParseTree.first)
-            fileMap[rellCompilerSourcePath] = AstSourceFile.make(ast.first, IdeSourcePathFilePath(rellCompilerSourcePath))
+            val (sourcePath, sourceFile) = buildCSourceFile(fileUri, fileContent)
+            fileMap[sourcePath] = sourceFile
         }
         return fileMap
+    }
+
+    fun buildCSourceFile(fileUri: URI, fileContent: String): Pair<C_SourcePath, C_SourceFile> {
+        val rellCompilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
+        val antlrParseTree = buildParseTreeWithSyntaxErrors(fileContent)
+        val ast = buildRellAstWithCompilerErrors(rellCompilerSourcePath, antlrParseTree.first)
+        return rellCompilerSourcePath to AstSourceFile.make(ast.first, IdeSourcePathFilePath(rellCompilerSourcePath))
+    }
+
+    fun updateFileMap(fileMap: MutableMap<C_SourcePath, C_SourceFile>, fileUri: URI, fileContent: String? = null) {
+        val (sourcePath, sourceFile) = buildCSourceFile(fileUri, fileContent ?: File(fileUri).readText())
+        fileMap[sourcePath] = sourceFile
     }
 
     fun buildRellResource(fileUri: URI, fileContent: String, fileMap:  MutableMap<C_SourcePath, C_SourceFile>): Resource {

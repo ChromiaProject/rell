@@ -1,5 +1,6 @@
 package net.postchain.rell.toolbox.lsp.server
 
+import net.postchain.rell.toolbox.core.indexer.RellCompilerUtils
 import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer

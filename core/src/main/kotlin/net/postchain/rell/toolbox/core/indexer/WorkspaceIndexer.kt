@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap
 class WorkspaceIndexer(val workspaceUri: URI) {
     private val logger = KotlinLogging.logger {}
     private val resourceFactory = RellResourceFactory(workspaceUri, AntlrRellParser())
+    private val rellCompilerUtils = RellCompilerUtils()
     var fileUriResourceMap = ConcurrentHashMap<URI, Resource>()
     var fileMap: ConcurrentHashMap<C_SourcePath, C_SourceFile> = ConcurrentHashMap()
 
@@ -98,7 +99,12 @@ class WorkspaceIndexer(val workspaceUri: URI) {
 
     //Change in source code
     fun updateFileUriResourceMap(fileUri: URI) {
-        fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileMap)
+        if (!File(fileUri).exists()) {
+            removeFileUriResourceMap(fileUri)
+        } else {
+            fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileMap)
+            resourceFactory.updateFileMap(fileMap, fileUri)
+        }
     }
 
     fun updateFileUriResourceMap(fileUri: URI, fileContent: String) {
@@ -106,7 +112,12 @@ class WorkspaceIndexer(val workspaceUri: URI) {
             logger.info { "Skipping indexing of file $fileUri because it is a git file" }
             return
         }
-        fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileContent, fileMap)
+        if (!File(fileUri).exists()) {
+            removeFileUriResourceMap(fileUri)
+        } else {
+            fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileContent, fileMap)
+            resourceFactory.updateFileMap(fileMap, fileUri, fileContent)
+        }
     }
 
     //Rename and Move file
@@ -114,7 +125,7 @@ class WorkspaceIndexer(val workspaceUri: URI) {
         val resource = fileUriResourceMap[oldFileUri]
         if (resource != null) {
             fileUriResourceMap[newFileUri] = resource
-            fileUriResourceMap.remove(oldFileUri)
+            removeFileUriResourceMap(oldFileUri)
         } else {
             logger.warn { "Could not find resource for $oldFileUri. Re-parsing file..." }
             updateFileUriResourceMap(newFileUri)
@@ -125,6 +136,11 @@ class WorkspaceIndexer(val workspaceUri: URI) {
 
     fun removeFileUriResourceMap(fileUri: URI) {
         fileUriResourceMap.remove(fileUri)
+        fileMap.remove(createSourcePath(fileUri))
+    }
+
+    fun createSourcePath(fileUri: URI): C_SourcePath {
+        return rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
     }
 
     fun findAffectedFiles(fileUri: URI): Set<URI> {
@@ -164,6 +180,12 @@ class WorkspaceIndexer(val workspaceUri: URI) {
 
     fun getResource(uri: URI): Resource? {
         return fileUriResourceMap[uri]
+    }
+
+    fun getFileUrisWithPrefix(uri: URI): Collection<URI> {
+        return fileUriResourceMap.keys.filter {
+            it.toString().startsWith(uri.toString())
+        }
     }
 
 }

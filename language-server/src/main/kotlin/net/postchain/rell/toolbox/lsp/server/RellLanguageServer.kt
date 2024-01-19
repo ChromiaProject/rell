@@ -153,28 +153,36 @@ class RellLanguageServer(
     override fun didOpen(params: DidOpenTextDocumentParams) {
         val textDocument = params.textDocument
         val uri = parseFileUri(textDocument.uri)
-        workspaceManager.didOpen(uri, textDocument.version, textDocument.text)
+        if (uri.isRellFile()) {
+            workspaceManager.didOpen(uri, textDocument.version, textDocument.text)
+        }
     }
 
     override fun didChange(params: DidChangeTextDocumentParams) {
         val textDocument: VersionedTextDocumentIdentifier = params.textDocument
         val uri = parseFileUri(textDocument.uri)
-        workspaceManager.didChangeTextDocumentContent(
-            uri, textDocument.version, params.contentChanges
-        )
+        if (uri.isRellFile()) {
+            workspaceManager.didChangeTextDocumentContent(
+                uri, textDocument.version, params.contentChanges
+            )
+        }
     }
 
     override fun didClose(params: DidCloseTextDocumentParams) {
         val uri = parseFileUri(params.textDocument.uri)
-        requestManager.runWrite {
-            workspaceManager.didClose(uri)
+        if (uri.isRellFile()) {
+            requestManager.runWrite {
+                workspaceManager.didClose(uri)
+            }
         }
     }
 
     override fun didSave(params: DidSaveTextDocumentParams) {
         val uri = parseFileUri(params.textDocument.uri)
-        requestManager.runWrite {
-            workspaceManager.didSave(uri)
+        if (uri.isRellFile()) {
+            requestManager.runWrite {
+                workspaceManager.didSave(uri)
+            }
         }
     }
 
@@ -187,17 +195,31 @@ class RellLanguageServer(
     override fun didChangeWatchedFiles(params: DidChangeWatchedFilesParams) {
         val dirtyFiles = mutableListOf<URI>()
         val deletedFiles = mutableListOf<URI>()
+        val dirtyFolders = mutableListOf<URI>()
+        val deletedFolders = mutableListOf<URI>()
         params.changes.forEach { change ->
             val uri = parseFileUri(change.uri)
-            if (change.type == FileChangeType.Deleted) {
-                deletedFiles.add(uri)
+            if (uri.isRellFile()) {
+                if (change.type == FileChangeType.Deleted) {
+                    deletedFiles.add(uri)
+                } else {
+                    dirtyFiles.add(uri)
+                }
             } else {
-                dirtyFiles.add(uri)
+                if (change.type == FileChangeType.Deleted) {
+                    deletedFolders.add(uri)
+                } else {
+                    if (File(uri).isDirectory) {
+                        dirtyFolders.add(uri)
+                    }
+                }
             }
         }
 
         requestManager.runWrite {
             workspaceManager.didChangeFiles(dirtyFiles, deletedFiles, updateAffectedFiles = true)
+            workspaceManager.didChangeFolders(dirtyFolders, deletedFolders)
+            languageClient.refreshSemanticTokens()
         }
     }
 
@@ -206,7 +228,7 @@ class RellLanguageServer(
 
         return requestManager.runRead {
             val resource = workspaceManager.getResource(uri)
-            if (resource != null) {
+            if (uri.isRellFile() && resource != null) {
                 SemanticTokens(semanticTokensManager.getRelativeSemanticTokens(resource))
             } else {
                 SemanticTokens()
@@ -214,40 +236,60 @@ class RellLanguageServer(
         }
     }
 
-    override fun definition(params: DefinitionParams): CompletableFuture<Either<MutableList<out Location>, MutableList<out LocationLink>>> {
+    override fun definition(params: DefinitionParams): CompletableFuture<Either<MutableList<out Location>, MutableList<out LocationLink>>?> {
         val fileUri = parseFileUri(params.textDocument.uri)
 
         return requestManager.runRead {
-            workspaceManager.getDefinitionLocations(fileUri, params.position)
+            if (fileUri.isRellFile()) {
+                workspaceManager.getDefinitionLocations(fileUri, params.position)
+            } else {
+                null
+            }
         }
     }
 
-    override fun documentSymbol(params: DocumentSymbolParams): CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> {
+    override fun documentSymbol(params: DocumentSymbolParams): CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>?> {
         val fileUri = parseFileUri(params.textDocument.uri)
         return requestManager.runRead {
-            workspaceManager.getDocumentSymbols(fileUri)
+            if (fileUri.isRellFile()) {
+                workspaceManager.getDocumentSymbols(fileUri)
+            } else {
+                null
+            }
         }
     }
 
 
-    override fun formatting(params: DocumentFormattingParams): CompletableFuture<List<TextEdit>> {
+    override fun formatting(params: DocumentFormattingParams): CompletableFuture<List<TextEdit>?> {
         val fileUri = parseFileUri(params.textDocument.uri)
         return requestManager.runRead {
-            formattingManager.format(fileUri, params.options)
+            if (fileUri.isRellFile()) {
+                formattingManager.format(fileUri, params.options)
+            } else {
+                null
+            }
         }
     }
 
-    override fun rangeFormatting(params: DocumentRangeFormattingParams): CompletableFuture<List<TextEdit>> {
+    override fun rangeFormatting(params: DocumentRangeFormattingParams): CompletableFuture<List<TextEdit>?> {
         val fileUri = parseFileUri(params.textDocument.uri)
         return requestManager.runRead {
-            formattingManager.rangeFormat(fileUri, params.range, params.options)
+            if (fileUri.isRellFile()) {
+                formattingManager.rangeFormat(fileUri, params.range, params.options)
+            } else {
+                null
+            }
         }
     }
 
-    override fun references(params: ReferenceParams): CompletableFuture<List<Location>> {
+    override fun references(params: ReferenceParams): CompletableFuture<List<Location>?> {
         val fileUri = parseFileUri(params.textDocument.uri)
         return requestManager.runRead {
-            workspaceManager.getReferenceLocations(fileUri, params.position)
+            if (fileUri.isRellFile()) {
+                workspaceManager.getReferenceLocations(fileUri, params.position)
+            } else {
+                null
+            }
         }
     }
 

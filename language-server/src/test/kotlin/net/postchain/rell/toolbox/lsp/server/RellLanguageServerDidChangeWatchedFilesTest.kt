@@ -174,4 +174,38 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         assertThat(resourcesBeforeDeletion.keys).containsOnly(oldFileUri)
         assertThat(indexer.fileUriResourceMap.keys).containsOnly(renamedFileUri)
     }
+
+    @Test
+    fun `didChangeWatched folder renamed`() {
+        val rellRenameFolderDir = File(javaClass.getClassLoader().getResource("folderRename")!!.file)
+        val tempCopyDestination = tempDir.resolve("folderRename")
+        await().until { rellRenameFolderDir.copyRecursively(tempCopyDestination) }
+
+        val testWorkspaceSrc = tempCopyDestination.resolve("src")
+        clientServerLauncher.initializeServer(testWorkspaceSrc.toURI())
+        val indexer = workspaceManager.indexers[testWorkspaceSrc.toURI()]!!
+
+        indexer.getAllIssues().forEach { (_, issues) ->
+            assertThat(issues.size).isEqualTo(0)
+        }
+
+        val submoduleFolder = testWorkspaceSrc.listFiles()!!.first { it.endsWith("submodule") }
+        val newFolderName = File(submoduleFolder.path.replace("submodule", "newmodule"))
+        submoduleFolder.renameTo(newFolderName)
+
+        val fileEventDelete = FileEvent(submoduleFolder.toURI().toString(), FileChangeType.Deleted)
+        val fileEventCreate = FileEvent(newFolderName.toURI().toString(), FileChangeType.Created)
+        val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEventDelete, fileEventCreate))
+
+        server.didChangeWatchedFiles(didChangeParams)
+        await().until { testClient.diagnostics.isNotEmpty() }
+
+        indexer.getAllIssues().forEach { (uri, issues) ->
+            if (uri.toString().endsWith("main.rell")) {
+                assertThat(issues.size).isEqualTo(1)
+            } else {
+                assertThat(issues.size).isEqualTo(0)
+            }
+        }
+    }
 }

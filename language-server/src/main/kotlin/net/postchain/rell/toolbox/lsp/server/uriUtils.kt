@@ -8,3 +8,7 @@ fun parseFileUri(fileUri: String): URI {
     uri = uri.replace("file:///", "file:/")
     return URI(uri)
 }
+
+fun URI.isRellFile(): Boolean {
+    return this.toString().endsWith(".rell")
+}
