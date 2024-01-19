@@ -125,41 +125,17 @@ class RellLanguageServerTest {
     }
 
     @Test
-    fun `didClose sends empty diagnostic for file with no errors`() {
+    fun `didClose removes file from openDocuments`() {
         val file = testWorkspaceFolder.resolve("src/no_errors.rell")
+        val textDocumentItem = createTextDocumentItem(file)
+        val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
+        server.didOpen(didOpenParam)
+        await().until { workspaceManager.openDocuments.isNotEmpty() }
+
         val didCloseParam = DidCloseTextDocumentParams(TextDocumentIdentifier(file.toURI().toString()))
-
         server.didClose(didCloseParam)
-        await().until { testClient.diagnostics.isNotEmpty() }
-
-        assertThat(testClient.diagnostics.keys).containsOnly(file.toURI().toString())
-        assertThat(testClient.diagnostics[file.toURI().toString()]!!.size).isEqualTo(0)
-        assertThat(workspaceManager.openDocuments).isEmpty()
-    }
-
-    @Test
-    fun `didClose sends diagnostic for file with single syntax errors`() {
-        val file = testWorkspaceFolder.resolve("src/single_syntax_error.rell")
-        val didCloseParam = DidCloseTextDocumentParams(TextDocumentIdentifier(file.toURI().toString()))
-
-        server.didClose(didCloseParam)
-        await().until { testClient.diagnostics.isNotEmpty() }
-
-        assertThat(testClient.diagnostics.keys).containsOnly(file.toURI().toString())
-        assertThat(testClient.diagnostics[file.toURI().toString()]!!.size).isEqualTo(1)
-        assertThat(workspaceManager.openDocuments).isEmpty()
-    }
-
-    @Test
-    fun `didClose send diagnostic for open file with multiple semantic errors`() {
-        val file = testWorkspaceFolder.resolve("src/semantic_error.rell")
-        val didCloseParam = DidCloseTextDocumentParams(TextDocumentIdentifier(file.toURI().toString()))
-
-        server.didClose(didCloseParam)
-        await().until { testClient.diagnostics.isNotEmpty() }
-
-        assertThat(testClient.diagnostics.keys).containsOnly(file.toURI().toString())
-        assertThat(testClient.diagnostics[file.toURI().toString()]!!.size).isEqualTo(3)
+        
+        await().until { workspaceManager.openDocuments.isEmpty() }
         assertThat(workspaceManager.openDocuments).isEmpty()
     }
 

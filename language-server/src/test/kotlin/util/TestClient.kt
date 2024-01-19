@@ -35,4 +35,8 @@ open class TestClient : LanguageClient {
     override fun logMessage(message: MessageParams?) {
         return
     }
+
+    override fun refreshSemanticTokens(): CompletableFuture<Void>? {
+        return CompletableFuture<Void>()
+    }
 }
