@@ -4,14 +4,17 @@ import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.formatter.RellFormatter
 import net.postchain.rell.toolbox.formatter.TextReplacement
 import net.postchain.rell.toolbox.lsp.editing.Document
+import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import org.eclipse.lsp4j.FormattingOptions
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.TextEdit
 import java.io.File
 import java.net.URI
 
+
 class RellFormattingManager(
-    private val workspaceManager: RellWorkspaceManager
+    private val workspaceManager: RellWorkspaceManager,
+    private val formatterOptionsResolver: RellFormatterOptionsResolver
 ) {
     fun format(fileUri: URI, options: FormattingOptions?): List<TextEdit> {
         val (fileDocument, replacements) = getDocumentReplacements(fileUri, options)
@@ -33,7 +36,7 @@ class RellFormattingManager(
         fileUri: URI,
         options: FormattingOptions?
     ): Pair<Document, List<TextReplacement>> {
-        val formatterRequest = setUserOptions(options)
+        val formatterRequest = setUserOptions(fileUri, options)
         val document = workspaceManager.getDocument(fileUri)
         val fileDocument = document ?: Document(fileUri, 1, File(fileUri).readText())
         val replacements = RellFormatter.getFormattingChanges(fileDocument.contents, formatterRequest)
@@ -50,8 +53,14 @@ class RellFormattingManager(
         }
     }
 
-    private fun setUserOptions(options: FormattingOptions?): FormatterOptions {
+    private fun setUserOptions(fileUri: URI, options: FormattingOptions?): FormatterOptions {
         val formatterRequest = FormatterOptions()
+
+        val resolvedFormatterOptions = formatterOptionsResolver.getFormattingOptionsFor(fileUri)
+        if (resolvedFormatterOptions != null) {
+            return resolvedFormatterOptions
+        }
+
         if (options == null) return formatterRequest
 
         if (options["maxLineWidth"] != null) {

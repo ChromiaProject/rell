@@ -3,6 +3,7 @@ package util
 import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer
+import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
@@ -15,8 +16,6 @@ import net.postchain.rell.toolbox.lsp.server.RellRequestManager
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
 import net.postchain.rell.toolbox.lsp.server.RellFormattingManager
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
-import org.eclipse.lsp4j.services.TextDocumentService
-import org.eclipse.lsp4j.services.WorkspaceService
 import org.koin.core.KoinApplication
 import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
@@ -45,6 +44,7 @@ class TestServerModule {
         singleOf(::RellIndexCachingService)
         single { RellReferenceService(get()) }
         singleOf(::RellWorkspaceManager)
+        single { RellFormatterOptionsResolver(get()) }
         single { RellRequestManager() }
         singleOf(::RellLanguageServerTerminator)
         single { CapabilitiesProvider() }
