@@ -1,6 +1,7 @@
 plugins {
     id("java")
-    kotlin("jvm") version "1.9.10"
+    // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
+    id("org.jetbrains.kotlin.jvm")
     antlr
     id("jacoco")
 }
@@ -79,10 +80,4 @@ sourceSets.getByName("main") {
 
 sourceSets.getByName("test") {
     output.setResourcesDir(file("build/classes/kotlin/test"))
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
 }

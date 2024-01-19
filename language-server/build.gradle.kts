@@ -1,5 +1,6 @@
 plugins {
-    kotlin("jvm") version "1.9.10"
+    // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
+    id("org.jetbrains.kotlin.jvm")
     id("com.github.johnrengelman.shadow") version "8.1.1"
     application
     id("jacoco")
@@ -63,10 +64,4 @@ application {
 
 tasks.jar {
     manifest.attributes["Multi-Release"] = true
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
 }

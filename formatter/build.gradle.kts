@@ -1,6 +1,7 @@
 plugins {
     id("java")
-    kotlin("jvm") version "1.9.10"
+    // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
+    id("org.jetbrains.kotlin.jvm")
     application
     id("jacoco")
 }
@@ -50,10 +51,4 @@ tasks.processTestResources {
 
 application {
     mainClass.set("net.postchain.rell.toolbox.formatter.MainKt")
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
 }
