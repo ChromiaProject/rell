@@ -2,6 +2,7 @@ plugins {
     id("java")
     kotlin("jvm") version "1.9.10"
     application
+    id("jacoco")
 }
 
 version = rootProject.version

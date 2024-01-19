@@ -2,6 +2,8 @@ plugins {
     kotlin("jvm") version "1.9.10"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     application
+    id("jacoco")
+    id("jacoco-report-aggregation")
 }
 
 version = rootProject.version
@@ -49,6 +51,10 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.check {
+    dependsOn(tasks.named<JacocoReport>("testCodeCoverageReport"))
 }
 
 application {
