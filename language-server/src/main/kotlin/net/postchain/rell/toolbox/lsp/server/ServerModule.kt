@@ -3,6 +3,7 @@ package net.postchain.rell.toolbox.lsp.server
 import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer
+import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
@@ -21,6 +22,7 @@ val serverModule = module {
     single { RellReferenceService(get()) }
     singleOf(::RellWorkspaceManager)
     single { RellRequestManager() }
+    single { RellFormatterOptionsResolver(get()) }
     singleOf(::RellLanguageServerTerminator)
     single { CapabilitiesProvider() }
     single { RellSemanticTokensManager() }
