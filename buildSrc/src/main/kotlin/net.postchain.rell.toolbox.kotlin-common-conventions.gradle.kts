@@ -58,28 +58,12 @@ publishing {
 }
 
 dependencies {
-    constraints {
-        // Define dependency versions as constraints
-        //implementation(catalog.findLibrary("commons-text").get())
-
-        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    }
-
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
 
     // Use the Kotlin JDK 8 standard library.
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-
-    // Align versions of all Kotlin components
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-    //implementation(catalog.findLibrary("rell").get())
-
-    //testImplementation(catalog.findLibrary("assertk").get())
-
-    implementation("io.github.microutils:kotlin-logging-jvm:2.1.23")
-
-
+    implementation(catalog.findLibrary("oshai").get())
 }
 
 kotlin {

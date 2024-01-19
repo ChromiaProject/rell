@@ -30,3 +30,12 @@ application {
 tasks.jar {
     manifest.attributes["Multi-Release"] = true
 }
+
+publishing {
+    publications {
+        create<MavenPublication>("rell-language-server") {
+            artifactId = "rell-language-server"
+            shadow.component(this)
+        }
+    }
+}
