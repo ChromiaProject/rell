@@ -1,37 +1,9 @@
 plugins {
-    kotlin("jvm") version "1.9.10"
+    id("net.postchain.rell.toolbox.kotlin-common-conventions")
     id("com.github.johnrengelman.shadow") version "8.1.1"
     application
+    id("jacoco-report-aggregation")
 }
-
-version = rootProject.version
-group = rootProject.group
-
-repositories {
-    mavenCentral()
-    maven { url = uri("https://jitpack.io") }
-    maven {
-        name = "bintray"
-        url = uri("https://jcenter.bintray.com")
-    }
-    maven {
-        name = "etherjar"
-        url = uri("https://maven.emrld.io")
-    }
-    maven {
-        name = "Rell GitLab Registry"
-        url = uri("https://gitlab.com/api/v4/projects/32802097/packages/maven")
-    }
-    maven {
-        name = "Postchain GitLab Registry"
-        url = uri("https://gitlab.com/api/v4/projects/32294340/packages/maven")
-    }
-    maven {
-        name = "Chromia parent GitLab Registry"
-        url = uri("https://gitlab.com/api/v4/projects/50818999/packages/maven")
-    }
-}
-
 
 dependencies {
     implementation(libs.bundles.lsp4j)
@@ -48,8 +20,8 @@ dependencies {
     testImplementation(libs.bundles.testing)
 }
 
-tasks.test {
-    useJUnitPlatform()
+tasks.check {
+    dependsOn(tasks.named<JacocoReport>("testCodeCoverageReport"))
 }
 
 application {
@@ -58,4 +30,13 @@ application {
 
 tasks.jar {
     manifest.attributes["Multi-Release"] = true
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("rell-language-server") {
+            artifactId = "rell-language-server"
+            shadow.component(this)
+        }
+    }
 }
