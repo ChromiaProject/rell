@@ -5,6 +5,7 @@ plugins {
     id("org.jetbrains.kotlin.jvm")
     id("maven-publish")
     id("jacoco")
+    id("org.jetbrains.dokka")
 }
 
 version = rootProject.version

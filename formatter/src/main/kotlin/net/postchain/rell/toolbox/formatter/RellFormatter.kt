@@ -795,7 +795,6 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
                 try {
                     val formatMethod =
                         javaClass.getDeclaredMethod("format", child.javaClass, FormattableDocument::class.java)
-                    println("Format Child by analysis ${child.javaClass.simpleName}")
                     formatMethod.invoke(this, child, doc)
                 } catch (e: NoSuchMethodException) {
                     format(child, doc)
