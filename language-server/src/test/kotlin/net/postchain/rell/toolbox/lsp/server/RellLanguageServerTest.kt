@@ -202,7 +202,7 @@ class RellLanguageServerTest {
 
         val didSaveParams = DidSaveTextDocumentParams(TextDocumentIdentifier(savedFile.toURI().toString()))
         server.didSave(didSaveParams)
-        await().until { testClient.diagnostics.isNotEmpty() }
+        await().until { testClient.diagnostics.size == 2 }
 
         assertThat(testClient.diagnostics.keys).containsOnly(
             savedFile.toURI().toString(),
