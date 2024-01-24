@@ -1,8 +1,6 @@
 # General
 The formatter module is used to enable formatting for *.rell* files. It does this by using a set of defined rules for how tokens should be formatted
-in regard to its surrounding with a few options that can override the default values.
-
-//TODO should the rell_format file be introduced here? or in the client
+in regard to its surrounding with a few options that can override the default values with a `.rellformat` file in the repository.
 
 
 # Packages
