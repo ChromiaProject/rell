@@ -11,7 +11,7 @@
 
 ### `.diagnostics`
 
-* The DiagnosticsConverter Kotlin object converts Rell issues into LSP diagnostics using LSP4J. It maps severity, code,
+* The DiagnosticsConverter converts Rell issues into LSP diagnostics. It maps severity, code,
   message, and range from Rell issues to LSP diagnostic attributes. The toDiagnostics function processes a list of Rell
   issues, while the toDiagnostic function handles individual issue conversions. The severity mapping ensures
   compatibility with LSP diagnostic severities.
@@ -20,15 +20,13 @@
 
 * The Document class in the editing package manages a text document's state for language server interactions. It stores
   file-related information, such as URI, version, and contents. The class provides methods to get the offset and
-  position
-  in the document based on line and character indices. Additionally, it includes functionality to apply text document
-  changes, adjusting the document's version and content accordingly.
+  position in the document based on line and character indices. Additionally, it includes functionality to apply text
+  document changes, adjusting the document's version and content accordingly.
 
 ### `.editorconfig`
 
 * RellFormatterOptionsResolver class fetches formatting options for Rell code from the `.rellformat` file if it exists
-  in
-  the users' workspace. It utilizes RellWorkspaceManager to locate and parse the file, extracting properties
+  in the user's workspace. It utilizes RellWorkspaceManager to locate and parse the file, extracting properties
   like max_line_width, insert_spaces, and tab_size, that are used by the formatter.
 
 ### `.launcher`
@@ -40,19 +38,23 @@
 
 ### `.references`
 
-* This Kotlin class, ReferenceIndexer, manages indexing and retrieval of references for symbols within Rell code. The
+* ReferenceIndexer manages indexing and retrieval of references for symbols within Rell code. The
   class maintains maps for global, module, and local references, and provides methods to find references based on the
-  type of symbol (global, module, or local). It also handles the updating of the reference index when the underlying
-  code changes. The class is designed to work with URI-based representations of files and symbols, utilizing LSP4J for
-  defining locations and ranges within the code.
+  type of symbol (global, module, or local). It also handles the updating of the reference index when the rell source
+  code changes.
 
 ### `.server`
 
-* Read [LanguageServer.md](LanguageServer.md)
+* The RellLanguageServer class is the main component of the Rell Language Server, implementing the Language Server
+  Protocol. It handles various language server functionalities such as initializing the server, processing document
+  changes, managing workspace, and responding to client requests.
+* The RellWorkspaceManager class in the net.postchain.rell.toolbox.lsp.server package is responsible for managing the
+  Rell language server's workspace. It handles document-related operations, indexing, and interacts with various
+  services to provide symbol information, diagnostics, and other language server functionalities.
 
 ### `.symbols`
 
-* The RellSymbolService in the symbols package efficiently handles go-to-definition requests within the Rell Language
+* The RellSymbolService in the symbols package handles go-to-definition requests within the Rell Language
   Server. It facilitates the retrieval of symbol locations and information, supporting various symbol types such as
   global, module, and local links.
 * The OutlineTreeBuilder and related classes in the symbols package are utilized for constructing and managing outline
