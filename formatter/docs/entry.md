@@ -11,8 +11,10 @@ The entrypoint for the formatter is these three companion objects
 ```kotlin
 fun getFormattingChanges(source: String, formatterRequest: FormatterOptions): List<TextReplacement>
 ```
-This method get the source files content as a string and any options that has been specified. The files content is then tokenized and sent in to the formatter as a parse tree, that then each node (token) in the tree matches against
-its corresponding formatting rules and any override options. What is returned is a list of mutations to the original string representation of the file. 
+This method retrieves the content of the source files as a string along with any specified options. The content of the file then undergoes tokenization and is passed into the formatter as a parse tree.
+The formatter locates the root node for the document and invokes the function `format(node)` ([here](Text_modifications.md#format)) recursively on its children. 
+This function tries to identify a matching formatting rule for the node with its corresponding overloads, and if none is found, it recursively attempts to find one for its children.
+The result is a list of mutations applied to the original string representation of the file.
 
 #### applyTextReplacements
 ```kotlin

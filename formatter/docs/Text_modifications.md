@@ -33,15 +33,22 @@ fun interiorIndentRangeIncludeLast(startNode, endNode)
 ```
 Give the string `foo(bar: text)` as a node and a change modifier to add a string `%`
 
-- Append adds a change after a node will result in `foo(bar: text)%`
-- Prepend adds a change before a node will result in `%foo(bar: text)`
-- Surround adds a change before and after a node will result in `%foo(bar: text)%`
-- Format will invoke the correct formatting rule for that nodes type
-- InteriorIndent will add indent on the nodes children given that it is invoked on the functions parenthesis 
+#### Append
+Adds a change after a node will result in `foo(bar: text)%`
+#### Prepend
+Adds a change before a node will result in `%foo(bar: text)`
+#### Surround 
+Adds a change before and after a node will result in `%foo(bar: text)%`
+#### Format
+Will invoke the correct formatting rule for that nodes type
+#### InteriorIndent
+Will add indent on the nodes children given that it is invoked on the functions parenthesis 
 ```
 foo(
     bar: text
 )
 ```
-- InteriorIndentRange does the same as InteriorIndent, but the range to indent is specified in the call
-- interiorIndentRangeIncludeLast will do the same as well but forcibly includes the last node in the range 
+#### InteriorIndentRange 
+Does the same as InteriorIndent, but the range to indent is specified in the call
+#### interiorIndentRangeIncludeLast 
+Will do the same as well but forcibly includes the last node in the range 
