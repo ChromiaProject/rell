@@ -3,7 +3,60 @@ package net.postchain.rell.toolbox.formatter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.toolbox.core.parser.RellLexer
 import net.postchain.rell.toolbox.core.parser.RellParser
-import net.postchain.rell.toolbox.core.parser.RellParser.*
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AnnotationArgsContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AnnotationContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AssignOpContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AtExprAtContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AtExprModifiers_0Context
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AtExprModifiers_1Context
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AtExprWhatComplexContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AtExprWhatComplexItemContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AtExprWhereContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_BaseAttributeDefinitionContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_BaseExprContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_BinaryOperatorContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_BinaryOperator_16Context
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_BlockStmtContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_ConstantDefContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_CreateExprContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_DeleteStmtContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_EntityAnnotationsContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_EntityBodyFullContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_EntityDefContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_EnumDefContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_ForStmtContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_FunctionBodyShortContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_FunctionDefContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_GenericTypeContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_GenericTypeExprContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_IfExprContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_IfStmtContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_IncrementOperatorContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_ListLiteralExprContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_MirrorStructType0Context
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_ModifierContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_ModuleHeaderContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_NameTypeAttrHeaderContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_NamespaceDefContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_NonEmptyMapLiteralExprContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_ObjectDefContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_OpDefContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_ParenthesesExprContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_QueryDefContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_RelKeyIndexClauseContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_ReturnStmtContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_RootParserContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_StructDefContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_TupleExprFieldNameEqExprContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_TupleVarDeclaratorContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_UpdateStmtContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_UpdateTargetAtContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_VarStmtContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_WhenConditionExprContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_WhenExprCasesContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_WhenExprContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_WhenStmtContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_WhileStmtContext
 import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
@@ -819,8 +872,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             val formatter = RellFormatter(parser, source, formatterRequest)
             val doc = RootFormattableDocument(formatter, formatterRequest)
             formatter.format(parser.ruleX_RootParser(), doc)
-            val replacements = doc.createReplacements()
-            return replacements
+            return doc.createReplacements()
         }
 
         fun applyTextReplacements(source: String, replacements: List<TextReplacement>): String {

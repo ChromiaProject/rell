@@ -21,5 +21,6 @@ interface FormattableDocument {
     fun interiorIndent(interiorNode: ParserRuleContext?)
 
     fun interiorIndentRange(startNode: ParserRuleContext?, endNode: ParserRuleContext?)
+
     fun interiorIndentRangeIncludeLast(startNode: ParserRuleContext?, endNode: ParserRuleContext?)
 }
