@@ -2,9 +2,7 @@ package net.postchain.rell.toolbox.lsp.editing
 
 
 import org.eclipse.lsp4j.Position
-import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
-import org.eclipse.lsp4j.TextEdit
 import java.net.URI
 
 
@@ -56,47 +54,6 @@ class Document(val fileUri: URI, val version: Int, val contents: String) {
         return Position(line, column)
     }
 
-    /**
-     * Returns with the text for a certain line without the trailing end line marker.
-     */
-    fun getLineContent(lineNumber: Int): String {
-        if (lineNumber < 0) {
-            throw IndexOutOfBoundsException(lineNumber.toString())
-        }
-        val NL = '\n'
-        val LF = '\r'
-        val l = contents.length
-        val lineContent = StringBuilder()
-        var line = 0
-        for (i in 0 until l) {
-            if (line > lineNumber) {
-                return lineContent.toString()
-            }
-            val ch = contents[i]
-            if (line == lineNumber && ch != NL && ch != LF) {
-                lineContent.append(ch)
-            }
-            if (ch == NL) {
-                line++
-            }
-        }
-        if (line < lineNumber) {
-            throw IndexOutOfBoundsException(lineNumber.toString())
-        }
-        return lineContent.toString()
-    }
-
-    val lineCount: Int
-        /**
-         * Get the number of lines in the document. Empty document has line count: `1`.
-         */
-        get() = getPosition(contents.length).line + 1
-
-    fun getSubstring(range: Range): String {
-        val start = getOffSet(range.start)
-        val end = getOffSet(range.end)
-        return contents.substring(start, end)
-    }
 
     /**
      * As opposed to [TextEdit][] the positions in the edits of a [DidChangeTextDocumentParams] refer to the
@@ -123,24 +80,4 @@ class Document(val fileUri: URI, val version: Int, val contents: String) {
         return currentDocument
     }
 
-    /**
-     * Only use for testing.
-     *
-     * All positions in the [TextEdit]s refer to the same original document (this).
-     */
-    //TODO: If only used for testing, should we have it as a test util function instead?
-    fun applyChanges(changes: Iterable<TextEdit>): Document {
-        var newContent = contents
-        for (change in changes) {
-            newContent = if (change.range == null) {
-                change.newText
-            } else {
-                val start = getOffSet(change.range.start)
-                val end = getOffSet(change.range.end)
-                newContent.substring(0, start) + change.newText + newContent.substring(end)
-            }
-        }
-        val newVersion = Integer.valueOf(version + 1)
-        return Document(fileUri, newVersion, newContent)
-    }
 }
