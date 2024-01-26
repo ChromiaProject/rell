@@ -40,13 +40,13 @@ internal class KotlinQueryTest {
     @CsvSource(
             "my_ns1.q1_in_namespace,myNs1Q1InNamespace,e: TestEnum,).toObject<TestStruct>()",
             "my_ns1.q2_in_namespace,myNs1Q2InNamespace,s: MyNs1TestStruct2,).toObject<MyNs1TestStruct2>()",
-            "my_ns1.q3a_return_type_enum,myNs1Q3aReturnTypeEnum,e: MyNs1LocalTestEnum,).let { TestEnum.values()[it.asInteger().toInt()] }",
-            "my_ns1.q3b_return_type_enum,myNs1Q3bReturnTypeEnum,'m: Map<TestEnum, ByteArray>',).let { MyNs1LocalTestEnum.values()[it.asInteger().toInt()] }",
+            "my_ns1.q3a_return_type_enum,myNs1Q3aReturnTypeEnum,e: MyNs1LocalTestEnum,).let { TestEnum.valueOf(it.asString()) }",
+            "my_ns1.q3b_return_type_enum,myNs1Q3bReturnTypeEnum,'m: Map<TestEnum, ByteArray>',).let { MyNs1LocalTestEnum.valueOf(it.asString()) }",
             "my_ns1.q4_return_type_list_struct,myNs1Q4ReturnTypeListStruct,'m: Map<ByteArray, MyNs1MyNs12TestStruct2>',).asArray().map { v -> v.toObject<TestStruct>() }",
             "my_ns1.q5_return_type_list_struct,myNs1Q5ReturnTypeListStruct,'v: List<MyNs1LocalTestStruct>',).asArray().map { v -> v.toObject<MyNs1LocalTestStruct>() }",
             "my_ns1.q6_return_type_list_struct,myNs1Q6ReturnTypeListStruct,'',).asArray().map { v -> v.toObject<MyNs1MyNs12TestStruct2>() }",
-            "my_ns1.q7_return_type_enum_map,myNs1Q7ReturnTypeEnumMap,'',).asArray().map { pair -> pair.asArray().let { it[0].let { TestEnum.values()[it.asInteger().toInt()] } to it[1].asString() } }",
-            "my_ns1.q8_return_type_enum_map,myNs1Q8ReturnTypeEnumMap,'',).asArray().map { pair -> pair.asArray().let { it[0].let { MyNs1LocalTestEnum.values()[it.asInteger().toInt()] } to it[1].asString() } }",
+            "my_ns1.q7_return_type_enum_map,myNs1Q7ReturnTypeEnumMap,'',).asArray().map { pair -> pair.asArray().let { it[0].let { TestEnum.valueOf(it.asString()) } to it[1].asString() } }",
+            "my_ns1.q8_return_type_enum_map,myNs1Q8ReturnTypeEnumMap,'',).asArray().map { pair -> pair.asArray().let { it[0].let { MyNs1LocalTestEnum.valueOf(it.asString()) } to it[1].asString() } }",
             "my_ns1.q9_return_type_any_map,myNs1Q9ReturnTypeAnyMap,'',).asArray().map { pair -> pair.asArray().let { it[0].toObject<TestStruct>() to it[1].asString() } }",
             "my_ns1.q10_return_type_any_map,myNs1Q10ReturnTypeAnyMap,'',).asArray().map { pair -> pair.asArray().let { it[0].toObject<MyNs1LocalTestStruct>() to it[1].asString() } }",
             "my_ns1.my_ns2.q2_in_namespace,myNs1MyNs2Q2InNamespace,'',).asString()",
@@ -65,7 +65,7 @@ internal class KotlinQueryTest {
 
     @ParameterizedTest(name = "query for return type {0} should convert to {1}")
     @CsvSource(
-            "return_type_enum,).let { TestEnum.values()[it.asInteger().toInt()] }",
+            "return_type_enum,).let { TestEnum.valueOf(it.asString()) }",
             "return_type_boolean,).asBoolean()",
             "return_type_integer,).asInteger()",
             "return_type_big_integer,).asBigInteger()",
@@ -88,7 +88,7 @@ internal class KotlinQueryTest {
             "return_type_list_gtv,).asArray()",
             "return_type_set_gtv,).asArray().toSet()",
             "return_type_map,').asDict().mapValues { (_, v) -> v.asString() }'",
-            "return_type_enum_map,').asArray().map { pair -> pair.asArray().let { it[0].let { TestEnum.values()[it.asInteger().toInt()] } to it[1].asString() } }'",
+            "return_type_enum_map,').asArray().map { pair -> pair.asArray().let { it[0].let { TestEnum.valueOf(it.asString()) } to it[1].asString() } }'",
             "return_type_any_map,').asArray().map { pair -> pair.asArray().let { it[0].toObject<TestStruct>() to it[1].asString() } }'",
             "return_type_unnamed_tuple,).asArray()", // Unnamed tuples are arrays with unknown entries
     )
