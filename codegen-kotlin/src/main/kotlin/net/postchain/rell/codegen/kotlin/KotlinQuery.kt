@@ -32,7 +32,7 @@ class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
             null -> ""
             is R_NullableType -> ".let { v -> if (v is GtvNull) null else v${formatReturnType(type.valueType)} }"
             is R_BooleanType -> ".asBoolean()"
-            is R_EnumType -> ".let { ${CamelCaseClassName.fromRellType(type).className}.values()[it.asInteger().toInt()] }"
+            is R_EnumType -> ".let { ${CamelCaseClassName.fromRellType(type).className}.valueOf(it.asString()) }"
             is R_TextType -> ".asString()"
             is R_IntegerType -> ".asInteger()"
             is R_BigIntegerType -> ".asBigInteger()"
