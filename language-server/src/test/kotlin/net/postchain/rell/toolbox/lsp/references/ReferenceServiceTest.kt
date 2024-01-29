@@ -3,6 +3,7 @@ package net.postchain.rell.toolbox.lsp.references
 import assertk.assertThat
 import assertk.assertions.containsAll
 import assertk.assertions.hasSize
+import java.io.File
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
@@ -11,7 +12,6 @@ import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import java.io.File
 
 @Suppress("JAVA_CLASS_ON_COMPANION")
 class ReferenceServiceTest {
@@ -132,6 +132,30 @@ class ReferenceServiceTest {
         val mainFileUri = workspaceFile.resolve("src/main.rell").toURI()
         val document = Document(mainFileUri, 1, File(mainFileUri).readText())
         val position = Position(6, 29)
+
+        val result = referenceService.getReferenceLocations(mainFileUri, document, indexer, position)
+
+        assertParameterReferences(result)
+    }
+
+    @Test
+    fun `References correctly found when cursor is just to the left of token`() {
+        val referenceService = RellReferenceService(RellSymbolService())
+        val mainFileUri = workspaceFile.resolve("src/main.rell").toURI()
+        val document = Document(mainFileUri, 1, File(mainFileUri).readText())
+        val position = Position(6, 26)
+
+        val result = referenceService.getReferenceLocations(mainFileUri, document, indexer, position)
+
+        assertParameterReferences(result)
+    }
+
+    @Test
+    fun `References correctly found when cursor is just to the right of token`() {
+        val referenceService = RellReferenceService(RellSymbolService())
+        val mainFileUri = workspaceFile.resolve("src/main.rell").toURI()
+        val document = Document(mainFileUri, 1, File(mainFileUri).readText())
+        val position = Position(6, 32)
 
         val result = referenceService.getReferenceLocations(mainFileUri, document, indexer, position)
 
