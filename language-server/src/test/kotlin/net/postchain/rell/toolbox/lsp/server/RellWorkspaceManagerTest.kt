@@ -11,6 +11,8 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
+import java.io.File
+import java.net.URI
 import net.postchain.rell.toolbox.core.indexer.RellIssue
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer
@@ -23,8 +25,6 @@ import org.eclipse.lsp4j.WorkspaceFolder
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.net.URI
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createDirectory
 
@@ -124,7 +124,7 @@ class RellWorkspaceManagerTest {
     @Test
     fun `Initialization correctly index for single file src out of depth search`(@TempDir tempDir: File) {
         val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val childDirs =File(srcDir, "one/two/three/four/five").toPath().createDirectories().toFile()
+        val childDirs = File(srcDir, "one/two/three/four/five").toPath().createDirectories().toFile()
         val mainFile = File(childDirs, "main.rell").apply {
             writeText(
                 """
@@ -499,6 +499,65 @@ class RellWorkspaceManagerTest {
     }
 
     @Test
+    fun `Go to definition for local link when cursor is left of first character`(@TempDir tempDir: File) {
+        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
+        val localLinkFile = File(srcDir, "local_link.rell").apply {
+            writeText(
+                """
+                module;
+                function foo() {
+                    val a_long_val_name = 2;
+                    val b = a_long_val_name;
+                }
+            """.trimIndent()
+            )
+        }
+
+
+        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
+        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        workspaceManager.didOpen(localLinkFile.toURI(), 1, localLinkFile.readText())
+
+        val candidate = workspaceManager.getDefinitionLocations(
+            localLinkFile.toURI(),
+            Position(3, 12)
+        )
+
+        assertThat(candidate.left!![0].uri.contains(localLinkFile.toString())).isTrue()
+        assertThat(candidate.left!![0].range.start).isEqualTo(Position(2, 8))
+        assertThat(candidate.left!![0].range.end).isEqualTo(Position(2, 23))
+    }
+
+    @Test
+    fun `Go to definition for local link when cursor is right of last character`(@TempDir tempDir: File) {
+        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
+        val localLinkFile = File(srcDir, "local_link.rell").apply {
+            writeText(
+                """
+                module;
+                function foo() {
+                    val a_long_val_name = 2;
+                    val b = a_long_val_name;
+                }
+            """.trimIndent()
+            )
+        }
+
+
+        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
+        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        workspaceManager.didOpen(localLinkFile.toURI(), 1, localLinkFile.readText())
+
+        val candidate = workspaceManager.getDefinitionLocations(
+            localLinkFile.toURI(),
+            Position(3, 27)
+        )
+        assertThat(candidate.left!![0].uri.contains(localLinkFile.toString())).isTrue()
+        assertThat(candidate.left!![0].range.start).isEqualTo(Position(2, 8))
+        assertThat(candidate.left!![0].range.end).isEqualTo(Position(2, 23))
+    }
+
+    @Test
     fun `Go to definition for module file`(@TempDir tempDir: File) {
         val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
         val rellFileContent = """
@@ -528,7 +587,7 @@ class RellWorkspaceManagerTest {
 
         val candidate = workspaceManager.getDefinitionLocations(importerFileUri, Position(1, 11))
         assertThat(candidate.left!![0].uri).isEqualTo(importerFile.toString())
-        assertThat(candidate.left!![0].range.start).isEqualTo(Position(0, 1))
+        assertThat(candidate.left!![0].range.start).isEqualTo(Position(0, 0))
     }
 
     @Test

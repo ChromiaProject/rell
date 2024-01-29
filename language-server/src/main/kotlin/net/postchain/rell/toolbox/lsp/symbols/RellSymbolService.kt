@@ -1,5 +1,6 @@
 package net.postchain.rell.toolbox.lsp.symbols
 
+import java.net.URI
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeFilePath
@@ -21,7 +22,6 @@ import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolInformation
 import org.eclipse.lsp4j.SymbolKind
 import org.eclipse.lsp4j.jsonrpc.messages.Either
-import java.net.URI
 
 class RellSymbolService {
 
@@ -42,7 +42,11 @@ class RellSymbolService {
         }
     }
 
-    fun getSymbolLocationsWithSymbol(document: Document, indexer: WorkspaceIndexer, position: Position): Pair<Location, IdeSymbolInfo>? {
+    fun getSymbolLocationsWithSymbol(
+        document: Document,
+        indexer: WorkspaceIndexer,
+        position: Position
+    ): Pair<Location, IdeSymbolInfo>? {
         val resource = indexer.getResource(document.fileUri) ?: return null
         val workspaceUri = formatWorkspaceUri(indexer.workspaceUri)
         val symbolWithInterval = getSymbolForDocument(document, resource, position)
@@ -54,10 +58,7 @@ class RellSymbolService {
             return Pair(Location(document.fileUri.toString(), Range(startPos, endPos)), symbol)
         }
 
-
-
         val link = symbol?.link ?: return null
-
         return when (link) {
             is IdeGlobalSymbolLink -> Pair(getGlobalLink(link.globalId(), workspaceUri, indexer)[0], symbol)
             is IdeModuleSymbolLink -> Pair(getModuleLink(link.moduleFile(), workspaceUri)[0], symbol)
@@ -79,8 +80,8 @@ class RellSymbolService {
 
         // TODO: optimization opportunity. lookup instead of iterating
         val symbolInfo = indexer.getResource(targetFileUri)!!.symbolInfos.entries.find { it.value.defId == symId }
-            // TODO: This is hiding a NullPointerException BUG. Fix it!!
-            // Go to definition fails as it.value.defId members have different structure then symId, causing ClassCastException
+        // TODO: This is hiding a NullPointerException BUG. Fix it!!
+        // Go to definition fails as it.value.defId members have different structure then symId, causing ClassCastException
             ?: return mutableListOf()
         val pos = symbolInfo.key as AntlrPos
         val symbolLength = pos.node.text.length
@@ -94,7 +95,7 @@ class RellSymbolService {
     private fun getModuleLink(moduleFile: IdeFilePath, workspaceUri: URI): MutableList<Location> {
         var uri = URI(moduleFile.toString())
         uri = URI(workspaceUri.toString() + uri.toString())
-        return mutableListOf(Location(uri.toString(), Range(Position(0, 1), Position(100, 1))))
+        return mutableListOf(Location(uri.toString(), Range(Position(0, 0), Position(100, 1))))
     }
 
     private fun getLocalLink(localPos: S_Pos, resource: Resource, document: Document): MutableList<Location> {
@@ -111,8 +112,8 @@ class RellSymbolService {
     fun getSymbolForDocument(
         document: Document, resource: Resource, position: Position
     ): IdeSymbolInfoWithInterval? {
-        val offset = document.getOffSet(position) - 1 // line starts on 0
-        return resource.locationInfo[Interval.of(offset, offset)]
+        val offset = document.getOffSet(position)
+        return resource.locationInfo[Interval.of(offset - 1, offset)]
     }
 
     //TODO maybe move out to utils if needed elsewhere
