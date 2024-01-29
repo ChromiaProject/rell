@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import java.io.File
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams
 import org.eclipse.lsp4j.FileChangeType
 import org.eclipse.lsp4j.FileEvent
@@ -15,7 +16,6 @@ import org.testcontainers.shaded.org.awaitility.Awaitility.await
 import util.TestClient
 import util.TestClientServerLauncher
 import util.TestServerModule
-import java.io.File
 import kotlin.io.path.createDirectory
 
 class RellLanguageServerDidChangeWatchedFilesTest {
@@ -198,7 +198,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEventDelete, fileEventCreate))
 
         server.didChangeWatchedFiles(didChangeParams)
-        await().until { testClient.diagnostics.isNotEmpty() }
+        await().until { testClient.diagnostics.size == 5 }
 
         indexer.getAllIssues().forEach { (uri, issues) ->
             if (uri.toString().endsWith("main.rell")) {
