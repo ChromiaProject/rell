@@ -9,6 +9,7 @@ import net.postchain.rell.base.utils.ide.IdeLocalSymbolLink
 import net.postchain.rell.base.utils.ide.IdeModuleSymbolLink
 import net.postchain.rell.base.utils.ide.IdeSymbolGlobalId
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
+import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.core.compiler.AntlrPos
 import net.postchain.rell.toolbox.core.indexer.IdeSymbolInfoWithInterval
 import net.postchain.rell.toolbox.core.indexer.Resource
@@ -50,15 +51,16 @@ class RellSymbolService {
         val resource = indexer.getResource(document.fileUri) ?: return null
         val workspaceUri = formatWorkspaceUri(indexer.workspaceUri)
         val symbolWithInterval = getSymbolForDocument(document, resource, position)
-        val symbol = symbolWithInterval?.ideSymbolInfo
+        val symbol = symbolWithInterval?.ideSymbolInfo ?: return null
 
-        if (symbol?.defId != null) {
+        val link = symbol.link
+
+        if (symbol.defId != null || link == null) {
             val startPos = document.getPosition(symbolWithInterval.interval.a)
             val endPos = document.getPosition(symbolWithInterval.interval.b + 1)
             return Pair(Location(document.fileUri.toString(), Range(startPos, endPos)), symbol)
         }
 
-        val link = symbol?.link ?: return null
         return when (link) {
             is IdeGlobalSymbolLink -> Pair(getGlobalLink(link.globalId(), workspaceUri, indexer)[0], symbol)
             is IdeModuleSymbolLink -> Pair(getModuleLink(link.moduleFile(), workspaceUri)[0], symbol)
@@ -67,6 +69,21 @@ class RellSymbolService {
                 null
             }
         }
+    }
+
+    fun getSymbolLocationForRenaming(document: Document,
+                                     indexer: WorkspaceIndexer,
+                                     position: Position): Location? {
+        val (location, symbolInfo) = getSymbolLocationsWithSymbol(document, indexer, position) ?: return null
+        return if (isEligibleForRenaming(symbolInfo)) {
+            location
+        } else {
+            null
+        }
+    }
+
+    private fun isEligibleForRenaming(symbolInfo: IdeSymbolInfo): Boolean {
+        return symbolInfo.kind !in NON_RENAMEABLE_SYMBOLS
     }
 
     private fun getGlobalLink(
@@ -157,4 +174,14 @@ class RellSymbolService {
         return path.substring(path.lastIndexOf('/') + 1)
     }
 
+    companion object {
+        val NON_RENAMEABLE_SYMBOLS = setOf(
+            IdeSymbolKind.DEF_IMPORT_MODULE,
+            IdeSymbolKind.MOD_ANNOTATION,
+            IdeSymbolKind.EXPR_IMPORT_ALIAS,
+            IdeSymbolKind.DEF_IMPORT_ALIAS,
+            IdeSymbolKind.DEF_TYPE,
+            IdeSymbolKind.UNKNOWN
+        )
+    }
 }

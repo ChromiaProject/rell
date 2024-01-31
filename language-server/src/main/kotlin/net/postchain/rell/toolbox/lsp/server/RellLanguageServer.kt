@@ -28,15 +28,22 @@ import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.LocationLink
 import org.eclipse.lsp4j.MessageParams
 import org.eclipse.lsp4j.MessageType
+import org.eclipse.lsp4j.PrepareRenameDefaultBehavior
+import org.eclipse.lsp4j.PrepareRenameParams
+import org.eclipse.lsp4j.PrepareRenameResult
 import org.eclipse.lsp4j.PublishDiagnosticsParams
+import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.ReferenceParams
+import org.eclipse.lsp4j.RenameParams
 import org.eclipse.lsp4j.SemanticTokens
 import org.eclipse.lsp4j.SemanticTokensParams
 import org.eclipse.lsp4j.SetTraceParams
 import org.eclipse.lsp4j.SymbolInformation
 import org.eclipse.lsp4j.TextEdit
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier
+import org.eclipse.lsp4j.WorkspaceEdit
 import org.eclipse.lsp4j.jsonrpc.messages.Either
+import org.eclipse.lsp4j.jsonrpc.messages.Either3
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest
 import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware
@@ -289,6 +296,33 @@ class RellLanguageServer(
                 workspaceManager.getReferenceLocations(fileUri, params.position)
             } else {
                 null
+            }
+        }
+    }
+
+    override fun rename(params: RenameParams): CompletableFuture<WorkspaceEdit> {
+        val newName = params.newName
+        val fileUri = parseFileUri(params.textDocument.uri)
+        val position = params.position
+
+        return requestManager.runRead {
+            if (fileUri.isRellFile()) {
+                workspaceManager.rename(fileUri, position, newName)
+            } else {
+                WorkspaceEdit()
+            }
+        }
+    }
+
+    override fun prepareRename(params: PrepareRenameParams): CompletableFuture<Either3<Range, PrepareRenameResult, PrepareRenameDefaultBehavior>> {
+        val fileUri = parseFileUri(params.textDocument.uri)
+        val position = params.position
+
+        return requestManager.runRead {
+            if (fileUri.isRellFile()) {
+                workspaceManager.prepareRename(fileUri, position)
+            } else {
+                Either3.forThird(PrepareRenameDefaultBehavior(true))
             }
         }
     }

@@ -2,6 +2,7 @@ package net.postchain.rell.toolbox.lsp.server
 
 import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
 import org.eclipse.lsp4j.InitializeParams
+import org.eclipse.lsp4j.RenameOptions
 import org.eclipse.lsp4j.SemanticTokensLegend
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions
 import org.eclipse.lsp4j.ServerCapabilities
@@ -9,6 +10,7 @@ import org.eclipse.lsp4j.SignatureHelpOptions
 import org.eclipse.lsp4j.TextDocumentSyncKind
 import org.eclipse.lsp4j.WorkspaceFoldersOptions
 import org.eclipse.lsp4j.WorkspaceServerCapabilities
+import org.eclipse.lsp4j.jsonrpc.messages.Either
 
 
 class CapabilitiesProvider {
@@ -43,8 +45,12 @@ class CapabilitiesProvider {
         // TODO: folding options
         // TODO: code lens options
         // TODO: code action options
-        // TODO: rename options
         // TODO: execute command options
+
+        clientCapabilities?.textDocument?.rename?.let {
+            val renameOptions = RenameOptions(true)
+            serverCapabilities.renameProvider = Either.forRight(renameOptions)
+        }
 
         val workspace = clientCapabilities?.workspace
         workspace?.let {

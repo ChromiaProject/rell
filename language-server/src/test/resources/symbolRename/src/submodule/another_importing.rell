@@ -1,0 +1,4 @@
+
+function another_reference_from_submodule() {
+    val result = better_addition(24, 343);
+}
