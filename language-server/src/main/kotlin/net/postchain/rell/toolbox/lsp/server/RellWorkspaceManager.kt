@@ -15,10 +15,16 @@ import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.LocationLink
 import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.PrepareRenameDefaultBehavior
+import org.eclipse.lsp4j.PrepareRenameResult
+import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolInformation
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
+import org.eclipse.lsp4j.TextEdit
+import org.eclipse.lsp4j.WorkspaceEdit
 import org.eclipse.lsp4j.WorkspaceFolder
 import org.eclipse.lsp4j.jsonrpc.messages.Either
+import org.eclipse.lsp4j.jsonrpc.messages.Either3
 import java.io.File
 import java.net.URI
 import java.nio.file.Files
@@ -243,7 +249,7 @@ class RellWorkspaceManager(
         position: Position
     ): Either<MutableList<out Location>, MutableList<out LocationLink>> {
         val indexer = getIndexerFor(fileUri)
-        val document = openDocuments[fileUri]!!
+        val document = openDocuments[fileUri] ?: return Either.forLeft(mutableListOf())
         return Either.forLeft(rellSymbolService.getSymbolLocations(document, indexer, position))
     }
 
@@ -280,6 +286,30 @@ class RellWorkspaceManager(
 
         result.addAll(rellReferenceService.getReferenceLocations(fileUri, document, indexer, position))
         return result
+    }
+
+    fun rename(fileUri: URI, position: Position, newName: String): WorkspaceEdit {
+        val locations = getReferenceLocations(fileUri, position, true)
+        val changes = mutableMapOf<String, MutableList<TextEdit>>()
+        locations.forEach { location ->
+            val uri = location.uri
+            val change = TextEdit(location.range, newName)
+            changes[uri]?.add(change) ?: changes.put(uri, mutableListOf(change))
+        }
+        return WorkspaceEdit(changes)
+    }
+
+    fun prepareRename(
+        fileUri: URI,
+        position: Position
+    ): Either3<Range, PrepareRenameResult, PrepareRenameDefaultBehavior> {
+        val indexer = getIndexerFor(fileUri)
+        val document = openDocuments[fileUri] ?: return Either3.forThird(PrepareRenameDefaultBehavior())
+
+        val location = rellSymbolService.getSymbolLocationForRenaming(document, indexer, position)
+            ?: return Either3.forThird(PrepareRenameDefaultBehavior())
+
+        return Either3.forFirst(location.range)
     }
 
     companion object {
