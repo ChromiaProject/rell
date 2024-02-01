@@ -113,7 +113,6 @@ class RellSymbolRenameTest {
         val renamedSymbolFile = testWorkspaceSrc.resolve("main.js")
         val fileUri = openFile(renamedSymbolFile)
 
-        val newFunctionName = "newName"
         val renameParams = RenameParams(TextDocumentIdentifier(fileUri), Position(0, 11), "newName")
         val renameResult = server.rename(renameParams)
         val result = renameResult.join()
