@@ -554,12 +554,16 @@ private object Lib_Type_Op {
                     }
                 }
 
-                property("name", type = "text", pure = true) { self ->
-                    asTestOp(self).nameValue
+                property("name", type = "text", pure = true) {
+                    value { self ->
+                        asTestOp(self).nameValue
+                    }
                 }
 
-                property("args", type = "list<gtv>", pure = true) { self ->
-                    asTestOp(self).argsValue()
+                property("args", type = "list<gtv>", pure = true) {
+                    value { self ->
+                        asTestOp(self).argsValue()
+                    }
                 }
 
                 function("tx", result = "rell.test.tx") {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lmodel.dsl
@@ -12,7 +12,11 @@ import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.futures.FcFuture
 
-class Ld_Constant(private val type: Ld_Type, private val value: Ld_ConstantValue) {
+class Ld_Constant(
+    val memberHeader: Ld_MemberHeader,
+    private val type: Ld_Type,
+    private val value: Ld_ConstantValue,
+) {
     fun finish(ctx: Ld_TypeFinishContext, simpleName: R_Name): L_Constant {
         val mType = type.finish(ctx)
         val rValue = value.getValue(mType)
@@ -50,4 +54,34 @@ private class Ld_ConstantValue_Getter(private val getter: (R_Type) -> Rt_Value):
         val rType = L_TypeUtils.getRTypeNotNull(type)
         return getter(rType)
     }
+}
+
+class Ld_ConstantDslImpl(
+    hdr: Ld_MemberHeader,
+    private val type: Ld_Type,
+    private val memberBuilder: Ld_MemberHeaderBuilder = Ld_MemberHeaderBuilder(hdr),
+): Ld_ConstantDsl, Ld_MemberDsl by Ld_MemberDslImpl(memberBuilder) {
+    private var bodyRes: Ld_BodyRes? = null
+
+    override fun value(getter: (R_Type) -> Rt_Value): Ld_BodyResult {
+        require(bodyRes == null)
+        val res = Ld_BodyRes(Ld_ConstantValue_Getter(getter))
+        bodyRes = res
+        return res
+    }
+
+    fun build(block: Ld_ConstantDsl.() -> Ld_BodyResult): Ld_Constant {
+        val bodyTag = block(this)
+        check(bodyTag === bodyRes)
+
+        val memberHeader = memberBuilder.buildMemberHeader()
+        val res = bodyRes!!
+        return Ld_Constant(
+            memberHeader,
+            type = type,
+            value = res.value,
+        )
+    }
+
+    private class Ld_BodyRes(val value: Ld_ConstantValue): Ld_BodyResult()
 }

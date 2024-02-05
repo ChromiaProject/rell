@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib
@@ -26,24 +26,32 @@ object Lib_Meta {
             type("meta", rType = R_RellMetaType) {
                 constructor(C_SysFn_Meta)
 
-                property("simple_name", type = "text", pure = true) { a ->
-                    val v = Rt_RellMetaValue.get(a)
-                    v.simpleName
+                property("simple_name", type = "text", pure = true) {
+                    value { a ->
+                        val v = Rt_RellMetaValue.get(a)
+                        v.simpleName
+                    }
                 }
 
-                property("full_name", type = "text", pure = true) { a ->
-                    val v = Rt_RellMetaValue.get(a)
-                    v.fullName
+                property("full_name", type = "text", pure = true) {
+                    value { a ->
+                        val v = Rt_RellMetaValue.get(a)
+                        v.fullName
+                    }
                 }
 
-                property("module_name", type = "text", pure = true) { a ->
-                    val v = Rt_RellMetaValue.get(a)
-                    v.moduleName
+                property("module_name", type = "text", pure = true) {
+                    value { a ->
+                        val v = Rt_RellMetaValue.get(a)
+                        v.moduleName
+                    }
                 }
 
-                property("mount_name", type = "text", pure = true) { a ->
-                    val v = Rt_RellMetaValue.get(a)
-                    v.mountName
+                property("mount_name", type = "text", pure = true) {
+                    value { a ->
+                        val v = Rt_RellMetaValue.get(a)
+                        v.mountName
+                    }
                 }
             }
         }

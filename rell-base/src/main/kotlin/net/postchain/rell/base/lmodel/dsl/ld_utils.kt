@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lmodel.dsl
@@ -48,11 +48,16 @@ class Ld_Exception(val code: String, val msg: String, cause: Throwable? = null):
     }
 }
 
-class Ld_Alias(val simpleName: R_Name, val deprecated: C_Deprecated?) {
+class Ld_Alias(val memberHeader: Ld_MemberHeader, val simpleName: R_Name, val deprecated: C_Deprecated?) {
     companion object {
-        fun make(simpleName: R_Name, primaryName: R_Name, deprecatedType: C_MessageType?): Ld_Alias {
+        fun make(
+            memberHeader: Ld_MemberHeader,
+            simpleName: R_Name,
+            primaryName: R_Name,
+            deprecatedType: C_MessageType?,
+        ): Ld_Alias {
             val deprecated = C_Deprecated.makeOrNull(deprecatedType, useInstead = primaryName.str)
-            return Ld_Alias(simpleName, deprecated)
+            return Ld_Alias(memberHeader, simpleName, deprecated)
         }
     }
 }
@@ -60,14 +65,14 @@ class Ld_Alias(val simpleName: R_Name, val deprecated: C_Deprecated?) {
 class Ld_AliasesBuilder(private val primaryName: R_Name) {
     private val aliases = mutableMapOf<R_Name, Ld_Alias>()
 
-    fun alias(name: String, deprecated: C_MessageType?) {
+    fun alias(name: String, deprecated: C_MessageType?, memberHeader: Ld_MemberHeader) {
         val rName = R_Name.of(name)
 
         Ld_Exception.check(rName != primaryName && rName !in aliases) {
             "alias_conflict:$rName" to "Alias name conflict: $rName"
         }
 
-        aliases[rName] = Ld_Alias.make(rName, primaryName, deprecated)
+        aliases[rName] = Ld_Alias.make(memberHeader, rName, primaryName, deprecated)
     }
 
     fun build(): List<Ld_Alias> {
@@ -76,7 +81,6 @@ class Ld_AliasesBuilder(private val primaryName: R_Name) {
 }
 
 enum class Ld_ConflictMemberKind {
-    ALIAS,
     NAMESPACE,
     FUNCTION,
     OTHER,

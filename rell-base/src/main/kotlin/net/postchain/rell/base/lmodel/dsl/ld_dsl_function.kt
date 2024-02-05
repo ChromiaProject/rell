@@ -20,9 +20,17 @@ interface Ld_FunctionContextDsl {
 }
 
 @RellLibDsl
-interface Ld_CommonFunctionDsl: Ld_FunctionContextDsl, Ld_FunctionBodyDsl {
+interface Ld_CommonFunctionDsl: Ld_FunctionContextDsl, Ld_FunctionBodyDsl, Ld_MemberDsl {
     fun deprecated(newName: String, error: Boolean = true)
-    fun generic(name: String, subOf: String? = null, superOf: String? = null)
+
+    fun generic(
+        name: String,
+        subOf: String? = null,
+        superOf: String? = null,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_MemberDsl.() -> Unit = {},
+    )
 
     fun param(
         name: String,
@@ -32,16 +40,26 @@ interface Ld_CommonFunctionDsl: Ld_FunctionContextDsl, Ld_FunctionBodyDsl {
         nullable: Boolean = false,
         lazy: Boolean = false,
         implies: L_ParamImplication? = null,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_MemberDsl.() -> Unit = {},
     )
 }
 
 @RellLibDsl
 interface Ld_FunctionDsl: Ld_CommonFunctionDsl {
     fun result(type: String)
-    fun alias(name: String, deprecated: C_MessageType? = null)
+
+    fun alias(
+        name: String,
+        deprecated: C_MessageType? = null,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_MemberDsl.() -> Unit = {},
+    )
 }
 
-sealed class Ld_FunctionBodyRef
+sealed class Ld_BodyResult
 
 @RellLibDsl
 interface Ld_CommonFunctionBodyDsl: Ld_FunctionContextDsl {
@@ -50,29 +68,29 @@ interface Ld_CommonFunctionBodyDsl: Ld_FunctionContextDsl {
     fun dbFunctionTemplate(name: String, arity: Int, template: String)
     fun dbFunctionCast(name: String, type: String)
 
-    fun bodyN(rCode: (List<Rt_Value>) -> Rt_Value): Ld_FunctionBodyRef
-    fun bodyContextN(rCode: (Rt_CallContext, List<Rt_Value>) -> Rt_Value): Ld_FunctionBodyRef
+    fun bodyN(rCode: (List<Rt_Value>) -> Rt_Value): Ld_BodyResult
+    fun bodyContextN(rCode: (Rt_CallContext, List<Rt_Value>) -> Rt_Value): Ld_BodyResult
 
-    fun body(rCode: () -> Rt_Value): Ld_FunctionBodyRef
-    fun body(rCode: (Rt_Value) -> Rt_Value): Ld_FunctionBodyRef
-    fun body(rCode: (Rt_Value, Rt_Value) -> Rt_Value): Ld_FunctionBodyRef
-    fun body(rCode: (Rt_Value, Rt_Value, Rt_Value) -> Rt_Value): Ld_FunctionBodyRef
-    fun body(rCode: (Rt_Value, Rt_Value, Rt_Value, Rt_Value) -> Rt_Value): Ld_FunctionBodyRef
+    fun body(rCode: () -> Rt_Value): Ld_BodyResult
+    fun body(rCode: (Rt_Value) -> Rt_Value): Ld_BodyResult
+    fun body(rCode: (Rt_Value, Rt_Value) -> Rt_Value): Ld_BodyResult
+    fun body(rCode: (Rt_Value, Rt_Value, Rt_Value) -> Rt_Value): Ld_BodyResult
+    fun body(rCode: (Rt_Value, Rt_Value, Rt_Value, Rt_Value) -> Rt_Value): Ld_BodyResult
 
-    fun bodyOpt1(rCode: (Rt_Value, Rt_Value?) -> Rt_Value): Ld_FunctionBodyRef
-    fun bodyOpt2(rCode: (Rt_Value, Rt_Value, Rt_Value?) -> Rt_Value): Ld_FunctionBodyRef
+    fun bodyOpt1(rCode: (Rt_Value, Rt_Value?) -> Rt_Value): Ld_BodyResult
+    fun bodyOpt2(rCode: (Rt_Value, Rt_Value, Rt_Value?) -> Rt_Value): Ld_BodyResult
 
-    fun bodyContext(rCode: (Rt_CallContext) -> Rt_Value): Ld_FunctionBodyRef
-    fun bodyContext(rCode: (Rt_CallContext, Rt_Value) -> Rt_Value): Ld_FunctionBodyRef
-    fun bodyContext(rCode: (Rt_CallContext, Rt_Value, Rt_Value) -> Rt_Value): Ld_FunctionBodyRef
-    fun bodyContext(rCode: (Rt_CallContext, Rt_Value, Rt_Value, Rt_Value) -> Rt_Value): Ld_FunctionBodyRef
+    fun bodyContext(rCode: (Rt_CallContext) -> Rt_Value): Ld_BodyResult
+    fun bodyContext(rCode: (Rt_CallContext, Rt_Value) -> Rt_Value): Ld_BodyResult
+    fun bodyContext(rCode: (Rt_CallContext, Rt_Value, Rt_Value) -> Rt_Value): Ld_BodyResult
+    fun bodyContext(rCode: (Rt_CallContext, Rt_Value, Rt_Value, Rt_Value) -> Rt_Value): Ld_BodyResult
 }
 
 @RellLibDsl
 interface Ld_FunctionBodyDsl: Ld_CommonFunctionBodyDsl {
     fun validate(validator: (C_SysFunctionCtx) -> Unit)
-    fun bodyRaw(body: C_SysFunctionBody): Ld_FunctionBodyRef
-    fun bodyMeta(block: Ld_FunctionMetaBodyDsl.() -> Ld_FunctionBodyRef): Ld_FunctionBodyRef
+    fun bodyRaw(body: C_SysFunctionBody): Ld_BodyResult
+    fun bodyMeta(block: Ld_FunctionMetaBodyDsl.() -> Ld_BodyResult): Ld_BodyResult
 }
 
 @RellLibDsl

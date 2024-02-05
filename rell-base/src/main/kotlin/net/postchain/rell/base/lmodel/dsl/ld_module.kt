@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lmodel.dsl
@@ -15,7 +15,7 @@ import net.postchain.rell.base.utils.toImmMap
 class Ld_ModuleDslImpl private constructor(
     private val moduleName: R_ModuleName,
     private val nsBuilder: Ld_NamespaceBuilder,
-): Ld_ModuleDsl, Ld_NamespaceDsl by Ld_NamespaceDslImpl(nsBuilder) {
+): Ld_ModuleDsl, Ld_NamespaceBodyDsl by Ld_NamespaceBodyDslImpl(nsBuilder) {
     private val imports = mutableMapOf<R_ModuleName, L_Module>()
     private val allImports = mutableMapOf<R_ModuleName, L_Module>()
 
@@ -76,7 +76,7 @@ class Ld_ModuleDslImpl private constructor(
 
         fcManager.finish()
 
-        val lNs = nsF.getResult()
+        val lNs = nsF.getResult().ns
 
         val doc = DocSymbol(
             kind = DocSymbolKind.MODULE,

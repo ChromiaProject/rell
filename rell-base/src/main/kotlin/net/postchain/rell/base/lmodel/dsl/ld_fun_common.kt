@@ -9,29 +9,35 @@ import net.postchain.rell.base.lmodel.L_FunctionParam
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.L_ParamImplication
 import net.postchain.rell.base.lmodel.L_TypeUtils
+import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.mtype.M_FunctionParam
 import net.postchain.rell.base.mtype.M_ParamArity
 import net.postchain.rell.base.mtype.M_Type_Nullable
 import net.postchain.rell.base.mtype.M_Types
-import net.postchain.rell.base.utils.doc.DocDeclaration_Parameter
-import net.postchain.rell.base.utils.doc.DocSymbol
-import net.postchain.rell.base.utils.doc.DocSymbolKind
-import net.postchain.rell.base.utils.doc.DocSymbolName
+import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.toImmList
 
 abstract class Ld_CommonFunctionDslImpl(
     private val commonMaker: Ld_CommonFunctionMaker,
     private val bodyDsl: Ld_FunctionBodyDsl,
-): Ld_CommonFunctionDsl, Ld_FunctionBodyDsl by bodyDsl {
+): Ld_CommonFunctionDsl, Ld_FunctionBodyDsl by bodyDsl, Ld_MemberDsl by Ld_MemberDslImpl(commonMaker) {
     override val fnSimpleName: String get() = bodyDsl.fnSimpleName
 
     override fun deprecated(newName: String, error: Boolean) {
         commonMaker.deprecated(C_Deprecated(useInstead = newName, error = error))
     }
 
-    override fun generic(name: String, subOf: String?, superOf: String?) {
-        commonMaker.generic(name = name, subOf = subOf, superOf = superOf)
+    override fun generic(
+        name: String,
+        subOf: String?,
+        superOf: String?,
+        since: String?,
+        comment: String?,
+        block: Ld_MemberDsl.() -> Unit,
+    ) {
+        val hdr = Ld_MemberHeader.make(since, comment)
+        commonMaker.generic(name = name, subOf = subOf, superOf = superOf, hdr = hdr, block = block)
     }
 
     override fun param(
@@ -42,7 +48,11 @@ abstract class Ld_CommonFunctionDslImpl(
         nullable: Boolean,
         lazy: Boolean,
         implies: L_ParamImplication?,
+        since: String?,
+        comment: String?,
+        block: Ld_MemberDsl.() -> Unit,
     ) {
+        val hdr = Ld_MemberHeader.make(since, comment)
         commonMaker.param(
             name = name,
             type = type,
@@ -51,29 +61,34 @@ abstract class Ld_CommonFunctionDslImpl(
             nullable = nullable,
             lazy = lazy,
             implies = implies,
+            hdr = hdr,
+            block = block,
         )
     }
 }
 
-interface Ld_CommonFunctionMaker {
+interface Ld_CommonFunctionMaker: Ld_MemberHeaderMaker {
     fun deprecated(deprecated: C_Deprecated)
-    fun generic(name: String, subOf: String? = null, superOf: String? = null)
+    fun generic(name: String, subOf: String?, superOf: String?, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit)
 
     fun param(
         name: String,
         type: String,
         arity: L_ParamArity = L_ParamArity.ONE,
-        exact: Boolean = false,
-        nullable: Boolean = false,
-        lazy: Boolean = false,
-        implies: L_ParamImplication? = null,
+        exact: Boolean,
+        nullable: Boolean,
+        lazy: Boolean,
+        implies: L_ParamImplication?,
+        hdr: Ld_MemberHeader,
+        block: Ld_MemberDsl.() -> Unit,
     )
 }
 
 abstract class Ld_CommonFunctionBuilder(
+    hdr: Ld_MemberHeader,
     private val outerTypeParams: Set<R_Name>,
     private val bodyBuilder: Ld_FunctionBodyBuilder,
-): Ld_CommonFunctionMaker {
+): Ld_MemberHeaderBuilder(hdr), Ld_CommonFunctionMaker {
     private var deprecated: C_Deprecated? = null
     private val typeParams = mutableMapOf<R_Name, Ld_TypeParam>()
     private val params = mutableMapOf<R_Name, Ld_FunctionParam>()
@@ -85,12 +100,18 @@ abstract class Ld_CommonFunctionBuilder(
         this.deprecated = deprecated
     }
 
-    final override fun generic(name: String, subOf: String?, superOf: String?) {
+    final override fun generic(
+        name: String,
+        subOf: String?,
+        superOf: String?,
+        hdr: Ld_MemberHeader,
+        block: Ld_MemberDsl.() -> Unit,
+    ) {
         require(subOf == null || superOf == null)
         require(params.isEmpty()) { "Trying to add a type parameter after a function parameter" }
         require(bodyBuilder.isEmpty()) { "Body already set" }
 
-        val typeParam = Ld_TypeParam.make(name, subOf = subOf, superOf = superOf)
+        val typeParam = Ld_TypeParam.make(name, subOf = subOf, superOf = superOf, hdr = hdr, block = block)
 
         Ld_Exception.check(typeParam.name !in typeParams) {
             "fun:type_param_conflict:$name" to "Name conflict: $name"
@@ -109,7 +130,9 @@ abstract class Ld_CommonFunctionBuilder(
         exact: Boolean,
         nullable: Boolean,
         lazy: Boolean,
-        implies: L_ParamImplication?
+        implies: L_ParamImplication?,
+        hdr: Ld_MemberHeader,
+        block: Ld_MemberDsl.() -> Unit,
     ) {
         require(bodyBuilder.isEmpty()) { "Body already set" }
 
@@ -122,8 +145,10 @@ abstract class Ld_CommonFunctionBuilder(
             "common_fun:param_name_conflict:$name" to "Parameter name conflict: $name"
         }
 
+        val memberHeader = Ld_MemberHeader.make(hdr, block)
+
         val param = Ld_FunctionParam(
-            index = params.size,
+            memberHeader = memberHeader,
             name = rName,
             type = Ld_Type.parse(type),
             arity = arity.mArity,
@@ -142,7 +167,9 @@ abstract class Ld_CommonFunctionBuilder(
         }
     }
 
-    protected fun commonBuild(bodyRes: Ld_FunctionBodyRef): Ld_CommonFunction {
+    protected fun buildCommon(bodyRes: Ld_BodyResult): Ld_CommonFunction {
+        val memberHeader = buildMemberHeader()
+
         val header = Ld_CommonFunctionHeader(
             typeParams = typeParams.values.toImmList(),
             params = params.values.toImmList(),
@@ -151,6 +178,7 @@ abstract class Ld_CommonFunctionBuilder(
         val body = bodyBuilder.build(bodyRes)
 
         return Ld_CommonFunction(
+            memberHeader = memberHeader,
             header = header,
             deprecated = deprecated,
             body = body,
@@ -164,22 +192,23 @@ class Ld_CommonFunctionHeader(
 )
 
 class Ld_CommonFunction(
+    val memberHeader: Ld_MemberHeader,
     val header: Ld_CommonFunctionHeader,
     val deprecated: C_Deprecated?,
     val body: Ld_FunctionBody,
 )
 
 class Ld_FunctionParam(
-    val index: Int,
+    val memberHeader: Ld_MemberHeader,
     val name: R_Name,
-    val type: Ld_Type,
-    val arity: M_ParamArity,
-    val exact: Boolean,
-    val nullable: Boolean,
-    val lazy: Boolean,
-    val implies: L_ParamImplication?,
+    private val type: Ld_Type,
+    private val arity: M_ParamArity,
+    private val exact: Boolean,
+    private val nullable: Boolean,
+    private val lazy: Boolean,
+    private val implies: L_ParamImplication?,
 ) {
-    fun finish(ctx: Ld_TypeFinishContext): L_FunctionParam {
+    fun finish(ctx: Ld_TypeFinishContext, comments: Map<R_Name, DocComment>): L_FunctionParam {
         val mType = type.finish(ctx)
 
         if (nullable) {
@@ -204,7 +233,7 @@ class Ld_FunctionParam(
             symbolName = DocSymbolName.local(name.str),
             mountName = null,
             declaration = DocDeclaration_Parameter(docParam, lazy, implies, null),
-            comment = null,
+            comment = comments[name],
         )
 
         return L_FunctionParam(
@@ -214,5 +243,20 @@ class Ld_FunctionParam(
             implies = implies,
             docSymbol = doc,
         )
+    }
+
+    companion object {
+        fun finish(
+            ctx: Ld_TypeFinishContext,
+            fullName: R_FullName,
+            params: List<Ld_FunctionParam>,
+            funMemberHeader: Ld_MemberHeader,
+        ): Pair<List<L_FunctionParam>, DocComment?> {
+            val paramMemberHeaders = params.associate { it.name to it.memberHeader }
+            val comments = Ld_FunctionParamComments.make(fullName, funMemberHeader, paramMemberHeaders)
+
+            val lParams = params.map { it.finish(ctx, comments.paramComments) }.toImmList()
+            return lParams to comments.functionComment
+        }
     }
 }

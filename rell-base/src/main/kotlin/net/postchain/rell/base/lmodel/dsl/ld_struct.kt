@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lmodel.dsl
@@ -22,22 +22,41 @@ import net.postchain.rell.base.utils.futures.FcFuture
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 
-class Ld_StructDslImpl: Ld_StructDsl {
+class Ld_StructDslImpl(
+    hdr: Ld_MemberHeader,
+    private val memberBuilder: Ld_MemberHeaderBuilder = Ld_MemberHeaderBuilder(hdr),
+): Ld_StructDsl, Ld_MemberDsl by Ld_MemberDslImpl(memberBuilder) {
     private val attributes = mutableMapOf<R_Name, Ld_StructAttribute>()
 
-    override fun attribute(name: String, type: String, mutable: Boolean) {
+    override fun attribute(
+        name: String,
+        type: String,
+        mutable: Boolean,
+        since: String?,
+        comment: String?,
+        block: Ld_MemberDsl.() -> Unit,
+    ) {
         val rName = R_Name.of(name)
         check(rName !in attributes) { "Name conflict: $rName" }
+
+        val hdr0 = Ld_MemberHeader.make(since, comment)
+        val memberHeader = Ld_MemberHeader.make(hdr0, block)
         val ldType = Ld_Type.parse(type)
-        attributes[rName] = Ld_StructAttribute(rName, ldType, mutable = mutable)
+        attributes[rName] = Ld_StructAttribute(memberHeader, rName, ldType, mutable = mutable)
     }
 
     fun build(): Ld_Struct {
-        return Ld_Struct(attributes.values.toImmList())
+        val memberHeader = memberBuilder.buildMemberHeader()
+        return Ld_Struct(memberHeader, attributes.values.toImmList())
     }
 }
 
-class Ld_StructAttribute(val name: R_Name, val type: Ld_Type, val mutable: Boolean) {
+class Ld_StructAttribute(
+    val memberHeader: Ld_MemberHeader,
+    val name: R_Name,
+    val type: Ld_Type,
+    val mutable: Boolean,
+) {
     fun finish(ctx: Ld_TypeFinishContext, outerFullName: R_FullName): L_StructAttribute {
         val mType = type.finish(ctx)
         val doc = finishDoc(outerFullName, mType)
@@ -52,12 +71,15 @@ class Ld_StructAttribute(val name: R_Name, val type: Ld_Type, val mutable: Boole
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
             mountName = null,
             declaration = DocDeclaration_StructAttribute(fullName.last, docType, mutable),
-            comment = null,
+            comment = memberHeader.docComment(),
         )
     }
 }
 
-class Ld_Struct(private val attributes: List<Ld_StructAttribute>) {
+class Ld_Struct(
+    val memberHeader: Ld_MemberHeader,
+    private val attributes: List<Ld_StructAttribute>,
+) {
     fun process(ctx: Ld_NamespaceContext, fullName: R_FullName): FcFuture<L_Struct> {
         val rStruct = C_Utils.createSysStruct(fullName.qualifiedName.str())
 

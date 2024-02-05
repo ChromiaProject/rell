@@ -118,6 +118,7 @@ class LTypeTest: BaseLTest() {
                 constant("INT", 123)
                 constant("BIG_INT", BigInteger.valueOf(456))
                 constant("DECIMAL", BigDecimal("789.987"))
+                //constant("MAGIC", "integer") { value { Rt_IntValue.get(12345) } } //TODO support this case
             }
         }
         chkTypeMems(mod, "data",
@@ -178,7 +179,7 @@ class LTypeTest: BaseLTest() {
     @Test fun testConstructorSpecial() {
         val mod = makeModule("test") {
             type("data") {
-                constructor(makeGlobalFun())
+                constructor(makeNsFun())
             }
         }
         chkTypeMems(mod, "data", "special constructor (...)")
@@ -467,7 +468,7 @@ class LTypeTest: BaseLTest() {
     @Test fun testStaticFunctionSpecial() {
         val mod = makeModule("test") {
             type("data") {
-                staticFunction("f", makeGlobalFun())
+                staticFunction("f", makeNsFun())
             }
         }
         chkTypeMems(mod, "data", "static special function f(...)")

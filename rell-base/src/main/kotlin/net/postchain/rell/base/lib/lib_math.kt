@@ -5,6 +5,7 @@
 package net.postchain.rell.base.lib
 
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
+import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceBodyDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.expr.Db_SysFunction
 import net.postchain.rell.base.runtime.Rt_BigIntegerValue
@@ -86,14 +87,14 @@ object Lib_Math {
         defFnMinMax(this, "decimal", Min_Decimal, Max_Decimal)
     }
 
-    private fun defFnAbs(d: Ld_NamespaceDsl, type: String, fn: C_SysFunctionBody) {
+    private fun defFnAbs(d: Ld_NamespaceBodyDsl, type: String, fn: C_SysFunctionBody) {
         d.function("abs", type) {
             param("a", type)
             bodyRaw(fn)
         }
     }
 
-    private fun defFnMinMax(d: Ld_NamespaceDsl, type: String, fnMin: C_SysFunctionBody, fnMax: C_SysFunctionBody) {
+    private fun defFnMinMax(d: Ld_NamespaceBodyDsl, type: String, fnMin: C_SysFunctionBody, fnMax: C_SysFunctionBody) {
         d.function("min", type) {
             param("a", type)
             param("b", type)

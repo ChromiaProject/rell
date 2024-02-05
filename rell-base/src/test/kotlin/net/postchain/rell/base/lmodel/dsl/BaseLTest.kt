@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lmodel.dsl
@@ -7,11 +7,11 @@ package net.postchain.rell.base.lmodel.dsl
 import net.postchain.rell.base.compiler.ast.S_Expr
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
-import net.postchain.rell.base.compiler.base.lib.C_LibFuncCaseCtx
-import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
-import net.postchain.rell.base.compiler.base.lib.C_SpecialLibMemberFunctionBody
-import net.postchain.rell.base.compiler.base.lib.V_SpecialMemberFunctionCall
+import net.postchain.rell.base.compiler.base.lib.*
+import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty
+import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty_RtValue
 import net.postchain.rell.base.compiler.vexpr.V_Expr
+import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.L_Module
 import net.postchain.rell.base.lmodel.L_TypeDefMembers
 import net.postchain.rell.base.model.R_CtErrorType
@@ -19,7 +19,10 @@ import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.R_MemberCalculator
 import net.postchain.rell.base.model.expr.R_MemberCalculator_Error
+import net.postchain.rell.base.runtime.Rt_IntValue
+import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.utils.LazyPosString
+import net.postchain.rell.base.utils.doc.DocException
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocUtils
 import net.postchain.rell.base.utils.toImmList
@@ -76,8 +79,24 @@ abstract class BaseLTest {
             "OK"
         } catch (e: Ld_Exception) {
             "LDE:${e.code}"
+        } catch (e: DocException) {
+            "DOCE:${e.code}"
         }
         assertEquals(expected, actual)
+    }
+
+    protected fun chkComment(name: String, exp: String?, block: Ld_NamespaceBodyDsl.() -> Unit) {
+        val mod = makeModule("test") {
+            imports(Lib_Rell.MODULE.lModule)
+            block(this)
+        }
+        chkComment(mod, name, exp)
+    }
+
+    protected fun chkComment(mod: L_Module, name: String, exp: String?) {
+        val doc = DocUtils.getDocSymbolByPath(mod, name.split("."))
+        checkNotNull(doc) { name }
+        assertEquals(exp, doc.comment?.strCode())
     }
 
     companion object {
@@ -100,7 +119,7 @@ abstract class BaseLTest {
             return parts.joinToString("|")
         }
 
-        fun makeGlobalFun(): C_SpecialLibGlobalFunctionBody {
+        fun makeNsFun(): C_SpecialLibGlobalFunctionBody {
             return object: C_SpecialLibGlobalFunctionBody() {
                 override fun compileCall(
                     ctx: C_ExprContext,
@@ -112,7 +131,7 @@ abstract class BaseLTest {
             }
         }
 
-        fun makeMemberFun(): C_SpecialLibMemberFunctionBody {
+        fun makeTypeFun(): C_SpecialLibMemberFunctionBody {
             return object: C_SpecialLibMemberFunctionBody() {
                 override fun compileCall(
                     ctx: C_ExprContext,
@@ -120,15 +139,23 @@ abstract class BaseLTest {
                     selfType: R_Type,
                     args: List<V_Expr>,
                 ): V_SpecialMemberFunctionCall {
-                    return makeMemberFunCall(ctx)
+                    return makeTypeFunCall(ctx)
                 }
             }
         }
 
-        fun makeMemberFunCall(ctx: C_ExprContext): V_SpecialMemberFunctionCall {
+        fun makeTypeFunCall(ctx: C_ExprContext): V_SpecialMemberFunctionCall {
             return object: V_SpecialMemberFunctionCall(ctx, R_CtErrorType) {
                 override fun calculator(): R_MemberCalculator = R_MemberCalculator_Error(R_CtErrorType, "Error")
             }
+        }
+
+        fun makeNsProp(): C_NamespaceProperty {
+            return C_NamespaceProperty_RtValue(Rt_IntValue.get(123))
+        }
+
+        fun makeTypeProp(pure: Boolean = false): C_SysFunctionBody {
+            return C_SysFunctionBody.simple(pure = pure) { _ -> Rt_UnitValue }
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.test
@@ -28,14 +28,14 @@ object Lib_Test_KeyPairs {
                 attribute("priv", type = "byte_array")
             }
 
-            constant("BLOCKCHAIN_SIGNER_KEYPAIR", type = "rell.test.keypair") { rType ->
-                keyPairToStruct(rType, Lib_RellTest.BLOCK_RUNNER_KEYPAIR)
+            constant("BLOCKCHAIN_SIGNER_KEYPAIR", type = "rell.test.keypair") {
+                value { rType -> keyPairToStruct(rType, Lib_RellTest.BLOCK_RUNNER_KEYPAIR) }
             }
 
             namespace("keypairs") {
                 for ((name, keyPair) in PREDEFINED_KEYPAIRS) {
-                    constant(name, type = "rell.test.keypair") { rType ->
-                        keyPairToStruct(rType, keyPair)
+                    constant(name, type = "rell.test.keypair") {
+                        value { rType -> keyPairToStruct(rType, keyPair) }
                     }
                 }
             }

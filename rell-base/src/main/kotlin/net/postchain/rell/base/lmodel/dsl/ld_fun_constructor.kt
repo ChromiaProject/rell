@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lmodel.dsl
@@ -9,23 +9,26 @@ import net.postchain.rell.base.lmodel.L_Constructor
 import net.postchain.rell.base.lmodel.L_ConstructorHeader
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.doc.DocComment
 
 interface Ld_ConstructorMaker: Ld_CommonFunctionMaker
 
 class Ld_ConstructorBuilder(
+    hdr: Ld_MemberHeader,
     outerTypeParams: Set<R_Name>,
     bodyBuilder: Ld_FunctionBodyBuilder,
-): Ld_CommonFunctionBuilder(outerTypeParams, bodyBuilder), Ld_ConstructorMaker {
-    fun build(bodyRes: Ld_FunctionBodyRef): Ld_Constructor {
-        val cf = commonBuild(bodyRes)
+): Ld_CommonFunctionBuilder(hdr, outerTypeParams, bodyBuilder), Ld_ConstructorMaker {
+    fun build(bodyRes: Ld_BodyResult): Ld_Constructor {
+        val cf = buildCommon(bodyRes)
+
+        val memberHeader = buildMemberHeader()
 
         val header = Ld_ConstructorHeader(
             typeParams = cf.header.typeParams,
             params = cf.header.params,
         )
 
-        return Ld_Constructor(header, cf.deprecated, cf.body)
+        return Ld_Constructor(memberHeader, header, cf.deprecated, cf.body)
     }
 }
 
@@ -38,26 +41,38 @@ class Ld_ConstructorHeader(
     private val typeParams: List<Ld_TypeParam>,
     private val params: List<Ld_FunctionParam>,
 ) {
-    fun finish(ctx: Ld_TypeFinishContext): L_ConstructorHeader {
-        val lTypeParams = Ld_TypeParam.finishList(ctx, typeParams)
-        val subCtx = ctx.subCtx(lTypeParams.map)
-        val lParams = params.map { it.finish(subCtx) }.toImmList()
+    class Finish(val lHeader: L_ConstructorHeader, val comment: DocComment?)
 
-        return L_ConstructorHeader(
-            typeParams = lTypeParams.list,
-            params = lParams,
-        )
+    fun finish(ctx: Ld_TypeFinishContext, fullName: R_FullName, memberHeader: Ld_MemberHeader): Finish {
+        val lTypeParams = Ld_TypeParam.finishList(ctx, typeParams)
+
+        val subCtx = ctx.subCtx(lTypeParams.map)
+        val (lParams, funComment) = Ld_FunctionParam.finish(subCtx, fullName, params, memberHeader)
+
+        val lHeader = L_ConstructorHeader(typeParams = lTypeParams.list, params = lParams)
+        return Finish(lHeader, funComment)
     }
 }
 
 class Ld_Constructor(
+    val memberHeader: Ld_MemberHeader,
     private val header: Ld_ConstructorHeader,
     private val deprecated: C_Deprecated?,
     private val body: Ld_FunctionBody,
 ) {
-    fun finish(ctx: Ld_TypeFinishContext, fullName: R_FullName): L_Constructor {
-        val lHeader = header.finish(ctx)
+    class Finish(val lConstructor: L_Constructor, val comment: DocComment?)
+
+    fun finish(ctx: Ld_TypeFinishContext, fullName: R_FullName): Finish {
+        val finHeader = header.finish(ctx, fullName, memberHeader)
         val lBody = body.finish(fullName.qualifiedName)
-        return L_Constructor(header = lHeader, deprecated = deprecated, body = lBody, pure = body.pure)
+
+        val lConstructor = L_Constructor(
+            header = finHeader.lHeader,
+            deprecated = deprecated,
+            body = lBody,
+            pure = body.pure,
+        )
+
+        return Finish(lConstructor, finHeader.comment)
     }
 }

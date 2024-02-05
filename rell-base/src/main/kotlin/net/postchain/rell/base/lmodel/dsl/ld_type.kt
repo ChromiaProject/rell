@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lmodel.dsl
@@ -13,6 +13,7 @@ import net.postchain.rell.base.utils.toImmMap
 
 class Ld_TypeParam(
     val name: R_Name,
+    val memberHeader: Ld_MemberHeader,
     private val variance: M_TypeVariance,
     private val bounds: Ld_TypeParamBound?,
 ) {
@@ -27,6 +28,8 @@ class Ld_TypeParam(
             subOf: String?,
             superOf: String?,
             variance: M_TypeVariance = M_TypeVariance.NONE,
+            hdr: Ld_MemberHeader,
+            block: Ld_MemberDsl.() -> Unit,
         ): Ld_TypeParam {
             val rName = R_Name.of(name)
 
@@ -37,7 +40,8 @@ class Ld_TypeParam(
                 else -> null
             }
 
-            return Ld_TypeParam(rName, variance = variance, bound)
+            val memberHeader = Ld_MemberHeader.make(hdr, block)
+            return Ld_TypeParam(rName, memberHeader, variance = variance, bound)
         }
 
         fun finishList(

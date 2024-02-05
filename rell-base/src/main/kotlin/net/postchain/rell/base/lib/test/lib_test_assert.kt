@@ -240,9 +240,11 @@ private object Lib_Test_Type_Failure {
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell.test") {
             type("failure", rType = R_TestFailureType) {
-                property("message", type = "text", pure = true) { a ->
-                    val v = a as Rt_TestFailureValue
-                    v.messageValue
+                property("message", type = "text", pure = true) {
+                    value { a ->
+                        val v = a as Rt_TestFailureValue
+                        v.messageValue
+                    }
                 }
             }
         }

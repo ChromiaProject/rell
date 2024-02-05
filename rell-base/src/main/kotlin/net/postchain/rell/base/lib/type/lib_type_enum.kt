@@ -30,9 +30,11 @@ object Lib_Type_Enum {
             extension("enum_ext", type = "T") {
                 generic("T", subOf = "enum")
 
-                property("name", type = "text", pure = true) { a ->
-                    val attr = a.asEnum()
-                    Rt_TextValue.get(attr.name)
+                property("name", type = "text", pure = true) {
+                    value { a ->
+                        val attr = a.asEnum()
+                        Rt_TextValue.get(attr.name)
+                    }
                 }
 
                 // Db-function is effectively a no-op, as enums are represented by their numeric values on SQL level.

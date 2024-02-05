@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lmodel.dsl
@@ -50,7 +50,7 @@ class Ld_NamespaceMember_TypeExtension(
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
             mountName = null,
             declaration = DocDeclaration_TypeExtension(fullName.last, docTypeParams, docSelfType),
-            comment = null,
+            comment = typeDef.memberHeader.docComment(),
         )
 
         return ctx.fcExec.future().after(membersF).compute { members ->

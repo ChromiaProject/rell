@@ -219,11 +219,11 @@ private object SampleDocLib {
                     body { -> Rt_UnitValue }
                 }
 
-                property("prop", type = "integer") { _ -> Rt_UnitValue }
-                property("pure_prop", pure = true, type = "integer") { _ -> Rt_UnitValue }
+                property("prop", type = "integer") { value { Rt_UnitValue } }
+                property("pure_prop", pure = true, type = "integer") { value { Rt_UnitValue } }
                 property("spec_prop", type = "integer", C_SysFunctionBody.simple { _ -> Rt_UnitValue })
 
-                function("spec_fun", BaseLTest.makeMemberFun())
+                function("spec_fun", BaseLTest.makeTypeFun())
 
                 function("dep_fun_warn", result = "integer") {
                     deprecated("other_fun", error = false)

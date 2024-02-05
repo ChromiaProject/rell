@@ -15,7 +15,7 @@ class LTypeNameConflictTest: BaseLTest() {
             function("f", "anything") { param("a", "anything"); body { -> Rt_UnitValue } }
         }
         chkNameConflictErr(defs, block, "f") {
-            function("f", makeMemberFun())
+            function("f", makeTypeFun())
         }
         chkNameConflictOK(defs, block, "static function f(): anything") {
             staticFunction("f", "anything") { body { -> Rt_UnitValue } }
@@ -24,7 +24,7 @@ class LTypeNameConflictTest: BaseLTest() {
             constant("f", 123)
         }
         chkNameConflictErr(defs, block, "f") {
-            property("f", "anything") { Rt_UnitValue }
+            property("f", "anything") { value { Rt_UnitValue } }
         }
     }
 
@@ -38,24 +38,24 @@ class LTypeNameConflictTest: BaseLTest() {
             function("f", "anything") { body { -> Rt_UnitValue } }
         }
         chkNameConflictOK(defs, block, "special function f(...)") {
-            function("f", makeMemberFun())
+            function("f", makeTypeFun())
         }
         chkNameConflictErr(defs, block, "f") {
             constant("f", 123)
         }
         chkNameConflictOK(defs, block, "property f: anything") {
-            property("f", "anything") { Rt_UnitValue }
+            property("f", "anything") { value { Rt_UnitValue } }
         }
     }
 
     @Test fun testSpecialFunction() {
-        val block = makeBlock { function("f", makeMemberFun()) }
+        val block = makeBlock { function("f", makeTypeFun()) }
         val defs = arrayOf("special function f(...)")
         chkNameConflictErr(defs, block, "f") {
             function("f", "anything") { body { -> Rt_UnitValue } }
         }
         chkNameConflictErr(defs, block, "f") {
-            function("f", makeMemberFun())
+            function("f", makeTypeFun())
         }
         chkNameConflictOK(defs, block, "static function f(): anything") {
             staticFunction("f", "anything") { body { -> Rt_UnitValue } }
@@ -64,7 +64,7 @@ class LTypeNameConflictTest: BaseLTest() {
             constant("f", 123)
         }
         chkNameConflictErr(defs, block, "f") {
-            property("f", "anything") { Rt_UnitValue }
+            property("f", "anything") { value { Rt_UnitValue } }
         }
     }
 
@@ -75,7 +75,7 @@ class LTypeNameConflictTest: BaseLTest() {
             function("c", "anything") { body { -> Rt_UnitValue } }
         }
         chkNameConflictOK(defs, block, "special function c(...)") {
-            function("c", makeMemberFun())
+            function("c", makeTypeFun())
         }
         chkNameConflictErr(defs, block, "c") {
             staticFunction("c", "anything") { body { -> Rt_UnitValue } }
@@ -84,18 +84,18 @@ class LTypeNameConflictTest: BaseLTest() {
             constant("c", 123)
         }
         chkNameConflictOK(defs, block, "property c: anything") {
-            property("c", "anything") { Rt_UnitValue }
+            property("c", "anything") { value { Rt_UnitValue } }
         }
     }
 
     @Test fun testProperty() {
-        val block = makeBlock { property("p", "anything") { Rt_UnitValue } }
+        val block = makeBlock { property("p", "anything") { value { Rt_UnitValue } } }
         val defs = arrayOf("property p: anything")
         chkNameConflictErr(defs, block, "p") {
             function("p", "anything") { body { -> Rt_UnitValue } }
         }
         chkNameConflictErr(defs, block, "p") {
-            function("p", makeMemberFun())
+            function("p", makeTypeFun())
         }
         chkNameConflictOK(defs, block, "static function p(): anything") {
             staticFunction("p", "anything") { body { -> Rt_UnitValue } }
@@ -104,7 +104,7 @@ class LTypeNameConflictTest: BaseLTest() {
             constant("p", 123)
         }
         chkNameConflictErr(defs, block, "p") {
-            property("p", "anything") { Rt_UnitValue }
+            property("p", "anything") { value { Rt_UnitValue } }
         }
     }
 
@@ -155,11 +155,11 @@ class LTypeNameConflictTest: BaseLTest() {
     private fun initAlias(): Pair<Array<String>, Ld_TypeDefDsl.() -> Unit> {
         val block = makeBlock {
             constant("c", 123)
-            property("p", "anything") { Rt_UnitValue }
+            property("p", "anything") { value { Rt_UnitValue } }
             function("f", "anything") { body { -> Rt_UnitValue } }
-            function("g", makeMemberFun())
+            function("g", makeTypeFun())
             staticFunction("h", "anything") { param("a", "anything"); body { -> Rt_UnitValue } }
-            staticFunction("i", makeGlobalFun())
+            staticFunction("i", makeNsFun())
         }
 
         val defs = arrayOf(

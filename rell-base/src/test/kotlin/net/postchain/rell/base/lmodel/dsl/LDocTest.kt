@@ -83,7 +83,7 @@ class LDocTest: BaseLTest() {
     @Test fun testNamespaceExtensionSimple() {
         val mod = makeDocModule {
             extension("test_ext", type = "any") {
-                property("v", type = "integer") { _ -> Rt_UnitValue }
+                property("v", type = "integer") { value { _ -> Rt_UnitValue } }
             }
         }
         chkDoc(mod, "test_ext", "TYPE_EXTENSION|mod:test_ext", "<extension> test_ext: [any]")
@@ -122,7 +122,7 @@ class LDocTest: BaseLTest() {
             constant("INT", 123L)
             constant("BIGINT", BigInteger.valueOf(123))
             constant("FIXED_VAL", "integer", Rt_IntValue.get(456))
-            constant("LATE_VAL", "integer") { Rt_IntValue.get(789) }
+            constant("LATE_VAL", "integer") { value { Rt_IntValue.get(789) } }
         }
         chkDoc(mod, "INT", "CONSTANT|mod:INT", "<val> INT: [integer] = 123")
         chkDoc(mod, "BIGINT", "CONSTANT|mod:BIGINT", "<val> BIGINT: [big_integer] = 123L")
@@ -132,8 +132,8 @@ class LDocTest: BaseLTest() {
 
     @Test fun testNamespaceProperty() {
         val mod = makeDocModule {
-            property("prop", type = "integer") { bodyContext { Rt_UnitValue } }
-            property("pure_prop", type = "integer", pure = true) { bodyContext { Rt_UnitValue } }
+            property("prop", type = "integer") { value { Rt_UnitValue } }
+            property("pure_prop", type = "integer", pure = true) { value { Rt_UnitValue } }
         }
         chkDoc(mod, "prop", "PROPERTY|mod:prop", "prop: [integer]")
         chkDoc(mod, "pure_prop", "PROPERTY|mod:pure_prop", "<pure> pure_prop: [integer]")
@@ -176,7 +176,7 @@ class LDocTest: BaseLTest() {
 
     @Test fun testNamespaceFunctionSpecial() {
         val mod = makeDocModule {
-            function("foo", makeGlobalFun())
+            function("foo", makeNsFun())
         }
         chkDoc(mod, "foo", "FUNCTION|mod:foo", "<function> foo(...)")
     }
@@ -263,10 +263,10 @@ class LDocTest: BaseLTest() {
     @Test fun testTypeDefProperty() {
         val mod = makeDocModule {
             type("data") {
-                property("prop", type = "integer") { _ -> Rt_UnitValue }
-                property("pure_prop", type = "integer", pure = true) { _ -> Rt_UnitValue }
-                property("spec_prop", type = "integer", C_SysFunctionBody.simple { _ -> Rt_UnitValue })
-                property("pure_spec_prop", type = "integer", C_SysFunctionBody.simple(pure = true) { _ -> Rt_UnitValue })
+                property("prop", type = "integer") { value { _ -> Rt_UnitValue } }
+                property("pure_prop", type = "integer", pure = true) { value { _ -> Rt_UnitValue } }
+                property("spec_prop", type = "integer", makeTypeProp())
+                property("pure_spec_prop", type = "integer", makeTypeProp(pure = true))
             }
         }
         chkDoc(mod, "data.prop", "PROPERTY|mod:data.prop", "prop: [integer]")
@@ -307,7 +307,7 @@ class LDocTest: BaseLTest() {
     @Test fun testTypeDefConstructorSpecial() {
         val mod = makeDocModule {
             type("data") {
-                constructor(makeGlobalFun())
+                constructor(makeNsFun())
             }
         }
 
@@ -334,12 +334,12 @@ class LDocTest: BaseLTest() {
                     param(type = "text", name = "x")
                     body { -> Rt_UnitValue }
                 }
-                function("spec", makeMemberFun())
+                function("spec", makeTypeFun())
                 staticFunction("stat", result = "integer") {
                     param(type = "text", name = "x")
                     body { -> Rt_UnitValue }
                 }
-                staticFunction("stat_spec", makeGlobalFun())
+                staticFunction("stat_spec", makeNsFun())
 
                 function("pure_1", result = "text", pure = true) { body { -> Rt_UnitValue } }
                 function("pure_2", result = "text") {
@@ -489,10 +489,10 @@ class LDocTest: BaseLTest() {
         val mod = makeDocModule {
             extension("ext", type = "T") {
                 generic("T", subOf = "any")
-                property("prop", type = "integer") { _ -> Rt_UnitValue }
-                property("pure_prop", type = "integer", pure = true) { _ -> Rt_UnitValue }
-                property("spec_prop", type = "integer", C_SysFunctionBody.simple { _ -> Rt_UnitValue })
-                property("pure_spec_prop", type = "integer", C_SysFunctionBody.simple(pure = true) { _ -> Rt_UnitValue })
+                property("prop", type = "integer") { value { _ -> Rt_UnitValue } }
+                property("pure_prop", type = "integer", pure = true) { value { _ -> Rt_UnitValue } }
+                property("spec_prop", type = "integer", makeTypeProp())
+                property("pure_spec_prop", type = "integer", makeTypeProp(pure = true))
             }
         }
         chkDoc(mod, "ext.prop", "PROPERTY|mod:ext.prop", "prop: [integer]")
@@ -509,12 +509,12 @@ class LDocTest: BaseLTest() {
                     param(type = "text", name = "x")
                     body { -> Rt_UnitValue }
                 }
-                function("spec", makeMemberFun())
+                function("spec", makeTypeFun())
                 staticFunction("stat", result = "integer") {
                     param(type = "text", name = "x")
                     body { -> Rt_UnitValue }
                 }
-                staticFunction("stat_spec", makeGlobalFun())
+                staticFunction("stat_spec", makeNsFun())
 
                 function("pure_1", result = "text", pure = true) { body { -> Rt_UnitValue } }
                 function("pure_2", result = "text") {

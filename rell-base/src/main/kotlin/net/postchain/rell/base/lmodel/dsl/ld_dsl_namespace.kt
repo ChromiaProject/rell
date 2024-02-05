@@ -17,54 +17,141 @@ import java.math.BigInteger
 
 @RellLibDsl
 interface Ld_CommonNamespaceDsl {
-    fun constant(name: String, value: Long)
-    fun constant(name: String, value: BigInteger)
-    fun constant(name: String, value: BigDecimal)
-    fun constant(name: String, type: String, value: Rt_Value)
-    fun constant(name: String, type: String, getter: (R_Type) -> Rt_Value)
+    fun constant(
+        name: String,
+        value: Long,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_MemberDsl.() -> Unit = {},
+    )
+
+    fun constant(
+        name: String,
+        value: BigInteger,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_MemberDsl.() -> Unit = {},
+    )
+
+    fun constant(
+        name: String,
+        value: BigDecimal,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_MemberDsl.() -> Unit = {},
+    )
+
+    fun constant(
+        name: String,
+        type: String,
+        value: Rt_Value,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_MemberDsl.() -> Unit = {},
+    )
+
+    fun constant(
+        name: String,
+        type: String,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_ConstantDsl.() -> Ld_BodyResult,
+    )
 }
 
 @RellLibDsl
-interface Ld_NamespaceDsl: Ld_CommonNamespaceDsl {
+interface Ld_NamespaceBodyDsl: Ld_CommonNamespaceDsl {
     fun include(namespace: Ld_Namespace)
 
-    fun alias(name: String? = null, target: String, deprecated: C_Deprecated? = null)
-    fun alias(name: String? = null, target: String, deprecated: C_MessageType)
+    fun alias(
+        name: String? = null,
+        target: String,
+        deprecated: C_Deprecated? = null,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_MemberDsl.() -> Unit = {},
+    )
 
-    fun namespace(name: String, block: Ld_NamespaceDsl.() -> Unit)
+    fun alias(
+        name: String? = null,
+        target: String,
+        deprecated: C_MessageType,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_MemberDsl.() -> Unit = {},
+    )
+
+    fun namespace(
+        name: String,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_NamespaceDsl.() -> Unit,
+    )
 
     fun type(
         name: String,
         abstract: Boolean = false,
         hidden: Boolean = false,
         rType: R_Type? = null,
+        since: String? = null,
+        comment: String? = null,
         block: Ld_TypeDefDsl.() -> Unit = {},
     )
 
-    fun extension(name: String, type: String, block: Ld_TypeExtensionDsl.() -> Unit)
+    fun extension(
+        name: String,
+        type: String,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_TypeExtensionDsl.() -> Unit,
+    )
 
-    fun struct(name: String, block: Ld_StructDsl.() -> Unit)
+    fun struct(
+        name: String,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_StructDsl.() -> Unit,
+    )
 
     fun property(
         name: String,
         type: String,
         pure: Boolean = false,
-        block: Ld_NamespacePropertyDsl.() -> Ld_PropertyBody,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_NamespacePropertyDsl.() -> Ld_BodyResult,
     )
 
-    fun property(name: String, property: C_NamespaceProperty)
+    fun property(
+        name: String,
+        property: C_NamespaceProperty,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_MemberDsl.() -> Unit = {},
+    )
 
     fun function(
         name: String,
         result: String? = null,
         pure: Boolean? = null,
-        block: Ld_FunctionDsl.() -> Ld_FunctionBodyRef,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_FunctionDsl.() -> Ld_BodyResult,
     )
 
-    fun function(name: String, fn: C_SpecialLibGlobalFunctionBody)
+    fun function(
+        name: String,
+        fn: C_SpecialLibGlobalFunctionBody,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_MemberDsl.() -> Unit = {},
+    )
+}
 
+@RellLibDsl
+interface Ld_NamespaceDsl: Ld_NamespaceBodyDsl, Ld_MemberDsl {
     companion object {
-        fun make(block: Ld_NamespaceDsl.() -> Unit): Ld_Namespace {
+        fun make(block: Ld_NamespaceBodyDsl.() -> Unit): Ld_Namespace {
             val builder = Ld_NamespaceBuilder()
             val dsl = Ld_NamespaceDslImpl(builder)
             block(dsl)
@@ -74,12 +161,24 @@ interface Ld_NamespaceDsl: Ld_CommonNamespaceDsl {
 }
 
 @RellLibDsl
-interface Ld_NamespacePropertyDsl {
+interface Ld_NamespacePropertyDsl: Ld_MemberDsl {
     fun validate(validator: (C_SysFunctionCtx) -> Unit)
-    fun bodyContext(block: (Rt_CallContext) -> Rt_Value): Ld_PropertyBody
+    fun value(block: (Rt_CallContext) -> Rt_Value): Ld_BodyResult
 }
 
 @RellLibDsl
-interface Ld_StructDsl {
-    fun attribute(name: String, type: String, mutable: Boolean = false)
+interface Ld_StructDsl: Ld_MemberDsl {
+    fun attribute(
+        name: String,
+        type: String,
+        mutable: Boolean = false,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_MemberDsl.() -> Unit = {},
+    )
+}
+
+@RellLibDsl
+interface Ld_ConstantDsl: Ld_MemberDsl {
+    fun value(getter: (R_Type) -> Rt_Value): Ld_BodyResult
 }

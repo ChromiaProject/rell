@@ -79,7 +79,7 @@ object Lib_OpContext {
             }
 
             property("exists", type = "boolean", pure = false) {
-                bodyContext { ctx ->
+                value { ctx ->
                     val v = ctx.exeCtx.opCtx.exists()
                     Rt_BooleanValue.get(v)
                 }
@@ -87,21 +87,21 @@ object Lib_OpContext {
 
             property("last_block_time", type = "integer", pure = false) {
                 validate(::checkCtx)
-                bodyContext { ctx ->
+                value { ctx ->
                     Rt_IntValue.get(ctx.exeCtx.opCtx.lastBlockTime())
                 }
             }
 
             property("block_height", type = "integer", pure = false) {
                 validate(::checkCtx)
-                bodyContext { ctx ->
+                value { ctx ->
                     Rt_IntValue.get(ctx.exeCtx.opCtx.blockHeight())
                 }
             }
 
             property("op_index", type = "integer", pure = false) {
                 validate(::checkCtx)
-                bodyContext { ctx ->
+                value { ctx ->
                     Rt_IntValue.get(ctx.exeCtx.opCtx.opIndex().toLong())
                 }
             }

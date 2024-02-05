@@ -5,7 +5,7 @@
 package net.postchain.rell.base.lib.type
 
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
-import net.postchain.rell.base.lmodel.dsl.Ld_FunctionBodyRef
+import net.postchain.rell.base.lmodel.dsl.Ld_BodyResult
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionMetaBodyDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
@@ -144,7 +144,7 @@ object Lib_Type_Gtv {
         }
     }
 
-    fun makeToGtvBody(m: Ld_FunctionDsl, pretty: Boolean): Ld_FunctionBodyRef = with(m) {
+    fun makeToGtvBody(m: Ld_FunctionDsl, pretty: Boolean): Ld_BodyResult = with(m) {
         bodyMeta {
             val selfType = this.fnBodyMeta.rSelfType
             validateToGtvBody(this, selfType)

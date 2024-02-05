@@ -141,7 +141,9 @@ class CLibFunctionTypeExtTest: BaseCLibTest() {
     private fun makeTypeExtensionMod() = makeModule {
         extension("ext", type = "T") {
             generic("T", subOf = "any")
-            property("test_prop", type = "integer", pure = true) { _ -> Rt_IntValue.ZERO }
+            property("test_prop", type = "integer", pure = true) {
+                value { _ -> Rt_IntValue.ZERO }
+            }
             staticFunction("test_decode", result = "T") {
                 param("a", type = "integer")
                 body { a ->
@@ -177,7 +179,7 @@ class CLibFunctionTypeExtTest: BaseCLibTest() {
                     args: List<V_Expr>,
                 ): V_SpecialMemberFunctionCall {
                     ctx.msgCtx.error(callCtx.linkPos, "test_error:${callCtx.qualifiedNameMsg()}", "Test error")
-                    return BaseLTest.makeMemberFunCall(ctx)
+                    return BaseLTest.makeTypeFunCall(ctx)
                 }
             })
         }

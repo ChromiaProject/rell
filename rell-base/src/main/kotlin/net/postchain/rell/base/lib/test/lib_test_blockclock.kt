@@ -23,7 +23,7 @@ object Lib_Test_BlockClock {
             constant("DEFAULT_BLOCK_INTERVAL", DEFAULT_BLOCK_INTERVAL)
 
             property("last_block_time", type = "timestamp") {
-                bodyContext { ctx ->
+                value { ctx ->
                     val t0 = ctx.exeCtx.testBlockClock.getLastBlockTime()
                     val t = Rt_Utils.checkNotNull(t0) {
                         "no_last_block_time" toCodeMsg "No last block time"
@@ -33,21 +33,21 @@ object Lib_Test_BlockClock {
             }
 
             property("last_block_time_or_null", type = "timestamp?") {
-                bodyContext { ctx ->
+                value { ctx ->
                     val t = ctx.exeCtx.testBlockClock.getLastBlockTime()
                     if (t == null) Rt_NullValue else Rt_IntValue.get(t)
                 }
             }
 
             property("next_block_time", type = "timestamp") {
-                bodyContext { ctx ->
+                value { ctx ->
                     val t = ctx.exeCtx.testBlockClock.getNextBlockTime()
                     Rt_IntValue.get(t)
                 }
             }
 
             property("block_interval", type = "timestamp") {
-                bodyContext { ctx ->
+                value { ctx ->
                     val t = ctx.exeCtx.testBlockClock.getBlockInterval()
                     Rt_IntValue.get(t)
                 }

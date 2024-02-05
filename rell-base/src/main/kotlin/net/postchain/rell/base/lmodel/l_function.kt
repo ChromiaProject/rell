@@ -76,22 +76,30 @@ class L_FunctionParam(
     }
 }
 
-class L_FunctionHeader(
-    val mHeader: M_FunctionHeader,
+abstract class L_CommonFunctionHeader(
     val params: List<L_FunctionParam>,
 ) {
-    val typeParams = mHeader.typeParams
-    val resultType = mHeader.resultType
-
     private val paramsMap: Map<R_Name, L_FunctionParam> by lazy {
         params.associateBy { it.name }.toImmMap()
     }
 
+    fun getParam(name: R_Name): L_FunctionParam? {
+        return paramsMap[name]
+    }
+}
+
+class L_FunctionHeader(
+    val mHeader: M_FunctionHeader,
+    params: List<L_FunctionParam>,
+): L_CommonFunctionHeader(params) {
+    val typeParams = mHeader.typeParams
+    val resultType = mHeader.resultType
+
     init {
-        checkEquals(params.size, mHeader.params.size)
-        for (i in params.indices) {
-            check(params[i].mParam === mHeader.params[i]) {
-                "$mHeader ; $i ; ${params[i].mParam} ; ${mHeader.params[i]}"
+        checkEquals(this.params.size, mHeader.params.size)
+        for (i in this.params.indices) {
+            check(this.params[i].mParam === mHeader.params[i]) {
+                "$mHeader ; $i ; ${this.params[i].mParam} ; ${mHeader.params[i]}"
             }
         }
     }
@@ -123,10 +131,6 @@ class L_FunctionHeader(
         }
 
         return if (mHeader2 === mHeader && params2 === params) this else L_FunctionHeader(mHeader2, params2)
-    }
-
-    fun getParam(name: R_Name): L_FunctionParam? {
-        return paramsMap[name]
     }
 }
 
@@ -196,13 +200,8 @@ class L_Function(
     }
 
     fun getDocMember(name: String): DocDefinition? {
-        return if (name.startsWith("#")) {
-            val index = name.substring(1).toInt()
-            header.params[index]
-        } else {
-            val rName = R_Name.of(name)
-            header.getParam(rName)
-        }
+        val rName = R_Name.of(name)
+        return header.getParam(rName)
     }
 }
 
@@ -294,6 +293,10 @@ class L_TypeDefMember_Function(
             function2.validate()
             L_TypeDefMember_Function(simpleName, docSymbol, function2, deprecated)
         }
+    }
+
+    override fun getDocMember(name: String): DocDefinition? {
+        return function.getDocMember(name)
     }
 }
 

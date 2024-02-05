@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.ide
 
-import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty_RtValue
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.Lib_Rell
@@ -69,8 +68,8 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
 
     @Test fun testNamespaceProperty() {
         extraModule {
-            property("prop", type = "integer") { bodyContext { Rt_UnitValue } }
-            property("pure_prop", pure = true, type = "integer") { bodyContext { Rt_UnitValue } }
+            property("prop", type = "integer") { value { Rt_UnitValue } }
+            property("pure_prop", pure = true, type = "integer") { value { Rt_UnitValue } }
             property("spec_prop", C_NamespaceProperty_RtValue(Rt_IntValue.ZERO))
         }
         chkSyms("query q() = prop;", "prop=MEM_SYS_PROPERTY|-|-", "?head=PROPERTY|mod:prop")
@@ -90,7 +89,7 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
 
     @Test fun testNamespaceFunctionSpecial() {
         extraModule {
-            function("foo", BaseLTest.makeGlobalFun())
+            function("foo", BaseLTest.makeNsFun())
         }
         chkSyms("query q() = foo();", "foo=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|mod:foo")
     }
@@ -218,9 +217,9 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
         extraModule {
             type("data") {
                 modTst.setRTypeFactory(this)
-                property("prop", type = "integer") { _ -> Rt_UnitValue }
-                property("pure_prop", type = "integer", pure = true) { _ -> Rt_UnitValue }
-                property("spec_prop", type = "integer", C_SysFunctionBody.simple { _ -> Rt_UnitValue })
+                property("prop", type = "integer") { value { _ -> Rt_UnitValue } }
+                property("pure_prop", type = "integer", pure = true) { value { _ -> Rt_UnitValue } }
+                property("spec_prop", type = "integer", BaseLTest.makeTypeProp())
             }
         }
         chkSyms("function f(d: data) = d.prop;", "prop=MEM_SYS_PROPERTY|-|-", "?head=PROPERTY|mod:data.prop")
@@ -256,7 +255,7 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
         extraModule {
             type("data") {
                 modTst.setRTypeFactory(this)
-                constructor(BaseLTest.makeGlobalFun())
+                constructor(BaseLTest.makeNsFun())
             }
         }
         chkSyms("function f() = data();", "data=DEF_TYPE|-|-", "?head=CONSTRUCTOR|mod:data")
@@ -269,11 +268,11 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
                 function("foo", result = "integer") {
                     body { -> Rt_UnitValue }
                 }
-                function("spec", BaseLTest.makeMemberFun())
+                function("spec", BaseLTest.makeTypeFun())
                 staticFunction("stat", result = "integer") {
                     body { -> Rt_UnitValue }
                 }
-                staticFunction("stat_spec", BaseLTest.makeGlobalFun())
+                staticFunction("stat_spec", BaseLTest.makeNsFun())
             }
         }
 
@@ -351,9 +350,9 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
         extraModule {
             extension("test_ext", type = "T") {
                 generic("T", subOf = "any")
-                property("prop", type = "integer") { _ -> Rt_UnitValue }
-                property("pure_prop", type = "integer", pure = true) { _ -> Rt_UnitValue }
-                property("spec_prop", type = "integer", C_SysFunctionBody.simple { _ -> Rt_UnitValue })
+                property("prop", type = "integer") { value { _ -> Rt_UnitValue } }
+                property("pure_prop", type = "integer", pure = true) { value { _ -> Rt_UnitValue } }
+                property("spec_prop", type = "integer", BaseLTest.makeTypeProp())
             }
         }
 
@@ -372,11 +371,11 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
                 function("foo", result = "T") {
                     body { -> Rt_UnitValue }
                 }
-                function("spec", BaseLTest.makeMemberFun())
+                function("spec", BaseLTest.makeTypeFun())
                 staticFunction("stat", result = "T") {
                     body { -> Rt_UnitValue }
                 }
-                staticFunction("stat_spec", BaseLTest.makeGlobalFun())
+                staticFunction("stat_spec", BaseLTest.makeNsFun())
             }
         }
 

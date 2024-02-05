@@ -1,9 +1,10 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.testutils.tools
 
+import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_Compiler
 import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
@@ -44,7 +45,8 @@ private class RunInfo(
 private class ReposCompiler {
     private val startTimeMs = System.currentTimeMillis()
     private var totCount = 0
-    private var errList = mutableListOf<String>()
+    private val errList = mutableListOf<String>()
+    private val errMsgs = mutableMapOf<MessageKey, MutableSet<MessageRec>>()
 
     fun go(reposDir: File) {
         val verDirs = mutableListOf<VerDir>()
@@ -80,6 +82,17 @@ private class ReposCompiler {
         }
 
         println("---------------------------------------------------------------------------")
+
+        if (errMsgs.isNotEmpty()) {
+            println("Errors: ${errMsgs.keys.size}")
+            for (key in errMsgs.keys.sorted()) {
+                println("${key.pos} ${key.message}")
+                for (msg in errMsgs.getValue(key).sortedBy { it.srcPath }) {
+                    println("    ${msg.srcPath}")
+                }
+            }
+            println("---------------------------------------------------------------------------")
+        }
 
         if (errList.isNotEmpty()) {
             println("Failed:")
@@ -152,8 +165,11 @@ private class ReposCompiler {
         val resStr = if (err) "*** ERROR ***" else "ok"
         println("$repoName - $verName - ${runInfo.srcPath} - [${runInfo.module}] ==> $resStr")
 
+        val srcPath = "$repoName/$verName/${runInfo.srcPath}"
         for (msg in res.errors) {
             println("    $msg")
+            val msgRec = MessageRec(srcPath, msg.pos, msg.text)
+            errMsgs.computeIfAbsent(msgRec.key) { mutableSetOf() }.add(msgRec)
         }
     }
 }
@@ -179,4 +195,16 @@ private fun parseRunInfo(verDir: VerDir, line: String): RunInfo {
     val rellVer = if (parts.size < 4) null else R_LangVersion.of(parts[3])
 
     return RunInfo(srcPath, srcDir, module, test, rellVer)
+}
+
+private data class MessageKey(val pos: S_Pos, val message: String): Comparable<MessageKey> {
+    override fun compareTo(other: MessageKey): Int {
+        var d = pos.compareTo(other.pos)
+        if (d == 0) d = message.compareTo(other.message)
+        return d
+    }
+}
+
+private data class MessageRec(val srcPath: String, val pos: S_Pos, val message: String) {
+    val key = MessageKey(pos, message)
 }

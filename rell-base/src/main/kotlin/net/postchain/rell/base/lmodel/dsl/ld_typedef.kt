@@ -14,7 +14,6 @@ import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.mtype.*
-import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.futures.FcFuture
@@ -34,14 +33,16 @@ sealed class Ld_TypeDefMember {
     abstract fun finish(ctx: Ld_TypeFinishContext, typeName: R_FullName): List<L_TypeDefMember>
 }
 
-private class Ld_TypeDefMember_Constructor(private val constructor: Ld_Constructor): Ld_TypeDefMember() {
+private class Ld_TypeDefMember_Constructor(
+    private val constructor: Ld_Constructor,
+): Ld_TypeDefMember() {
     override fun finish(ctx: Ld_TypeFinishContext, typeName: R_FullName): List<L_TypeDefMember> {
-        val lConstructor = constructor.finish(ctx, typeName)
-        val doc = makeDoc(typeName, lConstructor)
-        return immListOf(L_TypeDefMember_Constructor(lConstructor, doc))
+        val finConstructor = constructor.finish(ctx, typeName)
+        val doc = makeDoc(typeName, finConstructor.lConstructor, finConstructor.comment)
+        return immListOf(L_TypeDefMember_Constructor(finConstructor.lConstructor, doc))
     }
 
-    private fun makeDoc(typeName: R_FullName, lConstructor: L_Constructor): DocSymbol {
+    private fun makeDoc(typeName: R_FullName, lConstructor: L_Constructor, comment: DocComment?): DocSymbol {
         val docDeclaration = DocDeclaration_TypeConstructor(
             L_TypeUtils.docTypeParams(lConstructor.header.typeParams),
             lConstructor.header.params.map { it.docSymbol.declaration }.toImmList(),
@@ -54,12 +55,15 @@ private class Ld_TypeDefMember_Constructor(private val constructor: Ld_Construct
             symbolName = DocSymbolName.global(typeName.moduleName.str(), typeName.qualifiedName.str()),
             mountName = null,
             declaration = docDeclaration,
-            comment = null,
+            comment = comment,
         )
     }
 }
 
-private class Ld_TypeDefMember_SpecialConstructor(private val fn: C_SpecialLibGlobalFunctionBody): Ld_TypeDefMember() {
+private class Ld_TypeDefMember_SpecialConstructor(
+    private val memberHeader: Ld_MemberHeader,
+    private val fn: C_SpecialLibGlobalFunctionBody,
+): Ld_TypeDefMember() {
     override fun finish(ctx: Ld_TypeFinishContext, typeName: R_FullName): List<L_TypeDefMember> {
         val doc = makeDoc(typeName)
         return immListOf(L_TypeDefMember_SpecialConstructor(fn, doc))
@@ -71,7 +75,7 @@ private class Ld_TypeDefMember_SpecialConstructor(private val fn: C_SpecialLibGl
             symbolName = DocSymbolName.global(typeName.moduleName.str(), typeName.qualifiedName.str()),
             mountName = null,
             declaration = DocDeclaration_TypeSpecialConstructor(),
-            comment = null,
+            comment = memberHeader.docComment(),
         )
     }
 }
@@ -83,16 +87,18 @@ private class Ld_TypeDefMember_Constant(
     override fun finish(ctx: Ld_TypeFinishContext, typeName: R_FullName): List<L_TypeDefMember> {
         val fullName = typeName.append(simpleName)
         val lConstant = constant.finish(ctx, simpleName)
-        val doc = Ld_DocSymbols.constant(fullName, lConstant.type, lConstant.value)
+        val doc = Ld_DocSymbols.constant(fullName, constant.memberHeader, lConstant.type, lConstant.value)
         return immListOf(L_TypeDefMember_Constant(lConstant, doc))
     }
 }
 
-private class Ld_TypeDefMember_Property(private val property: Ld_TypeProperty): Ld_TypeDefMember() {
+private class Ld_TypeDefMember_Property(
+    private val property: Ld_TypeProperty,
+): Ld_TypeDefMember() {
     override fun finish(ctx: Ld_TypeFinishContext, typeName: R_FullName): List<L_TypeDefMember> {
         val fullName = typeName.append(property.simpleName)
         val lProperty = property.finish(ctx)
-        val doc = Ld_DocSymbols.property(fullName, lProperty.type, lProperty.body.pure)
+        val doc = Ld_DocSymbols.property(fullName, property.memberHeader, lProperty.type, lProperty.body.pure)
         return immListOf(L_TypeDefMember_Property(property.simpleName, doc, lProperty))
     }
 }
@@ -104,15 +110,33 @@ private class Ld_TypeDefMember_Function(
 ): Ld_TypeDefMember() {
     override fun finish(ctx: Ld_TypeFinishContext, typeName: R_FullName): List<L_TypeDefMember> {
         val fullName = typeName.append(simpleName)
-        val lFunction = function.finish(ctx, fullName, isStatic)
+        val finFunction = function.finish(ctx, fullName, isStatic)
+        val lFunction = finFunction.lFunction
 
-        val docSymbol = Ld_DocSymbols.function(fullName, lFunction.header, lFunction.flags, function.deprecated)
-        val member = L_TypeDefMember_Function(simpleName, docSymbol, lFunction, deprecated = function.deprecated)
+        val docSymbol = Ld_DocSymbols.function(
+            fullName,
+            lFunction.header,
+            lFunction.flags,
+            function.deprecated,
+            comment = finFunction.comment,
+        )
+
+        val member = L_TypeDefMember_Function(
+            simpleName,
+            docSymbol,
+            lFunction,
+            deprecated = function.deprecated,
+        )
 
         val res = mutableListOf<L_TypeDefMember>(member)
         for (alias in function.aliases) {
-            val aliasDocSymbol = makeDocSymbol(fullName, alias, docSymbol)
-            val aliasMember = L_TypeDefMember_Alias(alias.simpleName, aliasDocSymbol, member, alias.deprecated)
+            val aliasDocSymbol = makeDocSymbol(fullName, alias.memberHeader, alias, docSymbol)
+            val aliasMember = L_TypeDefMember_Alias(
+                alias.simpleName,
+                aliasDocSymbol,
+                member,
+                alias.deprecated,
+            )
             res.add(aliasMember)
         }
 
@@ -121,6 +145,7 @@ private class Ld_TypeDefMember_Function(
 
     private fun makeDocSymbol(
         fullName: R_FullName,
+        memberHeader: Ld_MemberHeader,
         alias: Ld_Alias,
         targetDocSymbol: DocSymbol,
     ): DocSymbol {
@@ -137,36 +162,39 @@ private class Ld_TypeDefMember_Function(
             DocSymbolKind.ALIAS,
             DocSymbolName.global(aliasFullName.moduleName.str(), aliasFullName.qualifiedName.str()),
             null,
-            docDec,
-            null
+            declaration = docDec,
+            comment = memberHeader.docComment(),
         )
     }
 }
 
 private class Ld_TypeDefMember_ValueSpecialFunction(
+    private val memberHeader: Ld_MemberHeader,
     private val simpleName: R_Name,
     private val fn: C_SpecialLibMemberFunctionBody,
 ): Ld_TypeDefMember() {
     override fun finish(ctx: Ld_TypeFinishContext, typeName: R_FullName): List<L_TypeDefMember> {
         val fullName = typeName.append(simpleName)
-        val doc = Ld_DocSymbols.specialFunction(fullName, isStatic = false)
+        val doc = Ld_DocSymbols.specialFunction(fullName, memberHeader, isStatic = false)
         return immListOf(L_TypeDefMember_ValueSpecialFunction(simpleName, doc, fn))
     }
 }
 
 private class Ld_TypeDefMember_StaticSpecialFunction(
+    private val memberHeader: Ld_MemberHeader,
     private val simpleName: R_Name,
     private val fn: C_SpecialLibGlobalFunctionBody,
 ): Ld_TypeDefMember() {
     override fun finish(ctx: Ld_TypeFinishContext, typeName: R_FullName): List<L_TypeDefMember> {
         val fullName = typeName.append(simpleName)
-        val doc = Ld_DocSymbols.specialFunction(fullName, isStatic = true)
+        val doc = Ld_DocSymbols.specialFunction(fullName, memberHeader, isStatic = true)
         return immListOf(L_TypeDefMember_StaticSpecialFunction(simpleName, doc, fn))
     }
 }
 
 class Ld_TypeDef(
     val simpleName: R_Name,
+    val memberHeader: Ld_MemberHeader,
     private val flags: L_TypeDefFlags,
     private val typeParams: List<Ld_TypeParam>,
     private val parent: Ld_TypeDefParent?,
@@ -254,18 +282,20 @@ class Ld_TypeDef(
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
             mountName = null,
             declaration = DocDeclaration_Type(fullName.last, docTypeParams, lParent, flags),
-            comment = null,
+            comment = memberHeader.docComment(),
         )
     }
 
     companion object {
         fun make(
             simpleName: R_Name,
+            hdr: Ld_MemberHeader,
             flags: L_TypeDefFlags,
             rType: R_Type?,
             block: Ld_TypeDefDsl.() -> Unit,
         ): Ld_TypeDef {
             val builder = Ld_TypeDefBuilder(simpleName, flags = flags)
+            builder.header(hdr)
 
             val dsl = Ld_TypeDefDslImpl(simpleName.str, builder)
             if (rType != null) {
@@ -293,8 +323,8 @@ class Ld_NamespaceMember_Type(
     }
 }
 
-interface Ld_TypeDefMaker: Ld_CommonNamespaceMaker {
-    fun generic(name: String, subOf: String?, superOf: String?)
+interface Ld_TypeDefMaker: Ld_CommonNamespaceMaker, Ld_MemberHeaderMaker {
+    fun generic(name: String, subOf: String?, superOf: String?, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit)
 
     fun parent(type: String)
 
@@ -302,29 +332,52 @@ interface Ld_TypeDefMaker: Ld_CommonNamespaceMaker {
     fun docCodeStrategy(strategy: L_TypeDefDocCodeStrategy)
     fun supertypeStrategy(strategy: L_TypeDefSupertypeStrategy)
 
-    fun property(name: String, type: String, body: C_SysFunctionBody)
+    fun property(
+        name: String,
+        type: String,
+        pure: Boolean,
+        hdr: Ld_MemberHeader,
+        block: Ld_TypePropertyDsl.() -> Ld_BodyResult,
+    )
 
-    fun constructor(pure: Boolean?, block: Ld_ConstructorDsl.() -> Ld_FunctionBodyRef)
-    fun constructor(fn: C_SpecialLibGlobalFunctionBody)
+    fun property(
+        name: String,
+        type: String,
+        body: C_SysFunctionBody,
+        hdr: Ld_MemberHeader,
+        block: Ld_MemberDsl.() -> Unit,
+    )
+
+    fun constructor(pure: Boolean?, hdr: Ld_MemberHeader, block: Ld_ConstructorDsl.() -> Ld_BodyResult)
+    fun constructor(fn: C_SpecialLibGlobalFunctionBody, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit)
 
     fun function(
         isStatic: Boolean,
         name: String,
         result: String?,
         pure: Boolean?,
-        block: Ld_FunctionDsl.() -> Ld_FunctionBodyRef,
+        hdr: Ld_MemberHeader,
+        block: Ld_FunctionDsl.() -> Ld_BodyResult,
     )
 
-    fun function(name: String, fn: C_SpecialLibGlobalFunctionBody)
-    fun function(name: String, fn: C_SpecialLibMemberFunctionBody)
+    fun function(name: String, fn: C_SpecialLibGlobalFunctionBody, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit)
+    fun function(name: String, fn: C_SpecialLibMemberFunctionBody, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit)
 }
 
 class Ld_TypeDefDslImpl(
     override val typeSimpleName: String,
     private val maker: Ld_TypeDefMaker,
-): Ld_TypeDefDsl, Ld_CommonNamespaceDsl by Ld_CommonNamespaceDslImpl(maker) {
-    override fun generic(name: String, subOf: String?, superOf: String?) {
-        maker.generic(name, subOf = subOf, superOf = superOf)
+): Ld_TypeDefDsl, Ld_CommonNamespaceDsl by Ld_CommonNamespaceDslImpl(maker), Ld_MemberDsl by Ld_MemberDslImpl(maker) {
+    override fun generic(
+        name: String,
+        subOf: String?,
+        superOf: String?,
+        since: String?,
+        comment: String?,
+        block: Ld_MemberDsl.() -> Unit,
+    ) {
+        val hdr = Ld_MemberHeader.make(since, comment)
+        maker.generic(name, subOf = subOf, superOf = superOf, hdr = hdr, block = block)
     }
 
     override fun parent(type: String) {
@@ -399,47 +452,94 @@ class Ld_TypeDefDslImpl(
         })
     }
 
-    override fun property(name: String, type: String, pure: Boolean, getter: (Rt_Value) -> Rt_Value) {
-        val body = C_SysFunctionBody.simple(pure = pure, rCode = getter)
-        maker.property(name, type, body)
+    override fun property(
+        name: String,
+        type: String,
+        pure: Boolean,
+        since: String?,
+        comment: String?,
+        block: Ld_TypePropertyDsl.() -> Ld_BodyResult,
+    ) {
+        val hdr = Ld_MemberHeader.make(since, comment)
+        maker.property(name, type, pure, hdr, block)
     }
 
-    override fun property(name: String, type: String, body: C_SysFunctionBody) {
-        maker.property(name, type, body)
+    override fun property(
+        name: String,
+        type: String,
+        body: C_SysFunctionBody,
+        since: String?,
+        comment: String?,
+        block: Ld_MemberDsl.() -> Unit,
+    ) {
+        val hdr = Ld_MemberHeader.make(since, comment)
+        maker.property(name, type, body, hdr, block)
     }
 
-    override fun constructor(pure: Boolean?, block: Ld_ConstructorDsl.() -> Ld_FunctionBodyRef) {
-        maker.constructor(pure = pure, block = block)
+    override fun constructor(
+        pure: Boolean?,
+        since: String?,
+        comment: String?,
+        block: Ld_ConstructorDsl.() -> Ld_BodyResult,
+    ) {
+        val hdr = Ld_MemberHeader.make(since, comment)
+        maker.constructor(pure = pure, hdr = hdr, block = block)
     }
 
-    override fun constructor(fn: C_SpecialLibGlobalFunctionBody) {
-        maker.constructor(fn)
+    override fun constructor(
+        fn: C_SpecialLibGlobalFunctionBody,
+        since: String?,
+        comment: String?,
+        block: Ld_MemberDsl.() -> Unit,
+    ) {
+        val hdr = Ld_MemberHeader.make(since, comment)
+        maker.constructor(fn, hdr, block)
     }
 
     override fun function(
         name: String,
         result: String?,
         pure: Boolean?,
-        block: Ld_FunctionDsl.() -> Ld_FunctionBodyRef,
+        since: String?,
+        comment: String?,
+        block: Ld_FunctionDsl.() -> Ld_BodyResult,
     ) {
-        maker.function(isStatic = false, name = name, result = result, pure = pure, block = block)
+        val hdr = Ld_MemberHeader.make(since, comment)
+        maker.function(isStatic = false, name = name, result = result, pure = pure, hdr = hdr, block = block)
     }
 
-    override fun function(name: String, fn: C_SpecialLibMemberFunctionBody) {
-        maker.function(name, fn)
+    override fun function(
+        name: String,
+        fn: C_SpecialLibMemberFunctionBody,
+        since: String?,
+        comment: String?,
+        block: Ld_MemberDsl.() -> Unit,
+    ) {
+        val hdr = Ld_MemberHeader.make(since, comment)
+        maker.function(name, fn, hdr, block)
     }
 
     override fun staticFunction(
         name: String,
         result: String?,
         pure: Boolean?,
-        block: Ld_FunctionDsl.() -> Ld_FunctionBodyRef,
+        since: String?,
+        comment: String?,
+        block: Ld_FunctionDsl.() -> Ld_BodyResult,
     ) {
-        maker.function(isStatic = true, name = name, result = result, pure = pure, block = block)
+        val hdr = Ld_MemberHeader.make(since, comment)
+        maker.function(isStatic = true, name = name, result = result, pure = pure, hdr = hdr, block = block)
     }
 
-    override fun staticFunction(name: String, fn: C_SpecialLibGlobalFunctionBody) {
-        maker.function(name, fn)
+    override fun staticFunction(
+        name: String,
+        fn: C_SpecialLibGlobalFunctionBody,
+        since: String?,
+        comment: String?,
+        block: Ld_MemberDsl.() -> Unit,
+    ) {
+        val hdr = Ld_MemberHeader.make(since, comment)
+        maker.function(name, fn, hdr, block)
     }
 }
 
@@ -453,7 +553,7 @@ class Ld_TypeParamBound(private val type: Ld_Type, private val subOf: Boolean) {
 private class Ld_TypeDefBuilder(
     private val simpleName: R_Name,
     private val flags: L_TypeDefFlags,
-): Ld_TypeDefMaker {
+): Ld_MemberHeaderBuilder(), Ld_TypeDefMaker {
     private val typeParams = mutableMapOf<R_Name, Ld_TypeParam>()
     private var selfType: String? = null
     private var parentType: Ld_TypeDefParent? = null
@@ -465,17 +565,30 @@ private class Ld_TypeDefBuilder(
     private val valueConflictChecker = Ld_MemberConflictChecker(immMapOf())
     private val members = mutableListOf<Ld_TypeDefMember>()
 
-    override fun generic(name: String, subOf: String?, superOf: String?) {
+    override fun generic(
+        name: String,
+        subOf: String?,
+        superOf: String?,
+        hdr: Ld_MemberHeader,
+        block: Ld_MemberDsl.() -> Unit,
+    ) {
         check(selfType == null) { "Trying to add a type parameter after self type was requested" }
         check(parentType == null) { "Trying to add a type parameter after a parent type" }
         check(rTypeFactory == null) { "Trying to add a type parameter after R_Type" }
         check(members.isEmpty()) { "Trying to add a type parameter after a member" }
 
         val (name0, variance) = parseTypeParamName(name)
-        val typeParam = Ld_TypeParam.make(name0, subOf = subOf, superOf = superOf, variance = variance)
+        val typeParam = Ld_TypeParam.make(
+            name0,
+            subOf = subOf,
+            superOf = superOf,
+            variance = variance,
+            hdr = hdr,
+            block = block,
+        )
 
         Ld_Exception.check(typeParam.name !in typeParams) {
-            "type:type_param_conflict:$name" to "Name conflict: $name"
+            "type:type_param_conflict:$name0" to "Name conflict: $name0"
         }
 
         typeParams[typeParam.name] = typeParam
@@ -529,29 +642,74 @@ private class Ld_TypeDefBuilder(
         }
     }
 
-    override fun constant(name: String, type: String, value: Ld_ConstantValue) {
+    override fun constant(
+        name: String,
+        type: String,
+        value: Ld_ConstantValue,
+        hdr: Ld_MemberHeader,
+        block: Ld_MemberDsl.() -> Unit,
+    ) {
+        val rName = R_Name.of(name)
+        staticConflictChecker.addMember(rName, Ld_ConflictMemberKind.OTHER)
+
+        val memberHeader = Ld_MemberHeader.make(hdr, block)
+        val ldType = Ld_Type.parse(type)
+        val constant = Ld_Constant(memberHeader, ldType, value)
+        members.add(Ld_TypeDefMember_Constant(rName, constant))
+    }
+
+    override fun constant(
+        name: String,
+        type: String,
+        hdr: Ld_MemberHeader,
+        block: Ld_ConstantDsl.() -> Ld_BodyResult,
+    ) {
         val rName = R_Name.of(name)
         staticConflictChecker.addMember(rName, Ld_ConflictMemberKind.OTHER)
 
         val ldType = Ld_Type.parse(type)
-        val constant = Ld_Constant(ldType, value)
+        val dsl = Ld_ConstantDslImpl(hdr, ldType)
+        val constant = dsl.build(block)
         members.add(Ld_TypeDefMember_Constant(rName, constant))
     }
 
-    override fun property(name: String, type: String, body: C_SysFunctionBody) {
+    override fun property(
+        name: String,
+        type: String,
+        pure: Boolean,
+        hdr: Ld_MemberHeader,
+        block: Ld_TypePropertyDsl.() -> Ld_BodyResult
+    ) {
         val rName = R_Name.of(name)
         valueConflictChecker.addMember(rName, Ld_ConflictMemberKind.OTHER)
 
         val ldType = Ld_Type.parse(type)
-        val property = Ld_TypeProperty(rName, ldType, body)
+        val builder = Ld_TypePropertyDslImpl(hdr, rName, ldType, pure)
+        val property = builder.build(block)
         members.add(Ld_TypeDefMember_Property(property))
     }
 
-    override fun constructor(pure: Boolean?, block: Ld_ConstructorDsl.() -> Ld_FunctionBodyRef) {
+    override fun property(
+        name: String,
+        type: String,
+        body: C_SysFunctionBody,
+        hdr: Ld_MemberHeader,
+        block: Ld_MemberDsl.() -> Unit,
+    ) {
+        val rName = R_Name.of(name)
+        valueConflictChecker.addMember(rName, Ld_ConflictMemberKind.OTHER)
+
+        val memberHeader = Ld_MemberHeader.make(hdr, block)
+        val ldType = Ld_Type.parse(type)
+        val property = Ld_TypeProperty(rName, memberHeader, ldType, body)
+        members.add(Ld_TypeDefMember_Property(property))
+    }
+
+    override fun constructor(pure: Boolean?, hdr: Ld_MemberHeader, block: Ld_ConstructorDsl.() -> Ld_BodyResult) {
         checkCanHaveConstructor()
 
         val bodyBuilder = Ld_FunctionBodyBuilder(simpleName, pure = pure)
-        val conBuilder = Ld_ConstructorBuilder(outerTypeParams = typeParams.keys.toImmSet(), bodyBuilder)
+        val conBuilder = Ld_ConstructorBuilder(hdr, outerTypeParams = typeParams.keys.toImmSet(), bodyBuilder)
         val bodyDslBuilder = Ld_FunctionBodyDslImpl(bodyBuilder)
         val dsl = Ld_ConstructorDslImpl(conBuilder, bodyDslBuilder)
 
@@ -561,9 +719,10 @@ private class Ld_TypeDefBuilder(
         members.add(Ld_TypeDefMember_Constructor(constructor))
     }
 
-    override fun constructor(fn: C_SpecialLibGlobalFunctionBody) {
+    override fun constructor(fn: C_SpecialLibGlobalFunctionBody, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit) {
         checkCanHaveConstructor()
-        members.add(Ld_TypeDefMember_SpecialConstructor(fn))
+        val memberHeader = Ld_MemberHeader.make(hdr, block)
+        members.add(Ld_TypeDefMember_SpecialConstructor(memberHeader, fn))
     }
 
     private fun checkCanHaveConstructor() {
@@ -577,11 +736,13 @@ private class Ld_TypeDefBuilder(
         name: String,
         result: String?,
         pure: Boolean?,
-        block: Ld_FunctionDsl.() -> Ld_FunctionBodyRef,
+        hdr: Ld_MemberHeader,
+        block: Ld_FunctionDsl.() -> Ld_BodyResult,
     ) {
         val rName = R_Name.of(name)
 
         val fn = Ld_FunctionBuilder.build(
+            hdr,
             simpleName = rName,
             result = result,
             pure = pure,
@@ -599,21 +760,34 @@ private class Ld_TypeDefBuilder(
         members.add(Ld_TypeDefMember_Function(rName, fn, isStatic = isStatic))
     }
 
-    override fun function(name: String, fn: C_SpecialLibGlobalFunctionBody) {
+    override fun function(
+        name: String,
+        fn: C_SpecialLibGlobalFunctionBody,
+        hdr: Ld_MemberHeader,
+        block: Ld_MemberDsl.() -> Unit,
+    ) {
         val rName = R_Name.of(name)
         staticConflictChecker.addMember(rName, Ld_ConflictMemberKind.OTHER)
-        members.add(Ld_TypeDefMember_StaticSpecialFunction(rName, fn))
+        val header = Ld_MemberHeader.make(hdr, block)
+        members.add(Ld_TypeDefMember_StaticSpecialFunction(header, rName, fn))
     }
 
-    override fun function(name: String, fn: C_SpecialLibMemberFunctionBody) {
+    override fun function(
+        name: String,
+        fn: C_SpecialLibMemberFunctionBody,
+        hdr: Ld_MemberHeader,
+        block: Ld_MemberDsl.() -> Unit,
+    ) {
         val rName = R_Name.of(name)
         valueConflictChecker.addMember(rName, Ld_ConflictMemberKind.OTHER)
-        members.add(Ld_TypeDefMember_ValueSpecialFunction(rName, fn))
+        val header = Ld_MemberHeader.make(hdr, block)
+        members.add(Ld_TypeDefMember_ValueSpecialFunction(header, rName, fn))
     }
 
     fun build(): Ld_TypeDef {
         return Ld_TypeDef(
             simpleName,
+            memberHeader = buildMemberHeader(),
             flags = flags,
             typeParams = typeParams.values.toImmList(),
             parent = parentType,

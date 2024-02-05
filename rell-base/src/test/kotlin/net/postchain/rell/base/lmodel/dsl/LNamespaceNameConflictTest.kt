@@ -4,8 +4,6 @@
 
 package net.postchain.rell.base.lmodel.dsl
 
-import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty
-import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty_RtValue
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_UnitValue
@@ -23,10 +21,10 @@ class LNamespaceNameConflictTest: BaseLTest() {
         chkNameConflictErr(defs, block, "ns") { type("ns") }
         chkNameConflictErr(defs, block, "ns") { struct("ns") {} }
         chkNameConflictErr(defs, block, "ns") { constant("ns", "anything", Rt_UnitValue) }
-        chkNameConflictErr(defs, block, "ns") { property("ns", "anything") { bodyContext { Rt_UnitValue } } }
-        chkNameConflictErr(defs, block, "ns") { property("ns", makeSpecProp()) }
+        chkNameConflictErr(defs, block, "ns") { property("ns", "anything") { value { Rt_UnitValue } } }
+        chkNameConflictErr(defs, block, "ns") { property("ns", makeNsProp()) }
         chkNameConflictErr(defs, block, "ns") { function("ns", "anything") { body { -> Rt_UnitValue } } }
-        chkNameConflictErr(defs, block, "ns") { function("ns", makeGlobalFun()) }
+        chkNameConflictErr(defs, block, "ns") { function("ns", makeNsFun()) }
     }
 
     @Test fun testFunction() {
@@ -37,33 +35,33 @@ class LNamespaceNameConflictTest: BaseLTest() {
         chkNameConflictErr(defs, block, "f") { type("f") }
         chkNameConflictErr(defs, block, "f") { struct("f") {} }
         chkNameConflictErr(defs, block, "f") { constant("f", "anything", Rt_UnitValue) }
-        chkNameConflictErr(defs, block, "f") { property("f", "anything") { bodyContext { Rt_UnitValue } } }
-        chkNameConflictErr(defs, block, "f") { property("f", makeSpecProp()) }
+        chkNameConflictErr(defs, block, "f") { property("f", "anything") { value { Rt_UnitValue } } }
+        chkNameConflictErr(defs, block, "f") { property("f", makeNsProp()) }
         chkNameConflictOK(defs, block, "function f(a: anything): anything") {
             function("f", "anything") { param("a", "anything"); body { -> Rt_UnitValue } }
         }
-        chkNameConflictErr(defs, block, "f") { function("f", makeGlobalFun()) }
+        chkNameConflictErr(defs, block, "f") { function("f", makeNsFun()) }
     }
 
     @Test fun testOther() {
         chkNameConflictCommon("data", "type data") { type("data") }
         chkNameConflictCommon("data", "struct data") { struct("data") {} }
         chkNameConflictCommon("c", "constant c: anything = unit") { constant("c", "anything", Rt_UnitValue) }
-        chkNameConflictCommon("p", "property p: anything") { property("p", "anything") { bodyContext { Rt_UnitValue } } }
-        chkNameConflictCommon("p", "property p") { property("p", makeSpecProp()) }
-        chkNameConflictCommon("f", "special function f()") { function("f", makeGlobalFun()) }
+        chkNameConflictCommon("p", "property p: anything") { property("p", "anything") { value { Rt_UnitValue } } }
+        chkNameConflictCommon("p", "property p") { property("p", makeNsProp()) }
+        chkNameConflictCommon("f", "special function f()") { function("f", makeNsFun()) }
     }
 
-    private fun chkNameConflictCommon(name: String, def: String, block: Ld_NamespaceDsl.() -> Unit) {
+    private fun chkNameConflictCommon(name: String, def: String, block: Ld_NamespaceBodyDsl.() -> Unit) {
         val defs = arrayOf(def)
         chkNameConflictErr(defs, block, name) { namespace(name) {} }
         chkNameConflictErr(defs, block, name) { type(name) }
         chkNameConflictErr(defs, block, name) { struct(name) {} }
         chkNameConflictErr(defs, block, name) { constant(name, "anything", Rt_UnitValue) }
-        chkNameConflictErr(defs, block, name) { property(name, "anything") { bodyContext { Rt_UnitValue } } }
-        chkNameConflictErr(defs, block, name) { property(name, makeSpecProp()) }
+        chkNameConflictErr(defs, block, name) { property(name, "anything") { value { Rt_UnitValue } } }
+        chkNameConflictErr(defs, block, name) { property(name, makeNsProp()) }
         chkNameConflictErr(defs, block, name) { function(name, "anything") { body { -> Rt_UnitValue } } }
-        chkNameConflictErr(defs, block, name) { function(name, makeGlobalFun()) }
+        chkNameConflictErr(defs, block, name) { function(name, makeNsFun()) }
     }
 
     @Test fun testAlias() {
@@ -77,9 +75,9 @@ class LNamespaceNameConflictTest: BaseLTest() {
         chkNameConflictErr(defs, block, "l") { type("l") }
         chkNameConflictErr(defs, block, "l") { struct("l") {} }
         chkNameConflictErr(defs, block, "l") { constant("l", "anything", Rt_UnitValue) }
-        chkNameConflictErr(defs, block, "l") { property("l", "anything") { bodyContext { Rt_UnitValue } } }
-        chkNameConflictErr(defs, block, "l") { property("l", makeSpecProp()) }
-        chkNameConflictErr(defs, block, "l") { function("l", makeGlobalFun()) }
+        chkNameConflictErr(defs, block, "l") { property("l", "anything") { value { Rt_UnitValue } } }
+        chkNameConflictErr(defs, block, "l") { property("l", makeNsProp()) }
+        chkNameConflictErr(defs, block, "l") { function("l", makeNsFun()) }
 
         chkNameConflictErr(defs, block, "l") {
             function("l", "anything") { param("a", "anything"); body { -> Rt_UnitValue } }
@@ -128,16 +126,16 @@ class LNamespaceNameConflictTest: BaseLTest() {
         chkNameConflictErr(defs, block, alias) { function("x", "anything") { alias(alias); body { -> Rt_UnitValue } } }
     }
 
-    private fun initAlias(): Pair<Array<String>, Ld_NamespaceDsl.() -> Unit> {
+    private fun initAlias(): Pair<Array<String>, Ld_NamespaceBodyDsl.() -> Unit> {
         val block = makeBlock {
             namespace("ns") {}
             type("t")
             struct("s") {}
             constant("c", "integer", Rt_IntValue.ZERO)
-            property("p1", "anything") { bodyContext { Rt_UnitValue } }
-            property("p2", makeSpecProp())
+            property("p1", "anything") { value { Rt_UnitValue } }
+            property("p2", makeNsProp())
             function("f1", "anything") { body { -> Rt_UnitValue } }
-            function("f2", makeGlobalFun())
+            function("f2", makeNsFun())
         }
 
         val defs = arrayOf(
@@ -156,9 +154,9 @@ class LNamespaceNameConflictTest: BaseLTest() {
 
     private fun chkNameConflictOK(
         defs: Array<String>,
-        block1: Ld_NamespaceDsl.() -> Unit,
+        block1: Ld_NamespaceBodyDsl.() -> Unit,
         vararg moreDefs: String,
-        block2: Ld_NamespaceDsl.() -> Unit,
+        block2: Ld_NamespaceBodyDsl.() -> Unit,
     ) {
         val mod = makeModule("test") {
             imports(Lib_Rell.MODULE.lModule)
@@ -170,9 +168,9 @@ class LNamespaceNameConflictTest: BaseLTest() {
 
     private fun chkNameConflictErr(
         defs: Array<String>,
-        block1: Ld_NamespaceDsl.() -> Unit,
+        block1: Ld_NamespaceBodyDsl.() -> Unit,
         name: String,
-        block2: Ld_NamespaceDsl.() -> Unit,
+        block2: Ld_NamespaceBodyDsl.() -> Unit,
     ) {
         val mod = makeModule("test") {
             imports(Lib_Rell.MODULE.lModule)
@@ -182,9 +180,5 @@ class LNamespaceNameConflictTest: BaseLTest() {
         chkDefs(mod, *defs)
     }
 
-    private fun makeBlock(block: Ld_NamespaceDsl.() -> Unit): Ld_NamespaceDsl.() -> Unit = block
-
-    private fun makeSpecProp(): C_NamespaceProperty {
-        return C_NamespaceProperty_RtValue(Rt_IntValue.get(123))
-    }
+    private fun makeBlock(block: Ld_NamespaceBodyDsl.() -> Unit): Ld_NamespaceBodyDsl.() -> Unit = block
 }

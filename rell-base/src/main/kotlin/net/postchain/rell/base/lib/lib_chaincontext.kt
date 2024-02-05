@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib
@@ -21,13 +21,13 @@ object Lib_ChainContext {
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("chain_context") {
             property("raw_config", type = "gtv", pure = false) {
-                bodyContext { ctx ->
+                value { ctx ->
                     Rt_GtvValue.get(ctx.chainCtx.rawConfig)
                 }
             }
 
             property("blockchain_rid", type = "byte_array", pure = false) {
-                bodyContext { ctx ->
+                value { ctx ->
                     val bcRid = ctx.chainCtx.blockchainRid
                     Rt_ByteArrayValue.get(bcRid.toByteArray())
                 }

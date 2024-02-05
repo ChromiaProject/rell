@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model
@@ -209,7 +209,7 @@ class R_IdeName(val rName: R_Name, val ideInfo: C_IdeSymbolInfo) {
 
 class R_LangVersion(private val ver: VersionNumber): Comparable<R_LangVersion> {
     init {
-        require(ver.items.size == 3) { "wrong version: $ver" }
+        require(ver.items.size == 3) { "invalid version: $ver" }
     }
 
     fun str(): String = ver.str()

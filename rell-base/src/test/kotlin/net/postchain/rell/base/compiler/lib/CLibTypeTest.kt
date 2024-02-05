@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.lib
@@ -10,6 +10,7 @@ import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lib.Lib_Rell
+import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_TextValue
 import net.postchain.rell.base.testutils.LibModuleTester
 import net.postchain.rell.base.utils.LazyPosString
@@ -17,6 +18,17 @@ import org.junit.Test
 
 class CLibTypeTest: BaseCLibTest() {
     private val modTst = LibModuleTester(tst)
+
+    @Test fun testConstant() {
+        modTst.extraModule {
+            imports(Lib_Rell.MODULE.lModule)
+            type("data") {
+                modTst.setRTypeFactory(this)
+                constant("MAGIC", "integer") { value { Rt_IntValue.get(12345) } }
+            }
+        }
+        chk("data.MAGIC", "int[12345]")
+    }
 
     @Test fun testNoConstructor() {
         modTst.extraModule {
