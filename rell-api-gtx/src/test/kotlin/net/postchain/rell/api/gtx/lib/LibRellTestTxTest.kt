@@ -48,7 +48,7 @@ class LibRellTestTxTest: BaseRellTest(false) {
         repl.chk("val b = rell.test.block().tx(foo(123));")
         repl.chk("b.run();", "OUT:123", "null")
         repl.chk("b.run_must_fail().message != '';", "true")
-        repl.chk("b.run_must_fail('Failed to save tx to database').message != '';", "true")
+        repl.chk("b.run_must_fail('Transaction already in database').message != '';", "true")
     }
 
     @Test fun testBlockTx() {
@@ -244,7 +244,7 @@ class LibRellTestTxTest: BaseRellTest(false) {
         repl.chk("val tx = rell.test.tx().op(foo(123));")
         repl.chk("tx.run();", "OUT:123", "null")
         repl.chk("tx.run_must_fail().message != '';", "true")
-        repl.chk("tx.run_must_fail('Failed to save tx to database').message != '';", "true")
+        repl.chk("tx.run_must_fail('Transaction already in database').message != '';", "true")
     }
 
     @Test fun testOpConstructor() {
@@ -290,7 +290,7 @@ class LibRellTestTxTest: BaseRellTest(false) {
         repl.chk("val op = foo(123);")
         repl.chk("op.run();", "OUT:123", "null")
         repl.chk("op.run_must_fail().message != '';", "true")
-        repl.chk("op.run_must_fail('Failed to save tx to database').message != '';", "true")
+        repl.chk("op.run_must_fail('Transaction already in database').message != '';", "true")
     }
 
     @Test fun testOpTypeCompatibility() {
@@ -486,9 +486,19 @@ class LibRellTestTxTest: BaseRellTest(false) {
         file("module.rell", "operation foo(x: integer) { print(x); }")
         initTxChain()
         repl.chk("foo(123).run();", "OUT:123", "null")
-        repl.chk("foo(123).run();", "rt_err:fn:rell.test.op.run:fail:${UserMistake::class.qualifiedName}")
+        repl.chk("foo(123).run();", "rt_err:block_runner:tx_duplicate")
         repl.chk("foo(456).run();", "OUT:456", "null")
         repl.chk("block @* {} ( .block_height )", "[0, 1]")
+    }
+
+    @Test fun testDuplicateTxInSingleBlock() {
+        file("module.rell", "operation foo(x: integer) { print(x); }")
+        initTxChain()
+        repl.chk(
+            "rell.test.block(rell.test.tx(foo(123)), rell.test.tx(foo(123))).run();",
+            "OUT:123",
+            "rt_err:block_runner:tx_duplicate"
+        )
     }
 
     private fun initSignAndRun() {

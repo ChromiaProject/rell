@@ -7,8 +7,11 @@ package net.postchain.rell.api.gtx
 import net.postchain.base.BaseBlockchainContext
 import net.postchain.base.BaseEContext
 import net.postchain.base.configuration.BlockchainConfigurationData
+import net.postchain.base.data.DatabaseAccess
 import net.postchain.common.BlockchainRid
+import net.postchain.common.data.Hash
 import net.postchain.common.hexStringToByteArray
+import net.postchain.common.toHex
 import net.postchain.core.*
 import net.postchain.crypto.KeyPair
 import net.postchain.crypto.PrivKey
@@ -113,7 +116,7 @@ class Rt_PostchainUnitTestBlockRunner(
         blockBuilder.begin(null)
 
         for (tx in block.txs()) {
-            val txBytes = prepareTxBytes(bcConfig, tx)
+            val txBytes = prepareTxBytes(bcConfig, eCtx, tx)
             val psTx = txFactory.decodeTransaction(txBytes)
             blockBuilder.appendTransaction(psTx)
         }
@@ -125,7 +128,7 @@ class Rt_PostchainUnitTestBlockRunner(
         blockBuilder.commit(bw)
     }
 
-    private fun prepareTxBytes(bcConfig: BlockchainConfiguration, tx: RawTestTxValue): ByteArray {
+    private fun prepareTxBytes(bcConfig: BlockchainConfiguration, eCtx: EContext, tx: RawTestTxValue): ByteArray {
         val signers = tx.signers.map { it.pub.toByteArray() }
         val dataBuilder = GtxBuilder(bcConfig.blockchainRid, signers, PostchainGtvUtils.cryptoSystem)
 
@@ -133,6 +136,7 @@ class Rt_PostchainUnitTestBlockRunner(
             dataBuilder.addOperation(op.name.str(), *op.args.toTypedArray())
         }
         val sigBuilder = dataBuilder.finish()
+        checkDuplicateTransaction(eCtx, sigBuilder.txRid)
 
         for (keyPair in tx.signers) {
             val pubKey = keyPair.pub.toByteArray()
@@ -142,6 +146,15 @@ class Rt_PostchainUnitTestBlockRunner(
         }
 
         return sigBuilder.buildGtx().encode()
+    }
+
+    private fun checkDuplicateTransaction(eCtx: EContext, txRid: Hash) {
+        if (DatabaseAccess.of(eCtx).isTransactionConfirmed(eCtx, txRid)) {
+            throw Rt_Exception.common(
+                "block_runner:tx_duplicate",
+                "Transaction already in database. txRid: ${txRid.toHex()}"
+            )
+        }
     }
 
     private fun getBlockchainContext(ctx: Rt_CallContext): BlockchainContext {

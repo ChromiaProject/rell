@@ -32,7 +32,7 @@ class LibRellTestBlockClockTest: BaseRellTest(false) {
         repl.chk("op(1).run();", "RES:unit")
         chkLastBlockTime(1577836810000)
 
-        repl.chk("op(0).run();", "rt_err:fn:rell.test.op.run:fail:net.postchain.common.exception.UserMistake")
+        repl.chk("op(0).run();", "rt_err:block_runner:tx_duplicate")
         chkLastBlockTime(1577836810000)
 
         repl.chk("op(2).run();", "RES:unit")
