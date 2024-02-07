@@ -5,6 +5,9 @@
 package net.postchain.rell.base.testutils
 
 import net.postchain.gtv.Gtv
+import net.postchain.rell.base.lib.type.Rt_BooleanValue
+import net.postchain.rell.base.lib.type.Rt_IntValue
+import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.runtime.*
 
 abstract class BaseRellTest(useSql: Boolean = true, gtv: Boolean = false): BaseTesterTest(useSql) {

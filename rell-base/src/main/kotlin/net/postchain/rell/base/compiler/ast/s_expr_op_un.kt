@@ -8,10 +8,14 @@ import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.*
+import net.postchain.rell.base.lib.type.R_BigIntegerType
+import net.postchain.rell.base.lib.type.R_BooleanType
+import net.postchain.rell.base.lib.type.R_DecimalType
+import net.postchain.rell.base.lib.type.R_IntegerType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
-import net.postchain.rell.base.runtime.Rt_BigIntegerValue
-import net.postchain.rell.base.runtime.Rt_DecimalValue
+import net.postchain.rell.base.lib.type.Rt_BigIntegerValue
+import net.postchain.rell.base.lib.type.Rt_DecimalValue
 
 sealed class S_UnaryOp(val code: String) {
     abstract fun compile(ctx: C_ExprContext, startPos: S_Pos, opPos: S_Pos, expr: V_Expr): V_Expr

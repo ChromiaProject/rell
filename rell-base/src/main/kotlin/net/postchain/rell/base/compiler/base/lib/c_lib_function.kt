@@ -15,6 +15,8 @@ import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.fn.*
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.vexpr.*
+import net.postchain.rell.base.lib.type.R_BooleanType
+import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_MemberCalculator
 import net.postchain.rell.base.utils.LazyPosString

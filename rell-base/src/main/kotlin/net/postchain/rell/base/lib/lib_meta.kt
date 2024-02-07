@@ -12,7 +12,8 @@ import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
 import net.postchain.rell.base.compiler.vexpr.V_ConstantValueExpr
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_BooleanType
+import net.postchain.rell.base.lib.type.R_BooleanType
+import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.model.R_DefinitionMeta
 import net.postchain.rell.base.model.R_LibSimpleType
 import net.postchain.rell.base.model.R_Type

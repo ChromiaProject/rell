@@ -10,7 +10,7 @@ import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_StructType
 import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.runtime.Rt_ByteArrayValue
+import net.postchain.rell.base.lib.type.Rt_ByteArrayValue
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_StructValue
 import net.postchain.rell.base.runtime.Rt_Value

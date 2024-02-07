@@ -5,6 +5,10 @@
 package net.postchain.rell.base.model.expr
 
 import com.google.common.math.LongMath
+import net.postchain.rell.base.lib.type.Rt_BigIntegerValue
+import net.postchain.rell.base.lib.type.Rt_BooleanValue
+import net.postchain.rell.base.lib.type.Rt_DecimalValue
+import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.*
 

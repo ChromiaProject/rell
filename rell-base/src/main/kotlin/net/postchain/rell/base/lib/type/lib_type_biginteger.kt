@@ -5,21 +5,31 @@
 package net.postchain.rell.base.lib.type
 
 import com.google.common.math.LongMath
+import mu.KLogging
+import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvFactory
+import net.postchain.rell.base.compiler.base.core.C_TypeAdapter
+import net.postchain.rell.base.compiler.base.core.C_TypeAdapter_IntegerToBigInteger
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.Lib_Math
+import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_BigIntegerType
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.Db_SysFunction
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.utils.checkEquals
 import org.jooq.DataType
 import org.jooq.impl.SQLDataType
+import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.MathContext
 import java.math.RoundingMode
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 import java.util.*
 
 object Lib_Type_BigInteger {
@@ -357,6 +367,108 @@ object Lib_BigIntegerMath {
                 "$head.$tail(...)E+$exp"
             }
             return if (value.signum() >= 0) s0 else "-$s0"
+        }
+    }
+}
+
+object R_BigIntegerType: R_PrimitiveType("big_integer") {
+    override fun defaultValue() = Rt_BigIntegerValue.ZERO
+    override fun comparator() = Rt_Comparator.create { it.asBigInteger() }
+    override fun fromCli(s: String): Rt_Value = Rt_BigIntegerValue.get(s)
+
+    override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_BigInteger
+    override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_BigInteger
+
+    override fun getTypeAdapter(sourceType: R_Type): C_TypeAdapter? {
+        return when (sourceType) {
+            R_IntegerType -> C_TypeAdapter_IntegerToBigInteger
+            else -> super.getTypeAdapter(sourceType)
+        }
+    }
+
+    override fun getLibTypeDef() = Lib_Rell.BIG_INTEGER_TYPE
+
+    private object R_TypeSqlAdapter_BigInteger: R_TypeSqlAdapter_Primitive("big_integer", Lib_BigIntegerMath.SQL_TYPE) {
+        override fun toSqlValue(value: Rt_Value) = value.asBigInteger()
+
+        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) {
+            val v = value.asBigInteger()
+            stmt.setBigDecimal(idx, BigDecimal(v))
+        }
+
+        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
+            val v = rs.getBigDecimal(idx)
+            return checkSqlNull(v, R_BigIntegerType, nullable) ?: Rt_BigIntegerValue.get(v)
+        }
+    }
+}
+
+class Rt_BigIntegerValue private constructor(val value: BigInteger): Rt_Value() {
+    override val valueType = Rt_CoreValueTypes.BIG_INTEGER.type()
+
+    override fun type() = R_BigIntegerType
+    override fun asBigInteger() = value
+    override fun toFormatArg() = value
+    override fun strCode(showTupleFieldNames: Boolean) = "bigint[${str()}]"
+    override fun str() = value.toString()
+    override fun equals(other: Any?) = other === this || (other is Rt_BigIntegerValue && value == other.value)
+    override fun hashCode() = value.hashCode()
+
+    companion object : KLogging() {
+        val ZERO = Rt_BigIntegerValue(BigInteger.ZERO)
+
+        fun get(v: BigInteger): Rt_Value {
+            if (v.signum() == 0) {
+                return ZERO
+            }
+
+            val res = getTry(v)
+            if (res != null) {
+                return res
+            }
+
+            val p = Lib_BigIntegerMath.PRECISION
+            val msg = "Big integer value out of range (allowed range is -10^$p..10^$p, exclusive)"
+            throw Rt_Exception.common("bigint:overflow", msg)
+        }
+
+        fun getTry(v: BigInteger): Rt_Value? {
+            return if (v < Lib_BigIntegerMath.MIN_VALUE || v > Lib_BigIntegerMath.MAX_VALUE) null else Rt_BigIntegerValue(v)
+        }
+
+        fun get(v: BigDecimal): Rt_Value {
+            val bigInt = try {
+                v.toBigIntegerExact()
+            } catch (e: ArithmeticException) {
+                throw Rt_Exception.common("bigint:nonint:$v", "Value is not an integer: '$v'")
+            }
+            return get(bigInt)
+        }
+
+        fun get(s: String): Rt_Value {
+            val v = try {
+                BigInteger(s)
+            } catch (e: NumberFormatException) {
+                throw Rt_Exception.common("bigint:invalid:$s", "Invalid big integer value: '$s'")
+            }
+            return get(v)
+        }
+
+        fun get(v: Long): Rt_Value {
+            val bi = BigInteger.valueOf(v)
+            return get(bi)
+        }
+    }
+}
+
+private object GtvRtConversion_BigInteger: GtvRtConversion() {
+    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvFactory.gtv(rt.asBigInteger())
+
+    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
+        val v = GtvRtUtils.gtvToBigInteger(ctx, gtv, R_BigIntegerType)
+        return ctx.rtValue {
+            Rt_BigIntegerValue.get(v)
         }
     }
 }

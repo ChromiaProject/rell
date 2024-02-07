@@ -5,7 +5,7 @@
 package net.postchain.rell.base.model.expr
 
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
-import net.postchain.rell.base.model.R_BooleanType
+import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.model.R_FrameBlock
 import net.postchain.rell.base.model.R_Struct
 import net.postchain.rell.base.model.R_Type

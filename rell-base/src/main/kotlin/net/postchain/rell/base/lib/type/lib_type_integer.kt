@@ -4,15 +4,26 @@
 
 package net.postchain.rell.base.lib.type
 
+import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvInteger
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.Lib_Math
+import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_IntegerType
+import net.postchain.rell.base.model.R_GtvCompatibility
+import net.postchain.rell.base.model.R_PrimitiveType
+import net.postchain.rell.base.model.R_TypeSqlAdapter
+import net.postchain.rell.base.model.R_TypeSqlAdapter_Primitive
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.sql.SqlConstants
+import net.postchain.rell.base.utils.toImmList
+import org.jooq.impl.SQLDataType
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 
 object Lib_Type_Integer {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -192,5 +203,70 @@ object Lib_Type_Integer {
         }
 
         return Rt_IntValue.get(r)
+    }
+}
+
+object R_IntegerType: R_PrimitiveType("integer") {
+    override fun defaultValue() = Rt_IntValue.ZERO
+
+    override fun comparator() = Rt_Comparator.create { it.asInteger() }
+    override fun fromCli(s: String): Rt_Value = Rt_IntValue.get(s.toLong())
+
+    override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Integer
+    override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_Integer
+
+    override fun getLibTypeDef() = Lib_Rell.INTEGER_TYPE
+
+    private object R_TypeSqlAdapter_Integer: R_TypeSqlAdapter_Primitive("integer", SQLDataType.BIGINT) {
+        override fun toSqlValue(value: Rt_Value) = value.asInteger()
+
+        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) {
+            stmt.setLong(idx, value.asInteger())
+        }
+
+        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
+            val v = rs.getLong(idx)
+            return checkSqlNull(v == 0L, rs, R_IntegerType, nullable) ?: Rt_IntValue.get(v)
+        }
+    }
+}
+
+class Rt_IntValue private constructor(val value: Long): Rt_Value() {
+    override val valueType = Rt_CoreValueTypes.INTEGER.type()
+
+    override fun type() = R_IntegerType
+    override fun asInteger() = value
+    override fun toFormatArg() = value
+    override fun strCode(showTupleFieldNames: Boolean) = "int[$value]"
+    override fun str() = "" + value
+    override fun equals(other: Any?) = other is Rt_IntValue && value == other.value
+    override fun hashCode() = java.lang.Long.hashCode(value)
+
+    companion object {
+        private const val NVALUES = 1000
+
+        private val VALUES: List<Rt_Value> = (-NVALUES .. NVALUES).map { Rt_IntValue(it.toLong()) }.toImmList()
+
+        val ZERO: Rt_Value = get(0)
+
+        fun get(v: Long): Rt_Value {
+            return if (v >= -NVALUES && v <= NVALUES) {
+                VALUES[(v + NVALUES).toInt()]
+            } else {
+                Rt_IntValue(v)
+            }
+        }
+    }
+}
+
+private object GtvRtConversion_Integer: GtvRtConversion() {
+    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvInteger(rt.asInteger())
+
+    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
+        val v = GtvRtUtils.gtvToInteger(ctx, gtv, R_IntegerType)
+        return ctx.rtValue {
+            Rt_IntValue.get(v)
+        }
     }
 }

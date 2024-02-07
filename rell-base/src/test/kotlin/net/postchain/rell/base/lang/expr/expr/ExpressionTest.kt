@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.lang.expr.expr
 
-import net.postchain.rell.base.runtime.Rt_BooleanValue
+import net.postchain.rell.base.lib.type.Rt_BooleanValue
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 import java.math.BigInteger

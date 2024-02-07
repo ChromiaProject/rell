@@ -4,11 +4,21 @@
 
 package net.postchain.rell.base.lib.type
 
+import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_SignerType
+import net.postchain.rell.base.model.R_PrimitiveType
+import net.postchain.rell.base.runtime.GtvRtConversion
+import net.postchain.rell.base.runtime.GtvRtConversion_None
 
 object Lib_Type_Signer {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("signer", rType = R_SignerType)
     }
+}
+
+object R_SignerType: R_PrimitiveType("signer") {
+    //TODO support Gtv
+    override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_None
+    override fun getLibTypeDef() = Lib_Rell.SIGNER_TYPE
+    //TODO sqlType = GTX_SIGNER_SQL_DATA_TYPE
 }

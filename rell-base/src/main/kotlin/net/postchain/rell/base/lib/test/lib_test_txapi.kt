@@ -13,8 +13,7 @@ import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.compiler.base.utils.C_StringQualifiedName
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.Lib_Rell
-import net.postchain.rell.base.lib.type.Lib_Type_Gtv
-import net.postchain.rell.base.lib.type.Lib_Type_Struct
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_TypeDefDsl

@@ -19,8 +19,8 @@ import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.R_MemberCalculator
 import net.postchain.rell.base.model.expr.R_MemberCalculator_Error
-import net.postchain.rell.base.runtime.Rt_IntValue
-import net.postchain.rell.base.runtime.Rt_UnitValue
+import net.postchain.rell.base.lib.type.Rt_IntValue
+import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.doc.DocException
 import net.postchain.rell.base.utils.doc.DocSymbol

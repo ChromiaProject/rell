@@ -5,12 +5,16 @@
 package net.postchain.rell.base.lib.type
 
 import com.google.common.math.LongMath
+import net.postchain.gtv.Gtv
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
+import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_ListType
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.R_VirtualListType
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.utils.Rt_ListComparator
 import net.postchain.rell.base.utils.immListOf
+import java.util.Comparator
 
 object Lib_Type_List {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -244,5 +248,64 @@ private class R_CollectionKind_List(type: R_Type): R_CollectionKind(type) {
         val list = mutableListOf<Rt_Value>()
         list.addAll(col)
         return Rt_ListValue(type, list)
+    }
+}
+
+class R_ListType(elementType: R_Type): R_CollectionType(elementType, "list") {
+    val virtualType = R_VirtualListType(this)
+
+    override fun equals0(other: R_Type): Boolean = other is R_ListType && elementType == other.elementType
+    override fun hashCode0() = elementType.hashCode()
+
+    override fun fromCli(s: String): Rt_Value = Rt_ListValue(this, s.split(",").map { elementType.fromCli(it) }.toMutableList())
+    override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_List(this)
+    override fun getLibTypeDef() = Lib_Rell.LIST_TYPE
+
+    override fun comparator(): Comparator<Rt_Value>? {
+        val elemComparator = elementType.comparator()
+        return if (elemComparator == null) null else Rt_ListComparator(elemComparator)
+    }
+}
+
+class Rt_ListValue(private val type: R_Type, private val elements: MutableList<Rt_Value>): Rt_Value() {
+    init {
+        check(type is R_ListType) { "wrong type: $type" }
+    }
+
+    override val valueType = Rt_CoreValueTypes.LIST.type()
+
+    override fun type() = type
+    override fun asIterable(): Iterable<Rt_Value> = elements
+    override fun asCollection() = elements
+    override fun asList() = elements
+    override fun toFormatArg() = elements
+
+    override fun strCode(showTupleFieldNames: Boolean) = strCode(type, elements)
+    override fun str() = elements.joinToString(", ", "[", "]") { it.str() }
+    override fun equals(other: Any?) = other === this || (other is Rt_ListValue && elements == other.elements)
+    override fun hashCode() = elements.hashCode()
+
+    companion object {
+        fun checkIndex(size: Int, index: Long) {
+            if (index < 0 || index >= size) {
+                throw Rt_Exception.common("list:index:$size:$index", "List index out of bounds: $index (size $size)")
+            }
+        }
+
+        fun strCode(type: R_Type, elements: List<out Rt_Value?>): String {
+            val elems = elements.joinToString(",") { it?.strCode(false) ?: "null" }
+            return "${type.strCode()}[$elems]"
+        }
+    }
+}
+
+private class GtvRtConversion_List(type: R_ListType): GtvRtConversion_Collection(type) {
+    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
+        val elementType = type.elementType
+        val array = GtvRtUtils.gtvToArray(ctx, gtv, type)
+        val rtList = array.map { elementType.gtvToRt(ctx, it) }
+        return ctx.rtValue {
+            Rt_ListValue(type, rtList.toMutableList())
+        }
     }
 }

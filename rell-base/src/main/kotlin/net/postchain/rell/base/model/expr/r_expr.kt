@@ -5,8 +5,7 @@
 package net.postchain.rell.base.model.expr
 
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
-import net.postchain.rell.base.lib.type.Lib_Type_BigInteger
-import net.postchain.rell.base.lib.type.Lib_Type_Decimal
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.stmt.R_Statement
 import net.postchain.rell.base.runtime.*

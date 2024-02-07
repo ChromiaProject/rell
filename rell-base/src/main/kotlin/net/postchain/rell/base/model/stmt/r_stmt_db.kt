@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.model.stmt
 
+import net.postchain.rell.base.lib.type.Rt_ListValue
 import net.postchain.rell.base.model.R_Attribute
 import net.postchain.rell.base.model.R_FrameBlock
 import net.postchain.rell.base.model.R_LambdaBlock

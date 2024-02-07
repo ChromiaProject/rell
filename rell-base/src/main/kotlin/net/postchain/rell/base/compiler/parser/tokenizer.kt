@@ -13,8 +13,8 @@ import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_Parser
 import net.postchain.rell.base.lib.type.Lib_DecimalMath
 import net.postchain.rell.base.model.R_Name
-import net.postchain.rell.base.runtime.Rt_BigIntegerValue
-import net.postchain.rell.base.runtime.Rt_DecimalValue
+import net.postchain.rell.base.lib.type.Rt_BigIntegerValue
+import net.postchain.rell.base.lib.type.Rt_DecimalValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.CommonUtils
 import java.io.InputStream

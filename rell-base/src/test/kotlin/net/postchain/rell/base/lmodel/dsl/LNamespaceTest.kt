@@ -6,7 +6,7 @@ package net.postchain.rell.base.lmodel.dsl
 
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
-import net.postchain.rell.base.runtime.Rt_UnitValue
+import net.postchain.rell.base.lib.type.Rt_UnitValue
 import org.junit.Test
 import kotlin.test.assertEquals
 

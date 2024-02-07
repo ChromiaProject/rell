@@ -7,7 +7,6 @@ package net.postchain.rell.base.lib.type
 import net.postchain.rell.base.compiler.base.lib.C_SysFunction
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.model.expr.Db_SysFunction
-import net.postchain.rell.base.runtime.Rt_TextValue
 
 object Lib_Type_Any {
     val ToText_R = C_SysFunction.rSimple { a ->

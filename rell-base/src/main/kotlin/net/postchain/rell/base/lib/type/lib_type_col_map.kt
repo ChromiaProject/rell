@@ -4,14 +4,23 @@
 
 package net.postchain.rell.base.lib.type
 
+import com.google.common.collect.Iterables
+import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvArray
+import net.postchain.gtv.GtvFactory
+import net.postchain.gtv.GtvType
+import net.postchain.rell.base.compiler.base.lib.C_LibType
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
+import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_TypeDefDsl
-import net.postchain.rell.base.model.R_MapType
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.mtype.M_Type_Tuple
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
+import net.postchain.rell.base.runtime.utils.toGtv
+import net.postchain.rell.base.utils.immListOf
 
 object Lib_Type_Map {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -193,5 +202,141 @@ object Lib_Type_Map {
                 Rt_BooleanValue.get(a in map)
             }
         }
+    }
+}
+
+data class R_MapKeyValueTypes(val key: R_Type, val value: R_Type)
+
+class R_MapType(
+    val keyValueTypes: R_MapKeyValueTypes
+): R_Type("map<${keyValueTypes.key.strCode()},${keyValueTypes.value.strCode()}>") {
+    constructor(keyType: R_Type, valueType: R_Type): this(R_MapKeyValueTypes(keyType, valueType))
+
+    val keyType = keyValueTypes.key
+    val valueType = keyValueTypes.value
+    val keySetType = R_SetType(keyType)
+    val valueListType = R_ListType(valueType)
+    val virtualType = R_VirtualMapType(this)
+
+    val entryType = R_TupleType.create(keyType, valueType)
+
+    val legacyEntryType: R_TupleType by lazy {
+        R_TupleType.createNamed("k" to keyType, "v" to valueType)
+    }
+
+    private val isError = keyType.isError() || valueType.isError()
+
+    override fun equals0(other: R_Type) = other is R_MapType && keyValueTypes == other.keyValueTypes
+    override fun hashCode0() = keyValueTypes.hashCode()
+
+    override fun isReference() = true
+    override fun isError() = isError
+    override fun isDirectMutable() = true
+    override fun isDirectVirtualable() = keyType == R_TextType
+
+    override fun strCode() = name
+    override fun componentTypes() = listOf(keyType, valueType)
+
+    override fun getLibType0() = C_LibType.make(Lib_Rell.MAP_TYPE, keyType, valueType)
+
+    override fun fromCli(s: String): Rt_Value {
+        val map = s.split(",").associate {
+            val (k, v) = it.split("=")
+            keyType.fromCli(k) to valueType.fromCli(v)
+        }
+        return Rt_MapValue(this, map.toMutableMap())
+    }
+
+    override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Map(this)
+
+    override fun toMetaGtv() = mapOf(
+            "type" to "map".toGtv(),
+            "key" to keyType.toMetaGtv(),
+            "value" to valueType.toMetaGtv()
+    ).toGtv()
+}
+
+class Rt_MapValue(val type: R_MapType, map: MutableMap<Rt_Value, Rt_Value>): Rt_Value() {
+    val map: Map<Rt_Value, Rt_Value> = map
+
+    private val mutableMap = map
+
+    override val valueType = Rt_CoreValueTypes.MAP.type()
+
+    override fun type() = type
+    override fun asMap() = map
+    override fun asMutableMap() = mutableMap
+    override fun asMapValue() = this
+    override fun toFormatArg() = map
+    override fun strCode(showTupleFieldNames: Boolean) = strCode(type, showTupleFieldNames, map)
+    override fun str() = map.entries.joinToString(", ", "{", "}") { "${it.key.str()}=${it.value.str()}" }
+    override fun equals(other: Any?) = other === this || (other is Rt_MapValue && map == other.map)
+    override fun hashCode() = map.hashCode()
+
+    override fun asIterable(): Iterable<Rt_Value> {
+        return asIterable(false)
+    }
+
+    fun asIterable(legacy: Boolean): Iterable<Rt_Value> {
+        val entryType = if (legacy) type.legacyEntryType else type.entryType
+        return Iterables.transform(map.entries) { entry ->
+            Rt_TupleValue(entryType, immListOf(entry.key, entry.value))
+        }
+    }
+
+    companion object {
+        fun strCode(type: R_Type, showTupleFieldNames: Boolean, map: Map<Rt_Value, Rt_Value>): String {
+            val entries = map.entries.joinToString(",") { (key, value) ->
+                key.strCode(false) + "=" + value.strCode(false)
+            }
+            return "${type.strCode()}[$entries]"
+        }
+    }
+}
+
+private class GtvRtConversion_Map(val type: R_MapType): GtvRtConversion() {
+    override fun directCompatibility() = R_GtvCompatibility(true, true)
+
+    override fun rtToGtv(rt: Rt_Value, pretty: Boolean): Gtv {
+        val keyType = type.keyType
+        val valueType = type.valueType
+        val m = rt.asMap()
+        return if (keyType == R_TextType) {
+            val m2 = m.mapKeys { (k, _) -> k.asString() }
+                    .mapValues { (_, v) -> valueType.rtToGtv(v, pretty) }
+            GtvFactory.gtv(m2)
+        } else {
+            val entries = m.map { (k, v) -> GtvArray(arrayOf(keyType.rtToGtv(k, pretty), valueType.rtToGtv(v, pretty))) }
+            GtvArray(entries.toTypedArray())
+        }
+    }
+
+    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
+        val map = if (type.keyType == R_TextType && gtv.type == GtvType.DICT) {
+            GtvRtUtils.gtvToMap(ctx, gtv, type)
+                    .mapKeys { (k, _) -> Rt_TextValue.get(k) as Rt_Value }
+                    .mapValues { (_, v) -> type.valueType.gtvToRt(ctx, v) }
+                    .toMutableMap()
+        } else {
+            val tmp = mutableMapOf<Rt_Value, Rt_Value>()
+            for (gtvEntry in GtvRtUtils.gtvToArray(ctx, gtv, type)) {
+                val (key, value) = gtvToRtEntry(ctx, gtvEntry)
+                if (key in tmp) {
+                    throw GtvRtUtils.errGtv(ctx, "map_dup_key:${key.strCode()}", "Duplicate map key: ${key.str()}")
+                }
+                tmp[key] = value
+            }
+            tmp
+        }
+        return ctx.rtValue {
+            Rt_MapValue(type, map)
+        }
+    }
+
+    private fun gtvToRtEntry(ctx: GtvToRtContext, gtv: Gtv): Pair<Rt_Value, Rt_Value> {
+        val array = GtvRtUtils.gtvToArray(ctx, gtv, 2, "map_entry_size", type)
+        val key = type.keyType.gtvToRt(ctx, array[0])
+        val value = type.valueType.gtvToRt(ctx, array[1])
+        return Pair(key, value)
     }
 }

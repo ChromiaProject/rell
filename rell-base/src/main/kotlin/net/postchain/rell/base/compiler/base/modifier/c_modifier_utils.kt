@@ -7,7 +7,7 @@ package net.postchain.rell.base.compiler.base.modifier
 import net.postchain.rell.base.compiler.base.core.C_ComparablePos
 import net.postchain.rell.base.compiler.base.core.C_MessageContext
 import net.postchain.rell.base.compiler.base.core.C_Name
-import net.postchain.rell.base.model.R_TextType
+import net.postchain.rell.base.lib.type.R_TextType
 
 object C_AnnUtils {
     fun checkArgsNone(ctx: C_ModifierContext, name: C_Name, args: List<C_AnnotationArg>): Boolean {

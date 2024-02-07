@@ -11,10 +11,10 @@ import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
-import net.postchain.rell.base.model.R_BooleanType
+import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_NullableType
-import net.postchain.rell.base.model.R_UnitType
+import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.stmt.*
 import net.postchain.rell.base.utils.MutableTypedKeyMap

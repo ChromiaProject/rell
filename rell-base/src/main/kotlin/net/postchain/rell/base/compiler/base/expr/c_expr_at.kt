@@ -14,6 +14,9 @@ import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.V_ColAtFrom
 import net.postchain.rell.base.compiler.vexpr.V_DbAtWhat
 import net.postchain.rell.base.compiler.vexpr.V_Expr
+import net.postchain.rell.base.lib.type.R_BooleanType
+import net.postchain.rell.base.lib.type.R_ByteArrayType
+import net.postchain.rell.base.lib.type.R_ListType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_IterableAdapter

@@ -7,6 +7,8 @@ package net.postchain.rell.base.compiler.lib
 import net.postchain.rell.base.compiler.base.core.C_DefinitionName
 import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.lib.Lib_Rell
+import net.postchain.rell.base.lib.type.Rt_TextValue
+import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.model.R_LibSimpleType
 import net.postchain.rell.base.model.R_Type

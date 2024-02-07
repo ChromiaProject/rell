@@ -21,6 +21,7 @@ import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.compiler.vexpr.V_MemberFunctionCall
 import net.postchain.rell.base.compiler.vexpr.V_TypeValueMember
+import net.postchain.rell.base.lib.type.R_RowidType
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*

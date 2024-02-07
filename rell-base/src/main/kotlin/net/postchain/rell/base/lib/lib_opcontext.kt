@@ -14,8 +14,7 @@ import net.postchain.rell.base.compiler.base.lib.C_SysFunctionCtx
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty
 import net.postchain.rell.base.compiler.base.namespace.C_NamespacePropertyContext
 import net.postchain.rell.base.compiler.vexpr.V_Expr
-import net.postchain.rell.base.lib.type.Lib_Type_Gtv
-import net.postchain.rell.base.lib.type.Lib_Type_Struct
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr

@@ -6,8 +6,10 @@ package net.postchain.rell.base.model.expr
 
 import net.postchain.rell.base.compiler.base.expr.C_EntityAttrRef
 import net.postchain.rell.base.lib.type.Lib_DecimalMath
+import net.postchain.rell.base.lib.type.R_BooleanType
+import net.postchain.rell.base.lib.type.R_DecimalType
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.runtime.Rt_BooleanValue
+import net.postchain.rell.base.lib.type.Rt_BooleanValue
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_Value

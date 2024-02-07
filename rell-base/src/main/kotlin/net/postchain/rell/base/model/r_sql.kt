@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.model
 
+import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
 import net.postchain.rell.base.runtime.Rt_SqlContext
@@ -95,7 +96,7 @@ class R_EntitySqlMapping_External(
         val height = sqlCtx.linkedChain(chain).height
 
         return """SELECT A."$rowid"
-            | FROM "$tbl" A JOIN "$txTbl" T ON T.tx_iid = A.transaction 
+            | FROM "$tbl" A JOIN "$txTbl" T ON T.tx_iid = A.transaction
             | JOIN "$blkTbl" B ON B.block_iid = T.block_iid
             | WHERE $where AND B.block_height <= $height"""
                 .trimMargin()

@@ -4,18 +4,25 @@
 
 package net.postchain.rell.base.lib.type
 
+import com.google.common.collect.Iterables
+import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvByteArray
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.Lib_Crypto
+import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_ByteArrayType
-import net.postchain.rell.base.model.R_IntegerType
-import net.postchain.rell.base.model.R_ListType
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.Db_SysFunction
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.utils.CommonUtils
+import org.bouncycastle.util.Arrays
+import org.jooq.util.postgres.PostgresDataType
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 import java.util.*
 
 object Lib_Type_ByteArray {
@@ -193,5 +200,66 @@ object Lib_Type_ByteArray {
         }
         val r = obj.copyOfRange(start.toInt(), end.toInt())
         return Rt_ByteArrayValue.get(r)
+    }
+}
+
+object R_ByteArrayType: R_PrimitiveType("byte_array") {
+    override fun defaultValue() = Rt_ByteArrayValue.get(byteArrayOf())
+    override fun comparator() = Rt_Comparator({ it.asByteArray() }, { x, y -> Arrays.compareUnsigned(x, y) })
+    override fun fromCli(s: String): Rt_Value = Rt_ByteArrayValue.get(CommonUtils.hexToBytes(s))
+
+    override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_ByteArray
+    override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_ByteArray
+
+    override fun getLibTypeDef() = Lib_Rell.BYTE_ARRAY_TYPE
+
+    private object R_TypeSqlAdapter_ByteArray: R_TypeSqlAdapter_Primitive("byte_array", PostgresDataType.BYTEA) {
+        override fun toSqlValue(value: Rt_Value) = value.asByteArray()
+        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) = stmt.setBytes(idx, value.asByteArray())
+
+        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
+            val v = rs.getBytes(idx)
+            return checkSqlNull(v, R_ByteArrayType, nullable) ?: Rt_ByteArrayValue.get(v)
+        }
+    }
+}
+
+class Rt_ByteArrayValue private constructor(private val value: ByteArray): Rt_Value() {
+    override val valueType = Rt_CoreValueTypes.BYTE_ARRAY.type()
+
+    override fun type() = R_ByteArrayType
+    override fun asByteArray() = value
+    override fun toFormatArg() = str()
+    override fun strCode(showTupleFieldNames: Boolean) = "byte_array[${CommonUtils.bytesToHex(value)}]"
+    override fun str() = "0x" + CommonUtils.bytesToHex(value)
+    override fun equals(other: Any?) = other === this || (other is Rt_ByteArrayValue && value.contentEquals(other.value))
+    override fun hashCode() = value.contentHashCode()
+
+    override fun asIterable(): Iterable<Rt_Value> {
+        return Iterables.transform(value.asIterable()) {
+            val signed = it!!.toInt()
+            val unsigned = if (signed >= 0) signed else (signed + 256)
+            Rt_IntValue.get(unsigned.toLong())
+        }
+    }
+
+    companion object {
+        val EMPTY: Rt_Value = Rt_ByteArrayValue(ByteArray(0))
+
+        fun get(value: ByteArray): Rt_Value {
+            return if (value.isEmpty()) EMPTY else Rt_ByteArrayValue(value)
+        }
+    }
+}
+
+private object GtvRtConversion_ByteArray: GtvRtConversion() {
+    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvByteArray(rt.asByteArray())
+
+    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
+        val v = GtvRtUtils.gtvToByteArray(ctx, gtv, R_ByteArrayType)
+        return ctx.rtValue {
+            Rt_ByteArrayValue.get(v)
+        }
     }
 }

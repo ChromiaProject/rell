@@ -11,7 +11,7 @@ import net.postchain.rell.base.lmodel.dsl.Ld_FunctionDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.runtime.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_RequireError
-import net.postchain.rell.base.runtime.Rt_UnitValue
+import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.runtime.Rt_Value
 
 object Lib_Require {

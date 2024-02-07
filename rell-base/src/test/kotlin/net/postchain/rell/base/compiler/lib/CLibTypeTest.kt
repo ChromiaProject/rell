@@ -10,8 +10,8 @@ import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lib.Lib_Rell
-import net.postchain.rell.base.runtime.Rt_IntValue
-import net.postchain.rell.base.runtime.Rt_TextValue
+import net.postchain.rell.base.lib.type.Rt_IntValue
+import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.testutils.LibModuleTester
 import net.postchain.rell.base.utils.LazyPosString
 import org.junit.Test

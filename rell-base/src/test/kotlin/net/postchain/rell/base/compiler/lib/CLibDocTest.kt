@@ -5,6 +5,7 @@
 package net.postchain.rell.base.compiler.lib
 
 import net.postchain.common.hexStringToByteArray
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.model.*
@@ -45,7 +46,7 @@ class CLibDocTest: BaseCLibTest() {
             entity my_entity {}
             object my_object {}
             operation my_operation() {}
-            struct __s { x: $type; } 
+            struct __s { x: $type; }
         """
 
         val actual = RellTestUtils.processApp(rellCode) { tApp ->

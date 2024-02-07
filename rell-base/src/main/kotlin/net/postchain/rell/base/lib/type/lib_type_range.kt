@@ -4,12 +4,14 @@
 
 package net.postchain.rell.base.lib.type
 
+import com.google.common.math.LongMath
+import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_RangeType
-import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.runtime.Rt_RangeValue
-import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.model.R_PrimitiveType
+import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.utils.Rt_Comparator
+import java.util.*
 
 object Lib_Type_Range {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -40,5 +42,75 @@ object Lib_Type_Range {
                 "Invalid range: start = $start, end = $end, step = $step")
         }
         return Rt_RangeValue(start, end, step)
+    }
+}
+
+object R_RangeType: R_PrimitiveType("range") {
+    override fun isDirectVirtualable() = false
+    override fun isDirectPure() = true
+    override fun isReference() = true
+    override fun comparator() = Rt_Comparator.create { it.asRange() }
+    override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_None
+    override fun getLibTypeDef() = Lib_Rell.RANGE_TYPE
+}
+
+class Rt_RangeValue(val start: Long, val end: Long, val step: Long): Rt_Value(), Iterable<Rt_Value>, Comparable<Rt_RangeValue> {
+    override val valueType = Rt_CoreValueTypes.RANGE.type()
+
+    override fun type() = R_RangeType
+    override fun asRange() = this
+    override fun toFormatArg() = str()
+    override fun str() = "range($start,$end,$step)"
+    override fun strCode(showTupleFieldNames: Boolean) = "range[$start,$end,$step]"
+
+    override fun asIterable(): Iterable<Rt_Value> = this
+    override fun iterator(): Iterator<Rt_Value> = RangeIterator(this)
+
+    override fun equals(other: Any?) = other is Rt_RangeValue && start == other.start && end == other.end && step == other.step
+    override fun hashCode() = Objects.hash(start, end, step)
+
+    fun contains(v: Long): Boolean {
+        if (step > 0) {
+            if (v < start || v >= end) return false
+        } else {
+            check(step < 0)
+            if (v > start || v <= end) return false
+        }
+        val m1 = valueMod(start, step)
+        val m2 = valueMod(v, step)
+        return m1 == m2
+    }
+
+    override fun compareTo(other: Rt_RangeValue): Int {
+        var c = start.compareTo(other.start)
+        if (c == 0) c = end.compareTo(other.end)
+        if (c == 0) c = step.compareTo(other.step)
+        return c
+    }
+
+    companion object {
+        private fun valueMod(v: Long, m: Long): Long {
+            val r = v % m
+            if (r >= 0) return r
+            return if (m > 0) r + m else r - m
+        }
+
+        private class RangeIterator(private val range: Rt_RangeValue): Iterator<Rt_Value> {
+            private var current = range.start
+
+            override fun hasNext(): Boolean {
+                if (range.step > 0) {
+                    return current < range.end
+                } else {
+                    return current > range.end
+                }
+            }
+
+            override fun next(): Rt_Value {
+                val res = current
+                current = LongMath.saturatedAdd(current, range.step)
+                return Rt_IntValue.get(res)
+            }
+        }
     }
 }

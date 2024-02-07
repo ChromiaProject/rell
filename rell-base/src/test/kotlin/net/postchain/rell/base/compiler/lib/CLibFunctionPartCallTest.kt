@@ -5,11 +5,11 @@
 package net.postchain.rell.base.compiler.lib
 
 import net.postchain.rell.base.lmodel.L_ParamArity
-import net.postchain.rell.base.model.R_IntegerType
-import net.postchain.rell.base.model.R_TextType
+import net.postchain.rell.base.lib.type.R_IntegerType
+import net.postchain.rell.base.lib.type.R_TextType
 import net.postchain.rell.base.model.R_TupleType
-import net.postchain.rell.base.runtime.Rt_IntValue
-import net.postchain.rell.base.runtime.Rt_TextValue
+import net.postchain.rell.base.lib.type.Rt_IntValue
+import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.runtime.Rt_TupleValue
 import org.junit.Test
 

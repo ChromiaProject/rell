@@ -8,11 +8,10 @@ import net.postchain.crypto.CURVE_PARAMS
 import net.postchain.crypto.Signature
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_BigIntegerType
-import net.postchain.rell.base.model.R_ByteArrayType
-import net.postchain.rell.base.model.R_IntegerType
+import net.postchain.rell.base.lib.type.R_IntegerType
 import net.postchain.rell.base.model.R_TupleType
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils

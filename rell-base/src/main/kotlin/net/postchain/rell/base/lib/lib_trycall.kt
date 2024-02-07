@@ -5,7 +5,7 @@
 package net.postchain.rell.base.lib
 
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.runtime.Rt_BooleanValue
+import net.postchain.rell.base.lib.type.Rt_BooleanValue
 import net.postchain.rell.base.runtime.Rt_CallContext
 import net.postchain.rell.base.runtime.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_Value

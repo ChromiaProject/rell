@@ -12,8 +12,7 @@ import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.*
-import net.postchain.rell.base.lib.type.Lib_Type_Any
-import net.postchain.rell.base.lib.type.Lib_Type_Decimal
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_UpdateStatementWhat

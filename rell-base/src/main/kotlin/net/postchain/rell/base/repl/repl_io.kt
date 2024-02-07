@@ -6,10 +6,10 @@ package net.postchain.rell.base.repl
 
 import net.postchain.gtv.Gtv
 import net.postchain.rell.base.compiler.base.utils.C_Message
-import net.postchain.rell.base.model.R_CollectionType
-import net.postchain.rell.base.model.R_MapType
+import net.postchain.rell.base.lib.type.R_CollectionType
+import net.postchain.rell.base.lib.type.R_MapType
 import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.runtime.Rt_UnitValue
+import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.PostchainGtvUtils
 import java.io.File

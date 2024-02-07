@@ -10,7 +10,7 @@ import net.postchain.rell.base.compiler.base.expr.C_Destination
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprVarFacts
 import net.postchain.rell.base.compiler.base.utils.C_Error
-import net.postchain.rell.base.model.R_BooleanType
+import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_Value

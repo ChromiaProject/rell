@@ -11,8 +11,7 @@ import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.compiler.vexpr.V_TypeAdapterExpr
-import net.postchain.rell.base.lib.type.Lib_Type_BigInteger
-import net.postchain.rell.base.lib.type.Lib_Type_Decimal
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*

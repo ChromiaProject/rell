@@ -23,14 +23,10 @@ import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocCode
-import org.bouncycastle.util.Arrays
 import org.jooq.DataType
 import org.jooq.SQLDialect
 import org.jooq.impl.DefaultDataType
 import org.jooq.impl.SQLDataType
-import org.jooq.util.postgres.PostgresDataType
-import org.postgresql.util.PGobject
-import java.math.BigDecimal
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.util.*
@@ -97,7 +93,7 @@ private class R_TypeSqlAdapter_None(private val type: R_Type): R_TypeSqlAdapter(
     }
 }
 
-private abstract class R_TypeSqlAdapter_Some(sqlType: DataType<*>?): R_TypeSqlAdapter(sqlType) {
+abstract class R_TypeSqlAdapter_Some(sqlType: DataType<*>?): R_TypeSqlAdapter(sqlType) {
     override fun isSqlCompatible() = true
 
     protected fun checkSqlNull(suspect: Boolean, rs: ResultSet, type: R_Type, nullable: Boolean): Rt_Value? {
@@ -129,7 +125,7 @@ private abstract class R_TypeSqlAdapter_Some(sqlType: DataType<*>?): R_TypeSqlAd
     }
 }
 
-private abstract class R_TypeSqlAdapter_Primitive(
+abstract class R_TypeSqlAdapter_Primitive(
     private val name: String,
     sqlType: DataType<*>
 ): R_TypeSqlAdapter_Some(sqlType) {
@@ -288,250 +284,9 @@ abstract class R_LibSimpleType(name: String, defName: C_DefinitionName): R_Simpl
     final override fun getLibType0(): C_LibType = C_LibType.make(libTypeDefLazy)
 }
 
-sealed class R_PrimitiveType(name: String): R_LibSimpleType(name, C_LibUtils.defName(name))
-
-object R_UnitType: R_PrimitiveType("unit") {
-    override fun createGtvConversion() = GtvRtConversion_None
-    override fun getLibTypeDef() = Lib_Rell.UNIT_TYPE
-}
-
-object R_BooleanType: R_PrimitiveType("boolean") {
-    override fun defaultValue() = Rt_BooleanValue.FALSE
-    override fun comparator() = Rt_Comparator.create { it.asBoolean() }
-
-    override fun fromCli(s: String): Rt_Value {
-        return when (s) {
-            "false" -> Rt_BooleanValue.FALSE
-            "true" -> Rt_BooleanValue.TRUE
-            else -> throw IllegalArgumentException(s)
-        }
-    }
-
-    override fun createGtvConversion() = GtvRtConversion_Boolean
-    override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_Boolean
-
-    override fun getLibTypeDef() = Lib_Rell.BOOLEAN_TYPE
-
-    private object R_TypeSqlAdapter_Boolean: R_TypeSqlAdapter_Primitive("boolean", SQLDataType.BOOLEAN) {
-        override fun toSqlValue(value: Rt_Value) = value.asBoolean()
-
-        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) {
-            stmt.setBoolean(idx, value.asBoolean())
-        }
-
-        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
-            val v = rs.getBoolean(idx)
-            return checkSqlNull(!v, rs, R_BooleanType, nullable) ?: Rt_BooleanValue.get(v)
-        }
-    }
-}
-
-object R_TextType: R_PrimitiveType("text") {
-    override fun defaultValue() = Rt_TextValue.EMPTY
-    override fun comparator() = Rt_Comparator.create { it.asString() }
-    override fun fromCli(s: String): Rt_Value = Rt_TextValue.get(s)
-    override fun createGtvConversion() = GtvRtConversion_Text
-    override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_Text
-
-    override fun getLibTypeDef() = Lib_Rell.TEXT_TYPE
-
-    private object R_TypeSqlAdapter_Text: R_TypeSqlAdapter_Primitive("text", PostgresDataType.TEXT) {
-        override fun toSqlValue(value: Rt_Value) = value.asString()
-
-        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) {
-            stmt.setString(idx, value.asString())
-        }
-
-        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
-            val v = rs.getString(idx)
-            return checkSqlNull(v, R_TextType, nullable) ?: Rt_TextValue.get(v)
-        }
-    }
-}
-
-object R_IntegerType: R_PrimitiveType("integer") {
-    override fun defaultValue() = Rt_IntValue.ZERO
-
-    override fun comparator() = Rt_Comparator.create { it.asInteger() }
-    override fun fromCli(s: String): Rt_Value = Rt_IntValue.get(s.toLong())
-
-    override fun createGtvConversion() = GtvRtConversion_Integer
-    override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_Integer
-
-    override fun getLibTypeDef() = Lib_Rell.INTEGER_TYPE
-
-    private object R_TypeSqlAdapter_Integer: R_TypeSqlAdapter_Primitive("integer", SQLDataType.BIGINT) {
-        override fun toSqlValue(value: Rt_Value) = value.asInteger()
-
-        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) {
-            stmt.setLong(idx, value.asInteger())
-        }
-
-        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
-            val v = rs.getLong(idx)
-            return checkSqlNull(v == 0L, rs, R_IntegerType, nullable) ?: Rt_IntValue.get(v)
-        }
-    }
-}
-
-object R_BigIntegerType: R_PrimitiveType("big_integer") {
-    override fun defaultValue() = Rt_BigIntegerValue.ZERO
-    override fun comparator() = Rt_Comparator.create { it.asBigInteger() }
-    override fun fromCli(s: String): Rt_Value = Rt_BigIntegerValue.get(s)
-
-    override fun createGtvConversion() = GtvRtConversion_BigInteger
-    override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_BigInteger
-
-    override fun getTypeAdapter(sourceType: R_Type): C_TypeAdapter? {
-        return when (sourceType) {
-            R_IntegerType -> C_TypeAdapter_IntegerToBigInteger
-            else -> super.getTypeAdapter(sourceType)
-        }
-    }
-
-    override fun getLibTypeDef() = Lib_Rell.BIG_INTEGER_TYPE
-
-    private object R_TypeSqlAdapter_BigInteger: R_TypeSqlAdapter_Primitive("big_integer", Lib_BigIntegerMath.SQL_TYPE) {
-        override fun toSqlValue(value: Rt_Value) = value.asBigInteger()
-
-        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) {
-            val v = value.asBigInteger()
-            stmt.setBigDecimal(idx, BigDecimal(v))
-        }
-
-        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
-            val v = rs.getBigDecimal(idx)
-            return checkSqlNull(v, R_BigIntegerType, nullable) ?: Rt_BigIntegerValue.get(v)
-        }
-    }
-}
-
-object R_DecimalType: R_PrimitiveType("decimal") {
-    override fun defaultValue() = Rt_DecimalValue.ZERO
-    override fun comparator() = Rt_Comparator.create { it.asDecimal() }
-    override fun fromCli(s: String): Rt_Value = Rt_DecimalValue.get(s)
-
-    override fun createGtvConversion() = GtvRtConversion_Decimal
-    override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_Decimal
-
-    override fun getTypeAdapter(sourceType: R_Type): C_TypeAdapter? {
-        return when (sourceType) {
-            R_IntegerType -> C_TypeAdapter_IntegerToDecimal
-            R_BigIntegerType -> C_TypeAdapter_BigIntegerToDecimal
-            else -> super.getTypeAdapter(sourceType)
-        }
-    }
-
-    override fun getLibTypeDef() = Lib_Rell.DECIMAL_TYPE
-
-    private object R_TypeSqlAdapter_Decimal: R_TypeSqlAdapter_Primitive("decimal", Lib_DecimalMath.DECIMAL_SQL_TYPE) {
-        override fun toSqlValue(value: Rt_Value) = value.asDecimal()
-
-        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) {
-            stmt.setBigDecimal(idx, value.asDecimal())
-        }
-
-        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
-            val v = rs.getBigDecimal(idx)
-            return checkSqlNull(v, R_DecimalType, nullable) ?: Rt_DecimalValue.get(v)
-        }
-    }
-}
-
-object R_ByteArrayType: R_PrimitiveType("byte_array") {
-    override fun defaultValue() = Rt_ByteArrayValue.get(byteArrayOf())
-    override fun comparator() = Rt_Comparator({ it.asByteArray() }, { x, y -> Arrays.compareUnsigned(x, y) })
-    override fun fromCli(s: String): Rt_Value = Rt_ByteArrayValue.get(CommonUtils.hexToBytes(s))
-
-    override fun createGtvConversion() = GtvRtConversion_ByteArray
-    override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_ByteArray
-
-    override fun getLibTypeDef() = Lib_Rell.BYTE_ARRAY_TYPE
-
-    private object R_TypeSqlAdapter_ByteArray: R_TypeSqlAdapter_Primitive("byte_array", PostgresDataType.BYTEA) {
-        override fun toSqlValue(value: Rt_Value) = value.asByteArray()
-        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) = stmt.setBytes(idx, value.asByteArray())
-
-        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
-            val v = rs.getBytes(idx)
-            return checkSqlNull(v, R_ByteArrayType, nullable) ?: Rt_ByteArrayValue.get(v)
-        }
-    }
-}
-
-object R_RowidType: R_PrimitiveType("rowid") {
-    override fun defaultValue() = Rt_RowidValue.ZERO
-    override fun comparator() = Rt_Comparator.create { it.asRowid() }
-    override fun fromCli(s: String): Rt_Value = Rt_RowidValue.get(s.toLong())
-
-    override fun createGtvConversion() = GtvRtConversion_Rowid
-    override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_Rowid
-
-    override fun getLibTypeDef() = Lib_Rell.ROWID_TYPE
-
-    private object R_TypeSqlAdapter_Rowid: R_TypeSqlAdapter_Primitive("rowid", SQLDataType.BIGINT) {
-        override fun toSqlValue(value: Rt_Value) = value.asRowid()
-
-        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) {
-            stmt.setLong(idx, value.asRowid())
-        }
-
-        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
-            val v = rs.getLong(idx)
-            return checkSqlNull(v == 0L, rs, R_RowidType, nullable) ?: Rt_RowidValue.get(v)
-        }
-    }
-}
-
-object R_GUIDType: R_PrimitiveType("guid") {
-    //TODO support Gtv
-    override fun createGtvConversion() = GtvRtConversion_None
-    override fun getLibTypeDef() = Lib_Rell.GUID_TYPE
-    //TODO sqlType = PostgresDataType.BYTEA
-}
+abstract class R_PrimitiveType(name: String): R_LibSimpleType(name, C_LibUtils.defName(name))
 
 private val GTX_SIGNER_SQL_DATA_TYPE = DefaultDataType(null as SQLDialect?, ByteArray::class.java, "gtx_signer")
-
-object R_SignerType: R_PrimitiveType("signer") {
-    //TODO support Gtv
-    override fun createGtvConversion() = GtvRtConversion_None
-    override fun getLibTypeDef() = Lib_Rell.SIGNER_TYPE
-    //TODO sqlType = GTX_SIGNER_SQL_DATA_TYPE
-}
-
-private val JSON_SQL_DATA_TYPE = DefaultDataType(null as SQLDialect?, String::class.java, "jsonb")
-
-object R_JsonType: R_PrimitiveType("json") {
-    override fun comparator() = Rt_Comparator.create { it.asJsonString() }
-    override fun fromCli(s: String): Rt_Value = Rt_JsonValue.parse(s)
-
-    //TODO consider converting between Rt_JsonValue and arbitrary Gtv, not only String
-    override fun createGtvConversion() = GtvRtConversion_Json
-
-    override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_Json
-
-    override fun getLibTypeDef() = Lib_Rell.JSON_TYPE
-
-    private object R_TypeSqlAdapter_Json: R_TypeSqlAdapter_Primitive("json", JSON_SQL_DATA_TYPE) {
-        override fun toSqlValue(value: Rt_Value): Any {
-            val str = value.asJsonString()
-            val obj = PGobject()
-            obj.type = "json"
-            obj.value = str
-            return obj
-        }
-
-        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) {
-            val obj = toSqlValue(value)
-            stmt.setObject(idx, obj)
-        }
-
-        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
-            val str = rs.getString(idx)
-            return checkSqlNull(str, R_JsonType, nullable) ?: Rt_JsonValue.parse(str)
-        }
-    }
-}
 
 object R_NullType: R_SimpleType("null", C_LibUtils.defName("null")) {
     override fun defaultValue() = Rt_NullValue
@@ -788,106 +543,6 @@ class R_NullableType(val valueType: R_Type): R_Type(calcName(valueType)) {
     }
 }
 
-sealed class R_CollectionType(
-    val elementType: R_Type,
-    private val baseName: String,
-): R_Type("$baseName<${elementType.strCode()}>") {
-    private val isError = elementType.isError()
-
-    final override fun isReference() = true
-    final override fun isError() = isError
-    final override fun isDirectMutable() = true
-    final override fun componentTypes() = listOf(elementType)
-    final override fun strCode() = name
-
-    protected abstract fun getLibTypeDef(): C_LibTypeDef
-
-    final override fun getLibType0() = C_LibType.make(getLibTypeDef(), elementType)
-
-    final override fun toMetaGtv() = mapOf(
-            "type" to baseName.toGtv(),
-            "value" to elementType.toMetaGtv()
-    ).toGtv()
-}
-
-class R_ListType(elementType: R_Type): R_CollectionType(elementType, "list") {
-    val virtualType = R_VirtualListType(this)
-
-    override fun equals0(other: R_Type): Boolean = other is R_ListType && elementType == other.elementType
-    override fun hashCode0() = elementType.hashCode()
-
-    override fun fromCli(s: String): Rt_Value = Rt_ListValue(this, s.split(",").map { elementType.fromCli(it) }.toMutableList())
-    override fun createGtvConversion() = GtvRtConversion_List(this)
-    override fun getLibTypeDef() = Lib_Rell.LIST_TYPE
-
-    override fun comparator(): Comparator<Rt_Value>? {
-        val elemComparator = elementType.comparator()
-        return if (elemComparator == null) null else Rt_ListComparator(elemComparator)
-    }
-}
-
-class R_SetType(elementType: R_Type): R_CollectionType(elementType, "set") {
-    val virtualType = R_VirtualSetType(this)
-
-    override fun equals0(other: R_Type): Boolean = other is R_SetType && elementType == other.elementType
-    override fun hashCode0() = elementType.hashCode()
-
-    override fun fromCli(s: String): Rt_Value = Rt_SetValue(this, s.split(",").map { elementType.fromCli(it) }.toMutableSet())
-    override fun createGtvConversion() = GtvRtConversion_Set(this)
-    override fun getLibTypeDef() = Lib_Rell.SET_TYPE
-}
-
-data class R_MapKeyValueTypes(val key: R_Type, val value: R_Type)
-
-class R_MapType(
-    val keyValueTypes: R_MapKeyValueTypes
-): R_Type("map<${keyValueTypes.key.strCode()},${keyValueTypes.value.strCode()}>") {
-    constructor(keyType: R_Type, valueType: R_Type): this(R_MapKeyValueTypes(keyType, valueType))
-
-    val keyType = keyValueTypes.key
-    val valueType = keyValueTypes.value
-    val keySetType = R_SetType(keyType)
-    val valueListType = R_ListType(valueType)
-    val virtualType = R_VirtualMapType(this)
-
-    val entryType = R_TupleType.create(keyType, valueType)
-
-    val legacyEntryType: R_TupleType by lazy {
-        R_TupleType.createNamed("k" to keyType, "v" to valueType)
-    }
-
-    private val isError = keyType.isError() || valueType.isError()
-
-    override fun equals0(other: R_Type) = other is R_MapType && keyValueTypes == other.keyValueTypes
-    override fun hashCode0() = keyValueTypes.hashCode()
-
-    override fun isReference() = true
-    override fun isError() = isError
-    override fun isDirectMutable() = true
-    override fun isDirectVirtualable() = keyType == R_TextType
-
-    override fun strCode() = name
-    override fun componentTypes() = listOf(keyType, valueType)
-
-    override fun getLibType0() = C_LibType.make(Lib_Rell.MAP_TYPE, keyType, valueType)
-
-    override fun fromCli(s: String): Rt_Value {
-        val map = s.split(",").associate {
-            val (k, v) = it.split("=")
-            keyType.fromCli(k) to valueType.fromCli(v)
-        }
-        return Rt_MapValue(this, map.toMutableMap())
-    }
-
-    override fun createGtvConversion() = GtvRtConversion_Map(this)
-
-    override fun toMetaGtv() = mapOf(
-            "type" to "map".toGtv(),
-            "key" to keyType.toMetaGtv(),
-            "value" to valueType.toMetaGtv()
-    ).toGtv()
-}
-
 class R_TupleField(val name: R_IdeName?, val type: R_Type) {
     fun str(): String = strCode()
 
@@ -1013,22 +668,6 @@ class R_TupleType(fields: List<R_TupleField>): R_Type(calcName(fields)) {
             return R_TupleType(fieldsList)
         }
     }
-}
-
-object R_RangeType: R_PrimitiveType("range") {
-    override fun isDirectVirtualable() = false
-    override fun isDirectPure() = true
-    override fun isReference() = true
-    override fun comparator() = Rt_Comparator.create { it.asRange() }
-    override fun createGtvConversion() = GtvRtConversion_None
-    override fun getLibTypeDef() = Lib_Rell.RANGE_TYPE
-}
-
-object R_GtvType: R_PrimitiveType("gtv") {
-    override fun isReference() = true
-    override fun isDirectPure() = true
-    override fun createGtvConversion() = GtvRtConversion_Gtv
-    override fun getLibTypeDef() = Lib_Rell.GTV_TYPE
 }
 
 sealed class R_VirtualType(private val baseInnerType: R_Type): R_Type("virtual<${baseInnerType.name}>") {

@@ -4,12 +4,17 @@
 
 package net.postchain.rell.base.lib.type
 
+import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvArray
+import net.postchain.rell.base.compiler.base.lib.C_LibType
+import net.postchain.rell.base.compiler.base.lib.C_LibTypeDef
+import net.postchain.rell.base.model.R_GtvCompatibility
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionMetaBodyDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_ListType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.lib.type.Lib_Type_Any as AnyFns
 
 object Lib_Type_Collection {
@@ -129,6 +134,37 @@ object Lib_Type_Collection {
     }
 }
 
-abstract class R_CollectionKind(val type: R_Type) {
+sealed class R_CollectionKind(val type: R_Type) {
     abstract fun makeRtValue(col: Iterable<Rt_Value>): Rt_Value
+}
+
+sealed class R_CollectionType(
+    val elementType: R_Type,
+    private val baseName: String,
+): R_Type("$baseName<${elementType.strCode()}>") {
+    private val isError = elementType.isError()
+
+    final override fun isReference() = true
+    final override fun isError() = isError
+    final override fun isDirectMutable() = true
+    final override fun componentTypes() = listOf(elementType)
+    final override fun strCode() = name
+
+    protected abstract fun getLibTypeDef(): C_LibTypeDef
+
+    final override fun getLibType0() = C_LibType.make(getLibTypeDef(), elementType)
+
+    final override fun toMetaGtv() = mapOf(
+            "type" to baseName.toGtv(),
+            "value" to elementType.toMetaGtv()
+    ).toGtv()
+}
+
+sealed class GtvRtConversion_Collection(val type: R_CollectionType): GtvRtConversion() {
+    final override fun directCompatibility() = R_GtvCompatibility(true, true)
+
+    final override fun rtToGtv(rt: Rt_Value, pretty: Boolean): Gtv {
+        val elementType = type.elementType
+        return GtvArray(rt.asCollection().map { elementType.rtToGtv(it, pretty) }.toTypedArray())
+    }
 }

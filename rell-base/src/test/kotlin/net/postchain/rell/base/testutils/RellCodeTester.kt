@@ -12,6 +12,8 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvNull
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
+import net.postchain.rell.base.lib.type.Rt_BooleanValue
+import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.*

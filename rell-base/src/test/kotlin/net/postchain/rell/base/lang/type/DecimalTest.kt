@@ -5,7 +5,7 @@
 package net.postchain.rell.base.lang.type
 
 import net.postchain.rell.base.lib.type.Lib_DecimalMath
-import net.postchain.rell.base.runtime.Rt_DecimalValue
+import net.postchain.rell.base.lib.type.Rt_DecimalValue
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.utils.toImmList

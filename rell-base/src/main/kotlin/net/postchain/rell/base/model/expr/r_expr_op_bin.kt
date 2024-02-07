@@ -5,8 +5,7 @@
 package net.postchain.rell.base.model.expr
 
 import com.google.common.math.LongMath
-import net.postchain.rell.base.lib.type.Lib_BigIntegerMath
-import net.postchain.rell.base.lib.type.Lib_DecimalMath
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import java.math.BigDecimal

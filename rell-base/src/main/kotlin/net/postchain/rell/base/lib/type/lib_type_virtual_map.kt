@@ -5,11 +5,6 @@
 package net.postchain.rell.base.lib.type
 
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_ListType
-import net.postchain.rell.base.model.R_MapType
-import net.postchain.rell.base.model.R_SetType
-import net.postchain.rell.base.runtime.Rt_ListValue
-import net.postchain.rell.base.runtime.Rt_SetValue
 import net.postchain.rell.base.utils.doc.DocCode
 
 object Lib_Type_VirtualMap {

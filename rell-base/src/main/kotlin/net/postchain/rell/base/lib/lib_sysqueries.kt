@@ -6,6 +6,7 @@ package net.postchain.rell.base.lib
 
 import net.postchain.rell.base.compiler.base.core.C_CompilerExecutor
 import net.postchain.rell.base.compiler.base.utils.C_Utils
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.RellVersions

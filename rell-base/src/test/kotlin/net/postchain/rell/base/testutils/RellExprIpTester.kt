@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.testutils
 
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.runtime.*

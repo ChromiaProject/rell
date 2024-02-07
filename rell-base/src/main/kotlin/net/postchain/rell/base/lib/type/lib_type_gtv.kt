@@ -4,18 +4,23 @@
 
 package net.postchain.rell.base.lib.type
 
+import net.postchain.gtv.*
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
+import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_BodyResult
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionMetaBodyDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_GtvType
-import net.postchain.rell.base.model.R_ListType
+import net.postchain.rell.base.model.R_GtvCompatibility
+import net.postchain.rell.base.model.R_PrimitiveType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_VirtualType
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.PostchainGtvUtils
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.immMapOf
+import java.math.BigInteger
 
 object Lib_Type_Gtv {
     val LIST_OF_GTV_TYPE = R_ListType(R_GtvType)
@@ -197,5 +202,68 @@ object Lib_Type_Gtv {
         val typeStr = type.name
         val fnName = m.fnSimpleName
         m.validationError("fn:invalid:$typeStr:$fnName", "Function '$fnName' not available for type '$typeStr'")
+    }
+}
+
+object R_GtvType: R_PrimitiveType("gtv") {
+    override fun isReference() = true
+    override fun isDirectPure() = true
+    override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Gtv
+    override fun getLibTypeDef() = Lib_Rell.GTV_TYPE
+}
+
+class Rt_GtvValue private constructor(val value: Gtv): Rt_Value() {
+    override val valueType = Rt_CoreValueTypes.GTV.type()
+
+    override fun type() = R_GtvType
+    override fun asGtv() = value
+
+    override fun strCode(showTupleFieldNames: Boolean) = "gtv[${str()}]"
+    override fun str() = toString(value)
+
+    override fun equals(other: Any?) = other === this || (other is Rt_GtvValue && value == other.value)
+    override fun hashCode() = value.hashCode()
+
+    companion object {
+        val NULL: Rt_Value = Rt_GtvValue(GtvNull)
+
+        private val ZERO_INTEGER: Rt_Value = Rt_GtvValue(GtvFactory.gtv(0))
+        private val ZERO_BIG_INTEGER: Rt_Value = Rt_GtvValue(GtvFactory.gtv(BigInteger.ZERO))
+        private val EMPTY_STRING: Rt_Value = Rt_GtvValue(GtvFactory.gtv(""))
+        private val EMPTY_BYTE_ARRAY: Rt_Value = Rt_GtvValue(GtvFactory.gtv(ByteArray(0)))
+        private val EMPTY_ARRAY: Rt_Value = Rt_GtvValue(GtvFactory.gtv(immListOf()))
+        private val EMPTY_DICT: Rt_Value = Rt_GtvValue(GtvFactory.gtv(immMapOf()))
+
+        fun get(value: Gtv): Rt_Value {
+            return when (value) {
+                GtvNull -> NULL
+                is GtvInteger -> if (value.integer == 0L) ZERO_INTEGER else Rt_GtvValue(value)
+                is GtvBigInteger -> if (value.integer == BigInteger.ZERO) ZERO_BIG_INTEGER else Rt_GtvValue(value)
+                is GtvString -> if (value.string.isEmpty()) EMPTY_STRING else Rt_GtvValue(value)
+                is GtvByteArray -> if (value.bytearray.isEmpty()) EMPTY_BYTE_ARRAY else Rt_GtvValue(value)
+                is GtvArray -> if (value.array.isEmpty()) EMPTY_ARRAY else Rt_GtvValue(value)
+                is GtvDictionary -> if (value.dict.isEmpty()) EMPTY_DICT else Rt_GtvValue(value)
+                else -> Rt_GtvValue(value)
+            }
+        }
+
+        fun toString(value: Gtv): String {
+            return try {
+                PostchainGtvUtils.gtvToJson(value)
+            } catch (e: Exception) {
+                value.toString() // Fallback, just in case (did not happen).
+            }
+        }
+    }
+}
+
+private object GtvRtConversion_Gtv: GtvRtConversion() {
+    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = rt.asGtv()
+
+    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
+        return ctx.rtValue {
+            Rt_GtvValue.get(gtv)
+        }
     }
 }

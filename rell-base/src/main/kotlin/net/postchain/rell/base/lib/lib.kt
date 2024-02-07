@@ -9,7 +9,7 @@ import net.postchain.rell.base.compiler.base.lib.C_LibNamespace
 import net.postchain.rell.base.compiler.base.namespace.C_SysNsProto
 import net.postchain.rell.base.lib.test.Lib_RellTest
 import net.postchain.rell.base.lib.type.Lib_Types
-import net.postchain.rell.base.model.R_ListType
+import net.postchain.rell.base.lib.type.R_ListType
 import net.postchain.rell.base.model.R_StructType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.toImmList

@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.sql
 
+import net.postchain.rell.base.lib.type.R_JsonType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
 import net.postchain.rell.base.runtime.Rt_SqlContext

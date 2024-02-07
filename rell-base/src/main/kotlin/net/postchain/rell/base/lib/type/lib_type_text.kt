@@ -4,17 +4,26 @@
 
 package net.postchain.rell.base.lib.type
 
+import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvString
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
+import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_ListType
-import net.postchain.rell.base.model.R_TextType
+import net.postchain.rell.base.model.R_GtvCompatibility
+import net.postchain.rell.base.model.R_PrimitiveType
+import net.postchain.rell.base.model.R_TypeSqlAdapter
+import net.postchain.rell.base.model.R_TypeSqlAdapter_Primitive
 import net.postchain.rell.base.model.expr.Db_SysFunction
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.SqlConstants
+import org.jooq.util.postgres.PostgresDataType
 import java.nio.ByteBuffer
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 import java.util.*
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
@@ -342,5 +351,122 @@ object Lib_Type_Text {
             )
         }
         return Rt_TextValue.get(s.substring(start.toInt(), end.toInt()))
+    }
+}
+
+object R_TextType: R_PrimitiveType("text") {
+    override fun defaultValue() = Rt_TextValue.EMPTY
+    override fun comparator() = Rt_Comparator.create { it.asString() }
+    override fun fromCli(s: String): Rt_Value = Rt_TextValue.get(s)
+    override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Text
+    override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_Text
+
+    override fun getLibTypeDef() = Lib_Rell.TEXT_TYPE
+
+    private object R_TypeSqlAdapter_Text: R_TypeSqlAdapter_Primitive("text", PostgresDataType.TEXT) {
+        override fun toSqlValue(value: Rt_Value) = value.asString()
+
+        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) {
+            stmt.setString(idx, value.asString())
+        }
+
+        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
+            val v = rs.getString(idx)
+            return checkSqlNull(v, R_TextType, nullable) ?: Rt_TextValue.get(v)
+        }
+    }
+}
+
+class Rt_TextValue private constructor(val value: String): Rt_Value() {
+    override val valueType = Rt_CoreValueTypes.TEXT.type()
+
+    override fun type() = R_TextType
+    override fun asString() = value
+    override fun toFormatArg() = value
+
+    override fun strCode(showTupleFieldNames: Boolean): String {
+        val esc = escape(value)
+        return "text[$esc]"
+    }
+
+    override fun str(): String = value
+    override fun equals(other: Any?) = other === this || (other is Rt_TextValue && value == other.value)
+    override fun hashCode() = value.hashCode()
+
+    companion object {
+        val EMPTY: Rt_Value = Rt_TextValue("")
+
+        fun get(s: String): Rt_Value {
+            return if (s.isEmpty()) EMPTY else Rt_TextValue(s)
+        }
+
+        fun like(s: String, pattern: String): Boolean {
+            val regex = likePatternToRegex(pattern, '_', '%')
+            val m = regex.matcher(s)
+            return m.matches()
+        }
+
+        fun likePatternToRegex(pattern: String, one: Char, many: Char): Pattern {
+            val buf = StringBuilder()
+            val raw = StringBuilder()
+            var esc = false
+
+            for (c in pattern) {
+                if (esc) {
+                    raw.append(c)
+                    esc = false
+                } else if (c == '\\') {
+                    esc = true
+                } else if (c == one || c == many) {
+                    if (raw.isNotEmpty()) buf.append(Pattern.quote(raw.toString()))
+                    raw.setLength(0)
+                    buf.append(if (c == many) ".*" else ".")
+                } else {
+                    raw.append(c)
+                }
+            }
+
+            if (raw.isNotEmpty()) buf.append(Pattern.quote(raw.toString()))
+            val s = buf.toString()
+            return Pattern.compile(s, Pattern.DOTALL)
+        }
+
+        private fun escape(s: String): String {
+            if (s.isEmpty()) return ""
+
+            val buf = StringBuilder(s.length)
+            for (c in s) {
+                if (c == '\t') {
+                    buf.append("\\t")
+                } else if (c == '\r') {
+                    buf.append("\\r")
+                } else if (c == '\n') {
+                    buf.append("\\n")
+                } else if (c == '\b') {
+                    buf.append("\\b")
+                } else if (c == '\\') {
+                    buf.append("\\\\")
+                } else if (c >= '\u0020' && c < '\u0080') {
+                    buf.append(c)
+                } else {
+                    buf.append("\\u")
+                    buf.append(String.format("%04x", c.toInt()))
+                }
+            }
+
+            return buf.toString()
+        }
+    }
+}
+
+private object GtvRtConversion_Text: GtvRtConversion() {
+    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvString(rt.asString())
+
+    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
+        val s = GtvRtUtils.gtvToString(ctx, gtv, R_TextType)
+        return ctx.rtValue {
+            Rt_TextValue.get(s)
+        }
     }
 }

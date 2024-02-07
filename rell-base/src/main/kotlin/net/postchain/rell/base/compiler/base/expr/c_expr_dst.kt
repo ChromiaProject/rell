@@ -10,6 +10,8 @@ import net.postchain.rell.base.compiler.ast.S_UpdateWhat
 import net.postchain.rell.base.compiler.base.core.C_LambdaBlock
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lib.type.Lib_Type_Entity
+import net.postchain.rell.base.lib.type.R_BooleanType
+import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.*

@@ -5,6 +5,7 @@
 package net.postchain.rell.base.runtime
 
 import com.google.common.io.Resources
+import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.immMapOf

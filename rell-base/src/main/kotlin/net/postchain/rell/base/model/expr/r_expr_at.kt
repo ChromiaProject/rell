@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.model.expr
 
+import net.postchain.rell.base.lib.type.Rt_ListValue
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.checkEquals

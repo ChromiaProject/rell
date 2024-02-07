@@ -8,7 +8,7 @@ import net.postchain.rell.base.compiler.ast.C_BinOp_EqNe
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.utils.C_Errors
-import net.postchain.rell.base.model.R_BooleanType
+import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 

@@ -14,6 +14,7 @@ import net.postchain.rell.base.compiler.base.fn.*
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.*
+import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.lmodel.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.Db_CallExpr

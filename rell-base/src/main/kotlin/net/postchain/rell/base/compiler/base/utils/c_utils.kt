@@ -22,6 +22,9 @@ import net.postchain.rell.base.compiler.parser.RellTokenizerState
 import net.postchain.rell.base.compiler.parser.S_Grammar
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.compiler.vexpr.V_ParameterDefaultValueExpr
+import net.postchain.rell.base.lib.type.R_ByteArrayType
+import net.postchain.rell.base.lib.type.R_IntegerType
+import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.runtime.utils.toGtv

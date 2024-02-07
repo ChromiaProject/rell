@@ -4,9 +4,13 @@
 
 package net.postchain.rell.base.model.expr
 
+import net.postchain.rell.base.lib.type.Rt_BooleanValue
+import net.postchain.rell.base.lib.type.Rt_ListValue
 import net.postchain.rell.base.model.R_FunctionBase
 import net.postchain.rell.base.model.R_FunctionDefinition
-import net.postchain.rell.base.model.R_MapType
+import net.postchain.rell.base.lib.type.R_MapType
+import net.postchain.rell.base.lib.type.Rt_MapValue
+import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.checkEquals

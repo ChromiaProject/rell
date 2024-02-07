@@ -10,12 +10,8 @@ import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty_RtVal
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_EnumType
-import net.postchain.rell.base.model.R_ListType
 import net.postchain.rell.base.model.expr.Db_SysFunction
 import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.runtime.Rt_IntValue
-import net.postchain.rell.base.runtime.Rt_ListValue
-import net.postchain.rell.base.runtime.Rt_TextValue
 import net.postchain.rell.base.utils.toImmList
 
 object Lib_Type_Enum {

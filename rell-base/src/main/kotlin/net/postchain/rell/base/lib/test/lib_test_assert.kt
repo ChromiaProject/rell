@@ -4,6 +4,8 @@
 
 package net.postchain.rell.base.lib.test
 
+import net.postchain.rell.base.lib.type.Rt_TextValue
+import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_ParamImplication
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionMetaBodyDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
