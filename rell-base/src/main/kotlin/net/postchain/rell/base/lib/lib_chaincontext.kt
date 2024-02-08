@@ -23,19 +23,23 @@ object Lib_ChainContext {
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("chain_context") {
             property("raw_config", type = "gtv", pure = false) {
+                comment("Blockchain configuration object for this blockchain in Gtv format.")
                 value { ctx ->
                     Rt_GtvValue.get(ctx.chainCtx.rawConfig)
                 }
             }
 
             property("blockchain_rid", type = "byte_array", pure = false) {
+                comment("Blockchain RID of this blockchain.")
                 value { ctx ->
                     val bcRid = ctx.chainCtx.blockchainRid
                     Rt_ByteArrayValue.get(bcRid.toByteArray())
                 }
             }
 
-            property("args", C_NsProperty_ChainContext_Args)
+            property("args", C_NsProperty_ChainContext_Args) {
+                comment("Module arguments for this module.")
+            }
         }
     }
 }

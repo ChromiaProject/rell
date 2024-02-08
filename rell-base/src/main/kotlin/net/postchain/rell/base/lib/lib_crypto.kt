@@ -41,13 +41,15 @@ object Lib_Crypto {
         alias(target = "crypto.eth_ecrecover")
 
         namespace("crypto") {
-            function("sha256", "byte_array") {
-                param("input", "byte_array")
+            function( "sha256", result = "byte_array") {
+                comment("Calculates an SHA-256 hash of a byte array and returns a byte array.")
+                param(name = "input", type = "byte_array", comment = "The byte array to be hashed.")
                 bodyRaw(Sha256)
             }
 
-            function("keccak256", "byte_array", pure = true) {
-                param("input", "byte_array")
+            function( "keccak256", result = "byte_array", pure = true) {
+                comment("Calculates a Keccak256 hash of a byte array and returns a byte array.")
+                param(name = "input", type = "byte_array", comment = "The byte array to be hashed.")
                 body { a ->
                     val data = a.asByteArray()
                     val res = keccak256(data)
@@ -55,11 +57,17 @@ object Lib_Crypto {
                 }
             }
 
-            function("verify_signature", "boolean", pure = true) {
-                param("data_hash", "byte_array")
-                param("pubkey", "pubkey")
-                param("signature", "byte_array")
-
+            function( "verify_signature", result = "boolean", pure = true) {
+                comment("""
+                    Verifies a signature against a message and public key.
+                    @returns true if the signature is valid, indicating that the message was indeed signed
+                    by the owner of the private key corresponding to the provided public key.
+                """)
+                param(name = "data_hash", type = "byte_array") {
+                    comment( "The byte array representing the message that was signed.")
+                }
+                param(name = "pubkey", type = "pubkey", comment = "The public key to verify the signature against.")
+                param(name = "signature", type = "byte_array", comment = "The 64-byte signature to verify.")
                 body { a, b, c ->
                     val dataHash = a.asByteArray()
                     val res = try {
@@ -72,12 +80,19 @@ object Lib_Crypto {
                 }
             }
 
-            function("eth_ecrecover", "byte_array", pure = true) {
-                param("r", "byte_array")
-                param("s", "byte_array")
-                param("rec_id", "integer")
-                param("data_hash", "byte_array")
-
+            function( "eth_ecrecover", result = "byte_array", pure = true) {
+                comment( """
+                    Calculates an Ethereum public key from a signature and hash.
+                    @returns a byte array representing the public key.
+                """)
+                param(name = "r", type = "byte_array", comment = "The first component of the Ethereum signature.")
+                param(name = "s", type = "byte_array", comment = "The second component of the Ethereum signature.")
+                param(name = "rec_id", type = "integer") {
+                    comment("The recovery identifier used for signature recovery.")
+                }
+                param(name = "data_hash", type = "byte_array") {
+                    comment("The byte array representing the hash that was signed.")
+                }
                 body { a, b, c, d ->
                     val r = a.asByteArray()
                     val s = b.asByteArray()
@@ -98,10 +113,17 @@ object Lib_Crypto {
             val signatureType = R_TupleType.create(R_ByteArrayType, R_ByteArrayType, R_IntegerType)
             val signatureTypeStr = "(byte_array,byte_array,integer)"
 
-            function("eth_sign", signatureTypeStr, pure = true) {
-                param("data_hash", "byte_array")
-                param("privkey", "byte_array")
-
+            function("eth_sign", result = signatureTypeStr, pure = true) {
+                comment( """
+                    Calculates an Ethereum signature.
+                    Takes a hash and a private key and returns values `r`, `s`,
+                    and `rec_id` that are accepted by `eth_ecrecover`.
+                    @returns tuple containing the ethereum signature components.
+                """ )
+                param(name = "data_hash", type = "byte_array") {
+                    comment("The byte array representing the hash to be signed.")
+                }
+                param(name = "privkey", type = "byte_array", comment = "The 32-byte private key used for signing.")
                 body { a, b ->
                     val hash = a.asByteArray()
                     val privKey = b.asByteArray()
@@ -109,7 +131,8 @@ object Lib_Crypto {
 
                     val signer = Signer(null)
                     val privKeyObj = PrivateKey.create(privKey)
-                    val sign = signer.create(hash, privKeyObj, net.postchain.rell.base.utils.etherjar.Signature::class.java)
+                    val sign =
+                        signer.create(hash, privKeyObj, net.postchain.rell.base.utils.etherjar.Signature::class.java)
 
                     val r = bigIntToRS(sign.r)
                     val s = bigIntToRS(sign.s)
@@ -128,7 +151,8 @@ object Lib_Crypto {
             }
 
             function("eth_privkey_to_address", result = "byte_array", pure = true) {
-                param(name = "privkey", type = "byte_array")
+                comment("Derives a 20-byte Ethereum address from a 32-byte private key.")
+                param(name = "privkey", type = "byte_array", comment = "The 32-byte private key.")
                 body { arg ->
                     val point = privkeyToPubkeyPoint(arg)
                     pointToEthAddressValue(point)
@@ -136,7 +160,8 @@ object Lib_Crypto {
             }
 
             function("eth_pubkey_to_address", result = "byte_array", pure = true) {
-                param(name = "pubkey", type = "byte_array")
+                comment("Derives a 20-byte Ethereum address from a public key (33, 64, or 65 bytes).")
+                param(name = "pubkey", type = "byte_array", comment = "The public key (33, 64, or 65 bytes).")
                 body { arg ->
                     val point = pubkeyToPoint(arg)
                     pointToEthAddressValue(point)
@@ -144,9 +169,11 @@ object Lib_Crypto {
             }
 
             function("privkey_to_pubkey", "byte_array", pure = true) {
-                param("privkey", "byte_array")
-                param("compressed", "boolean", arity = L_ParamArity.ZERO_ONE)
-
+                comment("Converts a privkey to a pubkey")
+                param("privkey", "byte_array", comment = "The private key")
+                param("compressed", "boolean", arity = L_ParamArity.ZERO_ONE) {
+                    comment("Whether or not the pubkey should be compressed. Defaults to false (uncompressed).")
+                }
                 bodyOpt1 { arg1, arg2 ->
                     val compressed = arg2?.asBoolean() ?: false
                     val point = privkeyToPubkeyPoint(arg1)
@@ -155,9 +182,15 @@ object Lib_Crypto {
                 }
             }
 
-            function("pubkey_encode", "byte_array", pure = true) {
-                param(name = "pubkey", type = "byte_array")
-                param(name = "compressed", type = "boolean", arity = L_ParamArity.ZERO_ONE)
+            function("pubkey_encode", result = "byte_array", pure = true) {
+                comment("Converts a public key between compressed (33-byte) and uncompressed (65-byte) formats.")
+                param(name = "pubkey", type = "byte_array", comment = "The public key to be encoded.")
+                param(name = "compressed", type = "boolean", arity = L_ParamArity.ZERO_ONE) {
+                    comment("""
+                        Boolean flag indicating whether to return the compressed (33-byte)
+                        or uncompressed (65-byte) public key. Defaults to false (uncompressed).
+                    """)
+                }
                 bodyOpt1 { arg1, arg2 ->
                     val compressed = arg2?.asBoolean() ?: false
                     val point = pubkeyToPoint(arg1)
@@ -166,8 +199,9 @@ object Lib_Crypto {
                 }
             }
 
-            function("pubkey_to_xy", "(big_integer,big_integer)", pure = true) {
-                param(name = "pubkey", type = "byte_array")
+            function("pubkey_to_xy", result = "(big_integer,big_integer)", pure = true) {
+                comment("Extracts the EC point coordinates (x, y) from a public key.")
+                param(name = "pubkey", type = "byte_array", comment = "The public key.")
                 body { arg ->
                     val point = pubkeyToPoint(arg)
                     val x = point.xCoord.toBigInteger()
@@ -178,10 +212,16 @@ object Lib_Crypto {
                 }
             }
 
-            function("xy_to_pubkey", "byte_array", pure = true) {
-                param(name = "x", type = "big_integer")
-                param(name = "y", type = "big_integer")
-                param(name = "compressed", type = "boolean", arity = L_ParamArity.ZERO_ONE)
+            function("xy_to_pubkey", result = "byte_array", pure = true) {
+                comment("Constructs a public key (compressed or uncompressed) from EC point coordinates.")
+                param(name = "x", type = "big_integer", comment = "The x-coordinate of the EC point.")
+                param(name = "y", type = "big_integer", comment = "The y-coordinate of the EC point.")
+                param(name = "compressed", type = "boolean", arity = L_ParamArity.ZERO_ONE) {
+                    comment("""
+                        Boolean flag indicating whether to return the compressed (33-byte)
+                        or uncompressed (65-byte) public key. Defaults to false (uncompressed).
+                    """)
+                }
                 bodyOpt2 { arg1, arg2, arg3 ->
                     val compressed = arg3?.asBoolean() ?: false
                     val point = xyToPoint(arg1, arg2)

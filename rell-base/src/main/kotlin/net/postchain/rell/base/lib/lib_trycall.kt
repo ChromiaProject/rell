@@ -14,26 +14,36 @@ import net.postchain.rell.base.utils.immListOf
 object Lib_TryCall {
     val NAMESPACE = Ld_NamespaceDsl.make {
         function("try_call", "boolean") {
-            param("fn", type = "() -> unit", exact = true)
+            comment("""
+                Calls a function that doesn't return a value and handles exceptions gracefully.
+                @returns `true` if call succeeds, `false` otherwise.
+            """)
+            param("fn", type = "() -> unit", exact = true, comment = "The function to be called.")
             bodyContext { ctx, f ->
                 tryCall(ctx, f, Rt_BooleanValue.TRUE) { Rt_BooleanValue.FALSE }
             }
         }
 
-        function("try_call") {
+        function("try_call", result = "T?") {
+            comment("""
+                Calls a function and handles exceptions gracefully, returning null if an exception occurs.
+                @returns `T` if call succeeds, `null` otherwise.
+            """)
             generic("T")
-            result(type = "T?")
-            param("fn", type = "() -> T")
+            param("fn", type = "() -> T", comment = "The function to be called.")
             bodyContext { ctx, f ->
                 tryCall(ctx, f, null) { Rt_NullValue }
             }
         }
 
-        function("try_call") {
+        function("try_call", result = "T") {
+            comment("""
+                Calls a function and handles exceptions gracefully, providing a fallback value if an exception occurs.
+                @returns `T` if call succeeds and the supplied default value otherwise.
+            """)
             generic("T")
-            result(type = "T")
-            param("fn", type = "() -> T")
-            param("default", type = "T", lazy = true)
+            param("fn", type = "() -> T", comment = "The function to be called.")
+            param("default", type = "T", lazy = true, comment = "The fallback value to be returned if an exception occurs.")
             bodyContext { ctx, f, v ->
                 tryCall(ctx, f, null) { v.asLazyValue() }
             }

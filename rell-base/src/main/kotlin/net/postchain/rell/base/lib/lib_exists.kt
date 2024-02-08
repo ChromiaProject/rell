@@ -28,8 +28,18 @@ import net.postchain.rell.base.utils.checkEquals
 
 object Lib_Exists {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        function("exists", C_SysFn_Exists(false))
-        function("empty", C_SysFn_Exists(true))
+        function("exists", C_SysFn_Exists(false)) {
+            comment("""
+                Checks if the value is null or empty.
+                @returns true if the value is not not or not empty.
+            """)
+        }
+        function("empty", C_SysFn_Exists(true)) {
+            comment("""
+                Checks if the value is null or empty.
+                @returns true if the value is not or empty.
+            """)
+        }
     }
 }
 

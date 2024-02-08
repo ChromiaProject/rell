@@ -64,8 +64,12 @@ object Lib_OpContext {
         }
 
         namespace("op_context") {
-            extension("struct_op_ext", type = "mirror_struct<-operation>") {
+            extension( "struct_op_ext", type = "mirror_struct<-operation>") {
                 function("to_gtx_operation", "gtx_operation") {
+                    comment( """
+                        Converts a mirror struct representing an operation to a `gtx_operation`.
+                        The mirror struct should contain the mount name and arguments of the operation.
+                    """)
                     body { a ->
                         val (mountName, gtvArgs) = Lib_Type_Struct.decodeOperation(a)
                         val nameValue = Rt_TextValue.get(mountName.str())
@@ -77,21 +81,24 @@ object Lib_OpContext {
                 }
             }
 
-            property("exists", type = "boolean", pure = false) {
+            property( "exists", type = "boolean", pure = false) {
+                comment("Indicates whether the code is being called from an operation.")
                 value { ctx ->
                     val v = ctx.exeCtx.opCtx.exists()
                     Rt_BooleanValue.get(v)
                 }
             }
 
-            property("last_block_time", type = "integer", pure = false) {
+            property( "last_block_time", type = "integer", pure = false) {
+                comment("Returns the timestamp of the last block in milliseconds.")
                 validate(::checkCtx)
                 value { ctx ->
                     Rt_IntValue.get(ctx.exeCtx.opCtx.lastBlockTime())
                 }
             }
 
-            property("block_height", type = "integer", pure = false) {
+            property( "block_height", type = "integer", pure = false) {
+                comment("Provides the height of the block currently being built.")
                 validate(::checkCtx)
                 value { ctx ->
                     Rt_IntValue.get(ctx.exeCtx.opCtx.blockHeight())
@@ -99,6 +106,7 @@ object Lib_OpContext {
             }
 
             property("op_index", type = "integer", pure = false) {
+                comment("Indicates the index of the operation being executed within the transaction.")
                 validate(::checkCtx)
                 value { ctx ->
                     Rt_IntValue.get(ctx.exeCtx.opCtx.opIndex().toLong())
@@ -108,6 +116,7 @@ object Lib_OpContext {
             property("transaction", PropTransaction)
 
             function("get_signers", result = "list<byte_array>") {
+                comment("Returns a list of pubkeys representing the signers of the current transaction.")
                 validate(::checkCtx)
                 bodyContext { ctx ->
                     val opCtx = ctx.exeCtx.opCtx
@@ -117,7 +126,8 @@ object Lib_OpContext {
             }
 
             function("is_signer", result = "boolean") {
-                param("pubkey", type = "byte_array")
+                comment("Checks if the provided public key is one of the signers of the current transaction.")
+                param("pubkey", type = "byte_array", comment = "The public key to check.")
                 validate(::checkCtx)
                 bodyContext { ctx, a ->
                     val bytes = a.asByteArray().toBytes()
@@ -127,6 +137,10 @@ object Lib_OpContext {
             }
 
             function("get_all_operations", result = "list<gtx_operation>") {
+                comment( """
+                    Gets all operations in this transaction.
+                    @returns a list of all operations within the current transaction.
+                """)
                 validate(::checkCtx)
                 bodyContext { ctx ->
                     val elements = ctx.exeCtx.opCtx.allOperations().toMutableList()
@@ -135,6 +149,7 @@ object Lib_OpContext {
             }
 
             function("get_current_operation", result = "gtx_operation") {
+                comment("Retrieves the current operation.")
                 validate(::checkCtx)
                 bodyContext { ctx ->
                     ctx.exeCtx.opCtx.currentOperation()
@@ -142,8 +157,9 @@ object Lib_OpContext {
             }
 
             function("emit_event", result = "unit") {
-                param("type", type = "text")
-                param("data", type = "gtv")
+                comment("Emits an event with the provided type and data.")
+                param("type", type = "text", comment = "Name of the event to emit.")
+                param("data", type = "gtv", comment = "Data to emit")
                 validate(::checkCtx)
                 bodyContext { ctx, arg1, arg2 ->
                     val type = arg1.asString()

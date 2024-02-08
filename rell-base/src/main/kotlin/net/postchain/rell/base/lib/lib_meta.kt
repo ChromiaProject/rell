@@ -25,9 +25,15 @@ object Lib_Meta {
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell") {
             type("meta", rType = R_RellMetaType) {
-                constructor(C_SysFn_Meta)
+                constructor(C_SysFn_Meta) {
+                    comment("""
+                       Returns a value of type `rell.meta` describing the given definition (specified by name).
+                       The definition can be: entity, object, operation, query."
+                    """)
+                }
 
                 property("simple_name", type = "text", pure = true) {
+                    comment("Gets the simple name of the meta-information.")
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
                         v.simpleName
@@ -35,6 +41,7 @@ object Lib_Meta {
                 }
 
                 property("full_name", type = "text", pure = true) {
+                    comment("Gets the full name, including the module name.")
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
                         v.fullName
@@ -42,6 +49,7 @@ object Lib_Meta {
                 }
 
                 property("module_name", type = "text", pure = true) {
+                    comment("Gets the module name.")
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
                         v.moduleName
@@ -49,6 +57,7 @@ object Lib_Meta {
                 }
 
                 property("mount_name", type = "text", pure = true) {
+                    comment("Gets the mount name.")
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
                         v.mountName

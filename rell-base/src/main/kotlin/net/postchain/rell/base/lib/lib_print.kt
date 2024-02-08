@@ -12,7 +12,8 @@ import net.postchain.rell.base.lib.type.Rt_UnitValue
 object Lib_Print {
     val NAMESPACE = Ld_NamespaceDsl.make {
         function("print", result = "unit") {
-            param("values", type = "anything", arity = L_ParamArity.ZERO_MANY)
+            comment("Prints the given message to the node log")
+            param("values", type = "anything", arity = L_ParamArity.ZERO_MANY, comment = "Any string or value")
             bodyContextN { ctx, args ->
                 val str = args.joinToString(" ") { it.str() }
                 ctx.globalCtx.outPrinter.print(str)
@@ -21,7 +22,8 @@ object Lib_Print {
         }
 
         function("log", result = "unit") {
-            param("values", type = "anything", arity = L_ParamArity.ZERO_MANY)
+            comment("Prints the given message to the node log with timestamp")
+            param("values", type = "anything", arity = L_ParamArity.ZERO_MANY, comment = "Any string or value")
 
             bodyMeta {
                 val filePos = fnBodyMeta.callPos.toFilePos()
