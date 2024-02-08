@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.sql
@@ -80,7 +80,7 @@ object SqlUtils {
         return res
     }
 
-    private fun getTableIndexes(con: Connection, schema: String, table: String): List<SqlIndex> {
+    fun getTableIndexes(con: Connection, schema: String, table: String): List<SqlIndex> {
         class IndexRec(val unique: Boolean, val ordinal: Int, val column: String)
         val map = HashMultimap.create<String, IndexRec>()
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.repl
@@ -72,10 +72,10 @@ class ReplSqlTest: BaseRellTest(true) {
 
     @Test fun testSqlInitError() {
         initSql("entity user { name; }", "c0.user", "name", "0,'Bob'", "1,'Alice'")
-        file("u1.rell", "module; entity user { key name; }")
+        file("u1.rell", "module; @log entity user { name; }")
         file("u2.rell", "module; entity user { name; }")
         repl.chk("\\db-auto", "CMD:db-auto:true")
-        repl.chk("import u1;", "rt_err:dbinit:index_diff:user:code:key:name")
+        repl.chk("import u1;", "rt_err:meta:entity:diff_log:user:false:true")
         repl.chk("import u2;")
         repl.chk("u2.user @* {} (.name)", "RES:list<text>[text[Bob],text[Alice]]")
     }

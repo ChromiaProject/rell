@@ -1,13 +1,13 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.sql
 
-import com.google.common.collect.Sets
 import mu.KLogger
 import mu.KLogging
 import net.postchain.rell.base.model.R_EntityDefinition
+import net.postchain.rell.base.model.R_KeyIndex
 import net.postchain.rell.base.model.R_ObjectDefinition
 import net.postchain.rell.base.model.expr.R_AttributeDefaultValueExpr
 import net.postchain.rell.base.model.expr.R_CreateExpr
@@ -17,11 +17,12 @@ import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_ExecutionContext
 import net.postchain.rell.base.runtime.utils.Rt_Messages
 import net.postchain.rell.base.runtime.utils.Rt_Utils
+import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.ProjExt
 import net.postchain.rell.base.utils.toImmSet
 
-private val ORD_TABLES = 0
-private val ORD_RECORDS = 1
+private val ORD_TABLES = SqlInitStepOrder.TABLES
+private val ORD_RECORDS = SqlInitStepOrder.RECORDS
 
 class SqlInitLogging(
         val header: Boolean = false,
@@ -224,12 +225,12 @@ private class SqlEntityIniter private constructor(
 
     private fun processEntity(entity: R_EntityDefinition, type: MetaEntityType): Boolean {
         val metaEntity = metaData[entity.metaName]
-        if (metaEntity == null) {
+        return if (metaEntity == null) {
             processNewEntity(entity, type)
-            return true
+            true
         } else {
             processExistingEntity(entity, type, metaEntity)
-            return false
+            false
         }
     }
 
@@ -261,12 +262,13 @@ private class SqlEntityIniter private constructor(
 
         checkAttrTypes(entity, metaCls)
         checkOldAttrs(entity, metaCls)
-        checkSqlIndexes(entity)
 
         val newAttrs = entity.strAttributes.keys.filter { it !in metaCls.attrs }
-        if (!newAttrs.isEmpty()) {
+        if (newAttrs.isNotEmpty()) {
             processNewAttrs(entity, metaCls.id, newAttrs)
         }
+
+        processIndexes(entity)
     }
 
     private fun checkAttrTypes(entity: R_EntityDefinition, metaEntity: MetaEntity) {
@@ -286,7 +288,7 @@ private class SqlEntityIniter private constructor(
 
     private fun checkOldAttrs(entity: R_EntityDefinition, metaEntity: MetaEntity) {
         val oldAttrs = metaEntity.attrs.keys.filter { it !in entity.strAttributes }.sorted()
-        if (!oldAttrs.isEmpty()) {
+        if (oldAttrs.isNotEmpty()) {
             val codeList = oldAttrs.joinToString(",")
             val msgList = oldAttrs.joinToString(", ")
             if (initCtx.logging.metaNoCode) {
@@ -294,41 +296,6 @@ private class SqlEntityIniter private constructor(
                 initCtx.msgs.warning("dbinit:no_code:attrs:${entity.metaName}:$codeList",
                         "Table columns for undefined attributes of ${metaEntity.type.en} $entityName found: $msgList")
             }
-        }
-    }
-
-    private fun checkSqlIndexes(entity: R_EntityDefinition) {
-        val table = sqlTables.getValue(entity.sqlMapping.table(sqlCtx))
-        val sqlIndexes = table.indexes.filter { !(it.unique && it.cols == listOf(SqlConstants.ROWID_COLUMN)) }
-
-        val codeIndexes = mutableListOf<SqlIndex>()
-        codeIndexes.addAll(entity.keys.map { SqlIndex("", true, it.attribs.map { it.str }) })
-        codeIndexes.addAll(entity.indexes.map { SqlIndex("", false, it.attribs.map { it.str }) })
-
-        compareSqlIndexes(entity, "database", sqlIndexes, "code", codeIndexes, true)
-        compareSqlIndexes(entity, "database", sqlIndexes, "code", codeIndexes, false)
-        compareSqlIndexes(entity, "code", codeIndexes, "database", sqlIndexes, true)
-        compareSqlIndexes(entity, "code", codeIndexes, "database", sqlIndexes, false)
-    }
-
-    private fun compareSqlIndexes(
-            entity: R_EntityDefinition,
-            aPlace: String,
-            aIndexes: List<SqlIndex>,
-            bPlace: String,
-            bIndexes: List<SqlIndex>,
-            unique: Boolean
-    ) {
-        val a = aIndexes.filter { it.unique == unique }.map { it.cols }.toSet()
-        val b = bIndexes.filter { it.unique == unique }.map { it.cols }.toSet()
-        val indexType = if (unique) "key" else "index"
-
-        val aOnly = Sets.difference(a, b)
-        for (cols in aOnly) {
-            val colsShort = cols.joinToString(",")
-            val entityName = msgEntityName(entity)
-            initCtx.msgs.error("dbinit:index_diff:${entity.metaName}:$aPlace:$indexType:$colsShort",
-                    "Entity $entityName: $indexType $cols exists in $aPlace, but not in $bPlace")
         }
     }
 
@@ -352,16 +319,12 @@ private class SqlEntityIniter private constructor(
     }
 
     private fun makeCreateExprAttrs(
-            entity: R_EntityDefinition,
-            newAttrs: List<String>,
-            existingRecs: Boolean
+        entity: R_EntityDefinition,
+        newAttrs: List<String>,
+        existingRecs: Boolean,
     ): List<R_CreateExprAttr> {
-        val res = mutableListOf<R_CreateExprAttr>()
-
-        val keys = entity.keys.flatMap { it.attribs }.map { it.str }.toSet()
-        val indexes = entity.indexes.flatMap { it.attribs }.map { it.str }.toSet()
-
         val entityName = msgEntityName(entity)
+        val res = mutableListOf<R_CreateExprAttr>()
 
         for (name in newAttrs) {
             val attr = entity.strAttributes.getValue(name)
@@ -373,18 +336,90 @@ private class SqlEntityIniter private constructor(
                 initCtx.msgs.error("meta:attr:new_no_def_value:${entity.metaName}:$name",
                         "New attribute '$name' of entity $entityName has no default value")
             }
-
-            if (name in keys) {
-                initCtx.msgs.error("meta:attr:new_key:${entity.metaName}:$name",
-                        "New attribute '$name' of entity $entityName is a key, adding key attributes not supported")
-            }
-            if (name in indexes) {
-                initCtx.msgs.error("meta:attr:new_index:${entity.metaName}:$name",
-                        "New attribute '$name' of entity $entityName is an index, adding index attributes not supported")
-            }
         }
 
         return res
+    }
+
+    private fun processIndexes(entity: R_EntityDefinition) {
+        val entityName = msgEntityName(entity)
+        val tableName = entity.sqlMapping.table(sqlCtx)
+        val sqlTable = sqlTables.getValue(tableName)
+
+        // First dropping old indexes, then creating new indexes - supposedly this way is more efficient.
+        processMissingIndexes(entity, sqlTable, tableName, entityName)
+        processNewIndexes(entity, sqlTable, tableName, entityName)
+    }
+
+    private fun processMissingIndexes(
+        entity: R_EntityDefinition,
+        table: SqlTable,
+        tableName: String,
+        entityName: String,
+    ) {
+        val codeIndexIds0 = entity.keys.map { SqlIndexId(it, true) } + entity.indexes.map { SqlIndexId(it, false) }
+        val codeIndexIds = codeIndexIds0.toSet()
+
+        val rowidCols = listOf(SqlConstants.ROWID_COLUMN)
+        val (sqlKeys, sqlIndexes) = table.indexes
+            .filterNot { it.unique && it.cols == rowidCols }
+            .sortedWith(::compareIndexes)
+            .partition { it.unique }
+
+        for (sqlKey in sqlKeys) {
+            if (SqlIndexId(sqlKey) !in codeIndexIds) {
+                val sql = "ALTER TABLE \"${tableName}\" DROP CONSTRAINT \"${sqlKey.name}\";"
+                val msg = "Drop key of entity $entityName: ${sqlKey.name} ${sqlKey.cols}"
+                initCtx.step(ORD_RECORDS, msg, SqlStepAction_ExecSql(sql))
+            }
+        }
+
+        for (sqlIndex in sqlIndexes) {
+            if (SqlIndexId(sqlIndex) !in codeIndexIds) {
+                val sql = "DROP INDEX \"${sqlIndex.name}\";"
+                val msg = "Drop index of entity $entityName: ${sqlIndex.name} ${sqlIndex.cols}"
+                initCtx.step(ORD_RECORDS, msg, SqlStepAction_ExecSql(sql))
+            }
+        }
+    }
+
+    private fun processNewIndexes(
+        entity: R_EntityDefinition,
+        sqlTable: SqlTable,
+        tableName: String,
+        entityName: String,
+    ) {
+        val sqlIndexNames = sqlTable.indexes.map { it.name }
+        val sqlIndexIds = sqlTable.indexes.map { SqlIndexId(it) }.toSet()
+
+        val keyNameGen = SqlGen.keyNameGen(tableName, sqlIndexNames)
+        for (rKey in entity.keys) {
+            if (SqlIndexId(rKey, true) !in sqlIndexIds) {
+                val sql = SqlGen.genCreateKeySql(tableName, rKey, keyNameGen)
+                val msg = "Create key of entity $entityName: ${rKey.attribs}"
+                initCtx.step(ORD_RECORDS, msg, SqlStepAction_ExecSql(sql))
+            }
+        }
+
+        val indexNameGen = SqlGen.indexNameGen(tableName, sqlIndexNames)
+        for (rIndex in entity.indexes) {
+            if (SqlIndexId(rIndex, false) !in sqlIndexIds) {
+                val sql = SqlGen.genCreateIndexSql(entity, tableName, rIndex, indexNameGen)
+                val msg = "Create index of entity $entityName: ${rIndex.attribs}"
+                initCtx.step(ORD_RECORDS, msg, SqlStepAction_ExecSql(sql))
+            }
+        }
+    }
+
+    private fun compareIndexes(index1: SqlIndex, index2: SqlIndex): Int {
+        var d = -index1.unique.compareTo(index2.unique)
+        if (d == 0) d = CommonUtils.compareLists(index1.cols, index2.cols)
+        return d
+    }
+
+    private data class SqlIndexId(val unique: Boolean, val cols: List<String>) {
+        constructor(sqlIndex: SqlIndex): this(sqlIndex.unique, sqlIndex.cols)
+        constructor(rKeyIndex: R_KeyIndex, unique: Boolean): this(unique, rKeyIndex.attribs.map { it.str })
     }
 
     companion object {
@@ -400,20 +435,34 @@ private class SqlEntityIniter private constructor(
     }
 }
 
+private enum class SqlInitStepOrder {
+    TABLES,
+    RECORDS,
+}
+
 private class SqlInitCtx(logger: KLogger, val logging: SqlInitLogging, val objsInit: SqlObjectsInit) {
     val msgs = Rt_Messages(logger)
 
     private val steps = mutableListOf<SqlInitStep>()
 
     fun checkErrors() = msgs.checkErrors()
-    fun step(order: Int, title: String, action: SqlStepAction) = steps.add(SqlInitStep(order, steps.size, title, action))
+
+    fun step(order: SqlInitStepOrder, title: String, action: SqlStepAction) {
+        steps.add(SqlInitStep(order, steps.size, title, action))
+    }
+
     fun steps() = steps.toList().sorted()
 }
 
-private class SqlInitStep(val order: Int, val order2: Int, val title: String, val action: SqlStepAction): Comparable<SqlInitStep> {
+private class SqlInitStep(
+    val order: SqlInitStepOrder,
+    val order2: Int,
+    val title: String,
+    val action: SqlStepAction,
+): Comparable<SqlInitStep> {
     override fun compareTo(other: SqlInitStep): Int {
-        var d = Integer.compare(order, other.order)
-        if (d == 0) d = Integer.compare(order2, other.order2)
+        var d = order.compareTo(other.order)
+        if (d == 0) d = order2.compareTo(other.order2)
         return d
     }
 }

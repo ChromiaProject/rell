@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.sql
@@ -11,6 +11,7 @@ import net.postchain.rell.base.runtime.Rt_SqlContext
 import net.postchain.rell.base.utils.toImmMap
 import org.jooq.Constraint
 import org.jooq.CreateTableColumnStep
+import org.jooq.DSLContext
 import org.jooq.DataType
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
@@ -24,7 +25,7 @@ private val disableLogo = run {
 object SqlGen {
     private val disableLogo2 = disableLogo
 
-    val DSL_CTX = DSL.using(SQLDialect.POSTGRES)
+    val DSL_CTX: DSLContext = DSL.using(SQLDialect.POSTGRES)
 
     // (!) When changing a function, change its name e.g. to fn_v2. Functions in the database are not upgraded - a function is created
     // only once, if there is no function with the same name in the database.
@@ -160,7 +161,7 @@ object SqlGen {
         return genEntity(sqlCtx, rEntity, tableName)
     }
 
-    fun genEntity(sqlCtx: Rt_SqlContext, rEntity: R_EntityDefinition, tableName: String): String {
+    private fun genEntity(sqlCtx: Rt_SqlContext, rEntity: R_EntityDefinition, tableName: String): String {
         val mapping = rEntity.sqlMapping
         val rowid = mapping.rowidColumn()
         val attrs = rEntity.attributes.values
@@ -168,32 +169,24 @@ object SqlGen {
         val t = DSL_CTX.createTable(tableName)
 
         val constraints = mutableListOf<Constraint>()
-        constraints.add(constraint("PK_" + tableName).primaryKey(rowid))
+        constraints.add(constraint("PK_$tableName").primaryKey(rowid))
         constraints += genAttrConstraints(sqlCtx, tableName, attrs)
 
         var q = t.column(rowid, SQLDataType.BIGINT.nullable(false))
         q = genAttrColumns(attrs, q)
 
-        for ((kidx, key) in rEntity.keys.withIndex()) {
-            val attribs = key.attribs.map { it.str }
-            constraints.add(constraint("K_${tableName}_${kidx}").unique(*attribs.toTypedArray()))
+        val keyNameGen = keyNameGen(tableName, listOf())
+        for (rKey in rEntity.keys) {
+            val c = makeConstraint(rKey, keyNameGen)
+            constraints.add(c)
         }
 
         var ddl = q.constraints(*constraints.toTypedArray()).toString() + ";\n"
 
-        val jsonAttribSet = attrs.filter { it.type is R_JsonType }.map { it.name }.toSet()
-
-        for ((iidx, index) in rEntity.indexes.withIndex()) {
-            val indexName = "IDX_${tableName}_${iidx}"
-            val indexSql : String
-            if (index.attribs.size == 1 && jsonAttribSet.contains(index.attribs[0].str)) {
-                val attrName = index.attribs[0]
-                indexSql = """CREATE INDEX "$indexName" ON "$tableName" USING gin ("${attrName}" jsonb_path_ops)"""
-            } else {
-                val attribs = index.attribs.map { it.str }
-                indexSql = (DSL_CTX.createIndex(indexName).on(tableName, *attribs.toTypedArray())).toString();
-            }
-            ddl += indexSql + ";\n";
+        val indexNameGen = indexNameGen(tableName, listOf())
+        for (rIndex in rEntity.indexes) {
+            val indexSql = genCreateIndexSql(rEntity, tableName, rIndex, indexNameGen)
+            ddl += "$indexSql;\n"
         }
 
         return ddl
@@ -224,6 +217,41 @@ object SqlGen {
         return constraints
     }
 
+    fun keyNameGen(table: String, existingNames: Collection<String>): SqlNameGen {
+        return SqlNameGen("K_${table}_%d", existingNames)
+    }
+
+    fun genCreateKeySql(table: String, rKey: R_Key, nameGen: SqlNameGen): String {
+        val c = makeConstraint(rKey, nameGen)
+        return DSL_CTX.alterTable(table).add(c).toString()
+    }
+
+    private fun makeConstraint(rKey: R_Key, nameGen: SqlNameGen): Constraint {
+        val keyName = nameGen.nextName()
+        val attribs = rKey.attribs.map { it.str }
+        return constraint(keyName).unique(*attribs.toTypedArray())
+    }
+
+    fun indexNameGen(table: String, existingNames: Collection<String>): SqlNameGen {
+        return SqlNameGen("IDX_${table}_%d", existingNames)
+    }
+
+    fun genCreateIndexSql(rEntity: R_EntityDefinition, table: String, index: R_Index, nameGen: SqlNameGen): String {
+        val indexName = nameGen.nextName()
+        return if (index.attribs.size == 1 && isJsonAttr(rEntity, index.attribs[0].str)) {
+            val attrName = index.attribs[0]
+            """CREATE INDEX "$indexName" ON "$table" USING gin ("$attrName" jsonb_path_ops)"""
+        } else {
+            val attribs = index.attribs.map { it.str }
+            DSL_CTX.createIndex(indexName).on(table, *attribs.toTypedArray()).toString()
+        }
+    }
+
+    private fun isJsonAttr(rEntity: R_EntityDefinition, name: String): Boolean {
+        val attr = rEntity.strAttributes[name]
+        return attr?.type == R_JsonType
+    }
+
     fun genAddColumnSql(table: String, attr: R_Attribute, nullable: Boolean): String {
         val type = getSqlType(attr.type).nullable(nullable)
         val b = DSL_CTX.alterTable(table).addColumn(attr.sqlMapping, type)
@@ -245,6 +273,21 @@ object SqlGen {
     }
 
     fun joinSqls(sqls: List<String>) = sqls.joinToString("\n") + "\n"
+}
+
+class SqlNameGen(private val pattern: String, existingNames: Collection<String>) {
+    private val existingNames = existingNames.toMutableSet()
+    private var nextIndex = 0
+
+    fun nextName(): String {
+        while (true) {
+            val name = pattern.format(nextIndex)
+            if (existingNames.add(name)) {
+                return name
+            }
+            ++nextIndex
+        }
+    }
 }
 
 private fun getSqlType(t: R_Type): DataType<*> {

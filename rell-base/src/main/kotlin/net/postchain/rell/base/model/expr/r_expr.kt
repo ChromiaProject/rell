@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model.expr
@@ -445,7 +445,7 @@ sealed class R_CreateExpr(type: R_Type, private val rEntity: R_EntityDefinition)
             }
 
             val constraintsSql = SqlGen.genAddAttrConstraintsSql(sqlCtx, table, attrs.map { it.attr })
-            if (!constraintsSql.isEmpty()) {
+            if (constraintsSql.isNotEmpty()) {
                 b.append(constraintsSql)
                 b.append(";\n")
             }

@@ -1,14 +1,13 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.misc
 
-import net.postchain.rell.base.sql.NullSqlInitProjExt
-import net.postchain.rell.base.sql.SqlInit
-import net.postchain.rell.base.sql.SqlInitLogging
-import net.postchain.rell.base.sql.SqlUtils
+import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.testutils.*
+import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.immSetOf
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -443,21 +442,31 @@ class SqlInitTest: BaseContextTest(useSql = true) {
 
     @Test fun testAddEntityAttrKey() {
         chkInit("entity user { name; }")
-        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8)")
+        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8,key(rowid))", true)
         chkData()
 
-        chkInit("entity user { name; key id: integer; }", "rt_err:dbinit:index_diff:user:code:key:id,meta:attr:new_key:user:id")
-        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8)")
+        chkInit("entity user { name; key id: integer; }")
+        chkAll(
+            "0,user,class,false",
+            "0,id,sys:integer 0,name,sys:text",
+            "c0.user(id:int8,name:text,rowid:int8,key(rowid),key(id))",
+            true,
+        )
         chkData()
     }
 
     @Test fun testAddEntityAttrIndex() {
         chkInit("entity user { name; }")
-        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8)")
+        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8,key(rowid))", indexes = true)
         chkData()
 
-        chkInit("entity user { name; index id: integer; }", "rt_err:dbinit:index_diff:user:code:index:id,meta:attr:new_index:user:id")
-        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8)")
+        chkInit("entity user { name; index id: integer; }")
+        chkAll(
+            "0,user,class,false",
+            "0,id,sys:integer 0,name,sys:text",
+            "c0.user(id:int8,name:text,rowid:int8,key(rowid),index(id))",
+            indexes = true,
+        )
         chkData()
     }
 
@@ -560,47 +569,67 @@ class SqlInitTest: BaseContextTest(useSql = true) {
     }
 
     private fun chkKeyIndexChange(key: String, index: String) {
-        val attrs = "first_name: text; last_name: text; address: text; year_ob: integer;"
-        chkKeyIndex(attrs, "$key last_name, first_name;", "OK")
+        chkKeyIndex("$key last_name, first_name;", "key(rowid),$key(last_name,first_name)")
 
-        val errPref = "dbinit:index_diff:user"
-        val err1 = "rt_err:$errPref:database:$key:last_name,first_name"
-        val errBase = "$err1,$errPref"
+        chkKeyIndex("$key first_name, last_name;", "key(rowid),$key(first_name,last_name)")
+        chkKeyIndex("$key first_name;", "key(rowid),$key(first_name)")
+        chkKeyIndex("$key last_name;", "key(rowid),$key(last_name)")
+        chkKeyIndex("", "key(rowid)")
+        chkKeyIndex("$key last_name, address;", "key(rowid),$key(last_name,address)")
+        chkKeyIndex("$key last_name, first_name, address;", "key(rowid),$key(last_name,first_name,address)")
+        chkKeyIndex("$key address, last_name, first_name;", "key(rowid),$key(address,last_name,first_name)")
+        chkKeyIndex("$key year_ob, last_name, first_name;", "key(rowid),$key(year_ob,last_name,first_name)")
 
-        chkKeyIndex(attrs, "$key first_name, last_name;", "$errBase:code:$key:first_name,last_name")
-        chkKeyIndex(attrs, "$key first_name;", "$errBase:code:$key:first_name")
-        chkKeyIndex(attrs, "$key last_name;", "$errBase:code:$key:last_name")
-        chkKeyIndex(attrs, "", "$err1")
-        chkKeyIndex(attrs, "$key last_name, address;", "$errBase:code:$key:last_name,address")
-        chkKeyIndex(attrs, "$key last_name, first_name, address;", "$errBase:code:$key:last_name,first_name,address")
-        chkKeyIndex(attrs, "$key address, last_name, first_name;", "$errBase:code:$key:address,last_name,first_name")
-        chkKeyIndex(attrs, "$key year_ob, last_name, first_name;", "$errBase:code:$key:year_ob,last_name,first_name")
-
-        chkKeyIndex(attrs, "$index last_name, first_name;", "$errBase:code:$index:last_name,first_name")
-        chkKeyIndex(attrs, "$key last_name, first_name; $key address;", "rt_err:$errPref:code:$key:address")
-        chkKeyIndex(attrs, "$key last_name, first_name; $key address, year_ob;", "rt_err:$errPref:code:$key:address,year_ob")
-        chkKeyIndex(attrs, "$key last_name, first_name; $key address, last_name;", "rt_err:$errPref:code:$key:address,last_name")
-        chkKeyIndex(attrs, "$key last_name, first_name; $index address;", "rt_err:$errPref:code:$index:address")
-        chkKeyIndex(attrs, "$key last_name, first_name; $index address, year_ob;", "rt_err:$errPref:code:$index:address,year_ob")
-        chkKeyIndex(attrs, "$key last_name, first_name; $index address, last_name;", "rt_err:$errPref:code:$index:address,last_name")
+        chkKeyIndex("$index last_name, first_name;", "key(rowid),$index(last_name,first_name)")
+        chkKeyIndex("$key last_name, first_name; $key address;",
+            "key(rowid),$key(address),$key(last_name,first_name)")
+        chkKeyIndex("$key last_name, first_name; $key address, year_ob;",
+            "key(rowid),$key(address,year_ob),$key(last_name,first_name)")
+        chkKeyIndex("$key last_name, first_name; $key address, last_name;",
+            "key(rowid),$key(address,last_name),$key(last_name,first_name)")
+        chkKeyIndex("$key last_name, first_name; $index address;",
+            "key(rowid),$index(address),$key(last_name,first_name)")
+        chkKeyIndex("$key last_name, first_name; $index address, year_ob;",
+            "key(rowid),$index(address,year_ob),$key(last_name,first_name)")
+        chkKeyIndex("$key last_name, first_name; $index address, last_name;",
+            "key(rowid),$index(address,last_name),$key(last_name,first_name)")
     }
 
-    private fun chkKeyIndex(attrs: String, extra: String, expected: String) {
-        chkInit("entity user { $attrs $extra }", expected)
+    private fun chkKeyIndex(extra: String, expected: String) {
+        val attrs = "first_name: text; last_name: text; address: text; year_ob: integer;"
+        chkInit("entity user { $attrs $extra }")
+        chkAll(
+            "0,user,class,false",
+            "0,address,sys:text 0,first_name,sys:text 0,last_name,sys:text 0,year_ob,sys:integer",
+            "c0.user(address:text,first_name:text,last_name:text,rowid:int8,year_ob:int8,$expected)",
+            indexes = true,
+        )
+    }
+
+    @Test fun testKeyAddConflict() {
+        chkInit("entity user { name; }")
+        insert("c0.user", "name", "100,'Bob'")
+        insert("c0.user", "name", "101,'Bob'")
+        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8,key(rowid))", true)
+        chkData("c0.user(100,Bob)", "c0.user(101,Bob)")
+
+        chkInit("entity user { key name; }", "rt_err:sqlerr:0")
+        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8,key(rowid))", true)
+        chkData("c0.user(100,Bob)", "c0.user(101,Bob)")
     }
 
     @Test fun testKeyRemove() {
         chkInit("entity user { key name; }")
-        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8)")
-        chkInit("entity user { name; }", "rt_err:dbinit:index_diff:user:database:key:name")
-        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8)")
+        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8,key(rowid),key(name))", true)
+        chkInit("entity user { name; }")
+        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8,key(rowid))", true)
     }
 
     @Test fun testIndexRemove() {
         chkInit("entity user { index name; }")
-        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8)")
-        chkInit("entity user { name; }", "rt_err:dbinit:index_diff:user:database:index:name")
-        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8)")
+        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8,key(rowid),index(name))", true)
+        chkInit("entity user { name; }")
+        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8,key(rowid))", true)
     }
 
     @Test fun testDropAll() {
@@ -685,11 +714,16 @@ class SqlInitTest: BaseContextTest(useSql = true) {
         }
     }
 
-    private fun chkAll(metaEnts: String, metaAttrs: String, cols: String? = null) {
+    private fun chkAll(metaEnts: String, metaAttrs: String, cols: String? = null, indexes: Boolean = false) {
         fun split(s: String) = s.split(" ").filter { it.isNotEmpty() }.toTypedArray()
         chkMetaEntities(*split(metaEnts))
         chkMetaAttrs(*split(metaAttrs))
-        if (cols != null) chkColumns(*split(cols))
+
+        if (cols != null) {
+            val actual = dumpTables(meta = false, columns = true, indexes = indexes)
+            val expected = split(cols)
+            assertEquals(expected.toList(), actual)
+        }
     }
 
     private fun chkMetaEntities(vararg expected: String) {
@@ -708,7 +742,7 @@ class SqlInitTest: BaseContextTest(useSql = true) {
     }
 
     private fun dumpDataSql(table: String, sql: String): List<String> {
-        val tables = dumpTablesStructure()
+        val tables = dumpTablesStructure(false)
         if (table !in tables) return listOf("NO_TABLE")
         return tstCtx.sqlMgr().access { sqlExec ->
             SqlTestUtils.dumpSql(sqlExec, sql)
@@ -716,37 +750,44 @@ class SqlInitTest: BaseContextTest(useSql = true) {
     }
 
     private fun chkColumns(vararg expected: String) {
-        val actual = dumpTables(false, true)
+        val actual = dumpTables(meta = false, columns = true, indexes = false)
         assertEquals(expected.toList(), actual)
     }
 
     private fun chkTables(vararg expected: String) {
-        val actual = dumpTables(true, false)
+        val actual = dumpTables(meta = true, columns = false, indexes = false)
         assertEquals(expected.toList(), actual)
     }
 
-    private fun dumpTables(meta: Boolean, columns: Boolean): List<String> {
-        val map = dumpTablesStructure()
+    private val DUMP_SKIP_TABLES = immSetOf(
+        "c0.rowid_gen",
+        "c0.blocks",
+        "c0.transactions",
+        "c0.configurations",
+        "c0.sys.faulty_configuration",
+    )
+
+    private fun dumpTables(meta: Boolean, columns: Boolean, indexes: Boolean): List<String> {
+        val map = dumpTablesStructure(indexes)
 
         val res = mutableListOf<String>()
         for (table in map.keys) {
-            if (table in listOf("c0.rowid_gen", "c0.blocks", "c0.transactions", "c0.configurations", "c0.sys.faulty_configuration")) continue
+            if (table in DUMP_SKIP_TABLES) continue
             if (!meta && (table == "c0.sys.attributes" || table == "c0.sys.classes")) continue
-            val attrs = map.getValue(table).map { (name, type) -> "$name:$type" } .joinToString(",")
-            res.add(if (columns) "$table($attrs)" else table)
+
+            val tableStr = if (columns || indexes) {
+                val tableDump = map.getValue(table)
+                val members = tableDump.cols.map { (name, type) -> "$name:$type" } + tableDump.indexes
+                val membersStr = members.joinToString(",")
+                "$table($membersStr)"
+            } else {
+                table
+            }
+
+            res.add(tableStr)
         }
 
         return res
-    }
-
-    private fun dumpTablesStructure(): Map<String, Map<String, String>> {
-        val sqlMgr = tstCtx.sqlMgr()
-        val map = sqlMgr.access { sqlExec ->
-            sqlExec.connection { con ->
-                SqlTestUtils.dumpTablesStructure(con)
-            }
-        }
-        return map
     }
 
     private fun chkFunctions(expected: List<String>) {
@@ -769,6 +810,7 @@ class SqlInitTest: BaseContextTest(useSql = true) {
         assertEquals(expected.toList(), actual)
     }
 
+    @Suppress("SameParameterValue")
     private fun chk(expr: String, expected: String) {
         val t = createChkTester()
         t.chk(expr, expected)
@@ -791,4 +833,36 @@ class SqlInitTest: BaseContextTest(useSql = true) {
             sqlExec.execute(sql)
         }
     }
+
+    private fun dumpTablesStructure(indexes: Boolean): Map<String, TableDump> {
+        val sqlMgr = tstCtx.sqlMgr()
+        val res = sqlMgr.access { sqlExec ->
+            sqlExec.connection { con ->
+                val map = SqlTestUtils.dumpTablesStructure(con)
+                map.mapValues { (table, cols) ->
+                    val idxList = if (!indexes) listOf() else {
+                        val idxs = SqlUtils.getTableIndexes(con, con.schema, table)
+                        idxs.sortedWith(::compareIndexes).map(::indexToStr)
+                    }
+                    TableDump(cols, idxList)
+                }
+            }
+        }
+        return res
+    }
+
+    private fun indexToStr(idx: SqlIndex): String {
+        val type = if (idx.unique) "key" else "index"
+        return "$type(${idx.cols.joinToString(",")})"
+    }
+
+    private fun compareIndexes(i1: SqlIndex, i2: SqlIndex): Int {
+        fun isRowid(idx: SqlIndex) = idx.unique && idx.cols == listOf("rowid")
+        var d = -isRowid(i1).compareTo(isRowid(i2))
+        if (d == 0) d = CommonUtils.compareLists(i1.cols, i2.cols)
+        if (d == 0) d = -i1.unique.compareTo(i2.unique)
+        return d
+    }
+
+    private class TableDump(val cols: Map<String, String>, val indexes: List<String>)
 }

@@ -252,3 +252,15 @@ Details:
    (2).pow(64) will overflow - use big_integer.pow() to get a big_integer result, e.g. (2).to_big_integer().pow(64).
 4. If the exponent is 0, the result is always 1; if the exponent is 1, the result is the original value.
 5. Both functions are SQL-compatible, so they can be used in a database at-expression.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+14. SQL: Adding and removing keys and indices
+
+Adding or removing keys and indices in an entity is now supported. Corresponding SQL keys or indexes are
+created or dropped during database initialization.
+
+Details:
+
+1. If a new key is added and the values of its attributes in the database aren't unique, database initialization fails.
+2. Adding a key or index may be slow for big tables.
+3. Adding new key or index attributes to an entity is supported too.
