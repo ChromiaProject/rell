@@ -25,29 +25,34 @@ import java.sql.ResultSet
 object Lib_Type_Json {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("json", rType = R_JsonType) {
+            comment("Wrapper object for a JSON-string.")
+
             constructor(pure = true) {
-                param("value", type = "text")
+                comment("Constructs a JSON value from a string. Fails if the string is not valid json.")
+                param("value", type = "text", comment = "The JSON string.")
                 dbFunctionCast("json", "JSONB")
-                body { a ->
-                    val s = a.asString()
-                    val r = try {
-                        Rt_JsonValue.parse(s)
+                body { value ->
+                    val jsonString = value.asString()
+                    val jsonValue = try {
+                        Rt_JsonValue.parse(jsonString)
                     } catch (e: IllegalArgumentException) {
-                        throw Rt_Exception.common("fn_json_badstr", "Bad JSON: $s")
+                        throw Rt_Exception.common("fn_json_badstr", "Bad JSON: $jsonString")
                     }
-                    r
+                    jsonValue
                 }
             }
 
             function("to_text", result = "text", pure = true) {
+                comment("Converts the JSON value to a string.")
                 alias("str")
                 dbFunctionCast("json.to_text", "TEXT")
-                body { a ->
-                    val s = a.asJsonString()
-                    Rt_TextValue.get(s)
+                body { json ->
+                    val jsonString = json.asJsonString()
+                    Rt_TextValue.get(jsonString)
                 }
             }
         }
+
     }
 }
 

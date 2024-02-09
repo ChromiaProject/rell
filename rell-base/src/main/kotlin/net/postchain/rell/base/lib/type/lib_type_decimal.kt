@@ -42,37 +42,57 @@ object Lib_Type_Decimal {
 
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("decimal", rType = R_DecimalType) {
-            constant("PRECISION", (Lib_DecimalMath.DECIMAL_INT_DIGITS + Lib_DecimalMath.DECIMAL_FRAC_DIGITS).toLong())
-            constant("SCALE", Lib_DecimalMath.DECIMAL_FRAC_DIGITS.toLong())
-            constant("INT_DIGITS", Lib_DecimalMath.DECIMAL_INT_DIGITS.toLong())
-            constant("MIN_VALUE", Lib_DecimalMath.DECIMAL_MIN_VALUE)
-            constant("MAX_VALUE", Lib_DecimalMath.DECIMAL_MAX_VALUE)
+            comment("""
+                A data type for representing real numbers with high precision.
+                Uses `java.math.BigDecimal` internally.
+            """)
+            constant("PRECISION", (Lib_DecimalMath.DECIMAL_INT_DIGITS + Lib_DecimalMath.DECIMAL_FRAC_DIGITS).toLong()) {
+                comment("The maximum number of decimal digits (131072 + 20)")
+            }
+            constant("SCALE", Lib_DecimalMath.DECIMAL_FRAC_DIGITS.toLong()) {
+                comment("The maximum number of decimal digits after the decimal point (20)")
+            }
+            constant("INT_DIGITS", Lib_DecimalMath.DECIMAL_INT_DIGITS.toLong()) {
+                comment("The maximum number of digits before the decimal point (131072)")
+            }
+            constant("MIN_VALUE", Lib_DecimalMath.DECIMAL_MIN_VALUE) {
+                comment("The smallest nonzero absolute value that a decimal can store")
+            }
+            constant("MAX_VALUE", Lib_DecimalMath.DECIMAL_MAX_VALUE) {
+                comment("The largest value that you can store in a decimal (1E+131072 - 1)")
+            }
 
             constructor {
-                param("value", "text")
+                comment("Creates a decimal from a text representation.")
+                param("value", "text", comment = "The text representation of the number.")
                 bodyRaw(DecFns.FromText)
             }
 
             constructor {
-                param("value", "integer")
+                comment("Creates a decimal from an integer.")
+                param("value", "integer", comment = "The integer value to convert.")
                 bodyRaw(DecFns.FromInteger)
             }
 
             constructor {
-                param("value", "big_integer")
+                comment("Creates a decimal from a big_integer.")
+                param("value", "big_integer", comment = "The big_integer value to convert.")
                 bodyRaw(DecFns.FromBigInteger)
             }
 
             staticFunction("from_text", "decimal") {
-                param("value", "text")
+                comment("Creates a decimal from a text representation.")
+                param("value", "text", comment = "The text representation of the number.")
                 bodyRaw(DecFns.FromText)
             }
 
             function("abs", "decimal") {
+                comment("Absolute value of the decimal.")
                 bodyRaw(Lib_Math.Abs_Decimal)
             }
 
             function("ceil", "decimal", pure = true) {
+                comment("Ceiling value: rounds 1.0 to 1.0, 1.00001 to 2.0, -1.99999 to -1.0, etc.")
                 dbFunctionSimple("decimal.ceil", "CEIL")
                 body { a ->
                     val v = a.asDecimal()
@@ -82,6 +102,7 @@ object Lib_Type_Decimal {
             }
 
             function("floor", "decimal", pure = true) {
+                comment("Floor value: rounds 1.0 to 1.0, 1.9999 to 1.0, -1.0001 to -2.0, etc.")
                 dbFunctionSimple("decimal.floor", "FLOOR")
                 body { a ->
                     val v = a.asDecimal()
@@ -91,16 +112,19 @@ object Lib_Type_Decimal {
             }
 
             function("min", "decimal") {
-                param("value", "decimal")
+                comment("Minimum of two decimal values.")
+                param("value", "decimal", comment = "The value to compare against.")
                 bodyRaw(Lib_Math.Min_Decimal)
             }
 
             function("max", "decimal") {
-                param("value", "decimal")
+                comment("Maximum of two decimal values.")
+                param("value", "decimal", comment = "The value to compare against.")
                 bodyRaw(Lib_Math.Max_Decimal)
             }
 
             function("round", "decimal", pure = true) {
+                comment("Rounds up to the nearest integer number.")
                 dbFunctionTemplate("decimal.round", 1, "ROUND(#0)")
                 body { a ->
                     val v = a.asDecimal()
@@ -110,8 +134,24 @@ object Lib_Type_Decimal {
             }
 
             function("round", "decimal", pure = true) {
-                param("digits", "integer")
+                comment("""
+                    Rounds to a specific number of decimal places.
+
+                    Example:
+                    ```rell
+                    >>> (123.456).round(-1)
+                    120
+                    >>> (123.456).round(1)
+                    123.5
+                    ```
+                """)
                 // Argument #2 has to be casted to INT, as PostgreSQL doesn't allow BIGINT.
+                param("digits", "integer") {
+                    comment("""
+                        Which decimal place to round the value to.
+                        A positive number means after the decimal point and negative number means before.
+                    """)
+                }
                 dbFunctionTemplate("decimal.round", 2, "ROUND(#0,(#1)::INT)")
                 body { a, b ->
                     val v = a.asDecimal()
@@ -125,7 +165,9 @@ object Lib_Type_Decimal {
 
             //function("pow", "decimal", listOf("integer"), R_SysFn_Decimal.Pow)
 
+            // Function: sign
             function("sign", "integer", pure = true) {
+                comment("Returns -1, 0, or 1 depending on the sign.")
                 alias("signum", C_MessageType.ERROR)
                 dbFunctionSimple("decimal.sign", "SIGN")
                 body { a ->
@@ -138,6 +180,7 @@ object Lib_Type_Decimal {
             //function("sqrt", "decimal", listOf(), R_SysFn_Decimal.Sqrt)
 
             function("to_big_integer", "big_integer", pure = true) {
+                comment("Converts this decimal to a big_integer by truncating the fractional part.")
                 dbFunctionTemplate("decimal.to_big_integer", 1, "TRUNC(#0)")
                 body { a ->
                     val v = a.asDecimal()
@@ -147,10 +190,14 @@ object Lib_Type_Decimal {
             }
 
             function("to_integer", "integer") {
+                comment("""
+                    Converts this decimal to an integer by rounding towards 0. Throws and exception if out of range.
+                """)
                 bodyRaw(DecFns.ToInteger)
             }
 
             function("to_text", "text", pure = true) {
+                comment("Converts this decimal to a string representation.")
                 dbFunction(ToText_Db)
                 body { a ->
                     val v = a.asDecimal()
@@ -160,7 +207,8 @@ object Lib_Type_Decimal {
             }
 
             function("to_text", "text", pure = true) {
-                param("scientific", "boolean")
+                comment("Converts this decimal to a string representation, optionally using scientific notation (eg: 1E+100).")
+                param("scientific", "boolean", comment = "Flag indicating whether to use scientific notation.")
                 body { a, b ->
                     val v = a.asDecimal()
                     val sci = b.asBoolean()

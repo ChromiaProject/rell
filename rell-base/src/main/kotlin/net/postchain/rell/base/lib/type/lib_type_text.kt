@@ -40,18 +40,25 @@ object Lib_Type_Text {
         alias("tuid", "text")
 
         type("text", rType = R_TextType) {
+            comment("An immutable data type for representing character strings.")
 
             staticFunction("from_bytes", result = "text", pure = true) {
-                param("bytes", type = "byte_array")
-                param("ignore_errors", type = "boolean", arity = L_ParamArity.ZERO_ONE)
-                bodyOpt1 { a, b ->
-                    val ignoreErr = b?.asBoolean() ?: false
-                    val bytes = a.asByteArray()
+                comment("Creates text from bytes, optionally handling invalid UTF-8 encoding.")
+                param("bytes", type = "byte_array", comment = "The byte array to convert to text.")
+                param( "ignore_errors", type = "boolean", arity = L_ParamArity.ZERO_ONE) {
+                    comment("""
+                        If true, replaces invalid characters with a placeholder;
+                        if false, throws an exception on encountering invalid bytes.
+                    """)
+                }
+                bodyOpt1 { bytes, ignoreErrors ->
+                    val ignoreErr = ignoreErrors?.asBoolean() ?: false
+                    val byteArray = bytes.asByteArray()
                     val s = if (ignoreErr) {
-                        String(bytes, CHARSET)
+                        String(byteArray, CHARSET)
                     } else {
                         val decoder = CHARSET.newDecoder()
-                        val byteBuffer = ByteBuffer.wrap(bytes)
+                        val byteBuffer = ByteBuffer.wrap(byteArray)
                         val charBuffer = Rt_Utils.wrapErr("fn:text.from_bytes") {
                             decoder.decode(byteBuffer)
                         }
@@ -62,9 +69,10 @@ object Lib_Type_Text {
             }
 
             function("empty", result = "boolean", pure = true) {
+                comment("Returns true if the text is empty, otherwise returns false.")
                 dbFunctionTemplate("text.empty", 1, "(LENGTH(#0) = 0)")
-                body { a ->
-                    val s = a.asString()
+                body { text ->
+                    val s = text.asString()
                     Rt_BooleanValue.get(s.isEmpty())
                 }
             }
@@ -72,8 +80,9 @@ object Lib_Type_Text {
             function("size", result = "integer", pure = true) {
                 alias("len", C_MessageType.ERROR)
                 dbFunctionSimple("text.size", "LENGTH")
-                body { a ->
-                    val s = a.asString()
+                comment("Returns the number of characters in the text.")
+                body { text ->
+                    val s = text.asString()
                     Rt_IntValue.get(s.length.toLong())
                 }
             }
@@ -81,8 +90,9 @@ object Lib_Type_Text {
             function("upper_case", result = "text", pure = true) {
                 alias("upperCase", C_MessageType.ERROR)
                 dbFunctionSimple("text.upper_case", "UPPER")
-                body { a ->
-                    val s = a.asString()
+                comment("Returns a new text with all characters converted to uppercase.")
+                body { text ->
+                    val s = text.asString()
                     Rt_TextValue.get(s.toUpperCase())
                 }
             }
@@ -90,56 +100,75 @@ object Lib_Type_Text {
             function("lower_case", result = "text", pure = true) {
                 alias("lowerCase", C_MessageType.ERROR)
                 dbFunctionSimple("text.lower_case", "LOWER")
-                body { a ->
-                    val s = a.asString()
+                comment("Returns a new text with all characters converted to lowercase.")
+                body { text ->
+                    val s = text.asString()
                     Rt_TextValue.get(s.toLowerCase())
                 }
             }
 
             function("compare_to", result = "integer", pure = true) {
                 alias("compareTo", C_MessageType.ERROR)
-                param("other", type = "text")
-                body { a, b ->
-                    val s1 = a.asString()
-                    val s2 = b.asString()
+                comment("""
+                    Compares this text to another text.
+                    @returns the value 0 if equal, a negative number if less than `other`,
+                    or a value greater than 0 if greater than `other`.
+                """)
+                param("other", type = "text", comment = "The text to compare to.")
+                body { text, other ->
+                    val s1 = text.asString()
+                    val s2 = other.asString()
                     Rt_IntValue.get(s1.compareTo(s2).toLong())
                 }
             }
 
             function("contains", result = "boolean", pure = true) {
-                param("text", type = "text")
+                comment("Returns true if this text contains the specified substring, otherwise returns false.")
+                param("text", type = "text", comment = "The substring to search for.")
                 dbFunctionTemplate("text.contains", 2, "(STRPOS(#0, #1) > 0)")
-                body { a, b ->
-                    val s1 = a.asString()
-                    val s2 = b.asString()
+                body { text, substring ->
+                    val s1 = text.asString()
+                    val s2 = substring.asString()
                     Rt_BooleanValue.get(s1.contains(s2))
                 }
             }
 
             function("starts_with", result = "boolean", pure = true) {
                 alias("startsWith", C_MessageType.ERROR)
-                param("prefix", type = "text")
+                comment("Returns true if this text starts with the specified prefix, otherwise returns false.")
+                param("prefix", type = "text", comment = "The prefix to check.")
                 dbFunctionTemplate("text.starts_with", 2, "(LEFT(#0, LENGTH(#1)) = #1)")
-                body { a, b ->
-                    val s1 = a.asString()
-                    val s2 = b.asString()
+                body { text, prefix ->
+                    val s1 = text.asString()
+                    val s2 = prefix.asString()
                     Rt_BooleanValue.get(s1.startsWith(s2))
                 }
             }
 
             function("ends_with", result = "boolean", pure = true) {
                 alias("endsWith", C_MessageType.ERROR)
-                param("suffix", type = "text")
+                comment("Returns true if this text ends with the specified suffix, otherwise returns false.")
+                param("suffix", type = "text", comment = "The suffix to check.")
                 dbFunctionTemplate("text.ends_with", 2, "(RIGHT(#0, LENGTH(#1)) = #1)")
-                body { a, b ->
-                    val s1 = a.asString()
-                    val s2 = b.asString()
+                body { text, suffix ->
+                    val s1 = text.asString()
+                    val s2 = suffix.asString()
                     Rt_BooleanValue.get(s1.endsWith(s2))
                 }
             }
 
             function("format", result = "text", pure = true) {
-                param("args", type = "anything", arity = L_ParamArity.ZERO_MANY)
+                comment("""
+                    Uses this string as a format string and returns a string obtained
+                    by substituting the specified arguments. Uses `java.lang.String.format` internally.
+                """)
+                param( "args", type = "anything", arity = L_ParamArity.ZERO_MANY) {
+                    comment("""
+                        Arguments referenced by the format specifiers in the format string.
+                        If there are more arguments than format specifiers, the extra arguments are ignored.
+                        The number of arguments is variable and may be zero.
+                   """)
+                }
                 bodyN { args ->
                     Rt_Utils.check(args.isNotEmpty()) { "fn:text.format:no_args" toCodeMsg "No arguments" }
                     val s = args[0].asString()
@@ -154,22 +183,26 @@ object Lib_Type_Text {
             }
 
             function("replace", result = "text", pure = true) {
-                param("old_value", type = "text")
-                param("new_value", type = "text")
+                comment("""
+                    Returns a new text resulting from replacing all occurrences of old text in this text with new text.
+                """)
+                param("old_value", type = "text", comment = "The substring to be replaced.")
+                param("new_value", type = "text", comment = "The replacement substring.")
                 dbFunctionTemplate("text.replace", 3, "REPLACE(#0, #1, #2)")
-                body { a, b, c ->
-                    val s1 = a.asString()
-                    val s2 = b.asString()
-                    val s3 = c.asString()
+                body { text, old, new ->
+                    val s1 = text.asString()
+                    val s2 = old.asString()
+                    val s3 = new.asString()
                     Rt_TextValue.get(s1.replace(s2, s3))
                 }
             }
 
             function("split", result = "list<text>", pure = true) {
-                param("delimiter", type = "text")
-                body { a, b ->
-                    val s1 = a.asString()
-                    val s2 = b.asString()
+                comment("Splits this text around matches of the given delimiter.")
+                param("delimiter", type = "text", comment = "The delimiter to split the text by.")
+                body { text, delimiter ->
+                    val s1 = text.asString()
+                    val s2 = delimiter.asString()
                     val arr = s1.split(s2)
                     val list = MutableList(arr.size) { Rt_TextValue.get(arr[it]) }
                     Rt_ListValue(SPLIT_TYPE, list)
@@ -177,26 +210,46 @@ object Lib_Type_Text {
             }
 
             function("trim", result = "text", pure = true) {
+                comment("Returns a new text with leading and trailing whitespace removed.")
                 //dbFunction(Db_SysFunction.template("text.trim", 1, "TRIM(#0, ' '||CHR(9)||CHR(10)||CHR(13))"))
-                body { a ->
-                    val s = a.asString()
+                body { text ->
+                    val s = text.asString()
                     Rt_TextValue.get(s.trim())
                 }
             }
 
             function("like", result = "boolean", pure = true) {
-                param("pattern", type = "text")
+                comment("""
+                    Returns true if this text matches the specified pattern using SQL LIKE syntax.
+
+                    Example:
+
+                    ```rell
+                    val names = ["Alice", "Victor", "Viktor", "Victoria"];
+                    print(names @* { .like("Vi_tor") });  // prints [Victor, Viktor]
+                    print(names @* { .like("Vic%") }); // prints [Victor, Victoria]
+                    ```
+                """)
+                param("pattern", type = "text") {
+                    comment("""
+                        The pattern to match against. `_` means any character and `%` means any number of caracters
+                    """)
+                }
                 dbFunctionTemplate("text.like", 2, "((#0) LIKE (#1))")
-                body { a, b ->
-                    val s = a.asString()
-                    val pattern = b.asString()
-                    val res = Rt_TextValue.like(s, pattern)
+                body { text, pattern ->
+                    val s = text.asString()
+                    val p = pattern.asString()
+                    val res = Rt_TextValue.like(s, p)
                     Rt_BooleanValue.get(res)
                 }
             }
 
             function("matches", result = "boolean", pure = true) {
-                param("regex", type = "text")
+                comment("""
+                    Returns true if this text matches the given regular expression.
+                    Uses `java.util.regex.Pattern` internally.
+                """)
+                param("regex", type = "text", comment = "The regular expression to match against.")
                 body { a, b ->
                     val s = a.asString()
                     val pattern = b.asString()
@@ -211,98 +264,118 @@ object Lib_Type_Text {
 
             function("char_at", result = "integer", pure = true) {
                 alias("charAt", C_MessageType.ERROR)
-                param("index", type = "integer")
+                comment("Get a 16-bit code of a character at the specified index.")
+                param("index", type = "integer", comment = "The index of the character.")
                 dbFunctionTemplate("text.char_at", 2, "ASCII(${SqlConstants.FN_TEXT_GETCHAR}(#0, (#1)::INT))")
-                body { a, b ->
-                    val s = a.asString()
-                    val index = b.asInteger()
-                    if (index < 0 || index >= s.length) {
+                body { text, index ->
+                    val s = text.asString()
+                    val i = index.asInteger()
+                    if (i < 0 || i >= s.length) {
                         throw Rt_Exception.common(
-                            "fn:text.char_at:index:${s.length}:$index",
-                            "Index out of bounds: $index (length ${s.length})"
+                            "fn:text.char_at:index:${s.length}:$i",
+                            "Index out of bounds: $i (length ${s.length})"
                         )
                     }
-                    val r = s[index.toInt()]
-                    Rt_IntValue.get(r.toLong())
+                    val c = s[i.toInt()]
+                    Rt_IntValue.get(c.toLong())
                 }
             }
 
             function("index_of", result = "integer", pure = true) {
                 alias("indexOf", C_MessageType.ERROR)
-                param("text", type = "text")
+                comment("""
+                    Returns the position of the first occurrence of the specified substring within this text,
+                    or -1 if the text is not found.
+                """)
+                param("text", type = "text", comment = "The substring to search for.")
                 dbFunctionTemplate("text.index_of", 2, "(STRPOS(#0, #1) - 1)")
-                body { a, b ->
-                    val s1 = a.asString()
-                    val s2 = b.asString()
+                body { text, substring ->
+                    val s1 = text.asString()
+                    val s2 = substring.asString()
                     Rt_IntValue.get(s1.indexOf(s2).toLong())
                 }
             }
 
             function("index_of", result = "integer", pure = true) {
+                comment("""
+                    Returns the position of the first occurrence of the specified substring within this text,
+                    starting at the specified index, or -1 if the text is not found.
+                """)
                 alias("indexOf", C_MessageType.ERROR)
-                param("text", type = "text")
-                param("start", type = "integer")
-                body { a, b, c ->
-                    val s1 = a.asString()
-                    val s2 = b.asString()
-                    val start = c.asInteger()
-                    if (start < 0 || start >= s1.length) {
+                param("text", type = "text", comment = "The substring to search for.")
+                param("start", type = "integer", comment = "The index to start the search from.")
+                body { text, substring, start ->
+                    val s1 = text.asString()
+                    val s2 = substring.asString()
+                    val startIndex = start.asInteger()
+                    if (startIndex < 0 || startIndex >= s1.length) {
                         throw Rt_Exception.common(
-                            "fn:text.index_of:index:${s1.length}:$start",
-                            "Index out of bounds: $start (length ${s1.length})"
+                            "fn:text.index_of:index:${s1.length}:$startIndex",
+                            "Index out of bounds: $startIndex (length ${s1.length})"
                         )
                     }
-                    Rt_IntValue.get(s1.indexOf(s2, start.toInt()).toLong())
+                    Rt_IntValue.get(s1.indexOf(s2, startIndex.toInt()).toLong())
                 }
             }
 
+
             function("last_index_of", result = "integer", pure = true) {
                 alias("lastIndexOf", C_MessageType.ERROR)
-                param("text", type = "text")
-                body { a, b ->
-                    val s1 = a.asString()
-                    val s2 = b.asString()
+                comment("""
+                    Returns the index within this text of the last occurrence of the specified string,
+                    or -1 if not found.
+                """)
+                param("text", type = "text", comment = "The substring to search for.")
+                body { text, substring ->
+                    val s1 = text.asString()
+                    val s2 = substring.asString()
                     Rt_IntValue.get(s1.lastIndexOf(s2).toLong())
                 }
             }
 
             function("last_index_of", result = "integer", pure = true) {
+                comment("""
+                    Returns the index within this text of the last occurrence of the specified string,
+                    starting from the specified startIndex, or -1 if not found.
+                """)
                 alias("lastIndexOf", C_MessageType.ERROR)
-                param("text", type = "text")
-                param("max", type = "integer")
-                body { a, b, c ->
-                    val s1 = a.asString()
-                    val s2 = b.asString()
-                    val start = c.asInteger()
-                    if (start < 0 || start >= s1.length) {
+                param("text", type = "text", comment = "The substring to search for.")
+                param("max", type = "integer", comment = "The index to search before.")
+                body { text, substring, max ->
+                    val s1 = text.asString()
+                    val s2 = substring.asString()
+                    val maxIndex = max.asInteger()
+                    if (maxIndex < 0 || maxIndex >= s1.length) {
                         throw Rt_Exception.common(
-                            "fn:text.last_index_of:index:${s1.length}:$start",
-                            "Index out of bounds: $start (length ${s1.length})"
+                            "fn:text.last_index_of:index:${s1.length}:$maxIndex",
+                            "Index out of bounds: $maxIndex (length ${s1.length})"
                         )
                     }
-                    Rt_IntValue.get(s1.lastIndexOf(s2, start.toInt()).toLong())
+                    Rt_IntValue.get(s1.lastIndexOf(s2, maxIndex.toInt()).toLong())
                 }
             }
 
             function("repeat", result = "text", pure = true) {
-                param("n", type = "integer")
+                comment("Returns the text repeated `n` times. SQL compatible.")
+                param("n", type = "integer", comment = "The number of times to repeat the text.")
                 dbFunctionTemplate("text.repeat", 2, "${SqlConstants.FN_TEXT_REPEAT}(#0, (#1)::INT)")
-                body { a, b ->
-                    val s = a.asString()
-                    val n = b.asInteger()
-                    Lib_Type_List.rtCheckRepeatArgs(s.length, n, "text")
-                    if (s.isEmpty() || n == 1L) a else {
-                        val res = s.repeat(n.toInt())
+                body { text, n ->
+                    val s = text.asString()
+                    val repeatCount = n.asInteger()
+                    Lib_Type_List.rtCheckRepeatArgs(s.length, repeatCount, "text")
+                    if (s.isEmpty() || repeatCount == 1L) text else {
+                        val res = s.repeat(repeatCount.toInt())
                         Rt_TextValue.get(res)
                     }
                 }
             }
 
             function("reversed", result = "text", pure = true) {
+                comment("Returns a reversed copy of the text. SQL compatible.")
                 dbFunctionTemplate("text.reversed", 1, "REVERSE(#0)")
-                body { a ->
-                    val s = a.asString()
-                    if (s.length <= 1) a else {
+                body { text ->
+                    val s = text.asString()
+                    if (s.length <= 1) text else {
                         val res = s.reversed()
                         Rt_TextValue.get(res)
                     }
@@ -310,33 +383,39 @@ object Lib_Type_Text {
             }
 
             function("sub", result = "text", pure = true) {
-                param("start", type = "integer")
+                comment("Returns a substring of this text starting from the specified index.")
+                param("start", type = "integer", comment = "The starting index of the substring.")
                 dbFunctionTemplate("text.sub/1", 2, "${SqlConstants.FN_TEXT_SUBSTR1}(#0, (#1)::INT)")
-                body { a, b ->
-                    val s = a.asString()
-                    val start = b.asInteger()
-                    calcSub(s, start, s.length.toLong())
+                body { text, start ->
+                    val s = text.asString()
+                    val startIndex = start.asInteger()
+                    calcSub(s, startIndex, s.length.toLong())
                 }
             }
 
             function("sub", result = "text", pure = true) {
-                param("start", type = "integer")
-                param("end", type = "integer")
+                comment("""
+                    Returns a substring of this text from the specified start index (inclusive)
+                    to the specified end index (exclusive).
+                """)
+                param("start", type = "integer", comment = "The start index of the substring.")
+                param("end", type = "integer", comment = "The end index of the substring.")
                 dbFunctionTemplate("text.sub/2", 3, "${SqlConstants.FN_TEXT_SUBSTR2}(#0, (#1)::INT, (#2)::INT)")
-                body { a, b, c ->
-                    val s = a.asString()
-                    val start = b.asInteger()
-                    val end = c.asInteger()
-                    calcSub(s, start, end)
+                body { text, start, end ->
+                    val s = text.asString()
+                    val startIndex = start.asInteger()
+                    val endIndex = end.asInteger()
+                    calcSub(s, startIndex, endIndex)
                 }
             }
 
             function("to_bytes", result = "byte_array", pure = true) {
                 alias("encode", C_MessageType.ERROR)
-                body { a ->
-                    val s = a.asString()
-                    val ba = s.toByteArray(CHARSET)
-                    Rt_ByteArrayValue.get(ba)
+                comment("Converts the text to UTF-8 encoded bytes.")
+                body { text ->
+                    val s = text.asString()
+                    val byteArray = s.toByteArray(CHARSET)
+                    Rt_ByteArrayValue.get(byteArray)
                 }
             }
         }

@@ -53,33 +53,39 @@ object Lib_Type_ByteArray {
         alias("pubkey", "byte_array")
 
         type("byte_array", rType = R_ByteArrayType) {
+            comment("An array of bytes. This type is immutable.")
             parent(type = "iterable<integer>")
 
             constructor {
-                param("hex", type = "text")
+                comment("Creates a byte_array from a hexadecimal string.")
+                param("hex", type = "text", comment = "The hexadecimal string.")
                 bodyRaw(FromHex)
             }
 
             constructor {
+                comment("Creates a byte_array from a list of integers.")
                 deprecated(newName = "byte_array.from_list")
-                param("list", type = "list<integer>")
+                param("list", type = "list<integer>", comment = "The list of integers.")
                 bodyRaw(FromList)
             }
 
             staticFunction("from_list", result = "byte_array") {
-                param("list", type = "list<integer>")
+                comment("Creates a byte_array from a list of integers.")
+                param("list", type = "list<integer>", comment = "The list of integers.")
                 bodyRaw(FromList)
             }
 
             staticFunction("from_hex", result = "byte_array") {
-                param("value", type = "text")
+                comment("Creates a byte_array from a hexadecimal string.")
+                param("value", type = "text", comment = "The hexadecimal string.")
                 bodyRaw(FromHex)
             }
 
             staticFunction("from_base64", result = "byte_array") {
-                param("value", type = "text")
-                body { a ->
-                    val s = a.asString()
+                comment("Creates a byte_array from a Base64 string.")
+                param("value", type = "text", comment = "The Base64 string.")
+                body { value ->
+                    val s = value.asString()
                     val bytes = Rt_Utils.wrapErr("fn:byte_array.from_base64") {
                         Base64.getDecoder().decode(s)
                     }
@@ -88,19 +94,21 @@ object Lib_Type_ByteArray {
             }
 
             function("empty", "boolean", pure = true) {
+                comment("Returns true if the byte_array is empty, otherwise returns false.")
                 dbFunctionTemplate("byte_array.empty", 1, "(LENGTH(#0) = 0)")
-                body { a ->
-                    val ba = a.asByteArray()
-                    Rt_BooleanValue.get(ba.isEmpty())
+                body { array ->
+                    val byteArray = array.asByteArray()
+                    Rt_BooleanValue.get(byteArray.isEmpty())
                 }
             }
 
             function("size", "integer", pure = true) {
+                comment("Returns the number of bytes.")
                 alias("len", C_MessageType.ERROR)
                 dbFunctionTemplate("byte_array.size", 1, "LENGTH(#0)")
-                body { a ->
-                    val ba = a.asByteArray()
-                    Rt_IntValue.get(ba.size.toLong())
+                body { array ->
+                    val byteArray = array.asByteArray()
+                    Rt_IntValue.get(byteArray.size.toLong())
                 }
             }
 
@@ -114,6 +122,7 @@ object Lib_Type_ByteArray {
 
             function("to_list", "list<integer>", pure = true) {
                 alias("toList", C_MessageType.ERROR)
+                comment("Converts the byte_array to a list of integers.")
                 body { a ->
                     val ba = a.asByteArray()
                     val list = MutableList<Rt_Value>(ba.size) { Rt_IntValue.get(ba[it].toLong() and 0xFF) }
@@ -122,7 +131,8 @@ object Lib_Type_ByteArray {
             }
 
             function("repeat", "byte_array", pure = true) {
-                param("n", "integer")
+                comment("Repeats the byte_array 'n' times.")
+                param("n", "integer", comment = "The number of times to repeat the byte_array.")
                 body { a, b ->
                     val bs = a.asByteArray()
                     val n = b.asInteger()
@@ -136,6 +146,7 @@ object Lib_Type_ByteArray {
             }
 
             function("reversed", "byte_array", pure = true) {
+                comment("Returns a reversed copy of the byte_array.")
                 body { a ->
                     val bs = a.asByteArray()
                     if (bs.size <= 1) a else {
@@ -147,7 +158,8 @@ object Lib_Type_ByteArray {
             }
 
             function("sub", "byte_array", pure = true) {
-                param("start", "integer")
+                comment("Returns a sub-array of the byte_array from the specified start index.")
+                param("start", "integer", comment = "The start index of the sub-array.")
                 dbFunctionTemplate("byte_array.sub/1", 2, "${SqlConstants.FN_BYTEA_SUBSTR1}(#0, (#1)::INT)")
                 body { a, b ->
                     val ba = a.asByteArray()
@@ -157,8 +169,9 @@ object Lib_Type_ByteArray {
             }
 
             function("sub", "byte_array", pure = true) {
-                param("start", "integer")
-                param("end", "integer")
+                comment("Returns a sub-array of the byte_array from the specified start index to the end index.")
+                param("start", "integer", comment = "The start index of the sub-array.")
+                param("end", "integer", comment = "The end index of the sub-array.")
                 dbFunctionTemplate("byte_array.sub/2", 3, "${SqlConstants.FN_BYTEA_SUBSTR2}(#0, (#1)::INT, (#2)::INT)")
                 body { a, b, c ->
                     val ba = a.asByteArray()
@@ -169,6 +182,7 @@ object Lib_Type_ByteArray {
             }
 
             function("to_hex", "text", pure = true) {
+                comment("Returns a hexadecimal representation of the byte_array.")
                 dbFunctionTemplate("byte_array.to_hex", 1, "ENCODE(#0, 'HEX')")
                 body { a ->
                     val ba = a.asByteArray()
@@ -178,6 +192,7 @@ object Lib_Type_ByteArray {
             }
 
             function("to_base64", "text", pure = true) {
+                comment("Returns a Base64 representation of the byte_array.")
                 dbFunctionTemplate("byte_array.to_base64", 1, "ENCODE(#0, 'BASE64')")
                 body { a ->
                     val ba = a.asByteArray()
@@ -187,6 +202,7 @@ object Lib_Type_ByteArray {
             }
 
             function("sha256", "byte_array") {
+                comment("Returns the SHA256 digest of the byte_array.")
                 bodyRaw(Lib_Crypto.Sha256)
             }
         }

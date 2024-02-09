@@ -22,6 +22,7 @@ import java.sql.ResultSet
 object Lib_Type_Boolean {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("boolean", rType = R_BooleanType) {
+            comment("A simple data type that represents two values: true and false.")
         }
     }
 }

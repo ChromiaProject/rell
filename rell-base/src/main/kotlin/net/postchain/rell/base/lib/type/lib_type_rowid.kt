@@ -24,19 +24,25 @@ import java.sql.ResultSet
 object Lib_Type_Rowid {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("rowid", rType = R_RowidType) {
+            comment("The primary key of a database record, a 64-bit integer.")
+
+            // Constructor to create a ROWID from an integer value
             constructor(pure = true) {
-                param("value", "integer")
-                body { a ->
-                    val v = a.asInteger()
-                    Rt_Utils.check(v >= 0) { "rowid(integer):negative:$v" toCodeMsg "Negative value: $v" }
-                    Rt_RowidValue.get(v)
+                comment("Constructs a ROWID from an integer value.")
+                param("value", "integer", comment = "The integer value to be converted to ROWID.")
+                body { value ->
+                    val intValue = value.asInteger()
+                    Rt_Utils.check(intValue >= 0) { "rowid(integer):negative:$intValue" toCodeMsg "Negative value: $intValue" }
+                    Rt_RowidValue.get(intValue)
                 }
             }
 
-            function("to_integer", "integer", pure = true) {
+            // Method to get the integer value of the ROWID
+            function("to_integer", result = "integer", pure = true) {
+                comment("Returns the integer value of the ROWID.")
                 dbFunctionTemplate("rowid.to_integer", 1, "#0")
-                body { a ->
-                    val v = a.asRowid()
+                body { rowid ->
+                    val v = rowid.asRowid()
                     Rt_IntValue.get(v)
                 }
             }
