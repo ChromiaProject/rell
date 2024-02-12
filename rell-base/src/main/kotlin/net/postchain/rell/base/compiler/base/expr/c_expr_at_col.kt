@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.expr
@@ -15,13 +15,9 @@ import net.postchain.rell.base.compiler.vexpr.*
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_VarPtr
-import net.postchain.rell.base.model.expr.R_ColAtFieldSummarization_None
 import net.postchain.rell.base.model.expr.R_ColAtParam
-import net.postchain.rell.base.model.expr.R_ColAtWhatExtras
-import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.ide.IdeLocalSymbolLink
 import net.postchain.rell.base.utils.toImmList
-
 
 class C_AtFrom_Iterable(
     outerExprCtx: C_ExprContext,
@@ -92,71 +88,25 @@ class C_AtFrom_Iterable(
 
     override fun compile(details: C_AtDetails): V_Expr {
         val rParam = R_ColAtParam(item.elemType, varPtr)
-        val rFrom = item.compile()
-        val what = compileWhat(details)
+        val vFrom = item.compile()
+        val what = compileColWhat(details, details.base.what.allFields)
         val extras = V_AtExprExtras(details.limit, details.offset)
 
         val cBlock = innerBlkCtx.buildBlock()
 
         return V_ColAtExpr(
-                outerExprCtx,
-                details.startPos,
-                result = details.res,
-                from = rFrom,
-                what = what,
-                where = details.base.where,
-                cardinality = details.cardinality.value,
-                extras = extras,
-                block = cBlock.rBlock,
-                param = rParam,
-                resVarFacts = details.exprFacts
+            outerExprCtx,
+            details.startPos,
+            result = details.res,
+            from = vFrom,
+            what = what,
+            where = details.base.where,
+            cardinality = details.cardinality.value,
+            extras = extras,
+            block = cBlock.rBlock,
+            param = rParam,
+            resVarFacts = details.exprFacts,
         )
-    }
-
-    private fun compileWhat(details: C_AtDetails): V_ColAtWhat {
-        val cFields = details.base.what.allFields
-        val fields = cFields.map { compileField(it) }
-        val sorting = compileSorting(cFields)
-
-        val extras = R_ColAtWhatExtras(
-                fields.size,
-                details.res.selectedFields,
-                details.res.groupFields,
-                sorting,
-                details.res.rowDecoder
-        )
-
-        return V_ColAtWhat(fields, extras)
-    }
-
-    private fun compileSorting(cFields: List<V_DbAtWhatField>): List<IndexedValue<Comparator<Rt_Value>>> {
-        val sorting = cFields
-                .withIndex()
-                .mapNotNull { (i, f) ->
-                    val sort = f.flags.sort
-                    if (sort == null) null else {
-                        val type = f.resultType
-                        var comparator = type.comparator()
-                        if (comparator != null && !sort.value.asc) comparator = comparator.reversed()
-                        if (comparator != null) IndexedValue(i, comparator) else {
-                            innerExprCtx.msgCtx.error(sort.pos, "at:expr:sort:type:${type.strCode()}",
-                                    "Type ${type.str()} is not sortable")
-                            null
-                        }
-                    }
-                }
-                .toImmList()
-        return sorting
-    }
-
-    private fun compileField(cField: V_DbAtWhatField): V_ColAtWhatField {
-        val summarization = if (cField.summarization == null) {
-            R_ColAtFieldSummarization_None
-        } else {
-            cField.summarization.compileR(innerExprCtx.appCtx)
-        }
-        val rFlags = cField.flags.compile()
-        return V_ColAtWhatField(cField.expr, rFlags, summarization)
     }
 
     private inner class C_AtFromBase_Iterable: C_AtFromBase() {

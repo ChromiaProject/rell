@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.atexpr
@@ -265,18 +265,18 @@ class AtExprComplexWhatTest: BaseRellTest() {
         def("struct rec { i: integer; t: text; }")
         initData()
 
-        chkModifiers("(.i, .t)", "(integer,text)", "ct_err:expr:at:aggregate")
-        chkModifiers("[.i, .u.score]", "list<integer>", "ct_err:expr:at:aggregate")
-        chkModifiers("f(.i, .t)", "(integer,text)", "ct_err:expr:at:aggregate")
-        chkModifiers("rec(.i, .t)", "rec", "ct_err:[expr:at:aggregate][at:what:aggr:bad_type:MINMAX:rec]")
+        chkModifiers("(.i, .t)", "(integer,text)", "ct_err:expr:at:nodb:aggregate")
+        chkModifiers("[.i, .u.score]", "list<integer>", "ct_err:expr:at:nodb:aggregate")
+        chkModifiers("f(.i, .t)", "(integer,text)", "ct_err:expr:at:nodb:aggregate")
+        chkModifiers("rec(.i, .t)", "rec", "ct_err:[expr:at:nodb:aggregate][at:what:aggr:bad_type:MINMAX:rec]")
     }
 
     private fun chkModifiers(expr: String, type: String, minMaxErr: String) {
-        chk("data @* {} ( @group $expr )", "ct_err:expr:at:group")
+        chk("data @* {} ( @group $expr )", "ct_err:expr:at:nodb:group")
         chk("data @* {} ( @min $expr )", minMaxErr.replace("MINMAX", "MIN"))
         chk("data @* {} ( @max $expr )", minMaxErr.replace("MINMAX", "MAX"))
-        chk("data @* {} ( @sum $expr )", "ct_err:[expr:at:aggregate][at:what:aggr:bad_type:SUM:$type]")
-        chk("data @* {} ( @sort $expr )", "ct_err:expr:at:sort")
+        chk("data @* {} ( @sum $expr )", "ct_err:[expr:at:nodb:aggregate][at:what:aggr:bad_type:SUM:$type]")
+        chk("data @* {} ( @sort $expr )", "ct_err:expr:at:nodb:sort")
         chk("data @* {} ( data, @omit $expr )", "list<data>[data[900],data[901],data[902]]")
     }
 

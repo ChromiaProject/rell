@@ -182,7 +182,8 @@ private object EntityUtils {
         val atEntity = ctx.makeAtEntity(rEntity, ctx.appCtx.nextAtExprId())
 
         val dbExpr = Lib_Type_Entity.pathToDbExpr(ctx, atEntity, path, resType, linkPos)
-        val whatValue = Db_AtWhatValue_DbExpr(dbExpr, path.last().type)
+        val valueType = path.last().type
+        val whatValue = Db_AtWhatValue_DbExpr(dbExpr, valueType)
         val whatField = Db_AtWhatField(R_AtWhatFieldFlags.DEFAULT, whatValue)
 
         return createCalculator0(atEntity, whatField, resType, cLambda)

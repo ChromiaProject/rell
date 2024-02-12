@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.atexpr
@@ -10,7 +10,7 @@ import net.postchain.rell.base.testutils.RellCodeTester
 import org.junit.Test
 
 abstract class AtExprGroupBaseTest: AtExprBaseTest() {
-    protected val fromData = impFrom("data")
+    private val fromData = impFrom("data")
 
     protected fun initDataCountries() {
         tst.strictToString = false
@@ -390,7 +390,7 @@ abstract class AtExprGroupBaseTest: AtExprBaseTest() {
         chkTypeAggr("max", type, "", "ct_err:at:what:aggr:bad_type:MAX:$type")
     }
 
-    protected fun chkTypeAggr(op: String, type: String, values: String, exp: String) {
+    private fun chkTypeAggr(op: String, type: String, values: String, exp: String) {
         chkTypeCommon("$fromData @? {} ( @$op .v )", type, values, exp)
     }
 
@@ -414,11 +414,11 @@ abstract class AtExprGroupBaseTest: AtExprBaseTest() {
     }
 
     protected fun chkTypeMinMaxFormal(type: String) {
-        chkTypeAggrFormal("min", type, "$type?", "$type")
-        chkTypeAggrFormal("max", type, "$type?", "$type")
+        chkTypeAggrFormal("min", type, "$type?", type)
+        chkTypeAggrFormal("max", type, "$type?", type)
     }
 
-    protected fun chkTypeAggrFormal(op: String, type: String, expNoGroup: String, expGroup: String) {
+    private fun chkTypeAggrFormal(op: String, type: String, expNoGroup: String, expGroup: String) {
         chkTypeAggrFormal(op, type, false, expNoGroup)
         chkTypeAggrFormal(op, type, true, expGroup)
     }

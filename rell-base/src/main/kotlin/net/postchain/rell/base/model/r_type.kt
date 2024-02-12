@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model
@@ -656,6 +656,10 @@ class R_TupleType(fields: List<R_TupleField>): R_Type(calcName(fields)) {
         }
 
         fun create(vararg fields: R_Type): R_TupleType {
+            return create(fields.toList())
+        }
+
+        fun create(fields: List<R_Type>): R_TupleType {
             val fieldsList = fields.map { R_TupleField(null, it) }
             return R_TupleType(fieldsList)
         }

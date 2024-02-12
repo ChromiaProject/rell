@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.modifier
@@ -14,6 +14,9 @@ enum class C_AtSummarizationKind(val annotation: String) {
     SUM("sum"),
     MIN("min"),
     MAX("max"),
+    LIST("list"),
+    SET("set"),
+    MAP("map"),
 }
 
 object C_Annotations {

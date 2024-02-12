@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.vexpr
@@ -10,10 +10,8 @@ import net.postchain.rell.base.compiler.base.core.C_AppContext
 import net.postchain.rell.base.compiler.base.core.C_MessageContext
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.C_Errors
-import net.postchain.rell.base.model.R_AtExprId
-import net.postchain.rell.base.model.R_FrameBlock
-import net.postchain.rell.base.model.R_IdeName
-import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.lib.type.R_ListType
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_IterableAdapter
 import net.postchain.rell.base.utils.*
@@ -43,12 +41,26 @@ class V_AtEntityExpr(
 }
 
 class V_AtWhatFieldFlags(
-        val omit: Boolean,
-        val sort: S_PosValue<R_AtWhatSort>?,
-        val group: S_Pos?,
-        val aggregate: S_Pos?
+    val omit: Boolean,
+    val sort: S_PosValue<R_AtWhatSort>?,
+    val group: S_Pos?,
+    val aggregate: S_Pos?,
 ) {
-    fun compile() = R_AtWhatFieldFlags(omit = omit, sort = sort?.value, group = group != null, aggregate = aggregate != null)
+    fun update(
+        omit: Boolean = this.omit,
+        sort: S_PosValue<R_AtWhatSort>? = this.sort,
+        group: S_Pos? = this.group,
+        aggregate: S_Pos? = this.aggregate,
+    ): V_AtWhatFieldFlags {
+        return V_AtWhatFieldFlags(omit = omit, sort = sort, group = group, aggregate = aggregate)
+    }
+
+    fun compile() = R_AtWhatFieldFlags(
+        omit = omit,
+        sort = sort?.value,
+        group = group != null,
+        aggregate = aggregate != null,
+    )
 
     companion object {
         val DEFAULT = V_AtWhatFieldFlags(omit = false, sort = null, group = null, aggregate = null)
@@ -64,6 +76,32 @@ class V_DbAtWhatField(
     val summarization: C_AtSummarization?,
 ) {
     fun isIgnored() = flags.omit && flags.sort == null && summarization == null
+
+    fun update(
+        resultType: R_Type = this.resultType,
+        expr: V_Expr = this.expr,
+        flags: V_AtWhatFieldFlags = this.flags,
+        summarization: C_AtSummarization? = this.summarization,
+    ): V_DbAtWhatField {
+        return V_DbAtWhatField(
+            appCtx = appCtx,
+            name = name,
+            resultType = resultType,
+            expr = expr,
+            flags = flags,
+            summarization = summarization,
+        )
+    }
+
+    fun toColField(): V_ColAtWhatField {
+        val summarization = if (summarization == null) {
+            R_ColAtFieldSummarization_None
+        } else {
+            summarization.compileR(appCtx)
+        }
+        val rFlags = flags.compile()
+        return V_ColAtWhatField(expr, rFlags, summarization)
+    }
 
     fun toDbField(nested: Boolean): Db_AtWhatField {
         val cWhatValue = if (expr.info.dependsOnDbAtEntity || V_AtUtils.hasWhatModifiers(flags)) {
@@ -92,19 +130,13 @@ class V_DbAtWhat(allFields: List<V_DbAtWhatField>) {
 }
 
 class V_AtExprBase(
-    from: List<R_DbAtEntity>,
-    what: List<V_DbAtWhatField>,
+    private val from: List<R_DbAtEntity>,
+    private val what: List<V_DbAtWhatField>,
     private val where: V_Expr?,
     private val isMany: Boolean,
+    private val innerExprs: List<V_Expr>,
 ) {
-    private val from = from.toImmList()
-    private val what = what.toImmList()
-
-    private val innerExprs = (what.map { it.expr } + listOfNotNull(where)).toImmList()
-    private val refAtExprIds = innerExprs.flatMap { it.info.dependsOnAtExprs }.toImmSet()
-
     fun innerExprs(): List<V_Expr> = innerExprs
-    fun referencedAtExprIds(): Set<R_AtExprId> = refAtExprIds
 
     fun toDbBase(nested: Boolean): Db_AtExprBase {
         val dbWhat = what.map { it.toDbField(nested) }
@@ -114,14 +146,14 @@ class V_AtExprBase(
 }
 
 class V_TopDbAtExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        private val resultType: R_Type,
-        private val base: V_AtExprBase,
-        private val extras: V_AtExprExtras,
-        private val cardinality: R_AtCardinality,
-        private val internals: R_DbAtExprInternals,
-        private val resVarFacts: C_ExprVarFacts
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    private val resultType: R_Type,
+    private val base: V_AtExprBase,
+    private val extras: V_AtExprExtras,
+    private val cardinality: R_AtCardinality,
+    private val internals: R_DbAtExprInternals,
+    private val resVarFacts: C_ExprVarFacts,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo(resultType, base.innerExprs() + extras.innerExprs())
     override fun varFacts0() = resVarFacts
@@ -136,18 +168,18 @@ class V_TopDbAtExpr(
 }
 
 class V_NestedDbAtExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        private val resultType: R_Type,
-        private val base: V_AtExprBase,
-        private val extras: V_AtExprExtras,
-        private val rBlock: R_FrameBlock,
-        private val resVarFacts: C_ExprVarFacts
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    private val resultType: R_Type,
+    private val base: V_AtExprBase,
+    private val extras: V_AtExprExtras,
+    private val rBlock: R_FrameBlock,
+    private val resVarFacts: C_ExprVarFacts,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(
-            resultType,
-            base.innerExprs() + extras.innerExprs(),
-            dependsOnDbAtEntity = true
+        resultType,
+        base.innerExprs() + extras.innerExprs(),
+        dependsOnDbAtEntity = true,
     )
 
     override fun varFacts0() = resVarFacts
@@ -190,8 +222,8 @@ class V_ColAtWhatField(val expr: V_Expr, val flags: R_AtWhatFieldFlags, val summ
 }
 
 class V_ColAtWhat(
-        fields: List<V_ColAtWhatField>,
-        val extras: R_ColAtWhatExtras
+    fields: List<V_ColAtWhatField>,
+    val extras: R_ColAtWhatExtras,
 ) {
     val fields = fields.toImmList()
 
@@ -208,17 +240,17 @@ class V_ColAtWhat(
 }
 
 class V_ColAtExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        private val result: C_AtExprResult,
-        private val from: V_ColAtFrom,
-        private val what: V_ColAtWhat,
-        private val where: V_Expr?,
-        private val cardinality: R_AtCardinality,
-        private val extras: V_AtExprExtras,
-        private val block: R_FrameBlock,
-        private val param: R_ColAtParam,
-        private val resVarFacts: C_ExprVarFacts
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    private val result: C_AtExprResult,
+    private val from: V_ColAtFrom,
+    private val what: V_ColAtWhat,
+    private val where: V_Expr?,
+    private val cardinality: R_AtCardinality,
+    private val extras: V_AtExprExtras,
+    private val block: R_FrameBlock,
+    private val param: R_ColAtParam,
+    private val resVarFacts: C_ExprVarFacts,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0(): V_ExprInfo {
         val subExprs = from.innerExprs() + what.innerExprs() + listOfNotNull(where) + extras.innerExprs()
@@ -235,15 +267,15 @@ class V_ColAtExpr(
         val summarization = compileSummarization(result, rWhat)
 
         return R_ColAtExpr(
-                type = result.resultType,
-                block = block,
-                param = param,
-                from = rFrom,
-                what = rWhat,
-                where = rWhere,
-                summarization = summarization,
-                cardinality = cardinality,
-                extras = rExtras
+            type = result.resultType,
+            block = block,
+            param = param,
+            from = rFrom,
+            what = rWhat,
+            where = rWhere,
+            summarization = summarization,
+            cardinality = cardinality,
+            extras = rExtras,
         )
     }
 
@@ -263,7 +295,7 @@ object V_AtUtils {
         return flags.sort != null || flags.group != null || flags.aggregate != null
     }
 
-    fun checkNoWhatModifiers(msgCtx: C_MessageContext, field: V_DbAtWhatField) {
+    fun checkNoWhatModifiersDb(msgCtx: C_MessageContext, field: V_DbAtWhatField) {
         val flags = field.flags
         checkWhatFlag(msgCtx, flags.sort?.pos, "sort", "sort")
         checkWhatFlag(msgCtx, flags.group, "group", "group")
@@ -272,7 +304,7 @@ object V_AtUtils {
 
     private fun checkWhatFlag(msgCtx: C_MessageContext, flagPos: S_Pos?, code: String, msg: String) {
         if (flagPos != null) {
-            msgCtx.error(flagPos, "expr:at:$code", "Cannot $msg this expression")
+            msgCtx.error(flagPos, "expr:at:nodb:$code", "Cannot $msg this expression in the database mode")
         }
     }
 }

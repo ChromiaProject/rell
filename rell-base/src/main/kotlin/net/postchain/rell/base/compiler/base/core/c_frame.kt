@@ -48,13 +48,13 @@ class C_LocalVarRef(val target: C_LocalVar, val ptr: R_VarPtr) {
 }
 
 class C_LocalVar(
-        val metaName: String,
-        val rName: R_Name?,
-        val type: R_Type,
-        val mutable: Boolean,
-        val offset: Int,
-        val uid: C_VarUid,
-        val atExprId: R_AtExprId?
+    val metaName: String,
+    val rName: R_Name?,
+    val type: R_Type,
+    val mutable: Boolean,
+    val offset: Int,
+    val uid: C_VarUid,
+    val atExprId: R_AtExprId?,
 ) {
     fun toRef(blockUid: R_FrameBlockUid): C_LocalVarRef {
         val ptr = R_VarPtr(metaName, blockUid, offset)
@@ -181,11 +181,11 @@ class C_BlockScopeBuilder(
     }
 
     fun newVar(
-            metaName: String,
-            name: R_Name?,
-            type: R_Type,
-            mutable: Boolean,
-            atExprId: R_AtExprId?
+        metaName: String,
+        name: R_Name?,
+        type: R_Type,
+        mutable: Boolean,
+        atExprId: R_AtExprId?,
     ): C_LocalVar {
         check(!done)
         val ofs = endOffset++
@@ -294,11 +294,11 @@ private class C_BlockEntryResolution_Ambiguous(
 }
 
 class C_OwnerBlockContext(
-        frameCtx: C_FrameContext,
-        blockUid: R_FrameBlockUid,
-        private val parent: C_OwnerBlockContext?,
-        atFrom: C_AtFrom?,
-        protoBlockScope: C_BlockScope
+    frameCtx: C_FrameContext,
+    blockUid: R_FrameBlockUid,
+    private val parent: C_OwnerBlockContext?,
+    atFrom: C_AtFrom?,
+    protoBlockScope: C_BlockScope,
 ): C_BlockContext(frameCtx, blockUid) {
     private val startOffset: Int = parent?.scopeBuilder?.endOffset() ?: 0
     private val scopeBuilder: C_BlockScopeBuilder = C_BlockScopeBuilder(fnCtx, blockUid, startOffset, protoBlockScope)
@@ -392,11 +392,11 @@ class C_OwnerBlockContext(
     }
 
     override fun addLocalVar(
-            name: C_Name,
-            type: R_Type,
-            mutable: Boolean,
-            atExprId: R_AtExprId?,
-            ideInfo: C_IdeSymbolInfo,
+        name: C_Name,
+        type: R_Type,
+        mutable: Boolean,
+        atExprId: R_AtExprId?,
+        ideInfo: C_IdeSymbolInfo,
     ): C_LocalVarRef {
         val localVar = scopeBuilder.newVar(name.str, name.rName, type, mutable, atExprId)
         if (checkNameConflict(name.pos, name.rName)) {
@@ -418,11 +418,11 @@ class C_OwnerBlockContext(
     }
 
     override fun newLocalVar(
-            metaName: String,
-            name: R_Name?,
-            type: R_Type,
-            mutable: Boolean,
-            atExprId: R_AtExprId?
+        metaName: String,
+        name: R_Name?,
+        type: R_Type,
+        mutable: Boolean,
+        atExprId: R_AtExprId?,
     ): C_LocalVar {
         return scopeBuilder.newVar(metaName, name, type, mutable, atExprId)
     }

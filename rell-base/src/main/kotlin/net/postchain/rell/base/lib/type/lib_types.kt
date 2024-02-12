@@ -1,9 +1,10 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.type
 
+import net.postchain.rell.base.compiler.base.lib.C_LibUtils
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 
@@ -11,8 +12,7 @@ object Lib_Types {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("immutable", abstract = true, hidden = true) {
             supertypeStrategySpecial { mType ->
-                val rType = L_TypeUtils.getRType(mType)
-                if (rType == null) false else !rType.completeFlags().mutable
+                C_LibUtils.isImmutableType(mType)
             }
         }
 

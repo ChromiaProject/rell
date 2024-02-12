@@ -1,9 +1,11 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model.expr
 
+import net.postchain.rell.base.compiler.base.utils.toCodeMsg
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.R_FrameBlock
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_VarPtr
@@ -12,6 +14,7 @@ import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.toImmList
 import kotlin.math.min
@@ -31,8 +34,9 @@ class R_ColAtFieldSummarization_Group: R_ColAtFieldSummarization() {
 }
 
 sealed class R_ColAtFieldSummarization_Aggregate: R_ColAtFieldSummarization() {
-    override fun newSummarizer(): R_ColAtValueSummarizer = R_ColAtValueSummarizer_Aggregate(this)
+    final override fun newSummarizer(): R_ColAtValueSummarizer = R_ColAtValueSummarizer_Aggregate(this)
 
+    open fun startValue(): Rt_Value? = null
     abstract fun summarize(value1: Rt_Value, value2: Rt_Value): Rt_Value
     abstract fun result(value: Rt_Value?): Rt_Value
 }
@@ -55,6 +59,52 @@ class R_ColAtFieldSummarization_Aggregate_MinMax(
     }
 
     override fun result(value: Rt_Value?) = value ?: Rt_NullValue
+}
+
+class R_ColAtFieldSummarization_Aggregate_List(
+    private val listType: R_ListType,
+): R_ColAtFieldSummarization_Aggregate() {
+    override fun startValue(): Rt_Value = Rt_ListValue(listType, mutableListOf())
+
+    override fun summarize(value1: Rt_Value, value2: Rt_Value): Rt_Value {
+        val list = value1.asList()
+        list.add(value2)
+        return value1
+    }
+
+    override fun result(value: Rt_Value?) = value ?: startValue()
+}
+
+class R_ColAtFieldSummarization_Aggregate_Set(
+    private val setType: R_SetType,
+): R_ColAtFieldSummarization_Aggregate() {
+    override fun startValue(): Rt_Value = Rt_SetValue(setType, mutableSetOf())
+
+    override fun summarize(value1: Rt_Value, value2: Rt_Value): Rt_Value {
+        val set = value1.asSet()
+        set.add(value2)
+        return value1
+    }
+
+    override fun result(value: Rt_Value?) = value ?: startValue()
+}
+
+class R_ColAtFieldSummarization_Aggregate_Map(
+    private val mapType: R_MapType,
+): R_ColAtFieldSummarization_Aggregate() {
+    override fun startValue(): Rt_Value = Rt_MapValue(mapType, mutableMapOf())
+
+    override fun summarize(value1: Rt_Value, value2: Rt_Value): Rt_Value {
+        val map = value1.asMutableMap()
+        val entry = value2.asTuple()
+        val k = entry[0]
+        val v = entry[1]
+        val v0 = map.put(k, v)
+        Rt_Utils.check(v0 == null) { "aggregate:map:dupkey:${k.strCode()}" toCodeMsg "Duplicate map key: ${k.str()}" }
+        return value1
+    }
+
+    override fun result(value: Rt_Value?) = value ?: startValue()
 }
 
 class R_ColAtWhatField(val expr: R_Expr, val flags: R_AtWhatFieldFlags, val summarization: R_ColAtFieldSummarization)
@@ -207,9 +257,9 @@ private class R_ColAtValueSummarizer_Group: R_ColAtValueSummarizer() {
 }
 
 private class R_ColAtValueSummarizer_Aggregate(
-        private val summarization: R_ColAtFieldSummarization_Aggregate
+    private val summarization: R_ColAtFieldSummarization_Aggregate,
 ): R_ColAtValueSummarizer() {
-    private var lastValue: Rt_Value? = null
+    private var lastValue: Rt_Value? = summarization.startValue()
 
     override fun update(value: Rt_Value) {
         val v0 = lastValue
@@ -274,15 +324,15 @@ class R_ColAtFrom(private val iterableAdapter: R_IterableAdapter, private val ex
 }
 
 class R_ColAtExpr(
-        type: R_Type,
-        val block: R_FrameBlock,
-        val param: R_ColAtParam,
-        val from: R_ColAtFrom,
-        val what: R_ColAtWhat,
-        val where: R_Expr,
-        val summarization: R_ColAtSummarization,
-        cardinality: R_AtCardinality,
-        extras: R_AtExprExtras
+    type: R_Type,
+    val block: R_FrameBlock,
+    val param: R_ColAtParam,
+    val from: R_ColAtFrom,
+    val what: R_ColAtWhat,
+    val where: R_Expr,
+    val summarization: R_ColAtSummarization,
+    cardinality: R_AtCardinality,
+    extras: R_AtExprExtras,
 ): R_AtExpr(type, cardinality, extras) {
     private val rowComparator = RowComparator.create(what.extras.sorting)
     private val hasSorting = rowComparator != null
@@ -301,7 +351,6 @@ class R_ColAtExpr(
 
         val iterable = from.evaluate(frame)
         val summarizer = summarization.newSummarizer()
-
         val limiter = summarizer.newLimiter(rtExtras, hasSorting)
 
         frame.block(block) {

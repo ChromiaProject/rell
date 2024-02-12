@@ -66,7 +66,7 @@ class R_SetType(elementType: R_Type): R_CollectionType(elementType, "set") {
 
 class Rt_SetValue(private val type: R_Type, private val elements: MutableSet<Rt_Value>): Rt_Value() {
     init {
-        check(type is R_SetType) { "wrong type: $type" }
+        check(type is R_SetType) { "wrong type: ${type.str()}" }
     }
 
     override val valueType = Rt_CoreValueTypes.SET.type()

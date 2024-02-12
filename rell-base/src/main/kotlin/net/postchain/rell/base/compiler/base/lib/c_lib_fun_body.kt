@@ -1,40 +1,15 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.lib
 
 import net.postchain.rell.base.compiler.ast.S_Pos
-import net.postchain.rell.base.compiler.base.core.C_DefinitionName
-import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
-import net.postchain.rell.base.model.R_IdeName
-import net.postchain.rell.base.model.R_ModuleName
-import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_SysFunction
 import net.postchain.rell.base.model.expr.Db_SysFunction
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
-import net.postchain.rell.base.utils.ide.IdeSymbolKind
-
-object C_LibUtils {
-    val DEFAULT_MODULE = R_ModuleName.EMPTY
-    val DEFAULT_MODULE_STR = DEFAULT_MODULE.str()
-
-    val RELL_MODULE = R_ModuleName.of("rell")
-
-    fun defName(name: String) = C_DefinitionName(DEFAULT_MODULE_STR, name)
-
-    fun ideName(name: String, kind: IdeSymbolKind): R_IdeName {
-        val rName = R_Name.of(name)
-        return ideName(rName, kind)
-    }
-
-    fun ideName(rName: R_Name, kind: IdeSymbolKind): R_IdeName {
-        val ideInfo = C_IdeSymbolInfo.get(kind)
-        return R_IdeName(rName, ideInfo)
-    }
-}
 
 class C_SysFunctionBody(val pure: Boolean, val rFn: R_SysFunction, val dbFn: Db_SysFunction?) {
     companion object {

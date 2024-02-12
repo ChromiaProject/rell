@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.vexpr
@@ -121,12 +121,12 @@ class V_CommonSubscriptExpr(
 }
 
 class V_TupleSubscriptExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        baseExpr: V_Expr,
-        private val kind: V_TupleSubscriptKind,
-        private val resType: R_Type,
-        private val index: Int
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    baseExpr: V_Expr,
+    private val kind: V_TupleSubscriptKind,
+    private val resType: R_Type,
+    private val index: Int,
 ): V_SubscriptExpr(exprCtx, pos, baseExpr) {
     override fun exprInfo0() = V_ExprInfo.simple(resType, baseExpr, canBeDbExpr = false)
 

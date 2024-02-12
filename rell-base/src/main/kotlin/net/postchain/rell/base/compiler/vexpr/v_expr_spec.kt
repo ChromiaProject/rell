@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.vexpr
@@ -24,14 +24,14 @@ import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmSet
 
 class V_LocalVarExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        private val varRef: C_LocalVarRef
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    private val varRef: C_LocalVarRef,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo(
-            varRef.target.type,
-            immListOf(),
-            dependsOnAtExprs = listOfNotNull(varRef.target.atExprId).toImmSet()
+        varRef.target.type,
+        immListOf(),
+        dependsOnAtExprs = listOfNotNull(varRef.target.atExprId).toImmSet(),
     )
 
     override fun varId() = varRef.target.uid

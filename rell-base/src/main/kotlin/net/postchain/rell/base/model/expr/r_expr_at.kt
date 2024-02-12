@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model.expr
@@ -100,22 +100,22 @@ class Rt_AtExprExtras(val limit: Long?, val offset: Long?) {
 }
 
 class R_DbAtExprInternals(
-        val block: R_FrameBlock,
-        val rowDecoder: R_AtExprRowDecoder
+    val block: R_FrameBlock,
+    val rowDecoder: R_AtExprRowDecoder,
 )
 
 abstract class R_AtExpr(
-        type: R_Type,
-        val cardinality: R_AtCardinality,
-        protected val extras: R_AtExprExtras
+    type: R_Type,
+    val cardinality: R_AtCardinality,
+    protected val extras: R_AtExprExtras,
 ): R_Expr(type) {
     protected fun evalResult(list: MutableList<Rt_Value>): Rt_Value {
-        if (cardinality.many) {
-            return Rt_ListValue(type, list)
+        return if (cardinality.many) {
+            Rt_ListValue(type, list)
         } else if (list.isNotEmpty()) {
-            return list[0]
+            list[0]
         } else {
-            return Rt_NullValue
+            Rt_NullValue
         }
     }
 
@@ -131,11 +131,11 @@ abstract class R_AtExpr(
 }
 
 class R_DbAtExpr(
-        type: R_Type,
-        val base: Db_AtExprBase,
-        cardinality: R_AtCardinality,
-        extras: R_AtExprExtras,
-        private val internals: R_DbAtExprInternals
+    type: R_Type,
+    val base: Db_AtExprBase,
+    cardinality: R_AtCardinality,
+    extras: R_AtExprExtras,
+    private val internals: R_DbAtExprInternals,
 ): R_AtExpr(type, cardinality, extras) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val extraVals = extras.evaluate(frame)

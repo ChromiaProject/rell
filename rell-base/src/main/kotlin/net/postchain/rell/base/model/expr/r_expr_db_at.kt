@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model.expr
@@ -190,7 +190,10 @@ class Db_AtWhatValue_ToStruct(private val rStruct: R_Struct, exprs: List<Db_Expr
     }
 }
 
-class Db_AtWhatField(val flags: R_AtWhatFieldFlags, val value: Db_AtWhatValue)
+class Db_AtWhatField(
+    val flags: R_AtWhatFieldFlags,
+    val value: Db_AtWhatValue,
+)
 
 class RedDb_AtWhatField(val expr: RedDb_Expr, val flags: R_AtWhatFieldFlags)
 
@@ -358,7 +361,7 @@ class Db_AtExprBase(
     private val from = from.toImmList()
     private val what = what.toImmList()
 
-    private val selWhat = what.filter { !it.flags.omit }.toImmList()
+    val selWhat = what.filter { !it.flags.omit }.toImmList()
     private val resultTypes = selWhat.flatMap { it.value.rawTypes() }.toImmList()
 
     init {
@@ -400,8 +403,8 @@ class Db_AtExprBase(
         val rtSql = redBase.buildSql(frame, extras)
         val select = SqlSelect(rtSql, resultTypes)
         val combiners = selWhat.map { it.value.combiner(frame) }
-        val records = select.execute(frame.sqlExec) {
-            val items = Rt_AtWhatCombiner.combineValues(combiners, it)
+        val records = select.execute(frame.sqlExec) { row ->
+            val items = Rt_AtWhatCombiner.combineValues(combiners, row)
             items.map { it.value() }
         }
         return records

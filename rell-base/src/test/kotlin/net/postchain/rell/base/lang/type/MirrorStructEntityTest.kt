@@ -228,16 +228,17 @@ class MirrorStructEntityTest: BaseRellTest(false) {
         initToStructEntity()
 
         chk("user@{} ( .name, @omit user.to_struct() )", "text[Bob]")
-        chk("user@{} ( @sort user.to_struct() )", "ct_err:expr:at:sort")
-        chk("user@{} ( @sort_desc user.to_struct() )", "ct_err:expr:at:sort")
+        chk("user@{} ( @sort user.to_struct() )", "ct_err:expr:at:nodb:sort")
+        chk("user@{} ( @sort_desc user.to_struct() )", "ct_err:expr:at:nodb:sort")
 
-        chk("user@{} ( @group user.to_struct() )", "ct_err:expr:at:group")
-        chk("user@{} ( @min user.to_struct() )", "ct_err:[expr:at:aggregate][at:what:aggr:bad_type:MIN:struct<user>]")
-        chk("user@{} ( @max user.to_struct() )", "ct_err:[expr:at:aggregate][at:what:aggr:bad_type:MAX:struct<user>]")
-        chk("user@{} ( @sum user.to_struct() )", "ct_err:[expr:at:aggregate][at:what:aggr:bad_type:SUM:struct<user>]")
-        chk("user@{} ( @group .name, @min user.to_struct() )", "ct_err:[expr:at:aggregate][at:what:aggr:bad_type:MIN:struct<user>]")
-        chk("user@{} ( @group .name, @max user.to_struct() )", "ct_err:[expr:at:aggregate][at:what:aggr:bad_type:MAX:struct<user>]")
-        chk("user@{} ( @group .name, @sum user.to_struct() )", "ct_err:[expr:at:aggregate][at:what:aggr:bad_type:SUM:struct<user>]")
+        val errAggr = "ct_err:[expr:at:nodb:aggregate]"
+        chk("user@{} ( @group user.to_struct() )", "ct_err:expr:at:nodb:group")
+        chk("user@{} ( @min user.to_struct() )", "$errAggr[at:what:aggr:bad_type:MIN:struct<user>]")
+        chk("user@{} ( @max user.to_struct() )", "$errAggr[at:what:aggr:bad_type:MAX:struct<user>]")
+        chk("user@{} ( @sum user.to_struct() )", "$errAggr[at:what:aggr:bad_type:SUM:struct<user>]")
+        chk("user@{} ( @group .name, @min user.to_struct() )", "$errAggr[at:what:aggr:bad_type:MIN:struct<user>]")
+        chk("user@{} ( @group .name, @max user.to_struct() )", "$errAggr[at:what:aggr:bad_type:MAX:struct<user>]")
+        chk("user@{} ( @group .name, @sum user.to_struct() )", "$errAggr[at:what:aggr:bad_type:SUM:struct<user>]")
     }
 
     @Test fun testToStructEntityCollectionAt() {

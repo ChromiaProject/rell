@@ -1,21 +1,23 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.expr
 
 import net.postchain.rell.base.compiler.ast.S_Pos
-import net.postchain.rell.base.compiler.base.core.C_AppContext
-import net.postchain.rell.base.compiler.base.core.C_BlockEntry_AtEntity
-import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
+import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
+import net.postchain.rell.base.compiler.base.utils.C_Constants
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.*
+import net.postchain.rell.base.lib.type.R_ListType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
+import net.postchain.rell.base.model.stmt.R_IterableAdapter_Direct
 import net.postchain.rell.base.utils.chainToIterable
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.toImmSet
 
 class C_AtEntity(
     val declPos: S_Pos,
@@ -52,9 +54,9 @@ class C_AtEntity(
 }
 
 class C_AtFrom_Entities(
-        outerExprCtx: C_ExprContext,
-        fromCtx: C_AtFromContext,
-        entities: List<C_AtEntity>
+    outerExprCtx: C_ExprContext,
+    fromCtx: C_AtFromContext,
+    entities: List<C_AtEntity>,
 ): C_AtFrom(outerExprCtx, fromCtx) {
     val entities = entities.toImmList()
 
@@ -121,44 +123,119 @@ class C_AtFrom_Entities(
     }
 
     override fun compile(details: C_AtDetails): V_Expr {
-        val vBase = compileBase(details)
-        val extras = V_AtExprExtras(details.limit, details.offset)
-
+        val cBase = compileBase(details)
         if (parentAtCtx?.dbAt != true) {
-            return compileTop(details, vBase, extras)
+            return compileTop(details, cBase)
         }
 
-        val dependent = isOuterDependent(vBase)
+        val dependent = isOuterDependent(cBase)
         return if (dependent || details.cardinality.value == R_AtCardinality.ZERO_MANY) {
-            compileNested(details, vBase, extras)
+            compileNested(details, cBase)
         } else {
-            compileTop(details, vBase, extras)
+            compileTop(details, cBase)
         }
     }
 
-    private fun isOuterDependent(vBase: V_AtExprBase): Boolean {
-        val exprIds = vBase.referencedAtExprIds()
+    private fun isOuterDependent(cBase: C_AtExprBase): Boolean {
+        val exprIds = cBase.referencedAtExprIds()
         return chainToIterable(parentAtCtx) { it.parent }.any { exprIds.contains(it.atExprId) }
     }
 
-    private fun compileTop(details: C_AtDetails, vBase: V_AtExprBase, extras: V_AtExprExtras): V_Expr {
+    private fun compileTop(details: C_AtDetails, cBase: C_AtExprBase): V_Expr {
+        val colAggr = cBase.what.any { it.summarization?.isCollectionAggregation() == true }
+        return if (colAggr) {
+            compileTopColAggr(details, cBase)
+        } else {
+            compileTopDefault(details, cBase)
+        }
+    }
+
+    private fun compileTopDefault(details: C_AtDetails, cBase: C_AtExprBase): V_Expr {
+        val extras = V_AtExprExtras(details.limit, details.offset)
         val cBlock = innerBlkCtx.buildBlock()
-        val rowDecoder = details.res.rowDecoder
-        val internals = R_DbAtExprInternals(cBlock.rBlock, rowDecoder)
+        val internals = R_DbAtExprInternals(cBlock.rBlock, details.res.rowDecoder)
 
         return V_TopDbAtExpr(
-                outerExprCtx,
-                details.startPos,
-                details.res.resultType,
-                vBase,
-                extras,
-                details.cardinality.value,
-                internals,
-                details.exprFacts
+            outerExprCtx,
+            details.startPos,
+            details.res.resultType,
+            cBase.toVBase(),
+            extras,
+            details.cardinality.value,
+            internals,
+            details.exprFacts,
         )
     }
 
-    private fun compileNested(details: C_AtDetails, vBase: V_AtExprBase, extras: V_AtExprExtras): V_Expr {
+    private fun compileTopColAggr(details: C_AtDetails, cBase: C_AtExprBase): V_Expr {
+        val dbWhat = cBase.what.map { field ->
+            val flags = field.flags.update(omit = false, sort = null, group = null, aggregate = null)
+            field.update(resultType = field.expr.type, flags = flags, summarization = null)
+        }
+
+        val itemType = R_TupleType.create(dbWhat.map { it.resultType })
+        val innerAtExpr = createTopColAggrInner(details, cBase, dbWhat, itemType)
+
+        val innerBlkCtx2 = outerExprCtx.blkCtx.createSubContext("@2", null)
+        val itemVar = innerBlkCtx2.newLocalVar(C_Constants.AT_PLACEHOLDER, null, itemType, false, null)
+        return createTopColAggrOuter(details, itemVar, innerAtExpr, innerBlkCtx2)
+    }
+
+    private fun createTopColAggrInner(
+        details: C_AtDetails,
+        cBase: C_AtExprBase,
+        what: List<V_DbAtWhatField>,
+        itemType: R_TupleType,
+    ): V_Expr {
+        val cBlock = innerBlkCtx.buildBlock()
+        val rowDecoder = R_AtExprRowDecoder_Tuple(itemType)
+
+        return V_TopDbAtExpr(
+            outerExprCtx,
+            details.startPos,
+            resultType = R_ListType(itemType),
+            base = cBase.update(what = what, isMany = true).toVBase(),
+            extras = V_AtExprExtras(null, null),
+            cardinality = R_AtCardinality.ZERO_MANY,
+            internals = R_DbAtExprInternals(cBlock.rBlock, rowDecoder),
+            resVarFacts = details.exprFacts,
+        )
+    }
+
+    private fun createTopColAggrOuter(
+        details: C_AtDetails,
+        itemVar: C_LocalVar,
+        innerAtExpr: V_Expr,
+        innerBlkCtx2: C_OwnerBlockContext,
+    ): V_Expr {
+        val cBlock = innerBlkCtx2.buildBlock()
+        val itemVarRef = itemVar.toRef(cBlock.rBlock.uid)
+        val factsCtx = outerExprCtx.factsCtx.sub(C_VarFacts.of(inited = mapOf(itemVar.uid to C_VarFact.YES)))
+        val innerExprCtx2 = outerExprCtx.update(blkCtx = innerBlkCtx2, factsCtx = factsCtx, atCtx = innerAtCtx)
+        val itemExpr: V_Expr = V_LocalVarExpr(innerExprCtx2, details.startPos, itemVarRef)
+
+        val colWhat = details.base.what.allFields.mapIndexed { i, field ->
+            val kind = V_TupleSubscriptKind_Simple
+            val expr = V_TupleSubscriptExpr(innerExprCtx2, field.expr.pos, itemExpr, kind, field.expr.type, i)
+            field.update(expr = expr)
+        }
+
+        return V_ColAtExpr(
+            outerExprCtx,
+            details.startPos,
+            result = details.res,
+            from = V_ColAtFrom(R_IterableAdapter_Direct, innerAtExpr),
+            what = compileColWhat(details, colWhat),
+            where = null,
+            cardinality = details.cardinality.value,
+            extras = V_AtExprExtras(details.limit, details.offset),
+            block = cBlock.rBlock,
+            param = R_ColAtParam(itemVar.type, itemVarRef.ptr),
+            resVarFacts = details.exprFacts,
+        )
+    }
+
+    private fun compileNested(details: C_AtDetails, cBase: C_AtExprBase): V_Expr {
         var resultType = details.res.resultType
 
         if (details.cardinality.value != R_AtCardinality.ZERO_MANY) {
@@ -169,21 +246,22 @@ class C_AtFrom_Entities(
         }
 
         val cBlock = innerBlkCtx.buildBlock()
+        val extras = V_AtExprExtras(details.limit, details.offset)
 
         return V_NestedDbAtExpr(
-                outerExprCtx,
-                details.startPos,
-                resultType,
-                vBase,
-                extras,
-                cBlock.rBlock,
-                details.exprFacts
+            outerExprCtx,
+            details.startPos,
+            resultType,
+            cBase.toVBase(),
+            extras,
+            cBlock.rBlock,
+            details.exprFacts,
         )
     }
 
-    private fun compileBase(details: C_AtDetails): V_AtExprBase {
+    private fun compileBase(details: C_AtDetails): C_AtExprBase {
         val rFrom = entities.map { it.toRAtEntity() }
-        return V_AtExprBase(
+        return C_AtExprBase(
             rFrom,
             details.base.what.materialFields,
             details.base.where,
@@ -204,6 +282,33 @@ class C_AtFrom_Entities(
         override fun compile(pos: S_Pos): V_Expr {
             return V_AtEntityExpr(innerExprCtx, pos, atEntity, false)
         }
+    }
+
+    private class C_AtExprBase(
+        val from: List<R_DbAtEntity>,
+        val what: List<V_DbAtWhatField>,
+        private val where: V_Expr?,
+        private val isMany: Boolean,
+    ) {
+        private val innerExprs = (what.map { it.expr } + listOfNotNull(where)).toImmList()
+
+        private val refAtExprIds: Set<R_AtExprId> by lazy {
+            innerExprs.flatMap { it.info.dependsOnAtExprs }.toImmSet()
+        }
+
+        fun update(
+            what: List<V_DbAtWhatField> = this.what,
+            where: V_Expr? = this.where,
+            isMany: Boolean = this.isMany,
+        ) = C_AtExprBase(
+            from = from,
+            what = what,
+            where = where,
+            isMany = isMany,
+        )
+
+        fun referencedAtExprIds(): Set<R_AtExprId> = refAtExprIds
+        fun toVBase() = V_AtExprBase(from, what, where, isMany, innerExprs)
     }
 }
 
@@ -227,13 +332,13 @@ class C_DbAtWhatValue_Simple(private val dbExpr: Db_Expr): C_DbAtWhatValue() {
 }
 
 class C_DbAtWhatValue_Complex(
-        vExprs: List<V_Expr>,
-        private val evaluator: Db_ComplexAtWhatEvaluator
+    vExprs: List<V_Expr>,
+    private val evaluator: Db_ComplexAtWhatEvaluator,
 ): C_DbAtWhatValue() {
     private val vExprs = vExprs.toImmList()
 
     override fun toDbWhatTop(appCtx: C_AppContext, field: V_DbAtWhatField): Db_AtWhatValue {
-        V_AtUtils.checkNoWhatModifiers(appCtx.msgCtx, field)
+        V_AtUtils.checkNoWhatModifiersDb(appCtx.msgCtx, field)
         return toDbWhatSub()
     }
 
@@ -258,7 +363,7 @@ class C_DbAtWhatValue_Complex(
 
 class C_DbAtWhatValue_Other(private val dbWhatValue: Db_AtWhatValue): C_DbAtWhatValue() {
     override fun toDbWhatTop(appCtx: C_AppContext, field: V_DbAtWhatField): Db_AtWhatValue {
-        V_AtUtils.checkNoWhatModifiers(appCtx.msgCtx, field)
+        V_AtUtils.checkNoWhatModifiersDb(appCtx.msgCtx, field)
         return dbWhatValue
     }
 

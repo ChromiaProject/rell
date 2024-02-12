@@ -155,6 +155,7 @@ object C_Utils {
     fun checkMapKeyType(ctx: C_DefinitionContext, pos: S_Pos, type: R_Type) {
         checkMapKeyType0(ctx.appCtx, pos, type, "expr_map_keytype", "as a map key")
     }
+
     fun checkGroupValueType(appCtx: C_AppContext, pos: S_Pos, type: R_Type) {
         checkMapKeyType0(appCtx, pos, type, "expr_at_group_type", "for grouping")
     }

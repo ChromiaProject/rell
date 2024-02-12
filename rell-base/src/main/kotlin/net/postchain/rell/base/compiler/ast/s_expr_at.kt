@@ -1,11 +1,12 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.ast
 
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.*
+import net.postchain.rell.base.compiler.base.lib.C_LibUtils
 import net.postchain.rell.base.compiler.base.modifier.*
 import net.postchain.rell.base.compiler.base.utils.C_Constants
 import net.postchain.rell.base.compiler.base.utils.C_Error
@@ -15,16 +16,10 @@ import net.postchain.rell.base.compiler.vexpr.V_AtWhatFieldFlags
 import net.postchain.rell.base.compiler.vexpr.V_DbAtWhat
 import net.postchain.rell.base.compiler.vexpr.V_DbAtWhatField
 import net.postchain.rell.base.compiler.vexpr.V_Expr
-import net.postchain.rell.base.lib.type.R_BigIntegerType
-import net.postchain.rell.base.lib.type.R_BooleanType
-import net.postchain.rell.base.lib.type.R_DecimalType
-import net.postchain.rell.base.lib.type.R_IntegerType
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
-import net.postchain.rell.base.lib.type.Rt_BigIntegerValue
-import net.postchain.rell.base.lib.type.Rt_DecimalValue
-import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.doc.DocDeclaration_AtVariable
 import net.postchain.rell.base.utils.doc.DocSymbolFactory
@@ -188,7 +183,11 @@ class S_AtExprWhat_Complex(val fields: List<S_AtExprWhatComplexField>): S_AtExpr
         return if (hasActualName) R_IdeName(field.effectiveName.rName, ideDef.refInfo) else null
     }
 
-    private fun compileSummarization(ctx: C_ExprContext, vExpr: V_Expr, ann: C_AtSummarizationKind?): C_AtSummarization? {
+    private fun compileSummarization(
+        ctx: C_ExprContext,
+        vExpr: V_Expr,
+        ann: C_AtSummarizationKind?,
+    ): C_AtSummarization? {
         ann ?: return null
 
         val type = vExpr.type
@@ -199,6 +198,9 @@ class S_AtExprWhat_Complex(val fields: List<S_AtExprWhatComplexField>): S_AtExpr
             C_AtSummarizationKind.SUM -> compileSummarizationSum(pos, type)
             C_AtSummarizationKind.MIN -> compileSummarizationMinMax(pos, type, R_CmpOp_Le, Db_SysFn_Aggregation.Min)
             C_AtSummarizationKind.MAX -> compileSummarizationMinMax(pos, type, R_CmpOp_Ge, Db_SysFn_Aggregation.Max)
+            C_AtSummarizationKind.LIST -> C_AtSummarization_Aggregate_List(pos, type)
+            C_AtSummarizationKind.SET -> compileSummarizationSet(ctx.msgCtx, pos, type)
+            C_AtSummarizationKind.MAP -> compileSummarizationMap(ctx.msgCtx, pos, type)
         }
 
         if (cSummarization == null) {
@@ -228,6 +230,37 @@ class S_AtExprWhat_Complex(val fields: List<S_AtExprWhatComplexField>): S_AtExpr
         return if (rCmpType == null && rComparator == null) null else {
             C_AtSummarization_Aggregate_MinMax(pos, type, cmpOp, rCmpType, rComparator, dbFn)
         }
+    }
+
+    private fun compileSummarizationSet(
+        msgCtx: C_MessageContext,
+        pos: C_AtSummarizationPos,
+        type: R_Type
+    ): C_AtSummarization {
+        if (!C_LibUtils.isImmutableType(type.mType)) {
+            C_AtSummarization.typeError(msgCtx, type, pos)
+        }
+        return C_AtSummarization_Aggregate_Set(pos, type)
+    }
+
+    private fun compileSummarizationMap(
+        msgCtx: C_MessageContext,
+        pos: C_AtSummarizationPos,
+        type: R_Type
+    ): C_AtSummarization? {
+        val mTypes = C_LibUtils.asMapEntryOrNull(type.mType)
+        mTypes ?: return null
+
+        val (mKeyType, mValueType) = mTypes
+        val rKeyType = L_TypeUtils.getRType(mKeyType) ?: return null
+        val rValueType = L_TypeUtils.getRType(mValueType) ?: return null
+
+        if (!C_LibUtils.isImmutableType(mTypes.first)) {
+            C_AtSummarization.typeError(msgCtx, type, pos)
+        }
+
+        val rMapType = R_MapType(rKeyType, rValueType)
+        return C_AtSummarization_Aggregate_Map(pos, type, rMapType)
     }
 
     private fun processNameConflicts(ctx: C_ExprContext, procFields: List<WhatField>): List<WhatField> {
@@ -427,22 +460,22 @@ class S_AtExpr(
     }
 
     private fun compileDetails(
-            ctx: C_ExprContext,
-            hint: C_ExprHint,
-            atExprId: R_AtExprId,
-            cFrom: C_AtFrom,
-            subValues: MutableList<V_Expr>
+        ctx: C_ExprContext,
+        hint: C_ExprHint,
+        atExprId: R_AtExprId,
+        cFrom: C_AtFrom,
+        subValues: MutableList<V_Expr>,
     ): C_AtDetails {
         val innerCtx = cFrom.innerExprCtx()
         val vWhere = where.compile(innerCtx, atExprId, subValues)
 
-        val cWhat = what.compile(innerCtx, hint, cFrom, subValues)
-        val cResult = compileAtResult(cWhat.allFields)
+        val vWhat = what.compile(innerCtx, hint, cFrom, subValues)
+        val cResult = compileAtResult(vWhat.allFields)
 
         val vLimit = compileLimitOffset(limit, "limit", ctx, subValues)
         val vOffset = compileLimitOffset(offset, "offset", ctx, subValues)
 
-        val base = C_AtExprBase(cWhat, vWhere)
+        val base = C_AtExprBase(vWhat, vWhere)
         val facts = C_ExprVarFacts.forSubExpressions(subValues)
 
         return C_AtDetails(startPos, cardinality, base, vLimit, vOffset, cResult, facts)
@@ -479,12 +512,12 @@ class S_AtExpr(
         val resultType = C_AtExprResult.calcResultType(recordType, cardinality.value)
 
         return C_AtExprResult(
-                recordType,
-                resultType,
-                rowDecoder,
-                selFieldsIndexes,
-                groupFieldsIndexes,
-                hasAggregateFields
+            recordType,
+            resultType,
+            rowDecoder,
+            selFieldsIndexes,
+            groupFieldsIndexes,
+            hasAggregateFields,
         )
     }
 

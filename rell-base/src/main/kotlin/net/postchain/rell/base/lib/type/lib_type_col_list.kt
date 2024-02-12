@@ -269,7 +269,7 @@ class R_ListType(elementType: R_Type): R_CollectionType(elementType, "list") {
 
 class Rt_ListValue(private val type: R_Type, private val elements: MutableList<Rt_Value>): Rt_Value() {
     init {
-        check(type is R_ListType) { "wrong type: $type" }
+        check(type is R_ListType) { "wrong type: ${type.str()}" }
     }
 
     override val valueType = Rt_CoreValueTypes.LIST.type()

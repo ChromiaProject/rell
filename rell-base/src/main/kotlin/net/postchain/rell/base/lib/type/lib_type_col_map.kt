@@ -10,13 +10,16 @@ import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.GtvType
 import net.postchain.rell.base.compiler.base.lib.C_LibType
+import net.postchain.rell.base.compiler.base.lib.C_LibUtils
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_TypeDefDsl
-import net.postchain.rell.base.model.*
-import net.postchain.rell.base.mtype.M_Type_Tuple
+import net.postchain.rell.base.model.R_GtvCompatibility
+import net.postchain.rell.base.model.R_TupleType
+import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.R_VirtualMapType
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.runtime.utils.toGtv
@@ -29,7 +32,7 @@ object Lib_Type_Map {
             generic("-V")
 
             supertypeStrategyComposite { mType ->
-                mType is M_Type_Tuple && mType.fieldTypes.size == 2
+                C_LibUtils.asMapEntryOrNull(mType) != null
             }
         }
 
