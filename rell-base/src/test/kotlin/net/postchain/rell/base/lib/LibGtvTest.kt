@@ -42,13 +42,13 @@ class LibGtvTest: BaseRellTest(false) {
     }
 
     @Test fun testToFromJson() {
-        chk("""gtv.from_json('{"x":123,"y":[4,5,6]}')""", """gtv[{"x":123,"y":[4,5,6]}]""")
-        chk("""gtv.from_json(json('{"x":123,"y":[4,5,6]}'))""", """gtv[{"x":123,"y":[4,5,6]}]""")
+        chk("""gtv.from_json('{"x":123,"y":[4,5,6]}')""", """gtv[["x": 123, "y": [4, 5, 6]]]""")
+        chk("""gtv.from_json(json('{"x":123,"y":[4,5,6]}'))""", """gtv[["x": 123, "y": [4, 5, 6]]]""")
         chk("""gtv.from_json('{"x":123,"y":[4,5,6]}').to_bytes()""",
                 "byte_array[a424302230080c0178a30302017b30160c0179a511300fa303020104a303020105a303020106]")
 
         chk("gtv.from_bytes(x'a424302230080c0178a30302017b30160c0179a511300fa303020104a303020105a303020106')",
-                """gtv[{"x":123,"y":[4,5,6]}]""")
+                """gtv[["x": 123, "y": [4, 5, 6]]]""")
         chk("gtv.from_bytes(x'a424302230080c0178a30302017b30160c0179a511300fa303020104a303020105a303020106').to_json()",
                 """json[{"x":123,"y":[4,5,6]}]""")
         chk("''+gtv.from_bytes(x'a424302230080c0178a30302017b30160c0179a511300fa303020104a303020105a303020106').to_json()",
@@ -186,10 +186,10 @@ class LibGtvTest: BaseRellTest(false) {
     }
 
     @Test fun testToFromGtvByteArray() {
-        chk("x''.to_gtv()", """gtv[""]""")
-        chk("x'0123abcd'.to_gtv()", """gtv["0123ABCD"]""")
-        chk("x''.to_gtv_pretty()", """gtv[""]""")
-        chk("x'0123abcd'.to_gtv_pretty()", """gtv["0123ABCD"]""")
+        chk("x''.to_gtv()", """gtv[x""]""")
+        chk("x'0123abcd'.to_gtv()", """gtv[x"0123ABCD"]""")
+        chk("x''.to_gtv_pretty()", """gtv[x""]""")
+        chk("x'0123abcd'.to_gtv_pretty()", """gtv[x"0123ABCD"]""")
 
         chkFromGtv("''", "byte_array.from_gtv(g)", "byte_array[]")
         chkFromGtv("'0123abcd'", "byte_array.from_gtv(g)", "byte_array[0123abcd]")
@@ -276,7 +276,7 @@ class LibGtvTest: BaseRellTest(false) {
     }
 
     @Test fun testToFromGtvOther() {
-        chk("gtv.from_json('{}').to_gtv()", "gtv[{}]")
+        chk("gtv.from_json('{}').to_gtv()", "gtv[[:]]")
         chk("gtv.from_json('[]').to_gtv()", "gtv[[]]")
         chk("gtv.from_json('[123]').to_gtv()", "gtv[[123]]")
         chk("gtv.from_json('[123]').to_gtv_pretty()", "gtv[[123]]")
@@ -290,7 +290,7 @@ class LibGtvTest: BaseRellTest(false) {
     @Test fun testToFromGtvList() {
         chk("list<integer>().to_gtv()", "gtv[[]]")
         chk("[123].to_gtv()", "gtv[[123]]")
-        chk("[123, 456].to_gtv()", "gtv[[123,456]]")
+        chk("[123, 456].to_gtv()", "gtv[[123, 456]]")
         chk("[123].to_gtv_pretty()", "gtv[[123]]")
 
         chkFromGtv("[]", "list<integer>.from_gtv(g)", "list<integer>[]")
@@ -309,7 +309,7 @@ class LibGtvTest: BaseRellTest(false) {
     @Test fun testToFromGtvSet() {
         chk("set<integer>().to_gtv()", "gtv[[]]")
         chk("set([123]).to_gtv()", "gtv[[123]]")
-        chk("set([123, 456]).to_gtv()", "gtv[[123,456]]")
+        chk("set([123, 456]).to_gtv()", "gtv[[123, 456]]")
         chk("set([123]).to_gtv_pretty()", "gtv[[123]]")
 
         chkFromGtv("[]", "set<integer>.from_gtv(g)", "set<integer>[]")
@@ -325,15 +325,15 @@ class LibGtvTest: BaseRellTest(false) {
     }
 
     @Test fun testToFromGtvMap() {
-        chk("map<text,integer>().to_gtv()", "gtv[{}]")
-        chk("['Hello':123].to_gtv()", """gtv[{"Hello":123}]""")
-        chk("['Hello':123,'Bye':456].to_gtv()", """gtv[{"Bye":456,"Hello":123}]""")
-        chk("['Hello':123].to_gtv_pretty()", """gtv[{"Hello":123}]""")
+        chk("map<text,integer>().to_gtv()", "gtv[[:]]")
+        chk("['Hello':123].to_gtv()", """gtv[["Hello": 123]]""")
+        chk("['Hello':123,'Bye':456].to_gtv()", """gtv[["Bye": 456, "Hello": 123]]""")
+        chk("['Hello':123].to_gtv_pretty()", """gtv[["Hello": 123]]""")
 
         chk("map<integer,text>().to_gtv()", "gtv[[]]")
-        chk("[123:'Hello'].to_gtv()", """gtv[[[123,"Hello"]]]""")
-        chk("[123:'Hello',456:'Bye'].to_gtv()", """gtv[[[123,"Hello"],[456,"Bye"]]]""")
-        chk("[123:'Hello',456:'Bye'].to_gtv_pretty()", """gtv[[[123,"Hello"],[456,"Bye"]]]""")
+        chk("[123:'Hello'].to_gtv()", """gtv[[[123, "Hello"]]]""")
+        chk("[123:'Hello',456:'Bye'].to_gtv()", """gtv[[[123, "Hello"], [456, "Bye"]]]""")
+        chk("[123:'Hello',456:'Bye'].to_gtv_pretty()", """gtv[[[123, "Hello"], [456, "Bye"]]]""")
 
         chkFromGtv("{}", "map<text,integer>.from_gtv(g)", "map<text,integer>[]")
         chkFromGtv("[]", "map<text,integer>.from_gtv(g)", "map<text,integer>[]")
@@ -376,15 +376,15 @@ class LibGtvTest: BaseRellTest(false) {
         def("struct C { t: (s: (x: boolean, y: text), k: integer); }")
 
         chk("(123,).to_gtv()", "gtv[[123]]")
-        chk("(123,'Hello').to_gtv()", """gtv[[123,"Hello"]]""")
-        chk("(x=123,y='Hello').to_gtv()", """gtv[[123,"Hello"]]""")
-        chk("(x=123,'Hello').to_gtv()", """gtv[[123,"Hello"]]""")
-        chk("(123,y='Hello').to_gtv()", """gtv[[123,"Hello"]]""")
+        chk("(123,'Hello').to_gtv()", """gtv[[123, "Hello"]]""")
+        chk("(x=123,y='Hello').to_gtv()", """gtv[[123, "Hello"]]""")
+        chk("(x=123,'Hello').to_gtv()", """gtv[[123, "Hello"]]""")
+        chk("(123,y='Hello').to_gtv()", """gtv[[123, "Hello"]]""")
 
-        chk("(123,'Hello').to_gtv_pretty()", """gtv[[123,"Hello"]]""")
-        chk("(x=123,y='Hello').to_gtv_pretty()", """gtv[{"x":123,"y":"Hello"}]""")
-        chk("(x=123,'Hello').to_gtv_pretty()", """gtv[[123,"Hello"]]""")
-        chk("(123,y='Hello').to_gtv_pretty()", """gtv[[123,"Hello"]]""")
+        chk("(123,'Hello').to_gtv_pretty()", """gtv[[123, "Hello"]]""")
+        chk("(x=123,y='Hello').to_gtv_pretty()", """gtv[["x": 123, "y": "Hello"]]""")
+        chk("(x=123,'Hello').to_gtv_pretty()", """gtv[[123, "Hello"]]""")
+        chk("(123,y='Hello').to_gtv_pretty()", """gtv[[123, "Hello"]]""")
 
         chkFromGtv("[[123,'Hello']]", "A.from_gtv(g)", "A[t=(x=int[123],y=text[Hello])]")
         chkFromGtv("[{'x':123,'y':'Hello'}]", "A.from_gtv(g)", "gtv_err:type:[(x:integer,y:text)]:ARRAY:DICT:attr:[A]:t")
@@ -414,9 +414,9 @@ class LibGtvTest: BaseRellTest(false) {
         def("struct rec { x: integer; y: text; }")
         def("struct no_gtv { r: range; }")
 
-        chk("rec(123,'Hello').to_gtv()", """gtv[[123,"Hello"]]""")
+        chk("rec(123,'Hello').to_gtv()", """gtv[[123, "Hello"]]""")
         chk("no_gtv(range(10)).to_gtv()", "ct_err:fn:invalid:no_gtv:to_gtv")
-        chk("rec(123,'Hello').to_gtv_pretty()", """gtv[{"x":123,"y":"Hello"}]""")
+        chk("rec(123,'Hello').to_gtv_pretty()", """gtv[["x": 123, "y": "Hello"]]""")
         chk("no_gtv(range(10)).to_gtv_pretty()", "ct_err:fn:invalid:no_gtv:to_gtv_pretty")
 
         chkFromGtv("[123,'Hello']", "rec.from_gtv(g)", "rec[x=int[123],y=text[Hello]]")
@@ -434,7 +434,6 @@ class LibGtvTest: BaseRellTest(false) {
         chkFromGtv("[]", "rec.from_gtv(g)", "gtv_err:struct_size:rec:2:0")
         chkFromGtv("[123,'Hello']", "rec.from_gtv_pretty(g)", "rec[x=int[123],y=text[Hello]]")
         chkFromGtv("[]", "rec.from_gtv_pretty(g)", "gtv_err:struct_size:rec:2:0")
-
         chkFromGtv("[]", "no_gtv.from_gtv(g)", "ct_err:fn:invalid:no_gtv:from_gtv")
         chkFromGtv("[]", "no_gtv.from_gtv_pretty(g)", "ct_err:fn:invalid:no_gtv:from_gtv_pretty")
     }

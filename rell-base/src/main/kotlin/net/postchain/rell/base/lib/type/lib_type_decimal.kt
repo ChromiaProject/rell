@@ -512,7 +512,7 @@ class Rt_DecimalValue private constructor(val value: BigDecimal): Rt_Value() {
     override fun asDecimal() = value
     override fun toFormatArg() = value
     override fun strCode(showTupleFieldNames: Boolean) = "dec[${str()}]"
-    override fun str() = Lib_DecimalMath.toString(value)
+    override fun str(format: StrFormat) = Lib_DecimalMath.toString(value)
     override fun equals(other: Any?) = other === this || (other is Rt_DecimalValue && value == other.value)
     override fun hashCode() = value.hashCode()
 

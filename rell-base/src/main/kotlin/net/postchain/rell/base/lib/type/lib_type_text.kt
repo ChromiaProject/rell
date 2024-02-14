@@ -468,7 +468,7 @@ class Rt_TextValue private constructor(val value: String): Rt_Value() {
         return "text[$esc]"
     }
 
-    override fun str(): String = value
+    override fun str(format: StrFormat): String = value
     override fun equals(other: Any?) = other === this || (other is Rt_TextValue && value == other.value)
     override fun hashCode() = value.hashCode()
 

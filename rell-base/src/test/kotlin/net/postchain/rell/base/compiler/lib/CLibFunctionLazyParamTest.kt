@@ -209,7 +209,7 @@ class CLibFunctionLazyParamTest: BaseCLibTest() {
         private class Rt_TestTypeValue: Rt_Value() {
             override val valueType = Rt_LibValueType.of(TYPE_NAME)
             override fun type(): R_Type = R_TestType
-            override fun str() = TYPE_NAME
+            override fun str(format: StrFormat): String = TYPE_NAME
             override fun strCode(showTupleFieldNames: Boolean) = TYPE_NAME
         }
     }

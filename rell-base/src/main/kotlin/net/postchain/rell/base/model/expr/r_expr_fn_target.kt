@@ -23,7 +23,7 @@ abstract class R_FunctionCallTarget {
     }
 
     abstract fun str(): String
-    open fun str(baseValue: Rt_Value?) = str()
+    open fun str(baseValue: Rt_Value?, format: Rt_Value.StrFormat) = str()
     open fun strCode(baseValue: Rt_Value?) = str()
 
     final override fun toString(): String {
@@ -82,7 +82,7 @@ object R_FunctionCallTarget_FunctionValue: R_FunctionCallTarget() {
     }
 
     override fun str() = "function_value"
-    override fun str(baseValue: Rt_Value?) = getFnValue(baseValue).toString()
+    override fun str(baseValue: Rt_Value?, format: Rt_Value.StrFormat) = getFnValue(baseValue).str(format)
     override fun strCode(baseValue: Rt_Value?) = getFnValue(baseValue).strCode()
 
     private fun getFnValue(baseValue: Rt_Value?): Rt_FunctionValue {

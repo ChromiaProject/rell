@@ -120,7 +120,7 @@ private class Rt_RellMetaValue(private val meta: R_DefinitionMeta): Rt_Value() {
 
     override val valueType = VALUE_TYPE
     override fun type(): R_Type = R_RellMetaType
-    override fun str() = "meta[${meta.fullName}]"
+    override fun str(format: StrFormat) = "meta[${meta.fullName}]"
     override fun strCode(showTupleFieldNames: Boolean) = "${R_RellMetaType.name}[${meta.fullName}]"
 
     companion object {

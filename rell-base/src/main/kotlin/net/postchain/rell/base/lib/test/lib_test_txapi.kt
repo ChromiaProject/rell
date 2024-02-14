@@ -663,7 +663,7 @@ class Rt_TestBlockValue(txs: List<RawTestTxValue>): Rt_Value() {
         return "${Lib_RellTest.BLOCK_TYPE_QNAME_STR}[$txsStr]"
     }
 
-    override fun str() = "block(${txs.joinToString(",")})"
+    override fun str(format: StrFormat) = "block(${txs.joinToString(",")})"
 
     override fun equals(other: Any?) = other === this || (other is Rt_TestBlockValue && txs == other.txs)
     override fun hashCode() = Objects.hash(txs)
@@ -690,7 +690,7 @@ class Rt_TestTxValue(
 
     override fun type(): R_Type = R_TestTxType
 
-    override fun str() = toString(ops)
+    override fun str(format: StrFormat) = toString(ops)
     override fun strCode(showTupleFieldNames: Boolean) = strCode(ops, signers)
 
     override fun equals(other: Any?) = other === this || (other is Rt_TestTxValue && ops == other.ops && signers == other.signers)
@@ -736,7 +736,7 @@ class Rt_TestOpValue(private val name: R_MountName, args: List<Gtv>): Rt_Value()
 
     override fun type(): R_Type = R_TestOpType
 
-    override fun str() = toString(name, args)
+    override fun str(format: StrFormat) = toString(name, args)
     override fun strCode(showTupleFieldNames: Boolean) = strCode(name, args)
 
     override fun equals(other: Any?) = other === this || (other is Rt_TestOpValue && name == other.name && args == other.args)
@@ -753,12 +753,12 @@ class Rt_TestOpValue(private val name: R_MountName, args: List<Gtv>): Rt_Value()
         private val VALUE_TYPE = Rt_LibValueType.of("TEST_OP")
 
         fun strCode(name: R_MountName, args: List<Gtv>): String {
-            val argsStr = args.joinToString(",") { Rt_GtvValue.toString(it) }
+            val argsStr = args.joinToString(",") { Rt_GtvValue.get(it).str(StrFormat.V2) }
             return "op[$name($argsStr)]"
         }
 
         fun toString(name: R_MountName, args: List<Gtv>): String {
-            val argsStr = args.joinToString(",") { Rt_GtvValue.toString(it) }
+            val argsStr = args.joinToString(",") { Rt_GtvValue.get(it).str(StrFormat.V2) }
             return "$name($argsStr)"
         }
     }

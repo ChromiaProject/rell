@@ -67,8 +67,8 @@ class MirrorStructOperationTest: BaseRellTest(false) {
 
     private fun chkInstanceMemberFunctions(type: String) {
         val expr = "$type('Bob',123)"
-        chk("$expr.to_gtv()", """gtv[["Bob",123]]""")
-        chk("$expr.to_gtv_pretty()", """gtv[{"name":"Bob","rating":123}]""")
+        chk("$expr.to_gtv()", """gtv[["Bob", 123]]""")
+        chk("$expr.to_gtv_pretty()", """gtv[["name": "Bob", "rating": 123]]""")
         chk("$expr.to_bytes()", "byte_array[a50e300ca2050c03426f62a30302017b]")
         chk("$expr.bad_name()", "ct_err:unknown_member:[$type]:bad_name")
     }

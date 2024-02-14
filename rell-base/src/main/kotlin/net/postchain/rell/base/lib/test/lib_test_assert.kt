@@ -61,7 +61,7 @@ object Lib_Test_Assert {
                     val equalsValue = R_BinaryOp_Eq.evaluate(actualValue, expectedValue)
                     if (equalsValue.asBoolean()) {
                         val code = "assert_not_equals:${actualValue.strCode()}"
-                        throw Rt_AssertError.exception(code, "expected not <${actualValue.str()}>")
+                        throw Rt_AssertError.exception(code, "expected not <${actualValue.str(Rt_Value.StrFormat.V2)}>")
                     }
                     Rt_UnitValue
                 }
@@ -190,7 +190,9 @@ object Lib_Test_Assert {
         val equalsValue = op.evaluate(actual, expected)
         if (!equalsValue.asBoolean()) {
             val code = "$fn:${actual.strCode()}:${expected.strCode()}"
-            throw Rt_AssertError.exception(code, "expected <${expected.str()}> but was <${actual.str()}>")
+            val expectedStr = expected.str(Rt_Value.StrFormat.V2)
+            val actualStr = actual.str(Rt_Value.StrFormat.V2)
+            throw Rt_AssertError.exception(code, "expected <$expectedStr> but was <$actualStr>")
         }
         return Rt_UnitValue
     }
@@ -233,7 +235,9 @@ object Lib_Test_Assert {
         val diff = comparator.compare(actualValue, expectedValue)
         if (!op.check(diff)) {
             val code = "assert_compare:${op.code}:${actualValue.strCode()}:${expectedValue.strCode()}"
-            throw Rt_AssertError.exception(code, "comparison failed: ${actualValue.str()} ${op.code} ${expectedValue.str()}")
+            val expectedStr = expectedValue.str(Rt_Value.StrFormat.V2)
+            val actualStr = actualValue.str(Rt_Value.StrFormat.V2)
+            throw Rt_AssertError.exception(code, "comparison failed: $actualStr ${op.code} $expectedStr")
         }
     }
 }
@@ -274,7 +278,7 @@ private class Rt_TestFailureValue(val message: String): Rt_Value() {
 
     override val valueType = VALUE_TYPE
     override fun type(): R_Type = R_TestFailureType
-    override fun str() = message
+    override fun str(format: StrFormat): String = message
     override fun strCode(showTupleFieldNames: Boolean) = "${R_TestFailureType.name}[$message]"
 
     companion object {

@@ -28,7 +28,7 @@ object RellTestUtils {
 
     val DEFAULT_COMPILER_OPTIONS = C_CompilerOptions.builder().hiddenLib(true).build()
 
-    val ENCODER_PLAIN = { _: R_Type, v: Rt_Value -> v.str() }
+    val ENCODER_PLAIN = { _: R_Type, v: Rt_Value -> v.str(Rt_Value.StrFormat.V1) }
     val ENCODER_STRICT = { _: R_Type, v: Rt_Value -> v.strCode() }
     val ENCODER_GTV = { t: R_Type, v: Rt_Value -> GtvTestUtils.gtvToStr(t.rtToGtv(v, true)) }
     val ENCODER_GTV_STRICT = { t: R_Type, v: Rt_Value -> GtvTestUtils.encodeGtvStr(t.rtToGtv(v, true)) }

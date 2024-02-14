@@ -60,7 +60,7 @@ class Rt_RangeValue(val start: Long, val end: Long, val step: Long): Rt_Value(),
     override fun type() = R_RangeType
     override fun asRange() = this
     override fun toFormatArg() = str()
-    override fun str() = "range($start,$end,$step)"
+    override fun str(format: StrFormat) = "range($start,$end,$step)"
     override fun strCode(showTupleFieldNames: Boolean) = "range[$start,$end,$step]"
 
     override fun asIterable(): Iterable<Rt_Value> = this

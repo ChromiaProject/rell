@@ -239,7 +239,7 @@ class LibBlockTransactionTest: BaseRellTest() {
 
         chk("block @ {}", "block[111]")
         chk("blk(block @ {})", "blk[v=block[111]]")
-        chk("blk(block @ {}).to_gtv_pretty()", """gtv[{"v":111}]""")
+        chk("blk(block @ {}).to_gtv_pretty()", """gtv[["v": 111]]""")
         chk("""blk.from_gtv_pretty(gtv.from_json('{"v":111}'))""", "blk[v=block[111]]")
         chk("blk(block @ {}).to_gtv()", """gtv[[111]]""")
         chk("""blk.from_gtv(gtv.from_json('[111]'))""", "blk[v=block[111]]")
@@ -248,7 +248,7 @@ class LibBlockTransactionTest: BaseRellTest() {
 
         chk("transaction @ {}", "transaction[444]")
         chk("tx(transaction @ {})", "tx[v=transaction[444]]")
-        chk("tx(transaction @ {}).to_gtv_pretty()", """gtv[{"v":444}]""")
+        chk("tx(transaction @ {}).to_gtv_pretty()", """gtv[["v": 444]]""")
         chk("""tx.from_gtv_pretty(gtv.from_json('{"v":444}'))""", "tx[v=transaction[444]]")
         chk("tx(transaction @ {}).to_gtv()", """gtv[[444]]""")
         chk("""tx.from_gtv(gtv.from_json('[444]'))""", "tx[v=transaction[444]]")

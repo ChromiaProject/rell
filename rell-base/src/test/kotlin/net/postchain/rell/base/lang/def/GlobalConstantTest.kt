@@ -432,9 +432,9 @@ class GlobalConstantTest: BaseRellTest(false) {
         chkConst("set<integer>.from_gtv(gtv.from_json('[1,2,3]')).size()", "int[3]")
         chkConst("map<integer,text>.from_gtv(gtv.from_json('[]')).size()", "int[0]")
 
-        chkConst("[1,2,3].to_gtv()", "gtv[[1,2,3]]")
-        chkConst("set([1,2,3]).to_gtv()", "gtv[[1,2,3]]")
-        chkConst("[1:'A',2:'B'].to_gtv()", """gtv[[[1,"A"],[2,"B"]]]""")
+        chkConst("[1,2,3].to_gtv()", "gtv[[1, 2, 3]]")
+        chkConst("set([1,2,3]).to_gtv()", "gtv[[1, 2, 3]]")
+        chkConst("[1:'A',2:'B'].to_gtv()", """gtv[[[1, "A"], [2, "B"]]]""")
         chkConst("[1,2,3].hash()", "byte_array[8a6ec7112c4e652c1d6971525a2fbebd9a26d38c026a7eb5bde8aaa54fd57101]")
     }
 
@@ -556,7 +556,7 @@ class GlobalConstantTest: BaseRellTest(false) {
         chkType("json('{}')", "json", "json[{}]")
         chkType("color.red", "color", "color[red]")
         chkType("range(100)", "range", "range[0,100,1]")
-        chkType("gtv.from_json('{}')", "gtv", "gtv[{}]")
+        chkType("gtv.from_json('{}')", "gtv", "gtv[[:]]")
 
         chkType("_nullable(123)", "integer?", "int[123]")
         chkType("(123,'hello')", "(integer,text)", "(int[123],text[hello])")

@@ -272,7 +272,13 @@ class Rt_MapValue(val type: R_MapType, map: MutableMap<Rt_Value, Rt_Value>): Rt_
     override fun asMapValue() = this
     override fun toFormatArg() = map
     override fun strCode(showTupleFieldNames: Boolean) = strCode(type, showTupleFieldNames, map)
-    override fun str() = map.entries.joinToString(", ", "{", "}") { "${it.key.str()}=${it.value.str()}" }
+
+    override fun str(format: StrFormat): String {
+        return map
+            .entries
+            .joinToString(", ", "{", "}") { "${it.key.str(format)}=${it.value.str(format)}" }
+    }
+
     override fun equals(other: Any?) = other === this || (other is Rt_MapValue && map == other.map)
     override fun hashCode() = map.hashCode()
 

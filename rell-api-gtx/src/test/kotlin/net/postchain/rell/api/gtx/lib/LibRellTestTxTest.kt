@@ -235,7 +235,7 @@ class LibRellTestTxTest: BaseRellTest(false) {
         chk("rell.test.tx().nop().nop()", "rell.test.tx[op[nop(0)],op[nop(1)]]")
         chk("rell.test.tx().nop(123)", "rell.test.tx[op[nop(123)]]")
         chk("rell.test.tx().nop('Bob')", "rell.test.tx[op[nop(\"Bob\")]]")
-        chk("rell.test.tx().nop(x'Beef')", "rell.test.tx[op[nop(\"BEEF\")]]")
+        chk("rell.test.tx().nop(x'Beef')", "rell.test.tx[op[nop(x\"BEEF\")]]")
     }
 
     @Test fun testTxRun() {
@@ -408,7 +408,7 @@ class LibRellTestTxTest: BaseRellTest(false) {
         chk("[rell.test.nop(), rell.test.nop(), rell.test.nop()]", "list<rell.test.op>[op[nop(0)],op[nop(1)],op[nop(2)]]")
         chk("rell.test.nop(123)", """op[nop(123)]""")
         chk("rell.test.nop('Bob')", """op[nop("Bob")]""")
-        chk("rell.test.nop(x'beef')", """op[nop("BEEF")]""")
+        chk("rell.test.nop(x'beef')", """op[nop(x"BEEF")]""")
 
         repl.chk("rell.test.nop()", "RES:op[nop(0)]")
         repl.chk("rell.test.nop()", "RES:op[nop(1)]")

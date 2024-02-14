@@ -281,7 +281,7 @@ class Rt_ListValue(private val type: R_Type, private val elements: MutableList<R
     override fun toFormatArg() = elements
 
     override fun strCode(showTupleFieldNames: Boolean) = strCode(type, elements)
-    override fun str() = elements.joinToString(", ", "[", "]") { it.str() }
+    override fun str(format: StrFormat) = elements.joinToString(", ", "[", "]") { it.str(format) }
     override fun equals(other: Any?) = other === this || (other is Rt_ListValue && elements == other.elements)
     override fun hashCode() = elements.hashCode()
 

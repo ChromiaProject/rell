@@ -52,16 +52,16 @@ class LibTypesTest: BaseRellTest(false) {
         def("struct bar { a: (x: integer, text); }")
         def("struct qaz { m: map<integer,text>; }")
 
-        chk("foo(123,'Hello').to_gtv()", """gtv[[123,"Hello"]]""")
-        chk("foo(123,'Hello').to_gtv_pretty()", """gtv[{"a":123,"b":"Hello"}]""")
+        chk("foo(123,'Hello').to_gtv()", """gtv[[123, "Hello"]]""")
+        chk("foo(123,'Hello').to_gtv_pretty()", """gtv[["a": 123, "b": "Hello"]]""")
         chk("foo(123,'Hello').to_bytes()", "byte_array[a510300ea30302017ba2070c0548656c6c6f]")
         chk("foo.from_gtv(gtv.from_bytes(x'a510300ea30302017ba2070c0548656c6c6f'))", "foo[a=int[123],b=text[Hello]]")
         chk("foo.from_gtv_pretty(gtv.from_bytes(x'a41a301830080c0161a30302017b300c0c0162a2070c0548656c6c6f'))",
                 "foo[a=int[123],b=text[Hello]]")
         chk("foo.from_bytes(x'a510300ea30302017ba2070c0548656c6c6f')", "foo[a=int[123],b=text[Hello]]")
 
-        chk("bar((x=123,'Hello')).to_gtv()", """gtv[[[123,"Hello"]]]""")
-        chk("bar((x=123,'Hello')).to_gtv_pretty()", """gtv[{"a":[123,"Hello"]}]""")
+        chk("bar((x=123,'Hello')).to_gtv()", """gtv[[[123, "Hello"]]]""")
+        chk("bar((x=123,'Hello')).to_gtv_pretty()", """gtv[["a": [123, "Hello"]]]""")
         chk("bar((x=123,'Hello')).to_bytes()", "byte_array[a5143012a510300ea30302017ba2070c0548656c6c6f]")
         chk("bar.from_gtv(gtv.from_bytes(x'a5143012a510300ea30302017ba2070c0548656c6c6f'))",
                 "bar[a=(x=int[123],text[Hello])]")
@@ -70,8 +70,8 @@ class LibTypesTest: BaseRellTest(false) {
                 "bar[a=(x=int[123],text[Hello])]")
         chk("bar.from_bytes(x'a5143012a510300ea30302017ba2070c0548656c6c6f')", "bar[a=(x=int[123],text[Hello])]")
 
-        chk("qaz([123:'Hello']).to_gtv()", """gtv[[[[123,"Hello"]]]]""")
-        chk("qaz([123:'Hello']).to_gtv_pretty()", """gtv[{"m":[[123,"Hello"]]}]""")
+        chk("qaz([123:'Hello']).to_gtv()", """gtv[[[[123, "Hello"]]]]""")
+        chk("qaz([123:'Hello']).to_gtv_pretty()", """gtv[["m": [[123, "Hello"]]]]""")
         chk("qaz([123:'Hello']).to_bytes()", "byte_array[a5183016a5143012a510300ea30302017ba2070c0548656c6c6f]")
         chk("qaz([123:'Hello']).to_gtv_pretty().to_bytes()",
                 "byte_array[a41d301b30190c016da5143012a510300ea30302017ba2070c0548656c6c6f]")

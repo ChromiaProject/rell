@@ -276,7 +276,7 @@ class Rt_IntValue private constructor(val value: Long): Rt_Value() {
     override fun asInteger() = value
     override fun toFormatArg() = value
     override fun strCode(showTupleFieldNames: Boolean) = "int[$value]"
-    override fun str() = "" + value
+    override fun str(format: StrFormat) = "" + value
     override fun equals(other: Any?) = other is Rt_IntValue && value == other.value
     override fun hashCode() = java.lang.Long.hashCode(value)
 

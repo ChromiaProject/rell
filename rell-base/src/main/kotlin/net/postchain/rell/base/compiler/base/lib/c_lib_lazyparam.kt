@@ -85,7 +85,7 @@ private sealed class Rt_LazyValue(
 
     final override fun type() = type
     final override fun strCode(showTupleFieldNames: Boolean) = "lazy[...]"
-    final override fun str() = "lazy[...]"
+    final override fun str(format: StrFormat): String = "lazy[...]"
 
     protected abstract fun calcValue(): Rt_Value
 

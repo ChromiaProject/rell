@@ -20,6 +20,7 @@ class LibRellTestAssertTest: BaseRellTest(false) {
         chkAssertEquals("x'beef'", "x'feed'", "byte_array[beef]", "byte_array[feed]")
         chkAssertEquals("json('[1,2,3]')", "json('[4,5,6]')", "json[[1,2,3]]", "json[[4,5,6]]")
         chkAssertEquals("range(5)", "range(6)", "range[0,5,1]", "range[0,6,1]")
+        chkAssertEquals("\"ABCDEF\".to_gtv()", "x\"ABCDEF\".to_gtv()", "gtv[\"ABCDEF\"]", "gtv[x\"ABCDEF\"]")
     }
 
     @Test fun testAssertEqualsComplex() {
@@ -33,6 +34,9 @@ class LibRellTestAssertTest: BaseRellTest(false) {
         chkAssertEqualsBad("(1,'a')", "(1,2)", "(integer,text)", "(integer,integer)")
         chkAssertEqualsBad("(1,'a')", "(1,'a',2)", "(integer,text)", "(integer,text,integer)")
         chkAssertEqualsBad("(x=1,y='a')", "(x=1,z='a')", "(x:integer,y:text)", "(x:integer,z:text)")
+
+        chkAssertEquals("(x\"AB\".to_gtv(),)", "(x\"CE\".to_gtv(),)", "(gtv[x\"AB\"])", "(gtv[x\"CE\"])")
+        chkAssertEquals("[x\"AB\".to_gtv(), x\"CD\".to_gtv()]", "[\"AB\".to_gtv(), \"CD\".to_gtv()]", "list<gtv>[gtv[x\"AB\"],gtv[x\"CD\"]]", "list<gtv>[gtv[\"AB\"],gtv[\"CD\"]]")
     }
 
     @Test fun testAssertEqualsCollections() {

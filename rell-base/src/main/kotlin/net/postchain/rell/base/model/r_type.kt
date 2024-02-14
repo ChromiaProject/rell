@@ -463,7 +463,7 @@ class R_EnumType(val enum: R_EnumDefinition): R_Type(enum.appLevelName, enum.cDe
         override fun equals(other: Any?) = other is Rt_EnumValue && attr == other.attr
         override fun hashCode() = type.hashCode() * 31 + attr.value
 
-        override fun str() = attr.name
+        override fun str(format: StrFormat): String = attr.name
         override fun strCode(showTupleFieldNames: Boolean) = "${type.name}[${attr.name}]"
     }
 }

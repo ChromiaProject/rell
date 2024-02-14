@@ -77,7 +77,7 @@ class Rt_SetValue(private val type: R_Type, private val elements: MutableSet<Rt_
     override fun asSet() = elements
     override fun toFormatArg() = elements
     override fun strCode(showTupleFieldNames: Boolean) = strCode(type, elements, showTupleFieldNames)
-    override fun str() = elements.joinToString(", ", "[", "]") { it.str() }
+    override fun str(format: StrFormat) = elements.joinToString(", ", "[", "]") { it.str(format) }
     override fun equals(other: Any?) = other === this || (other is Rt_SetValue && elements == other.elements)
     override fun hashCode() = elements.hashCode()
 

@@ -102,8 +102,8 @@ class MirrorStructEntityTest: BaseRellTest(false) {
         val t = RellCodeTester(tstCtx)
         t.def(def)
         val expr = "struct<data>(x = 123, y = 'abc')"
-        t.chk("$expr.to_gtv()", """gtv[[123,"abc"]]""")
-        t.chk("$expr.to_gtv_pretty()", """gtv[{"x":123,"y":"abc"}]""")
+        t.chk("$expr.to_gtv()", """gtv[[123, "abc"]]""")
+        t.chk("$expr.to_gtv_pretty()", """gtv[["x": 123, "y": "abc"]]""")
         t.chk("$expr.to_bytes()", "byte_array[a50e300ca30302017ba2050c03616263]")
         t.chk("$expr.bad_name()", "ct_err:unknown_member:[struct<data>]:bad_name")
     }

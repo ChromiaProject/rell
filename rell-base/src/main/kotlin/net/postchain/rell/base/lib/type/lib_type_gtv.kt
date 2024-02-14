@@ -218,8 +218,14 @@ class Rt_GtvValue private constructor(val value: Gtv): Rt_Value() {
     override fun type() = R_GtvType
     override fun asGtv() = value
 
-    override fun strCode(showTupleFieldNames: Boolean) = "gtv[${str()}]"
-    override fun str() = toString(value)
+    override fun strCode(showTupleFieldNames: Boolean) = "gtv[${str(StrFormat.V2)}]"
+
+    override fun str(format: StrFormat): String {
+        return when(format) {
+            StrFormat.V1 -> toString(value)
+            StrFormat.V2 -> value.toString()
+        }
+    }
 
     override fun equals(other: Any?) = other === this || (other is Rt_GtvValue && value == other.value)
     override fun hashCode() = value.hashCode()

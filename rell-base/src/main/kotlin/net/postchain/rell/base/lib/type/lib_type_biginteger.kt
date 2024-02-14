@@ -461,7 +461,7 @@ class Rt_BigIntegerValue private constructor(val value: BigInteger): Rt_Value() 
     override fun asBigInteger() = value
     override fun toFormatArg() = value
     override fun strCode(showTupleFieldNames: Boolean) = "bigint[${str()}]"
-    override fun str() = value.toString()
+    override fun str(format: StrFormat): String = value.toString()
     override fun equals(other: Any?) = other === this || (other is Rt_BigIntegerValue && value == other.value)
     override fun hashCode() = value.hashCode()
 

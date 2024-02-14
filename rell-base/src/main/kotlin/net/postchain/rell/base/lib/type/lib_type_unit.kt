@@ -34,5 +34,5 @@ object Rt_UnitValue: Rt_Value() {
 
     override fun type() = R_UnitType
     override fun strCode(showTupleFieldNames: Boolean) = "unit"
-    override fun str() = "unit"
+    override fun str(format: StrFormat) = "unit"
 }

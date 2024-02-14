@@ -170,8 +170,8 @@ class GtvRtConversionTest: BaseRellTest(useSql = false, gtv = true) {
 
     @Test fun testArgGtv() {
         tst.gtvResult = false
-        chkArg("gtv", """{"x":123,"y":[4,5,6]}""", """gtv[{"x":123,"y":[4,5,6]}]""")
-        chkArg("gtv", """{ "x" : 123, "y" : [4,5,6] }""", """gtv[{"x":123,"y":[4,5,6]}]""")
+        chkArg("gtv", """{"x":123,"y":[4,5,6]}""", """gtv[["x": 123, "y": [4, 5, 6]]]""")
+        chkArg("gtv", """{ "x" : 123, "y" : [4,5,6] }""", """gtv[["x": 123, "y": [4, 5, 6]]]""")
     }
 
     @Test fun testArgStructQuery() {
