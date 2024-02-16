@@ -80,7 +80,7 @@ object RellSourceToDocumentableTranslator : SourceToDocumentableTranslator {
                                         p.name.str,
                                         documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text("Param ${p.name}"))))),
                                         expectPresentInSet = null,
-                                        type = TypeParameter(DRI(), p.name.str),
+                                        type = TypeParameter(DRI(), p.type.name),
                                         sourceSets = setOf(sourceSet)
                                 )
                             }

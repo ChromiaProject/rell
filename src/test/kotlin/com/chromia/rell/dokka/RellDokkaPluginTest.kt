@@ -22,7 +22,7 @@ class RellDokkaPluginTest : BaseAbstractTest() {
             |/**
             | * My comment
             | */
-            |operation my_operation() {}
+            |operation my_operation(arg: text, i: integer) {}
             """.trimIndent(), configuration, cleanupOutput = false
         ) {
             documentablesTransformationStage = { module ->
