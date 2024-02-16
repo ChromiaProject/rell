@@ -1,12 +1,9 @@
-# Dokka plugin template
+# Rell Dokka Plugin
 
 [![Kotlin Alpha](https://kotl.in/badges/alpha.svg)](https://kotlinlang.org/docs/components-stability.html)
 [![JetBrains official project](https://jb.gg/badges/official.svg)](https://github.com/JetBrains#jetbrains-on-github)
 
-This repository provides a template for creating [Dokka](https://github.com/Kotlin/dokka) plugins 
-(check the [Creating a repository from a template](https://help.github.com/en/enterprise/2.20/user/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) article).
-
-> **TL;DR:** Click the <kbd>Use this template</kbd> button and clone it in IntelliJ IDEA.
+This repository defines the rell dokka plugin for generating docs from rell sources
 
 ### Getting started
 

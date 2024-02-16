@@ -5,17 +5,25 @@ plugins {
     signing
 }
 
-group = "org.example"
-version = "1.0-SNAPSHOT"
+group = "com.chromia.rell.dokka"
 
 repositories {
+    mavenLocal()
     mavenCentral()
+    maven("https://gitlab.com/api/v4/projects/32294340/packages/maven")
+    maven("https://gitlab.com/api/v4/projects/32802097/packages/maven")
+    maven("https://gitlab.com/api/v4/projects/46288950/packages/maven")
+    maven("https://gitlab.com/api/v4/projects/50818999/packages/maven")
+    maven("https://jcenter.bintray.com")
+    maven("https://maven.emrld.io")
 }
 
 val dokkaVersion: String by project
 dependencies {
     compileOnly("org.jetbrains.dokka:dokka-core:$dokkaVersion")
     implementation("org.jetbrains.dokka:dokka-base:$dokkaVersion")
+    implementation("org.jetbrains.dokka:analysis-kotlin-descriptors:$dokkaVersion")
+    implementation("net.postchain.rell:rell-api-base:0.13.6")
 
     testImplementation(kotlin("test"))
     testImplementation("org.jetbrains.dokka:dokka-test-api:$dokkaVersion")
@@ -23,7 +31,7 @@ dependencies {
 }
 
 kotlin {
-    jvmToolchain(8)
+    jvmToolchain(17)
 }
 
 tasks.dokkaHtml {
@@ -47,9 +55,9 @@ publishing {
             artifact(javadocJar)
 
             pom {
-                name.set("Dokka template plugin")
-                description.set("This is a plugin template for Dokka")
-                url.set("https://github.com/Kotlin/dokka-plugin-template/")
+                name.set("Rell dokka plugin")
+                description.set("Generates documentation for a rell project")
+                url.set("https://docs.chromia.com/")
 
                 licenses {
                     license {
@@ -59,32 +67,23 @@ publishing {
                     }
                 }
 
-                developers {
-                    developer {
-                        id.set("JetBrains")
-                        name.set("JetBrains Team")
-                        organization.set("JetBrains")
-                        organizationUrl.set("https://www.jetbrains.com")
-                    }
-                }
-
-                scm {
+                /*scm {
                     connection.set("scm:git:git://github.com/Kotlin/dokka-plugin-template.git")
                     url.set("https://github.com/Kotlin/dokka-plugin-template/tree/master")
-                }
+                }*/
             }
         }
         signPublicationsIfKeyPresent(dokkaTemplatePlugin)
     }
 
-    repositories {
+    /*repositories {
         maven("https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
             credentials {
                 username = System.getenv("SONATYPE_USER")
                 password = System.getenv("SONATYPE_PASSWORD")
             }
         }
-    }
+    }*/
 }
 
 fun Project.signPublicationsIfKeyPresent(publication: MavenPublication) {
