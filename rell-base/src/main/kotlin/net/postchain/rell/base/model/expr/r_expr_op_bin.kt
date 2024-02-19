@@ -11,14 +11,14 @@ import net.postchain.rell.base.runtime.*
 import java.math.BigDecimal
 import java.math.BigInteger
 
-sealed class R_CmpOp(val code: String, val checker: (Int) -> Boolean) {
+sealed class R_CmpOp(val code: String, val str: String, val checker: (Int) -> Boolean) {
     fun check(cmp: Int): Boolean = checker(cmp)
 }
 
-object R_CmpOp_Lt: R_CmpOp("<", { it < 0 })
-object R_CmpOp_Gt: R_CmpOp(">", { it > 0 })
-object R_CmpOp_Le: R_CmpOp("<=", { it <= 0 })
-object R_CmpOp_Ge: R_CmpOp(">=", { it >= 0 })
+object R_CmpOp_Lt: R_CmpOp("<", "less than", { it < 0 })
+object R_CmpOp_Gt: R_CmpOp(">", "greater than", { it > 0 })
+object R_CmpOp_Le: R_CmpOp("<=", "less than or equal to", { it <= 0 })
+object R_CmpOp_Ge: R_CmpOp(">=", "greater than or equal to", { it >= 0 })
 
 sealed class R_CmpType {
     abstract fun compare(left: Rt_Value, right: Rt_Value): Int

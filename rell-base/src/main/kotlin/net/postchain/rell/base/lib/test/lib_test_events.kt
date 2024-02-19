@@ -25,7 +25,10 @@ object Lib_Test_Events {
 
         namespace("rell.test") {
             function("assert_events", "unit") {
-                param("expected", EVENT_TYPE_STR, arity = L_ParamArity.ZERO_MANY)
+                comment("Asserts that the expected events has been emitted during last block")
+                param("expected", EVENT_TYPE_STR, arity = L_ParamArity.ZERO_MANY) {
+                    comment("Events that are expected to be emitted")
+                }
                 bodyContextN { ctx, args ->
                     val events = ctx.exeCtx.emittedEvents
                     val actual: Rt_Value = Rt_ListValue(EVENT_LIST_TYPE, events.toMutableList())
@@ -35,6 +38,7 @@ object Lib_Test_Events {
             }
 
             function("get_events", "list<$EVENT_TYPE_STR>") {
+                comment("Get all events that have been emitted from the last block.")
                 bodyContext { ctx ->
                     val events = ctx.exeCtx.emittedEvents
                     Rt_ListValue(EVENT_LIST_TYPE, events.toMutableList())

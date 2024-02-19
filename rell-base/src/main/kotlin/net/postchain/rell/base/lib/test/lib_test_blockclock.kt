@@ -19,10 +19,15 @@ object Lib_Test_BlockClock {
 
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell.test") {
-            constant("DEFAULT_FIRST_BLOCK_TIME", DEFAULT_FIRST_BLOCK_TIME)
-            constant("DEFAULT_BLOCK_INTERVAL", DEFAULT_BLOCK_INTERVAL)
+            constant("DEFAULT_FIRST_BLOCK_TIME", DEFAULT_FIRST_BLOCK_TIME) {
+                comment("Timestamp in milliseconds of the first block by default. (2020-01-01 00:00:00 UTC)")
+            }
+            constant("DEFAULT_BLOCK_INTERVAL", DEFAULT_BLOCK_INTERVAL) {
+                comment("Default time interval in milliseconds between each block. (10 seconds)")
+            }
 
             property("last_block_time", type = "timestamp") {
+                comment("Timestamp in milliseconds of the previous block. Read will fail if no block has been built.")
                 value { ctx ->
                     val t0 = ctx.exeCtx.testBlockClock.getLastBlockTime()
                     val t = Rt_Utils.checkNotNull(t0) {
@@ -33,6 +38,7 @@ object Lib_Test_BlockClock {
             }
 
             property("last_block_time_or_null", type = "timestamp?") {
+                comment("Timestamp in milliseconds of the previous block or `null` if no block has been built.")
                 value { ctx ->
                     val t = ctx.exeCtx.testBlockClock.getLastBlockTime()
                     if (t == null) Rt_NullValue else Rt_IntValue.get(t)
@@ -40,6 +46,7 @@ object Lib_Test_BlockClock {
             }
 
             property("next_block_time", type = "timestamp") {
+                comment("Timestamp in milliseconds which will be used for the next block.")
                 value { ctx ->
                     val t = ctx.exeCtx.testBlockClock.getNextBlockTime()
                     Rt_IntValue.get(t)
@@ -47,6 +54,7 @@ object Lib_Test_BlockClock {
             }
 
             property("block_interval", type = "timestamp") {
+                comment("Time interval in milliseconds between current block and next block to be used.")
                 value { ctx ->
                     val t = ctx.exeCtx.testBlockClock.getBlockInterval()
                     Rt_IntValue.get(t)
@@ -54,7 +62,12 @@ object Lib_Test_BlockClock {
             }
 
             function("set_block_interval", result = "integer") {
-                param(name = "interval", type = "integer")
+                comment("""
+                    Set the time interval in milliseconds between current block and the next one.
+                    This property is not respected if a timestamp has been explicitly set by calling
+                    `rell.test.set_next_block_time`.
+                """)
+                param(name = "interval", type = "integer", comment = "time interval to use between blocks")
                 bodyContext { ctx, a ->
                     val clock = ctx.exeCtx.testBlockClock
                     val res = clock.getBlockInterval()
@@ -64,7 +77,8 @@ object Lib_Test_BlockClock {
             }
 
             function("set_next_block_time", result = "unit") {
-                param(name = "time", type = "timestamp")
+                comment("Explicitly set the timestamp in milliseconds to use on the next block.")
+                param(name = "time", type = "timestamp", comment = "timestamp to use on next block")
                 bodyContext { ctx, a ->
                     ctx.exeCtx.testBlockClock.setNextBlockTime(a.asInteger())
                     Rt_UnitValue
@@ -72,7 +86,10 @@ object Lib_Test_BlockClock {
             }
 
             function("set_next_block_time_delta", result = "unit") {
-                param(name = "delta", type = "integer")
+                comment("""
+                    Explicitly set the timestamp in milliseconds to use on next block by specifying a time delay from the last block.
+                """)
+                param(name = "delta", type = "integer", comment = "time interval to use for next block")
                 bodyContext { ctx, a ->
                     ctx.exeCtx.testBlockClock.setNextBlockTimeDelta(a.asInteger())
                     Rt_UnitValue

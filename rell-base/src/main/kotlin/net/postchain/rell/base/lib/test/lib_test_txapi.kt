@@ -15,6 +15,7 @@ import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.L_ParamArity
+import net.postchain.rell.base.lmodel.dsl.Ld_FunctionDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_TypeDefDsl
 import net.postchain.rell.base.model.*
@@ -109,10 +110,9 @@ private class BlockCommonFunctions(
     private val runFullName = "$typeQName.$runSimpleName"
     private val runMustFailFullName = "$typeQName.$runMustFailSimpleName"
 
-    fun define(m: Ld_TypeDefDsl) = with(m) {
-        val sFailType = Lib_Test_Assert.FAILURE_TYPE.name
-
+    fun runFunction(m: Ld_TypeDefDsl, block: Ld_FunctionDsl.() -> Unit = {}) = with(m) {
         function(runSimpleName, "unit") {
+            block()
             bodyContext { ctx, arg ->
                 val block = getRunBlock(ctx, arg, runFullName)
                 try {
@@ -125,16 +125,23 @@ private class BlockCommonFunctions(
                 Rt_UnitValue
             }
         }
+    }
 
+    private val sFailType = Lib_Test_Assert.FAILURE_TYPE.name
+    fun runMustFailFunction(m: Ld_TypeDefDsl, block: Ld_FunctionDsl.() -> Unit = {}) = with(m) {
         function(runMustFailSimpleName, sFailType) {
+            block()
             bodyContext { ctx, arg ->
                 val block = getRunBlock(ctx, arg, runMustFailFullName)
                 runMustFail(ctx, block, null)
             }
         }
+    }
 
+    fun runMustFailWithMessageFunction(m: Ld_TypeDefDsl, block: Ld_FunctionDsl.() -> Unit = {}) = with(m) {
         function(runMustFailSimpleName, sFailType) {
-            param("expected_message", "text")
+            block()
+            param("expected_message", "text", comment = "String that must be contained in the error message")
             bodyContext { ctx, arg1, arg2 ->
                 val block = getRunBlock(ctx, arg1, runMustFailFullName)
                 val expected = arg2.asString()
@@ -164,36 +171,50 @@ private class BlockCommonFunctions(
 }
 
 private class TxCommonFunctions(private val txGetter: (self: Rt_Value) -> Rt_TestTxValue) {
-    fun define(m: Ld_TypeDefDsl) = with(m) {
-        val sTxType = R_TestTxType.name
 
+    private val sTxType = R_TestTxType.name
+    fun signWithKeypairList(m: Ld_TypeDefDsl, block: Ld_FunctionDsl.() -> Unit) = with(m) {
         function("sign", sTxType) {
-            param("keypairs", type = "list<rell.test.keypair>")
+            block()
+            param("keypairs", type = "list<rell.test.keypair>", comment = "Keypairs to sign this transaction with.")
             body { arg1, arg2 ->
                 signByKeyPairs(arg1, arg2.asList())
             }
         }
+    }
 
+    fun signWithKeypairs(m: Ld_TypeDefDsl, block: Ld_FunctionDsl.() -> Unit) = with(m) {
         function("sign", sTxType) {
-            param("privkeys", type = "list<byte_array>")
+            block()
+            param("keypairs", type = "rell.test.keypair", arity = L_ParamArity.ONE_MANY) {
+                comment("Keypairs to sign this transaction with.")
+            }
+            bodyN { args ->
+                check(args.isNotEmpty())
+                signByKeyPairs(args[0], args.subList(1, args.size))
+            }
+        }
+    }
+
+    fun signWithPrivkeyList(m: Ld_TypeDefDsl, block: Ld_FunctionDsl.() -> Unit) = with(m) {
+        function("sign", sTxType) {
+            block()
+            param("privkeys", type = "list<byte_array>", comment = "Private keys to sign this transaction with.")
             body { arg1, arg2 ->
                 signByByteArrays(arg1, arg2.asList())
             }
         }
+    }
 
+    fun signWithPrivkeys(m: Ld_TypeDefDsl, block: Ld_FunctionDsl.() -> Unit) = with(m) {
         function("sign", sTxType) {
-            param("privkeys", "byte_array", arity = L_ParamArity.ONE_MANY)
+            block()
+            param("privkeys", "byte_array", arity = L_ParamArity.ONE_MANY) {
+                comment("Private keys to sign this transaction with.")
+            }
             bodyN { args ->
                 check(args.isNotEmpty())
                 signByByteArrays(args[0], args.subList(1, args.size))
-            }
-        }
-
-        function("sign", sTxType) {
-            param("keypairs", type = "rell.test.keypair", arity = L_ParamArity.ONE_MANY)
-            bodyN { args ->
-                check(args.isNotEmpty())
-                signByKeyPairs(args[0], args.subList(1, args.size))
             }
         }
     }
@@ -233,45 +254,70 @@ private class TxCommonFunctions(private val txGetter: (self: Rt_Value) -> Rt_Tes
     }
 }
 
-private object Lib_Type_Block {
+object Lib_Type_Block {
     private val common = BlockCommonFunctions(Lib_RellTest.BLOCK_TYPE_QNAME_STR) { asTestBlock(it) }
 
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell.test") {
             type(Lib_RellTest.BLOCK_SNAME, rType = R_TestBlockType) {
-                common.define(this)
+                comment("Represents a block builder which can build a block on the blockchain.")
 
                 constructor {
-                    param("txs", type = "list<${Lib_RellTest.TX_TYPE_QNAME_STR}>")
+                    comment("Creates a new block builder with specified transactions.")
+                    param("txs", type = "list<${Lib_RellTest.TX_TYPE_QNAME_STR}>") {
+                        comment("Transactions to be included in this block builder")
+                    }
                     body { arg ->
                         Rt_TestBlockValue(arg.asList().map { asTestTx(it).toRaw() })
                     }
                 }
 
                 constructor {
-                    param("txs", type = Lib_RellTest.TX_TYPE_QNAME_STR, arity = L_ParamArity.ZERO_MANY)
+                    comment("Creates a new block builder with specified transactions.")
+                    param("txs", type = Lib_RellTest.TX_TYPE_QNAME_STR, arity = L_ParamArity.ZERO_MANY) {
+                        comment("Transactions to be included in this block builder")
+                    }
                     bodyN { args ->
                         Rt_TestBlockValue(args.map { asTestTx(it).toRaw() })
                     }
                 }
 
                 constructor {
-                    param("ops", type = "list<${Lib_RellTest.OP_TYPE_QNAME_STR}>")
+                    comment("Creates a new block builder with a transaction containing the specified operations.")
+                    param("ops", type = "list<${Lib_RellTest.OP_TYPE_QNAME_STR}>") {
+                        comment("Operations to be included in a transaction in this block builder")
+                    }
                     body { arg ->
                         newOps(arg.asList())
                     }
                 }
 
                 constructor {
-                    param("ops", type = Lib_RellTest.OP_TYPE_QNAME_STR, arity = L_ParamArity.ONE_MANY)
+                    comment("Creates a new block builder with a transaction containing the specified operations.")
+                    param("ops", type = Lib_RellTest.OP_TYPE_QNAME_STR, arity = L_ParamArity.ONE_MANY) {
+                        comment("Operations to be included in a transaction in this block builder")
+                    }
                     bodyN { args ->
                         newOps(args)
                     }
                 }
 
+                common.runFunction(this) {
+                    comment("Build this block")
+                }
+
+                common.runMustFailFunction(this) {
+                    comment("Try to build the block and require it to fail.")
+                }
+
+                common.runMustFailWithMessageFunction(this) {
+                    comment("Try to build the block and require it to fail with an expected message.")
+                }
+
                 val sSelfType = "rell.test.block"
 
                 function("copy", sSelfType) {
+                    comment("Copies this block builder.")
                     body { arg ->
                         val block = asTestBlock(arg)
                         Rt_TestBlockValue(block.txs())
@@ -279,14 +325,18 @@ private object Lib_Type_Block {
                 }
 
                 function("tx", sSelfType) {
-                    param("txs", type = "list<rell.test.tx>")
+                    comment("Adds a list of transactions to this block builder.")
+                    param("txs", type = "list<rell.test.tx>", comment = "Transactions to be added to this block")
                     body { arg1, arg2 ->
                         addTxs(arg1, arg2.asList())
                     }
                 }
 
                 function("tx", sSelfType) {
-                    param("txs", type = "rell.test.tx", arity = L_ParamArity.ONE_MANY)
+                    comment("Adds a list of transactions to this block builder.")
+                    param("txs", type = "rell.test.tx", arity = L_ParamArity.ONE_MANY) {
+                        comment("Transactions to be added to this block")
+                    }
                     bodyN { args ->
                         check(args.isNotEmpty())
                         addTxs(args[0], args.subList(1, args.size))
@@ -294,14 +344,20 @@ private object Lib_Type_Block {
                 }
 
                 function("tx", sSelfType) {
-                    param("ops", type = "list<rell.test.op>")
+                    comment("Adds a transaction containing a list of operations.")
+                    param("ops", type = "list<rell.test.op>") {
+                        comment("Operations to include in the transaction")
+                    }
                     body { arg1, arg2 ->
                         addOps(arg1, arg2.asList())
                     }
                 }
 
                 function("tx", sSelfType) {
-                    param("ops", type = "rell.test.op", arity = L_ParamArity.ONE_MANY)
+                    comment("Adds a transaction containing a list of operations.")
+                    param("ops", type = "rell.test.op", arity = L_ParamArity.ONE_MANY) {
+                        comment("Operations to include in the transaction")
+                    }
                     bodyN { args ->
                         check(args.isNotEmpty())
                         addOps(args[0], args.subList(1, args.size))
@@ -342,13 +398,18 @@ private object Lib_Type_Tx {
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell.test") {
             type(Lib_RellTest.TX_SNAME, rType = R_TestTxType) {
-                block.define(this)
-                tx.define(this)
+                comment("""
+                    Represents a transaction builder that can build a block
+                    containing this transacation on the blockchain.
+                """)
 
                 val sSelfType = "rell.test.tx"
 
                 constructor {
-                    param("ops", type = "list<${Lib_RellTest.OP_TYPE_QNAME_STR}>")
+                    comment("Creates a new transaction builder containing a list of operations.")
+                    param("ops", type = "list<${Lib_RellTest.OP_TYPE_QNAME_STR}>") {
+                        comment("Operations to be included in this transaction")
+                    }
                     body { arg ->
                         val ops = arg.asList().map { asTestOp(it).toRaw() }
                         newTx(ops)
@@ -356,7 +417,10 @@ private object Lib_Type_Tx {
                 }
 
                 constructor {
-                    param("ops", type = Lib_RellTest.OP_TYPE_QNAME_STR, arity = L_ParamArity.ZERO_MANY)
+                    comment("Creates a new transaction builder containing any number of operations.")
+                    param("ops", type = Lib_RellTest.OP_TYPE_QNAME_STR, arity = L_ParamArity.ZERO_MANY) {
+                        comment("Operations to be included in this transaction")
+                    }
                     bodyN { args ->
                         val ops = args.map { asTestOp(it).toRaw() }
                         newTx(ops)
@@ -364,7 +428,10 @@ private object Lib_Type_Tx {
                 }
 
                 constructor {
-                    param("ops", type = "list<-mirror_struct<-operation>>")
+                    comment("Creates a new transaction builder containing a list of operation structures.")
+                    param("ops", type = "list<-mirror_struct<-operation>>") {
+                        comment("Operations to be included in this transaction")
+                    }
                     body { arg ->
                         val list = arg.asList()
                         val ops = list.map { structToOpRaw(it) }
@@ -373,22 +440,59 @@ private object Lib_Type_Tx {
                 }
 
                 constructor {
-                    param("ops", type = "mirror_struct<-operation>", arity = L_ParamArity.ONE_MANY)
+                    comment("Creates a new transaction builder containing any number of operation structures.")
+                    param("ops", type = "mirror_struct<-operation>", arity = L_ParamArity.ONE_MANY) {
+                        comment("Operations to be included in this transaction")
+                    }
                     bodyN { args ->
                         val ops = args.map { structToOpRaw(it) }
                         newTx(ops)
                     }
                 }
+                block.runFunction(this) {
+                    comment("Build a block that contains this transaction.")
+                }
+
+                block.runMustFailFunction(this) {
+                    comment("Try to build a block that contains this transaction and require it to fail.")
+                }
+
+                block.runMustFailWithMessageFunction(this) {
+                    comment("""
+                        Try to build a block that contains this transaction and
+                        require it to fail with an expected message.
+                    """)
+                }
+
+                tx.signWithKeypairList(this) {
+                    comment("Sign this transaction with a number of keypairs.")
+                }
+
+                tx.signWithKeypairs(this) {
+                    comment("Sign this transaction with a number of keypairs.")
+                }
+
+                tx.signWithPrivkeyList(this) {
+                    comment("Sign this transaction with a number of private keys.")
+                }
+
+                tx.signWithPrivkeys(this) {
+                    comment("Sign this transaction with a number of private keys.")
+                }
 
                 function("op", sSelfType) {
-                    param("ops", type = "list<rell.test.op>")
+                    comment("Adds a list op operations to this transaction builder.")
+                    param("ops", type = "list<rell.test.op>", comment = "The operations to add")
                     body { arg1, arg2 ->
                         addOps(arg1, arg2.asList())
                     }
                 }
 
                 function("op", sSelfType) {
-                    param("ops", type = "rell.test.op", arity = L_ParamArity.ONE_MANY)
+                    comment("Adds a list op operations to this transaction builder.")
+                    param("ops", type = "rell.test.op", arity = L_ParamArity.ONE_MANY) {
+                       comment("The operations to add")
+                    }
                     bodyN { args ->
                         check(args.isNotEmpty())
                         addOps(args[0], args.subList(1, args.size))
@@ -396,14 +500,20 @@ private object Lib_Type_Tx {
                 }
 
                 function("op", sSelfType) {
-                    param("ops", type = "list<-mirror_struct<-operation>>")
+                    comment("Adds a list op operation structures to this transaction builder.")
+                    param("ops", type = "list<-mirror_struct<-operation>>") {
+                       comment("The operation structures to add")
+                    }
                     body { arg1, arg2 ->
                         addOpStructs(arg1, arg2.asList())
                     }
                 }
 
                 function("op", sSelfType) {
-                    param("ops", type = "mirror_struct<-operation>", arity = L_ParamArity.ONE_MANY)
+                    comment("Adds a list op operation structures to this transaction builder.")
+                    param("ops", type = "mirror_struct<-operation>", arity = L_ParamArity.ONE_MANY) {
+                        comment("The operation structures to add")
+                    }
                     bodyN { args ->
                         check(args.isNotEmpty())
                         addOpStructs(args[0], args.subList(1, args.size))
@@ -411,6 +521,7 @@ private object Lib_Type_Tx {
                 }
 
                 function("nop", sSelfType) {
+                    comment("Adds a nop operation to this transaction builder.")
                     bodyContext { ctx, arg ->
                         val tx = asTestTx(arg)
                         val op = Lib_Nop.callNoArgs(ctx)
@@ -420,27 +531,31 @@ private object Lib_Type_Tx {
                 }
 
                 function("nop", sSelfType) {
-                    param("x", type = "integer")
+                    comment("Adds a nop operation with a given nonce to this transaction builder.")
+                    param("x", type = "integer", comment = "nonce to use")
                     body { arg1, arg2 ->
                         calcNopOneArg(arg1, arg2)
                     }
                 }
 
                 function("nop", sSelfType) {
-                    param("x", "text")
+                    comment("Adds a nop operation with a given nonce to this transaction builder.")
+                    param("x", "text", comment = "nonce to use")
                     body { arg1, arg2 ->
                         calcNopOneArg(arg1, arg2)
                     }
                 }
 
                 function("nop", sSelfType) {
-                    param("x", "byte_array")
+                    comment("Adds a nop operation with a given nonce to this transaction builder.")
+                    param("x", "byte_array", comment = "nonce to use")
                     body { arg1, arg2 ->
                         calcNopOneArg(arg1, arg2)
                     }
                 }
 
                 function("copy", sSelfType) {
+                    comment("copies this transaction builder.")
                     body { arg ->
                         val tx = asTestTx(arg)
                         tx.copy()
@@ -492,6 +607,7 @@ private object Lib_Type_Op {
         namespace("rell.test") {
             extension("struct_op_ext", type = "mirror_struct<-operation>") {
                 function("to_test_op", "rell.test.op") {
+                    comment("Convert this struct to a test operation.")
                     validate { ctx ->
                         if (!ctx.exprCtx.modCtx.isTestLib()) {
                             val fnName = this.fnSimpleName
@@ -509,6 +625,7 @@ private object Lib_Type_Op {
 
             extension("gtx_operation_ext", type = "gtx_operation") {
                 function("to_test_op", "rell.test.op") {
+                    comment("Convert this struct to a test operation.")
                     validate { ctx ->
                         if (!ctx.exprCtx.modCtx.isTestLib()) {
                             val fnName = this.fnSimpleName
@@ -531,20 +648,23 @@ private object Lib_Type_Op {
             }
 
             type(Lib_RellTest.OP_SNAME, rType = R_TestOpType) {
-                block.define(this)
-                tx.define(this)
+                comment("Represent a operation that can be included in a transaction.")
 
                 constructor {
-                    param("name", type = "text")
-                    param("args", type = "list<gtv>")
+                    comment("Creates a new test operation.")
+                    param("name", type = "text", comment = "Name of the operation")
+                    param("args", type = "list<gtv>", comment = "Arguments to be supplied to the operation")
                     body { arg1, arg2 ->
                         newOp(arg1, arg2.asList())
                     }
                 }
 
                 constructor {
-                    param("name", type = "text")
-                    param("args", type = "gtv", arity = L_ParamArity.ZERO_MANY)
+                    comment("Creates a new test operation.")
+                    param("name", type = "text", comment = "Name of the operation")
+                    param("args", type = "gtv", arity = L_ParamArity.ZERO_MANY) {
+                        comment("Arguments to be supplied to the operation")
+                    }
                     bodyN { args ->
                         check(args.isNotEmpty())
                         val nameArg = args[0]
@@ -552,20 +672,53 @@ private object Lib_Type_Op {
                         newOp(nameArg, tailArgs)
                     }
                 }
+                block.runFunction(this) {
+                    comment("Build a block that contains a transaction with this operation.")
+                }
 
-                property("name", type = "text", pure = true) {
+                block.runMustFailFunction(this) {
+                    comment("""
+                        Try to build a block that contains a transaction including this operation and require it to fail.
+                    """)
+                }
+
+                block.runMustFailWithMessageFunction(this) {
+                    comment("""
+                        Try to build a block that contains a transaction including this operation and
+                        require it to fail with an expected message.
+                    """)
+                }
+
+                tx.signWithKeypairList(this) {
+                    comment("Creates a new transaction builder and signs it with a number of keypairs.")
+                }
+
+                tx.signWithKeypairs(this) {
+                    comment("Creates a new transaction builder and signs it with a number of keypairs.")
+                }
+
+                tx.signWithPrivkeyList(this) {
+                    comment("Creates a new transaction builder and signs it with a number of private keys.")
+                }
+
+                tx.signWithPrivkeys(this) {
+                    comment("Creates a new transaction builder and signs it with a number of private keys.")
+                }
+
+                property("name", type = "text", pure = true, comment = "Name of this operaiton") {
                     value { self ->
                         asTestOp(self).nameValue
                     }
                 }
 
-                property("args", type = "list<gtv>", pure = true) {
+                property("args", type = "list<gtv>", pure = true, comment = "Arguments to this operation") {
                     value { self ->
                         asTestOp(self).argsValue()
                     }
                 }
 
                 function("tx", result = "rell.test.tx") {
+                    comment("Creates a new transaction builder that contains this operation.")
                     body { arg ->
                         val op = asTestOp(arg).toRaw()
                         Rt_TestTxValue(listOf(op), listOf())
@@ -573,6 +726,7 @@ private object Lib_Type_Op {
                 }
 
                 function("to_gtx_operation", result = "gtx_operation", pure = true) {
+                    comment("Convert this operation to a `gtx_operation` struct.")
                     body { self ->
                         val op = asTestOp(self)
                         val attrs = mutableListOf(op.nameValue, op.argsValue())
@@ -609,27 +763,31 @@ private object Lib_Nop {
             val testOpType = R_TestOpType.name
 
             function("nop", testOpType) {
+                comment("Creates a new no-op operation.")
                 bodyContext { ctx ->
                     callNoArgs(ctx)
                 }
             }
 
             function("nop", testOpType) {
-                param("x", "integer")
+                comment("Creates a new no-op operation with a given nonce.")
+                param("x", "integer", comment = "nonce to use")
                 body { arg ->
                     callOneArg(arg)
                 }
             }
 
             function("nop", testOpType) {
-                param("x", "text")
+                comment("Creates a new no-op operation with a given nonce.")
+                param("x", "text", comment = "nonce to use")
                 body { arg ->
                     callOneArg(arg)
                 }
             }
 
             function("nop", testOpType) {
-                param("x", "byte_array")
+                comment("Creates a new no-op operation with a given nonce.")
+                param("x", "byte_array", comment = "nonce to use")
                 body { arg ->
                     callOneArg(arg)
                 }
