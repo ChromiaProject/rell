@@ -1,70 +1,15 @@
 # Rell Dokka Plugin
 
 [![Kotlin Alpha](https://kotl.in/badges/alpha.svg)](https://kotlinlang.org/docs/components-stability.html)
-[![JetBrains official project](https://jb.gg/badges/official.svg)](https://github.com/JetBrains#jetbrains-on-github)
 
 This repository defines the rell dokka plugin for generating docs from rell sources
 
-### Getting started
+### Usage
 
-Before writing a plugin it might be beneficial to spend 5 minutes reading our [developer guide](https://kotlin.github.io/dokka/1.8.10/developer_guide/introduction/) to have a basic idea about the data model and system architecture.
-If some you miss some information or something is unclear please let us know on [community slack](https://kotlinlang.slack.com/archives/C0F4UNJET) or via [github issue](https://github.com/Kotlin/dokka/issues).
+This project has a CLI that can be used to generate a site.
 
-### Structure
-A minimal repository for a Dokka plugin should contain files in the following structure:
-```
-.
-├── LICENSE
-├── README.md
-├── build.gradle.kts
-├── gradle
-│   └── wrapper
-│       ├── gradle-wrapper.jar
-│       └── gradle-wrapper.properties
-├── gradle.properties
-├── gradlew
-├── gradlew.bat
-├── settings.gradle.kts
-└── src
-    └── main
-        ├── kotlin
-        │   └── template
-        │       └── MyAwesomeDokkaPlugin.kt
-        └── resources
-            └── META-INF
-                └── services
-                    └── org.jetbrains.dokka.plugability.DokkaPlugin
-
-```
-
-### Applying the plugin
-
-In order to apply a plugin it needs to be published to a repository.
-For development use we recommend the mavenLocal.
-This repository contains a basic setup for publishing artefacts to that repository.
-In order to do it use `publishToMavenLocal` task. 
-
-After that you will need a sample project to test on.
-Kotlin has a lot of sample projects to choose from eg: [dokka-gradle-example](https://github.com/Kotlin/dokka/tree/master/examples)
-
-In order to apply the plugin you need to add it to project dependencies:
-```kotlin
-dependencies {
-    dokkaPlugin("template:template-dokka-plugin:0.1")
-}
-```
-
-Please keep in mind, that you need to have a `mavenLocal()` repository in your project.
-
-After that you can run Dokka on this project and see the results. 
-You should use a Dokka command you desire to write a plugin for (eg. `dokkaHtml`, `dokkaGfm` or other) with `--info` logging level.
-In project logs you should see the name of a plugin:
-```
-...
-Initializing plugins
-Loaded plugins: [org.jetbrains.dokka.base.DokkaBase, template.MyAwesomeDokkaPlugin]
-Loaded: [
-...
+```shell
+$ ./gradlew run --args="--source /path/to/rell/src --target <out> --modules module1,module2"
 ```
 
 ### Testing

@@ -92,7 +92,7 @@ fun R_OperationDefinition.toDFunction(sourceSet: DokkaConfiguration.DokkaSourceS
                 sourceSet,
                 DocumentationNode(listOf(Description(Text("This operation is called $simpleName")))),
                 Void,
-                KotlinModifier.Sealed
+                KotlinModifier.Sealed // Placeholder
         )
 
 fun R_QueryDefinition.toDFunction(sourceSet: DokkaConfiguration.DokkaSourceSet) =
