@@ -29,9 +29,13 @@ object Lib_Type_Gtv {
         alias("GTXValue", "gtv", C_MessageType.ERROR)
 
         type("gtv", rType = R_GtvType) {
+            comment("""
+                Generic Transfer Value (GTV) is a general-purpose type for sending and decoding any data structure.
+            """)
             staticFunction("from_bytes", "gtv", pure = true) {
+                comment("Decodes a `gtv` from a `byte_array`. Fails if it cannod be decoded.")
                 alias("fromBytes", C_MessageType.ERROR)
-                param("bytes", "byte_array")
+                param("bytes", "byte_array", comment = "Bytes to decode.")
                 body { a ->
                     val bytes = a.asByteArray()
                     Rt_Utils.wrapErr("fn:gtv.from_bytes") {
@@ -42,7 +46,8 @@ object Lib_Type_Gtv {
             }
 
             staticFunction("from_bytes_or_null", "gtv?", pure = true) {
-                param("bytes", "byte_array")
+                comment("Tries to decode a gtv from a `byte_array` and returns `null` if it fails.")
+                param("bytes", "byte_array", comment = "Bytes to decode.")
                 body { a ->
                     val bytes = a.asByteArray()
                     val gtv = try {
@@ -55,8 +60,9 @@ object Lib_Type_Gtv {
             }
 
             staticFunction("from_json", "gtv", pure = true) {
+                comment("Decodes a `gtv` from a JSON string representation.")
                 alias("fromJSON", C_MessageType.ERROR)
-                param("json", "text")
+                param("json", "text", comment = "JSON string to decode")
                 body { a ->
                     val str = a.asString()
                     Rt_Utils.wrapErr("fn:gtv.from_json(text)") {
@@ -67,8 +73,9 @@ object Lib_Type_Gtv {
             }
 
             staticFunction("from_json", "gtv", pure = true) {
+                comment("Decodes a `gtv` from a `json` representation.")
                 alias("fromJSON", C_MessageType.ERROR)
-                param("json", "json")
+                param("json", "json", comment = "json to decode")
                 body { a ->
                     val str = a.asJsonString()
                     Rt_Utils.wrapErr("fn:gtv.from_json(json)") {
@@ -79,6 +86,7 @@ object Lib_Type_Gtv {
             }
 
             function("to_bytes", "byte_array", pure = true) {
+                comment("Encodes this `gtv` to a `byte_array`.")
                 alias("toBytes", C_MessageType.ERROR)
                 body { a ->
                     val gtv = a.asGtv()
@@ -88,6 +96,7 @@ object Lib_Type_Gtv {
             }
 
             function("to_json", "json", pure = true) {
+                comment("Encodes this `gtv` to a `json` representation.")
                 alias("toJSON", C_MessageType.ERROR)
                 body { a ->
                     val gtv = a.asGtv()
@@ -104,16 +113,19 @@ object Lib_Type_Gtv {
                 generic("T", subOf = "any")
 
                 staticFunction("from_gtv", result = "T", pure = true) {
-                    param("gtv", type = "gtv")
+                    comment("Constructs this type from a `gtv`.")
+                    param("gtv", type = "gtv", comment = "gtv to decode.")
                     makeFromGtvBody(this, pretty = false)
                 }
 
                 staticFunction("from_gtv_pretty", result = "T", pure = true) {
-                    param("gtv", type = "gtv")
+                    comment("Constructs this type from a pretty formatted `gtv`.")
+                    param("gtv", type = "gtv", comment = "gtv to decode.")
                     makeFromGtvBody(this, pretty = true, allowVirtual = false)
                 }
 
                 function("hash", result = "byte_array", pure = true) {
+                    comment("Computes the hash of this value.")
                     bodyMeta {
                         val selfType = this.fnBodyMeta.rSelfType
                         if (selfType is R_VirtualType) {
@@ -139,10 +151,12 @@ object Lib_Type_Gtv {
                 }
 
                 function("to_gtv", result = "gtv", pure = true) {
+                    comment("Encodes this value to a `gtv` representation.")
                     makeToGtvBody(this, pretty = false)
                 }
 
                 function("to_gtv_pretty", result = "gtv", pure = true) {
+                    comment("Encodes this value to a pretty formatted `gtv` representation.")
                     makeToGtvBody(this, pretty = true)
                 }
             }

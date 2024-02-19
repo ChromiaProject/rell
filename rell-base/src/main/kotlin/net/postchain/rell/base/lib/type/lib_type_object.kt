@@ -38,8 +38,18 @@ object Lib_Type_Object {
 
         namespace("rell") {
             extension("object_ext", type = "object") {
-                function("to_struct", C_Fn_ToStruct(false))
-                function("to_mutable_struct", C_Fn_ToStruct(true))
+                function("to_struct", C_Fn_ToStruct(false)) {
+                    comment("""
+                        Convert this instance to a `struct<T>`.
+                        Note that this will read all values from the database.
+                    """)
+                }
+                function("to_mutable_struct", C_Fn_ToStruct(true)) {
+                    comment("""
+                        Convert this instance to a `mutable struct<T>`.
+                        Note that this will read all values from the database.
+                    """)
+                }
             }
         }
     }

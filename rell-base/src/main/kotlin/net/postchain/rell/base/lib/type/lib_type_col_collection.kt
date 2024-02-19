@@ -24,94 +24,121 @@ object Lib_Type_Collection {
             parent("iterable<T>")
 
             function("to_text", "text") {
+                comment("Converts the collection to a text representation.")
                 alias("str")
                 bodyRaw(AnyFns.ToText_NoDb)
             }
 
             function("empty", "boolean", pure = true) {
-                body { a ->
-                    val col = a.asCollection()
+                comment("Checks if the collection is empty.")
+                body { self ->
+                    val col = self.asCollection()
                     Rt_BooleanValue.get(col.isEmpty())
                 }
             }
 
             function("size", "integer", pure = true) {
+                comment("Returns the size of the collection.")
                 alias("len", deprecated = C_MessageType.ERROR)
-                body { a ->
-                    val col = a.asCollection()
+                body { self ->
+                    val col = self.asCollection()
                     Rt_IntValue.get(col.size.toLong())
                 }
             }
 
             function("contains", "boolean", pure = true) {
-                param("value", "T")
-                body { a, b ->
-                    val col = a.asCollection()
-                    Rt_BooleanValue.get(col.contains(b))
+                comment("Checks if the collection contains a specific element.")
+                param("value", "T", comment = "The element to check for.")
+                body { self, value ->
+                    val col = self.asCollection()
+                    Rt_BooleanValue.get(col.contains(value))
                 }
             }
 
             function("contains_all", "boolean", pure = true) {
+                comment("Checks if the collection contains all elements of another collection.")
                 alias("containsAll", deprecated = C_MessageType.ERROR)
-                param("values", type = "collection<-T>")
-                body { a, b ->
-                    val col1 = a.asCollection()
-                    val col2 = b.asCollection()
+                param("values", type = "collection<-T>", comment = "The collection to check against.")
+                body { self, values ->
+                    val col1 = self.asCollection()
+                    val col2 = values.asCollection()
                     Rt_BooleanValue.get(col1.containsAll(col2))
                 }
             }
 
             function("add", "boolean") {
-                param("value", "T")
-                body { a, b ->
-                    val col = a.asCollection()
-                    Rt_BooleanValue.get(col.add(b))
+                comment("""
+                    Adds an element to the collection.
+                    @returns `true` if the element was added, and `false` if the collection does not allow duplicates
+                    and the element is already contained in the collection.
+                """)
+                param("value", "T", comment = "The element to add.")
+                body { self, value ->
+                    val col = self.asCollection()
+                    Rt_BooleanValue.get(col.add(value))
                 }
             }
 
             function("add_all", "boolean") {
+                comment("""
+                    Adds all elements from another collection to this collection.
+                    @returns `true` if any of the specified elements was added to the collection,
+                    `false` if the collection was not modified.
+                """)
                 alias("addAll", deprecated = C_MessageType.ERROR)
-                param("values", type = "collection<-T>")
-                body { a, b ->
-                    val col = a.asCollection()
-                    Rt_BooleanValue.get(col.addAll(b.asCollection()))
+                param("values", type = "collection<-T>", comment = "The collection to add elements from.")
+                body { self, values ->
+                    val col = self.asCollection()
+                    Rt_BooleanValue.get(col.addAll(values.asCollection()))
                 }
             }
 
             function("remove", "boolean") {
-                param("value", "T")
-                body { a, b ->
-                    val col = a.asCollection()
-                    Rt_BooleanValue.get(col.remove(b))
+                comment("""
+                    Removes an element from the collection.
+                    @returns `true` if the element has been successfully removed;
+                    `false` if it was not present in the collection.
+                """)
+                param("value", "T", comment = "The element to remove.")
+                body { self, value ->
+                    val col = self.asCollection()
+                    Rt_BooleanValue.get(col.remove(value))
                 }
             }
 
             function("remove_all", "boolean") {
+                comment("""
+                    Removes all elements from the collection that are present in another collection.
+                    @returns `true` if any of the specified elements was removed from the collection,
+                    `false` if the collection was not modified.
+                """)
                 alias("removeAll", deprecated = C_MessageType.ERROR)
-                param("values", type = "collection<-T>")
-                body { a, b ->
-                    val col1 = a.asCollection()
-                    val col2 = b.asCollection()
+                param("values", type = "collection<-T>", comment = "The collection containing elements to remove.")
+                body { self, values ->
+                    val col1 = self.asCollection()
+                    val col2 = values.asCollection()
                     Rt_BooleanValue.get(col1.removeAll(col2))
                 }
             }
 
             function("clear", "unit") {
-                body { a ->
-                    val col = a.asCollection()
+                comment("Clears the collection.")
+                body { self ->
+                    val col = self.asCollection()
                     col.clear()
                     Rt_UnitValue
                 }
             }
 
             function("sorted", "list<T>", pure = true) {
+                comment("Returns a new sorted list of elements from the collection.")
                 bodyMeta {
                     val valueType = fnBodyMeta.typeArg("T")
                     val comparator = getSortComparator(this, valueType)
 
                     val listType = R_ListType(valueType)
-                    body { a ->
-                        val col = a.asCollection()
+                    body { self ->
+                        val col = self.asCollection()
                         val copy = ArrayList(col)
                         copy.sortWith(comparator)
                         Rt_ListValue(listType, copy)

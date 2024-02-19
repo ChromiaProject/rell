@@ -27,6 +27,7 @@ object Lib_Type_Enum {
                 generic("T", subOf = "enum")
 
                 property("name", type = "text", pure = true) {
+                    comment("Gets the name of the enum value.")
                     value { a ->
                         val attr = a.asEnum()
                         Rt_TextValue.get(attr.name)
@@ -40,9 +41,12 @@ object Lib_Type_Enum {
                 ) { a ->
                     val attr = a.asEnum()
                     Rt_IntValue.get(attr.value.toLong())
-                })
+                }) {
+                    comment("Gets the numeric value of the enum.")
+                }
 
                 staticFunction("values", result = "list<T>", pure = true) {
+                    comment("Gets all values of the enum.")
                     bodyMeta {
                         val listType = fnBodyMeta.rResultType as R_ListType
                         val enumType = listType.elementType as R_EnumType
@@ -56,7 +60,8 @@ object Lib_Type_Enum {
                 }
 
                 staticFunction("value", result = "T", pure = true) {
-                    param("name", type = "text")
+                    comment("Gets the enum value by name. Fails if `name` is not found.")
+                    param("name", type = "text", comment = "The name of the enum value.")
                     bodyMeta {
                         val enumType = fnBodyMeta.rResultType as R_EnumType
                         val enum = enumType.enum
@@ -75,7 +80,8 @@ object Lib_Type_Enum {
                 }
 
                 staticFunction("value", result = "T", pure = true) {
-                    param("value", type = "integer")
+                    comment("Gets the enum value by ordinal value. Fails if the ordinal is not found.")
+                    param("value", type = "integer", comment = "The ordinal value of the enum to get.")
                     bodyMeta {
                         val enumType = fnBodyMeta.rResultType as R_EnumType
                         val enum = enumType.enum

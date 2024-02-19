@@ -16,19 +16,22 @@ import java.util.*
 object Lib_Type_Range {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("range", rType = R_RangeType) {
+            comment("An integer range of values")
             parent(type = "iterable<integer>")
 
             constructor(pure = true) {
-                param("end", "integer")
+                comment("Construct a new range of values in steps of 1 from 0 to `end`")
+                param("end", "integer", comment = "End value (exclusive) for this range.")
                 body { a ->
                     calcRange(0, a.asInteger(), 1)
                 }
             }
 
             constructor(pure = true) {
-                param("start", "integer")
-                param("end", "integer")
-                param("step", "integer", arity = L_ParamArity.ZERO_ONE)
+                comment("Constructs a new range with specified `start`, `end` and `step` size.")
+                param("start", "integer", comment = "Start value for this range (inclusive).")
+                param("end", "integer", comment = "End value for this range (exclusive).")
+                param("step", "integer", arity = L_ParamArity.ZERO_ONE, comment = "Step size.")
                 bodyOpt2 { a, b, c ->
                     calcRange(a.asInteger(), b.asInteger(), c?.asInteger() ?: 1)
                 }

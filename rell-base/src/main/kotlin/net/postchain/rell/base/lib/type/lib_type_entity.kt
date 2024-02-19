@@ -33,6 +33,9 @@ import net.postchain.rell.base.utils.toImmList
 object Lib_Type_Entity {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("entity", abstract = true, hidden = true) {
+            comment("""
+                Common parent type of all entity types. An entity is a data structure that reside in the SQL database.
+            """)
             supertypeStrategySpecial { mType ->
                 val rType = L_TypeUtils.getRType(mType)
                 rType is R_EntityType
@@ -41,8 +44,18 @@ object Lib_Type_Entity {
 
         namespace("rell") {
             extension("entity_ext", type = "entity") {
-                function("to_struct", C_Fn_ToStruct(false))
-                function("to_mutable_struct", C_Fn_ToStruct(true))
+                function("to_struct", C_Fn_ToStruct(false)) {
+                    comment("""
+                        Convert this instance to a `struct<T>`.
+                        Note that this will read all values from the database.
+                    """)
+                }
+                function("to_mutable_struct", C_Fn_ToStruct(true)) {
+                    comment("""
+                        Convert this instance to a `mutable struct<T>`.
+                        Note that this will read all values from the database.
+                    """.trimIndent())
+                }
             }
         }
     }

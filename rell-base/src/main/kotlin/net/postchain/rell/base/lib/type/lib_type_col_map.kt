@@ -28,6 +28,10 @@ import net.postchain.rell.base.utils.immListOf
 object Lib_Type_Map {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("map_entry", hidden = true) {
+            comment("""
+                A parent type for all two-element tuples (with named and unnamed fields).
+                Is used for iterating through maps and constructing maps from iterables
+            """)
             generic("-K")
             generic("-V")
 
@@ -37,6 +41,7 @@ object Lib_Type_Map {
         }
 
         type("map") {
+            comment("Represents a mutable map that preserves entry iteration order.")
             generic("K", subOf = "immutable")
             generic("V")
             parent("iterable<(K,V)>")
@@ -46,6 +51,7 @@ object Lib_Type_Map {
             defCommonFunctions(this)
 
             constructor(pure = true) {
+                comment("Creates an empty map.")
                 bodyMeta {
                     val (keyType, valueType) = fnBodyMeta.typeArgs("K", "V")
                     val mapType = R_MapType(keyType, valueType)
@@ -56,7 +62,8 @@ object Lib_Type_Map {
             }
 
             constructor(pure = true) {
-                param("entries", type = "iterable<-map_entry<K,V>>")
+                comment("Creates a map with the provided entries")
+                param("entries", type = "iterable<-map_entry<K,V>>", comment = "Entries to populate the map with")
                 bodyMeta {
                     val (keyType, valueType) = fnBodyMeta.typeArgs("K", "V")
                     val mapType = R_MapType(keyType, valueType)
@@ -82,6 +89,7 @@ object Lib_Type_Map {
             }
 
             function("keys", result = "set<K>", pure = true) {
+                comment("Returns a new set containing the keys of this map.")
                 body { a ->
                     val mapValue = a.asMapValue()
                     val r = mutableSetOf<Rt_Value>()
@@ -91,6 +99,7 @@ object Lib_Type_Map {
             }
 
             function("values", result = "list<V>", pure = true) {
+                comment("Returns a new list containing the values of this map.")
                 body { a ->
                     val mapValue = a.asMapValue()
                     val r = mutableListOf<Rt_Value>()
@@ -100,6 +109,7 @@ object Lib_Type_Map {
             }
 
             function("clear", result = "unit") {
+                comment("Clears the map.")
                 body { a ->
                     val map = a.asMutableMap()
                     map.clear()
@@ -108,8 +118,9 @@ object Lib_Type_Map {
             }
 
             function("put", result = "unit") {
-                param("key", type = "K")
-                param("value", type = "V")
+                comment("Associates the specified value with the specified key in the map.")
+                param("key", type = "K", comment = "The key to put into the map.")
+                param("value", type = "V", comment = "The value to associate with the key.")
                 body { a, b, c ->
                     val map = a.asMutableMap()
                     map[b] = c
@@ -118,8 +129,9 @@ object Lib_Type_Map {
             }
 
             function("put_all", result = "unit") {
+                comment("Updates this map with key/value pairs from the specified map.")
                 alias("putAll", C_MessageType.ERROR)
-                param("map", type = "map<-K,-V>")
+                param("map", type = "map<-K,-V>", comment = "The map to put key-value pairs from.")
                 body { a, b ->
                     val map1 = a.asMutableMap()
                     val map2 = b.asMap()
@@ -129,7 +141,8 @@ object Lib_Type_Map {
             }
 
             function("remove", result = "V") {
-                param("key", type = "K")
+                comment("Removes a key-value pair from the map. Fails if the key is not found in the map.")
+                param("key", type = "K", comment = "The key of the pair to remove.")
                 body { a, b ->
                     val map = a.asMutableMap()
                     val v = map.remove(b)
@@ -138,7 +151,8 @@ object Lib_Type_Map {
             }
 
             function("remove_or_null", result = "V?") {
-                param("key", type = "K")
+                comment("Removes a key-value pair from the map, returning `null` if the key is not found.")
+                param("key", type = "K", comment = "The key of the pair to remove.")
                 body { a, b ->
                     val map = a.asMutableMap()
                     val v = map.remove(b)
@@ -150,11 +164,13 @@ object Lib_Type_Map {
 
     fun defCommonFunctions(m: Ld_TypeDefDsl) = with(m) {
         function("to_text", result = "text") {
+            comment("Converts the map to text.")
             alias("str")
             bodyRaw(Lib_Type_Any.ToText_NoDb)
         }
 
         function("empty", result = "boolean", pure = true) {
+            comment("Checks if the map is empty.")
             body { a ->
                 val map = a.asMap()
                 Rt_BooleanValue.get(map.isEmpty())
@@ -162,6 +178,7 @@ object Lib_Type_Map {
         }
 
         function("size", result = "integer", pure = true) {
+            comment("Gets the size of the map.")
             alias("len", C_MessageType.ERROR)
             body { a ->
                 val map = a.asMap()
@@ -170,7 +187,8 @@ object Lib_Type_Map {
         }
 
         function("get", result = "V", pure = true) {
-            param("key", type = "K")
+            comment("Gets the value associated with a key in the map. Fails if the key is not found.")
+            param("key", type = "K", comment = "The key to look up.")
             body { self, a ->
                 val map = self.asMap()
                 val v = map[a]
@@ -179,7 +197,8 @@ object Lib_Type_Map {
         }
 
         function("get_or_null", result = "V?", pure = true) {
-            param("key", type = "K")
+            comment("Gets the value associated with a key in the map, returning `null` if the key is not found.")
+            param("key", type = "K", comment = "The key to look up.")
             body { self, a ->
                 val map = self.asMap()
                 val r = map[a]
@@ -188,10 +207,16 @@ object Lib_Type_Map {
         }
 
         function("get_or_default", pure = true) {
+            comment("""
+                Gets the value associated with a key in the map, or a default value if the key is not found.
+                @returns The value associated with the key, or the default value if the key is not found.
+            """)
             generic("R", superOf = "V")
             result(type = "R")
-            param("key", type = "K")
-            param("default", type = "R", lazy = true)
+            param("key", type = "K", comment = "The key to look up.")
+            param("default", type = "R", lazy = true) {
+                comment("lazily evaluated default value to return if the key is not found.")
+            }
             body { self, a, b ->
                 val map = self.asMap()
                 map[a] ?: b.asLazyValue()
@@ -199,7 +224,8 @@ object Lib_Type_Map {
         }
 
         function("contains", result = "boolean", pure = true) {
-            param("key", type = "K")
+            comment("Checks if the map contains a key.")
+            param("key", type = "K", comment = "The key to check.")
             body { self, a ->
                 val map = self.asMap()
                 Rt_BooleanValue.get(a in map)

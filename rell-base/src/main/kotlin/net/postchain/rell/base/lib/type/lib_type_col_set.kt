@@ -15,12 +15,17 @@ import net.postchain.rell.base.utils.immListOf
 object Lib_Type_Set {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("set") {
+            comment("""
+                Represents a mutable set of elements. The set is a hash-set with an iteration order
+                determined by the order the elements was first added to the set.
+            """)
             generic("T", subOf = "immutable")
             parent("collection<T>")
 
             rType { t -> R_SetType(t) }
 
             constructor(pure = true) {
+                comment("Constructs an empty set.")
                 bodyMeta {
                     val elementType = fnBodyMeta.typeArg("T")
                     val rKind = R_CollectionKind_Set(R_SetType(elementType))
@@ -31,7 +36,10 @@ object Lib_Type_Set {
             }
 
             constructor(pure = true) {
-                param("values", type = "iterable<-T>")
+                comment("Constructs a set from the elements of the provided iterable.")
+                param("values", type = "iterable<-T>") {
+                    comment("The iterable containing elements to include in the set.")
+                }
                 bodyMeta {
                     val elementType = fnBodyMeta.typeArg("T")
                     val rKind = R_CollectionKind_Set(R_SetType(elementType))

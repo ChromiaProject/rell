@@ -60,6 +60,7 @@ object Lib_Type_Struct {
             }
 
             function("to_immutable", result = "immutable_mirror_struct<T>", pure = true) {
+                comment("Convert this struct to an immutable version.")
                 body { a ->
                     toMutableOrImmutable(a, false, "to_immutable")
                 }
@@ -91,6 +92,7 @@ object Lib_Type_Struct {
             }
 
             function("to_mutable", result = "mutable_mirror_struct<T>", pure = true) {
+                comment("Convert this structure to a mutable version.")
                 body { a ->
                     toMutableOrImmutable(a, true, "to_mutable")
                 }
@@ -102,6 +104,11 @@ object Lib_Type_Struct {
                 generic("T", subOf = "struct")
 
                 function("to_bytes", "byte_array", pure = true) {
+                    comment("""
+                        Convert this structure to a `byte_array` representation.
+
+                        Same as `.to_gtv().to_bytes()`.
+                    """)
                     alias("toBytes", C_MessageType.ERROR)
                     bodyMeta {
                         val selfType = this.fnBodyMeta.rSelfType
@@ -128,8 +135,9 @@ object Lib_Type_Struct {
                 }
 
                 staticFunction("from_bytes", result = "T", pure = true) {
+                    comment("Decodes a struct from a byte_array. Fails if the bytes cannot represent this struct.")
                     alias("fromBytes", C_MessageType.ERROR)
-                    param("bytes", type = "byte_array")
+                    param("bytes", type = "byte_array", comment = "Bytes to decode from.")
 
                     bodyMeta {
                         val resType = fnBodyMeta.rResultType
