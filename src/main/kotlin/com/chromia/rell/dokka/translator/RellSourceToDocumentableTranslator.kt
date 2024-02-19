@@ -2,6 +2,9 @@
 package com.chromia.rell.dokka.translator
 
 import com.chromia.rell.dokka.model.definitionsByModule
+import com.chromia.rell.dokka.model.toDClasslike
+import com.chromia.rell.dokka.model.toDFunction
+import com.chromia.rell.dokka.model.toDProperty
 import com.chromia.rell.dokka.model.toDRI
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.base.model.R_App
@@ -21,6 +24,7 @@ import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.Text
 import org.jetbrains.dokka.plugability.DokkaContext
 import org.jetbrains.dokka.transformers.sources.SourceToDocumentableTranslator
+import java.io.File
 
 object RellSourceToDocumentableTranslator : SourceToDocumentableTranslator {
 
@@ -31,13 +35,9 @@ object RellSourceToDocumentableTranslator : SourceToDocumentableTranslator {
                 .moduleArgsMissingError(false)
                 .build()
         val app = RellApiCompile.compileApp(config, files.first(), null)
-        //app.operations
-        app.definitionsByModule()
-        println(files.map { it.name })
-        println(app.operations)
         return DModule(
                 context.configuration.moduleName,
-                listOf(operationsToPackage(app.operations, sourceSet)),
+                app.packages(sourceSet),
                 mapOf(sourceSet to DocumentationNode(listOf())),
                 sourceSets = setOf(sourceSet)
         )
@@ -48,68 +48,20 @@ object RellSourceToDocumentableTranslator : SourceToDocumentableTranslator {
         return defs.map { (m, rellModule) ->
             DPackage(
                     dri = m.toDRI(),
-                    documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text(m.docSymbol.comment!!.toString()))))),
+                    documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text(m.docSymbol.comment.toString()))))),
                     sourceSets = setOf(sourceSet),
-                    properties = listOf(), // Global constants
-                    classlikes = listOf(), // Entities/Structs/Objects
+                    properties = rellModule.constants.map { it.toDProperty(sourceSet) }, // Global constants
+                    // Entities/Structs/Objects
+                    classlikes = rellModule.entities.map { it.toDClasslike(sourceSet) }
+                    + rellModule.objects.map { it.toDClasslike(sourceSet) }
+                    + rellModule.structs.map { it.toDClasslike(sourceSet) }
+                    + rellModule.enums.map { it.toDClasslike(sourceSet) },
                     typealiases = listOf(),
                     // Functions, queries, operations
-                    functions = listOf()
+                    functions = rellModule.functions.map { it.toDFunction(sourceSet) }
+                            + rellModule.queries.map { it.toDFunction(sourceSet) }
+                            + rellModule.operations.map { it.toDFunction(sourceSet) }
             )
-
         }
     }
-
-    private fun operationsToPackage(operations: Map<R_MountName, R_OperationDefinition>, sourceSet: DokkaConfiguration.DokkaSourceSet): DPackage {
-        return DPackage(
-                dri = DRI("rell"),
-                documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text("Hello"))))),
-                sourceSets = setOf(sourceSet),
-                properties = listOf(), // Global constants
-                classlikes = listOf(), // Entities/Structs/Objects
-                typealiases = listOf(),
-                // Functions, queries, operations
-                functions = operations.map {
-
-                    it.value
-
-                    DFunction(
-                            dri = DRI(packageName = it.key.parts.dropLast(1).joinToString("."),
-                                    classNames = it.value.appLevelName),
-                            name = it.key.str(),
-                            isConstructor = false,
-                            generics = listOf(),
-                            sourceSets = setOf(sourceSet),
-                            documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text("Hi!"))))),
-                            modifier = mapOf(),
-                            isExpectActual = true, // Operation
-                            visibility = mapOf(),
-                            expectPresentInSet = null,
-                            receiver = null,
-                            sources = mapOf(/*sourceSet to object : DocumentableSource {
-                                override val path: String
-                                    get() = "main.rell"
-
-                                override fun computeLineNumber(): Int? {
-                                    return null
-                                }
-                            },*/
-                                  sourceSet to DescriptorDocumentableSource(RellDeclarationDescriptor())  ),
-                            type = Dynamic,
-                            parameters = it.value.params().map { p ->
-                                DParameter(
-                                        DRI(),
-                                        p.name.str,
-                                        documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text("Param ${p.name}"))))),
-                                        expectPresentInSet = null,
-                                        type = TypeParameter(DRI(), p.type.name),
-                                        sourceSets = setOf(sourceSet)
-                                )
-                            }
-                    )
-                },
-
-        )
-    }
 }
-

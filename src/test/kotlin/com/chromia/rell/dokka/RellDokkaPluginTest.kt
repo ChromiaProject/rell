@@ -26,7 +26,7 @@ class RellDokkaPluginTest : BaseAbstractTest() {
             """.trimIndent(), configuration, cleanupOutput = false
         ) {
             documentablesTransformationStage = { module ->
-                val testedPackage = module.packages.find { it.name == "rell" }
+                val testedPackage = module.packages.find { it.name == "main" }
                 val testedClass = testedPackage?.functions?.find { it.name == "my_operation" }
 
                 assertNotNull(testedPackage)
