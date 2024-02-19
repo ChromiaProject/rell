@@ -4,19 +4,17 @@ import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
 
 enum class RellSymbolModifier(
-    val modifierId: Int,
     val modifierStringId: String
 ) {
-    DEFAULT(0, ""),
-    READONLY(1, "readonly"),
-//    DEPRECATED(2, "deprecated")
+    READONLY("readonly"),
+    MODIFICATION("modification");
 }
 
 
 enum class RellSymbolKind(
     val tokenId: Int,
     val tokenStringId: String,
-    val modifier: RellSymbolModifier = RellSymbolModifier.READONLY
+    val modifiers: List<RellSymbolModifier> = listOf()
 ) {
     DEFAULT(0, "keyword"),
     MODULE(1, "namespace"),
@@ -25,13 +23,13 @@ enum class RellSymbolKind(
     TYPE(4, "type"),
     ENUM(5, "enum"),
     ENUM_VALUE(6, "enumMember"),
-    GLOBAL_CONSTANT(7, "variable"),
-    ENTITY(8, "class"),
-    OBJECT(9, "class"),
-    ENTITY_ATTR_NORMAL_VAL(10, "property", RellSymbolModifier.READONLY),
-    ENTITY_ATTR_NORMAL_VAR(11, "property"),
-    ENTITY_ATTR_KEYINDEX_VAL(12, "property"),
-    ENTITY_ATTR_KEYINDEX_VAR(13, "property"),
+    GLOBAL_CONSTANT(7, "variable", listOf(RellSymbolModifier.READONLY)),
+    ENTITY(8, "class", listOf(RellSymbolModifier.MODIFICATION)),
+    OBJECT(9, "class", listOf(RellSymbolModifier.MODIFICATION)),
+    ENTITY_ATTR_NORMAL_VAL(10, "property", listOf(RellSymbolModifier.MODIFICATION, RellSymbolModifier.READONLY)),
+    ENTITY_ATTR_NORMAL_VAR(11, "property", listOf(RellSymbolModifier.MODIFICATION, RellSymbolModifier.READONLY)),
+    ENTITY_ATTR_KEYINDEX_VAL(12, "property", listOf(RellSymbolModifier.MODIFICATION, RellSymbolModifier.READONLY)),
+    ENTITY_ATTR_KEYINDEX_VAR(13, "property", listOf(RellSymbolModifier.MODIFICATION, RellSymbolModifier.READONLY)),
     STRUCT(14, "struct"),
     STRUCT_ATTR_VAL(15, "property"),
     STRUCT_ATTR_VAR(16, "property"),
@@ -41,7 +39,7 @@ enum class RellSymbolKind(
     FUNCTION(20, "function"),
     FUNCTION_EXTENDABLE(21, "function"),
     NAMED_ARGUMENT(22, "variable"),
-    LOCAL_VAL(23, "variable"),
+    LOCAL_VAL(23, "variable", listOf(RellSymbolModifier.READONLY)),
     LOCAL_VAR(24, "variable"),
     AT_ALIAS(25, "variable");
 

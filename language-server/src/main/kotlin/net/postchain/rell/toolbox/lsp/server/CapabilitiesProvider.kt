@@ -26,8 +26,8 @@ class CapabilitiesProvider {
 
         val semanticTokensOptions = SemanticTokensWithRegistrationOptions()
         semanticTokensOptions.legend = SemanticTokensLegend(
-            RellSemanticTokensManager.semanticTokens.tokenTypes,
-            RellSemanticTokensManager.semanticTokens.tokenModifiers
+            RellSemanticTokensManager.semanticTokens,
+            RellSemanticTokensManager.tokenModifiers
         )
         semanticTokensOptions.setRange(false)
         semanticTokensOptions.setFull(true)

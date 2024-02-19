@@ -9,6 +9,8 @@ data class SemanticTokenInfo(val tokenTypes: List<String>, val tokenModifiers: L
 
 class RellSemanticTokensManager {
 
+    private val supportedModifiers = RellSymbolModifier.entries.sortedBy { it.modifierStringId }
+
     fun getRelativeSemanticTokens(resource: Resource): List<Int> {
         val tokens = getSemanticTokens(resource)
         return relativeTokens(tokens)
@@ -45,7 +47,7 @@ class RellSemanticTokensManager {
                     deltaColumn,
                     token.len,
                     token.tokenType.tokenId,
-                    token.tokenType.modifier.modifierId
+                    getModifierValue(token.tokenType.modifiers)
                 )
             )
             activeLine = token.line
@@ -54,18 +56,36 @@ class RellSemanticTokensManager {
         return tokensRelative.flatMap { it.toImmList() }
     }
 
+    private fun getModifierValue(tokensModifiers: List<RellSymbolModifier>): Int {
+        if (tokensModifiers.isEmpty()) return 0
+        var bitmask = 0
+        for (modifier in tokensModifiers) {
+            val index = supportedModifiers.indexOf(modifier)
+            if (index != -1) {
+                bitmask = bitmask or (1 shl index)
+            }
+        }
+        return bitmask
+    }
+
 
     companion object {
-
-        val semanticTokens: SemanticTokenInfo
+        val semanticTokens: List<String>
             get() {
                 val tokenTypes: MutableList<String> = ArrayList()
-                val tokenModifier: MutableList<String> = ArrayList()
-                for (kind in RellSymbolKind.entries) {
-                    tokenTypes.add(kind.tokenStringId)
-                    tokenModifier.add(kind.modifier.modifierStringId)
+                for (type in RellSymbolKind.entries) {
+                    tokenTypes.add(type.tokenStringId)
                 }
-                return SemanticTokenInfo(tokenTypes, tokenModifier)
+                return tokenTypes
+            }
+
+        val tokenModifiers: List<String>
+            get() {
+                val tokenModifiers: MutableList<String> = ArrayList()
+                for (modifier in RellSymbolModifier.entries.sortedBy { it.modifierStringId }) {
+                    tokenModifiers.add(modifier.modifierStringId)
+                }
+                return tokenModifiers
             }
     }
 }
