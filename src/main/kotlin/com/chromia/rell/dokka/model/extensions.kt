@@ -1,4 +1,5 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+
 package com.chromia.rell.dokka.model
 
 import com.chromia.rell.dokka.translator.RellDeclarationDescriptor
@@ -12,16 +13,20 @@ import net.postchain.rell.base.model.R_FunctionDefinition
 import net.postchain.rell.base.model.R_FunctionParam
 import net.postchain.rell.base.model.R_GlobalConstantDefinition
 import net.postchain.rell.base.model.R_Module
+import net.postchain.rell.base.model.R_NullType
 import net.postchain.rell.base.model.R_ObjectDefinition
 import net.postchain.rell.base.model.R_OperationDefinition
 import net.postchain.rell.base.model.R_QueryDefinition
 import net.postchain.rell.base.model.R_RoutineDefinition
 import net.postchain.rell.base.model.R_StructDefinition
+import net.postchain.rell.base.model.R_Type
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.analysis.kotlin.descriptors.compiler.configuration.DescriptorDocumentableSource
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.DriTarget
 import org.jetbrains.dokka.links.PointingToCallableParameters
+import org.jetbrains.dokka.links.PointingToGenericParameters
+import org.jetbrains.dokka.model.Bound
 import org.jetbrains.dokka.model.DEnum
 import org.jetbrains.dokka.model.DEnumEntry
 import org.jetbrains.dokka.model.DFunction
@@ -31,9 +36,13 @@ import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.KotlinModifier
 import org.jetbrains.dokka.model.KotlinVisibility
+import org.jetbrains.dokka.model.TypeParameter
+import org.jetbrains.dokka.model.Visibility
+import org.jetbrains.dokka.model.Void
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.Text
+import kotlin.reflect.jvm.internal.calls.ThrowingCaller.returnType
 
 // Module == kotlin package
 fun R_App.definitionsByModule(): Map<R_Module, RellModule> {
@@ -59,6 +68,7 @@ fun R_Definition.toDRI() = DRI(cDefName.module.str(), simpleName)
 private fun R_RoutineDefinition.toDFunction(
         sourceSet: DokkaConfiguration.DokkaSourceSet,
         documentationNode: DocumentationNode,
+        returnType: Bound,
         modifier: KotlinModifier? = null
 ): DFunction = DFunction(
         dri = toDRI(),
@@ -69,7 +79,7 @@ private fun R_RoutineDefinition.toDFunction(
         visibility = mapOf(),
         receiver = null,
         isExpectActual = false,
-        type = Dynamic,
+        type = returnType,
         sourceSets = setOf(sourceSet),
         generics = listOf(),
         sources = mapOf(sourceSet to DescriptorDocumentableSource(RellDeclarationDescriptor())),
@@ -81,6 +91,7 @@ fun R_OperationDefinition.toDFunction(sourceSet: DokkaConfiguration.DokkaSourceS
         toDFunction(
                 sourceSet,
                 DocumentationNode(listOf(Description(Text("This operation is called $simpleName")))),
+                Void,
                 KotlinModifier.Sealed
         )
 
@@ -88,20 +99,28 @@ fun R_QueryDefinition.toDFunction(sourceSet: DokkaConfiguration.DokkaSourceSet) 
         toDFunction(
                 sourceSet,
                 DocumentationNode(listOf(Description(Text("This query is called $simpleName")))),
+                type().toBound(),
                 KotlinModifier.Open
         )
 
 fun R_FunctionDefinition.toDFunction(sourceSet: DokkaConfiguration.DokkaSourceSet) =
         toDFunction(
                 sourceSet,
-                DocumentationNode(listOf(Description(Text("This function is called $simpleName"))))
+                DocumentationNode(listOf(Description(Text("This function is called $simpleName")))),
+                Void
+        )
+
+fun R_Type.toBound() =
+        TypeParameter(
+                dri = DRI(this.defName.module.str(), this.name),
+                name
         )
 
 fun R_FunctionParam.toDFunction(sourceSet: DokkaConfiguration.DokkaSourceSet, parent: DRI, index: Int) = DParameter(
         dri = parent.copy(target = PointingToCallableParameters(index)),
         name = name.str,
         expectPresentInSet = null,
-        type = Dynamic,
+        type = TypeParameter(dri = DRI(type.defName.module.str(), type.name), name = type.name),
         sourceSets = setOf(sourceSet),
         documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text("This parameter is called $name"))))),
 )
@@ -219,4 +238,7 @@ fun R_EnumAttr.toDEnumEntry(module: String, sourceSet: DokkaConfiguration.DokkaS
         sourceSets = setOf(sourceSet),
         documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text("Enum entry $name")))))
 )
+
+fun DFunction.isOperation() = modifier.containsValue(KotlinModifier.Sealed)
+fun DFunction.isQuery() = modifier.containsValue(KotlinModifier.Open)
 

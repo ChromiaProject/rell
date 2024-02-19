@@ -1,16 +1,17 @@
 package com.chromia.rell.dokka.signature
 
+import com.chromia.rell.dokka.model.isOperation
+import com.chromia.rell.dokka.model.isQuery
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.parametersBlock
 import org.jetbrains.dokka.base.signatures.SignatureProvider
 import org.jetbrains.dokka.base.transformers.pages.comments.CommentsToContentConverter
 import org.jetbrains.dokka.base.translators.documentables.PageContentBuilder
 import org.jetbrains.dokka.links.DriOfUnit
+import org.jetbrains.dokka.model.Bound
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.Dynamic
-import org.jetbrains.dokka.model.KotlinModifier
-import org.jetbrains.dokka.model.Modifier
 import org.jetbrains.dokka.model.Projection
 import org.jetbrains.dokka.model.TypeConstructor
 import org.jetbrains.dokka.model.TypeParameter
@@ -43,9 +44,9 @@ class RellSignatureProvider internal constructor(
     private fun functionSignature(dFunction: DFunction): List<ContentNode> {
         return dFunction.sourceSets.map { sourceSet ->
             contentBuilder.contentFor(dFunction, ContentKind.Symbol, setOf(TextStyle.Monospace), sourceSets = setOf(sourceSet)) {
-                when (dFunction.modifier[sourceSet]) {
-                    KotlinModifier.Open -> keyword("query ")
-                    KotlinModifier.Sealed -> keyword("operation ")
+                when {
+                    dFunction.isQuery() -> keyword("query ")
+                    dFunction.isOperation() -> keyword("operation ")
                     else -> keyword("function ")
                 }
                 link(dFunction.name, dFunction.dri)
@@ -60,12 +61,16 @@ class RellSignatureProvider internal constructor(
                 }
 
                 punctuation(")")
-                if (dFunction.documentReturnType()) {
+                if (!dFunction.isOperation() && dFunction.type is TypeParameter) {
                     operator(": ")
-                    signatureForProjection(dFunction.type)
+                    signatureForReceiver(dFunction.type as TypeParameter)
                 }
             }
         }
+    }
+
+    private fun PageContentBuilder.DocumentableContentBuilder.signatureForReceiver(p: TypeParameter) {
+        link(p.name, p.dri)
     }
 
     private fun PageContentBuilder.DocumentableContentBuilder.signatureForProjection(
