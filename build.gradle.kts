@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "1.9.10"
     id("org.jetbrains.dokka") version "1.9.10" // Used to create a javadoc jar
+    kotlin("plugin.serialization") version "1.9.22"
     `maven-publish`
     signing
     application
@@ -26,6 +27,7 @@ dependencies {
     implementation("org.jetbrains.dokka:dokka-cli:$dokkaVersion")
     implementation("org.jetbrains.dokka:analysis-kotlin-descriptors:$dokkaVersion")
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-html-jvm:0.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     //runtimeOnly("org.freemarker:freemaker:2.3.31")
     implementation("net.postchain.rell:rell-api-base:0.13.6")
 

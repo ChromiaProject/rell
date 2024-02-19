@@ -1,11 +1,14 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 package com.chromia.rell.dokka.translator
 
+import com.chromia.rell.dokka.RellDokkaPlugin
+import com.chromia.rell.dokka.config.RellConfig
 import com.chromia.rell.dokka.model.definitionsByModule
 import com.chromia.rell.dokka.model.toDClasslike
 import com.chromia.rell.dokka.model.toDFunction
 import com.chromia.rell.dokka.model.toDProperty
 import com.chromia.rell.dokka.model.toDRI
+import kotlinx.serialization.json.Json
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.base.model.R_App
 import org.jetbrains.dokka.analysis.kotlin.descriptors.compiler.configuration.DescriptorDocumentableSource
@@ -30,12 +33,16 @@ object RellSourceToDocumentableTranslator : SourceToDocumentableTranslator {
 
     override fun invoke(sourceSet: DokkaConfiguration.DokkaSourceSet, context: DokkaContext): DModule {
         println(sourceSet)
+        val pluginConfig = context.configuration.pluginsConfiguration.find { it.fqPluginName == RellDokkaPlugin::class.qualifiedName }
+        val rellConfig = pluginConfig?.let {
+            Json.decodeFromString<RellConfig>(it.values)
+        }
         val files = sourceSet.sourceRoots
         val config = RellApiCompile.Config.Builder()
                 .mountConflictError(false)
                 .moduleArgsMissingError(false)
                 .build()
-        val app = RellApiCompile.compileApp(config, files.first(), listOf("management_chain_directory1"))
+        val app = RellApiCompile.compileApp(config, files.first(), rellConfig?.modules)
         return DModule(
                 context.configuration.moduleName,
                 app.packages(sourceSet),
