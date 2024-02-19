@@ -20,6 +20,6 @@ fun main(args: Array<String>) {
     }
 
     val server = app.koin.get<AbstractServerLauncher>(named(launcherType))
-    server.launch(args)
+    server.launch(arrayOf("-trace"))
 }
 

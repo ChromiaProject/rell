@@ -2,9 +2,21 @@ package net.postchain.rell.toolbox.core.tokens
 
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
+
+enum class RellSymbolModifier(
+    val modifierId: Int,
+    val modifierStringId: String
+) {
+    DEFAULT(0, ""),
+    READONLY(1, "readonly"),
+//    DEPRECATED(2, "deprecated")
+}
+
+
 enum class RellSymbolKind(
-    val numId: Int,
-    stringId: String,
+    val tokenId: Int,
+    val tokenStringId: String,
+    val modifier: RellSymbolModifier = RellSymbolModifier.READONLY
 ) {
     DEFAULT(0, "keyword"),
     MODULE(1, "namespace"),
@@ -16,7 +28,7 @@ enum class RellSymbolKind(
     GLOBAL_CONSTANT(7, "variable"),
     ENTITY(8, "class"),
     OBJECT(9, "class"),
-    ENTITY_ATTR_NORMAL_VAL(10, "property"),
+    ENTITY_ATTR_NORMAL_VAL(10, "property", RellSymbolModifier.READONLY),
     ENTITY_ATTR_NORMAL_VAR(11, "property"),
     ENTITY_ATTR_KEYINDEX_VAL(12, "property"),
     ENTITY_ATTR_KEYINDEX_VAR(13, "property"),
@@ -33,18 +45,13 @@ enum class RellSymbolKind(
     LOCAL_VAR(24, "variable"),
     AT_ALIAS(25, "variable");
 
-    val lspId: String
-
-    init {
-        lspId = stringId
-    }
-
     companion object {
         init {
-            val numIdList = entries.toTypedArray().map { x: RellSymbolKind -> x.numId }
+            val numIdList = entries.toTypedArray().map { x: RellSymbolKind -> x.tokenId }
             if (numIdList.min() != 0 ||
                 numIdList.size != numIdList.max() + 1 ||
-                numIdList.toSet().size != numIdList.size) {
+                numIdList.toSet().size != numIdList.size
+            ) {
                 throw RuntimeException("Inconsistent set of num ID's")
             }
         }
