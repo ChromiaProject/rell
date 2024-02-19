@@ -29,12 +29,13 @@ import java.io.File
 object RellSourceToDocumentableTranslator : SourceToDocumentableTranslator {
 
     override fun invoke(sourceSet: DokkaConfiguration.DokkaSourceSet, context: DokkaContext): DModule {
+        println(sourceSet)
         val files = sourceSet.sourceRoots
         val config = RellApiCompile.Config.Builder()
                 .mountConflictError(false)
                 .moduleArgsMissingError(false)
                 .build()
-        val app = RellApiCompile.compileApp(config, files.first(), null)
+        val app = RellApiCompile.compileApp(config, files.first(), listOf("management_chain_directory1"))
         return DModule(
                 context.configuration.moduleName,
                 app.packages(sourceSet),

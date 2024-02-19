@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.dokka") version "1.9.10" // Used to create a javadoc jar
     `maven-publish`
     signing
+    application
 }
 
 group = "com.chromia.rell.dokka"
@@ -22,8 +23,13 @@ val dokkaVersion: String by project
 dependencies {
     compileOnly("org.jetbrains.dokka:dokka-core:$dokkaVersion")
     implementation("org.jetbrains.dokka:dokka-base:$dokkaVersion")
+    implementation("org.jetbrains.dokka:dokka-cli:$dokkaVersion")
     implementation("org.jetbrains.dokka:analysis-kotlin-descriptors:$dokkaVersion")
+    runtimeOnly("org.jetbrains.kotlinx:kotlinx-html-jvm:0.8.0")
+    //runtimeOnly("org.freemarker:freemaker:2.3.31")
     implementation("net.postchain.rell:rell-api-base:0.13.6")
+
+    implementation("com.github.ajalt.clikt:clikt:3.5.2")
 
     testImplementation(kotlin("test"))
     testImplementation("org.jetbrains.dokka:dokka-test-api:$dokkaVersion")
@@ -36,6 +42,10 @@ kotlin {
 
 tasks.dokkaHtml {
     outputDirectory.set(layout.buildDirectory.dir("dokka"))
+}
+
+application {
+    mainClass = "com.chromia.rell.dokka.cli.MainKt"
 }
 
 val javadocJar by tasks.registering(Jar::class) {

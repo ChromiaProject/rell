@@ -20,6 +20,8 @@ import net.postchain.rell.base.model.R_StructDefinition
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.analysis.kotlin.descriptors.compiler.configuration.DescriptorDocumentableSource
 import org.jetbrains.dokka.links.DRI
+import org.jetbrains.dokka.links.DriTarget
+import org.jetbrains.dokka.links.PointingToCallableParameters
 import org.jetbrains.dokka.model.DEnum
 import org.jetbrains.dokka.model.DEnumEntry
 import org.jetbrains.dokka.model.DFunction
@@ -62,7 +64,7 @@ private fun R_RoutineDefinition.toDFunction(
         dri = toDRI(),
         name = simpleName,
         isConstructor = false,
-        parameters = params().map { it.toDFunction(sourceSet) },
+        parameters = params().mapIndexed { i, v -> v.toDFunction(sourceSet, toDRI(), i) },
         expectPresentInSet = null,
         visibility = mapOf(),
         receiver = null,
@@ -95,8 +97,8 @@ fun R_FunctionDefinition.toDFunction(sourceSet: DokkaConfiguration.DokkaSourceSe
                 DocumentationNode(listOf(Description(Text("This function is called $simpleName"))))
         )
 
-fun R_FunctionParam.toDFunction(sourceSet: DokkaConfiguration.DokkaSourceSet) = DParameter(
-        dri = DRI(type.defName.module.str(), type.defName.qualifiedName.str()),
+fun R_FunctionParam.toDFunction(sourceSet: DokkaConfiguration.DokkaSourceSet, parent: DRI, index: Int) = DParameter(
+        dri = parent.copy(target = PointingToCallableParameters(index)),
         name = name.str,
         expectPresentInSet = null,
         type = Dynamic,
@@ -121,8 +123,8 @@ fun R_GlobalConstantDefinition.toDProperty(sourceSet: DokkaConfiguration.DokkaSo
         documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text("This is constant $simpleName")))))
 )
 
-fun R_Attribute.toDProperty(sourceSet: DokkaConfiguration.DokkaSourceSet) = DProperty(
-        dri = DRI(this.type.defName.module.str(), this.type.name),
+fun R_Attribute.toDProperty(sourceSet: DokkaConfiguration.DokkaSourceSet, parent: DRI, index: Int) = DProperty(
+        dri = parent.copy(target = PointingToCallableParameters(index)),
         name = name,
         receiver = null,
         setter = null,
@@ -142,7 +144,7 @@ fun R_EntityDefinition.toDClasslike(sourceSet: DokkaConfiguration.DokkaSourceSet
         dri = toDRI(),
         name = this.simpleName,
         functions = listOf(),
-        properties = attributes.values.map { it.toDProperty(sourceSet) },
+        properties = attributes.values.mapIndexed { i, v -> v.toDProperty(sourceSet, toDRI(), i) },
         classlikes = listOf(),
         visibility = mapOf(sourceSet to KotlinVisibility.Public),
         companion = null,
@@ -159,7 +161,7 @@ fun R_StructDefinition.toDClasslike(sourceSet: DokkaConfiguration.DokkaSourceSet
         dri = toDRI(),
         name = this.simpleName,
         functions = listOf(),
-        properties = struct.attributes.values.map { it.toDProperty(sourceSet) },
+        properties = struct.attributes.values.mapIndexed { i, v -> v.toDProperty(sourceSet, toDRI(), i) },
         classlikes = listOf(),
         visibility = mapOf(sourceSet to KotlinVisibility.Internal),
         companion = null,
@@ -176,7 +178,7 @@ fun R_ObjectDefinition.toDClasslike(sourceSet: DokkaConfiguration.DokkaSourceSet
         dri = toDRI(),
         name = this.simpleName,
         functions = listOf(),
-        properties = this.rEntity.attributes.values.map { it.toDProperty(sourceSet) },
+        properties = this.rEntity.attributes.values.mapIndexed { i, v -> v.toDProperty(sourceSet, toDRI(), i) },
         classlikes = listOf(),
         visibility = mapOf(sourceSet to KotlinVisibility.Protected),
         companion = null,

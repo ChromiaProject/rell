@@ -9,6 +9,8 @@ import org.jetbrains.dokka.links.DriOfUnit
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.Dynamic
+import org.jetbrains.dokka.model.KotlinModifier
+import org.jetbrains.dokka.model.Modifier
 import org.jetbrains.dokka.model.Projection
 import org.jetbrains.dokka.model.TypeConstructor
 import org.jetbrains.dokka.model.TypeParameter
@@ -34,22 +36,19 @@ class RellSignatureProvider internal constructor(
     override fun signature(documentable: Documentable): List<ContentNode> {
         return when (documentable) {
             is DFunction -> functionSignature(documentable)
-            else -> TODO("Not yet implemented")
+            else -> listOf()
         }
     }
 
     private fun functionSignature(dFunction: DFunction): List<ContentNode> {
         return dFunction.sourceSets.map { sourceSet ->
             contentBuilder.contentFor(dFunction, ContentKind.Symbol, setOf(TextStyle.Monospace), sourceSets = setOf(sourceSet)) {
-                if (dFunction.isConstructor) {
-                    keyword("constructor")
-                } else if (dFunction.isExpectActual) {
-                    keyword("operation ")
-                    link(dFunction.name, dFunction.dri)
-                } else {
-                    keyword("function ")
-                    link(dFunction.name, dFunction.dri)
+                when (dFunction.modifier[sourceSet]) {
+                    KotlinModifier.Open -> keyword("query ")
+                    KotlinModifier.Sealed -> keyword("operation ")
+                    else -> keyword("function ")
                 }
+                link(dFunction.name, dFunction.dri)
 
                 punctuation("(")
                 if (dFunction.parameters.isNotEmpty()) {
