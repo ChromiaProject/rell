@@ -13,11 +13,11 @@ class ChainContextTest: BaseGtxTest() {
         val ver = RellTestUtils.RELL_VER
 
         chk("chain_context.raw_config",
-                "{'gtx':{'rell':{'moduleArgs':{},'modules':[''],'sources':{'main.rell':'query q() = chain_context.raw_config;'},'version':'$ver'}}}")
+                "{'gtx':{'rell':{'moduleArgs':{},'modules':[''],'sources':{'main.rell':'query q() = chain_context.raw_config;'},'strictGtvConversion':0,'version':'$ver'}}}")
 
         tst.moduleArgs("" to "'bar'")
         chk("chain_context.raw_config",
-                "{'gtx':{'rell':{'moduleArgs':{'':'bar'},'modules':[''],'sources':{'main.rell':'query q() = chain_context.raw_config;'},'version':'$ver'}}}")
+                "{'gtx':{'rell':{'moduleArgs':{'':'bar'},'modules':[''],'sources':{'main.rell':'query q() = chain_context.raw_config;'},'strictGtvConversion':0,'version':'$ver'}}}")
     }
 
     @Test fun testModuleArgs() {

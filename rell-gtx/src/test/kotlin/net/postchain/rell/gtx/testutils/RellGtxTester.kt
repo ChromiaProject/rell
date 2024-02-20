@@ -21,6 +21,8 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.GtvString
 import net.postchain.gtv.GtvType
+import net.postchain.gtv.mapper.toList
+import net.postchain.gtv.parse.GtvParser
 import net.postchain.gtx.GTXModule
 import net.postchain.gtx.GTXSchemaManager
 import net.postchain.gtx.data.ExtOpData
@@ -43,12 +45,13 @@ class RellGtxTester(
         entityDefs: List<String> = listOf(),
         inserts: List<String> = listOf(),
         gtv: Boolean = false,
-        chainId: Long = 995511
+        chainId: Long = 995511,
 ): RellBaseTester(tstCtx, entityDefs, inserts, gtv) {
     var wrapRtErrors = true
     val extraModuleConfig = mutableMapOf<String, String>()
     var modules: List<String>? = listOf("")
     var configTemplate: String = getDefaultConfigTemplate()
+    var strictGtvConversion: Boolean = false
 
     init {
         super.chainId = chainId
@@ -128,10 +131,14 @@ class RellGtxTester(
     }
 
     fun chkCallOperation(name: String, args: List<String>, expected: String = "OK") {
-        val gtvArgs = args.map { GtvTestUtils.decodeGtvStr(it.replace('\'', '"')) }
+        val gtvArgs = args.map { GtvTestUtils.decodeGtvStr(normalizeQuotes(it)) }
         val moduleCode = defsCode()
         val actual = callOperation0(moduleCode, name, gtvArgs)
         assertEquals(expected, actual)
+    }
+
+    fun normalizeQuotes(str: String): String {
+        return str.replace('\'', '"')
     }
 
     fun chkOpEx(code: String, args: List<Gtv>, expected: String = "OK") {
@@ -246,6 +253,7 @@ class RellGtxTester(
             GtvType.STRING -> {
                 val s = tpl.asString()
                 when (s) {
+                    "{STRICT_GTV_CONVERSION}" ->  GtvFactory.gtv(this.strictGtvConversion)
                     "{MODULES}" -> {
                         if (parts.modules == null) null else GtvFactory.gtv(parts.modules.map { GtvFactory.gtv(it) })
                     }
@@ -260,7 +268,7 @@ class RellGtxTester(
 
     private fun getDefaultConfigTemplate(): String {
         val v = RellTestUtils.RELL_VER
-        return "{'gtx':{'rell':{'modules':'{MODULES}','sources':'{SOURCES}','version':'$v','moduleArgs':'{MODULE_ARGS}'}}}"
+        return "{'gtx':{'rell':{'modules':'{MODULES}','sources':'{SOURCES}','version':'$v','moduleArgs':'{MODULE_ARGS}','strictGtvConversion':'{STRICT_GTV_CONVERSION}'}}}"
     }
 
     private fun createDatabaseAccess(): SQLDatabaseAccess = PostgreSQLDatabaseAccess()

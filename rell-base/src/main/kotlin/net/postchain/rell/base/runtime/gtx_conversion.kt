@@ -31,6 +31,7 @@ private class GtvToRtState(
     val pretty: Boolean,
     val validateOnly: Boolean,
     val defaultValueEvaluator: GtvToRtDefaultValueEvaluator?,
+    val strictGtvConversion: Boolean,
 ) {
     private val entityRowids: MultiValuedMap<R_EntityDefinition, Long> = HashSetValuedHashMap()
 
@@ -87,6 +88,7 @@ class GtvToRtContext private constructor(
     private val keepSymbol: Boolean,
 ) {
     val pretty = state.pretty
+    val strictGtvConversion = state.strictGtvConversion
     val defaultValueEvaluator = state.defaultValueEvaluator
 
     fun updateSymbol(symbol: GtvToRtSymbol, keep: Boolean = false): GtvToRtContext {
@@ -106,11 +108,13 @@ class GtvToRtContext private constructor(
             pretty: Boolean,
             validateOnly: Boolean = false,
             defaultValueEvaluator: GtvToRtDefaultValueEvaluator? = null,
+            strictGtvConversion: Boolean = false,
         ): GtvToRtContext {
             val state = GtvToRtState(
                 pretty = pretty,
                 validateOnly = validateOnly,
                 defaultValueEvaluator = defaultValueEvaluator,
+                strictGtvConversion = strictGtvConversion
             )
             return GtvToRtContext(state, null, false)
         }
@@ -591,18 +595,22 @@ class GtvRtConversion_VirtualTuple(val type: R_VirtualTupleType): GtvRtConversio
 
 object GtvRtUtils {
     fun gtvToInteger(ctx: GtvToRtContext, gtv: Gtv, rellType: R_Type): Long {
-        if (gtv.type == GtvType.BIGINTEGER) {
-            val v = gtv.asBigInteger()
-            try {
-                return v.longValueExact()
-            } catch (e: ArithmeticException) {
-                throw errGtvType(ctx, rellType, "out_of_range:$v", "value out of range: $v")
+        return when (gtv.type) {
+            GtvType.INTEGER -> {
+                gtv.asInteger()
             }
-        }
-        try {
-            return gtv.asInteger()
-        } catch (e: UserMistake) {
-            throw errGtvType(ctx, rellType, gtv, GtvType.INTEGER, e)
+            GtvType.BIGINTEGER -> {
+                val v = gtv.asBigInteger()
+                if (ctx.strictGtvConversion) {
+                    throw errGtvType(ctx, rellType, gtv, GtvType.INTEGER, "invalid value: '$v'")
+                }
+                try {
+                    return v.longValueExact()
+                } catch (e: ArithmeticException) {
+                    throw errGtvType(ctx, rellType, "out_of_range:$v", "value out of range: $v")
+                }
+            }
+            else -> throw errGtvType(ctx, rellType, gtv, GtvType.INTEGER, null)
         }
     }
 
@@ -646,10 +654,7 @@ object GtvRtUtils {
 
     fun gtvToByteArray(ctx: GtvToRtContext, gtv: Gtv, rellType: R_Type): ByteArray {
         try {
-            // TODO: This allows interpreting string as byte array.
-            // This is a temporary measure needed because of deficiency of the query API.
-            // Auto-conversion should be removed later.
-            return gtv.asByteArray(true)
+            return gtv.asByteArray(convert = !ctx.strictGtvConversion)
         } catch (e: UserMistake) {
             val exp = immListOf(GtvType.BYTEARRAY, GtvType.STRING)
             if (gtv.type in exp) {

@@ -43,7 +43,6 @@ abstract class RellBaseTester(
     var complexWhatEnabled = true
     var ideDefIdConflictError = true
     var compatibilityVer = C_CompilerOptions.DEFAULT.compatibility
-
     var blockchainRid = RellTestUtils.strToRidHex("DEADBEEF")
 
     var defs: List<String> = entityDefs

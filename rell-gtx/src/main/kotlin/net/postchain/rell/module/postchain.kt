@@ -189,7 +189,7 @@ private class RellGTXOperation(
             )
         }
 
-        val gtvCtx = GtvToRtContext.make(pretty = GTV_OPERATION_PRETTY)
+        val gtvCtx = GtvToRtContext.make(pretty = GTV_OPERATION_PRETTY, strictGtvConversion = module.config.strictGtvConversion)
         val rtArgs = convertArgs(gtvCtx, params, gtvArgs)
 
         opArgs = Rt_OperationArgs(gtvCtx, rtArgs)
@@ -220,7 +220,8 @@ private class RellModuleConfig(
         val sqlLogging: Boolean,
         val typeCheck: Boolean,
         val dbInitLogLevel: Int,
-        val compilerOptions: C_CompilerOptions
+        val compilerOptions: C_CompilerOptions,
+        val strictGtvConversion: Boolean
 )
 
 private class RellPostchainModule(
@@ -403,6 +404,7 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
             val chainCtx = Rt_ChainContext(config, bcRid)
             val chainDeps = getGtxChainDependencies(config)
             val moduleArgsSource = PostchainBaseUtils.createModuleArgsSource(modApp.app, config)
+            val strictGtvConversion = (rellNode["strictGtvConversion"]?.asBoolean() ?: false)
 
             val modLogPrinter = getModulePrinter(env.logPrinter, Rt_TimestampPrinter(combinedPrinter), copyOutput)
             val modOutPrinter = getModulePrinter(env.outPrinter, combinedPrinter, copyOutput)
@@ -415,6 +417,7 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
                 typeCheck = typeCheck,
                 dbInitLogLevel = dbInitLogLevel,
                 compilerOptions = modApp.compilerOptions,
+                strictGtvConversion = strictGtvConversion,
             )
 
             RellPostchainModule(

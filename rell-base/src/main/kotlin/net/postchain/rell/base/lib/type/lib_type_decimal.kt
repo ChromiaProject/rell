@@ -560,14 +560,14 @@ private object GtvRtConversion_Decimal: GtvRtConversion() {
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvFactory.gtv(Lib_DecimalMath.toString(rt.asDecimal()))
 
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
-        return when (gtv.type) {
-            GtvType.INTEGER -> {
+        return when {
+            !ctx.strictGtvConversion && gtv.type == GtvType.INTEGER -> {
                 ctx.rtValue {
                     val v = GtvRtUtils.gtvToInteger(ctx, gtv, R_DecimalType)
                     Rt_DecimalValue.get(v)
                 }
             }
-            GtvType.BIGINTEGER -> {
+            !ctx.strictGtvConversion && gtv.type == GtvType.BIGINTEGER -> {
                 ctx.rtValue {
                     val v = gtv.asBigInteger()
                     val bd = BigDecimal(v)
