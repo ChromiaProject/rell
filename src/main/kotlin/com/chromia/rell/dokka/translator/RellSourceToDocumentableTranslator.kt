@@ -32,7 +32,6 @@ import java.io.File
 object RellSourceToDocumentableTranslator : SourceToDocumentableTranslator {
 
     override fun invoke(sourceSet: DokkaConfiguration.DokkaSourceSet, context: DokkaContext): DModule {
-        println(sourceSet)
         val pluginConfig = context.configuration.pluginsConfiguration.find { it.fqPluginName == RellDokkaPlugin::class.qualifiedName }
         val rellConfig = pluginConfig?.let {
             Json.decodeFromString<RellConfig>(it.values)
@@ -44,7 +43,7 @@ object RellSourceToDocumentableTranslator : SourceToDocumentableTranslator {
                 .build()
         val app = RellApiCompile.compileApp(config, files.first(), rellConfig?.modules)
         return DModule(
-                context.configuration.moduleName,
+                rellConfig?.name ?: "root",
                 app.packages(sourceSet),
                 mapOf(sourceSet to DocumentationNode(listOf())),
                 sourceSets = setOf(sourceSet)
@@ -56,7 +55,7 @@ object RellSourceToDocumentableTranslator : SourceToDocumentableTranslator {
         return defs.map { (m, rellModule) ->
             DPackage(
                     dri = m.toDRI(),
-                    documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text(m.docSymbol.comment.toString()))))),
+                    documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text(m.docSymbol.comment?.toString() ?: ""))))),
                     sourceSets = setOf(sourceSet),
                     properties = rellModule.constants.map { it.toDProperty(sourceSet) }, // Global constants
                     // Entities/Structs/Objects
