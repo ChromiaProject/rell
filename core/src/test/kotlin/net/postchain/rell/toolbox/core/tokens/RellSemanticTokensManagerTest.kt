@@ -38,7 +38,7 @@ class RellSemanticTokensManagerTest {
 
         val tokens = RellSemanticTokensManager().getSemanticTokens(resource)
 
-        val functionSymbolKind = RellSymbolKind.FUNCTION
+        val functionSymbolKind = RellTokenType.FUNCTION
         val mainFunctionSemanticToken = listOf(1, 9, 4, functionSymbolKind.tokenId, functionSymbolKind.modifiersAsList)
         val fooFunctionSemanticToken = listOf(5, 9, 3, functionSymbolKind.tokenId, functionSymbolKind.modifiersAsList)
         assertThat(tokens).extracting {

@@ -9,7 +9,7 @@ data class SemanticTokenInfo(val tokenTypes: List<String>, val tokenModifiers: L
 
 class RellSemanticTokensManager {
 
-    private val supportedModifiers = RellSymbolModifier.entries.sortedBy { it.modifierStringId }
+    private val supportedModifiers = RellTokenModifier.entries.sortedBy { it.modifierStringId }
 
     fun getRelativeSemanticTokens(resource: Resource): List<Int> {
         val tokens = getSemanticTokens(resource)
@@ -56,7 +56,7 @@ class RellSemanticTokensManager {
         return tokensRelative.flatMap { it.toImmList() }
     }
 
-    private fun getModifierValue(tokensModifiers: List<RellSymbolModifier>): Int {
+    private fun getModifierValue(tokensModifiers: List<RellTokenModifier>): Int {
         if (tokensModifiers.isEmpty()) return 0
         var bitmask = 0
         for (modifier in tokensModifiers) {
@@ -73,7 +73,7 @@ class RellSemanticTokensManager {
         val semanticTokens: List<String>
             get() {
                 val tokenTypes: MutableList<String> = ArrayList()
-                for (type in RellSymbolKind.entries) {
+                for (type in RellTokenType.entries) {
                     tokenTypes.add(type.tokenStringId)
                 }
                 return tokenTypes
@@ -82,7 +82,7 @@ class RellSemanticTokensManager {
         val tokenModifiers: List<String>
             get() {
                 val tokenModifiers: MutableList<String> = ArrayList()
-                for (modifier in RellSymbolModifier.entries.sortedBy { it.modifierStringId }) {
+                for (modifier in RellTokenModifier.entries.sortedBy { it.modifierStringId }) {
                     tokenModifiers.add(modifier.modifierStringId)
                 }
                 return tokenModifiers
