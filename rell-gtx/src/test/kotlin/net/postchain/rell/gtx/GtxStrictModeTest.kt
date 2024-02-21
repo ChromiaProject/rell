@@ -1,11 +1,16 @@
 package net.postchain.rell.gtx
 
+import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvType
 import net.postchain.gtv.parse.GtvParser
+import net.postchain.rell.base.lang.type.VirtualTest.Companion.argToGtv
 import net.postchain.rell.gtx.testutils.BaseGtxTest
 import org.junit.Ignore
 import org.junit.Test
 
 class GtxStrictModeTest: BaseGtxTest() {
+
+    private var isVirtualTypeTest = false
 
     @Test fun testByteArray() {
         chkStrictMode("byte_array", "'ABCD'", "OK", "gtv_err:type:[byte_array]:bad_value:STRING:param:x")
@@ -208,6 +213,15 @@ class GtxStrictModeTest: BaseGtxTest() {
         chkStrictMode("map<decimal, integer>", "[[1, 1]]", "OK", "gtv_err:type:[decimal]:STRING:INTEGER:param:x")
     }
 
+    @Test fun testVirtualTypes() {
+        isVirtualTypeTest = true
+        testStruct()
+        testList()
+        testSet()
+        testMapTextKeys()
+        testTuple()
+    }
+
     private fun chkStrictMode(
         type: String,
         arg: String,
@@ -216,12 +230,30 @@ class GtxStrictModeTest: BaseGtxTest() {
     ) {
         tst.gtv = true
         tst.wrapRtErrors = false
-        val gtvArg = listOf(GtvParser.parse(tst.normalizeQuotes(arg)))
+        val (gtvArg, argType) = gtvArgWithType(arg, type)
 
         tst.strictGtvConversion = false
-        tst.chkOpEx("operation o(x: $type) {}", gtvArg, expectedNonStrict)
+        tst.chkOpEx("operation o(x: $argType) {}", listOf(gtvArg), expectedNonStrict)
 
         tst.strictGtvConversion = true
-        tst.chkOpEx("operation o(x: $type) {}", gtvArg, expectedStrict)
+        tst.chkOpEx("operation o(x: $argType) {}", listOf(gtvArg), expectedStrict)
+    }
+
+    private fun gtvArgWithType(arg: String, type: String): Pair<Gtv, String> {
+        var gtvArg = GtvParser.parse(tst.normalizeQuotes(arg))
+        var argType = type
+        if (isVirtualTypeTest) {
+            argType = "virtual<$type>"
+            gtvArg = argToGtv(gtvArg, argToPath(gtvArg))
+        }
+        return Pair(gtvArg, argType)
+    }
+
+    private fun argToPath(arg: Gtv): String {
+        return when (arg.type) {
+            GtvType.ARRAY -> (0..arg.asArray().size).joinToString(",", "[", "]") { "[$it]" }
+            GtvType.DICT -> arg.asDict().keys.joinToString(",", "[", "]") { "['$it']" }
+            else -> throw IllegalArgumentException("Invalid argument type: ${arg.type}")
+        }
     }
 }
