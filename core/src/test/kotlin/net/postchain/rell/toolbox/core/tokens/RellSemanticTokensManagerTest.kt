@@ -38,9 +38,18 @@ class RellSemanticTokensManagerTest {
 
         val tokens = RellSemanticTokensManager().getSemanticTokens(resource)
 
-        val mainFunctionSemanticToken = listOf(1, 9, 4, RellSymbolKind.FUNCTION.tokenId)
-        val fooFunctionSemanticToken = listOf(5, 9, 3, RellSymbolKind.FUNCTION.tokenId)
-        assertThat(tokens).extracting { listOf(it.line, it.col, it.len, it.tokenType) }.containsAll(
+        val functionSymbolKind = RellSymbolKind.FUNCTION
+        val mainFunctionSemanticToken = listOf(1, 9, 4, functionSymbolKind.tokenId, functionSymbolKind.modifiersAsList)
+        val fooFunctionSemanticToken = listOf(5, 9, 3, functionSymbolKind.tokenId, functionSymbolKind.modifiersAsList)
+        assertThat(tokens).extracting {
+            listOf(
+                it.line,
+                it.col,
+                it.len,
+                it.tokenType.tokenId,
+                it.tokenType.modifiersAsList
+            )
+        }.containsAll(
             mainFunctionSemanticToken,
             fooFunctionSemanticToken
         )
@@ -69,7 +78,7 @@ class RellSemanticTokensManagerTest {
 
         val relativeTokens = RellSemanticTokensManager().getRelativeSemanticTokens(resource)
 
-        val expectedRelativeTokens = arrayOf(1, 9, 4, 20, 0, 4, 9, 3, 20, 0)
+        val expectedRelativeTokens = arrayOf(1, 9, 4, 20, 8192, 4, 9, 3, 20, 8192)
         assertThat(relativeTokens).containsExactly(*expectedRelativeTokens)
     }
 }
