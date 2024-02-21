@@ -7,41 +7,187 @@ enum class RellSymbolModifier(
     val modifierStringId: String
 ) {
     READONLY("readonly"),
-    MODIFICATION("modification");
+    MODIFICATION("modification"),
+
+    //Rell keyword modifiers
+    DEFAULT("rell-default"),
+    MODULE("rell-module"),
+    ANNOTATION("rell-annotation"),
+    NAMESPACE("rell-namespace"),
+    TYPE("rell-type"),
+    ENUM("rell-enum"),
+    ENUM_VALUE("rell-enum_value"),
+    GLOBAL_CONSTANT("rell-global_constant"),
+    ENTITY("rell-entity"),
+    OBJECT("rell-object"),
+    ENTITY_ATTR_NORMAL_VAL("rell-entity_attr_normal_val"),
+    ENTITY_ATTR_NORMAL_VAR("rell-entity_attr_normal_var"),
+    ENTITY_ATTR_KEYINDEX_VAL("rell-entity_attr_keyindex_val"),
+    ENTITY_ATTR_KEYINDEX_VAR("rell-entity_attr_keyindex_var"),
+    STRUCT("rell-struct"),
+    STRUCT_ATTR_VAL("rell-struct_attr_val"),
+    STRUCT_ATTR_VAR("rell-struct_attr_var"),
+    TUPLE_ATTR("rell-tuple_attr"),
+    OPERATION("rell-operation"),
+    QUERY("rell-query"),
+    FUNCTION("rell-function"),
+    FUNCTION_EXTENDABLE("rell-extendable_function"),
+    NAMED_ARGUMENT("rell-named_argument"),
+    LOCAL_VAL("rell-local_val"),
+    LOCAL_VAR("rell-local_var"),
+    AT_ALIAS("rell-at_alias");
 }
 
 
 enum class RellSymbolKind(
     val tokenId: Int,
     val tokenStringId: String,
-    val modifiers: List<RellSymbolModifier> = listOf()
+    vararg val modifiers: RellSymbolModifier
 ) {
-    DEFAULT(0, "keyword"),
-    MODULE(1, "namespace"),
-    ANNOTATION(2, "decorator"),
-    NAMESPACE(3, "namespace"),
-    TYPE(4, "type"),
-    ENUM(5, "enum"),
-    ENUM_VALUE(6, "enumMember"),
-    GLOBAL_CONSTANT(7, "variable", listOf(RellSymbolModifier.READONLY)),
-    ENTITY(8, "class", listOf(RellSymbolModifier.MODIFICATION)),
-    OBJECT(9, "class", listOf(RellSymbolModifier.MODIFICATION)),
-    ENTITY_ATTR_NORMAL_VAL(10, "property", listOf(RellSymbolModifier.MODIFICATION, RellSymbolModifier.READONLY)),
-    ENTITY_ATTR_NORMAL_VAR(11, "property", listOf(RellSymbolModifier.MODIFICATION, RellSymbolModifier.READONLY)),
-    ENTITY_ATTR_KEYINDEX_VAL(12, "property", listOf(RellSymbolModifier.MODIFICATION, RellSymbolModifier.READONLY)),
-    ENTITY_ATTR_KEYINDEX_VAR(13, "property", listOf(RellSymbolModifier.MODIFICATION, RellSymbolModifier.READONLY)),
-    STRUCT(14, "struct"),
-    STRUCT_ATTR_VAL(15, "property"),
-    STRUCT_ATTR_VAR(16, "property"),
-    TUPLE_ATTR(17, "property"),
-    OPERATION(18, "function"),
-    QUERY(19, "function"),
-    FUNCTION(20, "function"),
-    FUNCTION_EXTENDABLE(21, "function"),
-    NAMED_ARGUMENT(22, "variable"),
-    LOCAL_VAL(23, "variable", listOf(RellSymbolModifier.READONLY)),
-    LOCAL_VAR(24, "variable"),
-    AT_ALIAS(25, "variable");
+    DEFAULT(
+        0,
+        "keyword",
+        RellSymbolModifier.DEFAULT
+    ),
+    MODULE(
+        1,
+        "namespace",
+        RellSymbolModifier.MODULE
+    ),
+    ANNOTATION(
+        2,
+        "decorator",
+        RellSymbolModifier.ANNOTATION
+    ),
+    NAMESPACE(
+        3,
+        "namespace",
+        RellSymbolModifier.NAMESPACE
+    ),
+    TYPE(
+        4,
+        "type",
+        RellSymbolModifier.TYPE
+    ),
+    ENUM(
+        5,
+        "enum",
+        RellSymbolModifier.ENUM
+    ),
+    ENUM_VALUE(
+        6,
+        "enumMember",
+        RellSymbolModifier.ENUM_VALUE
+    ),
+    GLOBAL_CONSTANT(
+        7,
+        "variable",
+        RellSymbolModifier.GLOBAL_CONSTANT,
+        RellSymbolModifier.READONLY
+    ),
+    ENTITY(
+        8,
+        "class",
+        RellSymbolModifier.ENTITY,
+        RellSymbolModifier.MODIFICATION
+    ),
+    OBJECT(
+        9,
+        "class",
+        RellSymbolModifier.OBJECT,
+        RellSymbolModifier.MODIFICATION
+    ),
+    ENTITY_ATTR_NORMAL_VAL(
+        10,
+        "property",
+        RellSymbolModifier.ENTITY_ATTR_NORMAL_VAL,
+        RellSymbolModifier.MODIFICATION,
+        RellSymbolModifier.READONLY
+    ),
+    ENTITY_ATTR_NORMAL_VAR(
+        11,
+        "property",
+        RellSymbolModifier.ENTITY_ATTR_NORMAL_VAR,
+        RellSymbolModifier.MODIFICATION,
+        RellSymbolModifier.READONLY
+    ),
+    ENTITY_ATTR_KEYINDEX_VAL(
+        12,
+        "property",
+        RellSymbolModifier.ENTITY_ATTR_KEYINDEX_VAL,
+        RellSymbolModifier.MODIFICATION,
+        RellSymbolModifier.READONLY
+    ),
+    ENTITY_ATTR_KEYINDEX_VAR(
+        13,
+        "property",
+        RellSymbolModifier.ENTITY_ATTR_KEYINDEX_VAR,
+        RellSymbolModifier.MODIFICATION,
+        RellSymbolModifier.READONLY
+    ),
+    STRUCT(
+        14,
+        "struct",
+        RellSymbolModifier.STRUCT
+    ),
+    STRUCT_ATTR_VAL(
+        15,
+        "property",
+        RellSymbolModifier.STRUCT_ATTR_VAL
+    ),
+    STRUCT_ATTR_VAR(
+        16,
+        "property",
+        RellSymbolModifier.STRUCT_ATTR_VAR
+    ),
+    TUPLE_ATTR(
+        17,
+        "property",
+        RellSymbolModifier.TUPLE_ATTR
+    ),
+    OPERATION(
+        18,
+        "function",
+        RellSymbolModifier.OPERATION
+    ),
+    QUERY(
+        19,
+        "function",
+        RellSymbolModifier.QUERY
+    ),
+    FUNCTION(
+        20,
+        "function",
+        RellSymbolModifier.FUNCTION
+    ),
+    FUNCTION_EXTENDABLE(
+        21,
+        "function",
+        RellSymbolModifier.FUNCTION_EXTENDABLE
+    ),
+    NAMED_ARGUMENT(
+        22,
+        "variable",
+        RellSymbolModifier.NAMED_ARGUMENT
+    ),
+    LOCAL_VAL(
+        23,
+        "variable",
+        RellSymbolModifier.LOCAL_VAL,
+        RellSymbolModifier.READONLY
+    ),
+    LOCAL_VAR(
+        24,
+        "variable",
+        RellSymbolModifier.LOCAL_VAR
+    ),
+    AT_ALIAS(
+        25,
+        "variable",
+        RellSymbolModifier.AT_ALIAS
+    );
+
+    val modifiersAsList: List<RellSymbolModifier> = modifiers.toList()
 
     companion object {
         init {

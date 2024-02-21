@@ -47,7 +47,7 @@ class RellSemanticTokensManager {
                     deltaColumn,
                     token.len,
                     token.tokenType.tokenId,
-                    getModifierValue(token.tokenType.modifiers)
+                    getModifierValue(token.tokenType.modifiersAsList)
                 )
             )
             activeLine = token.line
