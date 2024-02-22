@@ -71,7 +71,7 @@ class RellSemanticTokensManager {
         val semanticTokens: List<String>
             get() {
                 val tokenTypes: MutableList<String> = ArrayList()
-                for (type in RellTokenType.entries) {
+                for (type in RellTokenType.entries.sortedBy { it.tokenStringId }) {
                     tokenTypes.add(type.tokenStringId)
                 }
                 return tokenTypes
