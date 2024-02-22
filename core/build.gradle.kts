@@ -28,6 +28,10 @@ tasks.compileTestKotlin {
     dependsOn(tasks.generateTestGrammarSource)
 }
 
+tasks.compileTestJava {
+    dependsOn(tasks.processTestResources)
+}
+
 tasks.processTestResources {
     dependsOn(tasks.compileTestKotlin)
 }
