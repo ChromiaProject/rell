@@ -145,7 +145,7 @@ class RellSymbolService {
     fun getDocumentSymbols(
         fileUri: URI, document: Document, resource: Resource
     ): List<Either<SymbolInformation, DocumentSymbol>> {
-        if (document.contents.isEmpty()) {
+        if (document.content.isEmpty()) {
             return listOf()
         }
         val fileNodeInfo = createFileNodeInfo(fileUri, document)
@@ -165,7 +165,7 @@ class RellSymbolService {
         fileUri: URI, document: Document
     ): NodeInfo {
         val fileName = lastSegment(fileUri)
-        val range = Range(document.getPosition(0), document.getPosition(document.contents.length - 1))
+        val range = Range(document.getPosition(0), document.getPosition(document.content.length - 1))
         return NodeInfo(fileName, range, range, SymbolKind.File)
     }
 
