@@ -29,7 +29,7 @@
     --system-font-family: system-ui, -apple-system, BlinkMacSystemFont, Segoe UI,Roboto, Oxygen, Ubuntu,Cantarell, Droid Sans, Helvetica Neue, Arial, sans-serif;
     --default-font-family: International-regular, JetBrains Sans, Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI,Roboto, Oxygen, Ubuntu,Cantarell, Droid Sans, Helvetica Neue, Arial, sans-serif;
     --battlfin-font-family: Battlefin, JetBrains Sans, Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI,Roboto, Oxygen, Ubuntu,Cantarell, Droid Sans, Helvetica Neue, Arial, sans-serif;
-    --default-monospace-font-family: International-light, JetBrains Mono, SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+    --default-monospace-font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
 
     --active-tab-border-color: var(--ifm-color-primary-darker);
     --active-section-color: var(--ifm-color-primary-darker);
