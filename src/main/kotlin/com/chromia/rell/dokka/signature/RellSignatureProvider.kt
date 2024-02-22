@@ -30,7 +30,7 @@ class RellSignatureProvider internal constructor(
 ): SignatureProvider {
     private val contentBuilder = PageContentBuilder(ctcc, this, logger)
 
-    public constructor(context: DokkaContext) : this(
+    constructor(context: DokkaContext) : this(
             context.plugin<DokkaBase>().querySingle { commentsToContentConverter },
             context.logger
     )
@@ -45,11 +45,12 @@ class RellSignatureProvider internal constructor(
         return dFunction.sourceSets.map { sourceSet ->
             contentBuilder.contentFor(dFunction, ContentKind.Symbol, setOf(TextStyle.Monospace), sourceSets = setOf(sourceSet)) {
                 when {
+                    dFunction.isConstructor -> keyword("constructor")
                     dFunction.isQuery() -> keyword("query ")
                     dFunction.isOperation() -> keyword("operation ")
                     else -> keyword("function ")
                 }
-                link(dFunction.name, dFunction.dri)
+                if (!dFunction.isConstructor) link(dFunction.name, dFunction.dri)
 
                 punctuation("(")
                 if (dFunction.parameters.isNotEmpty()) {
