@@ -5,8 +5,6 @@ import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.toolbox.core.indexer.NodeInterval
 import net.postchain.rell.toolbox.core.indexer.Resource
 
-data class SemanticTokenInfo(val tokenTypes: List<String>, val tokenModifiers: List<String>)
-
 class RellSemanticTokensManager {
 
     private val supportedModifiers = RellTokenModifier.entries.sortedBy { it.modifierStringId }
@@ -46,7 +44,7 @@ class RellSemanticTokensManager {
                     deltaLine,
                     deltaColumn,
                     token.len,
-                    token.tokenType.tokenId,
+                    token.tokenType.ordinal,
                     getModifierValue(token.tokenType.modifiersAsList)
                 )
             )
