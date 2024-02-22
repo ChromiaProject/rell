@@ -44,7 +44,7 @@ class RellSemanticTokensManager {
                     deltaLine,
                     deltaColumn,
                     token.len,
-                    token.tokenType.ordinal,
+                    token.tokenType.tokenId,
                     getModifierValue(token.tokenType.modifiersAsList)
                 )
             )

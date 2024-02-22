@@ -89,4 +89,5 @@ enum class RellTokenType(
     AT_ALIAS("variable", RellTokenModifier.AT_ALIAS);
 
     val modifiersAsList: List<RellTokenModifier> = modifiers.toList()
+    val tokenId: Int = this.ordinal
 }
