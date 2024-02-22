@@ -26,14 +26,11 @@ class DokkaCommand : CliktCommand() {
     private val target by option().file(canBeFile = false).default(File("out"))
     private val modules by option().split(",")
     private val name by option().default("My Rell Dapp")
-    private val styles by option().default("src/main/resources/styles/styles.css")
+    private val styles by option().default("src/main/resources/styles/chromia-styles.css")
     private val assets by option().split(",").default(listOf("src/main/resources/img/chromia-symbol.png", "src/main/resources/fonts"))
 
     override fun run() {
         val sourceSet = DokkaSourceSetImpl(sourceRoots = setOf(source), sourceSetID = DokkaSourceSetID("main", "dapp"))
-        /*val baseConf = DokkaBaseConfiguration(
-                customStyleSheets = listOf(this::class.java.getResource("/styles.css")!!.toURI().toPath().toFile())
-        )*/
         val dokkaBaseConf = PluginConfigurationImpl(
                 DokkaBase::class.qualifiedName!!,
                 DokkaConfiguration.SerializationFormat.JSON,
@@ -41,6 +38,7 @@ class DokkaCommand : CliktCommand() {
         )
         val rellConfig = RellConfig(name, modules).toPluginConfig()
         val config = DokkaConfigurationImpl(
+                moduleName = name,
                 sourceSets = listOf(sourceSet),
                 outputDir = target,
                 pluginsConfiguration = listOf(rellConfig, dokkaBaseConf)

@@ -1,0 +1,104 @@
+/*
+ * Copyright 2014-2023 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
+ * Adds chromia-flavor to the default styles
+ */
+
+@import url('./font-jb-sans-auto.css');
+@import url('https://fonts.googleapis.com/css?family=JetBrains+Mono');
+
+/* --- root styles --- */
+:root {
+    /* --- Chromia styles --- */
+    --ifm-color-primary: #cc91f0;
+    --ifm-color-primary-dark: #bc6feb;
+    --ifm-color-primary-darker: #b45ee9;
+    --ifm-color-primary-darkest: #9d2be2;
+    --ifm-color-primary-light: #dcb3f5;
+    --ifm-color-primary-lighter: #e4c4f7;
+    --ifm-color-primary-lightest: #fbf7fe;
+    --ifm-background-color: #1f1a23!important;
+    --ifm-navbar-background-color: #1f1a23;
+    --ifm-color-gray-800: #444950;
+
+    /* --- overrides --- */
+    --color-dark: var(--ifm-background-color);
+    --background-color: #fff;
+    --hover-link-color: #bc6feb;
+    --border-color: #dadde1;
+
+    --system-font-family: system-ui, -apple-system, BlinkMacSystemFont, Segoe UI,Roboto, Oxygen, Ubuntu,Cantarell, Droid Sans, Helvetica Neue, Arial, sans-serif;
+    --default-font-family: International-regular, JetBrains Sans, Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI,Roboto, Oxygen, Ubuntu,Cantarell, Droid Sans, Helvetica Neue, Arial, sans-serif;
+    --battlfin-font-family: Battlefin, JetBrains Sans, Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI,Roboto, Oxygen, Ubuntu,Cantarell, Droid Sans, Helvetica Neue, Arial, sans-serif;
+    --default-monospace-font-family: International-light, JetBrains Mono, SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+
+    --active-tab-border-color: var(--ifm-color-primary-darker);
+    --active-section-color: var(--ifm-color-primary-darker);
+    --sidemenu-section-active-color: #cc91f0;
+}
+
+.theme-dark {
+    --background-color: var(--color-dark);
+    --color-dark: var(--ifm-background-color);
+    --default-font-color: hsla(0, 0%, 100%, 0.8);
+    --border-color: hsla(0, 0%, 100%, 0.2);
+    --code-background: hsla(0, 0%, 100%, 0.05);
+    --breadcrumb-font-color: #8c8c8e;
+    --brief-color: hsla(0, 0%, 100%, 0.4);
+    --copy-icon-color: hsla(0, 0%, 100%, 0.6);
+    --copy-icon-hover-color: #fff;
+
+    --active-tab-border-color: var(--ifm-color-primary);
+    --inactive-tab-border-color: hsla(0, 0%, 100%, 0.4);
+
+    --active-section-color: var(--ifm-color-primary);
+    --inactive-section-color: hsla(0, 0%, 100%, 0.4);
+
+    --navigation-highlight-color: rgba(255, 255, 255, 0.05);
+    --footer-background: hsla(0, 0%, 100%, 0.05);
+    --footer-font-color: hsla(0, 0%, 100%, 0.6);
+    --footer-go-to-top-color: var(--footer-font-color);
+
+    --sidemenu-section-active-color: var(--color-dark);
+}
+
+.navigation {
+    background-color: var(--background-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.library-name--link {
+    font-family: var(--system-font-family);
+    font-weight: bold;
+    color: var(--default-font-color);
+}
+
+/* Logo styles */
+:root {
+    --dokka-logo-image-url: url('../images/chromia-symbol.png');
+    --dokka-logo-height: 32px;
+    --dokka-logo-width: 32px;
+}
+
+@font-face {
+    font-family: Battlefin;
+    src: url("../images/fonts/Battlefin-Black.otf") format("opentype");
+}
+@font-face {
+    font-family: International-bold;
+    src: url("../images/fonts/NBInternationalBoldWebfont.ttf")
+    format("opentype");
+}
+@font-face {
+    font-family: International-regular;
+    src: url("../images/fonts/NBInternationalRegularWebfont.ttf")
+    format("opentype");
+}
+@font-face {
+    font-family: International-light;
+    src: url("../images/fonts/NBInternationalMonoWebfont.ttf")
+    format("opentype");
+}
+
+h1 {
+    font-family: var(--battlfin-font-family);
+}
