@@ -6,15 +6,14 @@ import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import java.net.URI
 
 
-class Document(val fileUri: URI, val version: Int, val contents: String) {
+
+class Document(val fileUri: URI, val version: Int, val content: String) {
 
     fun getOffSet(position: Position): Int {
-        val l = contents.length
-        val NL = '\n'
         var line = 0
         var column = 0
-        for (i in 0 until l) {
-            val ch = contents[i]
+        for (i in content.indices) {
+            val ch = content[i]
             if (position.line == line && position.character == column) {
                 return i
             }
@@ -26,24 +25,22 @@ class Document(val fileUri: URI, val version: Int, val contents: String) {
             }
         }
         if (position.line == line && position.character == column) {
-            return l
+            return content.length
         }
-        throw IndexOutOfBoundsException(position.toString())
+        throw IndexOutOfBoundsException("Position $position out of bounds")
     }
 
     fun getPosition(offset: Int): Position {
-        val l = contents.length
-        if (offset < 0 || offset > l) {
-            throw IndexOutOfBoundsException(offset.toString())
+        val contentLength = content.length
+        if (offset < 0 || offset > contentLength) {
+            throw IndexOutOfBoundsException("Offset $offset is out of bounds for range [0, $contentLength]")
         }
-        val NL = '\n'
         var line = 0
         var column = 0
-        for (i in 0 until l) {
-            val ch = contents[i]
-            if (i == offset) {
-                return Position(line, column)
-            }
+
+        for (i in content.indices) {
+            val ch = content[i]
+            if (i == offset) break
             if (ch == NL) {
                 line++
                 column = 0
@@ -65,19 +62,22 @@ class Document(val fileUri: URI, val version: Int, val contents: String) {
      */
     fun applyTextDocumentChanges(changes: Iterable<TextDocumentContentChangeEvent>): Document {
         var currentDocument = this
-        val newVersion: Int? = Integer.valueOf(currentDocument.version + 1)
+        val newVersion = currentDocument.version + 1
         for (change in changes) {
             val newContent: String = if (change.range == null) {
                 change.text
             } else {
                 val start = currentDocument.getOffSet(change.range.start)
                 val end = currentDocument.getOffSet(change.range.end)
-                (currentDocument.contents.substring(0, start) + change.text
-                        + currentDocument.contents.substring(end))
+                (currentDocument.content.substring(0, start) + change.text
+                        + currentDocument.content.substring(end))
             }
-            currentDocument = Document(fileUri, newVersion ?: 0, newContent)
+            currentDocument = Document(fileUri, newVersion, newContent)
         }
         return currentDocument
     }
 
+    companion object {
+        const val NL = '\n'
+    }
 }

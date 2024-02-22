@@ -339,7 +339,7 @@ class RellWorkspaceManagerTest {
             """.trimIndent()
 
         assertThat(workspaceManager.openDocuments.keys).containsOnly(rellFileUri)
-        assertThat(workspaceManager.openDocuments[rellFileUri]!!.contents).isEqualTo(expectedRellFileContent)
+        assertThat(workspaceManager.openDocuments[rellFileUri]!!.content).isEqualTo(expectedRellFileContent)
     }
 
     @Test

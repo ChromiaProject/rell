@@ -175,7 +175,7 @@ class RellWorkspaceManager(
         val updatedDocument = document.applyTextDocumentChanges(contentChanges)
         val indexer = getIndexerFor(fileUri)
         openDocuments[fileUri] = updatedDocument
-        indexer.updateFileUriResourceMap(fileUri, updatedDocument.contents)
+        indexer.updateFileUriResourceMap(fileUri, updatedDocument.content)
         reportDiagnostics(indexer, listOf(fileUri))
     }
 
