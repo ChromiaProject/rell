@@ -26,7 +26,9 @@ dependencies {
     implementation("org.jetbrains.dokka:dokka-base:$dokkaVersion")
     implementation("org.jetbrains.dokka:dokka-cli:$dokkaVersion")
     implementation("org.jetbrains.dokka:analysis-kotlin-descriptors:$dokkaVersion")
-    runtimeOnly("org.jetbrains.kotlinx:kotlinx-html-jvm:0.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.8.0")
+    //runtimeOnly("org.jetbrains.kotlinx:kotlinx-html:0.11.0")
+
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     //runtimeOnly("org.freemarker:freemaker:2.3.31")
     implementation("net.postchain.rell:rell-api-base:0.13.6")

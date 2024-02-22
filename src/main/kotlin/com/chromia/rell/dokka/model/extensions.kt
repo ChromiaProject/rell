@@ -13,7 +13,6 @@ import net.postchain.rell.base.model.R_FunctionDefinition
 import net.postchain.rell.base.model.R_FunctionParam
 import net.postchain.rell.base.model.R_GlobalConstantDefinition
 import net.postchain.rell.base.model.R_Module
-import net.postchain.rell.base.model.R_NullType
 import net.postchain.rell.base.model.R_ObjectDefinition
 import net.postchain.rell.base.model.R_OperationDefinition
 import net.postchain.rell.base.model.R_QueryDefinition
@@ -23,9 +22,7 @@ import net.postchain.rell.base.model.R_Type
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.analysis.kotlin.descriptors.compiler.configuration.DescriptorDocumentableSource
 import org.jetbrains.dokka.links.DRI
-import org.jetbrains.dokka.links.DriTarget
 import org.jetbrains.dokka.links.PointingToCallableParameters
-import org.jetbrains.dokka.links.PointingToGenericParameters
 import org.jetbrains.dokka.model.Bound
 import org.jetbrains.dokka.model.DEnum
 import org.jetbrains.dokka.model.DEnumEntry
@@ -42,6 +39,8 @@ import org.jetbrains.dokka.model.Void
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.Text
+import org.jetbrains.dokka.model.properties.ExtraProperty
+import org.jetbrains.dokka.model.properties.PropertyContainer
 import kotlin.reflect.jvm.internal.calls.ThrowingCaller.returnType
 
 // Module == kotlin package
@@ -241,4 +240,6 @@ fun R_EnumAttr.toDEnumEntry(module: String, sourceSet: DokkaConfiguration.DokkaS
 
 fun DFunction.isOperation() = modifier.containsValue(KotlinModifier.Sealed)
 fun DFunction.isQuery() = modifier.containsValue(KotlinModifier.Open)
+
+fun DFunction.isFunction() = !(isOperation() || isQuery())
 
