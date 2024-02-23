@@ -1,23 +1,35 @@
 package com.chromia.rell.dokka.systemlib
 
 import com.chromia.rell.dokka.doc.toDocumentationNode
+import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator
 import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import net.postchain.rell.base.compiler.base.lib.C_LibModule
+import net.postchain.rell.base.lmodel.L_FunctionParam
+import net.postchain.rell.base.lmodel.L_NamespaceMember_Function
+import net.postchain.rell.base.lmodel.L_NamespaceMember_Namespace
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Type
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Constant
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Constructor
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Function
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Property
 import org.jetbrains.dokka.DokkaConfiguration.DokkaSourceSet
+import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
+import org.jetbrains.dokka.links.PointingToCallableParameters
+import org.jetbrains.dokka.links.TypeParam
 import org.jetbrains.dokka.links.withClass
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DObject
 import org.jetbrains.dokka.model.DPackage
+import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.KotlinVisibility
+import org.jetbrains.dokka.model.TypeParameter
+import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
+import org.jetbrains.dokka.model.doc.P
+import org.jetbrains.dokka.model.doc.Text
 import org.jetbrains.dokka.utilities.DokkaLogger
 
 class SystemLibVisitor(
@@ -26,7 +38,7 @@ class SystemLibVisitor(
 ) {
     private val typeDefVisitor = TypeDefMemberVisitor(sourceSet, logger)
 
-    fun visitRellModule(module: C_LibModule): DPackage {
+    fun visitRellModule(module: C_LibModule): List<DPackage> {
         val packageName = module.lModule.moduleName.str()
         val dri = DRI(packageName = packageName)
 
@@ -34,8 +46,9 @@ class SystemLibVisitor(
         val namespaceMembers = module.lModule.namespace.getAllDefs()
 
         val types = namespaceMembers.filterIsInstance<L_NamespaceMember_Type>().visitTypes(dri)
+        val namespaces = namespaceMembers.filterIsInstance<L_NamespaceMember_Namespace>().visitNamespaces(dri)
 
-        return DPackage(
+        val basePackage = DPackage(
                 dri = DRI(packageName),
                 documentation = mapOf(sourceSet to doc),
                 sourceSets = setOf(sourceSet),
@@ -47,6 +60,7 @@ class SystemLibVisitor(
                 // Functions, queries, operations
                 functions = listOf()
         )
+        return listOf(basePackage) + namespaces.filter { it.dri != basePackage.dri && it.packageName != "rell" }
     }
 
     private fun List<L_NamespaceMember_Type>.visitTypes(parent: DRI): List<DClass> = map { it.visit(parent) }
@@ -101,6 +115,67 @@ class SystemLibVisitor(
                 classlikes = listOf(),
                 functions = staticFunctions,
                 properties = constants
-                )
+        )
+    }
+
+    private fun List<L_NamespaceMember_Namespace>.visitNamespaces(parent: DRI) = map { it.visit(parent) }
+
+    private fun L_NamespaceMember_Namespace.visit(parent: DRI): DPackage {
+        val dri = DRI(qualifiedName.str())
+        println(dri)
+        val members = namespace.getAllDefs()
+        
+        val functions = members.filterIsInstance<L_NamespaceMember_Function>().visitFunctions(dri)
+
+        return DPackage(
+                dri = dri,
+                documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
+                classlikes = listOf(),
+                properties = listOf(),
+                functions = functions,
+                sourceSets = setOf(sourceSet),
+                typealiases = listOf()
+        )
+    }
+
+    private fun List<L_NamespaceMember_Function>.visitFunctions(parent: DRI) = map { it.visit(parent) }
+
+    private fun L_NamespaceMember_Function.visit(parent: DRI): DFunction {
+        val dri = parent.withClass(simpleName.str).copy(callable = Callable(
+                name = simpleName.str,
+                params = List(function.header.params.size) { index -> TypeParam(listOf()) }))
+
+        return DFunction(
+                dri = dri,
+                name = this.simpleName.str,
+                isConstructor = false,
+                parameters = function.header.params.mapIndexed { index, p -> p.visit(dri, index) },
+                expectPresentInSet = null,
+                visibility = mapOf(),
+                receiver = null,
+                isExpectActual = false,
+                type = TypeParameter(parent.copy(classNames = function.header.resultType.strMsg()), function.header.resultType.strMsg()), // Return type
+                sourceSets = setOf(sourceSet),
+                generics = listOf(),
+                sources = mapOf(sourceSet to NULL_DESCRIPTOR),
+                documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
+                modifier = mapOf()
+        )
+    }
+
+    private fun L_FunctionParam.visit(parent: DRI, index: Int): DParameter {
+        val dri = parent.copy(target = PointingToCallableParameters(index))
+        return DParameter(
+                dri = dri,
+                name = name.str,
+                documentation = mapOf(
+                        sourceSet to DocumentationNode(listOf(Description(P(listOf(Text(docSymbol.comment?.description ?: "Parameter $name"))))))
+                ),
+                // Adds a link of the type to the definition
+                type = TypeParameter(dri = DRI("rell", type.toString()), name = this.type.toString()),
+                sourceSets = setOf(sourceSet),
+                expectPresentInSet = null
+        )
     }
 }
+

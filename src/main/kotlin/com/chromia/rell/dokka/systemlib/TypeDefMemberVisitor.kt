@@ -29,6 +29,9 @@ class TypeDefMemberVisitor(
 ) {
 
     fun List<L_TypeDefMember_Constructor>.visitConstructors(parent: DRI): List<DFunction> = map { it.visit(parent) }
+    fun List<L_TypeDefMember_Function>.visitFunctions(parent: DRI) = map { it.visit(parent) }
+    fun List<L_TypeDefMember_Property>.visitProperties(parent: DRI): List<DProperty> = map { it.visit(parent) }
+    fun List<L_TypeDefMember_Constant>.visitConstants(parent: DRI): List<DProperty> = map { it.visit(parent) }
 
     private fun L_TypeDefMember_Constructor.visit(parent: DRI): DFunction {
         val dri = parent.copy(callable = Callable.fromConstructor(constructor, this.docSymbol.symbolName.strCode()))
@@ -60,8 +63,6 @@ class TypeDefMemberVisitor(
                     )
             )
     )
-
-    fun List<L_TypeDefMember_Function>.visitFunctions(parent: DRI) = map { it.visit(parent) }
 
     private fun L_TypeDefMember_Function.visit(parent: DRI): DFunction {
         val dri = parent.withClass(simpleName.str).copy(callable = Callable(
@@ -101,9 +102,6 @@ class TypeDefMemberVisitor(
         )
     }
 
-
-    fun List<L_TypeDefMember_Property>.visitProperties(parent: DRI): List<DProperty> = map { it.visit(parent) }
-
     private fun L_TypeDefMember_Property.visit(parent: DRI): DProperty {
         val dri = parent.withClass(simpleName.str)
         val type = this.property.type.toString()
@@ -125,7 +123,6 @@ class TypeDefMemberVisitor(
                 getter = null,
         )
     }
-    fun List<L_TypeDefMember_Constant>.visitConstants(parent: DRI): List<DProperty> = map { it.visit(parent) }
 
     private fun L_TypeDefMember_Constant.visit(parent: DRI): DProperty {
         val dri = parent.withClass(constant.simpleName.str)
@@ -148,5 +145,4 @@ class TypeDefMemberVisitor(
                 getter = null,
         )
     }
-
 }
