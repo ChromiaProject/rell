@@ -2,6 +2,9 @@ package net.postchain.rell.toolbox.lsp.server
 
 import com.google.gson.JsonObject
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.File
+import java.net.URI
+import java.util.concurrent.CompletableFuture
 import net.postchain.rell.toolbox.core.RellAbout
 import net.postchain.rell.toolbox.core.RellVersionInfo
 import net.postchain.rell.toolbox.core.indexer.RellIssue
@@ -50,9 +53,6 @@ import org.eclipse.lsp4j.services.LanguageClientAware
 import org.eclipse.lsp4j.services.LanguageServer
 import org.eclipse.lsp4j.services.TextDocumentService
 import org.eclipse.lsp4j.services.WorkspaceService
-import java.io.File
-import java.net.URI
-import java.util.concurrent.CompletableFuture
 
 
 class RellLanguageServer(

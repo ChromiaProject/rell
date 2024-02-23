@@ -6,7 +6,6 @@ import org.eclipse.lsp4j.RenameOptions
 import org.eclipse.lsp4j.SemanticTokensLegend
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions
 import org.eclipse.lsp4j.ServerCapabilities
-import org.eclipse.lsp4j.SignatureHelpOptions
 import org.eclipse.lsp4j.TextDocumentSyncKind
 import org.eclipse.lsp4j.WorkspaceFoldersOptions
 import org.eclipse.lsp4j.WorkspaceServerCapabilities
@@ -26,7 +25,10 @@ class CapabilitiesProvider {
         serverCapabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental)
 
         val semanticTokensOptions = SemanticTokensWithRegistrationOptions()
-        semanticTokensOptions.setLegend(SemanticTokensLegend(RellSemanticTokensManager.tokenTypes, listOf()))
+        semanticTokensOptions.legend = SemanticTokensLegend(
+            RellSemanticTokensManager.semanticTokens,
+            RellSemanticTokensManager.tokenModifiers
+        )
         semanticTokensOptions.setRange(false)
         semanticTokensOptions.setFull(true)
         serverCapabilities.semanticTokensProvider = semanticTokensOptions

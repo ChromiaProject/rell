@@ -1,13 +1,13 @@
 package net.postchain.rell.toolbox.core.tokens
 
 
-import com.google.common.collect.ImmutableList
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.toolbox.core.indexer.NodeInterval
 import net.postchain.rell.toolbox.core.indexer.Resource
 
-
 class RellSemanticTokensManager {
+
+    private val supportedModifiers = RellTokenModifier.entries.sortedBy { it.modifierStringId }
 
     fun getRelativeSemanticTokens(resource: Resource): List<Int> {
         val tokens = getSemanticTokens(resource)
@@ -39,23 +39,51 @@ class RellSemanticTokensManager {
         for (token in tokens) {
             val deltaLine = token.line - activeLine
             val deltaColumn = if (deltaLine == 0) token.col - activeColumn else token.col
-            tokensRelative.add(listOf(deltaLine, deltaColumn, token.len, token.tokenType, 0))
+            tokensRelative.add(
+                listOf(
+                    deltaLine,
+                    deltaColumn,
+                    token.len,
+                    token.tokenType.tokenId,
+                    getModifierValue(token.tokenType.modifiersAsList)
+                )
+            )
             activeLine = token.line
             activeColumn = token.col
         }
         return tokensRelative.flatMap { it.toImmList() }
     }
 
+    private fun getModifierValue(tokensModifiers: List<RellTokenModifier>): Int {
+        if (tokensModifiers.isEmpty()) return 0
+        var bitmask = 0
+        for (modifier in tokensModifiers) {
+            val index = supportedModifiers.indexOf(modifier)
+            if (index != -1) {
+                bitmask = bitmask or (1 shl index)
+            }
+        }
+        return bitmask
+    }
 
 
     companion object {
-        val tokenTypes: List<String>
+        val semanticTokens: List<String>
             get() {
                 val tokenTypes: MutableList<String> = ArrayList()
-                for (kind in RellSymbolKind.entries) {
-                    tokenTypes.add(kind.lspId)
+                for (type in RellTokenType.entries.sortedBy { it.tokenStringId }) {
+                    tokenTypes.add(type.tokenStringId)
                 }
-                return ImmutableList.copyOf(tokenTypes)
+                return tokenTypes
+            }
+
+        val tokenModifiers: List<String>
+            get() {
+                val tokenModifiers: MutableList<String> = ArrayList()
+                for (modifier in RellTokenModifier.entries.sortedBy { it.modifierStringId }) {
+                    tokenModifiers.add(modifier.modifierStringId)
+                }
+                return tokenModifiers
             }
     }
 }
