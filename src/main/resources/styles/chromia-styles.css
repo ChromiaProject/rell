@@ -74,7 +74,6 @@
 
 /* Logo styles */
 :root {
-    --dokka-logo-image-url: url('../images/chromia-symbol.png');
     --dokka-logo-height: 32px;
     --dokka-logo-width: 32px;
 }
