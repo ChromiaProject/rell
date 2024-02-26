@@ -24,6 +24,8 @@ import org.eclipse.lsp4j.DocumentRangeFormattingParams
 import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.DocumentSymbolParams
 import org.eclipse.lsp4j.FileChangeType
+import org.eclipse.lsp4j.Hover
+import org.eclipse.lsp4j.HoverParams
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.InitializeResult
 import org.eclipse.lsp4j.InitializedParams
@@ -267,6 +269,11 @@ class RellLanguageServer(
         }
     }
 
+    override fun hover(params: HoverParams): CompletableFuture<Hover> {
+        return requestManager.runRead {
+            Hover(workspaceManager.getHoverDocumentation(params))
+        }
+    }
 
     override fun formatting(params: DocumentFormattingParams): CompletableFuture<List<TextEdit>?> {
         val fileUri = parseFileUri(params.textDocument.uri) ?: return CompletableFuture.completedFuture(listOf())

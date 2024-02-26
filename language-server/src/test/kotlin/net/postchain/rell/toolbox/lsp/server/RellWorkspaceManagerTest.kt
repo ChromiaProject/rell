@@ -13,43 +13,22 @@ import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import java.io.File
 import java.net.URI
-import net.postchain.rell.toolbox.core.indexer.RellIssue
-import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
-import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer
-import net.postchain.rell.toolbox.lsp.references.RellReferenceService
-import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
+import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.lsp.server.utils.WorkspaceManagerTestBase
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import org.eclipse.lsp4j.WorkspaceFolder
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createDirectory
 
-class RellWorkspaceManagerTest {
-
-    private lateinit var workspaceManager: RellWorkspaceManager
-    private var diagnostics = mutableMapOf<URI, List<RellIssue>>()
-
-    @BeforeEach
-    fun setup() {
-        val symbolService = RellSymbolService()
-        val referenceService = RellReferenceService(symbolService)
-        val indexCachingService = RellIndexCachingService(RellIndexSerializer())
-        workspaceManager = RellWorkspaceManager(symbolService, referenceService, indexCachingService)
-        diagnostics.clear()
-    }
-
-    private fun populateDiagnostics(uri: URI, issues: List<RellIssue>) {
-        diagnostics.put(uri, issues)
-    }
+class RellWorkspaceManagerTest: WorkspaceManagerTestBase() {
 
     @Test
-    fun `Initialization correctly index relevant files`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val rellFile = File(srcDir, "rell_file.rell").apply {
+    fun `Initialization correctly index relevant files`() {
+        val rellFile = File(sourceDir, "rell_file.rell").apply {
             writeText(
                 """
                 module;
@@ -59,7 +38,7 @@ class RellWorkspaceManagerTest {
             """.trimIndent()
             )
         }
-        File(tempDir, "excluded.rell").apply {
+        File(workspace, "excluded.rell").apply {
             writeText(
                 """
                 module;
@@ -69,26 +48,23 @@ class RellWorkspaceManagerTest {
             """.trimIndent()
             )
         }
-        File(srcDir, "not_a_rell_file.json").apply {
+        File(sourceDir, "not_a_rell_file.json").apply {
             writeText("{module}")
         }
 
-        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
-
+        initializeWorkspace()
         val indexers = workspaceManager.indexers
-        val srcDirUri = srcDir.toURI()
+        val sourceDirUri = sourceDir.toURI()
 
         assertThat(indexers).hasSize(1)
-        assertThat(indexers.keys.first()).isEqualTo(srcDirUri)
-        assertThat(indexers[srcDirUri]!!.fileUriResourceMap).hasSize(1)
-        assertThat(indexers[srcDirUri]!!.fileUriResourceMap.keys).containsOnly(rellFile.toURI())
+        assertThat(indexers.keys.first()).isEqualTo(sourceDirUri)
+        assertThat(indexers[sourceDirUri]!!.fileUriResourceMap).hasSize(1)
+        assertThat(indexers[sourceDirUri]!!.fileUriResourceMap.keys).containsOnly(rellFile.toURI())
     }
 
     @Test
-    fun `Initialization correctly index for single file`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val mainFile = File(srcDir, "main.rell").apply {
+    fun `Initialization correctly index for single file`() {
+        File(sourceDir, "main.rell").apply {
             writeText(
                 """
                 module;
@@ -99,7 +75,7 @@ class RellWorkspaceManagerTest {
             """.trimIndent()
             )
         }
-        File(srcDir, "import_file.rell").apply {
+        File(sourceDir, "import_file.rell").apply {
             writeText(
                 """
                 module;
@@ -110,21 +86,19 @@ class RellWorkspaceManagerTest {
             )
         }
 
-        val workspaceFolders = listOf(WorkspaceFolder(mainFile.toURI().toString()))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        initializeWorkspace()
 
         val indexers = workspaceManager.indexers
-        val srcDirUri = srcDir.toURI()
+        val sourceDirUri = sourceDir.toURI()
 
         assertThat(indexers).hasSize(1)
-        assertThat(indexers.keys.first()).isEqualTo(srcDirUri)
-        assertThat(indexers[srcDirUri]!!.fileUriResourceMap).hasSize(2)
+        assertThat(indexers.keys.first()).isEqualTo(sourceDirUri)
+        assertThat(indexers[sourceDirUri]!!.fileUriResourceMap).hasSize(2)
     }
 
     @Test
-    fun `Initialization correctly index for single file src out of depth search`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val childDirs = File(srcDir, "one/two/three/four/five").toPath().createDirectories().toFile()
+    fun `Initialization correctly index for single file src out of depth search`() {
+        val childDirs =File(sourceDir, "one/two/three/four/five").toPath().createDirectories().toFile()
         val mainFile = File(childDirs, "main.rell").apply {
             writeText(
                 """
@@ -147,8 +121,7 @@ class RellWorkspaceManagerTest {
             )
         }
 
-        val workspaceFolders = listOf(WorkspaceFolder(mainFile.toURI().toString()))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        initializeWorkspace(mainFile)
 
         val indexers = workspaceManager.indexers
 
@@ -158,9 +131,8 @@ class RellWorkspaceManagerTest {
     }
 
     @Test
-    fun `Opening file triggers resource update`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val rellFile = File(srcDir, "rell_file.rell").apply {
+    fun `Opening file triggers resource update`() {
+        val rellFile = File(sourceDir, "rell_file.rell").apply {
             writeText(
                 """
                 module;
@@ -170,22 +142,20 @@ class RellWorkspaceManagerTest {
             """.trimIndent()
             )
         }
-        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        initializeWorkspace()
 
         val updatedContents = "gibberish"
         rellFile.writeText(updatedContents)
         workspaceManager.didOpen(rellFile.toURI(), 1, updatedContents)
 
-        val rellFileResource = workspaceManager.indexers[srcDir.toURI()]!!.fileUriResourceMap[rellFile.toURI()]!!
+        val rellFileResource = workspaceManager.indexers[sourceDir.toURI()]!!.fileUriResourceMap[rellFile.toURI()]!!
         assertThat(rellFileResource.parseTree.text).contains(updatedContents)
         assertThat(workspaceManager.openDocuments.keys).containsOnly(rellFile.toURI())
     }
 
     @Test
-    fun `Opening Git file URI is skipped by indexer`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val rellFileUri = File(srcDir, "rell_file.rell").apply {
+    fun `Opening Git file URI is skipped by indexer`() {
+        val rellFileUri = File(sourceDir, "rell_file.rell").apply {
             writeText(
                 """
                 module;
@@ -196,14 +166,13 @@ class RellWorkspaceManagerTest {
             )
         }.toURI()
 
-        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        initializeWorkspace()
 
         val gitFileUri = URI(rellFileUri.toString().replace("file:/", "git:/"))
         val gitFileContent = "gitcontent"
         workspaceManager.didOpen(gitFileUri, 1, gitFileContent)
 
-        val indexer = workspaceManager.indexers[srcDir.toURI()]!!
+        val indexer = workspaceManager.indexers[sourceDir.toURI()]!!
         val gitFileResource = indexer.fileUriResourceMap[gitFileUri]
         assertThat(gitFileResource).isNull()
         assertThat(indexer.fileUriResourceMap.keys).contains(rellFileUri)
@@ -211,10 +180,9 @@ class RellWorkspaceManagerTest {
     }
 
     @Test
-    fun `Correct indexer returned for new file`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        var srcDirUri = srcDir.toURI()
-        File(srcDir, "rell_file.rell").apply {
+    fun `Correct indexer returned for new file`() {
+        var sourceDirUri = sourceDir.toURI()
+        File(sourceDir, "rell_file.rell").apply {
             writeText(
                 """
                 module;
@@ -224,12 +192,12 @@ class RellWorkspaceManagerTest {
             """.trimIndent()
             )
         }
-        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
 
-        assertThat(workspaceManager.indexers.keys).containsOnly(srcDirUri)
-        val expectedIndexer = workspaceManager.indexers[srcDirUri]!!
-        val newRellFileUri = File(srcDir, "new_rell_file.rell").apply {
+        initializeWorkspace()
+
+        assertThat(workspaceManager.indexers.keys).containsOnly(sourceDirUri)
+        val expectedIndexer = workspaceManager.indexers[sourceDirUri]!!
+        val newRellFileUri = File(sourceDir, "new_rell_file.rell").apply {
             writeText(
                 """
                 module;
@@ -240,14 +208,13 @@ class RellWorkspaceManagerTest {
             )
         }.toURI()
         val indexer = workspaceManager.getIndexerFor(newRellFileUri)
-        assertThat(workspaceManager.indexers.keys).containsOnly(srcDirUri)
+        assertThat(workspaceManager.indexers.keys).containsOnly(sourceDirUri)
         assertThat(indexer === expectedIndexer).isTrue()
     }
 
     @Test
-    fun `Correct indexer returned for existing file`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val rellFileUri = File(srcDir, "rell_file.rell").apply {
+    fun `Correct indexer returned for existing file`() {
+        val rellFileUri = File(sourceDir, "rell_file.rell").apply {
             writeText(
                 """
                 module;
@@ -257,18 +224,15 @@ class RellWorkspaceManagerTest {
             """.trimIndent()
             )
         }.toURI()
-        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
-
+        initializeWorkspace()
         val indexer = workspaceManager.getIndexerFor(rellFileUri)
 
         assertThat(indexer.fileUriResourceMap.keys).containsOnly(rellFileUri)
     }
 
     @Test
-    fun `Correct indexer for single file opening (without workspace)`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val singleRellFileUri = File(srcDir, "rell_file.rell").apply {
+    fun `Correct indexer for single file opening (without workspace)`() {
+        val singleRellFileUri = File(sourceDir, "rell_file.rell").apply {
             writeText(
                 """
                 module;
@@ -286,9 +250,8 @@ class RellWorkspaceManagerTest {
     }
 
     @Test
-    fun `Closing file works`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val rellFileUri = File(srcDir, "rell_file.rell").apply {
+    fun `Closing file works`() {
+        val rellFileUri = File(sourceDir, "rell_file.rell").apply {
             writeText(
                 """
                 module;
@@ -298,8 +261,7 @@ class RellWorkspaceManagerTest {
             """.trimIndent()
             )
         }.toURI()
-        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        initializeWorkspace()
 
         workspaceManager.didOpen(rellFileUri, 1, "gibberish")
         assertThat(workspaceManager.openDocuments.keys).containsOnly(rellFileUri)
@@ -308,19 +270,17 @@ class RellWorkspaceManagerTest {
     }
 
     @Test
-    fun `didChangeTextDocumentContent correctly updates in-memory representation of file`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
+    fun `didChangeTextDocumentContent correctly updates in-memory representation of file`() {
         val rellFileContent = """
                 module;
                 function main() {
                     return "main";
                 }
             """.trimIndent()
-        val rellFile = File(srcDir, "rell_file.rell").apply {
+        val rellFile = File(sourceDir, "rell_file.rell").apply {
             writeText(rellFileContent)
         }
-        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        initializeWorkspace()
         workspaceManager.didOpen(rellFile.toURI(), 1, rellFileContent)
 
         val updateEvents = listOf(
@@ -343,9 +303,8 @@ class RellWorkspaceManagerTest {
     }
 
     @Test
-    fun `Adding, renaming or deleting file correctly updates index`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val renameFile = File(srcDir, "rell_file.rell").apply {
+    fun `Adding, renaming or deleting file correctly updates index`() {
+        val renameFile = File(sourceDir, "rell_file.rell").apply {
             writeText(
                 """
                 module;
@@ -356,7 +315,7 @@ class RellWorkspaceManagerTest {
             )
         }
         val beforeRenameFileUri = renameFile.toURI()
-        val deleteFileUri = File(srcDir, "delete_file.rell").apply {
+        val deleteFileUri = File(sourceDir, "delete_file.rell").apply {
             writeText(
                 """
                 module;
@@ -366,14 +325,13 @@ class RellWorkspaceManagerTest {
             """.trimIndent()
             )
         }.toURI()
-        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        initializeWorkspace()
 
-        val indexer = workspaceManager.indexers[srcDir.toURI()]!!
+        val indexer = workspaceManager.indexers[sourceDir.toURI()]!!
         assertThat(indexer.fileUriResourceMap).hasSize(2)
         assertThat(indexer.fileUriResourceMap.keys).containsOnly(beforeRenameFileUri, deleteFileUri)
 
-        val newFileUri = File(srcDir, "new_file.rell").apply {
+        val newFileUri = File(sourceDir, "new_file.rell").apply {
             writeText(
                 """
                 module;
@@ -384,7 +342,7 @@ class RellWorkspaceManagerTest {
             )
         }.toURI()
 
-        val newNameFile = File(srcDir, "much_cooler_name.rell")
+        val newNameFile = File(sourceDir, "much_cooler_name.rell")
         renameFile.renameTo(newNameFile)
 
         val renamedFileUri = newNameFile.toURI()
@@ -396,19 +354,18 @@ class RellWorkspaceManagerTest {
     }
 
     @Test
-    fun `Saving file updates current and all dependent files in index`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
+    fun `Saving file updates current and all dependent files in index`() {
         val rellFileContent = """
                 module;
                 function some_function() {
                     return "main";
                 }
             """.trimIndent()
-        val rellFile = File(srcDir, "rell_file.rell").apply {
+        val rellFile = File(sourceDir, "rell_file.rell").apply {
             writeText(rellFileContent)
         }
         val rellFileUri = rellFile.toURI()
-        val importerFileUri = File(srcDir, "importer.rell").apply {
+        val importerFileUri = File(sourceDir, "importer.rell").apply {
             writeText(
                 """
                 module;
@@ -419,11 +376,10 @@ class RellWorkspaceManagerTest {
             """.trimIndent()
             )
         }.toURI()
-        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        initializeWorkspace()
         workspaceManager.didOpen(rellFileUri, 1, rellFileContent)
 
-        val indexer = workspaceManager.indexers[srcDir.toURI()]!!
+        val indexer = workspaceManager.indexers[sourceDir.toURI()]!!
         assertThat(indexer.fileUriResourceMap[importerFileUri]!!.semanticErrors).isEmpty()
 
         val newContent = "gibberish"
@@ -435,9 +391,8 @@ class RellWorkspaceManagerTest {
     }
 
     @Test
-    fun `Go to definition for imported object`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val rellFile = File(srcDir, "rell_file.rell").apply {
+    fun `Go to definition for imported object`() {
+        val rellFile = File(sourceDir, "rell_file.rell").apply {
             writeText(
                 """
                     module;
@@ -449,7 +404,7 @@ class RellWorkspaceManagerTest {
             )
         }
 
-        val importedFileUri = File(srcDir, "imported.rell").apply {
+        val importedFileUri = File(sourceDir, "imported.rell").apply {
             writeText(
                 """
                     module;
@@ -460,8 +415,7 @@ class RellWorkspaceManagerTest {
             )
         }.toURI()
 
-        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        initializeWorkspace()
         workspaceManager.didOpen(rellFile.toURI(), 1, rellFile.readText())
         val candidate = workspaceManager.getDefinitionLocations(rellFile.toURI(), Position(3, 15))
         assertThat(candidate.left!![0].uri).isEqualTo(importedFileUri.toString())
@@ -470,9 +424,8 @@ class RellWorkspaceManagerTest {
     }
 
     @Test
-    fun `Go to definition for local link`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val localLinkFile = File(srcDir, "local_link.rell").apply {
+    fun `Go to definition for local link`() {
+        val localLinkFile = File(sourceDir, "local_link.rell").apply {
             writeText(
                 """
                 module;
@@ -484,9 +437,8 @@ class RellWorkspaceManagerTest {
             )
         }
 
+        initializeWorkspace()
 
-        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
         workspaceManager.didOpen(localLinkFile.toURI(), 1, localLinkFile.readText())
         val candidate = workspaceManager.getDefinitionLocations(
             localLinkFile.toURI(),
@@ -499,9 +451,8 @@ class RellWorkspaceManagerTest {
     }
 
     @Test
-    fun `Go to definition for local link when cursor is left of first character`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val localLinkFile = File(srcDir, "local_link.rell").apply {
+    fun `Go to definition for local link when cursor is left of first character`() {
+        val localLinkFile = File(sourceDir, "local_link.rell").apply {
             writeText(
                 """
                 module;
@@ -514,8 +465,7 @@ class RellWorkspaceManagerTest {
         }
 
 
-        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        initializeWorkspace()
         workspaceManager.didOpen(localLinkFile.toURI(), 1, localLinkFile.readText())
 
         val candidate = workspaceManager.getDefinitionLocations(
@@ -558,8 +508,7 @@ class RellWorkspaceManagerTest {
     }
 
     @Test
-    fun `Go to definition for module file`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
+    fun `Go to definition for module file`() {
         val rellFileContent = """
                 module;
                 import importer.*;
@@ -567,11 +516,11 @@ class RellWorkspaceManagerTest {
                     return some_function();
                 }
             """.trimIndent()
-        val importerFileUri = File(srcDir, "rell_file.rell").apply {
+        val importerFileUri = File(sourceDir, "rell_file.rell").apply {
             writeText(rellFileContent)
         }.toURI()
 
-        val importerFile = File(srcDir, "importer.rell").apply {
+        val importerFile = File(sourceDir, "importer.rell").apply {
             writeText(
                 """
             module;
@@ -581,8 +530,7 @@ class RellWorkspaceManagerTest {
             """.trimIndent()
             )
         }.toURI()
-        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        initializeWorkspace()
         workspaceManager.didOpen(importerFileUri, 1, rellFileContent)
 
         val candidate = workspaceManager.getDefinitionLocations(importerFileUri, Position(1, 11))
@@ -595,8 +543,7 @@ class RellWorkspaceManagerTest {
         val classLoader = javaClass.getClassLoader()
         val workspaceFile = File(classLoader.getResource("rellReferences")!!.file)
         val mainFile = File(workspaceFile, "src/main.rell")
-        val workspaceFolders = listOf(WorkspaceFolder(workspaceFile.toURI().toString()))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        initializeWorkspace(workspaceFile)
         workspaceManager.didOpen(mainFile.toURI(), 1, mainFile.readText())
         val references = workspaceManager.getReferenceLocations(mainFile.toURI(), Position(2, 16))
         assertThat(references).hasSize(4)
