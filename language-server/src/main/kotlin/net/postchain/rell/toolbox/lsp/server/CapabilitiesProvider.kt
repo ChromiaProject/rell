@@ -15,32 +15,32 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either
 class CapabilitiesProvider {
 
     fun createServerCapabilities(params: InitializeParams): ServerCapabilities {
-        val serverCapabilities = ServerCapabilities()
-        //serverCapabilities.setHoverProvider(true)
-        serverCapabilities.setDefinitionProvider(true)
-        serverCapabilities.setReferencesProvider(true)
-        serverCapabilities.setDocumentSymbolProvider(true)
-        serverCapabilities.setWorkspaceSymbolProvider(true)
-        //serverCapabilities.signatureHelpProvider = SignatureHelpOptions(listOf("(", ","))
-        serverCapabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental)
-
-        val semanticTokensOptions = SemanticTokensWithRegistrationOptions()
-        semanticTokensOptions.legend = SemanticTokensLegend(
-            RellSemanticTokensManager.semanticTokens,
-            RellSemanticTokensManager.tokenModifiers
-        )
-        semanticTokensOptions.setRange(false)
-        semanticTokensOptions.setFull(true)
-        serverCapabilities.semanticTokensProvider = semanticTokensOptions
+        val serverCapabilities = ServerCapabilities().apply {
+            setHoverProvider(true)
+            setDefinitionProvider(true)
+            setReferencesProvider(true)
+            setDocumentSymbolProvider(true)
+            setWorkspaceSymbolProvider(true)
+            //signatureHelpProvider = SignatureHelpOptions(listOf("(", ","))
+            setTextDocumentSync(TextDocumentSyncKind.Incremental)
+            semanticTokensProvider = SemanticTokensWithRegistrationOptions().apply {
+                legend = SemanticTokensLegend(
+                    RellSemanticTokensManager.semanticTokens,
+                    RellSemanticTokensManager.tokenModifiers
+                )
+                setRange(false)
+                setFull(true)
+            }
 
 //        val completionOptions = CompletionOptions()
 //        completionOptions.resolveProvider = false
 //        completionOptions.triggerCharacters = listOf(".")
 //        serverCapabilities.completionProvider = completionOptions
 
-        serverCapabilities.setDocumentFormattingProvider(true)
-        serverCapabilities.setDocumentRangeFormattingProvider(true)
+            setDocumentFormattingProvider(true)
+            setDocumentRangeFormattingProvider(true)
 //        serverCapabilities.setDocumentHighlightProvider(true)
+        }
 
         val clientCapabilities = params.capabilities
 

@@ -9,11 +9,14 @@ import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.core.indexer.findRellFilesInWorkspace
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.editing.Document
+import net.postchain.rell.toolbox.lsp.hover.formatDocSymbol
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import org.eclipse.lsp4j.DocumentSymbol
+import org.eclipse.lsp4j.HoverParams
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.LocationLink
+import org.eclipse.lsp4j.MarkupContent
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.PrepareRenameDefaultBehavior
 import org.eclipse.lsp4j.PrepareRenameResult
@@ -122,6 +125,14 @@ class RellWorkspaceManager(
         issues.forEach { (uri, issues) ->
             diagnosticsPublisher(uri, issues)
         }
+    }
+
+    fun getHoverDocumentation(params: HoverParams): MarkupContent {
+        val fileUri = parseFileUri(params.textDocument.uri) ?: return MarkupContent("plaintext", "")
+        val indexer = getIndexerFor(fileUri)
+        val document = openDocuments[fileUri] ?: return MarkupContent("plaintext", "")
+        val symbolLocation = rellSymbolService.getSymbolLocationsWithSymbol(document, indexer, params.position)
+        return MarkupContent("markdown", formatDocSymbol(symbolLocation?.second?.doc))
     }
 
     private fun reportDiagnostics(fileUris: List<URI>) {
