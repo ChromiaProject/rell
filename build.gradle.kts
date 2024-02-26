@@ -31,8 +31,8 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     //runtimeOnly("org.freemarker:freemaker:2.3.31")
-    implementation("net.postchain.rell:rell-api-base:0.14.0-SNAPSHOT")
-    implementation("net.postchain.rell:rell-base:0.14.0-SNAPSHOT")
+    implementation("net.postchain.rell:rell-api-base:0.13.9")
+    implementation("net.postchain.rell:rell-base:0.13.9")
 
     implementation("com.github.ajalt.clikt:clikt:3.5.2")
 
