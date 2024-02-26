@@ -8,6 +8,7 @@ import net.postchain.rell.base.lmodel.L_TypeDefMember_Constant
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Constructor
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Function
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Property
+import net.postchain.rell.base.lmodel.L_TypeDefMember_SpecialConstructor
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.*
 import org.jetbrains.dokka.links.DRI
@@ -15,6 +16,7 @@ import org.jetbrains.dokka.links.TypeParam
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
+import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.doc.Description
@@ -29,6 +31,7 @@ class TypeDefMemberVisitor(
 ) {
 
     fun List<L_TypeDefMember_Constructor>.visitConstructors(parent: DRI): List<DFunction> = map { it.visit(parent) }
+    fun List<L_TypeDefMember_SpecialConstructor>.visitSpecialConstructors(parent: DRI): List<DFunction> = map { it.visit(parent) }
     fun List<L_TypeDefMember_Function>.visitFunctions(parent: DRI) = map { it.visit(parent) }
     fun List<L_TypeDefMember_Property>.visitProperties(parent: DRI): List<DProperty> = map { it.visit(parent) }
     fun List<L_TypeDefMember_Constant>.visitConstants(parent: DRI): List<DProperty> = map { it.visit(parent) }
@@ -41,6 +44,36 @@ class TypeDefMemberVisitor(
                 name = dri.classNames!!,
                 isConstructor = true,
                 parameters = constructor.header.params.mapIndexed { index, p -> p.visit(dri, index) },
+                expectPresentInSet = null,
+                visibility = mapOf(),
+                receiver = null,
+                isExpectActual = false,
+                type = FunctionalTypeConstructor(dri, listOf()),
+                sourceSets = setOf(sourceSet),
+                generics = listOf(),
+                sources = mapOf(sourceSet to NULL_DESCRIPTOR),
+                documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
+                modifier = mapOf()
+        )
+    }
+
+    private fun L_TypeDefMember_SpecialConstructor.visit(parent: DRI): DFunction {
+        this.fn.paramCount()
+        val dri = parent.copy(callable = Callable(docSymbol.symbolName.strCode(), params = List(this.fn.paramCount()?.max() ?: 0) { TypeParam(listOf()) }))
+
+        return DFunction(
+                dri = dri,
+                name = dri.classNames!!,
+                isConstructor = true,
+                parameters = fn.paramCount()?.map {
+                    DParameter(
+                        dri = dri.copy(target = PointingToGenericParameters(it)),
+                        name = "...",
+                            documentation = mapOf(),
+                            expectPresentInSet = null,
+                            sourceSets = setOf(sourceSet),
+                            type = Dynamic
+                        ) } ?: listOf(),
                 expectPresentInSet = null,
                 visibility = mapOf(),
                 receiver = null,
