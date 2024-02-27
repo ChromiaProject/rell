@@ -8,10 +8,11 @@ import org.jetbrains.dokka.base.signatures.SignatureProvider
 import org.jetbrains.dokka.base.transformers.pages.comments.CommentsToContentConverter
 import org.jetbrains.dokka.base.translators.documentables.PageContentBuilder
 import org.jetbrains.dokka.links.DriOfUnit
-import org.jetbrains.dokka.model.Bound
 import org.jetbrains.dokka.model.DFunction
+import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.Dynamic
+import org.jetbrains.dokka.model.IsVar
 import org.jetbrains.dokka.model.Projection
 import org.jetbrains.dokka.model.TypeConstructor
 import org.jetbrains.dokka.model.TypeParameter
@@ -37,8 +38,28 @@ class RellSignatureProvider internal constructor(
     override fun signature(documentable: Documentable): List<ContentNode> {
         return when (documentable) {
             is DFunction -> functionSignature(documentable)
+            is DProperty -> propertySignature(documentable)
             else -> listOf()
         }
+    }
+
+    private fun propertySignature(d: DProperty): List<ContentNode> {
+        return d.sourceSets.map { sourceSet ->
+            contentBuilder.contentFor(d, ContentKind.Symbol, setOf(TextStyle.Monospace), sourceSets = setOf(sourceSet)) {
+                if (d.isMutable()) keyword("var ") else keyword("val ")
+                link(d.name, d.dri) // TODO: set styles if deprecated
+                operator(": ")
+                signatureForProjection(d.type)
+                if (!d.isMutable()) {
+                    // Set default value
+                }
+            }
+        }
+
+    }
+
+    private fun DProperty.isMutable(): Boolean {
+        return this.extra[IsVar] != null || this.setter != null
     }
 
     private fun functionSignature(dFunction: DFunction): List<ContentNode> {
