@@ -32,10 +32,7 @@ import java.io.File
 object RellSourceToDocumentableTranslator : SourceToDocumentableTranslator {
 
     override fun invoke(sourceSet: DokkaConfiguration.DokkaSourceSet, context: DokkaContext): DModule {
-        val pluginConfig = context.configuration.pluginsConfiguration.find { it.fqPluginName == RellDokkaPlugin::class.qualifiedName }
-        val rellConfig = pluginConfig?.let {
-            Json.decodeFromString<RellConfig>(it.values)
-        }
+        val rellConfig = RellDokkaPlugin.extractConfig(context)
         val files = sourceSet.sourceRoots
         val config = RellApiCompile.Config.Builder()
                 .mountConflictError(false)

@@ -1,4 +1,5 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+
 package com.chromia.rell.dokka.translator
 
 import com.chromia.rell.dokka.RellDokkaPlugin
@@ -18,18 +19,14 @@ import org.jetbrains.dokka.transformers.sources.SourceToDocumentableTranslator
 object RellSystemLibToDocumentableTranslator : SourceToDocumentableTranslator {
 
     override fun invoke(sourceSet: DokkaConfiguration.DokkaSourceSet, context: DokkaContext): DModule {
-        val pluginConfig = context.configuration.pluginsConfiguration.find { it.fqPluginName == RellDokkaPlugin::class.qualifiedName }
-        val rellConfig = pluginConfig?.let {
-            Json.decodeFromString<RellConfig>(it.values)
-        }
-        SystemLibVisitor(sourceSet, context.logger).let {
-
-        return DModule(
-                "Rell API Documentation",
-                it.visitRellModule(Lib_Rell.MODULE) + it.visitRellModule(Lib_RellTest.MODULE),
-                mapOf(sourceSet to DocumentationNode(listOf())),
-                sourceSets = setOf(sourceSet)
-        )
+        val conf = RellDokkaPlugin.extractConfig(context)!!
+        return SystemLibVisitor(sourceSet, context.logger).let {
+            DModule(
+                    conf.name,
+                    it.visitRellModule(Lib_Rell.MODULE) + it.visitRellModule(Lib_RellTest.MODULE),
+                    mapOf(sourceSet to DocumentationNode(listOf())),
+                    sourceSets = setOf(sourceSet)
+            )
         }
     }
 
