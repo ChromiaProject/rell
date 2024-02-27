@@ -37,6 +37,7 @@ dependencies {
     implementation("com.github.ajalt.clikt:clikt:3.5.2")
 
     testImplementation(kotlin("test"))
+    testImplementation("com.willowtreeapps.assertk:assertk:0.28.0")
     testImplementation("org.jetbrains.dokka:dokka-test-api:$dokkaVersion")
     testImplementation("org.jetbrains.dokka:dokka-base-test-utils:$dokkaVersion")
 }
