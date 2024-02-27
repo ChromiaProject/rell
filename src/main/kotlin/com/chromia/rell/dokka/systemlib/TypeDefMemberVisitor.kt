@@ -1,6 +1,8 @@
 package com.chromia.rell.dokka.systemlib
 
 import com.chromia.rell.dokka.doc.toDocumentationNode
+import com.chromia.rell.dokka.model.IsPure
+import com.chromia.rell.dokka.model.IsStatic
 import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import net.postchain.rell.base.lmodel.L_Constructor
 import net.postchain.rell.base.lmodel.L_FunctionParam
@@ -23,6 +25,7 @@ import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.P
 import org.jetbrains.dokka.model.doc.Text
+import org.jetbrains.dokka.model.properties.PropertyContainer
 import org.jetbrains.dokka.utilities.DokkaLogger
 
 class TypeDefMemberVisitor(
@@ -59,7 +62,8 @@ class TypeDefMemberVisitor(
 
     private fun L_TypeDefMember_SpecialConstructor.visit(parent: DRI): DFunction {
         this.fn.paramCount()
-        val dri = parent.copy(callable = Callable(docSymbol.symbolName.strCode(), params = List(this.fn.paramCount()?.max() ?: 0) { TypeParam(listOf()) }))
+        val dri = parent.copy(callable = Callable(docSymbol.symbolName.strCode(), params = List(this.fn.paramCount()?.max()
+                ?: 0) { TypeParam(listOf()) }))
 
         return DFunction(
                 dri = dri,
@@ -67,13 +71,14 @@ class TypeDefMemberVisitor(
                 isConstructor = true,
                 parameters = fn.paramCount()?.map {
                     DParameter(
-                        dri = dri.copy(target = PointingToGenericParameters(it)),
-                        name = "...",
+                            dri = dri.copy(target = PointingToGenericParameters(it)),
+                            name = "...",
                             documentation = mapOf(),
                             expectPresentInSet = null,
                             sourceSets = setOf(sourceSet),
                             type = Dynamic
-                        ) } ?: listOf(),
+                    )
+                } ?: listOf(),
                 expectPresentInSet = null,
                 visibility = mapOf(),
                 receiver = null,
@@ -116,7 +121,11 @@ class TypeDefMemberVisitor(
                 generics = listOf(),
                 sources = mapOf(sourceSet to NULL_DESCRIPTOR),
                 documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
-                modifier = mapOf()
+                modifier = mapOf(),
+                extra = PropertyContainer.withAll(
+                        takeIf { function.flags.isStatic }?.let { IsStatic },
+                        takeIf { function.flags.isPure }?.let { IsPure }
+                )
         )
     }
 
@@ -126,7 +135,8 @@ class TypeDefMemberVisitor(
                 dri = dri,
                 name = name.str,
                 documentation = mapOf(
-                        sourceSet to DocumentationNode(listOf(Description(P(listOf(Text(docSymbol.comment?.description ?: "Parameter $name"))))))
+                        sourceSet to DocumentationNode(listOf(Description(P(listOf(Text(docSymbol.comment?.description
+                                ?: "Parameter $name"))))))
                 ),
                 // Adds a link of the type to the definition
                 type = TypeParameter(dri = DRI(parent.packageName, type.toString()), name = this.type.toString()),

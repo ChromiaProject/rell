@@ -1,5 +1,7 @@
 package com.chromia.rell.dokka.signature
 
+import com.chromia.rell.dokka.model.IsPure
+import com.chromia.rell.dokka.model.IsStatic
 import com.chromia.rell.dokka.model.isOperation
 import com.chromia.rell.dokka.model.isQuery
 import org.jetbrains.dokka.base.DokkaBase
@@ -62,20 +64,30 @@ class RellSignatureProvider internal constructor(
         return this.extra[IsVar] != null || this.setter != null
     }
 
-    private fun functionSignature(dFunction: DFunction): List<ContentNode> {
-        return dFunction.sourceSets.map { sourceSet ->
-            contentBuilder.contentFor(dFunction, ContentKind.Symbol, setOf(TextStyle.Monospace), sourceSets = setOf(sourceSet)) {
+    private fun DFunction.isPure(): Boolean {
+        return this.extra[IsPure] != null
+    }
+
+    private fun DFunction.isStatic(): Boolean {
+        return this.extra[IsStatic] != null
+    }
+
+    private fun functionSignature(d: DFunction): List<ContentNode> {
+        return d.sourceSets.map { sourceSet ->
+            contentBuilder.contentFor(d, ContentKind.Symbol, setOf(TextStyle.Monospace), sourceSets = setOf(sourceSet)) {
+                if (d.isPure()) keyword("pure ")
+                if (d.isStatic()) keyword("static ")
                 when {
-                    dFunction.isConstructor -> keyword("constructor")
-                    dFunction.isQuery() -> keyword("query ")
-                    dFunction.isOperation() -> keyword("operation ")
+                    d.isConstructor -> keyword("constructor")
+                    d.isQuery() -> keyword("query ")
+                    d.isOperation() -> keyword("operation ")
                     else -> keyword("function ")
                 }
-                if (!dFunction.isConstructor) link(dFunction.name, dFunction.dri)
+                if (!d.isConstructor) link(d.name, d.dri)
 
                 punctuation("(")
-                if (dFunction.parameters.isNotEmpty()) {
-                   parametersBlock(dFunction) { p ->
+                if (d.parameters.isNotEmpty()) {
+                   parametersBlock(d) { p ->
                        text(p.name!!)
                        operator(": ")
                        signatureForProjection(p.type)
@@ -83,9 +95,9 @@ class RellSignatureProvider internal constructor(
                 }
 
                 punctuation(")")
-                if (!dFunction.isOperation() && dFunction.type is TypeParameter) {
+                if (!d.isOperation() && d.type is TypeParameter) {
                     operator(": ")
-                    signatureForReceiver(dFunction.type as TypeParameter)
+                    signatureForReceiver(d.type as TypeParameter)
                 }
             }
         }
