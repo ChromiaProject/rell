@@ -1,6 +1,7 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 package com.chromia.rell.dokka.page
 
+import com.chromia.rell.dokka.config.RellConfig
 import com.chromia.rell.dokka.translator.RellLanguageParser
 import org.jetbrains.dokka.InternalDokkaApi
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
@@ -18,7 +19,9 @@ import org.jetbrains.dokka.pages.TextStyle
 import org.jetbrains.dokka.utilities.DokkaLogger
 
 @OptIn(InternalDokkaApi::class)
-class RellPageCreator(configuration: DokkaBaseConfiguration?,
+class RellPageCreator(
+        private val rellConfig: RellConfig?,
+        configuration: DokkaBaseConfiguration?,
                       commentsToContentConverter: CommentsToContentConverter,
                       signatureProvider: SignatureProvider,
                       logger: DokkaLogger,
@@ -49,7 +52,7 @@ class RellPageCreator(configuration: DokkaBaseConfiguration?,
             }
 
             block(
-                    name = "Modules",
+                    name = rellConfig?.system?.let { "Namespaces" } ?: "Modules",
                     level = 2,
                     kind = ContentKind.Packages,
                     elements = m.packages,
