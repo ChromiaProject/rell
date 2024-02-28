@@ -8,6 +8,7 @@ import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.test.Lib_RellTest
 import net.postchain.rell.base.lmodel.L_FunctionParam
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Alias
+import net.postchain.rell.base.lmodel.L_NamespaceMember_Constant
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Function
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Namespace
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Property
@@ -64,6 +65,8 @@ class SystemLibVisitor(
                 .visitTypes(dri)
         val functions = namespaceMembers.filterIsInstance<L_NamespaceMember_Function>()
                 .visitFunctions(dri)
+        val properties = namespaceMembers.filterIsInstance<L_NamespaceMember_Property>()
+                .visitProperties(dri)
         val alias = namespaceMembers.filterIsInstance<L_NamespaceMember_Alias>()
                 //.visitFunctions(dri)
         val namespaces = module.lModule.namespace.getAllDefs().filterIsInstance<L_NamespaceMember_Namespace>()
@@ -76,7 +79,7 @@ class SystemLibVisitor(
                 documentation = mapOf(sourceSet to doc),
                 sourceSets = setOf(sourceSet),
                 // Global constants
-                properties = listOf(),
+                properties = properties,
                 // Entities/Structs/Objects
                 classlikes = types,
                 typealiases = listOf(),
@@ -151,12 +154,13 @@ class SystemLibVisitor(
         val types = members.filterIsInstance<L_NamespaceMember_Type>().visitTypes(dri)
         val functions = members.filterIsInstance<L_NamespaceMember_Function>().visitFunctions(dri)
         val properties = members.filterIsInstance<L_NamespaceMember_Property>().visitProperties(dri)
+        val constants = members.filterIsInstance<L_NamespaceMember_Constant>().visitConstants(dri)
 
         return DPackage(
                 dri = dri,
                 documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
                 classlikes = types,
-                properties = properties,
+                properties = properties + constants,
                 functions = functions,
                 sourceSets = setOf(sourceSet),
                 typealiases = listOf()
@@ -204,10 +208,33 @@ class SystemLibVisitor(
     }
 
     private fun List<L_NamespaceMember_Property>.visitProperties(parent: DRI): List<DProperty> = map { it.visit(parent) }
+    private fun List<L_NamespaceMember_Constant>.visitConstants(parent: DRI): List<DProperty> = map { it.visit(parent) }
 
     private fun L_NamespaceMember_Property.visit(parent: DRI): DProperty {
         val dri = parent.withClass(simpleName.str)
         val type = this.property.type.toString()
+
+        return DProperty(
+                dri = dri,
+                name = simpleName.str,
+                isExpectActual = false,
+                documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
+                expectPresentInSet = null,
+                sourceSets = setOf(sourceSet),
+                sources = mapOf(sourceSet to NULL_DESCRIPTOR),
+                type = TypeParameter(dri = DRI(parent.packageName, type), name = type),
+                generics = listOf(),
+                modifier = mapOf(),
+                visibility = mapOf(),
+                receiver = null,
+                setter = null,
+                getter = null,
+        )
+    }
+
+    private fun L_NamespaceMember_Constant.visit(parent: DRI): DProperty {
+        val dri = parent.withClass(simpleName.str)
+        val type = this.constant.type.toString()
 
         return DProperty(
                 dri = dri,
