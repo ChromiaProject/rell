@@ -78,7 +78,7 @@ class RellSemanticTokensManagerTest {
 
         val relativeTokens = RellSemanticTokensManager().getRelativeSemanticTokens(resource)
 
-        val expectedRelativeTokens = arrayOf(1, 9, 4, 20, 8192, 4, 9, 3, 20, 8192)
+        val expectedRelativeTokens = arrayOf(1, 9, 4, 20, 4194304, 4, 9, 3, 20, 4194304)
         assertThat(relativeTokens).containsExactly(*expectedRelativeTokens)
     }
 }

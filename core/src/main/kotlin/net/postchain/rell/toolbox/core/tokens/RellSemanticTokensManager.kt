@@ -7,7 +7,7 @@ import net.postchain.rell.toolbox.core.indexer.Resource
 
 class RellSemanticTokensManager {
 
-    private val supportedModifiers = RellTokenModifier.entries.sortedBy { it.modifierStringId }
+    private val supportedModifiers = RellTokenModifier.entries
 
     fun getRelativeSemanticTokens(resource: Resource): List<Int> {
         val tokens = getSemanticTokens(resource)
@@ -45,7 +45,7 @@ class RellSemanticTokensManager {
                     deltaColumn,
                     token.len,
                     token.tokenType.tokenId,
-                    getModifierValue(token.tokenType.modifiersAsList)
+                    getModifierId(token.tokenType.modifiersAsList)
                 )
             )
             activeLine = token.line
@@ -54,7 +54,10 @@ class RellSemanticTokensManager {
         return tokensRelative.flatMap { it.toImmList() }
     }
 
-    private fun getModifierValue(tokensModifiers: List<RellTokenModifier>): Int {
+    //A token can have multiple modifiers, each combination of modifiers needs to be encoded
+    //as a single integer to follow the Language Server Protocol
+    //https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_semanticTokens
+    private fun getModifierId(tokensModifiers: List<RellTokenModifier>): Int {
         if (tokensModifiers.isEmpty()) return 0
         var bitmask = 0
         for (modifier in tokensModifiers) {
@@ -71,7 +74,7 @@ class RellSemanticTokensManager {
         val semanticTokens: List<String>
             get() {
                 val tokenTypes: MutableList<String> = ArrayList()
-                for (type in RellTokenType.entries.sortedBy { it.tokenStringId }) {
+                for (type in RellTokenType.entries) {
                     tokenTypes.add(type.tokenStringId)
                 }
                 return tokenTypes
@@ -80,7 +83,7 @@ class RellSemanticTokensManager {
         val tokenModifiers: List<String>
             get() {
                 val tokenModifiers: MutableList<String> = ArrayList()
-                for (modifier in RellTokenModifier.entries.sortedBy { it.modifierStringId }) {
+                for (modifier in RellTokenModifier.entries) {
                     tokenModifiers.add(modifier.modifierStringId)
                 }
                 return tokenModifiers
