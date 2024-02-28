@@ -36,11 +36,11 @@ class RellDokkaPlugin : DokkaPlugin() {
         }
     }
 
-   val renderer by extending {
+   /*val renderer by extending {
         with (plugin<DokkaBase>()) {
             CoreExtensions.renderer providing ::RellHtmlRenderer override htmlRenderer
         }
-    }
+    }*/
 
     companion object {
         fun extractConfig(context: DokkaContext): RellConfig? {

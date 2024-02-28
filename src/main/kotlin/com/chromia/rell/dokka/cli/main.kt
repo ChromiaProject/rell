@@ -1,13 +1,10 @@
 package com.chromia.rell.dokka.cli
 
-import com.chromia.rell.dokka.RellDokkaPlugin
 import com.chromia.rell.dokka.config.RellConfig
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
-import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.file
 import org.jetbrains.dokka.DokkaConfiguration
@@ -32,16 +29,20 @@ class DokkaCommand : CliktCommand() {
     private val system by option(help = "Generate system library docs", hidden = true).flag()
 
     override fun run() {
-        val sourceSet = DokkaSourceSetImpl(sourceRoots = setOf(source), sourceSetID = DokkaSourceSetID("main", "dapp"))
+        val rellConfig = if (system) RellConfig.SYSTEM else RellConfig(name, modules)
+        val sourceSets = if (system) RellConfig.SYSTEM_SOURCE_SETS else listOf(DokkaSourceSetImpl(sourceRoots = setOf(source), sourceSetID = DokkaSourceSetID("main", "dapp")))
         val dokkaBaseConf = PluginConfigurationImpl(
                 DokkaBase::class.qualifiedName!!,
                 DokkaConfiguration.SerializationFormat.JSON,
-                """{"customStyleSheets": ["$styles"], "customAssets":[${assets.joinToString(",") { "\"$it\"" }}]}"""
+                """{ 
+                        "customStyleSheets": ["$styles"], 
+                        "customAssets":[${assets.joinToString(",") { "\"$it\"" }}], 
+                        "footerMessage": "© 2024 Chromia"
+                    }"""
         )
-        val rellConfig = if (system) RellConfig.SYSTEM else RellConfig(name, modules)
         val config = DokkaConfigurationImpl(
                 moduleName = rellConfig.name,
-                sourceSets = listOf(sourceSet),
+                sourceSets = sourceSets,
                 outputDir = target,
                 pluginsConfiguration = listOf(rellConfig.toPluginConfig(), dokkaBaseConf)
         )

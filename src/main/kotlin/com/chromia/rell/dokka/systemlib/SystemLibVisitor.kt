@@ -2,8 +2,12 @@ package com.chromia.rell.dokka.systemlib
 
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
+import com.intellij.util.containers.ContainerUtil.filterIsInstance
 import net.postchain.rell.base.compiler.base.lib.C_LibModule
+import net.postchain.rell.base.lib.Lib_Rell
+import net.postchain.rell.base.lib.test.Lib_RellTest
 import net.postchain.rell.base.lmodel.L_FunctionParam
+import net.postchain.rell.base.lmodel.L_NamespaceMember_Alias
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Function
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Namespace
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Property
@@ -25,6 +29,7 @@ import org.jetbrains.dokka.model.DObject
 import org.jetbrains.dokka.model.DPackage
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
+import org.jetbrains.dokka.model.DTypeAlias
 import org.jetbrains.dokka.model.KotlinVisibility
 import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.doc.Description
@@ -39,22 +44,35 @@ class SystemLibVisitor(
 ) {
     private val typeDefVisitor = TypeDefMemberVisitor(sourceSet, logger)
 
-    fun visitRellModule(module: C_LibModule): List<DPackage> {
+    companion object {
+        val blacklistedTypes = listOf("guid", "signer")
+        val blacklistedNamespaces = listOf("")
+    }
+
+    fun visitRellModule(module: C_LibModule, isRoot: Boolean): List<DPackage> {
+
         val packageName = module.lModule.moduleName.str()
-        val dri = DRI(packageName = packageName)
+        val dri = DRI(packageName = if (isRoot) "<root>" else packageName)
 
         val doc = module.lModule.docSymbol.toDocumentationNode()
-        val namespaceMembers = module.lModule.namespace.getAllDefs()
+        val namespaceMembers = module.lModule.namespace.members
 
         val types = namespaceMembers.filterIsInstance<L_NamespaceMember_Type>()
                 .filterNot { it.typeDef.abstract }
                 .filterNot { it.typeDef.hidden }
+                .filterNot { blacklistedTypes.contains(it.simpleName.str) }
                 .visitTypes(dri)
-        val namespaces = namespaceMembers.filterIsInstance<L_NamespaceMember_Namespace>()
+        val functions = namespaceMembers.filterIsInstance<L_NamespaceMember_Function>()
+                .visitFunctions(dri)
+        val alias = namespaceMembers.filterIsInstance<L_NamespaceMember_Alias>()
+                //.visitFunctions(dri)
+        val namespaces = module.lModule.namespace.getAllDefs().filterIsInstance<L_NamespaceMember_Namespace>()
+                .filterNot { blacklistedNamespaces.contains(it.simpleName.str) }
                 .visitNamespaces(dri)
+                .filterNot { it.children.isEmpty() }
 
         val basePackage = DPackage(
-                dri = DRI(packageName),
+                dri = dri,
                 documentation = mapOf(sourceSet to doc),
                 sourceSets = setOf(sourceSet),
                 // Global constants
@@ -63,9 +81,9 @@ class SystemLibVisitor(
                 classlikes = types,
                 typealiases = listOf(),
                 // Functions, queries, operations
-                functions = listOf()
+                functions = functions
         )
-        return listOf(basePackage) + namespaces.filter { it.dri != basePackage.dri && it.packageName != "rell" }
+        return namespaces + basePackage
     }
 
     private fun List<L_NamespaceMember_Type>.visitTypes(parent: DRI): List<DClass> = map { it.visit(parent) }
@@ -128,16 +146,16 @@ class SystemLibVisitor(
 
     private fun L_NamespaceMember_Namespace.visit(parent: DRI): DPackage {
         val dri = DRI(qualifiedName.str())
-        println(dri)
-        val members = namespace.getAllDefs()
-        
+        val members = namespace.members
+
+        val types = members.filterIsInstance<L_NamespaceMember_Type>().visitTypes(dri)
         val functions = members.filterIsInstance<L_NamespaceMember_Function>().visitFunctions(dri)
         val properties = members.filterIsInstance<L_NamespaceMember_Property>().visitProperties(dri)
 
         return DPackage(
                 dri = dri,
                 documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
-                classlikes = listOf(),
+                classlikes = types,
                 properties = properties,
                 functions = functions,
                 sourceSets = setOf(sourceSet),
