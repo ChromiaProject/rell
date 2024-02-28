@@ -10,3 +10,7 @@ object IsStatic : ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsStati
 object IsPure : ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsPure> {
     override val key: ExtraProperty.Key<DFunction, *> = this
 }
+
+object IsAlias : ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsAlias> {
+    override val key: ExtraProperty.Key<DFunction, *> = this
+}

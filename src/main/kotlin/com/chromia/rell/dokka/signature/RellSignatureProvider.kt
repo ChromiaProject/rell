@@ -1,5 +1,6 @@
 package com.chromia.rell.dokka.signature
 
+import com.chromia.rell.dokka.model.IsAlias
 import com.chromia.rell.dokka.model.IsPure
 import com.chromia.rell.dokka.model.IsStatic
 import com.chromia.rell.dokka.model.isOperation
@@ -10,8 +11,10 @@ import org.jetbrains.dokka.base.signatures.SignatureProvider
 import org.jetbrains.dokka.base.transformers.pages.comments.CommentsToContentConverter
 import org.jetbrains.dokka.base.translators.documentables.PageContentBuilder
 import org.jetbrains.dokka.links.DriOfUnit
+import org.jetbrains.dokka.model.Annotations
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DProperty
+import org.jetbrains.dokka.model.DTypeAlias
 import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.IsVar
@@ -64,6 +67,9 @@ class RellSignatureProvider internal constructor(
         return this.extra[IsVar] != null || this.setter != null
     }
 
+
+    private fun DFunction.isAlias(): Boolean = this.extra[IsAlias] != null
+
     private fun DFunction.isPure(): Boolean {
         return this.extra[IsPure] != null
     }
@@ -75,6 +81,7 @@ class RellSignatureProvider internal constructor(
     private fun functionSignature(d: DFunction): List<ContentNode> {
         return d.sourceSets.map { sourceSet ->
             contentBuilder.contentFor(d, ContentKind.Symbol, setOf(TextStyle.Monospace), sourceSets = setOf(sourceSet)) {
+                if (d.isAlias()) punctuation("(alias) ")
                 if (d.isPure()) keyword("pure ")
                 if (d.isStatic()) keyword("static ")
                 when {

@@ -1,12 +1,14 @@
 package com.chromia.rell.dokka.systemlib
 
 import com.chromia.rell.dokka.doc.toDocumentationNode
+import com.chromia.rell.dokka.model.IsAlias
 import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import com.intellij.util.containers.ContainerUtil.filterIsInstance
 import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.test.Lib_RellTest
 import net.postchain.rell.base.lmodel.L_FunctionParam
+import net.postchain.rell.base.lmodel.L_NamespaceMember
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Alias
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Constant
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Function
@@ -24,6 +26,8 @@ import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.PointingToCallableParameters
 import org.jetbrains.dokka.links.TypeParam
 import org.jetbrains.dokka.links.withClass
+import org.jetbrains.dokka.model.AnnotationParameterValue
+import org.jetbrains.dokka.model.Annotations
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DObject
@@ -31,12 +35,17 @@ import org.jetbrains.dokka.model.DPackage
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.DTypeAlias
+import org.jetbrains.dokka.model.Documentable
+import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.KotlinVisibility
+import org.jetbrains.dokka.model.StringValue
 import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.P
 import org.jetbrains.dokka.model.doc.Text
+import org.jetbrains.dokka.model.properties.ExtraProperty
+import org.jetbrains.dokka.model.properties.PropertyContainer
 import org.jetbrains.dokka.utilities.DokkaLogger
 
 class SystemLibVisitor(
@@ -68,7 +77,7 @@ class SystemLibVisitor(
         val properties = namespaceMembers.filterIsInstance<L_NamespaceMember_Property>()
                 .visitProperties(dri)
         val alias = namespaceMembers.filterIsInstance<L_NamespaceMember_Alias>()
-                //.visitFunctions(dri)
+                .visitAliases(dri)
         val namespaces = module.lModule.namespace.getAllDefs().filterIsInstance<L_NamespaceMember_Namespace>()
                 .filterNot { blacklistedNamespaces.contains(it.simpleName.str) }
                 .visitNamespaces(dri)
@@ -79,12 +88,12 @@ class SystemLibVisitor(
                 documentation = mapOf(sourceSet to doc),
                 sourceSets = setOf(sourceSet),
                 // Global constants
-                properties = properties,
+                properties = properties + alias.filterIsInstance<DProperty>(),
                 // Entities/Structs/Objects
                 classlikes = types,
                 typealiases = listOf(),
                 // Functions, queries, operations
-                functions = functions
+                functions = functions + alias.filterIsInstance<DFunction>()
         )
         return namespaces + basePackage
     }
@@ -167,9 +176,23 @@ class SystemLibVisitor(
         )
     }
 
+    private fun <R : Documentable> L_NamespaceMember.visit(parent: DRI, extraProperty: ExtraProperty<DFunction>?): R {
+        return when (this) {
+            is L_NamespaceMember_Type -> visit(parent) as R
+            is L_NamespaceMember_Function -> visit(parent, extraProperty) as R
+            else -> TODO()
+        }
+    }
+
+    private fun List<L_NamespaceMember_Alias>.visitAliases(parent: DRI): List<Documentable> = map { it.visit(parent) }
+    private fun L_NamespaceMember_Alias.visit(parent: DRI): Documentable {
+        val dri = parent.withClass("alias")
+        return this.finalTargetMember.visit(dri, IsAlias)
+    }
+
     private fun List<L_NamespaceMember_Function>.visitFunctions(parent: DRI) = map { it.visit(parent) }
 
-    private fun L_NamespaceMember_Function.visit(parent: DRI): DFunction {
+    private fun L_NamespaceMember_Function.visit(parent: DRI, extraProperty: ExtraProperty<DFunction>? = null): DFunction {
         val dri = parent.withClass(simpleName.str).copy(callable = Callable(
                 name = simpleName.str,
                 params = List(function.header.params.size) { index -> TypeParam(listOf()) }))
@@ -186,9 +209,12 @@ class SystemLibVisitor(
                 type = TypeParameter(parent.copy(classNames = function.header.resultType.strMsg()), function.header.resultType.strMsg()), // Return type
                 sourceSets = setOf(sourceSet),
                 generics = listOf(),
-                sources = mapOf(sourceSet to NULL_DESCRIPTOR),
-                documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
-                modifier = mapOf()
+                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
+                documentation = docSymbol.toDocumentationNode().toSourceSetDependent(),
+                modifier = mapOf(),
+                extra = PropertyContainer.withAll(
+                       takeIf { extraProperty != null }?.let { extraProperty }
+                )
         )
     }
 
@@ -198,7 +224,8 @@ class SystemLibVisitor(
                 dri = dri,
                 name = name.str,
                 documentation = mapOf(
-                        sourceSet to DocumentationNode(listOf(Description(P(listOf(Text(docSymbol.comment?.description ?: "Parameter $name"))))))
+                        sourceSet to DocumentationNode(listOf(Description(P(listOf(Text(docSymbol.comment?.description
+                                ?: "Parameter $name"))))))
                 ),
                 // Adds a link of the type to the definition
                 type = TypeParameter(dri = DRI("rell", type.toString()), name = this.type.toString()),
@@ -218,10 +245,10 @@ class SystemLibVisitor(
                 dri = dri,
                 name = simpleName.str,
                 isExpectActual = false,
-                documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
+                documentation = docSymbol.toDocumentationNode().toSourceSetDependent(),
                 expectPresentInSet = null,
                 sourceSets = setOf(sourceSet),
-                sources = mapOf(sourceSet to NULL_DESCRIPTOR),
+                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
                 type = TypeParameter(dri = DRI(parent.packageName, type), name = type),
                 generics = listOf(),
                 modifier = mapOf(),
@@ -240,10 +267,10 @@ class SystemLibVisitor(
                 dri = dri,
                 name = simpleName.str,
                 isExpectActual = false,
-                documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
+                documentation = docSymbol.toDocumentationNode().toSourceSetDependent(),
                 expectPresentInSet = null,
                 sourceSets = setOf(sourceSet),
-                sources = mapOf(sourceSet to NULL_DESCRIPTOR),
+                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
                 type = TypeParameter(dri = DRI(parent.packageName, type), name = type),
                 generics = listOf(),
                 modifier = mapOf(),
@@ -253,5 +280,7 @@ class SystemLibVisitor(
                 getter = null,
         )
     }
+
+    private fun <T> T.toSourceSetDependent() = if (this != null) mapOf(sourceSet to this) else mapOf()
 }
 
