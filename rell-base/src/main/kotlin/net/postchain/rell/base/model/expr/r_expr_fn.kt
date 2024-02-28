@@ -7,6 +7,7 @@ package net.postchain.rell.base.model.expr
 import net.postchain.rell.base.model.R_FilePos
 import net.postchain.rell.base.model.R_SysFunction
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
 import net.postchain.rell.base.utils.LazyString

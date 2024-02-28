@@ -20,6 +20,8 @@ import net.postchain.rell.base.model.R_GtvCompatibility
 import net.postchain.rell.base.model.R_TupleType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_VirtualMapType
+import net.postchain.rell.base.model.Rt_NullValue
+import net.postchain.rell.base.model.Rt_TupleValue
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.runtime.utils.toGtv

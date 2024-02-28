@@ -11,6 +11,8 @@ import net.postchain.rell.base.lmodel.dsl.Ld_FunctionMetaBodyDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_LibSimpleType
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.Rt_FunctionValue
+import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.immListOf

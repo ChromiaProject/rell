@@ -11,7 +11,7 @@ import net.postchain.rell.base.lib.type.R_DecimalType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.lib.type.Rt_BooleanValue
 import net.postchain.rell.base.runtime.Rt_CallFrame
-import net.postchain.rell.base.runtime.Rt_NullValue
+import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.CommonUtils
 

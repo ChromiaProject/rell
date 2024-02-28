@@ -22,7 +22,7 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.runtime.Rt_ObjectValue
+import net.postchain.rell.base.model.Rt_ObjectValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf

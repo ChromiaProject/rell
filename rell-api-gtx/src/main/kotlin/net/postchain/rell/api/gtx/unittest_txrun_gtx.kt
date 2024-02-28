@@ -32,6 +32,7 @@ import net.postchain.rell.base.lib.test.Rt_TestBlockValue
 import net.postchain.rell.base.lib.type.Rt_GtvValue
 import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.Rt_TupleValue
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.gtx.PostchainBaseUtils

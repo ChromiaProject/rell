@@ -12,7 +12,7 @@ import net.postchain.rell.base.model.R_StructType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.lib.type.Rt_ByteArrayValue
 import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.runtime.Rt_StructValue
+import net.postchain.rell.base.model.Rt_StructValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.BytesKeyPair

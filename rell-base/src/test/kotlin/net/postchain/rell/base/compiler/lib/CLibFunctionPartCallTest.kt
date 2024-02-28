@@ -10,7 +10,7 @@ import net.postchain.rell.base.lib.type.R_TextType
 import net.postchain.rell.base.model.R_TupleType
 import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.lib.type.Rt_TextValue
-import net.postchain.rell.base.runtime.Rt_TupleValue
+import net.postchain.rell.base.model.Rt_TupleValue
 import org.junit.Test
 
 class CLibFunctionPartCallTest: BaseCLibTest() {

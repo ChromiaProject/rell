@@ -9,6 +9,7 @@ import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.compiler.vexpr.V_ConstantValueEvalContext
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lib.type.*
+import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.doc.*
 

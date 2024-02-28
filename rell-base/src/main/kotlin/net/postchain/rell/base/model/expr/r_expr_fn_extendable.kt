@@ -12,6 +12,7 @@ import net.postchain.rell.base.lib.type.R_MapType
 import net.postchain.rell.base.lib.type.Rt_MapValue
 import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.toImmList

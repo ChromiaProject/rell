@@ -17,7 +17,7 @@ import net.postchain.rell.base.compiler.vexpr.V_WhenExpr
 import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.lib.type.Rt_BooleanValue
-import net.postchain.rell.base.runtime.Rt_NullValue
+import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.immSetOf

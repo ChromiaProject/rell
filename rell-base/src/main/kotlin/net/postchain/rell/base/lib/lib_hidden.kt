@@ -13,7 +13,7 @@ import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.lib.type.R_TextType
 import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.runtime.Rt_NullValue
+import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
 import net.postchain.rell.base.utils.LazyPosString

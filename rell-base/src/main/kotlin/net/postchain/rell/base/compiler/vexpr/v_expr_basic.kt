@@ -16,8 +16,8 @@ import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_CallFrame
-import net.postchain.rell.base.runtime.Rt_StructValue
-import net.postchain.rell.base.runtime.Rt_TupleValue
+import net.postchain.rell.base.model.Rt_StructValue
+import net.postchain.rell.base.model.Rt_TupleValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immSetOf
