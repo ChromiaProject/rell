@@ -1,8 +1,8 @@
 package com.chromia.rell.dokka
 
 import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
-import kotlin.test.Test
-import kotlin.test.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Test
 
 class RellDokkaPluginTest : BaseAbstractTest() {
     private val configuration = dokkaConfiguration {

@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
 plugins {
     kotlin("jvm") version "1.9.10"
     id("org.jetbrains.dokka") version "1.9.10" // Used to create a javadoc jar
@@ -36,7 +38,8 @@ dependencies {
 
     implementation("com.github.ajalt.clikt:clikt:3.5.2")
 
-    testImplementation(kotlin("test"))
+    //testImplementation(kotlin("test"))
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:1.9.10")
     testImplementation("com.willowtreeapps.assertk:assertk:0.28.0")
     testImplementation("org.jetbrains.dokka:dokka-test-api:$dokkaVersion")
     testImplementation("org.jetbrains.dokka:dokka-base-test-utils:$dokkaVersion")
@@ -61,6 +64,19 @@ val javadocJar by tasks.registering(Jar::class) {
 
 java {
     withSourcesJar()
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+tasks {
+    withType<Test> {
+        testLogging {
+            events("failed")
+            exceptionFormat = TestExceptionFormat.FULL
+        }
+    }
 }
 
 publishing {

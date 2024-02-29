@@ -1,6 +1,7 @@
 package com.chromia.rell.dokka.systemlib
 
 import com.chromia.rell.dokka.doc.toDocumentationNode
+import com.chromia.rell.dokka.dri.toDRI
 import com.chromia.rell.dokka.model.IsPure
 import com.chromia.rell.dokka.model.IsStatic
 import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
@@ -116,7 +117,7 @@ class TypeDefMemberVisitor(
                 visibility = mapOf(),
                 receiver = null,
                 isExpectActual = false,
-                type = TypeParameter(parent.copy(classNames = function.header.resultType.strMsg()), function.header.resultType.strMsg()), // Return type
+                type = TypeParameter(function.header.resultType.toDRI(), function.header.resultType.strMsg()), // Return type
                 sourceSets = setOf(sourceSet),
                 generics = listOf(),
                 sources = mapOf(sourceSet to NULL_DESCRIPTOR),
