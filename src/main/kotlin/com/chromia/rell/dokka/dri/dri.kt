@@ -1,0 +1,44 @@
+package com.chromia.rell.dokka.dri
+
+import net.postchain.rell.base.mtype.M_Type
+import net.postchain.rell.base.mtype.M_Type_Generic
+import net.postchain.rell.base.mtype.M_Type_Nullable
+import org.jetbrains.dokka.links.DRI
+import org.jetbrains.dokka.model.Bound
+import org.jetbrains.dokka.model.Dynamic
+import org.jetbrains.dokka.model.GenericTypeConstructor
+import org.jetbrains.dokka.model.Nullable
+import org.jetbrains.dokka.model.TypeParameter
+
+// This works only for types within the same module..
+//fun DRI.Companion.fromMType(mType: M_Type) = DRI(mType., mType.toString())
+
+fun M_Type.toDRI(): DRI {
+
+    return when (this) {
+        is M_Type_Generic -> {
+            val name = genericType.name.substringAfterLast(".")
+            val packageName = if (genericType.name.contains(".")) genericType.name.substringBeforeLast(".") else "<root>"
+            //val packageName = if (genericType.name.startsWith())
+            DRI(packageName, name)
+        }
+        else -> DRI("<root>", this.toString())
+    }
+
+}
+
+fun M_Type.toBound(): Bound {
+    return when (this) {
+        is M_Type_Nullable -> Nullable(valueType.toBound())
+        is M_Type_Generic -> {
+            GenericTypeConstructor(
+                    dri = toDRI(),
+                    presentableName = this.genericType.name,
+                    projections = this.typeArgs.map { it.canonicalOutType().toBound() }
+            )
+        }
+        else -> TypeParameter(toDRI(), this.strCode())
+    }
+}
+
+val DriOfUnit = DRI("<root>", "unit")
