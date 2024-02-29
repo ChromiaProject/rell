@@ -18,6 +18,7 @@ import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.Dynamic
+import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.IsVar
 import org.jetbrains.dokka.model.Nullable
@@ -118,9 +119,9 @@ class RellSignatureProvider internal constructor(
                 }
 
                 punctuation(")")
-                if (!d.isOperation() && d.type is TypeParameter) {
+                if (!d.isOperation()) {
                     operator(": ")
-                    signatureForReceiver(d.type as TypeParameter)
+                    signatureForProjection(d.type)
                 }
             }
         }
@@ -146,6 +147,15 @@ class RellSignatureProvider internal constructor(
                 group(styles = emptySet()) {
                     link(p.presentableName!!, p.dri)
 
+                    list(p.projections, prefix = "<", suffix = ">", separatorStyles = mainStyles + TokenStyle.Punctuation,
+                            surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
+                        signatureForProjection(it, showFullyQualifiedName)
+                    }
+                }
+            }
+            is FunctionalTypeConstructor -> {
+                group(styles = emptySet()) {
+                    link(p.presentableName!!, p.dri)
                     list(p.projections, prefix = "<", suffix = ">", separatorStyles = mainStyles + TokenStyle.Punctuation,
                             surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
                         signatureForProjection(it, showFullyQualifiedName)

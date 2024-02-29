@@ -26,11 +26,12 @@ data class RellConfig(val name: String, val modules: List<String>?, val system: 
         val SYSTEM_SOURCE_SETS = SystemLibSourceSet.entries.map { it.sourceSet }
     }
 
-    enum class SystemLibSourceSet(val scope: String, val sourceSetName: String, val module: C_LibModule) {
+    enum class SystemLibSourceSet(val scope: String, val sourceSetName: String, val module: C_LibModule, val dependent: Set<SystemLibSourceSet> = setOf()) {
         MAIN("<root>", "rell", Lib_Rell.MODULE),
-        TEST("rell.test", "test", Lib_RellTest.MODULE);
+        TEST("rell.test", "test", Lib_RellTest.MODULE, setOf(MAIN));
 
-        val sourceSet = DokkaSourceSetImpl(sourceSetID = DokkaSourceSetID(scope, sourceSetName), displayName = sourceSetName)
+        val sourceSetId = DokkaSourceSetID(scope, sourceSetName)
+        val sourceSet = DokkaSourceSetImpl(sourceSetID = sourceSetId, displayName = sourceSetName, dependentSourceSets = dependent.map { it.sourceSetId }.toSet())
 
         companion object {
             fun findModule(sourceSet: DokkaConfiguration.DokkaSourceSet) = entries.find { sourceSet == it.sourceSet }?.module
