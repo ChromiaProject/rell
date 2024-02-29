@@ -1,8 +1,11 @@
 package com.chromia.rell.dokka.signature
 
+import com.chromia.rell.dokka.dri.DriOfUnit
 import com.chromia.rell.dokka.model.IsAlias
 import com.chromia.rell.dokka.model.IsPure
 import com.chromia.rell.dokka.model.IsStatic
+import com.chromia.rell.dokka.model.IsVararg
+import com.chromia.rell.dokka.model.IsZeroOne
 import com.chromia.rell.dokka.model.isOperation
 import com.chromia.rell.dokka.model.isQuery
 import org.jetbrains.dokka.base.DokkaBase
@@ -10,14 +13,14 @@ import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.parametersBlock
 import org.jetbrains.dokka.base.signatures.SignatureProvider
 import org.jetbrains.dokka.base.transformers.pages.comments.CommentsToContentConverter
 import org.jetbrains.dokka.base.translators.documentables.PageContentBuilder
-import org.jetbrains.dokka.links.DriOfUnit
-import org.jetbrains.dokka.model.Annotations
 import org.jetbrains.dokka.model.DFunction
+import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
-import org.jetbrains.dokka.model.DTypeAlias
 import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.Dynamic
+import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.IsVar
+import org.jetbrains.dokka.model.Nullable
 import org.jetbrains.dokka.model.Projection
 import org.jetbrains.dokka.model.TypeConstructor
 import org.jetbrains.dokka.model.TypeParameter
@@ -25,6 +28,7 @@ import org.jetbrains.dokka.model.Void
 import org.jetbrains.dokka.pages.ContentKind
 import org.jetbrains.dokka.pages.ContentNode
 import org.jetbrains.dokka.pages.TextStyle
+import org.jetbrains.dokka.pages.TokenStyle
 import org.jetbrains.dokka.plugability.DokkaContext
 import org.jetbrains.dokka.plugability.plugin
 import org.jetbrains.dokka.plugability.querySingle
@@ -33,13 +37,14 @@ import org.jetbrains.dokka.utilities.DokkaLogger
 class RellSignatureProvider internal constructor(
         ctcc: CommentsToContentConverter,
         logger: DokkaLogger
-): SignatureProvider {
+) : SignatureProvider {
     private val contentBuilder = PageContentBuilder(ctcc, this, logger)
 
     constructor(context: DokkaContext) : this(
             context.plugin<DokkaBase>().querySingle { commentsToContentConverter },
             context.logger
     )
+
     override fun signature(documentable: Documentable): List<ContentNode> {
         return when (documentable) {
             is DFunction -> functionSignature(documentable)
@@ -78,6 +83,14 @@ class RellSignatureProvider internal constructor(
         return this.extra[IsStatic] != null
     }
 
+    private fun DParameter.isVararg(): Boolean {
+        return this.extra[IsVararg] != null
+    }
+
+    private fun DParameter.isZeroOne(): Boolean {
+        return this.extra[IsZeroOne] != null
+    }
+
     private fun functionSignature(d: DFunction): List<ContentNode> {
         return d.sourceSets.map { sourceSet ->
             contentBuilder.contentFor(d, ContentKind.Symbol, setOf(TextStyle.Monospace), sourceSets = setOf(sourceSet)) {
@@ -94,11 +107,14 @@ class RellSignatureProvider internal constructor(
 
                 punctuation("(")
                 if (d.parameters.isNotEmpty()) {
-                   parametersBlock(d) { p ->
-                       text(p.name!!)
-                       operator(": ")
-                       signatureForProjection(p.type)
-                   }
+                    parametersBlock(d) { p ->
+                        if (p.isZeroOne()) punctuation("[")
+                        text(p.name!!)
+                        operator(": ")
+                        signatureForProjection(p.type)
+                        if (p.isZeroOne()) punctuation("]")
+                        if (p.isVararg()) punctuation("...")
+                    }
                 }
 
                 punctuation(")")
@@ -117,12 +133,32 @@ class RellSignatureProvider internal constructor(
     private fun PageContentBuilder.DocumentableContentBuilder.signatureForProjection(
             p: Projection, showFullyQualifiedName: Boolean = false
     ) {
-        return when (p) {
+        when (p) {
+
             is TypeParameter -> {
                 link(p.name, p.dri)
             }
+
             is Dynamic -> {
             }
+
+            is GenericTypeConstructor -> {
+                group(styles = emptySet()) {
+                    link(p.presentableName!!, p.dri)
+
+                    list(p.projections, prefix = "<", suffix = ">", separatorStyles = mainStyles + TokenStyle.Punctuation,
+                            surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
+                        signatureForProjection(it, showFullyQualifiedName)
+                    }
+                }
+            }
+
+            is Nullable -> {
+                signatureForProjection(p.inner)
+                operator("?")
+            }
+
+            is Void -> link("unit", DriOfUnit)
             else -> TODO(p.toString())
         }
     }

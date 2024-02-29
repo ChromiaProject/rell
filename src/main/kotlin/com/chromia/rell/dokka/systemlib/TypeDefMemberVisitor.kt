@@ -1,9 +1,12 @@
 package com.chromia.rell.dokka.systemlib
 
 import com.chromia.rell.dokka.doc.toDocumentationNode
+import com.chromia.rell.dokka.dri.toBound
 import com.chromia.rell.dokka.dri.toDRI
 import com.chromia.rell.dokka.model.IsPure
 import com.chromia.rell.dokka.model.IsStatic
+import com.chromia.rell.dokka.model.IsVararg
+import com.chromia.rell.dokka.model.IsZeroOne
 import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import net.postchain.rell.base.lmodel.L_Constructor
 import net.postchain.rell.base.lmodel.L_FunctionParam
@@ -12,6 +15,7 @@ import net.postchain.rell.base.lmodel.L_TypeDefMember_Constructor
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Function
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Property
 import net.postchain.rell.base.lmodel.L_TypeDefMember_SpecialConstructor
+import net.postchain.rell.base.mtype.M_ParamArity
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.*
 import org.jetbrains.dokka.links.DRI
@@ -117,7 +121,7 @@ class TypeDefMemberVisitor(
                 visibility = mapOf(),
                 receiver = null,
                 isExpectActual = false,
-                type = TypeParameter(function.header.resultType.toDRI(), function.header.resultType.strMsg()), // Return type
+                type = function.header.resultType.toBound(), // Return type
                 sourceSets = setOf(sourceSet),
                 generics = listOf(),
                 sources = mapOf(sourceSet to NULL_DESCRIPTOR),
@@ -140,9 +144,13 @@ class TypeDefMemberVisitor(
                                 ?: "Parameter $name"))))))
                 ),
                 // Adds a link of the type to the definition
-                type = TypeParameter(dri = DRI(parent.packageName, type.toString()), name = this.type.toString()),
+                type = type.toBound(),
                 sourceSets = setOf(sourceSet),
-                expectPresentInSet = null
+                expectPresentInSet = null,
+                extra = PropertyContainer.withAll(
+                        takeIf { arity == M_ParamArity.ZERO_ONE }?.let { IsZeroOne },
+                        takeIf { arity.many }?.let { IsVararg }
+                )
         )
     }
 

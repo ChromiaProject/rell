@@ -1,8 +1,10 @@
 package com.chromia.rell.dokka.systemlib
 
 import com.chromia.rell.dokka.doc.toDocumentationNode
+import com.chromia.rell.dokka.dri.toBound
 import com.chromia.rell.dokka.dri.toDRI
 import com.chromia.rell.dokka.model.IsAlias
+import com.chromia.rell.dokka.model.IsVararg
 import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import com.intellij.util.containers.ContainerUtil.filterIsInstance
 import net.postchain.rell.base.compiler.base.lib.C_LibModule
@@ -207,7 +209,7 @@ class SystemLibVisitor(
                 visibility = mapOf(),
                 receiver = null,
                 isExpectActual = false,
-                type = TypeParameter(DRI("<root>", classNames = function.header.resultType.strMsg()), function.header.resultType.strMsg()), // Return type
+                type = function.header.resultType.toBound(),
                 sourceSets = setOf(sourceSet),
                 generics = listOf(),
                 sources = NULL_DESCRIPTOR.toSourceSetDependent(),
@@ -229,9 +231,12 @@ class SystemLibVisitor(
                                 ?: "Parameter $name"))))))
                 ),
                 // Adds a link of the type to the definition
-                type = TypeParameter(dri = type.toDRI(), name = this.type.toString()),
+                type = type.toBound(),
                 sourceSets = setOf(sourceSet),
-                expectPresentInSet = null
+                expectPresentInSet = null,
+                extra = PropertyContainer.withAll(
+                        takeIf { arity.many }?.let { IsVararg }
+                )
         )
     }
 
