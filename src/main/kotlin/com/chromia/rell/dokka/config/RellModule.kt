@@ -9,12 +9,12 @@ import org.jetbrains.dokka.DokkaSourceSetImpl
 import org.jetbrains.dokka.links.DRI
 import java.io.File
 
-enum class RellModule(scopeId: String, private val sourceSetName: String, val module: C_LibModule, private vararg val dependent: RellModule) {
+enum class RellModule(packageName: String, private val sourceSetName: String, val module: C_LibModule, private vararg val dependent: RellModule) {
     MAIN("root", "rell", Lib_Rell.MODULE),
     TEST("rell.test", "test", Lib_RellTest.MODULE, MAIN);
 
-    val sourceSetId = DokkaSourceSetID(scopeId, sourceSetName)
-    val dri = DRI(scopeId)
+    val sourceSetId = DokkaSourceSetID("rell", sourceSetName)
+    val dri = DRI(packageName)
 
     fun sourceSet(includes: List<File>) = DokkaSourceSetImpl(
             displayName = sourceSetName,
