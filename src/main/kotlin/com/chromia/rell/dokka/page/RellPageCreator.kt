@@ -79,7 +79,7 @@ class RellPageCreator(
     override fun contentForPackage(p: DPackage): ContentGroup {
         return contentBuilder.contentFor(p) {
             group(kind = ContentKind.Cover) {
-                cover("Module-level declarations")
+                cover( if (rellConfig?.system == true) "Namespace definitions" else "Module-level declarations")
                 if (contentForDescription(p).isNotEmpty()) {
                     sourceSetDependentHint(
                             dri = p.dri,
