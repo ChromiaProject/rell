@@ -16,7 +16,7 @@ import org.jetbrains.dokka.model.TypeParameter
 //fun DRI.Companion.fromMType(mType: M_Type) = DRI(mType., mType.toString())
 
 fun R_QualifiedName.toDRI(): DRI {
-    val packageName = if (str().contains(".")) str().substringBeforeLast(".") else "<root>"
+    val packageName = if (str().contains(".")) str().substringBeforeLast(".") else "[root]"
     val className = str().substringAfterLast(".")
     return DRI(packageName = packageName, classNames = className)
 }
@@ -26,11 +26,11 @@ fun M_Type.toDRI(): DRI {
     return when (this) {
         is M_Type_Generic -> {
             val name = genericType.name.substringAfterLast(".")
-            val packageName = if (genericType.name.contains(".")) genericType.name.substringBeforeLast(".") else "<root>"
+            val packageName = if (genericType.name.contains(".")) genericType.name.substringBeforeLast(".") else "[root]"
             //val packageName = if (genericType.name.startsWith())
             DRI(packageName, name)
         }
-        else -> DRI("<root>", this.toString())
+        else -> DRI("[root]", this.toString())
     }
 
 }
@@ -49,8 +49,8 @@ fun M_Type.toBound(): Bound {
     }
 }
 
-val DriOfUnit = DRI("<root>", "unit")
-val DriOfRoot = DRI("<root>")
+val DriOfUnit = DRI("[root]", "unit")
+val DriOfRoot = DRI("[root]")
 
 
 fun DRI.withAlias() = copy(extra = DRIExtraContainer().also { it[AliasDRIExtra] = AliasDRIExtra }.encode())

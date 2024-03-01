@@ -35,7 +35,7 @@ class SystemLibTestTest : BaseAbstractTest() {
     fun `Aliases are properly named`() {
         testFromData(configuration, cleanupOutput = false) {
             documentablesTransformationStage = { module ->
-                val rellPackage = module.packages.find { it.name == "<root>" }
+                val rellPackage = module.packages.find { it.name == "[root]" }
                 assertNotNull(rellPackage)
                 val requireAlias = rellPackage!!.functions.find { it.name == "requireNotEmpty" }
                 assertNotNull(requireAlias)
@@ -49,7 +49,7 @@ class SystemLibTestTest : BaseAbstractTest() {
     fun `Test aliases are found in root`() {
         testFromData(configuration, cleanupOutput = false) {
             documentablesTransformationStage = { module ->
-                val rellPackage = module.packages.find { it.name == "<root>" }
+                val rellPackage = module.packages.find { it.name == "[root]" }
                 assertNotNull(rellPackage)
                 val assertAlias = rellPackage!!.functions.find { it.name == "assert_equals" }
                 assertNotNull(assertAlias)

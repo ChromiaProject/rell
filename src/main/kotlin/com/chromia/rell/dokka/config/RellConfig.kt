@@ -27,7 +27,7 @@ data class RellConfig(val name: String, val modules: List<String>?, val system: 
     }
 
     enum class SystemLibSourceSet(val scope: String, val sourceSetName: String, val module: C_LibModule, val dependent: Set<SystemLibSourceSet> = setOf()) {
-        MAIN("<root>", "rell", Lib_Rell.MODULE),
+        MAIN("[root]", "rell", Lib_Rell.MODULE),
         TEST("rell.test", "test", Lib_RellTest.MODULE, setOf(MAIN));
 
         val sourceSetId = DokkaSourceSetID(scope, sourceSetName)
