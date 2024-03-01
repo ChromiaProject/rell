@@ -256,49 +256,9 @@ class SystemLibVisitor(
     private fun List<L_NamespaceMember_Property>.visitProperties(parent: DRI): List<DProperty> = map { it.visit(parent) }
     private fun List<L_NamespaceMember_Constant>.visitConstants(parent: DRI): List<DProperty> = map { it.visit(parent) }
 
-    private fun L_NamespaceMember_Property.visit(parent: DRI): DProperty {
-        val dri = parent.withClass(simpleName.str)
-        val type = this.property.type.toString()
+    private fun L_NamespaceMember_Property.visit(parent: DRI) = makeDProperty(sourceSet, parent, docSymbol, simpleName.str, property.type)
 
-        return DProperty(
-                dri = dri,
-                name = simpleName.str,
-                isExpectActual = false,
-                documentation = docSymbol.toDocumentationNode().toSourceSetDependent(),
-                expectPresentInSet = null,
-                sourceSets = setOf(sourceSet),
-                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
-                type = TypeParameter(dri = DRI(parent.packageName, type), name = type),
-                generics = listOf(),
-                modifier = mapOf(),
-                visibility = mapOf(),
-                receiver = null,
-                setter = null,
-                getter = null,
-        )
-    }
-
-    private fun L_NamespaceMember_Constant.visit(parent: DRI): DProperty {
-        val dri = parent.withClass(simpleName.str)
-        val type = this.constant.type.toString()
-
-        return DProperty(
-                dri = dri,
-                name = simpleName.str,
-                isExpectActual = false,
-                documentation = docSymbol.toDocumentationNode().toSourceSetDependent(),
-                expectPresentInSet = null,
-                sourceSets = setOf(sourceSet),
-                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
-                type = TypeParameter(dri = DRI(parent.packageName, type), name = type),
-                generics = listOf(),
-                modifier = mapOf(),
-                visibility = mapOf(),
-                receiver = null,
-                setter = null,
-                getter = null,
-        )
-    }
+    private fun L_NamespaceMember_Constant.visit(parent: DRI) = makeDProperty(sourceSet, parent, docSymbol, simpleName.str, constant.type)
 
     private fun <T> T.toSourceSetDependent() = if (this != null) mapOf(sourceSet to this) else mapOf()
 }

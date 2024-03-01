@@ -154,47 +154,9 @@ class TypeDefMemberVisitor(
         )
     }
 
-    private fun L_TypeDefMember_Property.visit(parent: DRI): DProperty {
-        val dri = parent.withClass(simpleName.str)
-        val type = this.property.type.toString()
+    private fun L_TypeDefMember_Property.visit(parent: DRI)
+        = makeDProperty(sourceSet, parent, docSymbol, simpleName.str, property.type)
 
-        return DProperty(
-                dri = dri,
-                name = simpleName.str,
-                isExpectActual = false,
-                documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
-                expectPresentInSet = null,
-                sourceSets = setOf(sourceSet),
-                sources = mapOf(sourceSet to NULL_DESCRIPTOR),
-                type = TypeParameter(dri = DRI(parent.packageName, type), name = type),
-                generics = listOf(),
-                modifier = mapOf(),
-                visibility = mapOf(),
-                receiver = null,
-                setter = null,
-                getter = null,
-        )
-    }
-
-    private fun L_TypeDefMember_Constant.visit(parent: DRI): DProperty {
-        val dri = parent.withClass(constant.simpleName.str)
-        val type = this.constant.type.toString()
-
-        return DProperty(
-                dri = dri,
-                name = constant.simpleName.str,
-                isExpectActual = false,
-                documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
-                expectPresentInSet = null,
-                sourceSets = setOf(sourceSet),
-                sources = mapOf(sourceSet to NULL_DESCRIPTOR),
-                type = TypeParameter(dri = DRI(parent.packageName, type), name = type),
-                generics = listOf(),
-                modifier = mapOf(),
-                visibility = mapOf(),
-                receiver = null,
-                setter = null,
-                getter = null,
-        )
-    }
+    private fun L_TypeDefMember_Constant.visit(parent: DRI)
+        = makeDProperty(sourceSet, parent, docSymbol, constant.simpleName.str, constant.type)
 }

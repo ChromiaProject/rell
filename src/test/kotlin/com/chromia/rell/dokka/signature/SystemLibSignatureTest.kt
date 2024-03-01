@@ -137,4 +137,18 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             }
         }
     }
+
+    @Test
+    fun `Links are worknig on return types of properties`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("-rell/rell.test/op/args.html").firstSignature()
+                        .match(
+                                "val ", A("args"), ": ",
+                                A("list"), "<", A("gtv"), ">",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
 }
