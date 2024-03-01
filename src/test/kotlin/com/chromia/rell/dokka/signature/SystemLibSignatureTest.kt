@@ -181,4 +181,20 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             }
         }
     }
+
+    @Test
+    fun `function parameters are displayed correctly`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("-rell/root/try_call.html").firstSignature()
+                        .match(
+                                "function ", A("try_call"), "(",
+                                Parameters(
+                                        Parameter("fn: () -> T, "), Parameter("default: T")
+                                ), "): T",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
 }

@@ -3,6 +3,7 @@ package com.chromia.rell.dokka.model
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
+import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.properties.ExtraProperty
 
 object IsStatic : ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsStatic> {
@@ -24,4 +25,8 @@ object IsVararg : ExtraProperty<DParameter>, ExtraProperty.Key<DParameter, IsVar
 
 object IsZeroOne: ExtraProperty<DParameter>, ExtraProperty.Key<DParameter, IsZeroOne> {
     override val key: ExtraProperty.Key<DParameter, *> = this
+}
+
+object IsTuple: ExtraProperty<GenericTypeConstructor>, ExtraProperty.Key<GenericTypeConstructor, IsTuple> {
+    override val key: ExtraProperty.Key<GenericTypeConstructor, *> = this
 }

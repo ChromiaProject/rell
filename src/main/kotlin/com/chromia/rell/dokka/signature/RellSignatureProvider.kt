@@ -5,6 +5,7 @@ import com.chromia.rell.dokka.dri.isAlias
 import com.chromia.rell.dokka.model.IsAlias
 import com.chromia.rell.dokka.model.IsPure
 import com.chromia.rell.dokka.model.IsStatic
+import com.chromia.rell.dokka.model.IsTuple
 import com.chromia.rell.dokka.model.IsVararg
 import com.chromia.rell.dokka.model.IsZeroOne
 import com.chromia.rell.dokka.model.isOperation
@@ -26,6 +27,7 @@ import org.jetbrains.dokka.model.Nullable
 import org.jetbrains.dokka.model.Projection
 import org.jetbrains.dokka.model.TypeConstructor
 import org.jetbrains.dokka.model.TypeParameter
+import org.jetbrains.dokka.model.UnresolvedBound
 import org.jetbrains.dokka.model.Void
 import org.jetbrains.dokka.pages.ContentKind
 import org.jetbrains.dokka.pages.ContentNode
@@ -92,6 +94,8 @@ class RellSignatureProvider internal constructor(
         return this.extra[IsZeroOne] != null
     }
 
+    private fun GenericTypeConstructor.isTuple(): Boolean = this.extra[IsTuple] != null
+
     private fun functionSignature(d: DFunction): List<ContentNode> {
         return d.sourceSets.map { sourceSet ->
             contentBuilder.contentFor(d, ContentKind.Symbol, setOf(TextStyle.Monospace), sourceSets = setOf(sourceSet)) {
@@ -136,6 +140,10 @@ class RellSignatureProvider internal constructor(
     ) {
         when (p) {
 
+            is UnresolvedBound -> {
+                text(p.name)
+            }
+
             is TypeParameter -> {
                 p.presentableName?.let { text("$it: ") }
                 link(p.name, p.dri)
@@ -147,8 +155,13 @@ class RellSignatureProvider internal constructor(
             is GenericTypeConstructor -> {
                 group(styles = emptySet()) {
                     p.presentableName?.let { link(it, p.dri) }
-                    list(p.projections, prefix = "<", suffix = ">", separatorStyles = mainStyles + TokenStyle.Punctuation,
-                            surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
+                    list(
+                            p.projections,
+                            prefix = if (p.isTuple()) "(" else "<",
+                            suffix = if (p.isTuple()) ")" else ">",
+                            separatorStyles = mainStyles + TokenStyle.Punctuation,
+                            surroundingCharactersStyle = mainStyles + TokenStyle.Operator)
+                    {
                         signatureForProjection(it, showFullyQualifiedName)
                     }
                 }
@@ -156,10 +169,13 @@ class RellSignatureProvider internal constructor(
 
             is FunctionalTypeConstructor -> {
                 group(styles = emptySet()) {
-                    list(p.projections, prefix = "(", suffix = ")", separatorStyles = mainStyles + TokenStyle.Punctuation,
+                    if (p.projections.size == 1) punctuation("()")
+                    list(p.projections.dropLast(1), prefix = "(", suffix = ")", separatorStyles = mainStyles + TokenStyle.Punctuation,
                             surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
                         signatureForProjection(it, showFullyQualifiedName)
                     }
+                operator(" -> ")
+                signatureForProjection(p.projections.last(), showFullyQualifiedName)
                 }
             }
 
