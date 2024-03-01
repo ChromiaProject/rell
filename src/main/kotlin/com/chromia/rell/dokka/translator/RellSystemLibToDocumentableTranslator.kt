@@ -2,7 +2,7 @@
 
 package com.chromia.rell.dokka.translator
 
-import com.chromia.rell.dokka.config.RellConfig
+import com.chromia.rell.dokka.config.RellModule
 import com.chromia.rell.dokka.systemlib.SystemLibVisitor
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.analysis.kotlin.descriptors.compiler.configuration.DescriptorDocumentableSource
@@ -15,7 +15,7 @@ import org.jetbrains.dokka.transformers.sources.SourceToDocumentableTranslator
 object RellSystemLibToDocumentableTranslator : SourceToDocumentableTranslator {
 
     override fun invoke(sourceSet: DokkaConfiguration.DokkaSourceSet, context: DokkaContext): DModule {
-        val module = RellConfig.SystemLibSourceSet.find(sourceSet)
+        val module = RellModule.find(sourceSet)
                 ?: throw IllegalArgumentException("Module not found for source set")
         return SystemLibVisitor(sourceSet, context.logger).run {
             DModule(

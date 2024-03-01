@@ -1,6 +1,7 @@
 package com.chromia.rell.dokka.cli
 
 import com.chromia.rell.dokka.config.RellConfig
+import com.chromia.rell.dokka.config.RellModule
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
@@ -31,7 +32,7 @@ class DokkaCommand : CliktCommand() {
 
     override fun run() {
         val rellConfig = if (system) RellConfig.SYSTEM else RellConfig(name, modules)
-        val sourceSets = if (system) RellConfig.SYSTEM_SOURCE_SETS.map { it.sourceSet(includes) } else listOf(DokkaSourceSetImpl(sourceRoots = setOf(source), sourceSetID = DokkaSourceSetID("main", "dapp")))
+        val sourceSets = if (system) RellModule.entries.map { it.sourceSet(includes) } else listOf(DokkaSourceSetImpl(sourceRoots = setOf(source), sourceSetID = DokkaSourceSetID("main", "dapp")))
         val dokkaBaseConf = PluginConfigurationImpl(
                 DokkaBase::class.qualifiedName!!,
                 DokkaConfiguration.SerializationFormat.JSON,

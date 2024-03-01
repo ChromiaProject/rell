@@ -1,6 +1,6 @@
 package com.chromia.rell.dokka.dri
 
-import com.chromia.rell.dokka.config.RellConfig
+import com.chromia.rell.dokka.config.RellModule
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_Type_Generic
@@ -15,10 +15,9 @@ import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.Nullable
 import org.jetbrains.dokka.model.TypeParameter
-import org.jetbrains.kotlin.library.metadata.KlibMetadataProtoBuf.className
 
 fun R_QualifiedName.toDRI(): DRI {
-    val packageName = if (parts.size > 1) str().substringBeforeLast(".") else RellConfig.SystemLibSourceSet.MAIN.dri.packageName
+    val packageName = if (parts.size > 1) str().substringBeforeLast(".") else RellModule.MAIN.dri.packageName
     val className = last.str
     return DRI(packageName = packageName, classNames = className)
 }
@@ -55,7 +54,7 @@ fun M_Type.toBound(presentableName: String? = null): Bound {
     }
 }
 
-val DriOfRoot = RellConfig.SystemLibSourceSet.MAIN.dri
+val DriOfRoot = RellModule.MAIN.dri
 val DriOfUnit = DriOfRoot.withClass("unit")
 
 

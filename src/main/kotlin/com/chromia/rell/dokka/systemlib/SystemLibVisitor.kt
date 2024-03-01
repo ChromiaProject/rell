@@ -1,6 +1,6 @@
 package com.chromia.rell.dokka.systemlib
 
-import com.chromia.rell.dokka.config.RellConfig
+import com.chromia.rell.dokka.config.RellModule
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.DriOfRoot
 import com.chromia.rell.dokka.dri.toBound
@@ -52,9 +52,9 @@ class SystemLibVisitor(
         val blacklistedNamespaces = listOf("")
     }
 
-    fun visitRellModule(rellSourceSet: RellConfig.SystemLibSourceSet): List<DPackage> {
-        val dri = rellSourceSet.dri
-        val module = rellSourceSet.module
+    fun visitRellModule(rellModule: RellModule): List<DPackage> {
+        val dri = rellModule.dri
+        val module = rellModule.module
 
         val doc = module.lModule.docSymbol.toDocumentationNode()
         val namespaceMembers = module.lModule.namespace.members
