@@ -66,7 +66,6 @@ class TypeDefMemberVisitor(
     }
 
     private fun L_TypeDefMember_SpecialConstructor.visit(parent: DRI): DFunction {
-        this.fn.paramCount()
         val dri = parent.copy(callable = Callable(docSymbol.symbolName.strCode(), params = List(this.fn.paramCount()?.max()
                 ?: 0) { TypeParam(listOf()) }))
 
@@ -76,19 +75,19 @@ class TypeDefMemberVisitor(
                 isConstructor = true,
                 parameters = fn.paramCount()?.map {
                     DParameter(
-                            dri = dri.copy(target = PointingToGenericParameters(it)),
-                            name = "...",
+                            dri = dri.copy(target = PointingToCallableParameters(it)),
+                            name = "arg",
                             documentation = mapOf(),
                             expectPresentInSet = null,
                             sourceSets = setOf(sourceSet),
-                            type = Dynamic
+                            type = TypeParameter(dri, "anything")
                     )
                 } ?: listOf(),
                 expectPresentInSet = null,
                 visibility = mapOf(),
                 receiver = null,
                 isExpectActual = false,
-                type = FunctionalTypeConstructor(dri, listOf(), presentableName = dri.classNames!!),
+                type = TypeParameter(dri.parent, dri.parent.classNames!!),
                 sourceSets = setOf(sourceSet),
                 generics = listOf(),
                 sources = mapOf(sourceSet to NULL_DESCRIPTOR),

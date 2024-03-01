@@ -53,7 +53,7 @@ fun M_Type.toBound(presentableName: String? = null): Bound {
                     projections = fieldTypes.mapIndexed { index, type -> type.toBound(fieldNames[index].value)} // TODO: Named tuples
             )
         }
-        else -> TypeParameter(toDRI(), presentableName ?: strCode())
+        else -> TypeParameter(toDRI(), presentableName ?: strCode(), presentableName ?: strCode())
     }
 }
 

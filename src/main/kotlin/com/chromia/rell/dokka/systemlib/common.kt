@@ -3,16 +3,15 @@ package com.chromia.rell.dokka.systemlib
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.toBound
 import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
-import net.postchain.rell.base.lmodel.L_Constant
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.utils.doc.DocSymbol
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.DRI
+import org.jetbrains.dokka.links.PointingToCallableParameters
 import org.jetbrains.dokka.links.withClass
+import org.jetbrains.dokka.model.Bound
+import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
-
-fun L_Constant.toDProperty(sourceSet: DokkaConfiguration.DokkaSourceSet, parent: DRI, docSymbol: DocSymbol) =
-        makeDProperty(sourceSet, parent, docSymbol, simpleName.str, type)
 
 fun makeDProperty(sourceSet: DokkaConfiguration.DokkaSourceSet, parent: DRI, docSymbol: DocSymbol, name: String, type: M_Type) =
         DProperty(
@@ -30,4 +29,20 @@ fun makeDProperty(sourceSet: DokkaConfiguration.DokkaSourceSet, parent: DRI, doc
                 receiver = null,
                 setter = null,
                 getter = null,
+        )
+
+fun makeDarameter(sourceSet: DokkaConfiguration.DokkaSourceSet,
+                  parent: DRI,
+                  docSymbol: DocSymbol?,
+                  name: String,
+                  type: Bound,
+                  index: Int,
+                  ) =
+        DParameter(
+                dri = parent.copy(target = PointingToCallableParameters(index)),
+                name = name,
+                documentation = docSymbol?.let { mapOf(sourceSet to docSymbol.toDocumentationNode()) } ?: mapOf(),
+                expectPresentInSet = null,
+                sourceSets = setOf(sourceSet),
+                type = type,
         )

@@ -151,4 +151,20 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             }
         }
     }
+
+    @Test
+    fun `Meta type (special) constructor does not look too ugly`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("-rell/rell/meta/meta.html").firstSignature()
+                        .match(
+                                "constructor(",
+                                Parameters(
+                                        Parameter("arg: ", A("anything"))
+                                ), "): ", A("meta"),
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
 }
