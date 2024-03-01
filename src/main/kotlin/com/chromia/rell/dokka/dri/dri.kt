@@ -4,10 +4,12 @@ import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_Type_Generic
 import net.postchain.rell.base.mtype.M_Type_Nullable
+import net.postchain.rell.base.mtype.M_Type_Tuple
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.DRIExtraContainer
 import org.jetbrains.dokka.links.DRIExtraProperty
 import org.jetbrains.dokka.model.Bound
+import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.Nullable
 import org.jetbrains.dokka.model.TypeParameter
@@ -35,17 +37,23 @@ fun M_Type.toDRI(): DRI {
 
 }
 
-fun M_Type.toBound(): Bound {
+fun M_Type.toBound(presentableName: String? = null): Bound {
     return when (this) {
         is M_Type_Nullable -> Nullable(valueType.toBound())
         is M_Type_Generic -> {
             GenericTypeConstructor(
                     dri = toDRI(),
-                    presentableName = this.genericType.name,
-                    projections = this.typeArgs.map { it.canonicalOutType().toBound() }
+                    presentableName = presentableName ?: genericType.name,
+                    projections = typeArgs.map { it.canonicalOutType().toBound() }
             )
         }
-        else -> TypeParameter(toDRI(), this.strCode())
+        is M_Type_Tuple -> {
+            FunctionalTypeConstructor(
+                    dri = toDRI(),
+                    projections = fieldTypes.mapIndexed { index, type -> type.toBound(fieldNames[index].value)} // TODO: Named tuples
+            )
+        }
+        else -> TypeParameter(toDRI(), presentableName ?: strCode())
     }
 }
 

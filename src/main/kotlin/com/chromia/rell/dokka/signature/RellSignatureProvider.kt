@@ -137,6 +137,7 @@ class RellSignatureProvider internal constructor(
         when (p) {
 
             is TypeParameter -> {
+                p.presentableName?.let { text("$it: ") }
                 link(p.name, p.dri)
             }
 
@@ -145,18 +146,17 @@ class RellSignatureProvider internal constructor(
 
             is GenericTypeConstructor -> {
                 group(styles = emptySet()) {
-                    link(p.presentableName!!, p.dri)
-
+                    p.presentableName?.let { link(it, p.dri) }
                     list(p.projections, prefix = "<", suffix = ">", separatorStyles = mainStyles + TokenStyle.Punctuation,
                             surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
                         signatureForProjection(it, showFullyQualifiedName)
                     }
                 }
             }
+
             is FunctionalTypeConstructor -> {
                 group(styles = emptySet()) {
-                    link(p.presentableName!!, p.dri)
-                    list(p.projections, prefix = "<", suffix = ">", separatorStyles = mainStyles + TokenStyle.Punctuation,
+                    list(p.projections, prefix = "(", suffix = ")", separatorStyles = mainStyles + TokenStyle.Punctuation,
                             surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
                         signatureForProjection(it, showFullyQualifiedName)
                     }

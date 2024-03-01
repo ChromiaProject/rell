@@ -119,4 +119,22 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             }
         }
     }
+
+    @Test
+    fun `Links are working for nested inner types (tuple arguments)`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("-rell/rell.test/assert_events.html").firstSignature()
+                        .match(
+                                "function ", A("assert_events"), "(",
+                                Parameters(
+                                        Parameter("expected: (", A("text"), ", ", A("gtv"), ")...")
+                                ),
+                                "): ",
+                                A("unit"),
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
 }

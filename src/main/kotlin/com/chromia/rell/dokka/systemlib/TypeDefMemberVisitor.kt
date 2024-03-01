@@ -56,7 +56,7 @@ class TypeDefMemberVisitor(
                 visibility = mapOf(),
                 receiver = null,
                 isExpectActual = false,
-                type = FunctionalTypeConstructor(dri, listOf(), presentableName = dri.classNames!!),
+                type = TypeParameter(dri, dri.classNames!!),
                 sourceSets = setOf(sourceSet),
                 generics = listOf(),
                 sources = mapOf(sourceSet to NULL_DESCRIPTOR),
