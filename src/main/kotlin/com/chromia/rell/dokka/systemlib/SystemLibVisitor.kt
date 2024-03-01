@@ -1,20 +1,13 @@
 package com.chromia.rell.dokka.systemlib
 
+import com.chromia.rell.dokka.config.RellConfig
 import com.chromia.rell.dokka.doc.toDocumentationNode
-import com.chromia.rell.dokka.dri.AliasDRIExtra
 import com.chromia.rell.dokka.dri.DriOfRoot
 import com.chromia.rell.dokka.dri.toBound
-import com.chromia.rell.dokka.dri.toDRI
 import com.chromia.rell.dokka.dri.withAlias
-import com.chromia.rell.dokka.model.IsAlias
 import com.chromia.rell.dokka.model.IsVararg
 import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
-import com.intellij.util.containers.ContainerUtil.filterIsInstance
-import net.postchain.rell.base.compiler.base.lib.C_LibModule
-import net.postchain.rell.base.lib.Lib_Rell
-import net.postchain.rell.base.lib.test.Lib_RellTest
 import net.postchain.rell.base.lmodel.L_FunctionParam
-import net.postchain.rell.base.lmodel.L_NamespaceMember
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Alias
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Constant
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Function
@@ -30,30 +23,21 @@ import net.postchain.rell.base.lmodel.L_TypeDefMember_SpecialConstructor
 import org.jetbrains.dokka.DokkaConfiguration.DokkaSourceSet
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
-import org.jetbrains.dokka.links.DRIExtraContainer
 import org.jetbrains.dokka.links.PointingToCallableParameters
 import org.jetbrains.dokka.links.TypeParam
 import org.jetbrains.dokka.links.withClass
-import org.jetbrains.dokka.links.withEnumEntryExtra
-import org.jetbrains.dokka.model.AnnotationParameterValue
-import org.jetbrains.dokka.model.Annotations
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DObject
 import org.jetbrains.dokka.model.DPackage
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
-import org.jetbrains.dokka.model.DTypeAlias
 import org.jetbrains.dokka.model.Documentable
-import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.KotlinVisibility
-import org.jetbrains.dokka.model.StringValue
-import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.P
 import org.jetbrains.dokka.model.doc.Text
-import org.jetbrains.dokka.model.properties.ExtraProperty
 import org.jetbrains.dokka.model.properties.PropertyContainer
 import org.jetbrains.dokka.utilities.DokkaLogger
 
@@ -68,10 +52,9 @@ class SystemLibVisitor(
         val blacklistedNamespaces = listOf("")
     }
 
-    fun visitRellModule(module: C_LibModule, name: String?): List<DPackage> {
-
-        val packageName = module.lModule.moduleName.str()
-        val dri = DRI(packageName = name)
+    fun visitRellModule(rellSourceSet: RellConfig.SystemLibSourceSet): List<DPackage> {
+        val dri = rellSourceSet.dri
+        val module = rellSourceSet.module
 
         val doc = module.lModule.docSymbol.toDocumentationNode()
         val namespaceMembers = module.lModule.namespace.members

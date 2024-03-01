@@ -27,10 +27,11 @@ class DokkaCommand : CliktCommand() {
     private val styles by option().default("src/main/resources/styles/chromia-styles.css")
     private val assets by option().split(",").default(listOf("src/main/resources/fonts"))
     private val system by option(help = "Generate system library docs", hidden = true).flag()
+    private val includes by option(help = "Include documentation files").file().split(",").default(listOf(File("src/main/resources/rell.md")))
 
     override fun run() {
         val rellConfig = if (system) RellConfig.SYSTEM else RellConfig(name, modules)
-        val sourceSets = if (system) RellConfig.SYSTEM_SOURCE_SETS else listOf(DokkaSourceSetImpl(sourceRoots = setOf(source), sourceSetID = DokkaSourceSetID("main", "dapp")))
+        val sourceSets = if (system) RellConfig.SYSTEM_SOURCE_SETS.map { it.sourceSet(includes) } else listOf(DokkaSourceSetImpl(sourceRoots = setOf(source), sourceSetID = DokkaSourceSetID("main", "dapp")))
         val dokkaBaseConf = PluginConfigurationImpl(
                 DokkaBase::class.qualifiedName!!,
                 DokkaConfiguration.SerializationFormat.JSON,

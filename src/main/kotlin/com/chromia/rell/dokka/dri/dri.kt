@@ -1,5 +1,6 @@
 package com.chromia.rell.dokka.dri
 
+import com.chromia.rell.dokka.config.RellConfig
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_Type_Generic
@@ -8,18 +9,17 @@ import net.postchain.rell.base.mtype.M_Type_Tuple
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.DRIExtraContainer
 import org.jetbrains.dokka.links.DRIExtraProperty
+import org.jetbrains.dokka.links.withClass
 import org.jetbrains.dokka.model.Bound
 import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.Nullable
 import org.jetbrains.dokka.model.TypeParameter
-
-// This works only for types within the same module..
-//fun DRI.Companion.fromMType(mType: M_Type) = DRI(mType., mType.toString())
+import org.jetbrains.kotlin.library.metadata.KlibMetadataProtoBuf.className
 
 fun R_QualifiedName.toDRI(): DRI {
-    val packageName = if (str().contains(".")) str().substringBeforeLast(".") else "[root]"
-    val className = str().substringAfterLast(".")
+    val packageName = if (parts.size > 1) str().substringBeforeLast(".") else RellConfig.SystemLibSourceSet.MAIN.dri.packageName
+    val className = last.str
     return DRI(packageName = packageName, classNames = className)
 }
 
@@ -27,12 +27,10 @@ fun M_Type.toDRI(): DRI {
 
     return when (this) {
         is M_Type_Generic -> {
-            val name = genericType.name.substringAfterLast(".")
-            val packageName = if (genericType.name.contains(".")) genericType.name.substringBeforeLast(".") else "[root]"
-            //val packageName = if (genericType.name.startsWith())
-            DRI(packageName, name)
+            val qualifiedName = R_QualifiedName.of(genericType.name)
+            qualifiedName.toDRI()
         }
-        else -> DRI("[root]", this.toString())
+        else -> DriOfRoot.withClass(toString())
     }
 
 }
@@ -57,8 +55,8 @@ fun M_Type.toBound(presentableName: String? = null): Bound {
     }
 }
 
-val DriOfUnit = DRI("[root]", "unit")
-val DriOfRoot = DRI("[root]")
+val DriOfRoot = RellConfig.SystemLibSourceSet.MAIN.dri
+val DriOfUnit = DriOfRoot.withClass("unit")
 
 
 fun DRI.withAlias() = copy(extra = DRIExtraContainer().also { it[AliasDRIExtra] = AliasDRIExtra }.encode())

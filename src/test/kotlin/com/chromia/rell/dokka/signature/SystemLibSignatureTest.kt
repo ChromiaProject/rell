@@ -18,7 +18,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         this.pluginsConfigurations.add(RellConfig.SYSTEM.toPluginConfig())
         sourceSets {
             RellConfig.SYSTEM_SOURCE_SETS.forEach {
-                add(lazy { it })
+                add(lazy { it.sourceSet(listOf()) })
             }
         }
     }
@@ -28,7 +28,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("-rell/[root]/integer/abs.html").firstSignature()
+                writerPlugin.writer.renderedContent("-rell/root/integer/abs.html").firstSignature()
                         .match("pure function ", A("abs"), "(): ", A("integer"), ignoreSpanWithTokenStyle = true)
             }
         }
@@ -97,7 +97,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("-rell/[root]/integer/integer.html").firstSignature()
+                writerPlugin.writer.renderedContent("-rell/root/integer/integer.html").firstSignature()
                         .match(
                                 "constructor(",
                                 Parameters(
