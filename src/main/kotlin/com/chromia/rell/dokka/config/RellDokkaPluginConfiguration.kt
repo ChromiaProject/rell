@@ -9,7 +9,7 @@ import org.jetbrains.dokka.PluginConfigurationImpl
 import org.jetbrains.dokka.plugability.ConfigurableBlock
 
 @Serializable
-data class RellConfig(val name: String, val modules: List<String>?, val system: Boolean = false) : ConfigurableBlock {
+data class RellDokkaPluginConfiguration(val name: String, val modules: List<String>?, val system: Boolean = false) : ConfigurableBlock {
     fun toPluginConfig() = PluginConfigurationImpl(
             RellDokkaPlugin::class.qualifiedName!!,
             DokkaConfiguration.SerializationFormat.JSON,
@@ -17,6 +17,6 @@ data class RellConfig(val name: String, val modules: List<String>?, val system: 
     )
 
     companion object {
-        val SYSTEM = RellConfig("Rell-Api-Reference", listOf("rell", "rell.test"), system = true)
+        val SYSTEM_CONFIG = RellDokkaPluginConfiguration("Rell-Api-Reference", listOf("rell", "rell.test"), system = true)
     }
 }

@@ -9,6 +9,11 @@ import org.jetbrains.dokka.DokkaSourceSetImpl
 import org.jetbrains.dokka.links.DRI
 import java.io.File
 
+/**
+ * Contains the metadata to simulate a source set.
+ * A source set is typically a source file folder, but in the case of the system library,
+ * we must pretend to have one, and then extract the data from the C_LibModule instead.
+ */
 enum class RellModule(packageName: String, private val sourceSetName: String, val module: C_LibModule, private vararg val dependent: RellModule) {
     MAIN("root", "rell", Lib_Rell.MODULE),
     TEST("rell.test", "test", Lib_RellTest.MODULE, MAIN);

@@ -1,7 +1,6 @@
 package com.chromia.rell.dokka
 
-import com.chromia.rell.dokka.config.RellConfig
-import com.chromia.rell.dokka.renderers.html.RellHtmlRenderer
+import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.signature.RellSignatureProvider
 import com.chromia.rell.dokka.translator.RellDocumentableToPageTranslator
 import com.chromia.rell.dokka.translator.RellSourceToDocumentableTranslator
@@ -43,10 +42,10 @@ class RellDokkaPlugin : DokkaPlugin() {
     }*/
 
     companion object {
-        fun extractConfig(context: DokkaContext): RellConfig? {
+        fun extractConfig(context: DokkaContext): RellDokkaPluginConfiguration? {
             val pluginConfig = context.configuration.pluginsConfiguration.find { it.fqPluginName == RellDokkaPlugin::class.qualifiedName }
             return pluginConfig?.let {
-                Json.decodeFromString<RellConfig>(it.values)
+                Json.decodeFromString<RellDokkaPluginConfiguration>(it.values)
             }
         }
     }

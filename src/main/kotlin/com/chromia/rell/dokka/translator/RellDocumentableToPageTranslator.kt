@@ -1,7 +1,7 @@
 package com.chromia.rell.dokka.translator
 
 import com.chromia.rell.dokka.RellDokkaPlugin
-import com.chromia.rell.dokka.config.RellConfig
+import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.page.RellPageCreator
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
@@ -17,7 +17,7 @@ import org.jetbrains.dokka.transformers.documentation.DocumentableToPageTranslat
 class RellDocumentableToPageTranslator(context: DokkaContext) : DocumentableToPageTranslator {
 
     private val configuration = configuration<DokkaBase, DokkaBaseConfiguration>(context)
-    private val rellConfig = configuration<RellDokkaPlugin, RellConfig>(context)
+    private val rellConfig = configuration<RellDokkaPlugin, RellDokkaPluginConfiguration>(context)
     private val commentsToContentConverter = context.plugin<DokkaBase>().querySingle { commentsToContentConverter }
     private val signatureProvider = context.plugin<DokkaBase>().querySingle { signatureProvider }
     private val customTagContentProviders = context.plugin<DokkaBase>().query { customTagContentProvider }

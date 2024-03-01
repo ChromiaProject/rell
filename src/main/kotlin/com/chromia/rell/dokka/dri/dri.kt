@@ -4,7 +4,6 @@ import com.chromia.rell.dokka.config.RellModule
 import com.chromia.rell.dokka.model.IsTuple
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.mtype.M_Type
-import net.postchain.rell.base.mtype.M_TypeParam
 import net.postchain.rell.base.mtype.M_Type_Function
 import net.postchain.rell.base.mtype.M_Type_Generic
 import net.postchain.rell.base.mtype.M_Type_Nullable

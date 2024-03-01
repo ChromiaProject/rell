@@ -2,7 +2,6 @@ package com.chromia.rell.dokka.signature
 
 import com.chromia.rell.dokka.dri.DriOfUnit
 import com.chromia.rell.dokka.dri.isAlias
-import com.chromia.rell.dokka.model.IsAlias
 import com.chromia.rell.dokka.model.IsPure
 import com.chromia.rell.dokka.model.IsStatic
 import com.chromia.rell.dokka.model.IsTuple

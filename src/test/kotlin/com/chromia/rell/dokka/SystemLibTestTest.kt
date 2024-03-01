@@ -3,7 +3,7 @@ package com.chromia.rell.dokka
 import assertk.assertThat
 import assertk.assertions.containsAtLeast
 import assertk.assertions.doesNotContain
-import com.chromia.rell.dokka.config.RellConfig
+import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.config.RellModule
 import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 
 class SystemLibTestTest : BaseAbstractTest() {
     private val configuration = dokkaConfiguration {
-        this.pluginsConfigurations.add(RellConfig.SYSTEM.toPluginConfig())
+        this.pluginsConfigurations.add(RellDokkaPluginConfiguration.SYSTEM_CONFIG.toPluginConfig())
         sourceSets {
             RellModule.entries.forEach {
                 add(lazy { it.sourceSet(listOf()) })

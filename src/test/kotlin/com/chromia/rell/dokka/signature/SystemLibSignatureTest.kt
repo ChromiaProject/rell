@@ -1,6 +1,6 @@
 package com.chromia.rell.dokka.signature
 
-import com.chromia.rell.dokka.config.RellConfig
+import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.config.RellModule
 import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
 import org.junit.jupiter.api.Test
@@ -15,7 +15,7 @@ import utils.match
 
 internal class SystemLibSignatureTest : BaseAbstractTest() {
     private val configuration = dokkaConfiguration {
-        this.pluginsConfigurations.add(RellConfig.SYSTEM.toPluginConfig())
+        this.pluginsConfigurations.add(RellDokkaPluginConfiguration.SYSTEM_CONFIG.toPluginConfig())
         sourceSets {
             RellModule.entries.forEach {
                 add(lazy { it.sourceSet(listOf()) })

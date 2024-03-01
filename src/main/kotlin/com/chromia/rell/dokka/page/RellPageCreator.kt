@@ -1,7 +1,7 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 package com.chromia.rell.dokka.page
 
-import com.chromia.rell.dokka.config.RellConfig
+import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.translator.RellLanguageParser
 import org.jetbrains.dokka.InternalDokkaApi
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
@@ -20,12 +20,12 @@ import org.jetbrains.dokka.utilities.DokkaLogger
 
 @OptIn(InternalDokkaApi::class)
 class RellPageCreator(
-        private val rellConfig: RellConfig?,
+        private val rellDokkaPluginConfiguration: RellDokkaPluginConfiguration?,
         configuration: DokkaBaseConfiguration?,
-                      commentsToContentConverter: CommentsToContentConverter,
-                      signatureProvider: SignatureProvider,
-                      logger: DokkaLogger,
-                      customTagContentProviders: List<CustomTagContentProvider>)
+        commentsToContentConverter: CommentsToContentConverter,
+        signatureProvider: SignatureProvider,
+        logger: DokkaLogger,
+        customTagContentProviders: List<CustomTagContentProvider>)
     : DefaultPageCreator(
         configuration,
         commentsToContentConverter,
@@ -52,7 +52,7 @@ class RellPageCreator(
             }
 
             block(
-                    name = rellConfig?.system?.let { "Namespaces" } ?: "Modules",
+                    name = rellDokkaPluginConfiguration?.system?.let { "Namespaces" } ?: "Modules",
                     level = 2,
                     kind = ContentKind.Packages,
                     elements = m.packages,
@@ -79,7 +79,7 @@ class RellPageCreator(
     override fun contentForPackage(p: DPackage): ContentGroup {
         return contentBuilder.contentFor(p) {
             group(kind = ContentKind.Cover) {
-                cover( if (rellConfig?.system == true) "Namespace definitions" else "Module-level declarations")
+                cover( if (rellDokkaPluginConfiguration?.system == true) "Namespace definitions" else "Module-level declarations")
                 if (contentForDescription(p).isNotEmpty()) {
                     sourceSetDependentHint(
                             dri = p.dri,

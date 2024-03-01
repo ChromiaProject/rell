@@ -2,7 +2,6 @@ package com.chromia.rell.dokka.model
 
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DParameter
-import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.properties.ExtraProperty
 

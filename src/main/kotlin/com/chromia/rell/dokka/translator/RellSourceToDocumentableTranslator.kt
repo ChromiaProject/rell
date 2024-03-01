@@ -2,32 +2,21 @@
 package com.chromia.rell.dokka.translator
 
 import com.chromia.rell.dokka.RellDokkaPlugin
-import com.chromia.rell.dokka.config.RellConfig
 import com.chromia.rell.dokka.model.definitionsByModule
 import com.chromia.rell.dokka.model.toDClasslike
 import com.chromia.rell.dokka.model.toDFunction
 import com.chromia.rell.dokka.model.toDProperty
 import com.chromia.rell.dokka.model.toDRI
-import kotlinx.serialization.json.Json
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.base.model.R_App
-import org.jetbrains.dokka.analysis.kotlin.descriptors.compiler.configuration.DescriptorDocumentableSource
-import net.postchain.rell.base.model.R_MountName
-import net.postchain.rell.base.model.R_OperationDefinition
 import org.jetbrains.dokka.DokkaConfiguration
-import org.jetbrains.dokka.links.DRI
-import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DModule
 import org.jetbrains.dokka.model.DPackage
-import org.jetbrains.dokka.model.DParameter
-import org.jetbrains.dokka.model.Dynamic
-import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.Text
 import org.jetbrains.dokka.plugability.DokkaContext
 import org.jetbrains.dokka.transformers.sources.SourceToDocumentableTranslator
-import java.io.File
 
 object RellSourceToDocumentableTranslator : SourceToDocumentableTranslator {
 
