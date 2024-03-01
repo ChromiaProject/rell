@@ -57,4 +57,16 @@ class SystemLibTestTest : BaseAbstractTest() {
         }
     }
 
+    @Test
+    fun `Structs are created`() {
+        testFromData(configuration, cleanupOutput = false) {
+            documentablesTransformationStage = { module ->
+                val rellPackage = module.packages.find { it.name == "[root]" }
+                assertNotNull(rellPackage)
+                val res = rellPackage!!.classlikes.find { it.name == "gtx_operation" }
+                assertNotNull(res)
+            }
+        }
+    }
+
 }

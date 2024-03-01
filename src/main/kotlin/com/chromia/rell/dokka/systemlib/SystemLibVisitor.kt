@@ -20,6 +20,7 @@ import net.postchain.rell.base.lmodel.L_NamespaceMember_Constant
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Function
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Namespace
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Property
+import net.postchain.rell.base.lmodel.L_NamespaceMember_Struct
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Type
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Constant
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Constructor
@@ -80,6 +81,8 @@ class SystemLibVisitor(
                 .filterNot { it.typeDef.hidden }
                 .filterNot { blacklistedTypes.contains(it.simpleName.str) }
                 .visitTypes(dri)
+        val structs = namespaceMembers.filterIsInstance<L_NamespaceMember_Struct>()
+                .visitStructs(dri)
         val functions = namespaceMembers.filterIsInstance<L_NamespaceMember_Function>()
                 .visitFunctions(dri)
         val properties = namespaceMembers.filterIsInstance<L_NamespaceMember_Property>()
@@ -98,7 +101,7 @@ class SystemLibVisitor(
                 // Global constants
                 properties = properties + alias.filterIsInstance<DProperty>(),
                 // Entities/Structs/Objects
-                classlikes = types,
+                classlikes = types + structs,
                 typealiases = listOf(),
                 // Functions, queries, operations
                 functions = functions
@@ -152,114 +155,135 @@ class SystemLibVisitor(
         }
     }
 
-    fun companionObject(parent: DRI, constants: List<DProperty>, staticFunctions: List<DFunction>): DObject? {
-        if (constants.isEmpty() && staticFunctions.isEmpty()) return null
-        val dri = parent.withClass("static")
-        return DObject(
-                name = null,
-                dri = dri,
+    private fun List<L_NamespaceMember_Struct>.visitStructs(parent: DRI): List<DClass> = map { it.visit(parent) }
 
+    private fun L_NamespaceMember_Struct.visit(parent: DRI): DClass {
+        val dri = parent.withClass(simpleName.str)
+        return DClass(
+                dri = dri,
+                name = simpleName.str,
+                documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
+                constructors = listOf(),
+                properties = struct.attributesMap.map { makeDProperty(sourceSet, dri, it.value.docSymbol, it.key, it.value.type) },
+                functions = listOf(),
+                generics = listOf(),
+                classlikes = listOf(),
+                isExpectActual = false,
+                companion = null, //companionObject(dri, listOf(), staticFunctions),
+                expectPresentInSet = null,
                 visibility = mapOf(sourceSet to KotlinVisibility.Public),
                 supertypes = mapOf(sourceSet to listOf()), // TODO: add super types
                 sourceSets = setOf(sourceSet),
                 sources = mapOf(sourceSet to NULL_DESCRIPTOR),
-                documentation = mapOf(sourceSet to DocumentationNode(listOf())),
-                isExpectActual = false,
-                expectPresentInSet = null,
-                classlikes = listOf(),
-                functions = staticFunctions,
-                properties = constants
-        )
-    }
-
-    private fun List<L_NamespaceMember_Namespace>.visitNamespaces(parent: DRI) = map { it.visit(parent) }
-
-    private fun L_NamespaceMember_Namespace.visit(parent: DRI): DPackage {
-        val dri = DRI(qualifiedName.str())
-        val members = namespace.members
-
-        val types = members.filterIsInstance<L_NamespaceMember_Type>().visitTypes(dri)
-        val functions = members.filterIsInstance<L_NamespaceMember_Function>().visitFunctions(dri)
-        val properties = members.filterIsInstance<L_NamespaceMember_Property>().visitProperties(dri)
-        val constants = members.filterIsInstance<L_NamespaceMember_Constant>().visitConstants(dri)
-
-        return DPackage(
-                dri = dri,
-                documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
-                classlikes = types,
-                properties = properties + constants,
-                functions = functions,
-                sourceSets = setOf(sourceSet),
-                typealiases = listOf()
-        )
-    }
-
-    private fun <R : Documentable> L_NamespaceMember.visit(parent: DRI): R {
-        return when (this) {
-            is L_NamespaceMember_Type -> visit(parent) as R
-            is L_NamespaceMember_Function -> visit(parent) as R
-            else -> TODO()
-        }
-    }
-
-    private fun List<L_NamespaceMember_Alias>.visitAliases(parent: DRI): List<Documentable> = map { it.visit(parent) }
-    private fun L_NamespaceMember_Alias.visit(parent: DRI): Documentable {
-
-        val dri = DriOfRoot.withClass(simpleName.str).withAlias()
-        return this.finalTargetMember.visit(dri)
-    }
-
-    private fun List<L_NamespaceMember_Function>.visitFunctions(parent: DRI) = map { it.visit(parent) }
-
-    private fun L_NamespaceMember_Function.visit(parent: DRI): DFunction {
-        val dri = parent.copy(callable = Callable(
-                name = simpleName.str,
-                params = List(function.header.params.size) { index -> TypeParam(listOf()) }))
-
-        return DFunction(
-                dri = dri,
-                name = parent.classNames ?: simpleName.str,
-                isConstructor = false,
-                parameters = function.header.params.mapIndexed { index, p -> p.visit(dri, index) },
-                expectPresentInSet = null,
-                visibility = mapOf(),
-                receiver = null,
-                isExpectActual = false,
-                type = function.header.resultType.toBound(),
-                sourceSets = setOf(sourceSet),
-                generics = listOf(),
-                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
-                documentation = docSymbol.toDocumentationNode().toSourceSetDependent(),
                 modifier = mapOf()
         )
+}
+
+fun companionObject(parent: DRI, constants: List<DProperty>, staticFunctions: List<DFunction>): DObject? {
+    if (constants.isEmpty() && staticFunctions.isEmpty()) return null
+    val dri = parent.withClass("static")
+    return DObject(
+            name = null,
+            dri = dri,
+
+            visibility = mapOf(sourceSet to KotlinVisibility.Public),
+            supertypes = mapOf(sourceSet to listOf()), // TODO: add super types
+            sourceSets = setOf(sourceSet),
+            sources = mapOf(sourceSet to NULL_DESCRIPTOR),
+            documentation = mapOf(sourceSet to DocumentationNode(listOf())),
+            isExpectActual = false,
+            expectPresentInSet = null,
+            classlikes = listOf(),
+            functions = staticFunctions,
+            properties = constants
+    )
+}
+
+private fun List<L_NamespaceMember_Namespace>.visitNamespaces(parent: DRI) = map { it.visit(parent) }
+
+private fun L_NamespaceMember_Namespace.visit(parent: DRI): DPackage {
+    val dri = DRI(qualifiedName.str())
+    val members = namespace.members
+
+    val types = members.filterIsInstance<L_NamespaceMember_Type>().visitTypes(dri)
+    val functions = members.filterIsInstance<L_NamespaceMember_Function>().visitFunctions(dri)
+    val properties = members.filterIsInstance<L_NamespaceMember_Property>().visitProperties(dri)
+    val constants = members.filterIsInstance<L_NamespaceMember_Constant>().visitConstants(dri)
+
+    return DPackage(
+            dri = dri,
+            documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
+            classlikes = types,
+            properties = properties + constants,
+            functions = functions,
+            sourceSets = setOf(sourceSet),
+            typealiases = listOf()
+    )
+}
+
+private fun List<L_NamespaceMember_Alias>.visitAliases(parent: DRI): List<Documentable> = map { it.visit(parent) }
+private fun L_NamespaceMember_Alias.visit(parent: DRI): Documentable {
+
+    val dri = DriOfRoot.withClass(simpleName.str).withAlias()
+    val target = finalTargetMember
+    return when (target) {
+        is L_NamespaceMember_Type -> target.visit(dri)
+        is L_NamespaceMember_Function -> target.visit(dri)
+        else -> TODO("Alias type not implemented")
     }
+}
 
-    private fun L_FunctionParam.visit(parent: DRI, index: Int): DParameter {
-        val dri = parent.copy(target = PointingToCallableParameters(index))
-        return DParameter(
-                dri = dri,
-                name = name.str,
-                documentation = mapOf(
-                        sourceSet to DocumentationNode(listOf(Description(P(listOf(Text(docSymbol.comment?.description
-                                ?: "Parameter $name"))))))
-                ),
-                // Adds a link of the type to the definition
-                type = type.toBound(),
-                sourceSets = setOf(sourceSet),
-                expectPresentInSet = null,
-                extra = PropertyContainer.withAll(
-                        takeIf { arity.many }?.let { IsVararg }
-                )
-        )
-    }
+private fun List<L_NamespaceMember_Function>.visitFunctions(parent: DRI) = map { it.visit(parent) }
 
-    private fun List<L_NamespaceMember_Property>.visitProperties(parent: DRI): List<DProperty> = map { it.visit(parent) }
-    private fun List<L_NamespaceMember_Constant>.visitConstants(parent: DRI): List<DProperty> = map { it.visit(parent) }
+private fun L_NamespaceMember_Function.visit(parent: DRI): DFunction {
+    val dri = parent.copy(callable = Callable(
+            name = simpleName.str,
+            params = List(function.header.params.size) { index -> TypeParam(listOf()) }))
 
-    private fun L_NamespaceMember_Property.visit(parent: DRI) = makeDProperty(sourceSet, parent, docSymbol, simpleName.str, property.type)
+    return DFunction(
+            dri = dri,
+            name = parent.classNames ?: simpleName.str,
+            isConstructor = false,
+            parameters = function.header.params.mapIndexed { index, p -> p.visit(dri, index) },
+            expectPresentInSet = null,
+            visibility = mapOf(),
+            receiver = null,
+            isExpectActual = false,
+            type = function.header.resultType.toBound(),
+            sourceSets = setOf(sourceSet),
+            generics = listOf(),
+            sources = NULL_DESCRIPTOR.toSourceSetDependent(),
+            documentation = docSymbol.toDocumentationNode().toSourceSetDependent(),
+            modifier = mapOf()
+    )
+}
 
-    private fun L_NamespaceMember_Constant.visit(parent: DRI) = makeDProperty(sourceSet, parent, docSymbol, simpleName.str, constant.type)
+private fun L_FunctionParam.visit(parent: DRI, index: Int): DParameter {
+    val dri = parent.copy(target = PointingToCallableParameters(index))
+    return DParameter(
+            dri = dri,
+            name = name.str,
+            documentation = mapOf(
+                    sourceSet to DocumentationNode(listOf(Description(P(listOf(Text(docSymbol.comment?.description
+                            ?: "Parameter $name"))))))
+            ),
+            // Adds a link of the type to the definition
+            type = type.toBound(),
+            sourceSets = setOf(sourceSet),
+            expectPresentInSet = null,
+            extra = PropertyContainer.withAll(
+                    takeIf { arity.many }?.let { IsVararg }
+            )
+    )
+}
 
-    private fun <T> T.toSourceSetDependent() = if (this != null) mapOf(sourceSet to this) else mapOf()
+private fun List<L_NamespaceMember_Property>.visitProperties(parent: DRI): List<DProperty> = map { it.visit(parent) }
+private fun List<L_NamespaceMember_Constant>.visitConstants(parent: DRI): List<DProperty> = map { it.visit(parent) }
+
+private fun L_NamespaceMember_Property.visit(parent: DRI) = makeDProperty(sourceSet, parent, docSymbol, simpleName.str, property.type)
+
+private fun L_NamespaceMember_Constant.visit(parent: DRI) = makeDProperty(sourceSet, parent, docSymbol, simpleName.str, constant.type)
+
+private fun <T> T.toSourceSetDependent() = if (this != null) mapOf(sourceSet to this) else mapOf()
 }
 
