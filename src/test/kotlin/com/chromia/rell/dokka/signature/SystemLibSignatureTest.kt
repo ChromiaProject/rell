@@ -187,7 +187,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("-rell/root/try_call.html").firstSignature()
+                writerPlugin.writer.renderedContent("-rell/root/[rell]try_call.html").lastSignature() // TODO: Why the [rell]-prefix
                         .match(
                                 "function ", A("try_call"), "(",
                                 Parameters(

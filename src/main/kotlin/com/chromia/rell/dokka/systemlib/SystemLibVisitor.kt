@@ -221,9 +221,7 @@ private fun L_NamespaceMember_Alias.visit(parent: DRI): Documentable {
 private fun List<L_NamespaceMember_Function>.visitFunctions(parent: DRI) = map { it.visit(parent) }
 
 private fun L_NamespaceMember_Function.visit(parent: DRI): DFunction {
-    val dri = parent.copy(callable = Callable(
-            name = simpleName.str,
-            params = List(function.header.params.size) { index -> TypeParam(listOf()) }))
+    val dri = parent.withClass(simpleName.str)
 
     return DFunction(
             dri = dri,
