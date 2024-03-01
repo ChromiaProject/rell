@@ -75,7 +75,6 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
     }
 
     @Test
-    @Disabled // Does not work across source sets
     fun `function with list typest lib types`() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
@@ -86,7 +85,8 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
                                 Parameters(
                                         Parameter("ops: ", A("list"), "<", A("rell.test.op"), ">")
                                 ),
-                                ")",
+                                "): ",
+                                A("tx"),
                                 ignoreSpanWithTokenStyle = true)
             }
         }
