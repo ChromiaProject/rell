@@ -34,7 +34,7 @@ data class RellConfig(val name: String, val modules: List<String>?, val system: 
         val sourceSet = DokkaSourceSetImpl(sourceSetID = sourceSetId, displayName = sourceSetName, dependentSourceSets = dependent.map { it.sourceSetId }.toSet())
 
         companion object {
-            fun findModule(sourceSet: DokkaConfiguration.DokkaSourceSet) = entries.find { sourceSet == it.sourceSet }?.module
+            fun findModule(sourceSet: DokkaConfiguration.DokkaSourceSet) = entries.find { sourceSet == it.sourceSet }
         }
 
     }

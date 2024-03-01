@@ -20,7 +20,7 @@ object RellSystemLibToDocumentableTranslator : SourceToDocumentableTranslator {
         return SystemLibVisitor(sourceSet, context.logger).run {
             DModule(
                     "Rell",
-                    visitRellModule(module, true),
+                    visitRellModule(module.module, module.scope),
                     mapOf(sourceSet to DocumentationNode(listOf())),
                     sourceSets = setOf(sourceSet)
             )

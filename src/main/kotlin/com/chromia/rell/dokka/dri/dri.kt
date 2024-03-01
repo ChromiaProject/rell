@@ -1,17 +1,25 @@
 package com.chromia.rell.dokka.dri
 
+import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_Type_Generic
 import net.postchain.rell.base.mtype.M_Type_Nullable
 import org.jetbrains.dokka.links.DRI
+import org.jetbrains.dokka.links.DRIExtraContainer
+import org.jetbrains.dokka.links.DRIExtraProperty
 import org.jetbrains.dokka.model.Bound
-import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.Nullable
 import org.jetbrains.dokka.model.TypeParameter
 
 // This works only for types within the same module..
 //fun DRI.Companion.fromMType(mType: M_Type) = DRI(mType., mType.toString())
+
+fun R_QualifiedName.toDRI(): DRI {
+    val packageName = if (str().contains(".")) str().substringBeforeLast(".") else "<root>"
+    val className = str().substringAfterLast(".")
+    return DRI(packageName = packageName, classNames = className)
+}
 
 fun M_Type.toDRI(): DRI {
 
@@ -42,3 +50,9 @@ fun M_Type.toBound(): Bound {
 }
 
 val DriOfUnit = DRI("<root>", "unit")
+val DriOfRoot = DRI("<root>")
+
+
+fun DRI.withAlias() = copy(extra = DRIExtraContainer().also { it[AliasDRIExtra] = AliasDRIExtra }.encode())
+fun DRI.isAlias() = DRIExtraContainer(extra)[AliasDRIExtra] != null
+ object AliasDRIExtra: DRIExtraProperty<AliasDRIExtra>()

@@ -1,6 +1,7 @@
 package com.chromia.rell.dokka.signature
 
 import com.chromia.rell.dokka.dri.DriOfUnit
+import com.chromia.rell.dokka.dri.isAlias
 import com.chromia.rell.dokka.model.IsAlias
 import com.chromia.rell.dokka.model.IsPure
 import com.chromia.rell.dokka.model.IsStatic
@@ -73,8 +74,7 @@ class RellSignatureProvider internal constructor(
         return this.extra[IsVar] != null || this.setter != null
     }
 
-
-    private fun DFunction.isAlias(): Boolean = this.extra[IsAlias] != null
+    private fun Documentable.isAlias(): Boolean = this.dri.isAlias()
 
     private fun DFunction.isPure(): Boolean {
         return this.extra[IsPure] != null

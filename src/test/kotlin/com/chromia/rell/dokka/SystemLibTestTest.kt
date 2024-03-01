@@ -31,4 +31,17 @@ class SystemLibTestTest : BaseAbstractTest() {
             }
         }
     }
+    @Test
+    fun `Aliases are properly named`() {
+        testFromData(configuration, cleanupOutput = false) {
+            documentablesTransformationStage = { module ->
+                val rellPackage = module.packages.find { it.name == "<root>" }
+                assertNotNull(rellPackage)
+                val requireAlias = rellPackage!!.functions.find { it.name == "requireNotEmpty" }
+                assertNotNull(requireAlias)
+                val requireFunction = rellPackage.functions.find { it.name == "require_not_empty" }
+                assertNotNull(requireFunction)
+            }
+        }
+    }
 }

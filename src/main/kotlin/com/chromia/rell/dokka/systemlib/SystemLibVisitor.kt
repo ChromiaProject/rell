@@ -1,8 +1,11 @@
 package com.chromia.rell.dokka.systemlib
 
 import com.chromia.rell.dokka.doc.toDocumentationNode
+import com.chromia.rell.dokka.dri.AliasDRIExtra
+import com.chromia.rell.dokka.dri.DriOfRoot
 import com.chromia.rell.dokka.dri.toBound
 import com.chromia.rell.dokka.dri.toDRI
+import com.chromia.rell.dokka.dri.withAlias
 import com.chromia.rell.dokka.model.IsAlias
 import com.chromia.rell.dokka.model.IsVararg
 import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
@@ -26,9 +29,11 @@ import net.postchain.rell.base.lmodel.L_TypeDefMember_SpecialConstructor
 import org.jetbrains.dokka.DokkaConfiguration.DokkaSourceSet
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
+import org.jetbrains.dokka.links.DRIExtraContainer
 import org.jetbrains.dokka.links.PointingToCallableParameters
 import org.jetbrains.dokka.links.TypeParam
 import org.jetbrains.dokka.links.withClass
+import org.jetbrains.dokka.links.withEnumEntryExtra
 import org.jetbrains.dokka.model.AnnotationParameterValue
 import org.jetbrains.dokka.model.Annotations
 import org.jetbrains.dokka.model.DClass
@@ -62,10 +67,10 @@ class SystemLibVisitor(
         val blacklistedNamespaces = listOf("")
     }
 
-    fun visitRellModule(module: C_LibModule, isRoot: Boolean): List<DPackage> {
+    fun visitRellModule(module: C_LibModule, name: String?): List<DPackage> {
 
         val packageName = module.lModule.moduleName.str()
-        val dri = DRI(packageName = if (isRoot) "<root>" else packageName)
+        val dri = DRI(packageName = name)
 
         val doc = module.lModule.docSymbol.toDocumentationNode()
         val namespaceMembers = module.lModule.namespace.members
@@ -179,30 +184,31 @@ class SystemLibVisitor(
         )
     }
 
-    private fun <R : Documentable> L_NamespaceMember.visit(parent: DRI, extraProperty: ExtraProperty<DFunction>?): R {
+    private fun <R : Documentable> L_NamespaceMember.visit(parent: DRI): R {
         return when (this) {
             is L_NamespaceMember_Type -> visit(parent) as R
-            is L_NamespaceMember_Function -> visit(parent, extraProperty) as R
+            is L_NamespaceMember_Function -> visit(parent) as R
             else -> TODO()
         }
     }
 
     private fun List<L_NamespaceMember_Alias>.visitAliases(parent: DRI): List<Documentable> = map { it.visit(parent) }
     private fun L_NamespaceMember_Alias.visit(parent: DRI): Documentable {
-        val dri = parent.withClass("alias")
-        return this.finalTargetMember.visit(dri, IsAlias)
+
+        val dri = DriOfRoot.withClass(simpleName.str).withAlias()
+        return this.finalTargetMember.visit(dri)
     }
 
     private fun List<L_NamespaceMember_Function>.visitFunctions(parent: DRI) = map { it.visit(parent) }
 
-    private fun L_NamespaceMember_Function.visit(parent: DRI, extraProperty: ExtraProperty<DFunction>? = null): DFunction {
-        val dri = parent.withClass(simpleName.str).copy(callable = Callable(
+    private fun L_NamespaceMember_Function.visit(parent: DRI): DFunction {
+        val dri = parent.copy(callable = Callable(
                 name = simpleName.str,
                 params = List(function.header.params.size) { index -> TypeParam(listOf()) }))
 
         return DFunction(
                 dri = dri,
-                name = this.simpleName.str,
+                name = parent.classNames ?: simpleName.str,
                 isConstructor = false,
                 parameters = function.header.params.mapIndexed { index, p -> p.visit(dri, index) },
                 expectPresentInSet = null,
@@ -214,10 +220,7 @@ class SystemLibVisitor(
                 generics = listOf(),
                 sources = NULL_DESCRIPTOR.toSourceSetDependent(),
                 documentation = docSymbol.toDocumentationNode().toSourceSetDependent(),
-                modifier = mapOf(),
-                extra = PropertyContainer.withAll(
-                       takeIf { extraProperty != null }?.let { extraProperty }
-                )
+                modifier = mapOf()
         )
     }
 

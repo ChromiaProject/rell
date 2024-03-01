@@ -10,7 +10,6 @@ import signatures.firstSignature
 import signatures.lastSignature
 import signatures.renderedContent
 import utils.A
-import utils.Span
 import utils.TestOutputWriterPlugin
 import utils.match
 
