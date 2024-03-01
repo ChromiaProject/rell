@@ -206,6 +206,7 @@ private fun L_NamespaceMember_Namespace.visit(parent: DRI): DPackage {
     val members = namespace.members
 
     val types = members.filterIsInstance<L_NamespaceMember_Type>().visitTypes(dri)
+    val structs = members.filterIsInstance<L_NamespaceMember_Struct>().visitStructs(dri)
     val functions = members.filterIsInstance<L_NamespaceMember_Function>().visitFunctions(dri)
     val properties = members.filterIsInstance<L_NamespaceMember_Property>().visitProperties(dri)
     val constants = members.filterIsInstance<L_NamespaceMember_Constant>().visitConstants(dri)
@@ -213,7 +214,7 @@ private fun L_NamespaceMember_Namespace.visit(parent: DRI): DPackage {
     return DPackage(
             dri = dri,
             documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
-            classlikes = types,
+            classlikes = types + structs,
             properties = properties + constants,
             functions = functions,
             sourceSets = setOf(sourceSet),

@@ -153,6 +153,20 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
     }
 
     @Test
+    fun `Links are worknig on return types of properties2`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("-rell/rell.test.keypairs/alice.html").firstSignature()
+                        .match(
+                                "val ", A("alice"), ": ",
+                                A("rell.test.keypair"),
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
+
+    @Test
     fun `Meta type (special) constructor does not look too ugly`() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
