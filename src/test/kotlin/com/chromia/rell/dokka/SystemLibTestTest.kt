@@ -44,4 +44,17 @@ class SystemLibTestTest : BaseAbstractTest() {
             }
         }
     }
+
+    @Test
+    fun `Test aliases are found in root`() {
+        testFromData(configuration, cleanupOutput = false) {
+            documentablesTransformationStage = { module ->
+                val rellPackage = module.packages.find { it.name == "<root>" }
+                assertNotNull(rellPackage)
+                val assertAlias = rellPackage!!.functions.find { it.name == "assert_equals" }
+                assertNotNull(assertAlias)
+            }
+        }
+    }
+
 }

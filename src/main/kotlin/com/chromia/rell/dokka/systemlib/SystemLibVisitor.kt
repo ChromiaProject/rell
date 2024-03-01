@@ -101,9 +101,19 @@ class SystemLibVisitor(
                 classlikes = types,
                 typealiases = listOf(),
                 // Functions, queries, operations
-                functions = functions + alias.filterIsInstance<DFunction>()
+                functions = functions
         )
-        return namespaces + basePackage
+
+        val aliasPackage = DPackage(
+                dri = DriOfRoot,
+                documentation = mapOf(),
+                sourceSets = setOf(sourceSet),
+                classlikes = listOf(),
+                properties = listOf(),
+                typealiases = listOf(),
+                functions = alias.filterIsInstance<DFunction>(),
+        )
+        return namespaces + basePackage + aliasPackage
     }
 
     private fun List<L_NamespaceMember_Type>.visitTypes(parent: DRI): List<DClass> = map { it.visit(parent) }
