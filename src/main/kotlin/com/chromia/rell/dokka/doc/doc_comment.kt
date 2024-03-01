@@ -10,12 +10,14 @@ import org.jetbrains.dokka.model.doc.*
 fun DocSymbol.toDocumentationNode() = comment?.formatDescription() ?: DocumentationNode(listOf())
 
 fun DocComment.formatDescription() = DocumentationNode(
-        buildList {
-            add(Description(Text(description.substringBefore("\n\n")))) // Short text on main page
-            add(Description(P(listOf(Text(description)))))                    // Full text on site
-            tags[DocCommentTag.SEE]?.forEach { add(See(P(listOf(Text(it.text))), name = it.text, address = null)) }
-            tags[DocCommentTag.PARAM]?.forEach { add(Param(P(listOf(Text(it.text))), it.key!!)) }
-            tags[DocCommentTag.RETURNS]?.let { add(Return(P(listOf(Text(it.first().text))))) }
-            tags[DocCommentTag.SINCE]?.let { add(Since(P(listOf(Text(it.first().text))))) }
-        }
+        RellMarkdownParser().parse(description).children +
+                buildList {
+                    val p = RellMarkdownParser()
+
+                    tags[DocCommentTag.SEE]?.forEach { add(See(P(listOf(Text(it.text))), name = it.text, address = null)) }
+                    tags[DocCommentTag.PARAM]?.forEach { add(Param(p.parseStringToDocNode(it.text), it.key!!)) }
+                    tags[DocCommentTag.RETURNS]?.let { add(Return(p.parseStringToDocNode(it.first().text))) }
+                    //tags[DocCommentTag.RETURNS]?.let { add(Return(P(listOf(Text(it.first().text))))) }
+                    tags[DocCommentTag.SINCE]?.let { add(Since(p.parseStringToDocNode(it.first().text))) }
+                }
 )
