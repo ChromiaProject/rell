@@ -4,6 +4,8 @@ import assertk.assertThat
 import assertk.assertions.containsAtLeast
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
+import assertk.assertions.isTrue
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.config.RellModule
 import net.postchain.rell.base.lib.Lib_Rell
@@ -12,6 +14,7 @@ import net.postchain.rell.base.lmodel.L_NamespaceMember
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Namespace
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Type
 import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
+import org.jetbrains.dokka.base.transformers.documentables.isDeprecated
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
@@ -47,8 +50,10 @@ class SystemLibTestTest : BaseAbstractTest() {
                 assertNotNull(rellPackage)
                 val requireAlias = rellPackage!!.functions.find { it.name == "requireNotEmpty" }
                 assertNotNull(requireAlias)
+                assertThat(requireAlias!!.isDeprecated()).isTrue()
                 val requireFunction = rellPackage.functions.find { it.name == "require_not_empty" }
                 assertNotNull(requireFunction)
+                assertThat(requireFunction!!.isDeprecated()).isFalse()
             }
         }
     }

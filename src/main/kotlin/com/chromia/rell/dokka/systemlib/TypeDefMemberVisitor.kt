@@ -102,7 +102,7 @@ class TypeDefMemberVisitor(
             params = listOf(
                     TypeConstructor(
                             function.header.strCode(),
-                            params = function.header.params.mapIndexed { index, p -> TypeParam(listOf()) }
+                            params = function.header.params.map { JavaClassReference(it.type.strCode()) }
                     )
             )
     )
