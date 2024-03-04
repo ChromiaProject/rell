@@ -4,7 +4,6 @@ import com.chromia.rell.dokka.config.RellModule
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.DriOfRoot
 import com.chromia.rell.dokka.dri.toBound
-import com.chromia.rell.dokka.dri.toDRI
 import com.chromia.rell.dokka.dri.withAlias
 import com.chromia.rell.dokka.model.IsVararg
 import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
@@ -25,8 +24,8 @@ import net.postchain.rell.base.lmodel.L_TypeDefMember_SpecialConstructor
 import org.jetbrains.dokka.DokkaConfiguration.DokkaSourceSet
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
+import org.jetbrains.dokka.links.JavaClassReference
 import org.jetbrains.dokka.links.PointingToCallableParameters
-import org.jetbrains.dokka.links.TypeParam
 import org.jetbrains.dokka.links.withClass
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DFunction
@@ -35,9 +34,7 @@ import org.jetbrains.dokka.model.DPackage
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.Documentable
-import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.KotlinVisibility
-import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.P
@@ -113,8 +110,8 @@ class SystemLibVisitor(
 
     private fun List<L_NamespaceMember_Type>.visitTypes(parent: DRI): List<DClass> = map { it.visit(parent) }
 
-    private fun L_NamespaceMember_Type.visit(parent: DRI): DClass {
-        val dri = parent.withClass(simpleName.str)
+    private fun L_NamespaceMember_Type.visit(parent: DRI, alias: String? = null): DClass {
+        val dri = parent.withClass(alias ?: simpleName.str)
         val allTypeDefs = typeDef.members.all
         with(typeDefVisitor) {
 
@@ -128,7 +125,7 @@ class SystemLibVisitor(
             val staticFunctions = allTypeDefs.filterIsInstance<L_TypeDefMember_Function>().filter { it.function.flags.isStatic }.visitFunctions(dri)
             return DClass(
                     dri = dri,
-                    name = simpleName.str,
+                    name = alias ?: simpleName.str,
                     documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
                     constructors = constructors + specialConstructors,
                     properties = properties + constants,
@@ -216,23 +213,24 @@ class SystemLibVisitor(
 
     private fun List<L_NamespaceMember_Alias>.visitAliases(parent: DRI): List<Documentable> = map { it.visit(parent) }
     private fun L_NamespaceMember_Alias.visit(parent: DRI): Documentable {
-        val dri = DriOfRoot.withClass(simpleName.str).withAlias()
-        val target = finalTargetMember
-        return when (target) {
-            is L_NamespaceMember_Type -> target.visit(dri)
-            is L_NamespaceMember_Function -> target.visit(dri)
+        val dri = DriOfRoot.withAlias()
+        return when (val target = finalTargetMember) {
+            is L_NamespaceMember_Type -> target.visit(dri, simpleName.str)
+            is L_NamespaceMember_Function -> target.visit(dri, simpleName.str)
             else -> TODO("Alias type not implemented")
         }
     }
 
     private fun List<L_NamespaceMember_Function>.visitFunctions(parent: DRI) = map { it.visit(parent) }
 
-    internal fun L_NamespaceMember_Function.visit(parent: DRI): DFunction {
-        val dri = parent.withClass(simpleName.str)
-
+    internal fun L_NamespaceMember_Function.visit(parent: DRI, alias: String? = null): DFunction {
+        val dri = parent.copy(callable = Callable(
+                name = alias ?: simpleName.str,
+                params = function.header.params.map { JavaClassReference(it.type.strCode()) }
+        ))
         return DFunction(
                 dri = dri,
-                name = parent.classNames ?: simpleName.str,
+                name = alias ?: simpleName.str,
                 isConstructor = false,
                 parameters = function.header.params.mapIndexed { index, p -> p.visit(dri, index) },
                 expectPresentInSet = null,
