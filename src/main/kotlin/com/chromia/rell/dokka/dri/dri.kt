@@ -47,7 +47,7 @@ fun M_Type.toBound(presentableName: String? = null): Bound {
             GenericTypeConstructor(
                     dri = toDRI(),
                     presentableName = presentableName ?: genericType.name,
-                    projections = typeArgs.map { it.canonicalOutType().toBound() }
+                    projections = typeArgs.map { it.canonicalOutType().toBound() } // TODO: Not complete
             )
         }
 

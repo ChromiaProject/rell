@@ -13,6 +13,10 @@ import org.jetbrains.dokka.plugability.DokkaPlugin
 import org.jetbrains.dokka.plugability.DokkaPluginApiPreview
 import org.jetbrains.dokka.plugability.PluginApiPreviewAcknowledgement
 
+/**
+ * This plugin takes rell files and produces documentation nodes for each doc comment in the style of kdocs.
+ * It can also produce documentation for the system library.
+ */
 class RellDokkaPlugin : DokkaPlugin() {
     @DokkaPluginApiPreview
     override fun pluginApiPreviewAcknowledgement() = PluginApiPreviewAcknowledgement
@@ -23,17 +27,19 @@ class RellDokkaPlugin : DokkaPlugin() {
         }
     }
 
-    val pageCreator by extending {
-        with(plugin<DokkaBase>()) {
-            CoreExtensions.documentableToPageTranslator providing ::RellDocumentableToPageTranslator override documentableToPageTranslator
-        }
-    }
-
     val signatureProvider by extending {
         with (plugin<DokkaBase>()) {
             signatureProvider providing ::RellSignatureProvider override kotlinSignatureProvider
         }
     }
+
+    val documentableToPageTranslator by extending {
+        with(plugin<DokkaBase>()) {
+            CoreExtensions.documentableToPageTranslator providing ::RellDocumentableToPageTranslator override documentableToPageTranslator
+        }
+    }
+
+
 
    /*val renderer by extending {
         with (plugin<DokkaBase>()) {

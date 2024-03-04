@@ -26,6 +26,7 @@ import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.TypeParameter
+import org.jetbrains.dokka.model.UnresolvedBound
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.P
@@ -80,7 +81,7 @@ class TypeDefMemberVisitor(
                             documentation = mapOf(),
                             expectPresentInSet = null,
                             sourceSets = setOf(sourceSet),
-                            type = TypeParameter(dri, "anything")
+                            type = UnresolvedBound("T")
                     )
                 } ?: listOf(),
                 expectPresentInSet = null,

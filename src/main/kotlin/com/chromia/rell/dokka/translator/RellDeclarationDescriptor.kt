@@ -4,7 +4,16 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptorVisitor
 import org.jetbrains.kotlin.descriptors.annotations.Annotations
 import org.jetbrains.kotlin.name.Name
+import com.chromia.rell.dokka.page.RellLanguageParser
+import com.chromia.rell.dokka.page.RellPageCreator
 
+/**
+ * Dummy class just to distinguish our rell files from kotlin and java.
+ * This is set on all documentables.
+ * Is used toghether with [RellLanguageParser] to not crash default implementations in the page creator.
+ * @see RellLanguageParser
+ * @see RellPageCreator
+ */
 class RellDeclarationDescriptor: DeclarationDescriptor {
     override fun getName(): Name {
         TODO("Not yet implemented")

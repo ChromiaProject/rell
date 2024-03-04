@@ -2,7 +2,6 @@
 package com.chromia.rell.dokka.page
 
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
-import com.chromia.rell.dokka.translator.RellLanguageParser
 import org.jetbrains.dokka.InternalDokkaApi
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
 import org.jetbrains.dokka.base.signatures.SignatureProvider
@@ -10,6 +9,7 @@ import org.jetbrains.dokka.base.transformers.pages.comments.CommentsToContentCon
 import org.jetbrains.dokka.base.transformers.pages.tags.CustomTagContentProvider
 import org.jetbrains.dokka.base.translators.documentables.DefaultPageCreator
 import org.jetbrains.dokka.base.translators.documentables.descriptions
+import org.jetbrains.dokka.model.DClasslike
 import org.jetbrains.dokka.model.DModule
 import org.jetbrains.dokka.model.DPackage
 import org.jetbrains.dokka.pages.ContentGroup

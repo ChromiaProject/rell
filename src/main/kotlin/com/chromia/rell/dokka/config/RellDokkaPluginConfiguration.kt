@@ -9,7 +9,11 @@ import org.jetbrains.dokka.PluginConfigurationImpl
 import org.jetbrains.dokka.plugability.ConfigurableBlock
 
 @Serializable
-data class RellDokkaPluginConfiguration(val name: String, val modules: List<String>?, val system: Boolean = false) : ConfigurableBlock {
+data class RellDokkaPluginConfiguration(
+        val name: String,
+        val modules: List<String>?,
+        val system: Boolean = false
+) : ConfigurableBlock {
     fun toPluginConfig() = PluginConfigurationImpl(
             RellDokkaPlugin::class.qualifiedName!!,
             DokkaConfiguration.SerializationFormat.JSON,

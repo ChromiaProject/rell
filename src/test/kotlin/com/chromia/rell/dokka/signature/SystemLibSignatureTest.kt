@@ -175,7 +175,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
                         .match(
                                 "constructor(",
                                 Parameters(
-                                        Parameter("arg: ", A("anything"))
+                                        Parameter("arg: T")
                                 ), "): ", A("meta"),
                                 ignoreSpanWithTokenStyle = true)
             }
@@ -193,6 +193,22 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
                                 Parameters(
                                         Parameter("fn: () -> T, "), Parameter("default: T")
                                 ), "): T",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
+
+    @Test
+    fun `special functions empty and exists displayed correctly`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("-rell/root/empty.html").firstSignature()
+                        .match(
+                                "function ", A("empty"), "(",
+                                Parameters(
+                                        Parameter("arg: T?")
+                                ), "): ", A("boolean"),
                                 ignoreSpanWithTokenStyle = true)
             }
         }

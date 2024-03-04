@@ -3,8 +3,14 @@ package com.chromia.rell.dokka
 import assertk.assertThat
 import assertk.assertions.containsAtLeast
 import assertk.assertions.doesNotContain
+import assertk.assertions.isEqualTo
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.config.RellModule
+import net.postchain.rell.base.lib.Lib_Rell
+import net.postchain.rell.base.lib.test.Lib_RellTest
+import net.postchain.rell.base.lmodel.L_NamespaceMember
+import net.postchain.rell.base.lmodel.L_NamespaceMember_Namespace
+import net.postchain.rell.base.lmodel.L_NamespaceMember_Type
 import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -32,6 +38,7 @@ class SystemLibTestTest : BaseAbstractTest() {
             }
         }
     }
+
     @Test
     fun `Aliases are properly named`() {
         testFromData(configuration, cleanupOutput = false) {
@@ -69,4 +76,49 @@ class SystemLibTestTest : BaseAbstractTest() {
             }
         }
     }
+
+    @Test
+    fun `All members of Lib_Rell and Lib_RellTest is covered`() {
+        testFromData(configuration, cleanupOutput = false) {
+            documentablesTransformationStage = { module ->
+                val documentablesInPackage = module.packages.flatMap { it.children }
+                val sysLibDefs = Lib_Rell.MODULE.lModule.namespace.getAllDefs()
+                val testLibDefs = Lib_RellTest.MODULE.lModule.namespace.getAllDefs()
+                val expectedDefs = (sysLibDefs + testLibDefs)
+                        .filterHiddenTypes()
+                        .filterEmptyNamespaces()
+                assertThat(documentablesInPackage.size).isEqualTo(
+                        expectedDefs.size
+                                - 2 /* Blacklisted types */
+                                - 15 /* TODO: Not implemented yet */
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `All types of Lib_Rell and Lib_RellTest are covered`() {
+        testFromData(configuration, cleanupOutput = false) {
+            documentablesTransformationStage = { module ->
+                val sysLibDefs = Lib_Rell.MODULE.lModule.namespace.getAllDefs()
+                val testLibDefs = Lib_RellTest.MODULE.lModule.namespace.getAllDefs()
+                val documentablesInTypes = module.packages.flatMap {
+                    it.classlikes.flatMap { it.children }
+                }
+                val expectedTypeDefs = (sysLibDefs+testLibDefs).filterIsInstance<L_NamespaceMember_Type>()
+                        .flatMap { it.typeDef.allMembers.all }
+                assertThat(documentablesInTypes.size).isEqualTo(expectedTypeDefs.size - 104 /* TODO: Not implemented */)
+            }
+        }
+    }
+
+    private fun List<L_NamespaceMember>.filterHiddenTypes() =
+            filterNot {
+                it.getTypeDefOrNull()?.hidden == true || it.getTypeDefOrNull()?.abstract == true
+            }
+
+    private fun List<L_NamespaceMember>.filterEmptyNamespaces() =
+            filterNot {
+                (it is L_NamespaceMember_Namespace) && it.namespace.getAllDefs().isNotEmpty()
+            }
 }

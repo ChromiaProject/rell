@@ -63,9 +63,7 @@ class RellSignatureProvider internal constructor(
                 link(d.name, d.dri) // TODO: set styles if deprecated
                 operator(": ")
                 signatureForProjection(d.type)
-                if (!d.isMutable()) {
-                    // Set default value
-                }
+                // Set default value
             }
         }
 

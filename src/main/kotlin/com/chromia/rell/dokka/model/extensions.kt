@@ -34,14 +34,10 @@ import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.KotlinModifier
 import org.jetbrains.dokka.model.KotlinVisibility
 import org.jetbrains.dokka.model.TypeParameter
-import org.jetbrains.dokka.model.Visibility
 import org.jetbrains.dokka.model.Void
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.Text
-import org.jetbrains.dokka.model.properties.ExtraProperty
-import org.jetbrains.dokka.model.properties.PropertyContainer
-import kotlin.reflect.jvm.internal.calls.ThrowingCaller.returnType
 
 // Module == kotlin package
 fun R_App.definitionsByModule(): Map<R_Module, RellModule> {

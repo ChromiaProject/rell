@@ -13,7 +13,12 @@ import org.jetbrains.dokka.plugability.configuration
 import org.jetbrains.dokka.plugability.query
 import org.jetbrains.dokka.plugability.querySingle
 import org.jetbrains.dokka.transformers.documentation.DocumentableToPageTranslator
+import org.jetbrains.dokka.base.translators.documentables.DefaultDocumentableToPageTranslator
 
+/**
+ * Injects the [RellDokkaPluginConfiguration] into our [RellPageCreator].
+ * @see DefaultDocumentableToPageTranslator
+ */
 class RellDocumentableToPageTranslator(context: DokkaContext) : DocumentableToPageTranslator {
 
     private val configuration = configuration<DokkaBase, DokkaBaseConfiguration>(context)
