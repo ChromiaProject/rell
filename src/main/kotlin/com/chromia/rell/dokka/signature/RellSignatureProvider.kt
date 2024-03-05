@@ -10,24 +10,34 @@ import com.chromia.rell.dokka.model.IsZeroOne
 import com.chromia.rell.dokka.model.isOperation
 import com.chromia.rell.dokka.model.isQuery
 import org.jetbrains.dokka.base.DokkaBase
+import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.driOrNull
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.parametersBlock
+import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.stylesIfDeprecated
 import org.jetbrains.dokka.base.signatures.SignatureProvider
 import org.jetbrains.dokka.base.transformers.pages.comments.CommentsToContentConverter
 import org.jetbrains.dokka.base.translators.documentables.PageContentBuilder
+import org.jetbrains.dokka.links.DriOfAny
+import org.jetbrains.dokka.links.withTargetToDeclaration
+import org.jetbrains.dokka.model.Bound
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
+import org.jetbrains.dokka.model.DTypeParameter
 import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.GenericTypeConstructor
+import org.jetbrains.dokka.model.Invariance
 import org.jetbrains.dokka.model.IsVar
 import org.jetbrains.dokka.model.Nullable
 import org.jetbrains.dokka.model.Projection
+import org.jetbrains.dokka.model.TypeAliased
 import org.jetbrains.dokka.model.TypeConstructor
 import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.UnresolvedBound
+import org.jetbrains.dokka.model.Variance
 import org.jetbrains.dokka.model.Void
+import org.jetbrains.dokka.model.withDri
 import org.jetbrains.dokka.pages.ContentKind
 import org.jetbrains.dokka.pages.ContentNode
 import org.jetbrains.dokka.pages.TextStyle
@@ -52,9 +62,29 @@ class RellSignatureProvider internal constructor(
         return when (documentable) {
             is DFunction -> functionSignature(documentable)
             is DProperty -> propertySignature(documentable)
+            is DTypeParameter -> typeParameterSignature(documentable)
             else -> listOf()
         }
     }
+
+    private fun typeParameterSignature(t: DTypeParameter) = t.sourceSets.map {
+        contentBuilder.contentFor(t, sourceSets = setOf(it)) {
+            group(styles = mainStyles + t.stylesIfDeprecated(it)) {
+                signatureForProjection(t.variantTypeParameter.withDri(t.dri.withTargetToDeclaration()))
+            }
+            list(
+                    elements = t.nontrivialBounds,
+                    prefix = " : ",
+                    surroundingCharactersStyle = mainStyles + TokenStyle.Operator
+            ) { bound ->
+                println(bound)
+                signatureForProjection(bound)
+            }
+        }
+    }
+
+    private val DTypeParameter.nontrivialBounds: List<Bound>
+        get() = bounds.filterNot { it is Nullable && it.inner.driOrNull == DriOfAny }
 
     private fun propertySignature(d: DProperty): List<ContentNode> {
         return d.sourceSets.map { sourceSet ->
@@ -105,6 +135,13 @@ class RellSignatureProvider internal constructor(
                     d.isOperation() -> keyword("operation ")
                     else -> keyword("function ")
                 }
+
+                list(d.generics, prefix = "<", suffix = "> ",
+                        separatorStyles = mainStyles + TokenStyle.Punctuation,
+                        surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
+                    +buildSignature(it)
+                }
+
                 if (!d.isConstructor) link(d.name, d.dri)
 
                 punctuation("(")
@@ -136,17 +173,12 @@ class RellSignatureProvider internal constructor(
             p: Projection, showFullyQualifiedName: Boolean = false
     ) {
         when (p) {
-
-            is UnresolvedBound -> {
-                text(p.name)
-            }
-
             is TypeParameter -> {
-                p.presentableName?.let { text("$it: ") }
+                p.presentableName?.let {
+                    text(it)
+                    operator(": ")
+                }
                 link(p.name, p.dri)
-            }
-
-            is Dynamic -> {
             }
 
             is GenericTypeConstructor -> {
@@ -171,17 +203,27 @@ class RellSignatureProvider internal constructor(
                             surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
                         signatureForProjection(it, showFullyQualifiedName)
                     }
-                operator(" -> ")
-                signatureForProjection(p.projections.last(), showFullyQualifiedName)
+                    operator(" -> ")
+                    signatureForProjection(p.projections.last(), showFullyQualifiedName)
                 }
             }
 
-            is Nullable -> {
-                signatureForProjection(p.inner)
+            is Invariance<*> -> text((p.inner as TypeParameter).name) // Hack to make T not be a broken link
+
+            is Variance<*> -> group(styles = emptySet()) {
+                p.takeIf { it.toString().isNotEmpty() }?.let { keyword("$it ") } // Will never happen??
+                signatureForProjection(p.inner, showFullyQualifiedName)
+            }
+
+            is Nullable -> group(styles = emptySet()) {
+                signatureForProjection(p.inner, showFullyQualifiedName)
                 operator("?")
             }
 
+            is TypeAliased -> signatureForProjection(p.typeAlias)
             is Void -> link("unit", DriOfUnit)
+            is UnresolvedBound -> text(p.name)
+            is Dynamic -> { }
             else -> TODO(p.toString())
         }
     }

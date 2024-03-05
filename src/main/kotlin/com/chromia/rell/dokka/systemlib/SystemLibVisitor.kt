@@ -36,6 +36,7 @@ import org.jetbrains.dokka.model.DObject
 import org.jetbrains.dokka.model.DPackage
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
+import org.jetbrains.dokka.model.DTypeParameter
 import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.KotlinVisibility
 import org.jetbrains.dokka.model.doc.Description
@@ -243,7 +244,15 @@ class SystemLibVisitor(
                 isExpectActual = false,
                 type = function.header.resultType.toBound(),
                 sourceSets = setOf(sourceSet),
-                generics = listOf(),
+                generics = function.header.typeParams.map { DTypeParameter(
+                        dri = DRI(classNames = it.name),
+                        name = it.name,
+                        presentableName = null,
+                        documentation = DocumentationNode(listOf()).toSourceSetDependent(),
+                        expectPresentInSet = null,
+                        sourceSets = setOf(sourceSet),
+                        bounds = listOf()
+                ) },
                 sources = NULL_DESCRIPTOR.toSourceSetDependent(),
                 documentation = docSymbol.toDocumentationNode().toSourceSetDependent(),
                 modifier = mapOf(),

@@ -23,6 +23,7 @@ import org.jetbrains.dokka.links.TypeParam
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
+import org.jetbrains.dokka.model.DTypeParameter
 import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.TypeParameter
@@ -124,7 +125,15 @@ class TypeDefMemberVisitor(
                 isExpectActual = false,
                 type = function.header.resultType.toBound(), // Return type
                 sourceSets = setOf(sourceSet),
-                generics = listOf(),
+                generics = function.header.typeParams.map { DTypeParameter(
+                        dri = DRI(classNames = it.name),
+                        name = it.name,
+                        presentableName = null,
+                        documentation = mapOf(sourceSet to DocumentationNode(listOf())),
+                        expectPresentInSet = null,
+                        sourceSets = setOf(sourceSet),
+                        bounds = listOf()
+                ) },
                 sources = mapOf(sourceSet to NULL_DESCRIPTOR),
                 documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
                 modifier = mapOf(),

@@ -187,7 +187,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("-rell/root/try_call.html").lastSignature() // TODO: Why the [rell]-prefix
                         .match(
-                                "function ", A("try_call"), "(",
+                                "function <T> ", A("try_call"), "(",
                                 Parameters(
                                         Parameter("fn: () -> T, "), Parameter("default: T")
                                 ), "): T",
@@ -222,6 +222,22 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
                                 "function ", A("print"), "(",
                                 Parameters(
                                         Parameter("values: anything...")
+                                ), ")",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
+
+    @Test
+    fun `generic type parameters are visualized on functions`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("-rell/rell.test/assert_equals.html").firstSignature()
+                        .match(
+                                "function <T> ", A("assert_equals"), "(",
+                                Parameters(
+                                        Parameter("actual: T,"), Parameter("expected: T")
                                 ), ")",
                                 ignoreSpanWithTokenStyle = true)
             }
