@@ -211,4 +211,20 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             }
         }
     }
+
+    @Test
+    fun `print function can print anything`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("-rell/root/print.html").firstSignature()
+                        .match(
+                                "function ", A("print"), "(",
+                                Parameters(
+                                        Parameter("values: anything...")
+                                ), ")",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
 }

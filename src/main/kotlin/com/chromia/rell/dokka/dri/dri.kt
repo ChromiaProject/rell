@@ -8,6 +8,7 @@ import net.postchain.rell.base.mtype.M_Type_Function
 import net.postchain.rell.base.mtype.M_Type_Generic
 import net.postchain.rell.base.mtype.M_Type_Nullable
 import net.postchain.rell.base.mtype.M_Type_Param
+import net.postchain.rell.base.mtype.M_Type_Simple
 import net.postchain.rell.base.mtype.M_Type_Tuple
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.DRIExtraContainer
@@ -42,7 +43,6 @@ fun M_Type.toDRI(): DRI {
 
 fun M_Type.toBound(presentableName: String? = null): Bound {
     return when (this) {
-        is M_Type_Nullable -> Nullable(valueType.toBound())
         is M_Type_Generic -> {
             GenericTypeConstructor(
                     dri = toDRI(),
@@ -66,9 +66,9 @@ fun M_Type.toBound(presentableName: String? = null): Bound {
             )
         }
 
-        is M_Type_Param -> {
-            UnresolvedBound(param.name)
-        }
+        is M_Type_Param -> UnresolvedBound(param.name)
+        is M_Type_Simple -> UnresolvedBound(strCode())
+        is M_Type_Nullable -> Nullable(valueType.toBound())
 
         else -> TypeParameter(toDRI(), presentableName ?: strCode(), presentableName ?: strCode())
     }
