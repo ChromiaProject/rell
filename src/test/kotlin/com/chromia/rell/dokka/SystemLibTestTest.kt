@@ -97,6 +97,18 @@ class SystemLibTestTest : BaseAbstractTest() {
     }
 
     @Test
+    fun `aliased types can be found`() {
+        testFromData(configuration, cleanupOutput = false) {
+            documentablesTransformationStage = { module ->
+                val rellPackage = module.packages.find { it.name == "root" }
+                assertNotNull(rellPackage)
+                val res = rellPackage.typealiases.find { it.name == "name" }
+                assertNotNull(res)
+            }
+        }
+    }
+
+    @Test
     fun `All members of Lib_Rell and Lib_RellTest is covered`() {
         testFromData(configuration, cleanupOutput = false) {
             documentablesTransformationStage = { module ->
@@ -106,8 +118,8 @@ class SystemLibTestTest : BaseAbstractTest() {
                 val expectedDefs = (sysLibDefs + testLibDefs).filterEmptyNamespaces()
                 assertThat(documentablesInPackage.size).isEqualTo(
                         expectedDefs.size
-                                - 2 /* Blacklisted types */
-                                - 15 /* TODO: Not implemented yet */
+                                - 3 /* Blacklisted types */
+                                - 10 /* TODO: Not implemented yet */
                 )
             }
         }

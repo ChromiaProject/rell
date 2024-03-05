@@ -5,6 +5,7 @@ import com.chromia.rell.dokka.deprecation.toAnnotation
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.DriOfRoot
 import com.chromia.rell.dokka.dri.toBound
+import com.chromia.rell.dokka.dri.toDRI
 import com.chromia.rell.dokka.dri.withAlias
 import com.chromia.rell.dokka.dri.withSourceSet
 import com.chromia.rell.dokka.model.IsHidden
@@ -20,19 +21,21 @@ import net.postchain.rell.base.lmodel.L_NamespaceMember_Property
 import net.postchain.rell.base.lmodel.L_NamespaceMember_SpecialFunction
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Struct
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Type
+import net.postchain.rell.base.lmodel.L_TypeDefMember
+import net.postchain.rell.base.lmodel.L_TypeDefMember_Alias
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Constant
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Constructor
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Function
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Property
 import net.postchain.rell.base.lmodel.L_TypeDefMember_SpecialConstructor
-import net.postchain.rell.base.model.R_QualifiedName
-import net.postchain.rell.base.mtype.M_GenericType
-import net.postchain.rell.base.mtype.M_Type_Generic
+import net.postchain.rell.base.lmodel.L_TypeDefMember_StaticSpecialFunction
+import net.postchain.rell.base.lmodel.L_TypeDefMember_ValueSpecialFunction
 import org.jetbrains.dokka.DokkaConfiguration.DokkaSourceSet
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.JavaClassReference
 import org.jetbrains.dokka.links.PointingToCallableParameters
+import org.jetbrains.dokka.links.TypeConstructor
 import org.jetbrains.dokka.links.withClass
 import org.jetbrains.dokka.model.Annotations
 import org.jetbrains.dokka.model.DClass
@@ -41,20 +44,24 @@ import org.jetbrains.dokka.model.DObject
 import org.jetbrains.dokka.model.DPackage
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
+import org.jetbrains.dokka.model.DTypeAlias
 import org.jetbrains.dokka.model.Documentable
+import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.GenericTypeConstructor
-import org.jetbrains.dokka.model.TypeConstructor
 import org.jetbrains.dokka.model.KotlinClassKindTypes
 import org.jetbrains.dokka.model.KotlinModifier.Abstract
 import org.jetbrains.dokka.model.KotlinVisibility
 import org.jetbrains.dokka.model.KotlinVisibility.Public
 import org.jetbrains.dokka.model.TypeConstructorWithKind
+import org.jetbrains.dokka.model.TypeParameter
+import org.jetbrains.dokka.model.UnresolvedBound
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.P
 import org.jetbrains.dokka.model.doc.Text
 import org.jetbrains.dokka.model.properties.PropertyContainer
 import org.jetbrains.dokka.utilities.DokkaLogger
+import org.jetbrains.kotlin.ir.types.impl.IrErrorClassImpl.visibility
 
 /**
  * Translates a [RellModule] into documentables.
@@ -67,6 +74,7 @@ class SystemLibVisitor(
 
     companion object {
         val blacklistedTypes = listOf("guid", "signer")
+        val blacklistedAliases = listOf("tuid")
         val blacklistedNamespaces = listOf("")
     }
 
@@ -89,6 +97,7 @@ class SystemLibVisitor(
         val properties = namespaceMembers.filterIsInstance<L_NamespaceMember_Property>()
                 .visitProperties(dri)
         val alias = namespaceMembers.filterIsInstance<L_NamespaceMember_Alias>()
+                .filterNot { blacklistedAliases.contains(it.simpleName.str) }
                 .visitAliases(dri)
         val namespaces = module.lModule.namespace.getAllDefs().filterIsInstance<L_NamespaceMember_Namespace>()
                 .filterNot { blacklistedNamespaces.contains(it.simpleName.str) }
@@ -114,7 +123,7 @@ class SystemLibVisitor(
                 sourceSets = setOf(sourceSet),
                 classlikes = listOf(),
                 properties = alias.filterIsInstance<DProperty>(),
-                typealiases = listOf(),
+                typealiases = alias.filterIsInstance<DTypeAlias>(),
                 functions = alias.filterIsInstance<DFunction>(),
         )
         return namespaces + basePackage + aliasPackage
@@ -130,8 +139,15 @@ class SystemLibVisitor(
 
         val generics = typeDef.mGenericType.params.toGenerics(dri.withSourceSet(sourceSet))
 
-        val parent = typeDef.mGenericType.parent?.genericType?.commonType?.let {
-            listOf(TypeConstructorWithKind(it.toBound() as GenericTypeConstructor, KotlinClassKindTypes.CLASS))
+        val superTypes = typeDef.mGenericType.parent?.genericType?.commonType?.let {
+            buildList {
+                add(TypeConstructorWithKind(it.toBound() as GenericTypeConstructor, KotlinClassKindTypes.CLASS))
+                /*var parentType = it.getParentType()
+                while (parentType != null) {
+                    add(TypeConstructorWithKind(parentType.toBound() as GenericTypeConstructor, KotlinClassKindTypes.CLASS))
+                    parentType = parentType.getParentType()
+                }*/
+            }
         }
         with(typeDefVisitor) {
 
@@ -153,10 +169,10 @@ class SystemLibVisitor(
                     generics = generics,
                     classlikes = listOf(),
                     isExpectActual = false,
-                    companion = null, //companionObject(dri, listOf(), staticFunctions),
+                    companion = null,
                     expectPresentInSet = null,
                     visibility = Public.toSourceSetDependent(),
-                    supertypes = parent.toSourceSetDependent(),
+                    supertypes = superTypes.toSourceSetDependent(),
                     sourceSets = setOf(sourceSet),
                     sources = mapOf(sourceSet to NULL_DESCRIPTOR),
                     modifier = modifier.toSourceSetDependent(),
@@ -181,33 +197,13 @@ class SystemLibVisitor(
                 generics = listOf(),
                 classlikes = listOf(),
                 isExpectActual = false,
-                companion = null, //companionObject(dri, listOf(), staticFunctions),
+                companion = null,
                 expectPresentInSet = null,
-                visibility = mapOf(sourceSet to KotlinVisibility.Public),
+                visibility = Public.toSourceSetDependent(),
                 supertypes = mapOf(sourceSet to listOf()), // TODO: add super types
                 sourceSets = setOf(sourceSet),
                 sources = mapOf(sourceSet to NULL_DESCRIPTOR),
                 modifier = mapOf()
-        )
-    }
-
-    fun companionObject(parent: DRI, constants: List<DProperty>, staticFunctions: List<DFunction>): DObject? {
-        if (constants.isEmpty() && staticFunctions.isEmpty()) return null
-        val dri = parent.withClass("static")
-        return DObject(
-                name = null,
-                dri = dri,
-
-                visibility = mapOf(sourceSet to KotlinVisibility.Public),
-                supertypes = mapOf(sourceSet to listOf()), // TODO: add super types
-                sourceSets = setOf(sourceSet),
-                sources = mapOf(sourceSet to NULL_DESCRIPTOR),
-                documentation = mapOf(sourceSet to DocumentationNode(listOf())),
-                isExpectActual = false,
-                expectPresentInSet = null,
-                classlikes = listOf(),
-                functions = staticFunctions,
-                properties = constants
         )
     }
 
@@ -238,8 +234,27 @@ class SystemLibVisitor(
     private fun L_NamespaceMember_Alias.visit(parent: DRI): Documentable {
         val dri = DriOfRoot.withAlias()
         return when (val target = finalTargetMember) {
-            is L_NamespaceMember_Type -> target.visit(dri, simpleName.str)
             is L_NamespaceMember_Function -> target.visit(dri, simpleName.str, deprecated)
+            is L_NamespaceMember_Type -> {
+                val aliasDri = dri.withClass(simpleName.str)
+                DTypeAlias(
+                        aliasDri,
+                        simpleName.str,
+                        documentation = target.docSymbol.toDocumentationNode().toSourceSetDependent(),
+                        expectPresentInSet = null,
+                        generics = listOf(),
+                        sourceSets = setOf(sourceSet),
+                        sources = NULL_DESCRIPTOR.toSourceSetDependent(),
+                        type = TypeParameter(aliasDri, simpleName.str),
+                        underlyingType = TypeParameter(target.qualifiedName.toDRI(), target.simpleName.str).toSourceSetDependent(),
+                        visibility = Public.toSourceSetDependent(),
+                        extra = PropertyContainer.withAll(
+                                takeIf { deprecated != null }?.let {
+                                    Annotations(listOf(deprecated!!.toAnnotation()).toSourceSetDependent())
+                                }
+                        )
+                )
+            }
             else -> TODO("Alias type not implemented")
         }
     }

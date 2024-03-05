@@ -27,17 +27,15 @@ import org.jetbrains.dokka.model.Bound
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DClasslike
 import org.jetbrains.dokka.model.DFunction
-import org.jetbrains.dokka.model.DInterface
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
+import org.jetbrains.dokka.model.DTypeAlias
 import org.jetbrains.dokka.model.DTypeParameter
 import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.IsVar
-import org.jetbrains.dokka.model.JavaModifier
-import org.jetbrains.dokka.model.KotlinModifier
 import org.jetbrains.dokka.model.Nullable
 import org.jetbrains.dokka.model.PrimaryConstructorExtra
 import org.jetbrains.dokka.model.Projection
@@ -74,12 +72,41 @@ class RellSignatureProvider internal constructor(
 
     override fun signature(documentable: Documentable): List<ContentNode> {
         return when (documentable) {
+            is DTypeAlias -> typeAliasSignature(documentable)
             is DClasslike -> classLikeSignature(documentable)
             is DFunction -> functionSignature(documentable)
             is DProperty -> propertySignature(documentable)
             is DTypeParameter -> typeParameterSignature(documentable)
             else -> listOf()
         }
+    }
+
+    private fun typeAliasSignature(a: DTypeAlias): List<ContentNode> {
+        return a.sourceSets.map { sourceSet ->
+            contentBuilder.contentFor(a, sourceSets = setOf(sourceSet)) {
+                a.underlyingType.entries.groupBy ({ it.value }, { it.key }).map { (type, platforms) ->
+                    +contentBuilder.contentFor(a, ContentKind.Symbol,
+                            setOf(TextStyle.Monospace),
+                            sourceSets = platforms.toSet()) {
+                        keyword("alias ")
+                        group(styles = mainStyles + a.stylesIfDeprecated(sourceSet)) {
+                            signatureForProjection(a.type)
+                        }
+                        operator(" = ")
+                        signatureForTypealiasTarget(a, type)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun PageContentBuilder.DocumentableContentBuilder.signatureForTypealiasTarget(
+            typeAlias: DTypeAlias, bound: Bound
+    ) {
+        signatureForProjection(
+                p = bound,
+                showFullyQualifiedName = bound.driOrNull?.classNames == typeAlias.dri.classNames
+        )
     }
 
     private fun classLikeSignature(c: DClasslike) = c.sourceSets.map { sourceSet ->
