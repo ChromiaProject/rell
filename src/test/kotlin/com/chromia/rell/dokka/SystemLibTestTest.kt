@@ -5,6 +5,7 @@ import assertk.assertions.containsAtLeast
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
+import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.config.RellModule
@@ -15,8 +16,8 @@ import net.postchain.rell.base.lmodel.L_NamespaceMember_Namespace
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Type
 import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
 import org.jetbrains.dokka.base.transformers.documentables.isDeprecated
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
+import kotlin.test.assertNotNull
 
 class SystemLibTestTest : BaseAbstractTest() {
     private val configuration = dokkaConfiguration {
@@ -35,7 +36,7 @@ class SystemLibTestTest : BaseAbstractTest() {
                 assertThat(module.packages.map { it.name }).containsAtLeast("rell", "rell.test", "crypto", "op_context", "chain_context")
                 val rellPackage = module.packages.find { it.name == "rell" }
                 assertNotNull(rellPackage)
-                val rellTypes = rellPackage!!.classlikes.map { it.name }
+                val rellTypes = rellPackage.classlikes.map { it.name }
                 assertThat(rellTypes).doesNotContain("guid")
                 assertThat(rellTypes).doesNotContain("signer")
             }
@@ -48,12 +49,12 @@ class SystemLibTestTest : BaseAbstractTest() {
             documentablesTransformationStage = { module ->
                 val rellPackage = module.packages.find { it.name == "root" }
                 assertNotNull(rellPackage)
-                val requireAlias = rellPackage!!.functions.find { it.name == "requireNotEmpty" }
+                val requireAlias = rellPackage.functions.find { it.name == "requireNotEmpty" }
                 assertNotNull(requireAlias)
-                assertThat(requireAlias!!.isDeprecated()).isTrue()
+                assertThat(requireAlias.isDeprecated()).isTrue()
                 val requireFunction = rellPackage.functions.find { it.name == "require_not_empty" }
                 assertNotNull(requireFunction)
-                assertThat(requireFunction!!.isDeprecated()).isFalse()
+                assertThat(requireFunction.isDeprecated()).isFalse()
             }
         }
     }
@@ -64,7 +65,7 @@ class SystemLibTestTest : BaseAbstractTest() {
             documentablesTransformationStage = { module ->
                 val rellPackage = module.packages.find { it.name == "root" }
                 assertNotNull(rellPackage)
-                val assertAlias = rellPackage!!.functions.find { it.name == "assert_equals" }
+                val assertAlias = rellPackage.functions.find { it.name == "assert_equals" }
                 assertNotNull(assertAlias)
             }
         }
@@ -76,8 +77,21 @@ class SystemLibTestTest : BaseAbstractTest() {
             documentablesTransformationStage = { module ->
                 val rellPackage = module.packages.find { it.name == "root" }
                 assertNotNull(rellPackage)
-                val res = rellPackage!!.classlikes.find { it.name == "gtx_operation" }
+                val res = rellPackage.classlikes.find { it.name == "gtx_operation" }
                 assertNotNull(res)
+            }
+        }
+    }
+
+    @Test
+    fun `is_signer is deprecated`() {
+        testFromData(configuration, cleanupOutput = false) {
+            documentablesTransformationStage = { module ->
+                val rellPackage = module.packages.find { it.name == "root" }
+                assertNotNull(rellPackage)
+                val res = rellPackage.functions.find { it.name == "is_signer" }
+                assertNotNull(res)
+                assertThat(res.isDeprecated()).isTrue()
             }
         }
     }

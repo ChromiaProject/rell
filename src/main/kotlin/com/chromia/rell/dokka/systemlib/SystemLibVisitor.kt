@@ -10,7 +10,6 @@ import com.chromia.rell.dokka.model.IsVararg
 import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.lmodel.L_FunctionParam
-import net.postchain.rell.base.lmodel.L_NamespaceMember
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Alias
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Constant
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Function
@@ -31,7 +30,6 @@ import org.jetbrains.dokka.links.JavaClassReference
 import org.jetbrains.dokka.links.PointingToCallableParameters
 import org.jetbrains.dokka.links.withClass
 import org.jetbrains.dokka.model.Annotations
-import org.jetbrains.dokka.model.BooleanValue
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DObject
@@ -40,18 +38,12 @@ import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.KotlinVisibility
-import org.jetbrains.dokka.model.StringValue
-import org.jetbrains.dokka.model.doc.Deprecated
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.P
-import org.jetbrains.dokka.model.doc.TagWrapper
 import org.jetbrains.dokka.model.doc.Text
 import org.jetbrains.dokka.model.properties.PropertyContainer
 import org.jetbrains.dokka.utilities.DokkaLogger
-import org.jetbrains.kotlin.util.capitalizeDecapitalize.capitalizeFirstWord
-import java.util.Locale
-import javax.swing.text.html.HTML.Tag.S
 
 /**
  * Translates a [RellModule] into documentables.
@@ -234,11 +226,12 @@ class SystemLibVisitor(
 
     private fun List<L_NamespaceMember_Function>.visitFunctions(parent: DRI) = map { it.visit(parent) }
 
-    internal fun L_NamespaceMember_Function.visit(parent: DRI, alias: String? = null, deprecated: C_Deprecated? = null): DFunction {
+    internal fun L_NamespaceMember_Function.visit(parent: DRI, alias: String? = null, deprecatedOverride: C_Deprecated? = null): DFunction {
         val dri = parent.copy(callable = Callable(
                 name = alias ?: simpleName.str,
                 params = function.header.params.map { JavaClassReference(it.type.strCode()) }
         ))
+        val deprecated = deprecatedOverride ?: deprecated
         return DFunction(
                 dri = dri,
                 name = alias ?: simpleName.str,
