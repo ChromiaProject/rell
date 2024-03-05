@@ -25,6 +25,9 @@ import net.postchain.rell.base.lmodel.L_TypeDefMember_Constructor
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Function
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Property
 import net.postchain.rell.base.lmodel.L_TypeDefMember_SpecialConstructor
+import net.postchain.rell.base.model.R_QualifiedName
+import net.postchain.rell.base.mtype.M_GenericType
+import net.postchain.rell.base.mtype.M_Type_Generic
 import org.jetbrains.dokka.DokkaConfiguration.DokkaSourceSet
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
@@ -38,13 +41,14 @@ import org.jetbrains.dokka.model.DObject
 import org.jetbrains.dokka.model.DPackage
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
-import org.jetbrains.dokka.model.DTypeParameter
 import org.jetbrains.dokka.model.Documentable
-import org.jetbrains.dokka.model.KotlinModifier
+import org.jetbrains.dokka.model.GenericTypeConstructor
+import org.jetbrains.dokka.model.TypeConstructor
+import org.jetbrains.dokka.model.KotlinClassKindTypes
 import org.jetbrains.dokka.model.KotlinModifier.Abstract
 import org.jetbrains.dokka.model.KotlinVisibility
-import org.jetbrains.dokka.model.KotlinVisibility.Internal
 import org.jetbrains.dokka.model.KotlinVisibility.Public
+import org.jetbrains.dokka.model.TypeConstructorWithKind
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.P
@@ -126,6 +130,9 @@ class SystemLibVisitor(
 
         val generics = typeDef.mGenericType.params.toGenerics(dri.withSourceSet(sourceSet))
 
+        val parent = typeDef.mGenericType.parent?.genericType?.commonType?.let {
+            listOf(TypeConstructorWithKind(it.toBound() as GenericTypeConstructor, KotlinClassKindTypes.CLASS))
+        }
         with(typeDefVisitor) {
 
             val specialConstructors = allTypeDefs.filterIsInstance<L_TypeDefMember_SpecialConstructor>().visitSpecialConstructors(dri)
@@ -149,7 +156,7 @@ class SystemLibVisitor(
                     companion = null, //companionObject(dri, listOf(), staticFunctions),
                     expectPresentInSet = null,
                     visibility = Public.toSourceSetDependent(),
-                    supertypes = mapOf(sourceSet to listOf()), // TODO: add super types
+                    supertypes = parent.toSourceSetDependent(),
                     sourceSets = setOf(sourceSet),
                     sources = mapOf(sourceSet to NULL_DESCRIPTOR),
                     modifier = modifier.toSourceSetDependent(),

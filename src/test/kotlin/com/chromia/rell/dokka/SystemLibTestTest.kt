@@ -124,7 +124,7 @@ class SystemLibTestTest : BaseAbstractTest() {
                 }
                 val expectedTypeDefs = (sysLibDefs+testLibDefs).filterIsInstance<L_NamespaceMember_Type>()
                         .flatMap { it.typeDef.allMembers.all }
-                assertThat(documentablesInTypes.size).isEqualTo(expectedTypeDefs.size - 104 /* TODO: Not implemented */)
+                assertThat(documentablesInTypes.size).isEqualTo(expectedTypeDefs.size - 45 /* TODO: Not implemented */)
             }
         }
     }

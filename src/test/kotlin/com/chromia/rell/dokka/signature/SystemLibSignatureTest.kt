@@ -243,4 +243,17 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             }
         }
     }
+
+    @Test
+    fun `Inheritance is shown for collection types`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("-rell/root/set/index.html").firstSignature()
+                        .match(
+                                "type ", A("set"), "<", A("T"), "> : ", A("collection"), "<T>", // TODO: Last generic type should be a link
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
 }
