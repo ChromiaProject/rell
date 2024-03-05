@@ -245,7 +245,7 @@ class SystemLibVisitor(
                 type = function.header.resultType.toBound(),
                 sourceSets = setOf(sourceSet),
                 generics = function.header.typeParams.map { DTypeParameter(
-                        dri = DRI(classNames = it.name),
+                        dri = dri,
                         name = it.name,
                         presentableName = null,
                         documentation = DocumentationNode(listOf()).toSourceSetDependent(),

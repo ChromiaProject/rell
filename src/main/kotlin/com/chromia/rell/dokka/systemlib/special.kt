@@ -15,10 +15,12 @@ import org.jetbrains.dokka.links.TypeConstructor
 import org.jetbrains.dokka.links.TypeParam
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DParameter
+import org.jetbrains.dokka.model.DTypeParameter
 import org.jetbrains.dokka.model.Nullable
 import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.UnresolvedBound
 import org.jetbrains.dokka.model.Void
+import org.jetbrains.dokka.model.doc.DocumentationNode
 
 fun existsAndEmptySpecialFunctions(f: L_NamespaceMember_SpecialFunction, sourceSet: DokkaConfiguration.DokkaSourceSet): DFunction {
     val dri = DriOfRoot.copy(callable = Callable(f.simpleName.str, params = listOf(TypeConstructor("T", listOf()))))
@@ -29,7 +31,7 @@ fun existsAndEmptySpecialFunctions(f: L_NamespaceMember_SpecialFunction, sourceS
             documentation = mapOf(),
             expectPresentInSet = null,
             sourceSets = setOf(sourceSet),
-            type = Nullable(UnresolvedBound("T"))
+            type = Nullable(TypeParameter(dri, "T"))
     )
     return DFunction(
             dri,
@@ -42,7 +44,15 @@ fun existsAndEmptySpecialFunctions(f: L_NamespaceMember_SpecialFunction, sourceS
             isExpectActual = false,
             type = TypeParameter(R_QualifiedName.of("boolean").toDRI(), "boolean"),
             sourceSets = setOf(sourceSet),
-            generics = listOf(),
+            generics = listOf(DTypeParameter(
+                    dri = dri,
+                    name = "T",
+                    presentableName = null,
+                    documentation = mapOf(sourceSet to DocumentationNode(listOf())),
+                    expectPresentInSet = null,
+                    sourceSets = setOf(sourceSet),
+                    bounds = listOf() // TODO: collection, maps and nullable
+            )),
             sources = mapOf(sourceSet to NULL_DESCRIPTOR),
             documentation = mapOf(sourceSet to f.docSymbol.toDocumentationNode()),
             modifier = mapOf(),
@@ -63,7 +73,7 @@ fun metaTypeConstructor(c: L_TypeDefMember_SpecialConstructor, sourceSet: DokkaC
             documentation = mapOf(),
             expectPresentInSet = null,
             sourceSets = setOf(sourceSet),
-            type = UnresolvedBound("T")
+            type = TypeParameter(dri, "T")
     )
 
     return DFunction(
@@ -77,7 +87,15 @@ fun metaTypeConstructor(c: L_TypeDefMember_SpecialConstructor, sourceSet: DokkaC
             isExpectActual = false,
             type = Void,
             sourceSets = setOf(sourceSet),
-            generics = listOf(),
+            generics = listOf(DTypeParameter(
+                    dri = dri,
+                    name = "T",
+                    presentableName = null,
+                    documentation = mapOf(sourceSet to DocumentationNode(listOf())),
+                    expectPresentInSet = null,
+                    sourceSets = setOf(sourceSet),
+                    bounds = listOf()
+            )),
             sources = mapOf(sourceSet to NULL_DESCRIPTOR),
             documentation = mapOf(sourceSet to c.docSymbol.toDocumentationNode()),
             modifier = mapOf()

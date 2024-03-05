@@ -208,8 +208,6 @@ class RellSignatureProvider internal constructor(
                 }
             }
 
-            is Invariance<*> -> text((p.inner as TypeParameter).name) // Hack to make T not be a broken link
-
             is Variance<*> -> group(styles = emptySet()) {
                 p.takeIf { it.toString().isNotEmpty() }?.let { keyword("$it ") } // Will never happen??
                 signatureForProjection(p.inner, showFullyQualifiedName)

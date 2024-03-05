@@ -171,9 +171,9 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("-rell/rell/meta/meta.html").firstSignature()
                         .match(
-                                "constructor(",
+                                "constructor<", A("T"), "> (",
                                 Parameters(
-                                        Parameter("type: T")
+                                        Parameter("type: ", A("T"))
                                 ), ")",
                                 ignoreSpanWithTokenStyle = true)
             }
@@ -187,7 +187,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("-rell/root/try_call.html").lastSignature() // TODO: Why the [rell]-prefix
                         .match(
-                                "function <T> ", A("try_call"), "(",
+                                "function <", A("T"), "> ", A("try_call"), "(",
                                 Parameters(
                                         Parameter("fn: () -> T, "), Parameter("default: T")
                                 ), "): T",
@@ -203,9 +203,9 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("-rell/root/empty.html").firstSignature()
                         .match(
-                                "function ", A("empty"), "(",
+                                "function <", A("T"), "> ", A("empty"), "(",
                                 Parameters(
-                                        Parameter("arg: T?")
+                                        Parameter("arg: ", A("T"), "?")
                                 ), "): ", A("boolean"),
                                 ignoreSpanWithTokenStyle = true)
             }
@@ -235,7 +235,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("-rell/rell.test/assert_equals.html").firstSignature()
                         .match(
-                                "function <T> ", A("assert_equals"), "(",
+                                "function <", A("T"), "> ", A("assert_equals"), "(",
                                 Parameters(
                                         Parameter("actual: T,"), Parameter("expected: T")
                                 ), ")",
