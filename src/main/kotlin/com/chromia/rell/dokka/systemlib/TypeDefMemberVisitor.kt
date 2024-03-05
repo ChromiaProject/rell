@@ -67,6 +67,7 @@ class TypeDefMemberVisitor(
     }
 
     private fun L_TypeDefMember_SpecialConstructor.visit(parent: DRI): DFunction {
+        if (parent.classNames == "meta") return metaTypeConstructor(this, sourceSet, parent)
         val dri = parent.copy(callable = Callable(docSymbol.symbolName.strCode(), params = List(this.fn.paramCount()?.max()
                 ?: 0) { TypeParam(listOf()) }))
 

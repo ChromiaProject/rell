@@ -5,16 +5,20 @@ import com.chromia.rell.dokka.dri.DriOfRoot
 import com.chromia.rell.dokka.dri.toDRI
 import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import net.postchain.rell.base.lmodel.L_NamespaceMember_SpecialFunction
+import net.postchain.rell.base.lmodel.L_TypeDefMember_SpecialConstructor
 import net.postchain.rell.base.model.R_QualifiedName
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.Callable
+import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.PointingToCallableParameters
 import org.jetbrains.dokka.links.TypeConstructor
+import org.jetbrains.dokka.links.TypeParam
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.Nullable
 import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.UnresolvedBound
+import org.jetbrains.dokka.model.Void
 
 fun existsAndEmptySpecialFunctions(f: L_NamespaceMember_SpecialFunction, sourceSet: DokkaConfiguration.DokkaSourceSet): DFunction {
     val dri = DriOfRoot.copy(callable = Callable(f.simpleName.str, params = listOf(TypeConstructor("T", listOf()))))
@@ -42,5 +46,40 @@ fun existsAndEmptySpecialFunctions(f: L_NamespaceMember_SpecialFunction, sourceS
             sources = mapOf(sourceSet to NULL_DESCRIPTOR),
             documentation = mapOf(sourceSet to f.docSymbol.toDocumentationNode()),
             modifier = mapOf(),
+    )
+}
+
+fun metaTypeConstructor(c: L_TypeDefMember_SpecialConstructor, sourceSet: DokkaConfiguration.DokkaSourceSet, parent: DRI): DFunction {
+    val dri = parent.copy(
+            callable = Callable(
+                    c.docSymbol.symbolName.strCode(),
+                    params = listOf(TypeConstructor("T", listOf()))
+            )
+    )
+
+    val param = DParameter(
+            dri = dri.copy(target = PointingToCallableParameters(0)),
+            name = "type",
+            documentation = mapOf(),
+            expectPresentInSet = null,
+            sourceSets = setOf(sourceSet),
+            type = UnresolvedBound("T")
+    )
+
+    return DFunction(
+            dri = dri,
+            name = dri.classNames!!,
+            isConstructor = true,
+            parameters = listOf(param),
+            expectPresentInSet = null,
+            visibility = mapOf(),
+            receiver = null,
+            isExpectActual = false,
+            type = Void,
+            sourceSets = setOf(sourceSet),
+            generics = listOf(),
+            sources = mapOf(sourceSet to NULL_DESCRIPTOR),
+            documentation = mapOf(sourceSet to c.docSymbol.toDocumentationNode()),
+            modifier = mapOf()
     )
 }

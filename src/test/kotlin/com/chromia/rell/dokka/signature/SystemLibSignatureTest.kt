@@ -85,8 +85,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
                                 Parameters(
                                         Parameter("ops: ", A("list"), "<", A("rell.test.op"), ">")
                                 ),
-                                "): ",
-                                A("tx"),
+                                ")",
                                 ignoreSpanWithTokenStyle = true)
             }
         }
@@ -104,7 +103,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
                                         Parameter("value: ", A("text"), ", "),
                                         Parameter("[radix: ", A("integer"), "]"),
                                 ),
-                                "): ", A("integer"),
+                                ")",
                                 ignoreSpanWithTokenStyle = true)
                 writerPlugin.writer.renderedContent("-rell/rell.test/op/sign.html").lastSignature()
                         .match(
@@ -112,7 +111,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
                                 A("sign"),
                                 "(",
                                 Parameters(
-                                        Parameter("privkeys: ", A("byte_array"), "..."), // Should be A()
+                                        Parameter("privkeys: ", A("byte_array"), "..."),
                                 ),
                                 "): ", A("rell.test.tx"),
                                 ignoreSpanWithTokenStyle = true)
@@ -131,8 +130,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
                                 Parameters(
                                         Parameter("expected: (", A("text"), ", ", A("gtv"), ")...")
                                 ),
-                                "): ",
-                                A("unit"),
+                                ")",
                                 ignoreSpanWithTokenStyle = true)
             }
         }
@@ -175,8 +173,8 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
                         .match(
                                 "constructor(",
                                 Parameters(
-                                        Parameter("arg: T")
-                                ), "): ", A("meta"),
+                                        Parameter("type: T")
+                                ), ")",
                                 ignoreSpanWithTokenStyle = true)
             }
         }

@@ -120,7 +120,7 @@ class RellSignatureProvider internal constructor(
                 }
 
                 punctuation(")")
-                if (!d.isOperation()) {
+                if (d.documentReturnType()) {
                     operator(": ")
                     signatureForProjection(d.type)
                 }
@@ -187,6 +187,7 @@ class RellSignatureProvider internal constructor(
     }
 
     private fun DFunction.documentReturnType() = when {
+        this.isOperation() -> false
         this.isConstructor -> false
         this.type is TypeConstructor && (this.type as TypeConstructor).dri == DriOfUnit -> false
         this.type is Void -> false
