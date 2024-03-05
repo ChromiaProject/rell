@@ -6,6 +6,8 @@ import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.DriOfRoot
 import com.chromia.rell.dokka.dri.toBound
 import com.chromia.rell.dokka.dri.withAlias
+import com.chromia.rell.dokka.dri.withSourceSet
+import com.chromia.rell.dokka.model.IsHidden
 import com.chromia.rell.dokka.model.IsVararg
 import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
@@ -38,7 +40,11 @@ import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.DTypeParameter
 import org.jetbrains.dokka.model.Documentable
+import org.jetbrains.dokka.model.KotlinModifier
+import org.jetbrains.dokka.model.KotlinModifier.Abstract
 import org.jetbrains.dokka.model.KotlinVisibility
+import org.jetbrains.dokka.model.KotlinVisibility.Internal
+import org.jetbrains.dokka.model.KotlinVisibility.Public
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.P
@@ -68,8 +74,6 @@ class SystemLibVisitor(
         val namespaceMembers = module.lModule.namespace.members
 
         val types = namespaceMembers.filterIsInstance<L_NamespaceMember_Type>()
-                .filterNot { it.typeDef.abstract }
-                .filterNot { it.typeDef.hidden }
                 .filterNot { blacklistedTypes.contains(it.simpleName.str) }
                 .visitTypes(dri)
         val structs = namespaceMembers.filterIsInstance<L_NamespaceMember_Struct>()
@@ -116,7 +120,12 @@ class SystemLibVisitor(
 
     private fun L_NamespaceMember_Type.visit(parent: DRI, alias: String? = null): DClass {
         val dri = parent.withClass(alias ?: simpleName.str)
-        val allTypeDefs = typeDef.members.all
+        val allTypeDefs = typeDef.allMembers.all
+
+        val modifier = if (typeDef.abstract) Abstract else null
+
+        val generics = typeDef.mGenericType.params.toGenerics(dri.withSourceSet(sourceSet))
+
         with(typeDefVisitor) {
 
             val specialConstructors = allTypeDefs.filterIsInstance<L_TypeDefMember_SpecialConstructor>().visitSpecialConstructors(dri)
@@ -134,16 +143,19 @@ class SystemLibVisitor(
                     constructors = constructors + specialConstructors,
                     properties = properties + constants,
                     functions = functions + staticFunctions,
-                    generics = listOf(),
+                    generics = generics,
                     classlikes = listOf(),
                     isExpectActual = false,
                     companion = null, //companionObject(dri, listOf(), staticFunctions),
                     expectPresentInSet = null,
-                    visibility = mapOf(sourceSet to KotlinVisibility.Public),
+                    visibility = Public.toSourceSetDependent(),
                     supertypes = mapOf(sourceSet to listOf()), // TODO: add super types
                     sourceSets = setOf(sourceSet),
                     sources = mapOf(sourceSet to NULL_DESCRIPTOR),
-                    modifier = mapOf()
+                    modifier = modifier.toSourceSetDependent(),
+                    extra = PropertyContainer.withAll(
+                            takeIf { this@visit.typeDef.hidden }?.let { IsHidden }
+                    )
             )
         }
     }
@@ -244,15 +256,7 @@ class SystemLibVisitor(
                 isExpectActual = false,
                 type = function.header.resultType.toBound(),
                 sourceSets = setOf(sourceSet),
-                generics = function.header.typeParams.map { DTypeParameter(
-                        dri = dri,
-                        name = it.name,
-                        presentableName = null,
-                        documentation = DocumentationNode(listOf()).toSourceSetDependent(),
-                        expectPresentInSet = null,
-                        sourceSets = setOf(sourceSet),
-                        bounds = listOf()
-                ) },
+                generics = function.header.typeParams.toGenerics(dri.withSourceSet(sourceSet)),
                 sources = NULL_DESCRIPTOR.toSourceSetDependent(),
                 documentation = docSymbol.toDocumentationNode().toSourceSetDependent(),
                 modifier = mapOf(),

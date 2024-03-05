@@ -2,6 +2,7 @@ package com.chromia.rell.dokka.signature
 
 import com.chromia.rell.dokka.dri.DriOfUnit
 import com.chromia.rell.dokka.dri.isAlias
+import com.chromia.rell.dokka.model.IsHidden
 import com.chromia.rell.dokka.model.IsPure
 import com.chromia.rell.dokka.model.IsStatic
 import com.chromia.rell.dokka.model.IsTuple
@@ -9,7 +10,10 @@ import com.chromia.rell.dokka.model.IsVararg
 import com.chromia.rell.dokka.model.IsZeroOne
 import com.chromia.rell.dokka.model.isOperation
 import com.chromia.rell.dokka.model.isQuery
+import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.base.DokkaBase
+import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.annotations
+import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.annotationsInline
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.driOrNull
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.parametersBlock
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.stylesIfDeprecated
@@ -17,9 +21,13 @@ import org.jetbrains.dokka.base.signatures.SignatureProvider
 import org.jetbrains.dokka.base.transformers.pages.comments.CommentsToContentConverter
 import org.jetbrains.dokka.base.translators.documentables.PageContentBuilder
 import org.jetbrains.dokka.links.DriOfAny
+import org.jetbrains.dokka.links.sureClassNames
 import org.jetbrains.dokka.links.withTargetToDeclaration
 import org.jetbrains.dokka.model.Bound
+import org.jetbrains.dokka.model.DClass
+import org.jetbrains.dokka.model.DClasslike
 import org.jetbrains.dokka.model.DFunction
+import org.jetbrains.dokka.model.DInterface
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.DTypeParameter
@@ -27,9 +35,11 @@ import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.GenericTypeConstructor
-import org.jetbrains.dokka.model.Invariance
 import org.jetbrains.dokka.model.IsVar
+import org.jetbrains.dokka.model.JavaModifier
+import org.jetbrains.dokka.model.KotlinModifier
 import org.jetbrains.dokka.model.Nullable
+import org.jetbrains.dokka.model.PrimaryConstructorExtra
 import org.jetbrains.dokka.model.Projection
 import org.jetbrains.dokka.model.TypeAliased
 import org.jetbrains.dokka.model.TypeConstructor
@@ -37,6 +47,10 @@ import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.UnresolvedBound
 import org.jetbrains.dokka.model.Variance
 import org.jetbrains.dokka.model.Void
+import org.jetbrains.dokka.model.WithAbstraction
+import org.jetbrains.dokka.model.WithConstructors
+import org.jetbrains.dokka.model.WithGenerics
+import org.jetbrains.dokka.model.WithSupertypes
 import org.jetbrains.dokka.model.withDri
 import org.jetbrains.dokka.pages.ContentKind
 import org.jetbrains.dokka.pages.ContentNode
@@ -60,11 +74,91 @@ class RellSignatureProvider internal constructor(
 
     override fun signature(documentable: Documentable): List<ContentNode> {
         return when (documentable) {
+            is DClasslike -> classLikeSignature(documentable)
             is DFunction -> functionSignature(documentable)
             is DProperty -> propertySignature(documentable)
             is DTypeParameter -> typeParameterSignature(documentable)
             else -> listOf()
         }
+    }
+
+    private fun classLikeSignature(c: DClasslike) = c.sourceSets.map { sourceSet ->
+            contentBuilder.contentFor(c, ContentKind.Symbol,
+                    setOf(TextStyle.Monospace),
+                    sourceSets = setOf(sourceSet)) {
+                //c.visibility[sourceSet]?.takeIf { it.name.isNotBlank() }?.name?.let { keyword("$it ") }
+                if (c.isHidden()) keyword("hidden ")
+                if (c is WithAbstraction) {
+                    modifier(c, sourceSet)
+                }
+                when (c) {
+                    is DClass -> {
+                        keyword("type ")
+                    }
+                    else -> TODO("Type $c not treated")
+                }
+
+                link(c.name, c.dri, styles = mainStyles) // + deprecationStyles)
+                if (c is WithGenerics) {
+                    list(c.generics, prefix = "<", suffix = ">",
+                            separatorStyles = mainStyles + TokenStyle.Punctuation,
+                            surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
+                        //annotationsInline(it)
+                        +buildSignature(it)
+                    }
+                }
+                if (c is WithConstructors) {
+                    val pConstructor = c.constructors.singleOrNull { it.extra[PrimaryConstructorExtra] != null }
+                    if (pConstructor?.sourceSets?.contains(sourceSet) == true) {
+                        if (pConstructor.annotations().values.any { it.isNotEmpty() }) {
+                            text(Typography.nbsp.toString())
+                            annotationsInline(pConstructor)
+                            keyword("constructor")
+                        }
+
+                        // for primary constructor, opening and closing parentheses
+                        // should be present only if it has parameters. If there are
+                        // no parameters, it should result in `class Example`
+                        if (pConstructor.parameters.isNotEmpty()) {
+                            val parameterPropertiesByName = c.properties
+                                    //.filter { it.isAlsoParameter(sourceSet) }
+                                    .associateBy { it.name }
+
+                            punctuation("(")
+                            parametersBlock(pConstructor) { param ->
+                                annotationsInline(param)
+                                parameterPropertiesByName[param.name]?.let { property ->
+                                    property.setter?.let { keyword("var ") } ?: keyword("val ")
+                                }
+                                text(param.name.orEmpty())
+                                operator(": ")
+                                signatureForProjection(param.type)
+                                //defaultValueAssign(param, sourceSet)
+                            }
+                            punctuation(")")
+                        }
+                    }
+                }
+                if (c is WithSupertypes) {
+                    c.supertypes.filter { it.key == sourceSet }.map { (s, typeConstructors) ->
+                        list(typeConstructors, prefix = " : ", sourceSets = setOf(s)) {
+                            link(it.typeConstructor.dri.sureClassNames, it.typeConstructor.dri, sourceSets = setOf(s))
+                            list(it.typeConstructor.projections, prefix = "<", suffix = "> ",
+                                    separatorStyles = mainStyles + TokenStyle.Punctuation,
+                                    surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
+                                signatureForProjection(it)
+                            }
+                        }
+                    }
+                }
+            }
+    }
+    private fun <T> PageContentBuilder.DocumentableContentBuilder.modifier(
+            documentable: T,
+            sourceSet: DokkaConfiguration.DokkaSourceSet
+    ) where T : Documentable, T : WithAbstraction {
+        val modifier = documentable.modifier[sourceSet] ?: return
+        keyword("${modifier.name} ")
     }
 
     private fun typeParameterSignature(t: DTypeParameter) = t.sourceSets.map {
@@ -97,6 +191,10 @@ class RellSignatureProvider internal constructor(
             }
         }
 
+    }
+
+    private fun DClasslike.isHidden(): Boolean {
+        return this is DClass && this.extra[IsHidden] != null
     }
 
     private fun DProperty.isMutable(): Boolean {

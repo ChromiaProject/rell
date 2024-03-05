@@ -1,5 +1,7 @@
 package com.chromia.rell.dokka.model
 
+import org.jetbrains.dokka.model.DClass
+import org.jetbrains.dokka.model.DClasslike
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.GenericTypeConstructor
@@ -28,4 +30,8 @@ object IsZeroOne: ExtraProperty<DParameter>, ExtraProperty.Key<DParameter, IsZer
 
 object IsTuple: ExtraProperty<GenericTypeConstructor>, ExtraProperty.Key<GenericTypeConstructor, IsTuple> {
     override val key: ExtraProperty.Key<GenericTypeConstructor, *> = this
+}
+
+object IsHidden: ExtraProperty<DClass>, ExtraProperty.Key<DClass, IsHidden> {
+    override val key: ExtraProperty.Key<DClass, *> = this
 }

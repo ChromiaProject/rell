@@ -1,17 +1,22 @@
 package com.chromia.rell.dokka.systemlib
 
 import com.chromia.rell.dokka.doc.toDocumentationNode
+import com.chromia.rell.dokka.dri.DRIWithSourceSet
 import com.chromia.rell.dokka.dri.toBound
 import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import net.postchain.rell.base.mtype.M_Type
+import net.postchain.rell.base.mtype.M_TypeParam
 import net.postchain.rell.base.utils.doc.DocSymbol
 import org.jetbrains.dokka.DokkaConfiguration
+import org.jetbrains.dokka.base.renderers.html.SearchbarDataInstaller
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.PointingToCallableParameters
 import org.jetbrains.dokka.links.withClass
 import org.jetbrains.dokka.model.Bound
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
+import org.jetbrains.dokka.model.DTypeParameter
+import org.jetbrains.dokka.model.doc.DocumentationNode
 
 fun makeDProperty(sourceSet: DokkaConfiguration.DokkaSourceSet, parent: DRI, docSymbol: DocSymbol, name: String, type: M_Type) =
         DProperty(
@@ -46,3 +51,15 @@ fun makeDarameter(sourceSet: DokkaConfiguration.DokkaSourceSet,
                 sourceSets = setOf(sourceSet),
                 type = type,
         )
+
+fun List<M_TypeParam>.toGenerics(dri: DRIWithSourceSet) = map {
+    DTypeParameter(
+            dri = dri.dri,
+            name = it.name,
+            presentableName = null,
+            documentation = mapOf(dri.sourceSet to DocumentationNode(listOf())),
+            expectPresentInSet = null,
+            sourceSets = setOf(dri.sourceSet),
+            bounds = listOf()
+    )
+}

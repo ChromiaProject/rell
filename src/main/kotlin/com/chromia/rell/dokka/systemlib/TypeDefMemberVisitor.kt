@@ -3,6 +3,7 @@ package com.chromia.rell.dokka.systemlib
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.toBound
 import com.chromia.rell.dokka.dri.toDRI
+import com.chromia.rell.dokka.dri.withSourceSet
 import com.chromia.rell.dokka.model.IsPure
 import com.chromia.rell.dokka.model.IsStatic
 import com.chromia.rell.dokka.model.IsVararg
@@ -68,35 +69,10 @@ class TypeDefMemberVisitor(
     }
 
     private fun L_TypeDefMember_SpecialConstructor.visit(parent: DRI): DFunction {
-        if (parent.classNames == "meta") return metaTypeConstructor(this, sourceSet, parent)
-        val dri = parent.copy(callable = Callable(docSymbol.symbolName.strCode(), params = List(this.fn.paramCount()?.max()
-                ?: 0) { TypeParam(listOf()) }))
-
-        return DFunction(
-                dri = dri,
-                name = dri.classNames!!,
-                isConstructor = true,
-                parameters = fn.paramCount()?.map {
-                    DParameter(
-                            dri = dri.copy(target = PointingToCallableParameters(it)),
-                            name = "arg",
-                            documentation = mapOf(),
-                            expectPresentInSet = null,
-                            sourceSets = setOf(sourceSet),
-                            type = UnresolvedBound("T")
-                    )
-                } ?: listOf(),
-                expectPresentInSet = null,
-                visibility = mapOf(),
-                receiver = null,
-                isExpectActual = false,
-                type = TypeParameter(dri.parent, dri.parent.classNames!!),
-                sourceSets = setOf(sourceSet),
-                generics = listOf(),
-                sources = mapOf(sourceSet to NULL_DESCRIPTOR),
-                documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
-                modifier = mapOf()
-        )
+        return when (parent.classNames) {
+            "meta" -> metaTypeConstructor(this, sourceSet, parent)
+            else -> TODO("Special type constructor for $parent is not implemented")
+        }
     }
 
     private fun Callable.Companion.fromConstructor(function: L_Constructor, name: String) = Callable(
@@ -125,15 +101,7 @@ class TypeDefMemberVisitor(
                 isExpectActual = false,
                 type = function.header.resultType.toBound(), // Return type
                 sourceSets = setOf(sourceSet),
-                generics = function.header.typeParams.map { DTypeParameter(
-                        dri = DRI(classNames = it.name),
-                        name = it.name,
-                        presentableName = null,
-                        documentation = mapOf(sourceSet to DocumentationNode(listOf())),
-                        expectPresentInSet = null,
-                        sourceSets = setOf(sourceSet),
-                        bounds = listOf()
-                ) },
+                generics = function.header.typeParams.toGenerics(dri.withSourceSet(sourceSet)),
                 sources = mapOf(sourceSet to NULL_DESCRIPTOR),
                 documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
                 modifier = mapOf(),

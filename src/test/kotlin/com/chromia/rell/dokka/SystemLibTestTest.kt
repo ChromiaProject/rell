@@ -103,9 +103,7 @@ class SystemLibTestTest : BaseAbstractTest() {
                 val documentablesInPackage = module.packages.flatMap { it.children }
                 val sysLibDefs = Lib_Rell.MODULE.lModule.namespace.getAllDefs()
                 val testLibDefs = Lib_RellTest.MODULE.lModule.namespace.getAllDefs()
-                val expectedDefs = (sysLibDefs + testLibDefs)
-                        .filterHiddenTypes()
-                        .filterEmptyNamespaces()
+                val expectedDefs = (sysLibDefs + testLibDefs).filterEmptyNamespaces()
                 assertThat(documentablesInPackage.size).isEqualTo(
                         expectedDefs.size
                                 - 2 /* Blacklisted types */
@@ -130,11 +128,6 @@ class SystemLibTestTest : BaseAbstractTest() {
             }
         }
     }
-
-    private fun List<L_NamespaceMember>.filterHiddenTypes() =
-            filterNot {
-                it.getTypeDefOrNull()?.hidden == true || it.getTypeDefOrNull()?.abstract == true
-            }
 
     private fun List<L_NamespaceMember>.filterEmptyNamespaces() =
             filterNot {

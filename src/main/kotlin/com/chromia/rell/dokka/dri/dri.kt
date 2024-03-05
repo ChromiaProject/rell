@@ -10,17 +10,24 @@ import net.postchain.rell.base.mtype.M_Type_Nullable
 import net.postchain.rell.base.mtype.M_Type_Param
 import net.postchain.rell.base.mtype.M_Type_Simple
 import net.postchain.rell.base.mtype.M_Type_Tuple
+import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.DRIExtraContainer
 import org.jetbrains.dokka.links.DRIExtraProperty
 import org.jetbrains.dokka.links.withClass
 import org.jetbrains.dokka.model.Bound
+import org.jetbrains.dokka.model.DisplaySourceSet
 import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.Nullable
+import org.jetbrains.dokka.model.SourceSetDependent
 import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.UnresolvedBound
 import org.jetbrains.dokka.model.properties.PropertyContainer
+
+data class DRIWithSourceSet(val dri: DRI, val sourceSet: DokkaConfiguration.DokkaSourceSet)
+
+fun DRI.withSourceSet(sourceSet: DokkaConfiguration.DokkaSourceSet) = DRIWithSourceSet(this, sourceSet)
 
 fun R_QualifiedName.toDRI(): DRI {
     val packageName = if (parts.size > 1) str().substringBeforeLast(".") else RellModule.MAIN.dri.packageName
