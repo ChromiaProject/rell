@@ -33,6 +33,7 @@ import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.KotlinModifier
 import org.jetbrains.dokka.model.KotlinVisibility
+import org.jetbrains.dokka.model.Modifier
 import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.Void
 import org.jetbrains.dokka.model.doc.Description
@@ -168,7 +169,8 @@ fun R_EntityDefinition.toDClasslike(sourceSet: DokkaConfiguration.DokkaSourceSet
         sources = mapOf(sourceSet to DescriptorDocumentableSource(RellDeclarationDescriptor())),
         expectPresentInSet = null,
         documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text("This entity is called $simpleName"))))),
-        sourceSets = setOf(sourceSet)
+        sourceSets = setOf(sourceSet),
+        modifier = mapOf(sourceSet to KotlinModifier.Empty),
 )
 
 fun R_StructDefinition.toDClasslike(sourceSet: DokkaConfiguration.DokkaSourceSet) = DInterface(
@@ -185,7 +187,8 @@ fun R_StructDefinition.toDClasslike(sourceSet: DokkaConfiguration.DokkaSourceSet
         sources = mapOf(sourceSet to DescriptorDocumentableSource(RellDeclarationDescriptor())),
         expectPresentInSet = null,
         documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text("This struct is called $simpleName"))))),
-        sourceSets = setOf(sourceSet)
+        modifier = mapOf(sourceSet to KotlinModifier.Empty),
+        sourceSets = setOf(sourceSet),
 )
 
 fun R_ObjectDefinition.toDClasslike(sourceSet: DokkaConfiguration.DokkaSourceSet) = DInterface(
@@ -202,7 +205,8 @@ fun R_ObjectDefinition.toDClasslike(sourceSet: DokkaConfiguration.DokkaSourceSet
         sources = mapOf(sourceSet to DescriptorDocumentableSource(RellDeclarationDescriptor())),
         expectPresentInSet = null,
         documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text("This struct is called $simpleName"))))),
-        sourceSets = setOf(sourceSet)
+        sourceSets = setOf(sourceSet),
+        modifier = mapOf(sourceSet to KotlinModifier.Empty),
 )
 
 fun R_EnumDefinition.toDClasslike(sourceSet: DokkaConfiguration.DokkaSourceSet) = DEnum(
