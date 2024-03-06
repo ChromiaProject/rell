@@ -1,15 +1,19 @@
 package com.chromia.rell.dokka.systemlib
 
+import com.chromia.rell.dokka.deprecation.toAnnotation
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.from
 import com.chromia.rell.dokka.dri.toBound
+import com.chromia.rell.dokka.dri.withAlias
 import com.chromia.rell.dokka.dri.withSourceSet
 import com.chromia.rell.dokka.model.IsPure
 import com.chromia.rell.dokka.model.IsStatic
 import com.chromia.rell.dokka.model.IsVararg
 import com.chromia.rell.dokka.model.IsZeroOne
 import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
+import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.lmodel.L_FunctionParam
+import net.postchain.rell.base.lmodel.L_TypeDefMember_Alias
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Constant
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Constructor
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Function
@@ -19,10 +23,11 @@ import net.postchain.rell.base.mtype.M_ParamArity
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.*
 import org.jetbrains.dokka.links.DRI
-import org.jetbrains.dokka.links.TypeParam
+import org.jetbrains.dokka.model.Annotations
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
+import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
@@ -41,6 +46,7 @@ class TypeDefMemberVisitor(
     fun List<L_TypeDefMember_Function>.visitFunctions(parent: DRI) = map { it.visit(parent) }
     fun List<L_TypeDefMember_Property>.visitProperties(parent: DRI): List<DProperty> = map { it.visit(parent) }
     fun List<L_TypeDefMember_Constant>.visitConstants(parent: DRI): List<DProperty> = map { it.visit(parent) }
+    fun List<L_TypeDefMember_Alias>.visitAliases(parent: DRI): List<Documentable> = map { it.visit(parent) }
 
     private fun L_TypeDefMember_Constructor.visit(parent: DRI): DFunction {
         val dri = DRI.from(this, parent)
@@ -63,6 +69,14 @@ class TypeDefMemberVisitor(
         )
     }
 
+    private fun L_TypeDefMember_Alias.visit(parent: DRI): Documentable {
+        val dri = DRI.from(this, parent).withAlias()
+        return when (val target = targetMember) {
+            is L_TypeDefMember_Function -> target.visit(dri, simpleName.str, deprecated)
+            else -> TODO("Alias type not implemented" + target.javaClass)
+        }
+    }
+
     private fun L_TypeDefMember_SpecialConstructor.visit(parent: DRI): DFunction {
         return when (parent.classNames) {
             "meta" -> metaTypeConstructor(this, sourceSet, parent)
@@ -70,12 +84,15 @@ class TypeDefMemberVisitor(
         }
     }
 
-    private fun L_TypeDefMember_Function.visit(parent: DRI): DFunction {
-        val dri = DRI.from(this, parent)
-
+    private fun L_TypeDefMember_Function.visit(parent: DRI, alias: String? = null, deprecatedOverride: C_Deprecated? = null): DFunction {
+        val dri = parent.copy(callable = Callable(
+                name = alias ?: simpleName.str,
+                params = function.header.params.map { JavaClassReference(it.type.strCode()) }
+        ))
+        val deprecated = deprecatedOverride ?: deprecated
         return DFunction(
                 dri = dri,
-                name = this.simpleName.str,
+                name = alias ?: simpleName.str,
                 isConstructor = false,
                 parameters = this.function.header.params.mapIndexed { index, p -> p.visit(dri, index) },
                 expectPresentInSet = null,
@@ -90,7 +107,10 @@ class TypeDefMemberVisitor(
                 modifier = mapOf(),
                 extra = PropertyContainer.withAll(
                         takeIf { function.flags.isStatic }?.let { IsStatic },
-                        takeIf { function.flags.isPure }?.let { IsPure }
+                        takeIf { function.flags.isPure }?.let { IsPure },
+                        takeIf { deprecated != null }?.let {
+                            Annotations(mapOf(sourceSet to listOf(deprecated!!.toAnnotation())))
+                        }
                 )
         )
     }

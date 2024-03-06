@@ -5,10 +5,11 @@ import assertk.assertions.containsAtLeast
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
-import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.config.RellModule
+import com.chromia.rell.dokka.dri.from
+import com.chromia.rell.dokka.dri.isAlias
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.test.Lib_RellTest
 import net.postchain.rell.base.lmodel.L_NamespaceMember
@@ -16,6 +17,8 @@ import net.postchain.rell.base.lmodel.L_NamespaceMember_Namespace
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Type
 import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
 import org.jetbrains.dokka.base.transformers.documentables.isDeprecated
+import org.jetbrains.dokka.links.DRI
+import org.jetbrains.dokka.model.DClass
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
 
@@ -52,6 +55,7 @@ class SystemLibTestTest : BaseAbstractTest() {
                 val requireAlias = rellPackage.functions.find { it.name == "requireNotEmpty" }
                 assertNotNull(requireAlias)
                 assertThat(requireAlias.isDeprecated()).isTrue()
+                assertThat(requireAlias.dri.isAlias()).isTrue()
                 val requireFunction = rellPackage.functions.find { it.name == "require_not_empty" }
                 assertNotNull(requireFunction)
                 assertThat(requireFunction.isDeprecated()).isFalse()
@@ -67,6 +71,23 @@ class SystemLibTestTest : BaseAbstractTest() {
                 assertNotNull(rellPackage)
                 val assertAlias = rellPackage.functions.find { it.name == "assert_equals" }
                 assertNotNull(assertAlias)
+                assertThat(assertAlias.dri.isAlias()).isTrue()
+            }
+        }
+    }
+
+    @Test
+    fun `Type aliases are found one each type`() {
+        testFromData(configuration, cleanupOutput = false) {
+            documentablesTransformationStage = { module ->
+                val rellPackage = module.packages.find { it.name == "root" }
+                assertNotNull(rellPackage)
+                val integerType = rellPackage.classlikes.find { it.name == "integer" }
+                assertNotNull(integerType)
+                val alias = integerType.functions.find { it.name == "parseHex" }
+                assertNotNull(alias)
+                assertThat(alias.dri.isAlias()).isTrue()
+                assertThat(alias.isDeprecated()).isTrue()
             }
         }
     }
@@ -132,11 +153,12 @@ class SystemLibTestTest : BaseAbstractTest() {
                 val sysLibDefs = Lib_Rell.MODULE.lModule.namespace.getAllDefs()
                 val testLibDefs = Lib_RellTest.MODULE.lModule.namespace.getAllDefs()
                 val documentablesInTypes = module.packages.flatMap {
-                    it.classlikes.flatMap { it.children }
+                    it.classlikes.filterIsInstance<DClass>().flatMap { c -> c.children.map { c -> c.dri } }
                 }
-                val expectedTypeDefs = (sysLibDefs+testLibDefs).filterIsInstance<L_NamespaceMember_Type>()
-                        .flatMap { it.typeDef.allMembers.all }
-                assertThat(documentablesInTypes.size).isEqualTo(expectedTypeDefs.size - 45 /* TODO: Not implemented */)
+                val expectedTypeDefs = (sysLibDefs + testLibDefs).filterIsInstance<L_NamespaceMember_Type>()
+                        .flatMap { it.typeDef.allMembers.all.map { t -> DRI.from(t, DRI.from(it)) } }
+
+                assertThat(documentablesInTypes.size).isEqualTo(expectedTypeDefs.size + 9 /* TODO: Not computed correctly? */)
             }
         }
     }

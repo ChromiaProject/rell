@@ -22,11 +22,14 @@ import net.postchain.rell.base.lmodel.L_NamespaceMember_Property
 import net.postchain.rell.base.lmodel.L_NamespaceMember_SpecialFunction
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Struct
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Type
+import net.postchain.rell.base.lmodel.L_TypeDefMember_Alias
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Constant
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Constructor
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Function
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Property
 import net.postchain.rell.base.lmodel.L_TypeDefMember_SpecialConstructor
+import net.postchain.rell.base.lmodel.L_TypeDefMember_StaticSpecialFunction
+import net.postchain.rell.base.lmodel.L_TypeDefMember_ValueSpecialFunction
 import org.jetbrains.dokka.DokkaConfiguration.DokkaSourceSet
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
@@ -123,8 +126,8 @@ class SystemLibVisitor(
 
     private fun List<L_NamespaceMember_Type>.visitTypes(parent: DRI): List<DClass> = map { it.visit(parent) }
 
-    private fun L_NamespaceMember_Type.visit(parent: DRI, alias: String? = null): DClass {
-        val dri = parent.withClass(alias ?: simpleName.str)
+    private fun L_NamespaceMember_Type.visit(parent: DRI): DClass {
+        val dri = parent.withClass(simpleName.str)
         val allTypeDefs = typeDef.allMembers.all
 
         val modifier = if (typeDef.abstract) Abstract else null
@@ -145,19 +148,18 @@ class SystemLibVisitor(
                     .visitFunctions(dri)
             val properties = allTypeDefs.filterIsInstance<L_TypeDefMember_Property>().visitProperties(dri)
             val constants = allTypeDefs.filterIsInstance<L_TypeDefMember_Constant>().visitConstants(dri)
-            val staticFunctions = allTypeDefs.filterIsInstance<L_TypeDefMember_Function>().filter { it.function.flags.isStatic }.visitFunctions(dri)
-            /*println("type $simpleName")
-            println(allTypeDefs.filterIsInstance<L_TypeDefMember_ValueSpecialFunction>().size.toString() + " value special functions")
-            println(allTypeDefs.filterIsInstance<L_TypeDefMember_StaticSpecialFunction>().size.toString() + " static special functions")
-            println(allTypeDefs.filterIsInstance<L_TypeDefMember_Alias>().size.toString() + " aliases")
-            println(allTypeDefs.filterIsInstance<L_TypeDefMember_Alias>().groupBy { it.targetMember.javaClass })*/
+            val staticFunctions = allTypeDefs.filterIsInstance<L_TypeDefMember_Function>()
+                    .filter { it.function.flags.isStatic }
+                    .visitFunctions(dri)
+            val aliases = allTypeDefs.filterIsInstance<L_TypeDefMember_Alias>().visitAliases(dri)
+            require(aliases.all { it is DFunction }) { "Alias not covered" }
             return DClass(
                     dri = dri,
-                    name = alias ?: simpleName.str,
+                    name = simpleName.str,
                     documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
                     constructors = constructors + specialConstructors,
                     properties = properties + constants,
-                    functions = functions + staticFunctions,
+                    functions = functions + staticFunctions + aliases.filterIsInstance<DFunction>(),
                     generics = generics,
                     classlikes = listOf(),
                     isExpectActual = false,
