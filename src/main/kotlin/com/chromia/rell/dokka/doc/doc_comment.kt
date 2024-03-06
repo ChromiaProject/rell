@@ -3,13 +3,12 @@ package com.chromia.rell.dokka.doc
 import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.doc.DocCommentTag
 import net.postchain.rell.base.utils.doc.DocSymbol
-import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.*
 
-fun DocSymbol.toDocumentationNode() = comment?.formatDescription() ?: DocumentationNode(listOf())
+fun DocSymbol.toDocumentationNode(additionalTags: TagWrapper? = null) = comment?.formatDescription(additionalTags) ?: DocumentationNode(listOf())
 
-fun DocComment.formatDescription() = DocumentationNode(
+fun DocComment.formatDescription(additionalTags: TagWrapper? = null) = DocumentationNode(
         RellMarkdownParser().parse(description).children +
                 buildList {
                     val p = RellMarkdownParser()
@@ -19,5 +18,6 @@ fun DocComment.formatDescription() = DocumentationNode(
                     tags[DocCommentTag.RETURNS]?.let { add(Return(p.parseStringToDocNode(it.first().text))) }
                     //tags[DocCommentTag.RETURNS]?.let { add(Return(P(listOf(Text(it.first().text))))) }
                     tags[DocCommentTag.SINCE]?.let { add(Since(p.parseStringToDocNode(it.first().text))) }
+                    additionalTags?.let { add(it) }
                 }
 )

@@ -1,6 +1,7 @@
 package com.chromia.rell.dokka
 
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
+import com.chromia.rell.dokka.doc.AliasDocTagProvider
 import com.chromia.rell.dokka.signature.RellSignatureProvider
 import com.chromia.rell.dokka.translator.RellDocumentableToPageTranslator
 import com.chromia.rell.dokka.translator.RellSourceToDocumentableTranslator
@@ -23,12 +24,12 @@ class RellDokkaPlugin : DokkaPlugin() {
 
     val sourceToDocumentableTranslator by extending {
         CoreExtensions.sourceToDocumentableTranslator providing {
-            if (extractConfig(it)?.system == true) RellSystemLibToDocumentableTranslator  else RellSourceToDocumentableTranslator
+            if (extractConfig(it)?.system == true) RellSystemLibToDocumentableTranslator else RellSourceToDocumentableTranslator
         }
     }
 
     val signatureProvider by extending {
-        with (plugin<DokkaBase>()) {
+        with(plugin<DokkaBase>()) {
             signatureProvider providing ::RellSignatureProvider override kotlinSignatureProvider
         }
     }
@@ -39,13 +40,18 @@ class RellDokkaPlugin : DokkaPlugin() {
         }
     }
 
-
-
-   /*val renderer by extending {
-        with (plugin<DokkaBase>()) {
-            CoreExtensions.renderer providing ::RellHtmlRenderer override htmlRenderer
+    val aliasProvider by extending {
+        with(plugin<DokkaBase>()) {
+            customTagContentProvider with AliasDocTagProvider
         }
-    }*/
+    }
+
+
+    /*val renderer by extending {
+         with (plugin<DokkaBase>()) {
+             CoreExtensions.renderer providing ::RellHtmlRenderer override htmlRenderer
+         }
+     }*/
 
     companion object {
         fun extractConfig(context: DokkaContext): RellDokkaPluginConfiguration? {

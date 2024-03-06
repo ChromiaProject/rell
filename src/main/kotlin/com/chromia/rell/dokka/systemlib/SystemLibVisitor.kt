@@ -2,6 +2,7 @@ package com.chromia.rell.dokka.systemlib
 
 import com.chromia.rell.dokka.config.RellModule
 import com.chromia.rell.dokka.deprecation.toAnnotation
+import com.chromia.rell.dokka.doc.AliasDocTagProvider
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.DriOfRoot
 import com.chromia.rell.dokka.dri.from
@@ -234,7 +235,7 @@ class SystemLibVisitor(
                 DTypeAlias(
                         aliasDri,
                         simpleName.str,
-                        documentation = target.docSymbol.toDocumentationNode().toSourceSetDependent(),
+                        documentation = target.docSymbol.toDocumentationNode(AliasDocTagProvider.aliasDocTag(DRI.from(target), target.qualifiedName.str())).toSourceSetDependent(),
                         expectPresentInSet = null,
                         generics = listOf(),
                         sourceSets = setOf(sourceSet),
@@ -274,7 +275,7 @@ class SystemLibVisitor(
                 sourceSets = setOf(sourceSet),
                 generics = function.header.typeParams.toGenerics(dri.withSourceSet(sourceSet)),
                 sources = NULL_DESCRIPTOR.toSourceSetDependent(),
-                documentation = docSymbol.toDocumentationNode().toSourceSetDependent(),
+                documentation = docSymbol.toDocumentationNode(alias?.let { AliasDocTagProvider.aliasDocTag(DRI.from(this), qualifiedName.str()) }).toSourceSetDependent(),
                 modifier = mapOf(),
                 extra = PropertyContainer.withAll(
                         takeIf { deprecated != null }?.let {

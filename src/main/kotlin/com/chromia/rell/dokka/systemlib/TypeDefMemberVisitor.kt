@@ -1,6 +1,7 @@
 package com.chromia.rell.dokka.systemlib
 
 import com.chromia.rell.dokka.deprecation.toAnnotation
+import com.chromia.rell.dokka.doc.AliasDocTagProvider
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.from
 import com.chromia.rell.dokka.dri.toBound
@@ -103,7 +104,7 @@ class TypeDefMemberVisitor(
                 sourceSets = setOf(sourceSet),
                 generics = function.header.typeParams.toGenerics(dri.withSourceSet(sourceSet)),
                 sources = mapOf(sourceSet to NULL_DESCRIPTOR),
-                documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
+                documentation = mapOf(sourceSet to docSymbol.toDocumentationNode(alias?.let { AliasDocTagProvider.aliasDocTag(DRI.from(this, parent), this.simpleName.str) })),
                 modifier = mapOf(),
                 extra = PropertyContainer.withAll(
                         takeIf { function.flags.isStatic }?.let { IsStatic },
