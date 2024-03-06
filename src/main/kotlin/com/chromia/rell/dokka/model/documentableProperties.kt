@@ -4,6 +4,7 @@ import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DClasslike
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DParameter
+import org.jetbrains.dokka.model.DTypeAlias
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.properties.ExtraProperty
 

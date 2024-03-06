@@ -2,6 +2,16 @@ package com.chromia.rell.dokka.dri
 
 import com.chromia.rell.dokka.config.RellModule
 import com.chromia.rell.dokka.model.IsTuple
+import net.postchain.rell.base.lmodel.L_NamespaceMember
+import net.postchain.rell.base.lmodel.L_NamespaceMember_Function
+import net.postchain.rell.base.lmodel.L_NamespaceMember_Namespace
+import net.postchain.rell.base.lmodel.L_NamespaceMember_SpecialFunction
+import net.postchain.rell.base.lmodel.L_TypeDefMember
+import net.postchain.rell.base.lmodel.L_TypeDefMember_Alias
+import net.postchain.rell.base.lmodel.L_TypeDefMember_Constant
+import net.postchain.rell.base.lmodel.L_TypeDefMember_Constructor
+import net.postchain.rell.base.lmodel.L_TypeDefMember_Function
+import net.postchain.rell.base.lmodel.L_TypeDefMember_Property
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_Type_Function
@@ -11,16 +21,15 @@ import net.postchain.rell.base.mtype.M_Type_Param
 import net.postchain.rell.base.mtype.M_Type_Simple
 import net.postchain.rell.base.mtype.M_Type_Tuple
 import org.jetbrains.dokka.DokkaConfiguration
+import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.DRIExtraContainer
 import org.jetbrains.dokka.links.DRIExtraProperty
 import org.jetbrains.dokka.links.withClass
 import org.jetbrains.dokka.model.Bound
-import org.jetbrains.dokka.model.DisplaySourceSet
 import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.Nullable
-import org.jetbrains.dokka.model.SourceSetDependent
 import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.UnresolvedBound
 import org.jetbrains.dokka.model.properties.PropertyContainer
@@ -28,6 +37,41 @@ import org.jetbrains.dokka.model.properties.PropertyContainer
 data class DRIWithSourceSet(val dri: DRI, val sourceSet: DokkaConfiguration.DokkaSourceSet)
 
 fun DRI.withSourceSet(sourceSet: DokkaConfiguration.DokkaSourceSet) = DRIWithSourceSet(this, sourceSet)
+
+fun DRI.Companion.from(m: L_NamespaceMember): DRI {
+    val packageName = when {
+        m is L_NamespaceMember_Namespace -> m.qualifiedName.str()
+        m.qualifiedName.parts.size > 1 -> m.qualifiedName.str().substringBeforeLast(".")
+        else -> RellModule.MAIN.dri.packageName
+    }
+    val className = when (m) {
+        is L_NamespaceMember_Function -> null
+        is L_NamespaceMember_SpecialFunction -> null
+        else -> m.simpleName.str
+    }
+    val callable = when (m) {
+        is L_NamespaceMember_Function -> Callable.from(m.function)
+        is L_NamespaceMember_SpecialFunction -> TODO("Special function not handled")
+        else -> null
+    }
+    return DRI(packageName, className, callable)
+}
+
+fun DRI.Companion.from(m: L_TypeDefMember, parent: DRI): DRI {
+    val callable = when (m) {
+        is L_TypeDefMember_Function -> Callable.from(m.function)
+        is L_TypeDefMember_Constructor -> Callable.from(m.constructor)
+        else -> null
+    }
+    val extra = if (m is L_TypeDefMember_Alias ) DRI().withAlias().extra else null
+    val className = when (m) {
+        is L_TypeDefMember_Constant -> m.constant.simpleName.str
+        is L_TypeDefMember_Property -> m.property.simpleName.str
+        else -> null
+    }
+
+    return parent.copy(callable = callable, extra = extra).let { if (className != null) it.withClass(className) else it }
+}
 
 fun R_QualifiedName.toDRI(): DRI {
     val packageName = if (parts.size > 1) str().substringBeforeLast(".") else RellModule.MAIN.dri.packageName

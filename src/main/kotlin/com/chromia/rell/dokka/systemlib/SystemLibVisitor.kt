@@ -4,6 +4,7 @@ import com.chromia.rell.dokka.config.RellModule
 import com.chromia.rell.dokka.deprecation.toAnnotation
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.DriOfRoot
+import com.chromia.rell.dokka.dri.from
 import com.chromia.rell.dokka.dri.toBound
 import com.chromia.rell.dokka.dri.toDRI
 import com.chromia.rell.dokka.dri.withAlias
@@ -21,47 +22,37 @@ import net.postchain.rell.base.lmodel.L_NamespaceMember_Property
 import net.postchain.rell.base.lmodel.L_NamespaceMember_SpecialFunction
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Struct
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Type
-import net.postchain.rell.base.lmodel.L_TypeDefMember
-import net.postchain.rell.base.lmodel.L_TypeDefMember_Alias
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Constant
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Constructor
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Function
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Property
 import net.postchain.rell.base.lmodel.L_TypeDefMember_SpecialConstructor
-import net.postchain.rell.base.lmodel.L_TypeDefMember_StaticSpecialFunction
-import net.postchain.rell.base.lmodel.L_TypeDefMember_ValueSpecialFunction
 import org.jetbrains.dokka.DokkaConfiguration.DokkaSourceSet
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.JavaClassReference
 import org.jetbrains.dokka.links.PointingToCallableParameters
-import org.jetbrains.dokka.links.TypeConstructor
 import org.jetbrains.dokka.links.withClass
 import org.jetbrains.dokka.model.Annotations
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DFunction
-import org.jetbrains.dokka.model.DObject
 import org.jetbrains.dokka.model.DPackage
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.DTypeAlias
 import org.jetbrains.dokka.model.Documentable
-import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.KotlinClassKindTypes
 import org.jetbrains.dokka.model.KotlinModifier.Abstract
-import org.jetbrains.dokka.model.KotlinVisibility
 import org.jetbrains.dokka.model.KotlinVisibility.Public
 import org.jetbrains.dokka.model.TypeConstructorWithKind
 import org.jetbrains.dokka.model.TypeParameter
-import org.jetbrains.dokka.model.UnresolvedBound
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.P
 import org.jetbrains.dokka.model.doc.Text
 import org.jetbrains.dokka.model.properties.PropertyContainer
 import org.jetbrains.dokka.utilities.DokkaLogger
-import org.jetbrains.kotlin.ir.types.impl.IrErrorClassImpl.visibility
 
 /**
  * Translates a [RellModule] into documentables.
@@ -99,6 +90,7 @@ class SystemLibVisitor(
         val alias = namespaceMembers.filterIsInstance<L_NamespaceMember_Alias>()
                 .filterNot { blacklistedAliases.contains(it.simpleName.str) }
                 .visitAliases(dri)
+                .groupBy { it.javaClass.name }
         val namespaces = module.lModule.namespace.getAllDefs().filterIsInstance<L_NamespaceMember_Namespace>()
                 .filterNot { blacklistedNamespaces.contains(it.simpleName.str) }
                 .visitNamespaces(dri)
@@ -122,9 +114,9 @@ class SystemLibVisitor(
                 documentation = mapOf(),
                 sourceSets = setOf(sourceSet),
                 classlikes = listOf(),
-                properties = alias.filterIsInstance<DProperty>(),
-                typealiases = alias.filterIsInstance<DTypeAlias>(),
-                functions = alias.filterIsInstance<DFunction>(),
+                properties = alias[DProperty::class.java.name] as? List<DProperty> ?: listOf(),
+                typealiases = alias[DTypeAlias::class.java.name] as? List<DTypeAlias> ?: listOf(),
+                functions = alias[DFunction::class.java.name] as? List<DFunction> ?: listOf(),
         )
         return namespaces + basePackage + aliasPackage
     }
@@ -159,6 +151,11 @@ class SystemLibVisitor(
             val properties = allTypeDefs.filterIsInstance<L_TypeDefMember_Property>().visitProperties(dri)
             val constants = allTypeDefs.filterIsInstance<L_TypeDefMember_Constant>().visitConstants(dri)
             val staticFunctions = allTypeDefs.filterIsInstance<L_TypeDefMember_Function>().filter { it.function.flags.isStatic }.visitFunctions(dri)
+            /*println("type $simpleName")
+            println(allTypeDefs.filterIsInstance<L_TypeDefMember_ValueSpecialFunction>().size.toString() + " value special functions")
+            println(allTypeDefs.filterIsInstance<L_TypeDefMember_StaticSpecialFunction>().size.toString() + " static special functions")
+            println(allTypeDefs.filterIsInstance<L_TypeDefMember_Alias>().size.toString() + " aliases")
+            println(allTypeDefs.filterIsInstance<L_TypeDefMember_Alias>().groupBy { it.targetMember.javaClass })*/
             return DClass(
                     dri = dri,
                     name = alias ?: simpleName.str,
@@ -232,7 +229,7 @@ class SystemLibVisitor(
 
     private fun List<L_NamespaceMember_Alias>.visitAliases(parent: DRI): List<Documentable> = map { it.visit(parent) }
     private fun L_NamespaceMember_Alias.visit(parent: DRI): Documentable {
-        val dri = DriOfRoot.withAlias()
+        val dri = DRI.from(this).withAlias()
         return when (val target = finalTargetMember) {
             is L_NamespaceMember_Function -> target.visit(dri, simpleName.str, deprecated)
             is L_NamespaceMember_Type -> {

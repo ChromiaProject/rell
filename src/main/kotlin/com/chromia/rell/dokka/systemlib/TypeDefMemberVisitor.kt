@@ -1,8 +1,8 @@
 package com.chromia.rell.dokka.systemlib
 
 import com.chromia.rell.dokka.doc.toDocumentationNode
+import com.chromia.rell.dokka.dri.from
 import com.chromia.rell.dokka.dri.toBound
-import com.chromia.rell.dokka.dri.toDRI
 import com.chromia.rell.dokka.dri.withSourceSet
 import com.chromia.rell.dokka.model.IsPure
 import com.chromia.rell.dokka.model.IsStatic
@@ -24,11 +24,7 @@ import org.jetbrains.dokka.links.TypeParam
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
-import org.jetbrains.dokka.model.DTypeParameter
-import org.jetbrains.dokka.model.Dynamic
-import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.TypeParameter
-import org.jetbrains.dokka.model.UnresolvedBound
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.P
@@ -48,7 +44,7 @@ class TypeDefMemberVisitor(
     fun List<L_TypeDefMember_Constant>.visitConstants(parent: DRI): List<DProperty> = map { it.visit(parent) }
 
     private fun L_TypeDefMember_Constructor.visit(parent: DRI): DFunction {
-        val dri = parent.copy(callable = Callable.fromConstructor(constructor, this.docSymbol.symbolName.strCode()))
+        val dri = DRI.from(this, parent)
 
         return DFunction(
                 dri = dri,
@@ -75,20 +71,8 @@ class TypeDefMemberVisitor(
         }
     }
 
-    private fun Callable.Companion.fromConstructor(function: L_Constructor, name: String) = Callable(
-            name = name,
-            params = listOf(
-                    TypeConstructor(
-                            function.header.strCode(),
-                            params = function.header.params.map { JavaClassReference(it.type.strCode()) }
-                    )
-            )
-    )
-
     private fun L_TypeDefMember_Function.visit(parent: DRI): DFunction {
-        val dri = parent.withClass(simpleName.str).copy(callable = Callable(
-                name = simpleName.str,
-                params = List(function.header.params.size) { index -> TypeParam(listOf()) }))
+        val dri = DRI.from(this, parent)
 
         return DFunction(
                 dri = dri,
