@@ -2,14 +2,15 @@ package com.chromia.rell.dokka.signature
 
 import com.chromia.rell.dokka.dri.DriOfUnit
 import com.chromia.rell.dokka.dri.isAlias
-import com.chromia.rell.dokka.model.IsHidden
-import com.chromia.rell.dokka.model.IsPure
-import com.chromia.rell.dokka.model.IsStatic
-import com.chromia.rell.dokka.model.IsTuple
-import com.chromia.rell.dokka.model.IsVararg
-import com.chromia.rell.dokka.model.IsZeroOne
+import com.chromia.rell.dokka.model.isHidden
+import com.chromia.rell.dokka.model.isMutable
 import com.chromia.rell.dokka.model.isOperation
+import com.chromia.rell.dokka.model.isPure
 import com.chromia.rell.dokka.model.isQuery
+import com.chromia.rell.dokka.model.isStatic
+import com.chromia.rell.dokka.model.isTuple
+import com.chromia.rell.dokka.model.isVararg
+import com.chromia.rell.dokka.model.isZeroOne
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.annotations
@@ -27,7 +28,6 @@ import org.jetbrains.dokka.model.Bound
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DClasslike
 import org.jetbrains.dokka.model.DFunction
-import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.DTypeAlias
 import org.jetbrains.dokka.model.DTypeParameter
@@ -35,7 +35,6 @@ import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.GenericTypeConstructor
-import org.jetbrains.dokka.model.IsVar
 import org.jetbrains.dokka.model.Nullable
 import org.jetbrains.dokka.model.PrimaryConstructorExtra
 import org.jetbrains.dokka.model.Projection
@@ -220,38 +219,10 @@ class RellSignatureProvider internal constructor(
 
     }
 
-    private fun DClasslike.isHidden(): Boolean {
-        return this is DClass && this.extra[IsHidden] != null
-    }
-
-    private fun DProperty.isMutable(): Boolean {
-        return this.extra[IsVar] != null || this.setter != null
-    }
-
-    private fun Documentable.isAlias(): Boolean = this.dri.isAlias()
-
-    private fun DFunction.isPure(): Boolean {
-        return this.extra[IsPure] != null
-    }
-
-    private fun DFunction.isStatic(): Boolean {
-        return this.extra[IsStatic] != null
-    }
-
-    private fun DParameter.isVararg(): Boolean {
-        return this.extra[IsVararg] != null
-    }
-
-    private fun DParameter.isZeroOne(): Boolean {
-        return this.extra[IsZeroOne] != null
-    }
-
-    private fun GenericTypeConstructor.isTuple(): Boolean = this.extra[IsTuple] != null
-
     private fun functionSignature(d: DFunction): List<ContentNode> {
         return d.sourceSets.map { sourceSet ->
             contentBuilder.contentFor(d, ContentKind.Symbol, setOf(TextStyle.Monospace), sourceSets = setOf(sourceSet)) {
-                if (d.isAlias()) punctuation("(alias) ")
+                if (d.dri.isAlias()) punctuation("(alias) ")
                 if (d.isPure()) keyword("pure ")
                 if (d.isStatic()) keyword("static ")
                 when {

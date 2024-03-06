@@ -134,11 +134,6 @@ class SystemLibVisitor(
         val superTypes = typeDef.mGenericType.parent?.genericType?.commonType?.let {
             buildList {
                 add(TypeConstructorWithKind(it.toBound() as GenericTypeConstructor, KotlinClassKindTypes.CLASS))
-                /*var parentType = it.getParentType()
-                while (parentType != null) {
-                    add(TypeConstructorWithKind(parentType.toBound() as GenericTypeConstructor, KotlinClassKindTypes.CLASS))
-                    parentType = parentType.getParentType()
-                }*/
             }
         }
         with(typeDefVisitor) {
