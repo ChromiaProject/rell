@@ -6,13 +6,13 @@ import com.chromia.rell.dokka.signature.RellSignatureProvider
 import com.chromia.rell.dokka.translator.RellDocumentableToPageTranslator
 import com.chromia.rell.dokka.translator.RellSourceToDocumentableTranslator
 import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator
-import kotlinx.serialization.json.Json
 import org.jetbrains.dokka.CoreExtensions
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.plugability.DokkaContext
 import org.jetbrains.dokka.plugability.DokkaPlugin
 import org.jetbrains.dokka.plugability.DokkaPluginApiPreview
 import org.jetbrains.dokka.plugability.PluginApiPreviewAcknowledgement
+import org.jetbrains.dokka.plugability.configuration
 
 /**
  * This plugin takes rell files and produces documentation nodes for each doc comment in the style of kdocs.
@@ -24,7 +24,7 @@ class RellDokkaPlugin : DokkaPlugin() {
 
     val sourceToDocumentableTranslator by extending {
         CoreExtensions.sourceToDocumentableTranslator providing {
-            if (extractConfig(it)?.system == true) RellSystemLibToDocumentableTranslator else RellSourceToDocumentableTranslator
+            if (config(it)?.system == true) RellSystemLibToDocumentableTranslator else RellSourceToDocumentableTranslator(it)
         }
     }
 
@@ -54,11 +54,6 @@ class RellDokkaPlugin : DokkaPlugin() {
      }*/
 
     companion object {
-        fun extractConfig(context: DokkaContext): RellDokkaPluginConfiguration? {
-            val pluginConfig = context.configuration.pluginsConfiguration.find { it.fqPluginName == RellDokkaPlugin::class.qualifiedName }
-            return pluginConfig?.let {
-                Json.decodeFromString<RellDokkaPluginConfiguration>(it.values)
-            }
-        }
+        private fun config(context: DokkaContext) = configuration<RellDokkaPlugin, RellDokkaPluginConfiguration>(context)
     }
 }

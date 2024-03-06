@@ -28,7 +28,7 @@ object RellSystemLibToDocumentableTranslator : SourceToDocumentableTranslator {
             DModule(
                     "Rell",
                     visitRellModule(module),
-                    mapOf(sourceSet to DocumentationNode(listOf())),
+                    documentation = mapOf(),
                     sourceSets = setOf(sourceSet)
             )
         }

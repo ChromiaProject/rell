@@ -2,6 +2,7 @@
 package com.chromia.rell.dokka.translator
 
 import com.chromia.rell.dokka.RellDokkaPlugin
+import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.model.definitionsByModule
 import com.chromia.rell.dokka.model.toDClasslike
 import com.chromia.rell.dokka.model.toDFunction
@@ -16,12 +17,14 @@ import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.Text
 import org.jetbrains.dokka.plugability.DokkaContext
+import org.jetbrains.dokka.plugability.configuration
 import org.jetbrains.dokka.transformers.sources.SourceToDocumentableTranslator
 
-object RellSourceToDocumentableTranslator : SourceToDocumentableTranslator {
+class RellSourceToDocumentableTranslator(context: DokkaContext) : SourceToDocumentableTranslator {
+    private val rellConfig = configuration<RellDokkaPlugin, RellDokkaPluginConfiguration>(context)
+
 
     override fun invoke(sourceSet: DokkaConfiguration.DokkaSourceSet, context: DokkaContext): DModule {
-        val rellConfig = RellDokkaPlugin.extractConfig(context)
         val files = sourceSet.sourceRoots
         val config = RellApiCompile.Config.Builder()
                 .mountConflictError(false)
