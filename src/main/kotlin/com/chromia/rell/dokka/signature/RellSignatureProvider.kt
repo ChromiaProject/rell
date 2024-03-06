@@ -14,11 +14,13 @@ import com.chromia.rell.dokka.model.isZeroOne
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.annotations
+import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.annotationsBlock
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.annotationsInline
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.driOrNull
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.parametersBlock
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.stylesIfDeprecated
 import org.jetbrains.dokka.base.signatures.SignatureProvider
+import org.jetbrains.dokka.base.transformers.documentables.isDeprecated
 import org.jetbrains.dokka.base.transformers.pages.comments.CommentsToContentConverter
 import org.jetbrains.dokka.base.translators.documentables.PageContentBuilder
 import org.jetbrains.dokka.links.DriOfAny
@@ -112,7 +114,6 @@ class RellSignatureProvider internal constructor(
             contentBuilder.contentFor(c, ContentKind.Symbol,
                     setOf(TextStyle.Monospace),
                     sourceSets = setOf(sourceSet)) {
-                //c.visibility[sourceSet]?.takeIf { it.name.isNotBlank() }?.name?.let { keyword("$it ") }
                 if (c.isHidden()) keyword("hidden ")
                 if (c is WithAbstraction) {
                     modifier(c, sourceSet)
@@ -197,7 +198,6 @@ class RellSignatureProvider internal constructor(
                     prefix = " : ",
                     surroundingCharactersStyle = mainStyles + TokenStyle.Operator
             ) { bound ->
-                println(bound)
                 signatureForProjection(bound)
             }
         }
@@ -207,10 +207,11 @@ class RellSignatureProvider internal constructor(
         get() = bounds.filterNot { it is Nullable && it.inner.driOrNull == DriOfAny }
 
     private fun propertySignature(d: DProperty): List<ContentNode> {
+        val deprecationStyles = if (d.isDeprecated()) setOf(TextStyle.Strikethrough) else setOf()
         return d.sourceSets.map { sourceSet ->
             contentBuilder.contentFor(d, ContentKind.Symbol, setOf(TextStyle.Monospace), sourceSets = setOf(sourceSet)) {
                 if (d.isMutable()) keyword("var ") else keyword("val ")
-                link(d.name, d.dri) // TODO: set styles if deprecated
+                link(d.name, d.dri, styles = mainStyles + deprecationStyles)
                 operator(": ")
                 signatureForProjection(d.type)
                 // Set default value
@@ -220,6 +221,7 @@ class RellSignatureProvider internal constructor(
     }
 
     private fun functionSignature(d: DFunction): List<ContentNode> {
+        val deprecationStyles = if (d.isDeprecated()) setOf(TextStyle.Strikethrough) else setOf()
         return d.sourceSets.map { sourceSet ->
             contentBuilder.contentFor(d, ContentKind.Symbol, setOf(TextStyle.Monospace), sourceSets = setOf(sourceSet)) {
                 if (d.dri.isAlias()) punctuation("(alias) ")
@@ -238,7 +240,7 @@ class RellSignatureProvider internal constructor(
                     +buildSignature(it)
                 }
 
-                if (!d.isConstructor) link(d.name, d.dri)
+                if (!d.isConstructor) link(d.name, d.dri, styles = mainStyles + deprecationStyles)
 
                 punctuation("(")
                 if (d.parameters.isNotEmpty()) {

@@ -12,4 +12,4 @@ fun C_Deprecated.toAnnotation() = Annotations.Annotation(
         params = mapOf(
                 "message" to StringValue(detailsMessage().substring(2).replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }),
                 "forRemoval" to BooleanValue(error),
-        ))
+        ), scope = Annotations.AnnotationScope.DIRECT, mustBeDocumented = true)
