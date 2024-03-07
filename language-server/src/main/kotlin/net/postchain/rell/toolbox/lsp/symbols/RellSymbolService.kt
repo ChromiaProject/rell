@@ -149,16 +149,14 @@ class RellSymbolService {
             return listOf()
         }
         val fileNodeInfo = createFileNodeInfo(fileUri, document)
-        val outlineTreeBuilder = OutlineTreeBuilder(fileNodeInfo, null)
+        val documentSymbol = getDocumentSymbolsWithRoot(fileNodeInfo, resource)
+        return listOf(Either.forRight(documentSymbol))
+    }
 
+    fun getDocumentSymbolsWithRoot(rootNodeInfo: NodeInfo, resource: Resource): DocumentSymbol {
+        val outlineTreeBuilder = OutlineTreeBuilder(rootNodeInfo, null)
         IdeApi.buildOutlineTree(outlineTreeBuilder, resource.ast)
-
-        val root = outlineTreeBuilder.build(null)
-
-        val symbols = mutableListOf<Either<SymbolInformation, DocumentSymbol>>()
-        symbols.add(Either.forRight(root.toDocumentSymbol()))
-
-        return symbols
+        return outlineTreeBuilder.build(null).toDocumentSymbol()
     }
 
     private fun createFileNodeInfo(

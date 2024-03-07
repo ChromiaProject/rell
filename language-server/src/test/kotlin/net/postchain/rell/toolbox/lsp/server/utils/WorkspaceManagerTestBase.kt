@@ -18,12 +18,12 @@ open class WorkspaceManagerTestBase {
     protected var diagnostics = mutableMapOf<URI, List<RellIssue>>()
     protected lateinit var workspace: File
     protected lateinit var sourceDir: File
+    protected val symbolService = RellSymbolService()
 
     @BeforeEach
     fun setup(@TempDir tempWorkspace: File) {
         workspace = tempWorkspace
         sourceDir = File(workspace, "src").apply { mkdir() }
-        val symbolService = RellSymbolService()
         val referenceService = RellReferenceService(symbolService)
         val indexCachingService = RellIndexCachingService(RellIndexSerializer())
         workspaceManager = RellWorkspaceManager(symbolService, referenceService, indexCachingService)

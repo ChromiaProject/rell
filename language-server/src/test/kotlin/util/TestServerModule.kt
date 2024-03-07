@@ -16,6 +16,7 @@ import net.postchain.rell.toolbox.lsp.server.RellRequestManager
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
 import net.postchain.rell.toolbox.lsp.server.RellFormattingManager
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
+import net.postchain.rell.toolbox.lsp.testrunner.RellTestRunner
 import org.koin.core.KoinApplication
 import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
@@ -50,6 +51,7 @@ class TestServerModule {
         single { CapabilitiesProvider() }
         single { RellSemanticTokensManager() }
 
+        singleOf(::RellTestRunner)
         singleOf(::RellLanguageServer)
         singleOf(::RellFormattingManager)
         

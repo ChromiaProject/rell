@@ -11,6 +11,9 @@ import net.postchain.rell.toolbox.core.indexer.RellIssue
 import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsConverter
+import net.postchain.rell.toolbox.lsp.testrunner.RellTestCase
+import net.postchain.rell.toolbox.lsp.testrunner.RellTestFile
+import net.postchain.rell.toolbox.lsp.testrunner.RellTestRunner
 import net.postchain.rell.toolbox.util.getCurrentLogFileName
 import org.eclipse.lsp4j.DefinitionParams
 import org.eclipse.lsp4j.DidChangeConfigurationParams
@@ -64,7 +67,8 @@ class RellLanguageServer(
     private val capabilitiesProvider: CapabilitiesProvider,
     private val semanticTokensManager: RellSemanticTokensManager,
     private val formattingManager: RellFormattingManager,
-    private val indexCachingService: RellIndexCachingService
+    private val indexCachingService: RellIndexCachingService,
+    private val testRunner: RellTestRunner,
 ) : LanguageServer, LanguageClientAware, TextDocumentService, WorkspaceService {
 
     private val logger = KotlinLogging.logger {}
@@ -338,5 +342,20 @@ class RellLanguageServer(
 
     override fun setTrace(params: SetTraceParams?) {
         logger.info { "Trace level set to ${params?.value}" }
+    }
+
+    @JsonRequest(useSegment = false, value = "rell/listTestFiles")
+    fun getTestFiles(workspaceUri: String): CompletableFuture<List<RellTestFile>> {
+        return requestManager.runRead {
+            testRunner.getTestFiles(URI(workspaceUri))
+        }
+    }
+
+    @JsonRequest(useSegment = false, value = "rell/listTestCases")
+    fun getTestCases(testFileUri: String): CompletableFuture<List<RellTestCase>> {
+        val fileUri = parseFileUri(testFileUri) ?: return CompletableFuture.completedFuture(listOf())
+        return requestManager.runRead {
+            testRunner.getTestCases(fileUri)
+        }
     }
 }
