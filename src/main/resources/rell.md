@@ -10,6 +10,10 @@ The Rell Standard Library contains the essential building blocks for writing you
 
 Global namespace containing types and functions accessible without any namespace prefix.
 
+# Package chain_context
+
+Blockchain metadata and module arguments.
+
 # Package crypto
 
 Cryptographic functions.
@@ -30,13 +34,13 @@ operation my_query() {
 }
 ```
 
-# Package chain_context
+# Package rell
 
-This namespace contains properties describing current blockchain.
+Meta information about rell types.
 
 # Package rell.test
 
-The rell.test namespace is only accessible withing test modules
+The [rell.test] namespace is only accessible within test modules
 
 ### Example
 
@@ -47,10 +51,6 @@ function test() {
     rell.test.block().run();
 }
 ```
-
-# Package rell
-
-Meta information about rell types.
 
 # Package rell.test.keypairs
 
