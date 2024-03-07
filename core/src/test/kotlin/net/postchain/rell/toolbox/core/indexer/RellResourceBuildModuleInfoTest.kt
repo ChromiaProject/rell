@@ -31,8 +31,8 @@ class RellResourceBuildModuleInfoTest {
         val rellCompilerUtils = RellCompilerUtils()
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
 
-        val fileUriImport = rellFilesErrors.find { it.toString().endsWith("import.rell") }!!
-        val fileUriSemanticError = rellFilesErrors.find { it.toString().endsWith("semantic_error.rell") }!!
+        val fileUriImport = rellFilesErrors.find { it.toString().endsWith("/import.rell") }!!
+        val fileUriSemanticError = rellFilesErrors.find { it.toString().endsWith("/semantic_error.rell") }!!
 
         val fileContentImport = File(fileUriImport).readText()
         val fileContentSemanticError = File(fileUriSemanticError).readText()
@@ -68,7 +68,7 @@ class RellResourceBuildModuleInfoTest {
     //TODO make it so a compiler can take in one file without ws defined
     @Test
     fun `compiler finds single errors in single rell file`() {
-        val fileUri = rellFilesErrors.find { it.toString().endsWith("semantic_error.rell") }!!
+        val fileUri = rellFilesErrors.find { it.toString().endsWith("/semantic_error.rell") }!!
         val fileContent = File(fileUri).readText()
         val rellCompilerUtils = RellCompilerUtils()
         val compilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceError.toURI())

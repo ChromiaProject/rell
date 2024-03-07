@@ -1,6 +1,5 @@
 package net.postchain.rell.toolbox.core.compiler
 
-import net.postchain.rell.base.compiler.ast.S_BasicPos
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.utils.ide.IdeFilePath

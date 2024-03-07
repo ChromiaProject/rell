@@ -80,6 +80,19 @@ tasks {
     }
 }
 
+tasks.withType<JacocoReport> {
+    dependsOn(tasks.test)
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.map {
+            fileTree(it).apply {
+                exclude("**/core/RellVersionInfo.*")
+                exclude("**/core/RellAbout.*")
+                exclude ("net/postchain/rell/toolbox/core/parser/**")
+                exclude ("net/postchain/rell/lsp/grammar/**")
+            }
+        }))
+    }
+}
 tasks.test {
     useJUnitPlatform()
 }

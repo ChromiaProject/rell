@@ -29,7 +29,7 @@ abstract class RellAbstractFormatter(
                 doc.prepend(currentExpr) { p -> p.newLine() }
             }
 
-            is RellParser.RuleX_BaseExprTailContext -> {
+            is RuleX_BaseExprTailContext -> {
                 if (currentExpr.ruleX_BaseExprTailCall() != null) {
                     formatExprTailCall(currentExpr, previousExpr, doc, false)
                 } else {
@@ -48,12 +48,12 @@ abstract class RellAbstractFormatter(
     }
 
     fun formatExprTailCall(
-        currentExpr: RellParser.RuleX_BaseExprTailContext,
+        currentExpr: RuleX_BaseExprTailContext,
         previousExpr: ParserRuleContext?,
         doc: FormattableDocument,
         indent: Boolean = true
     ) {
-        if (previousExpr is RellParser.RuleX_BaseExprTailContext) {
+        if (previousExpr is RuleX_BaseExprTailContext) {
             doc.interiorIndent(currentExpr)
         }
 
@@ -78,12 +78,12 @@ abstract class RellAbstractFormatter(
             doc.prepend(xBaseExprTail) { p -> p.noSpace() }
             doc.append(xBaseExprTail) { p -> p.noSpace() }
         } else if (xBaseExprTail is RellParser.RuleX_BaseExprTailCallContext) {
-            val exprTailCall = xBaseExprTail as RellParser.RuleX_BaseExprTailCallContext
+            val exprTailCall = xBaseExprTail
             doc.append(xBaseExprTail) { p -> p.noSpace() }
             formatBracePairWithoutSpace(exprTailCall.ruleX_CallArgs(), doc, BracePairTypes.PARENTHESES)
             formatArguments(exprTailCall.ruleX_CallArgs().ruleX_CallArg(), doc)
             doc.format(exprTailCall.ruleX_CallArgs())
-        } else if (xBaseExprTail is RellParser.RuleX_BaseExprTailContext) {
+        } else if (xBaseExprTail is RuleX_BaseExprTailContext) {
             if (xBaseExprTail.ruleX_BaseExprTailCall() != null) {
                 formatExprTailSingleline(xBaseExprTail.ruleX_BaseExprTailCall(), doc)
             } else if (xBaseExprTail.ruleX_BaseExprTailMember() != null) {
@@ -123,11 +123,7 @@ abstract class RellAbstractFormatter(
         val currentExprLineNr = currentExpr.stop.line
         val isLineSeparated = previousExprLineNr != currentExprLineNr
 
-        return if (getLineLength(currentExpr) > formatterOptions.maxLineWidth || isLineSeparated) {
-            true
-        } else {
-            false
-        }
+        return getLineLength(currentExpr) > formatterOptions.maxLineWidth || isLineSeparated
     }
 
     fun lineSeparateExpr(currentExpr: Token?, previousExp: Token?): Boolean {
@@ -509,9 +505,4 @@ abstract class RellAbstractFormatter(
         return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellLexer.HIDDEN) ?: listOf()
     }
 
-
-    fun nextHiddenRegionList(token: Token): List<Token> {
-        val commonTokenStream = parser.tokenStream as CommonTokenStream
-        return commonTokenStream.getHiddenTokensToRight(token.tokenIndex, RellLexer.HIDDEN) ?: listOf()
-    }
 }

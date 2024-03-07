@@ -2,6 +2,7 @@ package net.postchain.rell.lsp.grammar
 
 import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.grammar.GrammarUtils
+import java.util.*
 
 // TODO: This action generator should be revisited as current implementation was used for initial generation  and then modified manually.
 fun main() {
@@ -20,7 +21,7 @@ fun main() {
         val name = typeToTransform(type)
         println("    private static final RellcTransformer $name = RellcUtils.transformer(\"$type\");")
     }
-    if (!transforms.isEmpty()) println()
+    if (transforms.isNotEmpty()) println()
 
     println("    public static Object process(AntlrToRellContext ctx, ParserRuleContext node) {")
     println("        if (node == null) return null;\n")
@@ -28,16 +29,15 @@ fun main() {
     println("        switch (node.getRuleIndex()) {")
 
     for ((type, action) in actions) {
-        if( type.toLowerCase().contains("module")) {
-            println("Type ERROR: " + type)
+        if( type.lowercase(Locale.getDefault()).contains("module")) {
+            println("Type ERROR: $type")
         }
         val id = typeToId(type)
         println("            case $id: {")
 
         val attrs = action.action.generate(type)
-        val attrsStr = attrs.joinToString(", ")
         var varStr = ""
-        attrs.forEachIndexed { index, s ->
+        attrs.forEachIndexed { index, _ ->
             varStr += "var_$index"
             if ( index != attrs.size - 1)  { varStr += ", " }
         }
@@ -61,8 +61,9 @@ fun main() {
     println("}")
 }
 
+
 private fun typeToId(type: String): String {
-    return "RULE_rule" + type
+    return "RULE_rule$type"
 }
 
 private fun typeToTransform(type: String): String {
@@ -88,8 +89,9 @@ sealed class AntlrAction {
 }
 
 class AntlrAction_Token(private val name: String?) : AntlrAction() {
+
     override fun generate(type: String): List<String> {
-        val tail = if (name == null) "" else name.toLowerCase().capitalize()
+        val tail = name?.lowercase(Locale.getDefault())?.capitalize() ?: ""
         println("                Object var_0 = RellcUtils.token$tail(node);")
         return listOf("a")
     }
@@ -98,6 +100,7 @@ class AntlrAction_Token(private val name: String?) : AntlrAction() {
 class AntlrAttr(val name: String, val many: Boolean)
 
 class AntlrAction_General(private val attrs: List<AntlrAttr>) : AntlrAction() {
+
     override fun generate(type: String): List<String> {
         for (i in attrs.indices) {
             val attr = attrs[i]
