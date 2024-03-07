@@ -24,7 +24,10 @@ class RellDokkaPlugin : DokkaPlugin() {
 
     val sourceToDocumentableTranslator by extending {
         CoreExtensions.sourceToDocumentableTranslator providing {
-            if (config(it)?.system == true) RellSystemLibToDocumentableTranslator else RellSourceToDocumentableTranslator(it)
+            when (config(it)?.system) {
+                true -> RellSystemLibToDocumentableTranslator
+                else -> RellSourceToDocumentableTranslator(it)
+            }
         }
     }
 
