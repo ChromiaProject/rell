@@ -6,6 +6,7 @@ import net.postchain.rell.base.lib.test.Lib_RellTest
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.DokkaSourceSetID
 import org.jetbrains.dokka.DokkaSourceSetImpl
+import org.jetbrains.dokka.Platform
 import org.jetbrains.dokka.links.DRI
 import java.io.File
 
@@ -18,9 +19,10 @@ enum class RellModule(
         packageName: String,
         private val sourceSetName: String,
         val module: C_LibModule,
+        private val pretendedAnalysisPlatform: Platform, // Is used to color the filter boubbles
         private vararg val dependent: RellModule) {
-    MAIN("root", "rell", Lib_Rell.MODULE),
-    TEST("rell.test", "test", Lib_RellTest.MODULE, MAIN);
+    MAIN("root", "rell", Lib_Rell.MODULE, Platform.wasm),
+    TEST("rell.test", "test", Lib_RellTest.MODULE, Platform.js, MAIN);
 
     val sourceSetId = DokkaSourceSetID("rell", sourceSetName)
     val dri = DRI(packageName)
@@ -29,7 +31,8 @@ enum class RellModule(
             displayName = sourceSetName,
             sourceSetID = sourceSetId,
             dependentSourceSets = dependent.map { it.sourceSetId }.toSet(),
-            includes = includes.toSet()
+            includes = includes.toSet(),
+            analysisPlatform = pretendedAnalysisPlatform,
     )
 
     companion object {
