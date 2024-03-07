@@ -34,6 +34,7 @@
     --active-tab-border-color: var(--ifm-color-primary-darker);
     --active-section-color: var(--ifm-color-primary-darker);
     --sidemenu-section-active-color: #cc91f0;
+    --dokka-logo-image-url: url('../images/chromia-symbol.png');
 }
 
 .theme-dark {
@@ -80,21 +81,21 @@
 
 @font-face {
     font-family: Battlefin;
-    src: url("../images/fonts/Battlefin-Black.otf") format("opentype");
+    src: url("../fonts/Battlefin-Black.otf") format("opentype");
 }
 @font-face {
     font-family: International-bold;
-    src: url("../images/fonts/NBInternationalBoldWebfont.ttf")
+    src: url("../fonts/NBInternationalBoldWebfont.ttf")
     format("opentype");
 }
 @font-face {
     font-family: International-regular;
-    src: url("../images/fonts/NBInternationalRegularWebfont.ttf")
+    src: url("../fonts/NBInternationalRegularWebfont.ttf")
     format("opentype");
 }
 @font-face {
     font-family: International-light;
-    src: url("../images/fonts/NBInternationalMonoWebfont.ttf")
+    src: url("../fonts/NBInternationalMonoWebfont.ttf")
     format("opentype");
 }
 
@@ -103,8 +104,8 @@ h1 {
 }
 
 .nav-icon.class-kt::before {
-    content: url("../images/nav-icons/class.svg");
+    content: url("chromia/nav-icons/class.svg");
 }
 .nav-icon.abstract-class-kt::before {
-    content: url("../images/nav-icons/abstract-class.svg");
+    content: url("chromia/nav-icons/abstract-class.svg");
 }

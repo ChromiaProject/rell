@@ -25,8 +25,8 @@ class DokkaCommand : CliktCommand() {
     private val target by option().file(canBeFile = false).default(File("out"))
     private val modules by option().split(",")
     private val name by option().default("My Rell Dapp")
-    private val styles by option().default("src/main/resources/styles/chromia-styles.css")
-    private val assets by option().split(",").default(listOf("src/main/resources/fonts"))
+    private val styles by option()
+    private val assets by option().split(",")
     private val system by option(help = "Generate system library docs", hidden = true).flag()
     private val includes by option(help = "Include documentation files").file().split(",").default(listOf(File("src/main/resources/rell.md")))
 
@@ -37,8 +37,8 @@ class DokkaCommand : CliktCommand() {
                 DokkaBase::class.qualifiedName!!,
                 DokkaConfiguration.SerializationFormat.JSON,
                 """{ 
-                        "customStyleSheets": ["$styles"], 
-                        "customAssets":[${assets.joinToString(",") { "\"$it\"" }}], 
+                        ${styles?.let { "\"customStyleSheets\": [\"$it\"]," } ?: ""}
+                        ${assets?.let { a -> "\"customAssets\":[${a.joinToString(",") { "\"$it\"" }}]," } ?: ""}
                         "footerMessage": "© 2024 Chromia"
                     }"""
         )

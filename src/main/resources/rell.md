@@ -6,7 +6,7 @@ Rell code gets compiled to an intermediate binary format, which is code for a sp
 
 # Package root
 
-Basic data types.
+Global namespace containing types and functions accessible without any namespace prefix.
 
 # Package crypto
 
