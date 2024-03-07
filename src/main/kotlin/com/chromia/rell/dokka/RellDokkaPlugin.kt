@@ -59,6 +59,7 @@ class RellDokkaPlugin : DokkaPlugin() {
     val chromiaAssetsInstaller: Extension<PageTransformer, *, *> by extending {
         with (plugin<DokkaBase>()) {
             htmlPreprocessors providing ::ChromiaAssetsInstaller order {
+                before(customResourceInstaller)
                 after(rootCreator)
             } applyIf { !delayTemplateSubstitution }
         }
