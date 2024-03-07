@@ -20,14 +20,17 @@
     --ifm-navbar-background-color: #1f1a23;
     --ifm-color-gray-800: #444950;
 
+    --chromia-yellow: #ffb500;
+
     /* --- overrides --- */
     --color-dark: var(--ifm-background-color);
     --background-color: #fff;
     --hover-link-color: #bc6feb;
     --border-color: #dadde1;
 
-    --system-font-family: system-ui, -apple-system, BlinkMacSystemFont, Segoe UI,Roboto, Oxygen, Ubuntu,Cantarell, Droid Sans, Helvetica Neue, Arial, sans-serif;
+    --system-font-family: International-regular, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI,Roboto, Oxygen, Ubuntu,Cantarell, Droid Sans, Helvetica Neue, Arial, sans-serif;
     --default-font-family: International-regular, JetBrains Sans, Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI,Roboto, Oxygen, Ubuntu,Cantarell, Droid Sans, Helvetica Neue, Arial, sans-serif;
+    --bold-font-family: International-bold, JetBrains Sans, Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI,Roboto, Oxygen, Ubuntu,Cantarell, Droid Sans, Helvetica Neue, Arial, sans-serif;
     --battlfin-font-family: Battlefin, JetBrains Sans, Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI,Roboto, Oxygen, Ubuntu,Cantarell, Droid Sans, Helvetica Neue, Arial, sans-serif;
     --default-monospace-font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
 
@@ -68,9 +71,13 @@
 }
 
 .library-name--link {
-    font-family: var(--system-font-family);
-    font-weight: bold;
+    font-family: var(--bold-font-family);
+    font-size: 1.05rem;
     color: var(--default-font-color);
+}
+
+.library-name--link:hover {
+    color: var(--ifm-color-primary-darkest);
 }
 
 /* Logo styles */
@@ -78,6 +85,33 @@
     --dokka-logo-height: 32px;
     --dokka-logo-width: 32px;
 }
+
+.theme-dark .navigation-controls--theme {
+    background-image: url("../images/theme-toggle-night.svg");
+}
+
+.theme-dark #pages-search {
+    background-color: var(--background-color);
+   /* background-image: url("../images/searchIcon-night.svg");*/
+}
+
+#pages-search {
+    background-color: #969faf;
+}
+
+.filter-section .platform-tag.js-like[data-active], .platform-tags .platform-tag.js-like {
+    --platform-tag-color: var(--chromia-yellow);
+}
+
+.filter-section .platform-tag.wasm-like[data-active], .platform-tags .platform-tag.wasm-like {
+    --platform-tag-color: var(--ifm-color-primary-dark);
+}
+
+.filter-section .platform-tag:not([data-active])  {
+    color: var(--border-color);
+    background-color: var(--color-dark);
+}
+
 
 @font-face {
     font-family: Battlefin;

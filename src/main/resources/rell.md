@@ -1,8 +1,10 @@
 # Module Rell Standard Library
 
-Most dapp blockchain platforms use virtual machines of various kinds. But a traditional virtual machine architecture doesn't work very well with the Chromia relational data model, as we need a way to encode queries and operations. For this reason, ChromaWay is taking a more language-centric approach: a newly developed language called Rell (Relational language) that's used for dapp programming. This language allows programmers to describe the data model/schema, queries, and procedural app code.
-
-Rell code gets compiled to an intermediate binary format, which is code for a specialized virtual machine. Chromia nodes then translate queries in this code into SQL (while ensuring this translation is safe) and execute code as needed using an interpreter or compiler.
+The Rell Standard Library contains the essential building blocks for writing your rell dapp. It contains:
+- Basic data types
+- Cryptographic functions
+- Chain metadata
+- Test library functions
 
 # Package root
 

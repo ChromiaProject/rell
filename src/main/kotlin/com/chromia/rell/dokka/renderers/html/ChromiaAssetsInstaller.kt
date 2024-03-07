@@ -13,6 +13,8 @@ class ChromiaAssetsInstaller(private val dokkaContext: DokkaContext) : PageTrans
     private val chromiaPages = listOf(
             "images/chromia-symbol.png",
             "images/favicon.png",
+            "images/searchIcon.svg",
+            "images/searchIcon-night.svg",
             "images/theme-toggle.svg",
             "images/theme-toggle-night.svg",
             "fonts/Battlefin-Black.otf",
