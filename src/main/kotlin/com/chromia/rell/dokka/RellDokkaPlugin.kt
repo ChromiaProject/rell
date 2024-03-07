@@ -3,9 +3,9 @@ package com.chromia.rell.dokka
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.doc.AliasDocTagProvider
 import com.chromia.rell.dokka.signature.RellSignatureProvider
-import com.chromia.rell.dokka.translator.RellDocumentableToPageTranslator
-import com.chromia.rell.dokka.translator.RellSourceToDocumentableTranslator
-import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator
+import com.chromia.rell.dokka.translators.documentables.RellDocumentableToPageTranslator
+import com.chromia.rell.dokka.translators.RellSourceToDocumentableTranslator
+import com.chromia.rell.dokka.translators.RellSystemLibToDocumentableTranslator
 import org.jetbrains.dokka.CoreExtensions
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.plugability.DokkaContext

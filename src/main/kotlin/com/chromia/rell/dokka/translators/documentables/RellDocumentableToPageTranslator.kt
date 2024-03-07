@@ -1,4 +1,4 @@
-package com.chromia.rell.dokka.translator
+package com.chromia.rell.dokka.translators.documentables
 
 import com.chromia.rell.dokka.RellDokkaPlugin
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration

@@ -3,7 +3,7 @@ package com.chromia.rell.dokka.systemlib
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.DriOfRoot
 import com.chromia.rell.dokka.dri.toDRI
-import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
+import com.chromia.rell.dokka.translators.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import net.postchain.rell.base.lmodel.L_NamespaceMember_SpecialFunction
 import net.postchain.rell.base.lmodel.L_TypeDefMember_SpecialConstructor
 import net.postchain.rell.base.model.R_QualifiedName
@@ -12,13 +12,11 @@ import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.PointingToCallableParameters
 import org.jetbrains.dokka.links.TypeConstructor
-import org.jetbrains.dokka.links.TypeParam
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DTypeParameter
 import org.jetbrains.dokka.model.Nullable
 import org.jetbrains.dokka.model.TypeParameter
-import org.jetbrains.dokka.model.UnresolvedBound
 import org.jetbrains.dokka.model.Void
 import org.jetbrains.dokka.model.doc.DocumentationNode
 

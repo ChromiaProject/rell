@@ -11,7 +11,7 @@ import com.chromia.rell.dokka.model.IsPure
 import com.chromia.rell.dokka.model.IsStatic
 import com.chromia.rell.dokka.model.IsVararg
 import com.chromia.rell.dokka.model.IsZeroOne
-import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
+import com.chromia.rell.dokka.translators.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.lmodel.L_FunctionParam
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Alias

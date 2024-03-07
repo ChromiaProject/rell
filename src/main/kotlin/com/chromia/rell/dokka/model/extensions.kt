@@ -2,7 +2,7 @@
 
 package com.chromia.rell.dokka.model
 
-import com.chromia.rell.dokka.translator.RellDeclarationDescriptor
+import com.chromia.rell.dokka.descriptors.RellDeclarationDescriptor
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_Attribute
 import net.postchain.rell.base.model.R_Definition
@@ -33,7 +33,6 @@ import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.KotlinModifier
 import org.jetbrains.dokka.model.KotlinVisibility
-import org.jetbrains.dokka.model.Modifier
 import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.Void
 import org.jetbrains.dokka.model.doc.Description

@@ -1,4 +1,4 @@
-package com.chromia.rell.dokka.translator
+package com.chromia.rell.dokka.descriptors
 
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptorVisitor

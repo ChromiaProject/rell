@@ -1,5 +1,5 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-package com.chromia.rell.dokka.translator
+package com.chromia.rell.dokka.translators
 
 import com.chromia.rell.dokka.RellDokkaPlugin
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration

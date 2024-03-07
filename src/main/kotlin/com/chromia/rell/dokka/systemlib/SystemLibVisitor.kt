@@ -12,7 +12,7 @@ import com.chromia.rell.dokka.dri.withAlias
 import com.chromia.rell.dokka.dri.withSourceSet
 import com.chromia.rell.dokka.model.IsHidden
 import com.chromia.rell.dokka.model.IsVararg
-import com.chromia.rell.dokka.translator.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
+import com.chromia.rell.dokka.translators.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.lmodel.L_FunctionParam
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Alias
@@ -29,8 +29,6 @@ import net.postchain.rell.base.lmodel.L_TypeDefMember_Constructor
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Function
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Property
 import net.postchain.rell.base.lmodel.L_TypeDefMember_SpecialConstructor
-import net.postchain.rell.base.lmodel.L_TypeDefMember_StaticSpecialFunction
-import net.postchain.rell.base.lmodel.L_TypeDefMember_ValueSpecialFunction
 import org.jetbrains.dokka.DokkaConfiguration.DokkaSourceSet
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI

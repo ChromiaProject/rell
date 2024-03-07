@@ -1,15 +1,15 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
-package com.chromia.rell.dokka.translator
+package com.chromia.rell.dokka.translators
 
 import com.chromia.rell.dokka.config.RellModule
+import com.chromia.rell.dokka.descriptors.RellDeclarationDescriptor
 import com.chromia.rell.dokka.systemlib.SystemLibVisitor
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.analysis.kotlin.descriptors.compiler.configuration.DescriptorDocumentableSource
 import org.jetbrains.dokka.model.DModule
 import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.DocumentableSource
-import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.plugability.DokkaContext
 import org.jetbrains.dokka.transformers.sources.SourceToDocumentableTranslator
 
