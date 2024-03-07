@@ -138,8 +138,8 @@ h1 {
 }
 
 .nav-icon.class-kt::before {
-    content: url("chromia/nav-icons/class.svg");
+    content: url("../images/nav-icons/class.svg");
 }
 .nav-icon.abstract-class-kt::before {
-    content: url("chromia/nav-icons/abstract-class.svg");
+    content: url("../images/nav-icons/abstract-class.svg");
 }
