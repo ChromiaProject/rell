@@ -101,3 +101,10 @@
 h1 {
     font-family: var(--battlfin-font-family);
 }
+
+.nav-icon.class-kt::before {
+    content: url("../images/nav-icons/class.svg");
+}
+.nav-icon.abstract-class-kt::before {
+    content: url("../images/nav-icons/abstract-class.svg");
+}

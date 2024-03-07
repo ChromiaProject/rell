@@ -45,6 +45,8 @@ import org.jetbrains.dokka.model.DTypeAlias
 import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.KotlinClassKindTypes
+import org.jetbrains.dokka.model.KotlinModifier
+import org.jetbrains.dokka.model.KotlinModifier.Empty
 import org.jetbrains.dokka.model.KotlinModifier.Abstract
 import org.jetbrains.dokka.model.KotlinVisibility.Public
 import org.jetbrains.dokka.model.TypeConstructorWithKind
@@ -129,7 +131,7 @@ class SystemLibVisitor(
         val dri = parent.withClass(simpleName.str)
         val allTypeDefs = typeDef.allMembers.all
 
-        val modifier = if (typeDef.abstract) Abstract else null
+        val modifier = if (typeDef.abstract) Abstract else Empty
 
         val generics = typeDef.mGenericType.params.toGenerics(dri.withSourceSet(sourceSet))
 
