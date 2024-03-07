@@ -30,6 +30,7 @@ import org.jetbrains.dokka.model.Bound
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DClasslike
 import org.jetbrains.dokka.model.DFunction
+import org.jetbrains.dokka.model.DInterface
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.DTypeAlias
 import org.jetbrains.dokka.model.DTypeParameter
@@ -122,10 +123,11 @@ class RellSignatureProvider internal constructor(
                     is DClass -> {
                         keyword("type ")
                     }
+                    is DInterface -> keyword("entity ")
                     else -> TODO("Type $c not treated")
                 }
 
-                link(c.name, c.dri, styles = mainStyles) // + deprecationStyles)
+                link(c.name!!, c.dri, styles = mainStyles) // + deprecationStyles)
                 if (c is WithGenerics) {
                     list(c.generics, prefix = "<", suffix = ">",
                             separatorStyles = mainStyles + TokenStyle.Punctuation,

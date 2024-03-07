@@ -13,6 +13,7 @@ import org.jetbrains.dokka.DokkaConfigurationImpl
 import org.jetbrains.dokka.DokkaGenerator
 import org.jetbrains.dokka.DokkaSourceSetID
 import org.jetbrains.dokka.DokkaSourceSetImpl
+import org.jetbrains.dokka.Platform
 import org.jetbrains.dokka.PluginConfigurationImpl
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.utilities.DokkaConsoleLogger
@@ -32,7 +33,7 @@ class DokkaCommand : CliktCommand() {
 
     override fun run() {
         val rellConfig = if (system) RellDokkaPluginConfiguration.SYSTEM_CONFIG else RellDokkaPluginConfiguration(name, modules)
-        val sourceSets = if (system) RellModule.entries.map { it.sourceSet(includes) } else listOf(DokkaSourceSetImpl(sourceRoots = setOf(source), sourceSetID = DokkaSourceSetID("main", "dapp")))
+        val sourceSets = if (system) RellModule.entries.map { it.sourceSet(includes) } else listOf(DokkaSourceSetImpl(sourceRoots = setOf(source), sourceSetID = DokkaSourceSetID("main", "dapp"), displayName = "dapp", analysisPlatform = Platform.wasm))
         val dokkaBaseConf = PluginConfigurationImpl(
                 DokkaBase::class.qualifiedName!!,
                 DokkaConfiguration.SerializationFormat.JSON,
