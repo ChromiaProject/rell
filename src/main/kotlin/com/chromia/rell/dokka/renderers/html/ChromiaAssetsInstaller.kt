@@ -13,6 +13,7 @@ class ChromiaAssetsInstaller(private val dokkaContext: DokkaContext) : PageTrans
     private val chromiaPages = listOf(
             "images/chromia-symbol.png",
             "images/favicon.png",
+            "images/theme-toggle.svg",
             "images/theme-toggle-night.svg",
             "fonts/Battlefin-Black.otf",
             "fonts/NB International Bold Italic.ttf",
@@ -29,6 +30,8 @@ class ChromiaAssetsInstaller(private val dokkaContext: DokkaContext) : PageTrans
         val styles = chromiaStyles.map { it.name }
         val withEmbeddedResources = input.transformContentPagesTree { it.modified(embeddedResources = it.embeddedResources + styles) }
 
+        if (dokkaContext.configuration.delayTemplateSubstitution)
+            return withEmbeddedResources
         val (currentResources, otherPages) = withEmbeddedResources.children.partition { it is RendererSpecificResourcePage }
         return input.modified(
                 children = otherPages + currentResources.filterNot { it.name in styles } + chromiaPages + chromiaStyles
