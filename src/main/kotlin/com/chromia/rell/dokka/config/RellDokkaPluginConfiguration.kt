@@ -21,6 +21,6 @@ data class RellDokkaPluginConfiguration(
     )
 
     companion object {
-        val SYSTEM_CONFIG = RellDokkaPluginConfiguration("Rell-Api-Reference", listOf("rell", "rell.test"), system = true)
+        val SYSTEM_CONFIG = RellDokkaPluginConfiguration("Chromia Documentation", listOf("rell", "rell.test"), system = true)
     }
 }
