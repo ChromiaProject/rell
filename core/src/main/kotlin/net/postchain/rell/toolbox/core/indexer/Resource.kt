@@ -28,6 +28,10 @@ data class Resource(
         return symbolInfoWithInterval?.ideSymbolInfo?.kind
     }
 
+    fun isTest(): Boolean {
+        return moduleInfo?.test ?: false
+    }
+
     val rName = moduleInfo?.name
     val imports = moduleInfo?.imports ?: listOf()
     val fileSpecificSemanticErrors: List<C_Message> = semanticErrors.filter {
