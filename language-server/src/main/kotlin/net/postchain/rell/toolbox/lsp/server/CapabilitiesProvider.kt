@@ -21,7 +21,6 @@ class CapabilitiesProvider {
             setReferencesProvider(true)
             setDocumentSymbolProvider(true)
             setWorkspaceSymbolProvider(true)
-            //signatureHelpProvider = SignatureHelpOptions(listOf("(", ","))
             setTextDocumentSync(TextDocumentSyncKind.Incremental)
             semanticTokensProvider = SemanticTokensWithRegistrationOptions().apply {
                 legend = SemanticTokensLegend(
@@ -32,14 +31,8 @@ class CapabilitiesProvider {
                 setFull(true)
             }
 
-//        val completionOptions = CompletionOptions()
-//        completionOptions.resolveProvider = false
-//        completionOptions.triggerCharacters = listOf(".")
-//        serverCapabilities.completionProvider = completionOptions
-
             setDocumentFormattingProvider(true)
             setDocumentRangeFormattingProvider(true)
-//        serverCapabilities.setDocumentHighlightProvider(true)
         }
 
         val clientCapabilities = params.capabilities

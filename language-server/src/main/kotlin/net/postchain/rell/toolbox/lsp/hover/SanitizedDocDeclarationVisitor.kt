@@ -1,13 +1,18 @@
 package net.postchain.rell.toolbox.lsp.hover
 
 import net.postchain.rell.base.utils.doc.DocCodeTokenVisitor
+import net.postchain.rell.toolbox.core.annotaions.ExcludeFromJacocoGeneratedReport
 
 /**
  * Naively removes some keywords and reformats optional parameters using bracket notation.
  */
+
+//TODO Decide whether to extend or remove
+@ExcludeFromJacocoGeneratedReport
 class SanitizedDocDeclarationVisitor(val sb: StringBuilder): DocCodeTokenVisitor {
     var isOptional = false
     var hasStarted = false
+
     override fun keyword(s: String) {
         if (s == "zero_one") {
             sb.append("[")

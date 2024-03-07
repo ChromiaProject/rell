@@ -45,14 +45,14 @@ class RellResourceBuildParseTreeTest {
 
     @Test
     fun `ParseTree finds no error in semantic error file`() {
-        val parseTreeWithErrors = rellDesc.buildParseTreeWithSyntaxErrors(getFileContent("semantic_error.rell"))
+        val parseTreeWithErrors = rellDesc.buildParseTreeWithSyntaxErrors(getFileContent("/semantic_error.rell"))
         assertThat(parseTreeWithErrors.second.size).isEqualTo(0)
 
     }
 
     @Test
     fun `ParseTree finds no error in import error file`() {
-        val parseTreeWithErrors = rellDesc.buildParseTreeWithSyntaxErrors(getFileContent("import.rell"))
+        val parseTreeWithErrors = rellDesc.buildParseTreeWithSyntaxErrors(getFileContent("/import.rell"))
         assertThat(parseTreeWithErrors.second.size).isEqualTo(0)
     }
 

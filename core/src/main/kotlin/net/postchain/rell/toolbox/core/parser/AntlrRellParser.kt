@@ -18,7 +18,7 @@ class AntlrRellParser {
         return parser.ruleX_RootParser()
     }
 
-    fun parserFor(
+    private fun parserFor(
         source: String,
         parseListeners: List<ParseTreeListener> = listOf(),
         errorListeners: List<ANTLRErrorListener> = listOf()

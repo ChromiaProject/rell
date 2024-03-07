@@ -40,7 +40,7 @@ object RellcAPI {
         }
     }
 
-    fun validate(srcDir: C_SourceDir, modules: List<String>, options: C_CompilerOptions): List<C_Message> {
+    private fun validate(srcDir: C_SourceDir, modules: List<String>, options: C_CompilerOptions): List<C_Message> {
         val rModules = modules.map { s ->
             val rModule = IdeApi.parseModuleName(s)
             check(rModule != null) { "Invalid module name: [$s]" }

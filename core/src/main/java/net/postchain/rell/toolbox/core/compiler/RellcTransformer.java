@@ -14,10 +14,9 @@ final class RellcTransformer {
     }
 
     Object transform(AntlrToRellContext ctx, ParserRuleContext eObject, Object value) {
-        Object res = ctx.runWithAttachment(eObject, () -> {
+        return ctx.runWithAttachment(eObject, () -> {
             try {
-                Object res0 = transform.invoke(value);
-                return res0;
+                return transform.invoke(value);
             } catch (RellTokenizerDecodingException e) {
                 var err = e.toCError();
                 ctx.addError(err);
@@ -30,7 +29,6 @@ final class RellcTransformer {
                 return null;
             }
         });
-        return res;
     }
 }
 

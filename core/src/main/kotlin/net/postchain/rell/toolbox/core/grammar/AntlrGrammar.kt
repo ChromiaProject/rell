@@ -1,22 +1,29 @@
 @file:JvmName("AntlrGrammarGenerator")
 package net.postchain.rell.lsp.grammar
 
-import net.postchain.rell.base.utils.grammar.GrammarUtils
-
-import com.github.h0tk3y.betterParse.combinators.*
+import com.github.h0tk3y.betterParse.combinators.AndCombinator
+import com.github.h0tk3y.betterParse.combinators.MapCombinator
+import com.github.h0tk3y.betterParse.combinators.OptionalCombinator
+import com.github.h0tk3y.betterParse.combinators.OrCombinator
+import com.github.h0tk3y.betterParse.combinators.RepeatCombinator
+import com.github.h0tk3y.betterParse.combinators.SeparatedCombinator
+import com.github.h0tk3y.betterParse.combinators.SkipParser
 import com.github.h0tk3y.betterParse.grammar.ParserReference
 import net.postchain.rell.base.compiler.parser.RellToken
 import net.postchain.rell.base.compiler.parser.S_Grammar
 import net.postchain.rell.base.utils.LateInit
+import net.postchain.rell.base.utils.grammar.GrammarUtils
 import org.apache.commons.collections4.MapUtils
 
 // TODO: Grammar generator should be revisited as current implementation was not used for initial generation.
 // It's used by action generator for tranformer generation.
+
 fun main() {
     generateHeader()
     generateNonterminals()
     generateFooter()
 }
+
 
 private fun generateHeader() {
     val tokenizer = S_Grammar.tokenizer
@@ -62,6 +69,7 @@ private fun generateHeader() {
     println(text.trim())
 }
 
+
 private fun generateFooter() {
     val tokenizer = S_Grammar.tokenizer
     val text = """
@@ -82,6 +90,7 @@ private fun generateFooter() {
 
     println(text.trim())
 }
+
 
 private fun generateTerminals() {
     val tokenizer = S_Grammar.tokenizer
@@ -295,6 +304,7 @@ private object AntlrNontermGen {
     }
 }
 
+
 private object AntlrGramExprGen {
     private val parsers = GrammarUtils.getParsers()
     private val nonterms = MapUtils.invertMap(parsers).toMap()
@@ -357,10 +367,8 @@ private fun termNameToAntlr(name: String): String {
     return "X_$name"
 }
 
-
 private class AntlrNonterm(val name: String) {
     val prods = LateInit<List<AntlrProd>>()
-    val terminals = mutableListOf<Pair<String, String>>()
     fun generate(): String {
         val ps = prods.get().joinToString("\n   | ") { it.generate() }
         if (name == "X_IfStmt") {
@@ -387,12 +395,13 @@ private sealed class AntlrExpr {
 }
 
 private class AntlrExpr_Symbol(private val name: String): AntlrExpr() {
-    override fun generate() = "$name"
+    override fun generate() = name
 }
 
 private class AntlrExpr_Token(private val text: String): AntlrExpr() {
     override fun generate() = "'$text'"
 }
+
 
 private class AntlrExpr_Or(private val subs: List<AntlrExpr>): AntlrExpr() {
     override fun generate() = "(" + subs.joinToString(" | ") { it.generate() } + ")"
@@ -423,11 +432,13 @@ private sealed class AntlrGramExpr {
     abstract fun getRuleClassString(): String
 }
 
+
 private class AntlrGramExpr_Token(val name: String): AntlrGramExpr() {
     override fun hasValue() = true
     override fun many() = false
     override fun getRuleClassString(): String = "${nontermNameToAntlrRuleCtx(name)}"
 }
+
 
 private class AntlrGramExpr_Nonterm(val name: String): AntlrGramExpr() {
     override fun hasValue() = true
@@ -436,12 +447,14 @@ private class AntlrGramExpr_Nonterm(val name: String): AntlrGramExpr() {
     override fun getRuleClassString(): String = "${nontermNameToAntlrRuleCtx(name)}"
 }
 
+
 private class AntlrGramExpr_Skip(val sub: AntlrGramExpr): AntlrGramExpr() {
     override fun hasValue() = false
     override fun many() = sub.many()
 
     override fun getRuleClassString(): String = sub.getRuleClassString()
 }
+
 
 private class AntlrGramExpr_Map(val sub: AntlrGramExpr, val transform: (Any) -> Any): AntlrGramExpr() {
     override fun hasValue() = true
@@ -450,11 +463,13 @@ private class AntlrGramExpr_Map(val sub: AntlrGramExpr, val transform: (Any) -> 
     override fun getRuleClassString(): String = sub.getRuleClassString()
 }
 
+
 private class AntlrGramExpr_And(val subs: List<AntlrGramExpr>): AntlrGramExpr() {
     override fun hasValue() = subs.any { it.hasValue() }
     override fun many() = subs.any { it.many() }
     override fun getRuleClassString(): String = subs.get(0).getRuleClassString()
 }
+
 
 private class AntlrGramExpr_Or(val subs: List<AntlrGramExpr>): AntlrGramExpr() {
     override fun hasValue() = subs.any { it.hasValue() }
@@ -463,12 +478,14 @@ private class AntlrGramExpr_Or(val subs: List<AntlrGramExpr>): AntlrGramExpr() {
     override fun getRuleClassString(): String = subs.get(0).getRuleClassString()
 }
 
+
 private class AntlrGramExpr_Opt(val sub: AntlrGramExpr): AntlrGramExpr() {
     override fun hasValue() = sub.hasValue()
     override fun many() = sub.many()
 
     override fun getRuleClassString(): String = sub.getRuleClassString()
 }
+
 
 private class AntlrGramExpr_Rep(val term: AntlrGramExpr, val sep: AntlrGramExpr?, val zero: Boolean): AntlrGramExpr() {
     override fun hasValue() = term.hasValue()

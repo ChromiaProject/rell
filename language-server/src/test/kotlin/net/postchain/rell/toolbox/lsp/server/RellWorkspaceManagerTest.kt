@@ -11,9 +11,6 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
-import java.io.File
-import java.net.URI
-import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.server.utils.WorkspaceManagerTestBase
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
@@ -21,6 +18,8 @@ import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import org.eclipse.lsp4j.WorkspaceFolder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.net.URI
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createDirectory
 

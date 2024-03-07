@@ -73,10 +73,6 @@ class WorkspaceIndexer(val workspaceUri: URI) {
         return sources
     }
 
-    fun hasFile(fileUri: URI): Boolean {
-        return fileUriResourceMap.containsKey(fileUri)
-    }
-
     fun getAllIssues(): Map<URI, List<RellIssue>> {
         val issues: MutableMap<URI, List<RellIssue>> = mutableMapOf()
         fileUriResourceMap.forEach { (uri, resource) ->
@@ -139,15 +135,15 @@ class WorkspaceIndexer(val workspaceUri: URI) {
         fileMap.remove(createSourcePath(fileUri))
     }
 
-    fun createSourcePath(fileUri: URI): C_SourcePath {
+    private fun createSourcePath(fileUri: URI): C_SourcePath {
         return rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
     }
 
     fun findAffectedFiles(fileUri: URI): Set<URI> {
-        var shallowCopy = fileUriResourceMap.toMutableMap()
+        val shallowCopy = fileUriResourceMap.toMutableMap()
         val changedFileResource: Resource = fileUriResourceMap[fileUri]!!
         shallowCopy.remove(fileUri)
-        var filesToUpdate: MutableSet<URI> = mutableSetOf(fileUri)
+        val filesToUpdate: MutableSet<URI> = mutableSetOf(fileUri)
 
         val implicitImports = calculateImplicitImports(shallowCopy)
 
@@ -172,7 +168,7 @@ class WorkspaceIndexer(val workspaceUri: URI) {
         return implicitImports
     }
 
-    fun addRellFilesUri(): List<URI> {
+    private fun addRellFilesUri(): List<URI> {
         val uris: MutableList<URI> = ArrayList()
         findRellFilesInWorkspace(File(workspaceUri), uris)
         return uris.toList()

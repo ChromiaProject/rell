@@ -1,5 +1,6 @@
 package net.postchain.rell.toolbox.util
 
+import net.postchain.rell.toolbox.core.annotaions.ExcludeFromJacocoGeneratedReport
 import net.postchain.rell.toolbox.lsp.server.LauncherType
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
@@ -7,7 +8,7 @@ import org.apache.logging.log4j.core.Logger
 import org.apache.logging.log4j.core.LoggerContext
 import org.apache.logging.log4j.core.appender.RollingFileAppender
 
-
+@ExcludeFromJacocoGeneratedReport
 fun initializeLogger(logLevel: Level, launcherType: LauncherType) {
     val loggerContext = LoggerContext.getContext(false)
     val appenders = loggerContext.configuration.appenders
