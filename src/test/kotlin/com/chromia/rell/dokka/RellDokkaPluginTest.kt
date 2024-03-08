@@ -2,6 +2,7 @@ package com.chromia.rell.dokka
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isInstanceOf
 import assertk.assertions.isTrue
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.model.isEntity
@@ -13,6 +14,7 @@ import com.chromia.rell.dokka.model.isStruct
 import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
 import org.jetbrains.dokka.base.testApi.testRunner.BaseTestBuilder
 import org.jetbrains.dokka.links.DRI
+import org.jetbrains.dokka.model.DEnum
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.KotlinModifier
 import org.jetbrains.dokka.model.KotlinVisibility
@@ -166,8 +168,7 @@ class RellDokkaPluginTest : BaseAbstractTest() {
                 val myObject = objects.first()
                 assertThat(myObject.name).isEqualTo("my_object")
                 assertThat(myObject.isObject()).isTrue()
-                val simpleDri = myObject.dri
-                assertThat(simpleDri.toString()).isEqualTo(DRI("main", "my_object").toString())
+                assertThat(myObject.dri.toString()).isEqualTo(DRI("main", "my_object").toString())
                 val props = myObject.properties
                 assertThat(props.size).isEqualTo(2)
                 val (order, name) = props
@@ -176,6 +177,31 @@ class RellDokkaPluginTest : BaseAbstractTest() {
                 assertThat((order.type as GenericTypeConstructor).dri.classNames).isEqualTo("integer")
                 assertThat(name.name).isEqualTo("name")
                 assertThat(name.isMutable()).isTrue()
+            }
+        }
+    }
+
+    @Test
+    fun `enum transformation`() {
+        singleFileTestInline("""           
+            enum my_enum {
+              A, B, C
+            }
+        """.trimIndent()) {
+            documentablesTransformationStage = { m ->
+                val testPackage = m.packages.find { it.packageName == "main" }
+                assertNotNull(testPackage)
+                val enums = testPackage.classlikes
+                assertThat(enums.size).isEqualTo(1)
+                val myEnum = enums.first()
+                assertThat(myEnum.name).isEqualTo("my_enum")
+                assertThat(myEnum).isInstanceOf<DEnum>()
+                assertThat(myEnum.dri.toString()).isEqualTo(DRI("main", "my_enum").toString())
+                val entries = (myEnum as DEnum ).entries
+                assertThat(entries.size).isEqualTo(3)
+                val entry = entries.first()
+                assertThat(entry.name).isEqualTo("A")
+                assertThat(entry.dri.toString()).isEqualTo(DRI("main", "my_enum.A").toString())
             }
         }
     }

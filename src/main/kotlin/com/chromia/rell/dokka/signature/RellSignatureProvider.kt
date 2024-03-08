@@ -134,7 +134,7 @@ class RellSignatureProvider internal constructor(
                     }
                     is DInterface -> keyword("entity ")
                     is DObject -> keyword("object ")
-                    is DEnum -> keyword("enum 1")
+                    is DEnum -> keyword("enum ")
                     else -> TODO("Type $c not treated")
                 }
 

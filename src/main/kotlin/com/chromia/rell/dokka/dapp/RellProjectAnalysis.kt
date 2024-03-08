@@ -13,6 +13,8 @@ import com.chromia.rell.dokka.model.IsStruct
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_Attribute
 import net.postchain.rell.base.model.R_EntityDefinition
+import net.postchain.rell.base.model.R_EnumAttr
+import net.postchain.rell.base.model.R_EnumDefinition
 import net.postchain.rell.base.model.R_GlobalConstantDefinition
 import net.postchain.rell.base.model.R_KeyIndexKind
 import net.postchain.rell.base.model.R_Module
@@ -22,6 +24,8 @@ import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.withClass
 import org.jetbrains.dokka.model.DClass
+import org.jetbrains.dokka.model.DEnum
+import org.jetbrains.dokka.model.DEnumEntry
 import org.jetbrains.dokka.model.DPackage
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.IsVar
@@ -44,11 +48,12 @@ class RellProjectAnalysis(
         val entities = entities.values.map { it.visit() }
         val structs = structs.values.map { it.visit() }
         val objects = objects.values.map { it.visit() }
+        val enums = enums.values.map { it.visit() }
 
         return DPackage(
                 dri = DRI(name.str()),
                 properties = globalConstants,
-                classlikes = entities + structs + objects,
+                classlikes = entities + structs + objects + enums,
                 functions = listOf(),
                 typealiases = listOf(),
                 sourceSets = setOf(sourceSet),
@@ -153,7 +158,7 @@ class RellProjectAnalysis(
         )
     }
 
-    fun R_Attribute.visit(parent: DRI): DProperty {
+    private fun R_Attribute.visit(parent: DRI): DProperty {
         return DProperty(
                 dri = parent.withClass(name),
                 name = name,
@@ -177,6 +182,42 @@ class RellProjectAnalysis(
                         },
                         IsVar.takeIf { mutable }
                 )
+        )
+    }
+
+    private fun R_EnumDefinition.visit(): DEnum {
+        val dri = DRI.from(this)
+        val entries = this.attrs.map { it.visit(dri) }
+
+        return DEnum(
+                dri = dri,
+                name = simpleName,
+                entries = entries,
+                documentation = simpleDocumentationNode("This enum is called $simpleName").toSourceSetDependent(),
+                sourceSets = setOf(sourceSet),
+                properties = listOf(),
+                classlikes = listOf(),
+                companion = null,
+                constructors = listOf(),
+                expectPresentInSet = null,
+                functions = listOf(),
+                isExpectActual = false,
+                visibility = KotlinVisibility.Public.toSourceSetDependent(),
+                supertypes = mapOf(),
+                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
+        )
+    }
+
+    private fun R_EnumAttr.visit(parent: DRI): DEnumEntry {
+        return DEnumEntry(
+                dri = parent.withClass(name),
+                name = name,
+                documentation = simpleDocumentationNode("This enum entry is called $name").toSourceSetDependent(),
+                sourceSets = setOf(sourceSet),
+                expectPresentInSet = null,
+                classlikes = listOf(),
+                functions = listOf(),
+                properties = listOf()
         )
     }
 
