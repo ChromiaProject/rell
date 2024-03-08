@@ -2,13 +2,16 @@ package com.chromia.rell.dokka.signature
 
 import com.chromia.rell.dokka.dri.DriOfUnit
 import com.chromia.rell.dokka.dri.isAlias
+import com.chromia.rell.dokka.model.isEntity
 import com.chromia.rell.dokka.model.isHidden
 import com.chromia.rell.dokka.model.isMutable
 import com.chromia.rell.dokka.model.isOperation
 import com.chromia.rell.dokka.model.isPure
 import com.chromia.rell.dokka.model.isQuery
 import com.chromia.rell.dokka.model.isStatic
+import com.chromia.rell.dokka.model.isStruct
 import com.chromia.rell.dokka.model.isTuple
+import com.chromia.rell.dokka.model.isType
 import com.chromia.rell.dokka.model.isVararg
 import com.chromia.rell.dokka.model.isZeroOne
 import org.jetbrains.dokka.DokkaConfiguration
@@ -123,7 +126,9 @@ class RellSignatureProvider internal constructor(
                 }
                 when (c) {
                     is DClass -> {
-                        keyword("type ")
+                        if (c.isEntity()) keyword("entity ")
+                        if (c.isStruct()) keyword("struct ")
+                        if (c.isType()) keyword("type ")
                     }
                     is DInterface -> keyword("entity ")
                     is DObject -> keyword("object ")

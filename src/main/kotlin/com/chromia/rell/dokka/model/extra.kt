@@ -57,3 +57,20 @@ object IsIndex: ExtraProperty<DProperty>, ExtraProperty.Key<DProperty, IsIndex> 
 
 fun DProperty.isIndex() = this.extra[IsIndex] != null
 
+object IsEntity: ExtraProperty<DClasslike>, ExtraProperty.Key<DClasslike, IsEntity> {
+    override val key: ExtraProperty.Key<DClasslike, *> get() = this
+}
+
+fun DClasslike.isEntity() = this is DClass && this.extra[IsEntity] != null
+
+object IsStruct: ExtraProperty<DClasslike>, ExtraProperty.Key<DClasslike, IsStruct> {
+    override val key: ExtraProperty.Key<DClasslike, *> get() = this
+}
+
+fun DClasslike.isStruct() = this is DClass && this.extra[IsStruct] != null
+
+object IsType: ExtraProperty<DClasslike>, ExtraProperty.Key<DClasslike, IsType> {
+    override val key: ExtraProperty.Key<DClasslike, *> get() = this
+}
+
+fun DClasslike.isType() = this is DClass && this.extra[IsType] != null
