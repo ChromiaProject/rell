@@ -31,6 +31,7 @@ import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DClasslike
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DInterface
+import org.jetbrains.dokka.model.DObject
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.DTypeAlias
 import org.jetbrains.dokka.model.DTypeParameter
@@ -124,6 +125,7 @@ class RellSignatureProvider internal constructor(
                         keyword("type ")
                     }
                     is DInterface -> keyword("entity ")
+                    is DObject -> keyword("object ")
                     else -> TODO("Type $c not treated")
                 }
 

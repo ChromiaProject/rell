@@ -14,6 +14,7 @@ import utils.TestOutputWriterPlugin
 import utils.match
 
 internal class SystemLibSignatureTest : BaseAbstractTest() {
+    val projectRoot = "-rell -standard -library"
     private val configuration = dokkaConfiguration {
         this.pluginsConfigurations.add(RellDokkaPluginConfiguration.SYSTEM_CONFIG.toPluginConfig())
         sourceSets {
@@ -28,7 +29,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("-rell/root/integer/abs.html").firstSignature()
+                writerPlugin.writer.renderedContent("$projectRoot/root/integer/abs.html").firstSignature()
                         .match("pure function ", A("abs"), "(): ", A("integer"), ignoreSpanWithTokenStyle = true)
             }
         }
@@ -39,7 +40,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("-rell/crypto/eth_privkey_to_address.html").firstSignature()
+                writerPlugin.writer.renderedContent("$projectRoot/crypto/eth_privkey_to_address.html").firstSignature()
                         .match(
                                 "function ",
                                 A("eth_privkey_to_address"),
@@ -59,7 +60,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("-rell/rell.test/op/run_must_fail.html").lastSignature()
+                writerPlugin.writer.renderedContent("$projectRoot/rell.test/op/run_must_fail.html").lastSignature()
                         .match(
                                 "function ",
                                 A("run_must_fail"),
@@ -79,7 +80,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("-rell/rell.test/tx/tx.html").firstSignature()
+                writerPlugin.writer.renderedContent("$projectRoot/rell.test/tx/tx.html").firstSignature()
                         .match(
                                 "constructor(",
                                 Parameters(
@@ -96,7 +97,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("-rell/root/integer/integer.html").firstSignature()
+                writerPlugin.writer.renderedContent("$projectRoot/root/integer/integer.html").firstSignature()
                         .match(
                                 "constructor(",
                                 Parameters(
@@ -105,7 +106,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
                                 ),
                                 ")",
                                 ignoreSpanWithTokenStyle = true)
-                writerPlugin.writer.renderedContent("-rell/rell.test/op/sign.html").lastSignature()
+                writerPlugin.writer.renderedContent("$projectRoot/rell.test/op/sign.html").lastSignature()
                         .match(
                                 "function ",
                                 A("sign"),
@@ -124,7 +125,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("-rell/rell.test/assert_events.html").firstSignature()
+                writerPlugin.writer.renderedContent("$projectRoot/rell.test/assert_events.html").firstSignature()
                         .match(
                                 "function ", A("assert_events"), "(",
                                 Parameters(
@@ -141,7 +142,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("-rell/rell.test/op/args.html").firstSignature()
+                writerPlugin.writer.renderedContent("$projectRoot/rell.test/op/args.html").firstSignature()
                         .match(
                                 "val ", A("args"), ": ",
                                 A("list"), "<", A("gtv"), ">",
@@ -155,7 +156,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("-rell/rell.test.keypairs/alice.html").firstSignature()
+                writerPlugin.writer.renderedContent("$projectRoot/rell.test.keypairs/alice.html").firstSignature()
                         .match(
                                 "val ", A("alice"), ": ",
                                 A("rell.test.keypair"),
@@ -169,7 +170,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("-rell/rell/meta/meta.html").firstSignature()
+                writerPlugin.writer.renderedContent("$projectRoot/rell/meta/meta.html").firstSignature()
                         .match(
                                 "constructor<", A("T"), "> (",
                                 Parameters(
@@ -185,7 +186,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("-rell/root/try_call.html").lastSignature() // TODO: Why the [rell]-prefix
+                writerPlugin.writer.renderedContent("$projectRoot/root/try_call.html").lastSignature() // TODO: Why the [rell]-prefix
                         .match(
                                 "function <", A("T"), "> ", A("try_call"), "(",
                                 Parameters(
@@ -201,7 +202,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("-rell/root/empty.html").firstSignature()
+                writerPlugin.writer.renderedContent("$projectRoot/root/empty.html").firstSignature()
                         .match(
                                 "function <", A("T"), "> ", A("empty"), "(",
                                 Parameters(
@@ -217,7 +218,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("-rell/root/print.html").firstSignature()
+                writerPlugin.writer.renderedContent("$projectRoot/root/print.html").firstSignature()
                         .match(
                                 "function ", A("print"), "(",
                                 Parameters(
@@ -233,7 +234,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("-rell/rell.test/assert_equals.html").firstSignature()
+                writerPlugin.writer.renderedContent("$projectRoot/rell.test/assert_equals.html").firstSignature()
                         .match(
                                 "function <", A("T"), "> ", A("assert_equals"), "(",
                                 Parameters(
@@ -249,7 +250,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin()
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("-rell/root/set/index.html").firstSignature()
+                writerPlugin.writer.renderedContent("$projectRoot/root/set/index.html").firstSignature()
                         .match(
                                 "type ", A("set"), "<", A("T"), "> : ", A("collection"), "<T>", // TODO: Last generic type should be a link
                                 ignoreSpanWithTokenStyle = true)
