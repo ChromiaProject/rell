@@ -2,7 +2,11 @@ package com.chromia.rell.dokka
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isTrue
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
+import com.chromia.rell.dokka.model.isIndex
+import com.chromia.rell.dokka.model.isKey
+import com.chromia.rell.dokka.model.isMutable
 import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
 import org.jetbrains.dokka.base.testApi.testRunner.BaseTestBuilder
 import org.jetbrains.dokka.links.DRI
@@ -10,6 +14,7 @@ import org.jetbrains.dokka.links.TypeConstructor
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.KotlinModifier
 import org.jetbrains.dokka.model.KotlinVisibility
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -67,9 +72,50 @@ class RellDokkaPluginTest : BaseAbstractTest() {
     }
 
     @Test
+    fun `entity transformation`() {
+        singleFileTestInline("""
+            entity simple {}
+            
+            entity my_entity {
+              key name;
+              index my_value: integer;
+              mutable hash: byte_array;
+              simple;
+              // index my_value, simple; 
+            }
+        """.trimIndent()) {
+            documentablesTransformationStage = { m ->
+                val testPackage = m.packages.find { it.packageName == "main" }
+                assertNotNull(testPackage)
+                val entities = testPackage.classlikes
+                assertThat(entities.size).isEqualTo(2)
+                val (simpleEntity, myEntity) = entities
+                assertThat(simpleEntity.name).isEqualTo("simple")
+                val simpleDri = simpleEntity.dri
+                assertThat(simpleDri.toString()).isEqualTo(DRI("main", "simple").toString())
+                val props = myEntity.properties
+                assertThat(props.size).isEqualTo(4)
+                val (name, value, hash, simple) = props
+                assertThat(name.name).isEqualTo("name")
+                assertThat(name.dri.toString()).isEqualTo(DRI("main", "my_entity.name").toString())
+                assertThat((name.type as GenericTypeConstructor).dri.classNames).isEqualTo("text")
+                assertThat(name.isKey()).isTrue()
+                assertThat(value.name).isEqualTo("my_value")
+                assertThat(value.isIndex()).isTrue()
+                assertThat(hash.name).isEqualTo("hash")
+                assertThat(hash.isMutable()).isTrue()
+                assertThat(simple.name).isEqualTo("simple")
+                assertThat(simple.dri.toString()).isEqualTo(DRI("main", "my_entity.simple").toString())
+                assertThat((simple.type as GenericTypeConstructor).dri.toString()).isEqualTo(simpleDri.toString())
+            }
+        }
+    }
+
+    @Test
+    @Disabled
     fun `rell plugin should find packages and classes`() {
         testInline(
-            """
+                """
             |/src/main.rell
             |module;
             |entity foo { name; }

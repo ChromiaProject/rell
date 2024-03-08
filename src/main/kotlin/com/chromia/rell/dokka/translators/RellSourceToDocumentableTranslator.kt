@@ -37,7 +37,7 @@ class RellSourceToDocumentableTranslator(context: DokkaContext) : SourceToDocume
         with(RellProjectAnalysis(app, sourceSet)) {
             return DModule(
                     rellConfig?.name ?: "root",
-                    modules().visitModules(),
+                    modules.visitModules(),
                     mapOf(sourceSet to DocumentationNode(listOf())),
                     sourceSets = setOf(sourceSet)
             )

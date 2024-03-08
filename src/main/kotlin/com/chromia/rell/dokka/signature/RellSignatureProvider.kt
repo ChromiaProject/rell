@@ -29,6 +29,7 @@ import org.jetbrains.dokka.links.withTargetToDeclaration
 import org.jetbrains.dokka.model.Bound
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DClasslike
+import org.jetbrains.dokka.model.DEnum
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DInterface
 import org.jetbrains.dokka.model.DObject
@@ -126,6 +127,7 @@ class RellSignatureProvider internal constructor(
                     }
                     is DInterface -> keyword("entity ")
                     is DObject -> keyword("object ")
+                    is DEnum -> keyword("enum 1")
                     else -> TODO("Type $c not treated")
                 }
 

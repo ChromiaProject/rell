@@ -16,6 +16,7 @@ import net.postchain.rell.base.model.R_Definition
 import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.model.R_EnumDefinition
 import net.postchain.rell.base.model.R_GlobalConstantDefinition
+import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_ObjectDefinition
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.model.R_StructDefinition
@@ -86,7 +87,7 @@ fun DRI.Companion.from(m: L_TypeDefMember, parent: DRI): DRI {
         is L_TypeDefMember_Constructor -> Callable.from(m.constructor)
         else -> null
     }
-    val extra = if (m is L_TypeDefMember_Alias ) DRI().withAlias().extra else null
+    val extra = if (m is L_TypeDefMember_Alias) DRI().withAlias().extra else null
     val className = when (m) {
         is L_TypeDefMember_Constant -> m.constant.simpleName.str
         is L_TypeDefMember_Property -> m.property.simpleName.str
@@ -106,8 +107,11 @@ fun M_Type.toDRI(): DRI {
 
     return when (this) {
         is M_Type_Generic -> {
-            val qualifiedName = R_QualifiedName.of(genericType.name)
-            qualifiedName.toDRI()
+            val fullName = genericType.name
+            return when {
+                ":" in fullName -> R_QualifiedName.of(*fullName.split(":").map { R_Name.of(it) }.toTypedArray())
+                else -> R_QualifiedName.of(fullName)
+            }.toDRI()
         }
 
         else -> DriOfRoot.withClass(toString())

@@ -5,33 +5,43 @@ import com.chromia.rell.dokka.doc.simpleDocumentationNode
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.from
 import com.chromia.rell.dokka.dri.toBound
+import com.chromia.rell.dokka.model.IsIndex
+import com.chromia.rell.dokka.model.IsKey
 import net.postchain.rell.base.model.R_App
+import net.postchain.rell.base.model.R_Attribute
+import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.model.R_GlobalConstantDefinition
+import net.postchain.rell.base.model.R_KeyIndexKind
 import net.postchain.rell.base.model.R_Module
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.DRI
+import org.jetbrains.dokka.links.withClass
+import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DPackage
 import org.jetbrains.dokka.model.DProperty
+import org.jetbrains.dokka.model.IsVar
 import org.jetbrains.dokka.model.KotlinModifier
 import org.jetbrains.dokka.model.KotlinVisibility
+import org.jetbrains.dokka.model.properties.PropertyContainer
 
 class RellProjectAnalysis(
-        private val dapp: R_App,
+        dapp: R_App,
         private val sourceSet: DokkaConfiguration.DokkaSourceSet
 ) {
 
-    fun modules() = dapp.modules
+    val modules = dapp.modules
 
     fun List<R_Module>.visitModules() = map { it.visit() }
 
     private fun R_Module.visit(): DPackage {
 
-        val globalConstants = dapp.constants.map { it.visit() }
+        val globalConstants = constants.values.map { it.visit() }
+        val entities = entities.values.map { it.visit() }
 
         return DPackage(
                 dri = DRI(name.str()),
                 properties = globalConstants,
-                classlikes = listOf(),
+                classlikes = entities,
                 functions = listOf(),
                 typealiases = listOf(),
                 sourceSets = setOf(sourceSet),
@@ -58,6 +68,57 @@ class RellProjectAnalysis(
         )
     }
 
+    private fun R_EntityDefinition.visit(): DClass {
+
+        val dri = DRI.from(this)
+        val properties = this.attributes.values.map { it.visit(dri) }
+
+        return DClass(
+                dri = dri,
+                name = simpleName,
+                properties = properties,
+                documentation = simpleDocumentationNode("This entity is called $simpleName").toSourceSetDependent(),
+                sourceSets = setOf(sourceSet),
+                classlikes = listOf(),
+                companion = null,
+                constructors = listOf(),
+                expectPresentInSet = null,
+                functions = listOf(),
+                generics = listOf(),
+                isExpectActual = false,
+                visibility = KotlinVisibility.Public.toSourceSetDependent(),
+                modifier = KotlinModifier.Empty.toSourceSetDependent(),
+                supertypes = mapOf(),
+                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
+        )
+    }
+
+    fun R_Attribute.visit(parent: DRI): DProperty {
+        return DProperty(
+                dri = parent.withClass(name),
+                name = name,
+                type = type.toBound(),
+                documentation = simpleDocumentationNode("This propertiy is called $name").toSourceSetDependent(),
+                visibility = KotlinVisibility.Public.toSourceSetDependent(),
+                sourceSets = setOf(sourceSet),
+                generics = listOf(),
+                isExpectActual = false,
+                modifier = KotlinModifier.Empty.toSourceSetDependent(),
+                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
+                expectPresentInSet = null,
+                getter = null,
+                setter = null,
+                receiver = null,
+                extra = PropertyContainer.withAll(
+                        when (keyIndexKind) {
+                            R_KeyIndexKind.KEY -> IsKey
+                            R_KeyIndexKind.INDEX -> IsIndex
+                            else -> null
+                        },
+                        IsVar.takeIf { mutable }
+                )
+        )
+    }
 
     private fun <T> T.toSourceSetDependent() = if (this != null) mapOf(sourceSet to this) else mapOf()
 }
