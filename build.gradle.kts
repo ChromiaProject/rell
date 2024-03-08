@@ -23,6 +23,7 @@ repositories {
 }
 
 val dokkaVersion: String by project
+val rellVersion: String by project
 dependencies {
     compileOnly("org.jetbrains.dokka:dokka-core:$dokkaVersion")
     implementation("org.jetbrains.dokka:dokka-base:$dokkaVersion")
@@ -33,8 +34,9 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     //runtimeOnly("org.freemarker:freemaker:2.3.31")
-    implementation("net.postchain.rell:rell-api-base:0.13.9")
-    implementation("net.postchain.rell:rell-base:0.13.9")
+
+    implementation("net.postchain.rell:rell-api-base:$rellVersion")
+    implementation("net.postchain.rell:rell-base:$rellVersion")
 
     implementation("com.github.ajalt.clikt:clikt:3.5.2")
 

@@ -3,6 +3,7 @@
 package com.chromia.rell.dokka.model
 
 import com.chromia.rell.dokka.descriptors.RellDeclarationDescriptor
+import com.chromia.rell.dokka.dri.toBound
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_Attribute
 import net.postchain.rell.base.model.R_Definition
@@ -74,7 +75,7 @@ private fun R_RoutineDefinition.toDFunction(
         visibility = mapOf(),
         receiver = null,
         isExpectActual = false,
-        type = returnType,
+        type = type().mType.toBound(),
         sourceSets = setOf(sourceSet),
         generics = listOf(),
         sources = mapOf(sourceSet to DescriptorDocumentableSource(RellDeclarationDescriptor())),
@@ -132,7 +133,7 @@ fun R_GlobalConstantDefinition.toDProperty(sourceSet: DokkaConfiguration.DokkaSo
         isExpectActual = false,
         sourceSets = setOf(sourceSet),
         sources = mapOf(sourceSet to DescriptorDocumentableSource(RellDeclarationDescriptor())),
-        type = Dynamic,
+        type = type().toBound(),
         expectPresentInSet = null,
         documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text("This is constant $simpleName")))))
 )

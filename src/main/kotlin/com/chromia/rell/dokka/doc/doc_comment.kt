@@ -21,3 +21,10 @@ fun DocComment.formatDescription(additionalTags: TagWrapper? = null) = Documenta
                     additionalTags?.let { add(it) }
                 }
 )
+
+fun simpleDocumentationNode(shortDescription: String, longDescription: String = shortDescription) = DocumentationNode(
+        listOf(
+                Description(Text(shortDescription)),
+                Description(Text(longDescription))
+        )
+)

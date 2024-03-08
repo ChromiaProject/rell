@@ -12,7 +12,14 @@ import net.postchain.rell.base.lmodel.L_TypeDefMember_Constant
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Constructor
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Function
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Property
+import net.postchain.rell.base.model.R_Definition
+import net.postchain.rell.base.model.R_EntityDefinition
+import net.postchain.rell.base.model.R_EnumDefinition
+import net.postchain.rell.base.model.R_GlobalConstantDefinition
+import net.postchain.rell.base.model.R_ObjectDefinition
 import net.postchain.rell.base.model.R_QualifiedName
+import net.postchain.rell.base.model.R_StructDefinition
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_Type_Function
 import net.postchain.rell.base.mtype.M_Type_Generic
@@ -23,8 +30,6 @@ import net.postchain.rell.base.mtype.M_Type_Tuple
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
-import org.jetbrains.dokka.links.DRIExtraContainer
-import org.jetbrains.dokka.links.DRIExtraProperty
 import org.jetbrains.dokka.links.withClass
 import org.jetbrains.dokka.model.Bound
 import org.jetbrains.dokka.model.FunctionalTypeConstructor
@@ -34,9 +39,27 @@ import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.UnresolvedBound
 import org.jetbrains.dokka.model.properties.PropertyContainer
 
+val DriOfRoot = RellModule.MAIN.dri
+val DriOfUnit = DriOfRoot.withClass("unit")
+
 data class DRIWithSourceSet(val dri: DRI, val sourceSet: DokkaConfiguration.DokkaSourceSet)
 
 fun DRI.withSourceSet(sourceSet: DokkaConfiguration.DokkaSourceSet) = DRIWithSourceSet(this, sourceSet)
+
+fun DRI.Companion.from(d: R_Definition): DRI {
+    val packageName = d.cDefName.module.str()
+    val className = when (d) {
+        is R_GlobalConstantDefinition -> d.simpleName
+        is R_EntityDefinition -> d.simpleName
+        is R_StructDefinition -> d.simpleName
+        is R_ObjectDefinition -> d.simpleName
+        is R_EnumDefinition -> d.simpleName
+        else -> null
+    }
+    val callable = null
+    return DRI(packageName, className, callable)
+}
+
 
 fun DRI.Companion.from(m: L_NamespaceMember): DRI {
     val packageName = when {
@@ -125,11 +148,4 @@ fun M_Type.toBound(presentableName: String? = null): Bound {
     }
 }
 
-val DriOfRoot = RellModule.MAIN.dri
-val DriOfUnit = DriOfRoot.withClass("unit")
-
-
-fun DRI.withAlias() = copy(extra = DRIExtraContainer().also { it[AliasDRIExtra] = AliasDRIExtra }.encode())
-fun DRI.isAlias() = DRIExtraContainer(extra)[AliasDRIExtra] != null
-
-object AliasDRIExtra : DRIExtraProperty<AliasDRIExtra>()
+fun R_Type.toBound() = mType.toBound()

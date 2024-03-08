@@ -1,8 +1,10 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+
 package com.chromia.rell.dokka.translators
 
 import com.chromia.rell.dokka.RellDokkaPlugin
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
+import com.chromia.rell.dokka.dapp.RellProjectAnalysis
 import com.chromia.rell.dokka.model.definitionsByModule
 import com.chromia.rell.dokka.model.toDClasslike
 import com.chromia.rell.dokka.model.toDFunction
@@ -10,6 +12,7 @@ import com.chromia.rell.dokka.model.toDProperty
 import com.chromia.rell.dokka.model.toDRI
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.base.model.R_App
+import net.postchain.rell.base.model.R_Module
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.model.DModule
 import org.jetbrains.dokka.model.DPackage
@@ -31,12 +34,14 @@ class RellSourceToDocumentableTranslator(context: DokkaContext) : SourceToDocume
                 .moduleArgsMissingError(false)
                 .build()
         val app = RellApiCompile.compileApp(config, files.first(), rellConfig?.modules)
-        return DModule(
-                rellConfig?.name ?: "root",
-                app.packages(sourceSet),
-                mapOf(sourceSet to DocumentationNode(listOf())),
-                sourceSets = setOf(sourceSet)
-        )
+        with(RellProjectAnalysis(app, sourceSet)) {
+            return DModule(
+                    rellConfig?.name ?: "root",
+                    modules().visitModules(),
+                    mapOf(sourceSet to DocumentationNode(listOf())),
+                    sourceSets = setOf(sourceSet)
+            )
+        }
     }
 
     private fun R_App.packages(sourceSet: DokkaConfiguration.DokkaSourceSet): List<DPackage> {
@@ -44,14 +49,15 @@ class RellSourceToDocumentableTranslator(context: DokkaContext) : SourceToDocume
         return defs.map { (m, rellModule) ->
             DPackage(
                     dri = m.toDRI(),
-                    documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text(m.docSymbol.comment?.toString() ?: ""))))),
+                    documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text(m.docSymbol.comment?.toString()
+                            ?: ""))))),
                     sourceSets = setOf(sourceSet),
                     properties = rellModule.constants.map { it.toDProperty(sourceSet) }, // Global constants
                     // Entities/Structs/Objects
                     classlikes = rellModule.entities.map { it.toDClasslike(sourceSet) }
-                    + rellModule.objects.map { it.toDClasslike(sourceSet) }
-                    + rellModule.structs.map { it.toDClasslike(sourceSet) }
-                    + rellModule.enums.map { it.toDClasslike(sourceSet) },
+                            + rellModule.objects.map { it.toDClasslike(sourceSet) }
+                            + rellModule.structs.map { it.toDClasslike(sourceSet) }
+                            + rellModule.enums.map { it.toDClasslike(sourceSet) },
                     typealiases = listOf(),
                     // Functions, queries, operations
                     functions = rellModule.functions.map { it.toDFunction(sourceSet) }
