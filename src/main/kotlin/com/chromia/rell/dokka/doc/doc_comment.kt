@@ -25,6 +25,6 @@ fun DocComment.formatDescription(additionalTags: TagWrapper? = null) = Documenta
 fun simpleDocumentationNode(shortDescription: String, longDescription: String = shortDescription) = DocumentationNode(
         listOf(
                 Description(Text(shortDescription)),
-                Description(Text(longDescription))
+                Description(P(listOf(Text(longDescription))))
         )
 )
