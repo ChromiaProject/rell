@@ -8,6 +8,7 @@ import com.chromia.rell.dokka.model.isEntity
 import com.chromia.rell.dokka.model.isIndex
 import com.chromia.rell.dokka.model.isKey
 import com.chromia.rell.dokka.model.isMutable
+import com.chromia.rell.dokka.model.isObject
 import com.chromia.rell.dokka.model.isStruct
 import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
 import org.jetbrains.dokka.base.testApi.testRunner.BaseTestBuilder
@@ -145,6 +146,36 @@ class RellDokkaPluginTest : BaseAbstractTest() {
                 assertThat(simple.name).isEqualTo("simple")
                 assertThat(simple.dri.toString()).isEqualTo(DRI("main", "my_struct.simple").toString())
                 assertThat((simple.type as GenericTypeConstructor).dri.toString()).isEqualTo(simpleDri.toString())
+            }
+        }
+    }
+
+    @Test
+    fun `object transformation`() {
+        singleFileTestInline("""           
+            object my_object {
+              order: integer = 1;
+              mutable name: text = "my_object";
+            }
+        """.trimIndent()) {
+            documentablesTransformationStage = { m ->
+                val testPackage = m.packages.find { it.packageName == "main" }
+                assertNotNull(testPackage)
+                val objects = testPackage.classlikes
+                assertThat(objects.size).isEqualTo(1)
+                val myObject = objects.first()
+                assertThat(myObject.name).isEqualTo("my_object")
+                assertThat(myObject.isObject()).isTrue()
+                val simpleDri = myObject.dri
+                assertThat(simpleDri.toString()).isEqualTo(DRI("main", "my_object").toString())
+                val props = myObject.properties
+                assertThat(props.size).isEqualTo(2)
+                val (order, name) = props
+                assertThat(order.name).isEqualTo("order")
+                assertThat(order.dri.toString()).isEqualTo(DRI("main", "my_object.order").toString())
+                assertThat((order.type as GenericTypeConstructor).dri.classNames).isEqualTo("integer")
+                assertThat(name.name).isEqualTo("name")
+                assertThat(name.isMutable()).isTrue()
             }
         }
     }

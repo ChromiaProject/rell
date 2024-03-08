@@ -5,6 +5,7 @@ import com.chromia.rell.dokka.dri.isAlias
 import com.chromia.rell.dokka.model.isEntity
 import com.chromia.rell.dokka.model.isHidden
 import com.chromia.rell.dokka.model.isMutable
+import com.chromia.rell.dokka.model.isObject
 import com.chromia.rell.dokka.model.isOperation
 import com.chromia.rell.dokka.model.isPure
 import com.chromia.rell.dokka.model.isQuery
@@ -127,6 +128,7 @@ class RellSignatureProvider internal constructor(
                 when (c) {
                     is DClass -> {
                         if (c.isEntity()) keyword("entity ")
+                        if (c.isObject()) keyword("object ")
                         if (c.isStruct()) keyword("struct ")
                         if (c.isType()) keyword("type ")
                     }

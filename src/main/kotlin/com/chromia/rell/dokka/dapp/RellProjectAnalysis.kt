@@ -8,6 +8,7 @@ import com.chromia.rell.dokka.dri.toBound
 import com.chromia.rell.dokka.model.IsEntity
 import com.chromia.rell.dokka.model.IsIndex
 import com.chromia.rell.dokka.model.IsKey
+import com.chromia.rell.dokka.model.IsObject
 import com.chromia.rell.dokka.model.IsStruct
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_Attribute
@@ -15,6 +16,7 @@ import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.model.R_GlobalConstantDefinition
 import net.postchain.rell.base.model.R_KeyIndexKind
 import net.postchain.rell.base.model.R_Module
+import net.postchain.rell.base.model.R_ObjectDefinition
 import net.postchain.rell.base.model.R_StructDefinition
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.DRI
@@ -41,11 +43,12 @@ class RellProjectAnalysis(
         val globalConstants = constants.values.map { it.visit() }
         val entities = entities.values.map { it.visit() }
         val structs = structs.values.map { it.visit() }
+        val objects = objects.values.map { it.visit() }
 
         return DPackage(
                 dri = DRI(name.str()),
                 properties = globalConstants,
-                classlikes = entities + structs,
+                classlikes = entities + structs + objects,
                 functions = listOf(),
                 typealiases = listOf(),
                 sourceSets = setOf(sourceSet),
@@ -121,6 +124,32 @@ class RellProjectAnalysis(
                 supertypes = mapOf(),
                 sources = NULL_DESCRIPTOR.toSourceSetDependent(),
                 extra = PropertyContainer.withAll(IsStruct)
+        )
+    }
+
+    private fun R_ObjectDefinition.visit(): DClass {
+
+        val dri = DRI.from(this)
+        val properties = this.rEntity.attributes.values.map { it.visit(dri) }
+
+        return DClass(
+                dri = dri,
+                name = simpleName,
+                properties = properties,
+                documentation = simpleDocumentationNode("This object is called $simpleName").toSourceSetDependent(),
+                sourceSets = setOf(sourceSet),
+                classlikes = listOf(),
+                companion = null,
+                constructors = listOf(),
+                expectPresentInSet = null,
+                functions = listOf(),
+                generics = listOf(),
+                isExpectActual = false,
+                visibility = KotlinVisibility.Public.toSourceSetDependent(),
+                modifier = KotlinModifier.Empty.toSourceSetDependent(),
+                supertypes = mapOf(),
+                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
+                extra = PropertyContainer.withAll(IsObject)
         )
     }
 

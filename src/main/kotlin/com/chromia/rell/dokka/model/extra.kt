@@ -74,3 +74,9 @@ object IsType: ExtraProperty<DClasslike>, ExtraProperty.Key<DClasslike, IsType> 
 }
 
 fun DClasslike.isType() = this is DClass && this.extra[IsType] != null
+
+object IsObject: ExtraProperty<DClasslike>, ExtraProperty.Key<DClasslike, IsObject> {
+    override val key: ExtraProperty.Key<DClasslike, *> get() = this
+}
+
+fun DClasslike.isObject() = this is DClass && this.extra[IsObject] != null
