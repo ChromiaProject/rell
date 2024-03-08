@@ -80,25 +80,26 @@
     color: var(--ifm-color-primary-darkest);
 }
 
+/* Search button styles */
+#pages-search svg path {
+    fill: var(--color-dark);
+}
+.theme-dark #pages-search svg path {
+    fill: var(--default-font-color);
+}
+
 /* Logo styles */
 :root {
     --dokka-logo-height: 32px;
     --dokka-logo-width: 32px;
 }
 
+/* Dark mode toggle */
 .theme-dark .navigation-controls--theme {
     background-image: url("../images/theme-toggle-night.svg");
 }
 
-.theme-dark #pages-search {
-    background-color: var(--background-color);
-   /* background-image: url("../images/searchIcon-night.svg");*/
-}
-
-#pages-search {
-    background-color: #969faf;
-}
-
+/* Platform bubbles */
 .filter-section .platform-tag.js-like[data-active], .platform-tags .platform-tag.js-like {
     --platform-tag-color: var(--chromia-yellow);
 }
@@ -137,6 +138,7 @@ h1 {
     font-family: var(--battlfin-font-family);
 }
 
+/* Navigation icons */
 .nav-icon.class-kt::before {
     content: url("../images/nav-icons/class.svg");
 }
