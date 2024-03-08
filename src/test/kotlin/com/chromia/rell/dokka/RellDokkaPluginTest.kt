@@ -113,41 +113,41 @@ class RellDokkaPluginTest : BaseAbstractTest() {
         }
     }
 
-     @Test
-        fun `struct transformation`() {
-            singleFileTestInline("""
-                struct simple {}
-                
-                struct my_struct {
-                  order: integer;
-                  mutable hash: byte_array;
-                  simple;
-                }
-            """.trimIndent()) {
-                documentablesTransformationStage = { m ->
-                    val testPackage = m.packages.find { it.packageName == "main" }
-                    assertNotNull(testPackage)
-                    val structs = testPackage.classlikes
-                    assertThat(structs.size).isEqualTo(2)
-                    val (simpleStruct, myStruct) = structs
-                    assertThat(simpleStruct.name).isEqualTo("simple")
-                    assertThat(simpleStruct.isStruct()).isTrue()
-                    val simpleDri = simpleStruct.dri
-                    assertThat(simpleDri.toString()).isEqualTo(DRI("main", "simple").toString())
-                    val props = myStruct.properties
-                    assertThat(props.size).isEqualTo(3)
-                    val (order, hash, simple) = props
-                    assertThat(order.name).isEqualTo("order")
-                    assertThat(order.dri.toString()).isEqualTo(DRI("main", "my_struct.order").toString())
-                    assertThat((order.type as GenericTypeConstructor).dri.classNames).isEqualTo("integer")
-                    assertThat(hash.name).isEqualTo("hash")
-                    assertThat(hash.isMutable()).isTrue()
-                    assertThat(simple.name).isEqualTo("simple")
-                    assertThat(simple.dri.toString()).isEqualTo(DRI("main", "my_struct.simple").toString())
-                    assertThat((simple.type as GenericTypeConstructor).dri.toString()).isEqualTo(simpleDri.toString())
-                }
+    @Test
+    fun `struct transformation`() {
+        singleFileTestInline("""
+            struct simple {}
+            
+            struct my_struct {
+              order: integer;
+              mutable hash: byte_array;
+              simple;
+            }
+        """.trimIndent()) {
+            documentablesTransformationStage = { m ->
+                val testPackage = m.packages.find { it.packageName == "main" }
+                assertNotNull(testPackage)
+                val structs = testPackage.classlikes
+                assertThat(structs.size).isEqualTo(2)
+                val (simpleStruct, myStruct) = structs
+                assertThat(simpleStruct.name).isEqualTo("simple")
+                assertThat(simpleStruct.isStruct()).isTrue()
+                val simpleDri = simpleStruct.dri
+                assertThat(simpleDri.toString()).isEqualTo(DRI("main", "simple").toString())
+                val props = myStruct.properties
+                assertThat(props.size).isEqualTo(3)
+                val (order, hash, simple) = props
+                assertThat(order.name).isEqualTo("order")
+                assertThat(order.dri.toString()).isEqualTo(DRI("main", "my_struct.order").toString())
+                assertThat((order.type as GenericTypeConstructor).dri.classNames).isEqualTo("integer")
+                assertThat(hash.name).isEqualTo("hash")
+                assertThat(hash.isMutable()).isTrue()
+                assertThat(simple.name).isEqualTo("simple")
+                assertThat(simple.dri.toString()).isEqualTo(DRI("main", "my_struct.simple").toString())
+                assertThat((simple.type as GenericTypeConstructor).dri.toString()).isEqualTo(simpleDri.toString())
             }
         }
+    }
 
     @Test
     @Disabled
