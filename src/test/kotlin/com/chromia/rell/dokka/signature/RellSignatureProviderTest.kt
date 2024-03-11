@@ -96,7 +96,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
                                 Parameters(
                                         Parameter("arg: list<text>")
                                 ),
-                                "): list<text>",
+                                "): list<integer>",
                                 ignoreSpanWithTokenStyle = true)
             }
         }
@@ -119,5 +119,20 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
         }
     }
 
-
+    @Test
+    fun `functions signature with function arguments types`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        singleFileTestInline("function test(arg: (integer, text) -> text) = 2;", listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
+                        .match(
+                                "function ", A("test"), "(",
+                                Parameters(
+                                        Parameter("arg: (integer,text)->text")
+                                ),
+                                "): integer",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
 }
