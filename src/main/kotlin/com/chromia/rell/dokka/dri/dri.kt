@@ -17,7 +17,9 @@ import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.model.R_EnumDefinition
 import net.postchain.rell.base.model.R_GlobalConstantDefinition
 import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_ObjectDefinition
+import net.postchain.rell.base.model.R_PrimitiveType
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.model.R_RoutineDefinition
 import net.postchain.rell.base.model.R_StructDefinition
@@ -156,4 +158,13 @@ fun M_Type.toBound(presentableName: String? = null): Bound {
     }
 }
 
-fun R_Type.toBound() = mType.toBound()
+
+// Return types and parameters
+fun R_Type.toBound(): Bound {
+    // Links for Entity, Struct, Object, Enum
+    return when (this) {
+        is R_NullableType -> Nullable(valueType.toBound())
+        is R_PrimitiveType -> UnresolvedBound(name)
+        else -> mType.toBound()
+    }
+}

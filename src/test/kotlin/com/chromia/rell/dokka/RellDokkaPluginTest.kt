@@ -4,7 +4,6 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isTrue
-import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.model.isEntity
 import com.chromia.rell.dokka.model.isFunction
 import com.chromia.rell.dokka.model.isIndex
@@ -14,14 +13,11 @@ import com.chromia.rell.dokka.model.isObject
 import com.chromia.rell.dokka.model.isOperation
 import com.chromia.rell.dokka.model.isQuery
 import com.chromia.rell.dokka.model.isStruct
-import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
-import org.jetbrains.dokka.base.testApi.testRunner.BaseTestBuilder
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.JavaClassReference
 import org.jetbrains.dokka.links.PointingToCallableParameters
 import org.jetbrains.dokka.links.TypeConstructor
-import org.jetbrains.dokka.links.TypeParam
 import org.jetbrains.dokka.model.DEnum
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.KotlinModifier
@@ -31,25 +27,8 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-private const val TEST_DAPP_NAME = "Test dapp"
 
-class RellDokkaPluginTest : BaseAbstractTest() {
-    private val configuration = dokkaConfiguration {
-        pluginsConfigurations.add(RellDokkaPluginConfiguration(TEST_DAPP_NAME, listOf("main")).toPluginConfig())
-        sourceSets {
-            sourceSet {
-                sourceRoots = listOf("src")
-            }
-        }
-    }
-
-    private fun singleFileTestInline(content: String, block: BaseTestBuilder.() -> Unit) {
-        testInline("""
-            |/src/main.rell
-            |module;
-            |$content
-        """.trimIndent(), configuration, cleanupOutput = false, block = block)
-    }
+class RellDokkaPluginTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `rell module can be found`() {

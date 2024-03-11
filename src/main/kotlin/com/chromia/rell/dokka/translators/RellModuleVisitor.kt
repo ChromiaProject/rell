@@ -257,7 +257,7 @@ internal class RellModuleVisitor(
                 visibility = mapOf(),
                 receiver = null,
                 isExpectActual = false,
-                type = type().mType.toBound(),
+                type = type().toBound(),
                 sourceSets = setOf(sourceSet),
                 generics = listOf(),
                 sources = NULL_DESCRIPTOR.toSourceSetDependent(),
