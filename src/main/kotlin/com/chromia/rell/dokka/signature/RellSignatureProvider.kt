@@ -1,6 +1,6 @@
 package com.chromia.rell.dokka.signature
 
-import com.chromia.rell.dokka.dri.CollectionBoundExtra
+import com.chromia.rell.dokka.dri.GenericUnresolvedBoundExtra
 import com.chromia.rell.dokka.dri.DriOfUnit
 import com.chromia.rell.dokka.dri.isAlias
 import com.chromia.rell.dokka.model.isEntity
@@ -19,7 +19,6 @@ import com.chromia.rell.dokka.model.isZeroOne
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.annotations
-import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.annotationsBlock
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.annotationsInline
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.driOrNull
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.parametersBlock
@@ -334,9 +333,9 @@ class RellSignatureProvider internal constructor(
             is Void -> link("unit", DriOfUnit)
             is UnresolvedBound -> {
                 text(p.name)
-                p.extra[CollectionBoundExtra]?.let { element ->
+                p.extra[GenericUnresolvedBoundExtra]?.let { element ->
                     list(
-                            listOf(element.elementBound),
+                            element.bounds.toList(),
                             prefix = "<", suffix = ">",
                             separatorStyles = mainStyles + TokenStyle.Punctuation,
                             surroundingCharactersStyle = mainStyles + TokenStyle.Operator)

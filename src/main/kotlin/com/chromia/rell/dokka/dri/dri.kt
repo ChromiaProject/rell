@@ -26,9 +26,6 @@ import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.withClass
-import org.jetbrains.dokka.model.Bound
-import org.jetbrains.dokka.model.UnresolvedBound
-import org.jetbrains.dokka.model.properties.ExtraProperty
 
 val DriOfRoot = RellModule.MAIN.dri
 val DriOfUnit = DriOfRoot.withClass("unit")
@@ -110,12 +107,4 @@ fun M_Type.toDRI(): DRI {
         else -> DriOfRoot.withClass(toString())
     }
 
-}
-
-
-class CollectionBoundExtra(val elementBound: Bound): ExtraProperty<UnresolvedBound> {
-    override val key: ExtraProperty.Key<UnresolvedBound, *>
-        get() = Companion
-
-    companion object : ExtraProperty.Key<UnresolvedBound, CollectionBoundExtra>
 }

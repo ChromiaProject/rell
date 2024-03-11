@@ -160,6 +160,46 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
             }
         }
     }
+
+    @Test
+    fun `functions signature with list object arguments types`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        singleFileTestInline("""
+            struct my_struct {}
+            function test(arg: list<my_struct>) = set<my_struct>();
+        """.trimIndent(), listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
+                        .match(
+                                "function ", A("test"), "(",
+                                Parameters(
+                                        Parameter("arg: list<", A("my_struct"), ">")
+                                ),
+                                "): set<", A("my_struct"), ">",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
+
+    @Test
+    fun `functions signature with map arguments types`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        singleFileTestInline("""
+            struct my_struct {}
+            function test(arg: map<text, my_struct>) = arg;
+        """.trimIndent(), listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
+                        .match(
+                                "function ", A("test"), "(",
+                                Parameters(
+                                        Parameter("arg: map<text, ", A("my_struct"), ">")
+                                ),
+                                "): map<text, ", A("my_struct"), ">",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
 }
 
 

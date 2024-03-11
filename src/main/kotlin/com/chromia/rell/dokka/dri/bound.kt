@@ -2,7 +2,7 @@ package com.chromia.rell.dokka.dri
 
 import com.chromia.rell.dokka.model.IsTuple
 import net.postchain.rell.base.lib.type.R_CollectionType
-import net.postchain.rell.base.model.R_EntityType
+import net.postchain.rell.base.lib.type.R_MapType
 import net.postchain.rell.base.model.R_FunctionType
 import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_PrimitiveType
@@ -20,6 +20,7 @@ import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.Nullable
 import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.UnresolvedBound
+import org.jetbrains.dokka.model.properties.ExtraProperty
 import org.jetbrains.dokka.model.properties.PropertyContainer
 
 fun M_Type.toBound(presentableName: String? = null): Bound {
@@ -62,8 +63,16 @@ fun R_Type.toBound(): Bound {
         is R_NullableType -> Nullable(valueType.toBound())
         // No links to system lib from dapps
         is R_PrimitiveType -> UnresolvedBound(name)
-        is R_CollectionType -> UnresolvedBound(name.substringBefore("<"), PropertyContainer.withAll(CollectionBoundExtra(elementType.toBound())))
+        is R_CollectionType -> UnresolvedBound(name.substringBefore("<"), PropertyContainer.withAll(GenericUnresolvedBoundExtra(elementType.toBound())))
         is R_FunctionType -> UnresolvedBound(name)
+        is R_MapType -> UnresolvedBound("map", PropertyContainer.withAll(GenericUnresolvedBoundExtra(keyType.toBound(), valueType.toBound())))
         else -> mType.toBound(this.defName.qualifiedName.last.substringAfterLast(":"))
     }
+}
+
+class GenericUnresolvedBoundExtra(vararg val bounds: Bound): ExtraProperty<UnresolvedBound> {
+    override val key: ExtraProperty.Key<UnresolvedBound, *>
+        get() = Companion
+
+    companion object : ExtraProperty.Key<UnresolvedBound, GenericUnresolvedBoundExtra>
 }
