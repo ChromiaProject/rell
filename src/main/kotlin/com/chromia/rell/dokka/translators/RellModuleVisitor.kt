@@ -36,25 +36,23 @@ internal class RellModuleVisitor(
         private val sourceSet: DokkaConfiguration.DokkaSourceSet
 ) {
 
+    fun visitRellModule(module: R_Module): DPackage {
+        val dri = DRI(packageName = module.name.str())
 
-    fun visitRellModule(module: R_Module): DPackage = module.visit()
-
-    private fun R_Module.visit(): DPackage {
-
-        val globalConstants = constants.values.map { it.visit() }
-        val entities = entities.values.map { it.visit() }
-        val structs = structs.values.map { it.visit() }
-        val objects = objects.values.map { it.visit() }
-        val enums = enums.values.map { it.visit() }
+        val globalConstants = module.constants.values.map { it.visit() }
+        val entities = module.entities.values.map { it.visit() }
+        val structs = module.structs.values.map { it.visit() }
+        val objects = module.objects.values.map { it.visit() }
+        val enums = module.enums.values.map { it.visit() }
 
         return DPackage(
-                dri = DRI(name.str()),
+                dri = dri,
                 properties = globalConstants,
                 classlikes = entities + structs + objects + enums,
                 functions = listOf(),
                 typealiases = listOf(),
+                documentation = module.docSymbol.toDocumentationNode().toSourceSetDependent(),
                 sourceSets = setOf(sourceSet),
-                documentation = docSymbol.toDocumentationNode().toSourceSetDependent()
         )
     }
 
