@@ -6,30 +6,45 @@ import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.from
 import com.chromia.rell.dokka.dri.toBound
 import com.chromia.rell.dokka.model.IsEntity
+import com.chromia.rell.dokka.model.IsFunction
 import com.chromia.rell.dokka.model.IsIndex
 import com.chromia.rell.dokka.model.IsKey
 import com.chromia.rell.dokka.model.IsObject
+import com.chromia.rell.dokka.model.IsOperation
+import com.chromia.rell.dokka.model.IsQuery
 import com.chromia.rell.dokka.model.IsStruct
 import net.postchain.rell.base.model.R_Attribute
 import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.model.R_EnumAttr
 import net.postchain.rell.base.model.R_EnumDefinition
+import net.postchain.rell.base.model.R_FunctionDefinition
+import net.postchain.rell.base.model.R_FunctionParam
 import net.postchain.rell.base.model.R_GlobalConstantDefinition
 import net.postchain.rell.base.model.R_KeyIndexKind
 import net.postchain.rell.base.model.R_Module
 import net.postchain.rell.base.model.R_ObjectDefinition
+import net.postchain.rell.base.model.R_OperationDefinition
+import net.postchain.rell.base.model.R_QueryDefinition
+import net.postchain.rell.base.model.R_RoutineDefinition
 import net.postchain.rell.base.model.R_StructDefinition
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.DRI
+import org.jetbrains.dokka.links.PointingToCallableParameters
 import org.jetbrains.dokka.links.withClass
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DEnum
 import org.jetbrains.dokka.model.DEnumEntry
+import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DPackage
+import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.IsVar
 import org.jetbrains.dokka.model.KotlinModifier
 import org.jetbrains.dokka.model.KotlinVisibility
+import org.jetbrains.dokka.model.doc.Description
+import org.jetbrains.dokka.model.doc.DocumentationNode
+import org.jetbrains.dokka.model.doc.Text
+import org.jetbrains.dokka.model.properties.ExtraProperty
 import org.jetbrains.dokka.model.properties.PropertyContainer
 import org.jetbrains.dokka.utilities.DokkaLogger
 
@@ -46,12 +61,18 @@ internal class RellModuleVisitor(
         val structs = module.structs.values.map { it.visit() }
         val objects = module.objects.values.map { it.visit() }
         val enums = module.enums.values.map { it.visit() }
+        val functions = module.functions.values.map { it.visit() }
+        val operations = module.operations.values.map { it.visit() }
+        val queries = module.queries.values.map { it.visit() }
+
+        logger.info("Found ${globalConstants.size} constants, ${entities.size} entities, ${structs.size} structs, ${objects.size} objects, ${enums.size} enums, " +
+                "${functions.size} functions, ${operations.size} operations and ${queries.size} queries")
 
         return DPackage(
                 dri = dri,
                 properties = globalConstants,
                 classlikes = entities + structs + objects + enums,
-                functions = listOf(),
+                functions = functions + operations + queries,
                 typealiases = listOf(),
                 documentation = module.docSymbol.toDocumentationNode().toSourceSetDependent(),
                 sourceSets = setOf(sourceSet),
@@ -217,6 +238,42 @@ internal class RellModuleVisitor(
                 properties = listOf()
         )
     }
+
+    private fun R_FunctionDefinition.visit() = visit(IsFunction)
+    private fun R_OperationDefinition.visit() = visit(IsOperation)
+    private fun R_QueryDefinition.visit() = visit(IsQuery)
+
+    private fun R_RoutineDefinition.visit(extraProperty: ExtraProperty<DFunction>): DFunction {
+        val dri = DRI.from(this)
+        val params = params().mapIndexed { index, param  -> param.visit(dri, index) }
+
+        return  DFunction(
+                dri = dri,
+                name = simpleName,
+                isConstructor = false,
+                parameters = params,
+                documentation = simpleDocumentationNode("This $extraProperty is called $simpleName").toSourceSetDependent(),
+                expectPresentInSet = null,
+                visibility = mapOf(),
+                receiver = null,
+                isExpectActual = false,
+                type = type().mType.toBound(),
+                sourceSets = setOf(sourceSet),
+                generics = listOf(),
+                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
+                modifier = KotlinModifier.Empty.toSourceSetDependent(),
+                extra = PropertyContainer.withAll(extraProperty)
+        )
+    }
+
+    private fun R_FunctionParam.visit(parent: DRI, paramIndex: Int) = DParameter(
+            dri = parent.copy(target = PointingToCallableParameters(paramIndex)),
+            name = name.str,
+            expectPresentInSet = null,
+            type = type.toBound(),
+            sourceSets = setOf(sourceSet),
+            documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text("This parameter is called $name"))))),
+    )
 
     private fun <T> T.toSourceSetDependent() = if (this != null) mapOf(sourceSet to this) else mapOf()
 }

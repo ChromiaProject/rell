@@ -237,9 +237,3 @@ fun R_EnumAttr.toDEnumEntry(module: String, sourceSet: DokkaConfiguration.DokkaS
         sourceSets = setOf(sourceSet),
         documentation = mapOf(sourceSet to DocumentationNode(listOf(Description(Text("Enum entry $name")))))
 )
-
-fun DFunction.isOperation() = modifier.containsValue(KotlinModifier.Sealed)
-fun DFunction.isQuery() = modifier.containsValue(KotlinModifier.Open)
-
-fun DFunction.isFunction() = !(isOperation() || isQuery())
-

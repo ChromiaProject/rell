@@ -19,6 +19,7 @@ import net.postchain.rell.base.model.R_GlobalConstantDefinition
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_ObjectDefinition
 import net.postchain.rell.base.model.R_QualifiedName
+import net.postchain.rell.base.model.R_RoutineDefinition
 import net.postchain.rell.base.model.R_StructDefinition
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.mtype.M_Type
@@ -57,7 +58,10 @@ fun DRI.Companion.from(d: R_Definition): DRI {
         is R_EnumDefinition -> d.simpleName
         else -> null
     }
-    val callable = null
+    val callable = when (d) {
+        is R_RoutineDefinition -> Callable.from(d)
+        else -> null
+    }
     return DRI(packageName, className, callable)
 }
 

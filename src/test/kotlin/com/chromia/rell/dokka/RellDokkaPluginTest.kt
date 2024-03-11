@@ -6,14 +6,22 @@ import assertk.assertions.isInstanceOf
 import assertk.assertions.isTrue
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.model.isEntity
+import com.chromia.rell.dokka.model.isFunction
 import com.chromia.rell.dokka.model.isIndex
 import com.chromia.rell.dokka.model.isKey
 import com.chromia.rell.dokka.model.isMutable
 import com.chromia.rell.dokka.model.isObject
+import com.chromia.rell.dokka.model.isOperation
+import com.chromia.rell.dokka.model.isQuery
 import com.chromia.rell.dokka.model.isStruct
 import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
 import org.jetbrains.dokka.base.testApi.testRunner.BaseTestBuilder
+import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
+import org.jetbrains.dokka.links.JavaClassReference
+import org.jetbrains.dokka.links.PointingToCallableParameters
+import org.jetbrains.dokka.links.TypeConstructor
+import org.jetbrains.dokka.links.TypeParam
 import org.jetbrains.dokka.model.DEnum
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.KotlinModifier
@@ -202,6 +210,36 @@ class RellDokkaPluginTest : BaseAbstractTest() {
                 val entry = entries.first()
                 assertThat(entry.name).isEqualTo("A")
                 assertThat(entry.dri.toString()).isEqualTo(DRI("main", "my_enum.A").toString())
+            }
+        }
+    }
+
+    @Test
+    fun `function transformation`() {
+        singleFileTestInline("""           
+            function my_fun(name) = 13;
+            operation my_operation(name) {}
+            query my_query(name) = 13;
+        """.trimIndent()) {
+            documentablesTransformationStage = { m ->
+                val testPackage = m.packages.find { it.packageName == "main" }
+                assertNotNull(testPackage)
+                val functions = testPackage.functions
+                assertThat(functions.size).isEqualTo(3)
+                val (myFun, myOperation, myQuery) = functions
+                assertThat(myFun.isFunction()).isTrue()
+                assertThat(myOperation.isOperation()).isTrue()
+                assertThat(myQuery.isQuery()).isTrue()
+                assertThat(myFun.name).isEqualTo("my_fun")
+                val expectedDri = DRI("main", callable = Callable("my_fun", params = listOf(TypeConstructor("name", listOf(JavaClassReference("text"))))))
+                assertThat(myFun.dri.toString()).isEqualTo(expectedDri.toString())
+                val args = myFun.parameters
+                assertThat(args.size).isEqualTo(1)
+                val name = args.first()
+                assertThat(name.name).isEqualTo("name")
+                assertThat(name.dri.toString()).isEqualTo(expectedDri.copy(target = PointingToCallableParameters(0)).toString())
+                assertThat(name.type).isInstanceOf<GenericTypeConstructor>()
+                assertThat((name.type as GenericTypeConstructor).projections.size).isEqualTo(0)
             }
         }
     }

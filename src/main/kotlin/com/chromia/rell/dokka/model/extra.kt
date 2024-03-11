@@ -80,3 +80,20 @@ object IsObject: ExtraProperty<DClasslike>, ExtraProperty.Key<DClasslike, IsObje
 }
 
 fun DClasslike.isObject() = this is DClass && this.extra[IsObject] != null
+
+object IsFunction: ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsFunction> {
+    override val key: ExtraProperty.Key<DFunction, *> get() = this
+}
+
+fun DFunction.isFunction() = this.extra[IsFunction] != null
+
+object IsOperation: ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsOperation> {
+    override val key: ExtraProperty.Key<DFunction, *> get() = this
+}
+
+fun DFunction.isOperation() = this.extra[IsOperation] != null
+object IsQuery: ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsQuery> {
+    override val key: ExtraProperty.Key<DFunction, *> get() = this
+}
+
+fun DFunction.isQuery() = this.extra[IsQuery] != null
