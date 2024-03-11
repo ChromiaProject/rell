@@ -128,7 +128,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
                         .match(
                                 "function ", A("test"), "(",
                                 Parameters(
-                                        Parameter("arg: (integer,text)->text")
+                                        Parameter("arg: (integer, text) -> text")
                                 ),
                                 "): integer",
                                 ignoreSpanWithTokenStyle = true)
@@ -196,6 +196,26 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
                                         Parameter("arg: map<text, ", A("my_struct"), ">")
                                 ),
                                 "): map<text, ", A("my_struct"), ">",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
+
+    @Test
+    fun `functions signature with function arguments types with references`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        singleFileTestInline("""
+            struct my_struct {}
+            function test(arg: (my_struct) -> my_struct) = arg;
+        """.trimIndent(), listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
+                        .match(
+                                "function ", A("test"), "(",
+                                Parameters(
+                                        Parameter("arg: (", A("my_struct"), ") -> ", A("my_struct"))
+                                ),
+                                "): (", A("my_struct"), ") -> ", A("my_struct"),
                                 ignoreSpanWithTokenStyle = true)
             }
         }

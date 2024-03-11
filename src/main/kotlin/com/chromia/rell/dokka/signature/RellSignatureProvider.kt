@@ -2,6 +2,7 @@ package com.chromia.rell.dokka.signature
 
 import com.chromia.rell.dokka.dri.GenericUnresolvedBoundExtra
 import com.chromia.rell.dokka.dri.DriOfUnit
+import com.chromia.rell.dokka.dri.FunctionUnresolvedBoundExtra
 import com.chromia.rell.dokka.dri.isAlias
 import com.chromia.rell.dokka.model.isEntity
 import com.chromia.rell.dokka.model.isHidden
@@ -343,6 +344,16 @@ class RellSignatureProvider internal constructor(
                         signatureForProjection(it, showFullyQualifiedName)
                     }
 
+                }
+                p.extra[FunctionUnresolvedBoundExtra]?.let { (params, result) ->
+                    group(styles = emptySet()) {
+                        list(params, prefix = "(", suffix = ")", separatorStyles = mainStyles + TokenStyle.Punctuation,
+                                surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
+                            signatureForProjection(it, showFullyQualifiedName)
+                        }
+                        operator(" -> ")
+                        signatureForProjection(result, showFullyQualifiedName)
+                    }
                 }
             }
             is Dynamic -> { }

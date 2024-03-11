@@ -64,9 +64,9 @@ fun R_Type.toBound(): Bound {
         // No links to system lib from dapps
         is R_PrimitiveType -> UnresolvedBound(name)
         is R_CollectionType -> UnresolvedBound(name.substringBefore("<"), PropertyContainer.withAll(GenericUnresolvedBoundExtra(elementType.toBound())))
-        is R_FunctionType -> UnresolvedBound(name)
+        is R_FunctionType -> UnresolvedBound("", PropertyContainer.withAll(FunctionUnresolvedBoundExtra(params.map { it.toBound() }, result.toBound())))
         is R_MapType -> UnresolvedBound("map", PropertyContainer.withAll(GenericUnresolvedBoundExtra(keyType.toBound(), valueType.toBound())))
-        else -> mType.toBound(this.defName.qualifiedName.last.substringAfterLast(":"))
+        else -> mType.toBound(strippedName())
     }
 }
 
@@ -76,3 +76,21 @@ class GenericUnresolvedBoundExtra(vararg val bounds: Bound): ExtraProperty<Unres
 
     companion object : ExtraProperty.Key<UnresolvedBound, GenericUnresolvedBoundExtra>
 }
+
+class FunctionUnresolvedBoundExtra(val params: List<Bound>, val result: Bound): ExtraProperty<UnresolvedBound> {
+    operator fun component1(): List<Bound> {
+        return params
+    }
+
+    operator fun component2(): Bound {
+        return result
+    }
+
+    override val key: ExtraProperty.Key<UnresolvedBound, *>
+        get() = Companion
+
+    companion object : ExtraProperty.Key<UnresolvedBound, FunctionUnresolvedBoundExtra>
+}
+
+private fun R_Type.strippedName() = defName.qualifiedName.last.substringAfterLast(":")
+
