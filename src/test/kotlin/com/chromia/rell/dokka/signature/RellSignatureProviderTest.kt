@@ -135,4 +135,31 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
             }
         }
     }
+
+    @Test
+    fun `functions signature with object arguments types`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        singleFileTestInline("""
+            entity my_entity {}
+            struct my_struct {}
+            enum my_enum {}
+            object my_object {}
+            function test(arg1: my_entity, arg2: my_struct, arg3: my_enum) = my_object;
+        """.trimIndent(), listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
+                        .match(
+                                "function ", A("test"), "(",
+                                Parameters(
+                                        Parameter("arg1: ", A("my_entity"), ", "),
+                                        Parameter("arg2: ", A("my_struct"), ", "),
+                                        Parameter("arg3: ", A("my_enum"))
+                                ),
+                                "): ", A("my_object"),
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
 }
+
+

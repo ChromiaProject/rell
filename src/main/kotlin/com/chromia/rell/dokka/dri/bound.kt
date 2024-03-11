@@ -2,6 +2,7 @@ package com.chromia.rell.dokka.dri
 
 import com.chromia.rell.dokka.model.IsTuple
 import net.postchain.rell.base.lib.type.R_CollectionType
+import net.postchain.rell.base.model.R_EntityType
 import net.postchain.rell.base.model.R_FunctionType
 import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_PrimitiveType
@@ -63,6 +64,6 @@ fun R_Type.toBound(): Bound {
         is R_PrimitiveType -> UnresolvedBound(name)
         is R_CollectionType -> UnresolvedBound(name.substringBefore("<"), PropertyContainer.withAll(CollectionBoundExtra(elementType.toBound())))
         is R_FunctionType -> UnresolvedBound(name)
-        else -> mType.toBound()
+        else -> mType.toBound(this.defName.qualifiedName.last.substringAfterLast(":"))
     }
 }
