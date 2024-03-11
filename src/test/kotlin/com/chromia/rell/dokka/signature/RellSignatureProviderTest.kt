@@ -10,7 +10,7 @@ import utils.A
 import utils.TestOutputWriterPlugin
 import utils.match
 
-internal class RellSignatureProviderTest: SingleFileRellDokkaPluginTest() {
+internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `constants signature`() {
@@ -50,5 +50,74 @@ internal class RellSignatureProviderTest: SingleFileRellDokkaPluginTest() {
             }
         }
     }
+
+    @Test
+    fun `functions signature with primitive types`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        singleFileTestInline("function test(arg: integer, arg2: byte_array) = 13;", listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
+                        .match(
+                                "function ", A("test"), "(",
+                                Parameters(
+                                        Parameter("arg: integer, "), Parameter("arg2: byte_array")
+                                ),
+                                "): integer",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
+
+    @Test
+    fun `functions signature with nullable types`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        singleFileTestInline("function test(arg: text?): integer? = 13;", listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
+                        .match(
+                                "function ", A("test"), "(",
+                                Parameters(
+                                        Parameter("arg: text?")
+                                ),
+                                "): integer?",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
+
+    @Test
+    fun `functions signature with list types`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        singleFileTestInline("function test(arg: list<text>): list<integer> = [12];", listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
+                        .match(
+                                "function ", A("test"), "(",
+                                Parameters(
+                                        Parameter("arg: list<text>")
+                                ),
+                                "): list<text>",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
+
+    @Test
+    fun `functions signature with nullable list types`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        singleFileTestInline("function test(arg: list<text?>): set<integer> = set<integer>();", listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
+                        .match(
+                                "function ", A("test"), "(",
+                                Parameters(
+                                        Parameter("arg: list<text?>")
+                                ),
+                                "): set<integer>",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
+
 
 }

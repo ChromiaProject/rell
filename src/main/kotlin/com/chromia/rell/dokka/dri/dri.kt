@@ -1,7 +1,9 @@
 package com.chromia.rell.dokka.dri
 
 import com.chromia.rell.dokka.config.RellModule
+import com.chromia.rell.dokka.model.IsQuery
 import com.chromia.rell.dokka.model.IsTuple
+import net.postchain.rell.base.lib.type.R_CollectionType
 import net.postchain.rell.base.lmodel.L_NamespaceMember
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Function
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Namespace
@@ -36,11 +38,13 @@ import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.withClass
 import org.jetbrains.dokka.model.Bound
+import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.Nullable
 import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.UnresolvedBound
+import org.jetbrains.dokka.model.properties.ExtraProperty
 import org.jetbrains.dokka.model.properties.PropertyContainer
 
 val DriOfRoot = RellModule.MAIN.dri
@@ -164,7 +168,17 @@ fun R_Type.toBound(): Bound {
     // Links for Entity, Struct, Object, Enum
     return when (this) {
         is R_NullableType -> Nullable(valueType.toBound())
+        // No links to system lib from dapps
         is R_PrimitiveType -> UnresolvedBound(name)
+        is R_CollectionType -> UnresolvedBound(name.substringBefore("<"), PropertyContainer.withAll(CollectionBoundExtra(elementType.toBound())))
         else -> mType.toBound()
     }
+}
+
+
+class CollectionBoundExtra(val elementBound: Bound): ExtraProperty<UnresolvedBound> {
+    override val key: ExtraProperty.Key<UnresolvedBound, *>
+        get() = Companion
+
+    companion object : ExtraProperty.Key<UnresolvedBound, CollectionBoundExtra>
 }

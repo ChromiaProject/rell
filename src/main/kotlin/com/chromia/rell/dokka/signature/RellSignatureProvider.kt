@@ -1,5 +1,6 @@
 package com.chromia.rell.dokka.signature
 
+import com.chromia.rell.dokka.dri.CollectionBoundExtra
 import com.chromia.rell.dokka.dri.DriOfUnit
 import com.chromia.rell.dokka.dri.isAlias
 import com.chromia.rell.dokka.model.isEntity
@@ -331,7 +332,20 @@ class RellSignatureProvider internal constructor(
 
             is TypeAliased -> signatureForProjection(p.typeAlias)
             is Void -> link("unit", DriOfUnit)
-            is UnresolvedBound -> text(p.name)
+            is UnresolvedBound -> {
+                text(p.name)
+                p.extra[CollectionBoundExtra]?.let { element ->
+                    list(
+                            listOf(element.elementBound),
+                            prefix = "<", suffix = ">",
+                            separatorStyles = mainStyles + TokenStyle.Punctuation,
+                            surroundingCharactersStyle = mainStyles + TokenStyle.Operator)
+                    {
+                        signatureForProjection(it, showFullyQualifiedName)
+                    }
+
+                }
+            }
             is Dynamic -> { }
             else -> TODO(p.toString())
         }
