@@ -1,5 +1,7 @@
 package com.chromia.rell.dokka.signature
 
+import com.chromia.rell.dokka.RellDokkaPlugin
+import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.dri.GenericUnresolvedBoundExtra
 import com.chromia.rell.dokka.dri.DriOfUnit
 import com.chromia.rell.dokka.dri.FunctionUnresolvedBoundExtra
@@ -64,19 +66,22 @@ import org.jetbrains.dokka.pages.ContentNode
 import org.jetbrains.dokka.pages.TextStyle
 import org.jetbrains.dokka.pages.TokenStyle
 import org.jetbrains.dokka.plugability.DokkaContext
+import org.jetbrains.dokka.plugability.configuration
 import org.jetbrains.dokka.plugability.plugin
 import org.jetbrains.dokka.plugability.querySingle
 import org.jetbrains.dokka.utilities.DokkaLogger
 
 class RellSignatureProvider internal constructor(
         ctcc: CommentsToContentConverter,
-        logger: DokkaLogger
+        logger: DokkaLogger,
+        val rellConfig: RellDokkaPluginConfiguration
 ) : SignatureProvider {
     private val contentBuilder = PageContentBuilder(ctcc, this, logger)
 
     constructor(context: DokkaContext) : this(
             context.plugin<DokkaBase>().querySingle { commentsToContentConverter },
-            context.logger
+            context.logger,
+            configuration<RellDokkaPlugin, RellDokkaPluginConfiguration>(context) ?: throw IllegalArgumentException("No configuration")
     )
 
     override fun signature(documentable: Documentable): List<ContentNode> {
@@ -295,11 +300,17 @@ class RellSignatureProvider internal constructor(
 
             is GenericTypeConstructor -> {
                 group(styles = emptySet()) {
-                    p.presentableName?.let { link(it, p.dri) }
+                    p.presentableName?.let {
+                        if (!rellConfig.system && p.dri.packageName == "root") {
+                            text(it)
+                        } else {
+                            link(it, p.dri)
+                        }
+                    }
                     list(
                             p.projections,
-                            prefix = if (p.isTuple()) "(" else "<",
-                            suffix = if (p.isTuple()) ")" else ">",
+                            prefix = if (!p.isTuple()) "<" else "(",
+                            suffix = if (!p.isTuple()) ">" else if (p.projections.size <= 1) ",)" else ")",
                             separatorStyles = mainStyles + TokenStyle.Punctuation,
                             surroundingCharactersStyle = mainStyles + TokenStyle.Operator)
                     {

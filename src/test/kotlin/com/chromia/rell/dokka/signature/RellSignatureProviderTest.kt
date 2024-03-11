@@ -220,6 +220,25 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
             }
         }
     }
+
+    @Test
+    fun `functions signature with un-named tuple arguments types`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        singleFileTestInline("""
+            function test(arg: (text,)) = arg;
+        """.trimIndent(), listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
+                        .match(
+                                "function ", A("test"), "(",
+                                Parameters(
+                                        Parameter("arg: (text,)")
+                                ),
+                                "): (text,)",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
 }
 
 
