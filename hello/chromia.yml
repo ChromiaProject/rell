@@ -1,0 +1,10 @@
+blockchains:
+  hello:
+    module: main
+compile:
+  rellVersion: 0.12.0
+database:
+  schema: schema_hello
+test:
+  modules:
+    - test

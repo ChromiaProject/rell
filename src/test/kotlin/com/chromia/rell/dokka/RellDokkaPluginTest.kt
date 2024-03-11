@@ -22,6 +22,7 @@ import org.jetbrains.dokka.model.DEnum
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.KotlinModifier
 import org.jetbrains.dokka.model.KotlinVisibility
+import org.jetbrains.dokka.model.UnresolvedBound
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
@@ -56,8 +57,8 @@ class RellDokkaPluginTest : SingleFileRellDokkaPluginTest() {
                 assertThat(myConstant.dri.toString()).isEqualTo(DRI("main", classNames = "my_constant").toString())
                 assertThat(myConstant.visibility.values.first()).isEqualTo(KotlinVisibility.Public)
                 assertThat(myConstant.modifier.values.first()).isEqualTo(KotlinModifier.Empty)
-                assertTrue(myConstant.type is GenericTypeConstructor)
-                assertThat((myConstant.type as GenericTypeConstructor).dri.classNames).isEqualTo("integer")
+                assertTrue(myConstant.type is UnresolvedBound)
+                assertThat((myConstant.type as UnresolvedBound).name).isEqualTo("integer")
             }
         }
     }
@@ -90,7 +91,7 @@ class RellDokkaPluginTest : SingleFileRellDokkaPluginTest() {
                 val (name, value, hash, simple) = props
                 assertThat(name.name).isEqualTo("name")
                 assertThat(name.dri.toString()).isEqualTo(DRI("main", "my_entity.name").toString())
-                assertThat((name.type as GenericTypeConstructor).dri.classNames).isEqualTo("text")
+                assertThat((name.type as UnresolvedBound).name).isEqualTo("text")
                 assertThat(name.isKey()).isTrue()
                 assertThat(value.name).isEqualTo("my_value")
                 assertThat(value.isIndex()).isTrue()
@@ -129,7 +130,7 @@ class RellDokkaPluginTest : SingleFileRellDokkaPluginTest() {
                 val (order, hash, simple) = props
                 assertThat(order.name).isEqualTo("order")
                 assertThat(order.dri.toString()).isEqualTo(DRI("main", "my_struct.order").toString())
-                assertThat((order.type as GenericTypeConstructor).dri.classNames).isEqualTo("integer")
+                assertThat((order.type as UnresolvedBound).name).isEqualTo("integer")
                 assertThat(hash.name).isEqualTo("hash")
                 assertThat(hash.isMutable()).isTrue()
                 assertThat(simple.name).isEqualTo("simple")
@@ -161,7 +162,7 @@ class RellDokkaPluginTest : SingleFileRellDokkaPluginTest() {
                 val (order, name) = props
                 assertThat(order.name).isEqualTo("order")
                 assertThat(order.dri.toString()).isEqualTo(DRI("main", "my_object.order").toString())
-                assertThat((order.type as GenericTypeConstructor).dri.classNames).isEqualTo("integer")
+                assertThat((order.type as UnresolvedBound).name).isEqualTo("integer")
                 assertThat(name.name).isEqualTo("name")
                 assertThat(name.isMutable()).isTrue()
             }
@@ -217,8 +218,8 @@ class RellDokkaPluginTest : SingleFileRellDokkaPluginTest() {
                 val name = args.first()
                 assertThat(name.name).isEqualTo("name")
                 assertThat(name.dri.toString()).isEqualTo(expectedDri.copy(target = PointingToCallableParameters(0)).toString())
-                assertThat(name.type).isInstanceOf<GenericTypeConstructor>()
-                assertThat((name.type as GenericTypeConstructor).projections.size).isEqualTo(0)
+                assertThat(name.type).isInstanceOf<UnresolvedBound>()
+                assertThat((name.type as UnresolvedBound).name).isEqualTo("text")
             }
         }
     }
