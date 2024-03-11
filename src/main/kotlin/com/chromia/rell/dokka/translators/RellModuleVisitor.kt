@@ -31,9 +31,11 @@ import org.jetbrains.dokka.model.IsVar
 import org.jetbrains.dokka.model.KotlinModifier
 import org.jetbrains.dokka.model.KotlinVisibility
 import org.jetbrains.dokka.model.properties.PropertyContainer
+import org.jetbrains.dokka.utilities.DokkaLogger
 
 internal class RellModuleVisitor(
-        private val sourceSet: DokkaConfiguration.DokkaSourceSet
+        private val sourceSet: DokkaConfiguration.DokkaSourceSet,
+        private val logger: DokkaLogger,
 ) {
 
     fun visitRellModule(module: R_Module): DPackage {

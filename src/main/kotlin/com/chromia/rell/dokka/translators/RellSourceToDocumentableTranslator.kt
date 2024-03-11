@@ -32,7 +32,7 @@ class RellSourceToDocumentableTranslator(context: DokkaContext) : SourceToDocume
                 .moduleArgsMissingError(false)
                 .build()
         val app = RellApiCompile.compileApp(config, files.first(), rellConfig?.modules)
-        return RellModuleVisitor(sourceSet).run {
+        return RellModuleVisitor(sourceSet, context.logger).run {
             app.modules.map { visitRellModule(it) }
         }.let {
             DModule(
