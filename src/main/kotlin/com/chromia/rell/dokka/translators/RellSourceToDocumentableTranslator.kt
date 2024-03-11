@@ -4,7 +4,6 @@ package com.chromia.rell.dokka.translators
 
 import com.chromia.rell.dokka.RellDokkaPlugin
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
-import com.chromia.rell.dokka.dapp.RellProjectAnalysis
 import com.chromia.rell.dokka.model.definitionsByModule
 import com.chromia.rell.dokka.model.toDClasslike
 import com.chromia.rell.dokka.model.toDFunction
@@ -12,7 +11,6 @@ import com.chromia.rell.dokka.model.toDProperty
 import com.chromia.rell.dokka.model.toDRI
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.base.model.R_App
-import net.postchain.rell.base.model.R_Module
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.model.DModule
 import org.jetbrains.dokka.model.DPackage
@@ -34,12 +32,14 @@ class RellSourceToDocumentableTranslator(context: DokkaContext) : SourceToDocume
                 .moduleArgsMissingError(false)
                 .build()
         val app = RellApiCompile.compileApp(config, files.first(), rellConfig?.modules)
-        with(RellProjectAnalysis(app, sourceSet)) {
-            return DModule(
+        return RellModuleVisitor(sourceSet).run {
+            app.modules.map { visitRellModule(it) }
+        }.let {
+            DModule(
                     rellConfig?.name ?: "root",
-                    modules.visitModules(),
+                    it,
                     mapOf(sourceSet to DocumentationNode(listOf())),
-                    sourceSets = setOf(sourceSet)
+                    sourceSets = setOf(sourceSet),
             )
         }
     }

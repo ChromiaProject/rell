@@ -1,4 +1,4 @@
-package com.chromia.rell.dokka.dapp
+package com.chromia.rell.dokka.translators
 
 import com.chromia.rell.dokka.descriptors.NULL_DESCRIPTOR
 import com.chromia.rell.dokka.doc.simpleDocumentationNode
@@ -10,7 +10,6 @@ import com.chromia.rell.dokka.model.IsIndex
 import com.chromia.rell.dokka.model.IsKey
 import com.chromia.rell.dokka.model.IsObject
 import com.chromia.rell.dokka.model.IsStruct
-import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_Attribute
 import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.model.R_EnumAttr
@@ -33,14 +32,12 @@ import org.jetbrains.dokka.model.KotlinModifier
 import org.jetbrains.dokka.model.KotlinVisibility
 import org.jetbrains.dokka.model.properties.PropertyContainer
 
-class RellProjectAnalysis(
-        dapp: R_App,
+internal class RellModuleVisitor(
         private val sourceSet: DokkaConfiguration.DokkaSourceSet
 ) {
 
-    val modules = dapp.modules
 
-    fun List<R_Module>.visitModules() = map { it.visit() }
+    fun visitRellModule(module: R_Module): DPackage = module.visit()
 
     private fun R_Module.visit(): DPackage {
 
