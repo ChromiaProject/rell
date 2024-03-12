@@ -6,6 +6,7 @@ import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.from
 import com.chromia.rell.dokka.dri.toBound
 import com.chromia.rell.dokka.model.IsEntity
+import com.chromia.rell.dokka.model.IsExtendable
 import com.chromia.rell.dokka.model.IsFunction
 import com.chromia.rell.dokka.model.IsIndex
 import com.chromia.rell.dokka.model.IsKey
@@ -27,6 +28,9 @@ import net.postchain.rell.base.model.R_OperationDefinition
 import net.postchain.rell.base.model.R_QueryDefinition
 import net.postchain.rell.base.model.R_RoutineDefinition
 import net.postchain.rell.base.model.R_StructDefinition
+import net.postchain.rell.base.model.expr.R_ExtendableFunctionUid
+import net.postchain.rell.base.model.expr.R_FunctionExtension
+import net.postchain.rell.base.model.expr.R_FunctionExtensionsTable
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.PointingToCallableParameters
@@ -51,6 +55,7 @@ import org.jetbrains.dokka.utilities.DokkaLogger
 internal class RellModuleVisitor(
         private val sourceSet: DokkaConfiguration.DokkaSourceSet,
         private val logger: DokkaLogger,
+        private val functionExtensions:  Map<String, List<R_FunctionExtension>>
 ) {
 
     fun visitRellModule(module: R_Module): DPackage {
@@ -239,14 +244,16 @@ internal class RellModuleVisitor(
         )
     }
 
-    private fun R_FunctionDefinition.visit() = visit(IsFunction)
+    private fun R_FunctionDefinition.visit(): DFunction {
+        val isExtendable = functionExtensions.containsKey(appLevelName)
+        return visit(IsFunction, IsExtendable.takeIf { isExtendable })
+    }
     private fun R_OperationDefinition.visit() = visit(IsOperation)
     private fun R_QueryDefinition.visit() = visit(IsQuery)
 
-    private fun R_RoutineDefinition.visit(extraProperty: ExtraProperty<DFunction>): DFunction {
+    private fun R_RoutineDefinition.visit(vararg extraProperty: ExtraProperty<DFunction>?): DFunction {
         val dri = DRI.from(this)
         val params = params().mapIndexed { index, param  -> param.visit(dri, index) }
-
         return  DFunction(
                 dri = dri,
                 name = simpleName,
@@ -262,7 +269,7 @@ internal class RellModuleVisitor(
                 generics = listOf(),
                 sources = NULL_DESCRIPTOR.toSourceSetDependent(),
                 modifier = KotlinModifier.Empty.toSourceSetDependent(),
-                extra = PropertyContainer.withAll(extraProperty)
+                extra = PropertyContainer.withAll(listOfNotNull(*extraProperty))
         )
     }
 

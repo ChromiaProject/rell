@@ -87,6 +87,12 @@ object IsFunction: ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsFunc
 
 fun DFunction.isFunction() = this.extra[IsFunction] != null
 
+object IsExtendable: ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsExtendable> {
+    override val key: ExtraProperty.Key<DFunction, *> get() = this
+}
+
+fun DFunction.isExtendable() = this.extra[IsExtendable] != null
+
 object IsOperation: ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsOperation> {
     override val key: ExtraProperty.Key<DFunction, *> get() = this
 }

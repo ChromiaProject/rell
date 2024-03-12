@@ -225,16 +225,17 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
     fun `functions signature with un-named tuple arguments types`() {
         val writerPlugin = TestOutputWriterPlugin()
         singleFileTestInline("""
-            function test(arg: (text,)) = arg;
+            struct my_struct {}
+            function test(arg: (text, my_struct)) = arg;
         """.trimIndent(), listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
                         .match(
                                 "function ", A("test"), "(",
                                 Parameters(
-                                        Parameter("arg: (text,)")
+                                        Parameter("arg: (text, ", A("my_struct"), ")")
                                 ),
-                                "): (text,)",
+                                "): (text, ", A("my_struct"), ")",
                                 ignoreSpanWithTokenStyle = true)
             }
         }
@@ -244,20 +245,40 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
     fun `functions signature with named tuple arguments types`() {
         val writerPlugin = TestOutputWriterPlugin()
         singleFileTestInline("""
-            function test(arg: (x: text)) = arg;
+            struct my_struct {}
+            function test(arg: (x: text, y: my_struct)) = arg;
         """.trimIndent(), listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
                         .match(
                                 "function ", A("test"), "(",
                                 Parameters(
-                                        Parameter("arg: (x: text,)")
+                                        Parameter("arg: (x: text, y: ", A("my_struct"), ")")
                                 ),
-                                "): (x: text,)",
+                                "): (x: text, y: ", A("my_struct"), ")",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
+
+    @Test
+    fun `extendable functions signature`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        singleFileTestInline("""
+            @extendable function test(arg: integer): boolean;
+//            @extend(test) function () = true;
+//            @extend(test) function foo() = true;
+        """.trimIndent(), listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
+                        .match(
+                                "@extendable function ", A("test"), "(",
+                                Parameters(
+                                        Parameter("arg: integer")
+                                ),
+                        "): boolean",
                                 ignoreSpanWithTokenStyle = true)
             }
         }
     }
 }
-
-

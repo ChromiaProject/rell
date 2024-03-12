@@ -7,6 +7,7 @@ import com.chromia.rell.dokka.dri.DriOfUnit
 import com.chromia.rell.dokka.dri.FunctionUnresolvedBoundExtra
 import com.chromia.rell.dokka.dri.isAlias
 import com.chromia.rell.dokka.model.isEntity
+import com.chromia.rell.dokka.model.isExtendable
 import com.chromia.rell.dokka.model.isHidden
 import com.chromia.rell.dokka.model.isMutable
 import com.chromia.rell.dokka.model.isObject
@@ -246,6 +247,7 @@ class RellSignatureProvider internal constructor(
                 if (d.dri.isAlias()) punctuation("(alias) ")
                 if (d.isPure()) keyword("pure ")
                 if (d.isStatic()) keyword("static ")
+                if (d.isExtendable()) keyword("@extendable ")
                 when {
                     d.isConstructor -> keyword("constructor")
                     d.isQuery() -> keyword("query ")
