@@ -1,5 +1,7 @@
 package com.chromia.rell.dokka.model
 
+import com.chromia.rell.dokka.dri.GenericUnresolvedBoundExtra
+import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DClasslike
 import org.jetbrains.dokka.model.DFunction
@@ -7,6 +9,7 @@ import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.IsVar
+import org.jetbrains.dokka.model.UnresolvedBound
 import org.jetbrains.dokka.model.properties.ExtraProperty
 
 object IsStatic : ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsStatic> {
@@ -92,6 +95,21 @@ object IsExtendable: ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsEx
 }
 
 fun DFunction.isExtendable() = this.extra[IsExtendable] != null
+
+class ExtensionFunctionExtra(val target: DRI): ExtraProperty<DFunction> {
+    override val key: ExtraProperty.Key<DFunction, *> get() = Companion
+
+    companion object : ExtraProperty.Key<DFunction, ExtensionFunctionExtra>
+}
+
+fun DFunction.extensionTarget() = this.extra[ExtensionFunctionExtra]?.target
+
+object IsAnonymous: ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsAnonymous> {
+    override val key: ExtraProperty.Key<DFunction, *> get() = this
+}
+
+fun DFunction.isAnonymous() = this.extra[IsAnonymous] != null
+
 
 object IsOperation: ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsOperation> {
     override val key: ExtraProperty.Key<DFunction, *> get() = this

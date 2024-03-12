@@ -266,8 +266,6 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
         val writerPlugin = TestOutputWriterPlugin()
         singleFileTestInline("""
             @extendable function test(arg: integer): boolean;
-//            @extend(test) function () = true;
-//            @extend(test) function foo() = true;
         """.trimIndent(), listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
@@ -277,6 +275,38 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
                                         Parameter("arg: integer")
                                 ),
                         "): boolean",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
+
+    @Test
+    fun `extension functions signature`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        singleFileTestInline("""
+            @extendable function ext(): boolean = true;
+            @extend(ext) function test() = true;
+        """.trimIndent(), listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
+                        .match(
+                                "@extend(", A("ext"), ") function ", A("test"), "(): boolean",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
+
+    @Test
+    fun `anonymous extension functions signature`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        singleFileTestInline("""
+            @extendable function ext(): boolean = true;
+            @extend(ext) function () = true;
+        """.trimIndent(), listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("test-dapp/main/function#0.html").firstSignature()
+                        .match(
+                                "@extend(", A("ext"), ") function (): boolean",
                                 ignoreSpanWithTokenStyle = true)
             }
         }

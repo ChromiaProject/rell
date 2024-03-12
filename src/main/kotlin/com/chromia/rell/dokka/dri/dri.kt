@@ -99,7 +99,7 @@ fun M_Type.toDRI(): DRI {
         is M_Type_Generic -> {
             val fullName = genericType.name
             return when {
-                ":" in fullName -> R_QualifiedName.of(*fullName.split(":").map { R_Name.of(it) }.toTypedArray())
+                ":" in fullName -> R_QualifiedName.of(fullName.replace(":", "."))
                 else -> R_QualifiedName.of(fullName)
             }.toDRI()
         }

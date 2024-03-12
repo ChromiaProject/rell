@@ -31,7 +31,7 @@ class RellSourceToDocumentableTranslator(context: DokkaContext) : SourceToDocume
         val app = RellApiCompile.compileApp(config, files.first(), rellConfig?.modules)
 
         val functionExtensions = getFunctionExtensionsByReflection(app)
-        return RellModuleVisitor(sourceSet, context.logger, functionExtensions).run {
+        return RellModuleVisitor(sourceSet, context.logger, app, functionExtensions).run {
             app.modules.map { visitRellModule(it) }
         }.let {
             DModule(

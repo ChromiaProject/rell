@@ -5,6 +5,8 @@ import com.chromia.rell.dokka.doc.simpleDocumentationNode
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.from
 import com.chromia.rell.dokka.dri.toBound
+import com.chromia.rell.dokka.model.ExtensionFunctionExtra
+import com.chromia.rell.dokka.model.IsAnonymous
 import com.chromia.rell.dokka.model.IsEntity
 import com.chromia.rell.dokka.model.IsExtendable
 import com.chromia.rell.dokka.model.IsFunction
@@ -14,10 +16,13 @@ import com.chromia.rell.dokka.model.IsObject
 import com.chromia.rell.dokka.model.IsOperation
 import com.chromia.rell.dokka.model.IsQuery
 import com.chromia.rell.dokka.model.IsStruct
+import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_Attribute
+import net.postchain.rell.base.model.R_DefinitionName
 import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.model.R_EnumAttr
 import net.postchain.rell.base.model.R_EnumDefinition
+import net.postchain.rell.base.model.R_FunctionBase
 import net.postchain.rell.base.model.R_FunctionDefinition
 import net.postchain.rell.base.model.R_FunctionParam
 import net.postchain.rell.base.model.R_GlobalConstantDefinition
@@ -28,10 +33,9 @@ import net.postchain.rell.base.model.R_OperationDefinition
 import net.postchain.rell.base.model.R_QueryDefinition
 import net.postchain.rell.base.model.R_RoutineDefinition
 import net.postchain.rell.base.model.R_StructDefinition
-import net.postchain.rell.base.model.expr.R_ExtendableFunctionUid
 import net.postchain.rell.base.model.expr.R_FunctionExtension
-import net.postchain.rell.base.model.expr.R_FunctionExtensionsTable
 import org.jetbrains.dokka.DokkaConfiguration
+import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.PointingToCallableParameters
 import org.jetbrains.dokka.links.withClass
@@ -51,12 +55,28 @@ import org.jetbrains.dokka.model.doc.Text
 import org.jetbrains.dokka.model.properties.ExtraProperty
 import org.jetbrains.dokka.model.properties.PropertyContainer
 import org.jetbrains.dokka.utilities.DokkaLogger
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.isAccessible
 
 internal class RellModuleVisitor(
         private val sourceSet: DokkaConfiguration.DokkaSourceSet,
         private val logger: DokkaLogger,
+        app: R_App,
         private val functionExtensions:  Map<String, List<R_FunctionExtension>>
 ) {
+
+    val allFunctions = app.modules.flatMap { it.functions.values }.associateBy { it.defName.appLevelName }
+
+    val extensionFunctionsByModule = functionExtensions
+            .flatMap { (target, list) -> list.map { f -> target to f } }
+            .map { (target, f) ->
+        R_FunctionBase::class.memberProperties.find { it.name == "defName" }!!.let {
+            it.isAccessible = true
+            ExtensionFunction(target, (it.get(f.fnBase) as R_DefinitionName), f)
+        }
+    }.groupBy {  it.defName.module }
+
+    internal class ExtensionFunction(val target: String, val defName: R_DefinitionName, val f: R_FunctionExtension)
 
     fun visitRellModule(module: R_Module): DPackage {
         val dri = DRI(packageName = module.name.str())
@@ -66,10 +86,13 @@ internal class RellModuleVisitor(
         val structs = module.structs.values.map { it.visit() }
         val objects = module.objects.values.map { it.visit() }
         val enums = module.enums.values.map { it.visit() }
-        val functions = module.functions.values.map { it.visit() }
+        val functions = module.functions.values.mapNotNull { it.visit() }
         val operations = module.operations.values.map { it.visit() }
         val queries = module.queries.values.map { it.visit() }
 
+        val extensionFunctions = extensionFunctionsByModule[module.name.str()]?.mapNotNull { it.visit() } ?: listOf()
+
+        logger.info("Module: ${module.name}")
         logger.info("Found ${globalConstants.size} constants, ${entities.size} entities, ${structs.size} structs, ${objects.size} objects, ${enums.size} enums, " +
                 "${functions.size} functions, ${operations.size} operations and ${queries.size} queries")
 
@@ -77,7 +100,7 @@ internal class RellModuleVisitor(
                 dri = dri,
                 properties = globalConstants,
                 classlikes = entities + structs + objects + enums,
-                functions = functions + operations + queries,
+                functions = functions + operations + queries + extensionFunctions,
                 typealiases = listOf(),
                 documentation = module.docSymbol.toDocumentationNode().toSourceSetDependent(),
                 sourceSets = setOf(sourceSet),
@@ -244,8 +267,12 @@ internal class RellModuleVisitor(
         )
     }
 
-    private fun R_FunctionDefinition.visit(): DFunction {
+    private fun R_FunctionDefinition.visit(): DFunction? {
         val isExtendable = functionExtensions.containsKey(appLevelName)
+        // TODO: Do not flatten on each function visit..
+        if (!isExtendable && extensionFunctionsByModule.values.flatten().find { it.defName.appLevelName == this.appLevelName } != null) {
+            return null
+        }
         return visit(IsFunction, IsExtendable.takeIf { isExtendable })
     }
     private fun R_OperationDefinition.visit() = visit(IsOperation)
@@ -270,6 +297,40 @@ internal class RellModuleVisitor(
                 sources = NULL_DESCRIPTOR.toSourceSetDependent(),
                 modifier = KotlinModifier.Empty.toSourceSetDependent(),
                 extra = PropertyContainer.withAll(listOfNotNull(*extraProperty))
+        )
+    }
+
+    private fun ExtensionFunction.visit(): DFunction? {
+        val dri = DRI(
+                packageName = defName.module,
+                callable = Callable.from(
+                        defName.simpleName,
+                        f.fnBase.getHeader().params
+                )
+        )
+        val targetDri = allFunctions[target]?.visit()?.dri ?: return null
+        if (dri == targetDri) return null
+        val params = f.fnBase.getHeader().params.mapIndexed { index, param  -> param.visit(dri, index) }
+        return  DFunction(
+                dri = dri,
+                name = defName.simpleName,
+                isConstructor = false,
+                parameters = params,
+                documentation = simpleDocumentationNode("This extension function is called ${defName.simpleName}").toSourceSetDependent(),
+                expectPresentInSet = null,
+                visibility = mapOf(),
+                receiver = null,
+                isExpectActual = false,
+                type = f.fnBase.getHeader().type.toBound(),
+                sourceSets = setOf(sourceSet),
+                generics = listOf(),
+                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
+                modifier = KotlinModifier.Empty.toSourceSetDependent(),
+                extra = PropertyContainer.withAll(
+                        IsFunction,
+                        ExtensionFunctionExtra(targetDri),
+                        IsAnonymous.takeIf { defName.simpleName.startsWith("function#") }
+                )
         )
     }
 

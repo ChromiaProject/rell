@@ -3,6 +3,7 @@ package com.chromia.rell.dokka.dri
 import com.chromia.rell.dokka.model.IsTuple
 import net.postchain.rell.base.lib.type.R_CollectionType
 import net.postchain.rell.base.lib.type.R_MapType
+import net.postchain.rell.base.model.R_CtErrorType
 import net.postchain.rell.base.model.R_FunctionType
 import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_PrimitiveType
@@ -60,6 +61,7 @@ fun M_Type.toBound(presentableName: String? = null): Bound {
 fun R_Type.toBound(): Bound {
     // Links for Entity, Struct, Object, Enum
     return when (this) {
+        is R_CtErrorType -> org.jetbrains.dokka.model.Void
         is R_NullableType -> Nullable(valueType.toBound())
         // No links to system lib from dapps
         is R_PrimitiveType -> UnresolvedBound(name)
