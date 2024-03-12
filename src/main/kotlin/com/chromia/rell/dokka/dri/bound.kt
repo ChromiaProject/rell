@@ -28,7 +28,7 @@ fun M_Type.toBound(presentableName: String? = null): Bound {
         is M_Type_Generic -> {
             GenericTypeConstructor(
                     dri = toDRI(),
-                    presentableName = presentableName ?: genericType.name,
+                    presentableName = presentableName,
                     projections = typeArgs.map { it.canonicalOutType().toBound() } // TODO: Not complete
             )
         }
@@ -66,7 +66,7 @@ fun R_Type.toBound(): Bound {
         is R_CollectionType -> UnresolvedBound(name.substringBefore("<"), PropertyContainer.withAll(GenericUnresolvedBoundExtra(elementType.toBound())))
         is R_FunctionType -> UnresolvedBound("", PropertyContainer.withAll(FunctionUnresolvedBoundExtra(params.map { it.toBound() }, result.toBound())))
         is R_MapType -> UnresolvedBound("map", PropertyContainer.withAll(GenericUnresolvedBoundExtra(keyType.toBound(), valueType.toBound())))
-        else -> mType.toBound(strippedName())
+        else -> mType.toBound()
     }
 }
 
@@ -91,6 +91,4 @@ class FunctionUnresolvedBoundExtra(val params: List<Bound>, val result: Bound): 
 
     companion object : ExtraProperty.Key<UnresolvedBound, FunctionUnresolvedBoundExtra>
 }
-
-private fun R_Type.strippedName() = defName.qualifiedName.last.substringAfterLast(":")
 

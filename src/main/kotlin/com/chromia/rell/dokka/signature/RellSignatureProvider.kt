@@ -301,12 +301,10 @@ class RellSignatureProvider internal constructor(
             is GenericTypeConstructor -> {
                 group(styles = emptySet()) {
                     p.presentableName?.let {
-                        if (!rellConfig.system && p.dri.packageName == "root") {
-                            text(it)
-                        } else {
-                            link(it, p.dri)
-                        }
+                        text(it)
+                        operator(": ")
                     }
+                    parameterType(p)
                     list(
                             p.projections,
                             prefix = if (!p.isTuple()) "<" else "(",
@@ -367,7 +365,8 @@ class RellSignatureProvider internal constructor(
                     }
                 }
             }
-            is Dynamic -> { }
+
+            is Dynamic -> {}
             else -> TODO(p.toString())
         }
     }
@@ -378,5 +377,19 @@ class RellSignatureProvider internal constructor(
         this.type is TypeConstructor && (this.type as TypeConstructor).dri == DriOfUnit -> false
         this.type is Void -> false
         else -> true
+    }
+
+    private fun PageContentBuilder.DocumentableContentBuilder.parameterType(p: GenericTypeConstructor) {
+        if (p.isTuple()) return
+        val typeText = p.dri.classNames.orEmpty()
+        val packageName = p.dri.packageName
+
+        if (!rellConfig.system && packageName == "root") {
+            text(typeText)
+        } else {
+            val rellTestText = packageName?.takeIf { it.startsWith("rell.test") }?.let { "$it." }.orEmpty()
+            val linkText = rellTestText + typeText
+            link(linkText, p.dri)
+        }
     }
 }
