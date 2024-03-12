@@ -16,13 +16,15 @@ import com.chromia.rell.dokka.model.IsObject
 import com.chromia.rell.dokka.model.IsOperation
 import com.chromia.rell.dokka.model.IsQuery
 import com.chromia.rell.dokka.model.IsStruct
+import com.chromia.rell.dokka.reflection.getDefNameByReflection
+import com.chromia.rell.dokka.reflection.getParamsByReflection
+import com.chromia.rell.dokka.reflection.getTypeByReflection
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_Attribute
 import net.postchain.rell.base.model.R_DefinitionName
 import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.model.R_EnumAttr
 import net.postchain.rell.base.model.R_EnumDefinition
-import net.postchain.rell.base.model.R_FunctionBase
 import net.postchain.rell.base.model.R_FunctionDefinition
 import net.postchain.rell.base.model.R_FunctionParam
 import net.postchain.rell.base.model.R_GlobalConstantDefinition
@@ -55,8 +57,6 @@ import org.jetbrains.dokka.model.doc.Text
 import org.jetbrains.dokka.model.properties.ExtraProperty
 import org.jetbrains.dokka.model.properties.PropertyContainer
 import org.jetbrains.dokka.utilities.DokkaLogger
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.isAccessible
 
 internal class RellModuleVisitor(
         private val sourceSet: DokkaConfiguration.DokkaSourceSet,
@@ -70,10 +70,7 @@ internal class RellModuleVisitor(
     val extensionFunctionsByModule = functionExtensions
             .flatMap { (target, list) -> list.map { f -> target to f } }
             .map { (target, f) ->
-        R_FunctionBase::class.memberProperties.find { it.name == "defName" }!!.let {
-            it.isAccessible = true
-            ExtensionFunction(target, (it.get(f.fnBase) as R_DefinitionName), f)
-        }
+            ExtensionFunction(target, f.fnBase.getDefNameByReflection(), f)
     }.groupBy {  it.defName.module }
 
     internal class ExtensionFunction(val target: String, val defName: R_DefinitionName, val f: R_FunctionExtension)
@@ -120,7 +117,7 @@ internal class RellModuleVisitor(
                 isExpectActual = false,
                 sourceSets = setOf(sourceSet),
                 sources = NULL_DESCRIPTOR.toSourceSetDependent(),
-                type = type().toBound(),
+                type = getTypeByReflection().toBound(),
                 expectPresentInSet = null,
                 documentation = simpleDocumentationNode("This is constant $simpleName").toSourceSetDependent()
         )
@@ -280,7 +277,8 @@ internal class RellModuleVisitor(
 
     private fun R_RoutineDefinition.visit(vararg extraProperty: ExtraProperty<DFunction>?): DFunction {
         val dri = DRI.from(this)
-        val params = params().mapIndexed { index, param  -> param.visit(dri, index) }
+        val params = (if (this is R_FunctionDefinition) getParamsByReflection() else params()) // Temporary hack due to bug in rell
+                .mapIndexed { index, param  -> param.visit(dri, index) }
         return  DFunction(
                 dri = dri,
                 name = simpleName,
@@ -291,7 +289,7 @@ internal class RellModuleVisitor(
                 visibility = mapOf(),
                 receiver = null,
                 isExpectActual = false,
-                type = type().toBound(),
+                type = getTypeByReflection().toBound(),
                 sourceSets = setOf(sourceSet),
                 generics = listOf(),
                 sources = NULL_DESCRIPTOR.toSourceSetDependent(),
