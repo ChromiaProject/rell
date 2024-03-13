@@ -20,7 +20,6 @@ class RellAnalysis(sourceRoot: File, entryPointModules: List<String>?) {
     private val extendableFunctions: Set<String> // AppLevelName
     private val modules: List<R_Module>
 
-
     init {
         val config = RellApiCompile.Config.Builder()
                 .mountConflictError(false)
@@ -39,7 +38,6 @@ class RellAnalysis(sourceRoot: File, entryPointModules: List<String>?) {
         extensionFunctionsByAppLevelName = allExtensionFunctions.associateBy { it.defName.appLevelName }
         extensionFunctionsByModule = allExtensionFunctions.groupBy {  it.defName.module }
         extendableFunctions = extensionFunctionsByTargetFunction.keys
-
     }
 
     fun findFunctionReference(appLevelName: String): DRI? {
