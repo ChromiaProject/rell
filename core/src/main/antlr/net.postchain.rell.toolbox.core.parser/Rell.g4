@@ -1997,4 +1997,4 @@ RULE_STRING : ('"' (RULE_STRCHAR|~('"'|'\\'|'\u0000'..'\u001F'))* '"'|'\'' (RULE
 // Validations
 INVALID_DECIMAL : ('0'..'9')+ '.' ('a'..'z'|'A'..'Z')+;
 
-//ERROR : . ;
+ERROR : . ;

@@ -35,7 +35,7 @@ public class RellParser extends Parser {
 		T__73=74, T__74=75, T__75=76, T__76=77, T__77=78, T__78=79, T__79=80, 
 		T__80=81, T__81=82, RULE_ML_COMMENT=83, RULE_SL_COMMENT=84, RULE_WS=85, 
 		RULE_ID=86, RULE_DECIMAL=87, RULE_BIG_INTEGER=88, RULE_NUMBER=89, RULE_BYTES=90, 
-		RULE_STRING=91, INVALID_DECIMAL=92;
+		RULE_STRING=91, INVALID_DECIMAL=92, ERROR=93;
 	public static final int
 		RULE_ruleX_RootParser = 0, RULE_ruleX_ModuleHeader = 1, RULE_ruleX_Modifier = 2, 
 		RULE_ruleX_Modifier_0 = 3, RULE_ruleX_Modifier_1 = 4, RULE_ruleX_Annotation = 5, 
@@ -238,7 +238,7 @@ public class RellParser extends Parser {
 			null, null, null, null, null, null, null, null, null, null, null, null, 
 			null, null, null, null, null, null, null, null, null, null, null, "RULE_ML_COMMENT", 
 			"RULE_SL_COMMENT", "RULE_WS", "RULE_ID", "RULE_DECIMAL", "RULE_BIG_INTEGER", 
-			"RULE_NUMBER", "RULE_BYTES", "RULE_STRING", "INVALID_DECIMAL"
+			"RULE_NUMBER", "RULE_BYTES", "RULE_STRING", "INVALID_DECIMAL", "ERROR"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -15508,7 +15508,7 @@ public class RellParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\u0004\u0001\\\u0717\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001\u0002"+
+		"\u0004\u0001]\u0717\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001\u0002"+
 		"\u0002\u0007\u0002\u0002\u0003\u0007\u0003\u0002\u0004\u0007\u0004\u0002"+
 		"\u0005\u0007\u0005\u0002\u0006\u0007\u0006\u0002\u0007\u0007\u0007\u0002"+
 		"\b\u0007\b\u0002\t\u0007\t\u0002\n\u0007\n\u0002\u000b\u0007\u000b\u0002"+
