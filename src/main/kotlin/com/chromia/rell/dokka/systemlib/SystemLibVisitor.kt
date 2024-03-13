@@ -11,6 +11,8 @@ import com.chromia.rell.dokka.dri.toDRI
 import com.chromia.rell.dokka.dri.withAlias
 import com.chromia.rell.dokka.dri.withSourceSet
 import com.chromia.rell.dokka.model.IsHidden
+import com.chromia.rell.dokka.model.IsStruct
+import com.chromia.rell.dokka.model.IsType
 import com.chromia.rell.dokka.model.IsVararg
 import com.chromia.rell.dokka.translators.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
@@ -172,7 +174,8 @@ class SystemLibVisitor(
                     sources = mapOf(sourceSet to NULL_DESCRIPTOR),
                     modifier = modifier.toSourceSetDependent(),
                     extra = PropertyContainer.withAll(
-                            takeIf { this@visit.typeDef.hidden }?.let { IsHidden }
+                            takeIf { this@visit.typeDef.hidden }?.let { IsHidden },
+                            IsType
                     )
             )
         }
@@ -198,7 +201,8 @@ class SystemLibVisitor(
                 supertypes = mapOf(sourceSet to listOf()), // TODO: add super types
                 sourceSets = setOf(sourceSet),
                 sources = mapOf(sourceSet to NULL_DESCRIPTOR),
-                modifier = mapOf()
+                modifier = mapOf(),
+                extra = PropertyContainer.withAll(IsStruct)
         )
     }
 

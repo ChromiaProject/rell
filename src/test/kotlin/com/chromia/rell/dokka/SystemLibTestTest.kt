@@ -24,7 +24,7 @@ import kotlin.test.assertNotNull
 
 class SystemLibTestTest : BaseAbstractTest() {
     private val configuration = dokkaConfiguration {
-        this.pluginsConfigurations.add(RellDokkaPluginConfiguration.SYSTEM_CONFIG.toPluginConfig())
+        pluginsConfigurations.add(RellDokkaPluginConfiguration.SYSTEM_CONFIG.toPluginConfig())
         sourceSets {
             RellModule.entries.forEach {
                 add(lazy { it.sourceSet(listOf()) })

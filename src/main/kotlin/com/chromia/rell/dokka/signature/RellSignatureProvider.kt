@@ -1,20 +1,30 @@
 package com.chromia.rell.dokka.signature
 
+import com.chromia.rell.dokka.RellDokkaPlugin
+import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
+import com.chromia.rell.dokka.dri.GenericUnresolvedBoundExtra
 import com.chromia.rell.dokka.dri.DriOfUnit
+import com.chromia.rell.dokka.dri.FunctionUnresolvedBoundExtra
 import com.chromia.rell.dokka.dri.isAlias
+import com.chromia.rell.dokka.model.extensionTarget
+import com.chromia.rell.dokka.model.isAnonymous
+import com.chromia.rell.dokka.model.isEntity
+import com.chromia.rell.dokka.model.isExtendable
 import com.chromia.rell.dokka.model.isHidden
 import com.chromia.rell.dokka.model.isMutable
+import com.chromia.rell.dokka.model.isObject
 import com.chromia.rell.dokka.model.isOperation
 import com.chromia.rell.dokka.model.isPure
 import com.chromia.rell.dokka.model.isQuery
 import com.chromia.rell.dokka.model.isStatic
+import com.chromia.rell.dokka.model.isStruct
 import com.chromia.rell.dokka.model.isTuple
+import com.chromia.rell.dokka.model.isType
 import com.chromia.rell.dokka.model.isVararg
 import com.chromia.rell.dokka.model.isZeroOne
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.annotations
-import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.annotationsBlock
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.annotationsInline
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.driOrNull
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.parametersBlock
@@ -29,6 +39,7 @@ import org.jetbrains.dokka.links.withTargetToDeclaration
 import org.jetbrains.dokka.model.Bound
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DClasslike
+import org.jetbrains.dokka.model.DEnum
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DInterface
 import org.jetbrains.dokka.model.DObject
@@ -58,19 +69,22 @@ import org.jetbrains.dokka.pages.ContentNode
 import org.jetbrains.dokka.pages.TextStyle
 import org.jetbrains.dokka.pages.TokenStyle
 import org.jetbrains.dokka.plugability.DokkaContext
+import org.jetbrains.dokka.plugability.configuration
 import org.jetbrains.dokka.plugability.plugin
 import org.jetbrains.dokka.plugability.querySingle
 import org.jetbrains.dokka.utilities.DokkaLogger
 
 class RellSignatureProvider internal constructor(
         ctcc: CommentsToContentConverter,
-        logger: DokkaLogger
+        logger: DokkaLogger,
+        val rellConfig: RellDokkaPluginConfiguration
 ) : SignatureProvider {
     private val contentBuilder = PageContentBuilder(ctcc, this, logger)
 
     constructor(context: DokkaContext) : this(
             context.plugin<DokkaBase>().querySingle { commentsToContentConverter },
-            context.logger
+            context.logger,
+            configuration<RellDokkaPlugin, RellDokkaPluginConfiguration>(context) ?: throw IllegalArgumentException("No configuration")
     )
 
     override fun signature(documentable: Documentable): List<ContentNode> {
@@ -122,10 +136,14 @@ class RellSignatureProvider internal constructor(
                 }
                 when (c) {
                     is DClass -> {
-                        keyword("type ")
+                        if (c.isEntity()) keyword("entity ")
+                        if (c.isObject()) keyword("object ")
+                        if (c.isStruct()) keyword("struct ")
+                        if (c.isType()) keyword("type ")
                     }
                     is DInterface -> keyword("entity ")
                     is DObject -> keyword("object ")
+                    is DEnum -> keyword("enum ")
                     else -> TODO("Type $c not treated")
                 }
 
@@ -231,6 +249,13 @@ class RellSignatureProvider internal constructor(
                 if (d.dri.isAlias()) punctuation("(alias) ")
                 if (d.isPure()) keyword("pure ")
                 if (d.isStatic()) keyword("static ")
+                if (d.isExtendable()) keyword("@extendable ")
+                d.extensionTarget()?.let {
+                    keyword("@extend")
+                    punctuation("(")
+                    link(it.callable!!.name, it)
+                    punctuation(") ")
+                }
                 when {
                     d.isConstructor -> keyword("constructor")
                     d.isQuery() -> keyword("query ")
@@ -244,7 +269,7 @@ class RellSignatureProvider internal constructor(
                     +buildSignature(it)
                 }
 
-                if (!d.isConstructor) link(d.name, d.dri, styles = mainStyles + deprecationStyles)
+                if (!d.isConstructor && !d.isAnonymous()) link(d.name, d.dri, styles = mainStyles + deprecationStyles)
 
                 punctuation("(")
                 if (d.parameters.isNotEmpty()) {
@@ -285,11 +310,15 @@ class RellSignatureProvider internal constructor(
 
             is GenericTypeConstructor -> {
                 group(styles = emptySet()) {
-                    p.presentableName?.let { link(it, p.dri) }
+                    p.presentableName?.let {
+                        text(it)
+                        operator(": ")
+                    }
+                    parameterType(p)
                     list(
                             p.projections,
-                            prefix = if (p.isTuple()) "(" else "<",
-                            suffix = if (p.isTuple()) ")" else ">",
+                            prefix = if (!p.isTuple()) "<" else "(",
+                            suffix = if (!p.isTuple()) ">" else if (p.projections.size <= 1) ",)" else ")",
                             separatorStyles = mainStyles + TokenStyle.Punctuation,
                             surroundingCharactersStyle = mainStyles + TokenStyle.Operator)
                     {
@@ -322,8 +351,32 @@ class RellSignatureProvider internal constructor(
 
             is TypeAliased -> signatureForProjection(p.typeAlias)
             is Void -> link("unit", DriOfUnit)
-            is UnresolvedBound -> text(p.name)
-            is Dynamic -> { }
+            is UnresolvedBound -> {
+                text(p.name)
+                p.extra[GenericUnresolvedBoundExtra]?.let { element ->
+                    list(
+                            element.bounds.toList(),
+                            prefix = "<", suffix = ">",
+                            separatorStyles = mainStyles + TokenStyle.Punctuation,
+                            surroundingCharactersStyle = mainStyles + TokenStyle.Operator)
+                    {
+                        signatureForProjection(it, showFullyQualifiedName)
+                    }
+
+                }
+                p.extra[FunctionUnresolvedBoundExtra]?.let { (params, result) ->
+                    group(styles = emptySet()) {
+                        list(params, prefix = "(", suffix = ")", separatorStyles = mainStyles + TokenStyle.Punctuation,
+                                surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
+                            signatureForProjection(it, showFullyQualifiedName)
+                        }
+                        operator(" -> ")
+                        signatureForProjection(result, showFullyQualifiedName)
+                    }
+                }
+            }
+
+            is Dynamic -> {}
             else -> TODO(p.toString())
         }
     }
@@ -334,5 +387,19 @@ class RellSignatureProvider internal constructor(
         this.type is TypeConstructor && (this.type as TypeConstructor).dri == DriOfUnit -> false
         this.type is Void -> false
         else -> true
+    }
+
+    private fun PageContentBuilder.DocumentableContentBuilder.parameterType(p: GenericTypeConstructor) {
+        if (p.isTuple()) return
+        val typeText = p.dri.classNames.orEmpty()
+        val packageName = p.dri.packageName
+
+        if (!rellConfig.system && packageName == "root") {
+            text(typeText)
+        } else {
+            val rellTestText = packageName?.takeIf { it.startsWith("rell.test") }?.let { "$it." }.orEmpty()
+            val linkText = rellTestText + typeText
+            link(linkText, p.dri)
+        }
     }
 }
