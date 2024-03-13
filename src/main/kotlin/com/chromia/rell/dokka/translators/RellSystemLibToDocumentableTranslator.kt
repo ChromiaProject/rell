@@ -26,7 +26,7 @@ object RellSystemLibToDocumentableTranslator : SourceToDocumentableTranslator {
                 ?: throw IllegalArgumentException("Module not found for source set")
         return SystemLibVisitor(sourceSet, context.logger).run {
             DModule(
-                    "Rell Standard Library",
+                    "Rell System Library",
                     visitRellModule(module),
                     documentation = mapOf(),
                     sourceSets = setOf(sourceSet)

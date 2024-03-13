@@ -34,7 +34,6 @@ import net.postchain.rell.base.model.R_OperationDefinition
 import net.postchain.rell.base.model.R_QueryDefinition
 import net.postchain.rell.base.model.R_RoutineDefinition
 import net.postchain.rell.base.model.R_StructDefinition
-import net.postchain.rell.base.model.expr.R_FunctionExtension
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
