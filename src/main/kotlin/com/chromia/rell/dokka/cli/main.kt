@@ -2,7 +2,7 @@ package com.chromia.rell.dokka.cli
 
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.config.RellModule
-import com.chromia.rell.dokka.config.systemLibExternalDocumentationLink
+import com.chromia.rell.dokka.config.rellSourceSets
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
@@ -12,9 +12,6 @@ import com.github.ajalt.clikt.parameters.types.file
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.DokkaConfigurationImpl
 import org.jetbrains.dokka.DokkaGenerator
-import org.jetbrains.dokka.DokkaSourceSetID
-import org.jetbrains.dokka.DokkaSourceSetImpl
-import org.jetbrains.dokka.Platform
 import org.jetbrains.dokka.PluginConfigurationImpl
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.utilities.DokkaConsoleLogger
@@ -38,15 +35,7 @@ class DokkaCommand : CliktCommand() {
                 if (system) {
                     RellModule.entries.map { it.sourceSet(includes) }
                 } else {
-                    listOf(
-                            DokkaSourceSetImpl(
-                                    sourceRoots = setOf(source),
-                                    sourceSetID = DokkaSourceSetID("main", "dapp"),
-                                    displayName = "dapp",
-                                    analysisPlatform = Platform.wasm,
-                                    externalDocumentationLinks = setOf(systemLibExternalDocumentationLink)
-                            )
-                    )
+                    rellSourceSets(source, includes)
                 }
         val dokkaBaseConf = PluginConfigurationImpl(
                 DokkaBase::class.qualifiedName!!,
