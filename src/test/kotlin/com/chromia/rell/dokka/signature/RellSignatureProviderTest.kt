@@ -19,7 +19,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
                         .match(
-                                "val ", A("test"), ": integer",
+                                "val ", A("test"), ": ", A("integer"),
                                 ignoreSpanWithTokenStyle = true)
             }
         }
@@ -45,7 +45,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
                         .match(
-                                "query ", A("test"), "(): integer",
+                                "query ", A("test"), "(): ", A("integer"),
                                 ignoreSpanWithTokenStyle = true)
             }
         }
@@ -60,9 +60,9 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
                         .match(
                                 "function ", A("test"), "(",
                                 Parameters(
-                                        Parameter("arg: integer, "), Parameter("arg2: byte_array")
+                                        Parameter("arg: ", A("integer"), ", "), Parameter("arg2: ", A("byte_array"))
                                 ),
-                                "): integer",
+                                "): ", A("integer"),
                                 ignoreSpanWithTokenStyle = true)
             }
         }
@@ -77,9 +77,9 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
                         .match(
                                 "function ", A("test"), "(",
                                 Parameters(
-                                        Parameter("arg: text?")
+                                        Parameter("arg: ", A("text"), "?")
                                 ),
-                                "): integer?",
+                                "): ", A("integer"), "?",
                                 ignoreSpanWithTokenStyle = true)
             }
         }
@@ -94,9 +94,9 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
                         .match(
                                 "function ", A("test"), "(",
                                 Parameters(
-                                        Parameter("arg: list<text>")
+                                        Parameter("arg: ", A("list"), "<", A("text"), ">")
                                 ),
-                                "): list<integer>",
+                                "): ", A("list"), "<", A("integer"), ">",
                                 ignoreSpanWithTokenStyle = true)
             }
         }
@@ -111,9 +111,9 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
                         .match(
                                 "function ", A("test"), "(",
                                 Parameters(
-                                        Parameter("arg: list<text?>")
+                                        Parameter("arg: ", A("list"), "<", A("text"), "?>")
                                 ),
-                                "): set<integer>",
+                                "): ", A("set"), "<", A("integer"), ">",
                                 ignoreSpanWithTokenStyle = true)
             }
         }
@@ -128,9 +128,9 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
                         .match(
                                 "function ", A("test"), "(",
                                 Parameters(
-                                        Parameter("arg: (integer, text) -> text")
+                                        Parameter("arg: (", A("integer"), ", ", A("text"), ") -> ", A("text"))
                                 ),
-                                "): integer",
+                                "): ", A("integer"),
                                 ignoreSpanWithTokenStyle = true)
             }
         }
@@ -173,9 +173,9 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
                         .match(
                                 "function ", A("test"), "(",
                                 Parameters(
-                                        Parameter("arg: list<", A("my_struct"), ">")
+                                        Parameter("arg: ", A("list"), "<", A("my_struct"), ">")
                                 ),
-                                "): set<", A("my_struct"), ">",
+                                "): ", A("set"), "<", A("my_struct"), ">",
                                 ignoreSpanWithTokenStyle = true)
             }
         }
@@ -193,9 +193,9 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
                         .match(
                                 "function ", A("test"), "(",
                                 Parameters(
-                                        Parameter("arg: map<text, ", A("my_struct"), ">")
+                                        Parameter("arg: ", A("map"), "<", A("text"), ", ", A("my_struct"), ">")
                                 ),
-                                "): map<text, ", A("my_struct"), ">",
+                                "): ", A("map"), "<", A("text"), ", ", A("my_struct"), ">",
                                 ignoreSpanWithTokenStyle = true)
             }
         }
@@ -233,9 +233,9 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
                         .match(
                                 "function ", A("test"), "(",
                                 Parameters(
-                                        Parameter("arg: (text, ", A("my_struct"), ")")
+                                        Parameter("arg: (", A("text"), ", ", A("my_struct"), ")")
                                 ),
-                                "): (text, ", A("my_struct"), ")",
+                                "): (", A("text"), ", ", A("my_struct"), ")",
                                 ignoreSpanWithTokenStyle = true)
             }
         }
@@ -253,9 +253,9 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
                         .match(
                                 "function ", A("test"), "(",
                                 Parameters(
-                                        Parameter("arg: (x: text, y: ", A("my_struct"), ")")
+                                        Parameter("arg: (x: ", A("text"), ", y: ", A("my_struct"), ")")
                                 ),
-                                "): (x: text, y: ", A("my_struct"), ")",
+                                "): (x: ", A("text"), ", y: ", A("my_struct"), ")",
                                 ignoreSpanWithTokenStyle = true)
             }
         }
@@ -272,9 +272,9 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
                         .match(
                                 "@extendable function ", A("test"), "(",
                                 Parameters(
-                                        Parameter("arg: integer")
+                                        Parameter("arg: ", A("integer"))
                                 ),
-                        "): boolean",
+                        "): ", A("boolean"),
                                 ignoreSpanWithTokenStyle = true)
             }
         }
@@ -290,7 +290,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
                         .match(
-                                "@extend(", A("ext"), ") function ", A("test"), "(): boolean",
+                                "@extend(", A("ext"), ") function ", A("test"), "(): ", A("boolean"),
                                 ignoreSpanWithTokenStyle = true)
             }
         }
@@ -306,7 +306,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("test-dapp/main/function#0.html").firstSignature()
                         .match(
-                                "@extend(", A("ext"), ") function (): boolean",
+                                "@extend(", A("ext"), ") function (): ", A("boolean"),
                                 ignoreSpanWithTokenStyle = true)
             }
         }

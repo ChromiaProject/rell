@@ -84,7 +84,8 @@ class RellSignatureProvider internal constructor(
     constructor(context: DokkaContext) : this(
             context.plugin<DokkaBase>().querySingle { commentsToContentConverter },
             context.logger,
-            configuration<RellDokkaPlugin, RellDokkaPluginConfiguration>(context) ?: throw IllegalArgumentException("No configuration")
+            configuration<RellDokkaPlugin, RellDokkaPluginConfiguration>(context)
+                    ?: throw IllegalArgumentException("No configuration")
     )
 
     override fun signature(documentable: Documentable): List<ContentNode> {
@@ -101,7 +102,7 @@ class RellSignatureProvider internal constructor(
     private fun typeAliasSignature(a: DTypeAlias): List<ContentNode> {
         return a.sourceSets.map { sourceSet ->
             contentBuilder.contentFor(a, sourceSets = setOf(sourceSet)) {
-                a.underlyingType.entries.groupBy ({ it.value }, { it.key }).map { (type, platforms) ->
+                a.underlyingType.entries.groupBy({ it.value }, { it.key }).map { (type, platforms) ->
                     +contentBuilder.contentFor(a, ContentKind.Symbol,
                             setOf(TextStyle.Monospace),
                             sourceSets = platforms.toSet()) {
@@ -127,81 +128,83 @@ class RellSignatureProvider internal constructor(
     }
 
     private fun classLikeSignature(c: DClasslike) = c.sourceSets.map { sourceSet ->
-            contentBuilder.contentFor(c, ContentKind.Symbol,
-                    setOf(TextStyle.Monospace),
-                    sourceSets = setOf(sourceSet)) {
-                if (c.isHidden()) keyword("hidden ")
-                if (c is WithAbstraction) {
-                    modifier(c, sourceSet)
+        contentBuilder.contentFor(c, ContentKind.Symbol,
+                setOf(TextStyle.Monospace),
+                sourceSets = setOf(sourceSet)) {
+            if (c.isHidden()) keyword("hidden ")
+            if (c is WithAbstraction) {
+                modifier(c, sourceSet)
+            }
+            when (c) {
+                is DClass -> {
+                    if (c.isEntity()) keyword("entity ")
+                    if (c.isObject()) keyword("object ")
+                    if (c.isStruct()) keyword("struct ")
+                    if (c.isType()) keyword("type ")
                 }
-                when (c) {
-                    is DClass -> {
-                        if (c.isEntity()) keyword("entity ")
-                        if (c.isObject()) keyword("object ")
-                        if (c.isStruct()) keyword("struct ")
-                        if (c.isType()) keyword("type ")
+
+                is DInterface -> keyword("entity ")
+                is DObject -> keyword("object ")
+                is DEnum -> keyword("enum ")
+                else -> TODO("Type $c not treated")
+            }
+
+            link(c.name!!, c.dri, styles = mainStyles) // + deprecationStyles)
+            if (c is WithGenerics) {
+                list(c.generics, prefix = "<", suffix = ">",
+                        separatorStyles = mainStyles + TokenStyle.Punctuation,
+                        surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
+                    //annotationsInline(it)
+                    +buildSignature(it)
+                }
+            }
+            if (c is WithConstructors) {
+                val pConstructor = c.constructors.singleOrNull { it.extra[PrimaryConstructorExtra] != null }
+                if (pConstructor?.sourceSets?.contains(sourceSet) == true) {
+                    if (pConstructor.annotations().values.any { it.isNotEmpty() }) {
+                        text(Typography.nbsp.toString())
+                        annotationsInline(pConstructor)
+                        keyword("constructor")
                     }
-                    is DInterface -> keyword("entity ")
-                    is DObject -> keyword("object ")
-                    is DEnum -> keyword("enum ")
-                    else -> TODO("Type $c not treated")
-                }
 
-                link(c.name!!, c.dri, styles = mainStyles) // + deprecationStyles)
-                if (c is WithGenerics) {
-                    list(c.generics, prefix = "<", suffix = ">",
-                            separatorStyles = mainStyles + TokenStyle.Punctuation,
-                            surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
-                        //annotationsInline(it)
-                        +buildSignature(it)
-                    }
-                }
-                if (c is WithConstructors) {
-                    val pConstructor = c.constructors.singleOrNull { it.extra[PrimaryConstructorExtra] != null }
-                    if (pConstructor?.sourceSets?.contains(sourceSet) == true) {
-                        if (pConstructor.annotations().values.any { it.isNotEmpty() }) {
-                            text(Typography.nbsp.toString())
-                            annotationsInline(pConstructor)
-                            keyword("constructor")
-                        }
+                    // for primary constructor, opening and closing parentheses
+                    // should be present only if it has parameters. If there are
+                    // no parameters, it should result in `class Example`
+                    if (pConstructor.parameters.isNotEmpty()) {
+                        val parameterPropertiesByName = c.properties
+                                //.filter { it.isAlsoParameter(sourceSet) }
+                                .associateBy { it.name }
 
-                        // for primary constructor, opening and closing parentheses
-                        // should be present only if it has parameters. If there are
-                        // no parameters, it should result in `class Example`
-                        if (pConstructor.parameters.isNotEmpty()) {
-                            val parameterPropertiesByName = c.properties
-                                    //.filter { it.isAlsoParameter(sourceSet) }
-                                    .associateBy { it.name }
-
-                            punctuation("(")
-                            parametersBlock(pConstructor) { param ->
-                                annotationsInline(param)
-                                parameterPropertiesByName[param.name]?.let { property ->
-                                    property.setter?.let { keyword("var ") } ?: keyword("val ")
-                                }
-                                text(param.name.orEmpty())
-                                operator(": ")
-                                signatureForProjection(param.type)
-                                //defaultValueAssign(param, sourceSet)
+                        punctuation("(")
+                        parametersBlock(pConstructor) { param ->
+                            annotationsInline(param)
+                            parameterPropertiesByName[param.name]?.let { property ->
+                                property.setter?.let { keyword("var ") } ?: keyword("val ")
                             }
-                            punctuation(")")
+                            text(param.name.orEmpty())
+                            operator(": ")
+                            signatureForProjection(param.type)
+                            //defaultValueAssign(param, sourceSet)
                         }
+                        punctuation(")")
                     }
                 }
-                if (c is WithSupertypes) {
-                    c.supertypes.filter { it.key == sourceSet }.map { (s, typeConstructors) ->
-                        list(typeConstructors, prefix = " : ", sourceSets = setOf(s)) {
-                            link(it.typeConstructor.dri.sureClassNames, it.typeConstructor.dri, sourceSets = setOf(s))
-                            list(it.typeConstructor.projections, prefix = "<", suffix = "> ",
-                                    separatorStyles = mainStyles + TokenStyle.Punctuation,
-                                    surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
-                                signatureForProjection(it)
-                            }
+            }
+            if (c is WithSupertypes) {
+                c.supertypes.filter { it.key == sourceSet }.map { (s, typeConstructors) ->
+                    list(typeConstructors, prefix = " : ", sourceSets = setOf(s)) {
+                        link(it.typeConstructor.dri.sureClassNames, it.typeConstructor.dri, sourceSets = setOf(s))
+                        list(it.typeConstructor.projections, prefix = "<", suffix = "> ",
+                                separatorStyles = mainStyles + TokenStyle.Punctuation,
+                                surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
+                            signatureForProjection(it)
                         }
                     }
                 }
             }
+        }
     }
+
     private fun <T> PageContentBuilder.DocumentableContentBuilder.modifier(
             documentable: T,
             sourceSet: DokkaConfiguration.DokkaSourceSet
@@ -394,12 +397,8 @@ class RellSignatureProvider internal constructor(
         val typeText = p.dri.classNames.orEmpty()
         val packageName = p.dri.packageName
 
-        if (!rellConfig.system && packageName == "root") {
-            text(typeText)
-        } else {
-            val rellTestText = packageName?.takeIf { it.startsWith("rell.test") }?.let { "$it." }.orEmpty()
-            val linkText = rellTestText + typeText
-            link(linkText, p.dri)
-        }
+        val rellTestText = packageName?.takeIf { it.startsWith("rell.test") }?.let { "$it." }.orEmpty()
+        val linkText = rellTestText + typeText
+        link(linkText, p.dri)
     }
 }

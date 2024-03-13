@@ -14,7 +14,7 @@ import utils.TestOutputWriterPlugin
 import utils.match
 
 internal class SystemLibSignatureTest : BaseAbstractTest() {
-    val projectRoot = "-rell -standard -library"
+    val projectRoot = "-rell -system -library"
     private val configuration = dokkaConfiguration {
         this.pluginsConfigurations.add(RellDokkaPluginConfiguration.SYSTEM_CONFIG.toPluginConfig())
         sourceSets {

@@ -58,19 +58,7 @@ fun M_Type.toBound(presentableName: String? = null): Bound {
 }
 
 // Return types and parameters
-fun R_Type.toBound(): Bound {
-    // Links for Entity, Struct, Object, Enum
-    return when (this) {
-        is R_CtErrorType -> org.jetbrains.dokka.model.Void
-        is R_NullableType -> Nullable(valueType.toBound())
-        // No links to system lib from dapps
-        is R_PrimitiveType -> UnresolvedBound(name)
-        is R_CollectionType -> UnresolvedBound(name.substringBefore("<"), PropertyContainer.withAll(GenericUnresolvedBoundExtra(elementType.toBound())))
-        is R_FunctionType -> UnresolvedBound("", PropertyContainer.withAll(FunctionUnresolvedBoundExtra(params.map { it.toBound() }, result.toBound())))
-        is R_MapType -> UnresolvedBound("map", PropertyContainer.withAll(GenericUnresolvedBoundExtra(keyType.toBound(), valueType.toBound())))
-        else -> mType.toBound()
-    }
-}
+fun R_Type.toBound() = mType.toBound()
 
 class GenericUnresolvedBoundExtra(vararg val bounds: Bound): ExtraProperty<UnresolvedBound> {
     override val key: ExtraProperty.Key<UnresolvedBound, *>

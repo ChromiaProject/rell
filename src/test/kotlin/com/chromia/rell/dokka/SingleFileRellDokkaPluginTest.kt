@@ -1,9 +1,12 @@
 package com.chromia.rell.dokka
 
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
+import com.chromia.rell.dokka.config.systemLibExternalDocumentationLink
+import org.jetbrains.dokka.ExternalDocumentationLinkImpl
 import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
 import org.jetbrains.dokka.base.testApi.testRunner.BaseTestBuilder
 import org.jetbrains.dokka.plugability.DokkaPlugin
+import java.net.URL
 
 const val TEST_DAPP_NAME = "test-dapp"
 abstract class SingleFileRellDokkaPluginTest: BaseAbstractTest() {
@@ -12,6 +15,7 @@ abstract class SingleFileRellDokkaPluginTest: BaseAbstractTest() {
         sourceSets {
             sourceSet {
                 sourceRoots = listOf("src")
+                externalDocumentationLinks = listOf(systemLibExternalDocumentationLink)
             }
         }
     }
