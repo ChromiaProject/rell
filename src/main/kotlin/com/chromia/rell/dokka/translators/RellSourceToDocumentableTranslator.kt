@@ -3,6 +3,7 @@
 package com.chromia.rell.dokka.translators
 
 import com.chromia.rell.dokka.RellDokkaPlugin
+import com.chromia.rell.dokka.analysis.RellAnalysis
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.reflection.getFunctionExtensionsByReflection
 import com.chromia.rell.dokka.reflection.getNameByReflection
@@ -21,15 +22,10 @@ class RellSourceToDocumentableTranslator(context: DokkaContext) : SourceToDocume
 
     override fun invoke(sourceSet: DokkaConfiguration.DokkaSourceSet, context: DokkaContext): DModule {
         val files = sourceSet.sourceRoots
-        val config = RellApiCompile.Config.Builder()
-                .mountConflictError(false)
-                .moduleArgsMissingError(false)
-                .build()
-        val app = RellApiCompile.compileApp(config, files.first(), rellConfig?.modules)
 
-        val functionExtensions = getFunctionExtensionsByReflection(app)
-        return RellModuleVisitor(sourceSet, context.logger, app, functionExtensions).run {
-            app.modules.map { visitRellModule(it) }
+        val rellAnalysis = RellAnalysis(files.first(), rellConfig?.modules)
+        return RellModuleVisitor(sourceSet, context.logger, rellAnalysis).run {
+            rellAnalysis.modules().map { visitRellModule(it) }
         }.let {
             DModule(
                     rellConfig?.name ?: "root",
@@ -39,9 +35,4 @@ class RellSourceToDocumentableTranslator(context: DokkaContext) : SourceToDocume
             )
         }
     }
-
-    private fun getFunctionExtensionsByReflection(app: R_App) =
-            app.functionExtensions.getFunctionExtensionsByReflection().associate { extension ->
-                    extension.uid.getNameByReflection() to extension.extensions
-            }
 }

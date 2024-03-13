@@ -1,6 +1,5 @@
 package com.chromia.rell.dokka.reflection
 
-import com.chromia.rell.dokka.translators.RellModuleVisitor
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.model.R_DefinitionName

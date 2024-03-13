@@ -1,10 +1,12 @@
 package com.chromia.rell.dokka.translators
 
+import com.chromia.rell.dokka.analysis.RellAnalysis
 import com.chromia.rell.dokka.descriptors.NULL_DESCRIPTOR
 import com.chromia.rell.dokka.doc.simpleDocumentationNode
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.from
 import com.chromia.rell.dokka.dri.toBound
+import com.chromia.rell.dokka.model.ExtensionFunction
 import com.chromia.rell.dokka.model.ExtensionFunctionExtra
 import com.chromia.rell.dokka.model.IsAnonymous
 import com.chromia.rell.dokka.model.IsEntity
@@ -16,12 +18,9 @@ import com.chromia.rell.dokka.model.IsObject
 import com.chromia.rell.dokka.model.IsOperation
 import com.chromia.rell.dokka.model.IsQuery
 import com.chromia.rell.dokka.model.IsStruct
-import com.chromia.rell.dokka.reflection.getDefNameByReflection
 import com.chromia.rell.dokka.reflection.getParamsByReflection
 import com.chromia.rell.dokka.reflection.getTypeByReflection
-import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_Attribute
-import net.postchain.rell.base.model.R_DefinitionName
 import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.model.R_EnumAttr
 import net.postchain.rell.base.model.R_EnumDefinition
@@ -61,19 +60,8 @@ import org.jetbrains.dokka.utilities.DokkaLogger
 internal class RellModuleVisitor(
         private val sourceSet: DokkaConfiguration.DokkaSourceSet,
         private val logger: DokkaLogger,
-        app: R_App,
-        private val functionExtensions:  Map<String, List<R_FunctionExtension>>
+        private val rellAnalysis: RellAnalysis
 ) {
-
-    val allFunctions = app.modules.flatMap { it.functions.values }.associateBy { it.defName.appLevelName }
-
-    val extensionFunctionsByModule = functionExtensions
-            .flatMap { (target, list) -> list.map { f -> target to f } }
-            .map { (target, f) ->
-            ExtensionFunction(target, f.fnBase.getDefNameByReflection(), f)
-    }.groupBy {  it.defName.module }
-
-    internal class ExtensionFunction(val target: String, val defName: R_DefinitionName, val f: R_FunctionExtension)
 
     fun visitRellModule(module: R_Module): DPackage {
         val dri = DRI(packageName = module.name.str())
@@ -87,7 +75,7 @@ internal class RellModuleVisitor(
         val operations = module.operations.values.map { it.visit() }
         val queries = module.queries.values.map { it.visit() }
 
-        val extensionFunctions = extensionFunctionsByModule[module.name.str()]?.mapNotNull { it.visit() } ?: listOf()
+        val extensionFunctions = rellAnalysis.getExtensionFunctions(module.name.str()).mapNotNull { it.visit() }
 
         logger.info("Module: ${module.name}")
         logger.info("Found ${globalConstants.size} constants, ${entities.size} entities, ${structs.size} structs, ${objects.size} objects, ${enums.size} enums, " +
@@ -265,9 +253,9 @@ internal class RellModuleVisitor(
     }
 
     private fun R_FunctionDefinition.visit(): DFunction? {
-        val isExtendable = functionExtensions.containsKey(appLevelName)
+        val isExtendable = rellAnalysis.isExtendable(this.appLevelName)
         // TODO: Do not flatten on each function visit..
-        if (!isExtendable && extensionFunctionsByModule.values.flatten().find { it.defName.appLevelName == this.appLevelName } != null) {
+        if (!isExtendable && rellAnalysis.hasExtension(this)) {
             return null
         }
         return visit(IsFunction, IsExtendable.takeIf { isExtendable })
@@ -303,12 +291,12 @@ internal class RellModuleVisitor(
                 packageName = defName.module,
                 callable = Callable.from(
                         defName.simpleName,
-                        f.fnBase.getHeader().params
+                        fnBase.getHeader().params
                 )
         )
-        val targetDri = allFunctions[target]?.visit()?.dri ?: return null
+        val targetDri = rellAnalysis.findFunctionReference(targetAppLevelName) ?: return null
         if (dri == targetDri) return null
-        val params = f.fnBase.getHeader().params.mapIndexed { index, param  -> param.visit(dri, index) }
+        val params = fnBase.getHeader().params.mapIndexed { index, param  -> param.visit(dri, index) }
         return  DFunction(
                 dri = dri,
                 name = defName.simpleName,
@@ -319,7 +307,7 @@ internal class RellModuleVisitor(
                 visibility = mapOf(),
                 receiver = null,
                 isExpectActual = false,
-                type = f.fnBase.getHeader().type.toBound(),
+                type = fnBase.getHeader().type.toBound(),
                 sourceSets = setOf(sourceSet),
                 generics = listOf(),
                 sources = NULL_DESCRIPTOR.toSourceSetDependent(),
