@@ -1,7 +1,9 @@
 package net.postchain.rell.toolbox.core.parser
 
 import assertk.assertThat
+import assertk.assertions.containsExactly
 import assertk.assertions.hasSameSizeAs
+import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isGreaterThanOrEqualTo
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
@@ -33,6 +35,18 @@ class RellParserTest {
 
         val result = validateSimple(srcDir, "")
         assertThat(result).isEqualTo("OK")
+    }
+
+    @Test
+    fun `Function name containing invalid character is reported as syntax error`() {
+        val code = "function hello#() { }"
+
+        val parser = AntlrRellParser()
+        val syntaxErrorCollector = SyntaxErrorCollector()
+        parser.parse(code, listOf(), listOf(syntaxErrorCollector))
+
+        val expectedError = SyntaxError("extraneous input '#' expecting '('",1, 14, "<unknown>")
+        assertThat(syntaxErrorCollector.errors).containsExactly(expectedError)
     }
 
     @Test
