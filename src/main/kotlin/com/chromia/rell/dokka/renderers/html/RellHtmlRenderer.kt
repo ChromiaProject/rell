@@ -1,6 +1,9 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 package com.chromia.rell.dokka.renderers.html
 
+import com.chromia.rell.dokka.model.isFunction
+import com.chromia.rell.dokka.model.isOperation
+import com.chromia.rell.dokka.model.isQuery
 import kotlinx.html.*
 import kotlinx.html.stream.createHTML
 import org.jetbrains.dokka.DokkaSourceSetID
@@ -12,7 +15,6 @@ import org.jetbrains.dokka.base.renderers.html.buildBreakableText
 import org.jetbrains.dokka.base.renderers.html.command.consumers.ImmediateResolutionTagConsumer
 import org.jetbrains.dokka.base.renderers.html.innerTemplating.DefaultTemplateModelFactory
 import org.jetbrains.dokka.base.renderers.html.innerTemplating.DefaultTemplateModelMerger
-import org.jetbrains.dokka.base.renderers.html.innerTemplating.DokkaTemplateTypes
 import org.jetbrains.dokka.base.renderers.html.innerTemplating.HtmlTemplater
 import org.jetbrains.dokka.base.renderers.html.shouldRenderSourceSetTabs
 import org.jetbrains.dokka.base.renderers.html.strike
@@ -134,19 +136,26 @@ class RellHtmlRenderer(
                     ContentTab("Types", listOf(BasicTabbedContentType.TYPE)),
             )
 
-            if (p.functions.isNotEmpty()) {
+            if (p.functions.any { it.isFunction() }) {
                 add(ContentTab("Functions", listOf(
                         //RellTabbedContentType.FUNCTION,
                         BasicTabbedContentType.FUNCTION,
                         BasicTabbedContentType.EXTENSION_FUNCTION,
                 )))
+            }
+
+            if (p.functions.any { it.isOperation() }) {
                 add(ContentTab("Operations", listOf(
                         RellTabbedContentType.OPERATION,
                 )))
+            }
+
+            if (p.functions.any { it.isQuery() }) {
                 add(ContentTab("Queries", listOf(
                         RellTabbedContentType.QUERY,
                 )))
             }
+
             if (p.properties.isNotEmpty()) add(
                     ContentTab(
                             "Properties",
