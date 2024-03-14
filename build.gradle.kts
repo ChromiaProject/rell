@@ -1,4 +1,6 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.jetbrains.dokka.gradle.GradleExternalDocumentationLinkBuilder
+import java.net.URL
 
 plugins {
     kotlin("jvm") version "1.9.10"
@@ -7,6 +9,8 @@ plugins {
     `maven-publish`
     signing
     application
+    id("jacoco")
+    id("jacoco-report-aggregation") // Nothing to aggregate but added for consistency
 }
 
 group = "com.chromia.rell.dokka"
@@ -52,6 +56,7 @@ kotlin {
 }
 
 tasks.dokkaHtml {
+    moduleName.set("Rell Dokka Plugin")
     outputDirectory.set(layout.buildDirectory.dir("dokka"))
 }
 
@@ -81,8 +86,25 @@ tasks {
     }
 }
 
+tasks.check {
+    dependsOn(tasks.named<JacocoReport>("testCodeCoverageReport"))
+}
+
 publishing {
     publications {
+        repositories {
+            maven {
+                name = ("GitLab")
+                url = uri("https://gitlab.com/api/v4/projects/55009888/packages/maven")
+                credentials(HttpHeaderCredentials::class.java) {
+                    name = "Job-Token"
+                    value = System.getenv("CI_JOB_TOKEN")
+                }
+                authentication {
+                    create<HttpHeaderAuthentication>("header")
+                }
+            }
+        }
         val dokkaTemplatePlugin by creating(MavenPublication::class) {
             artifactId = project.name
             from(components["java"])
@@ -100,24 +122,10 @@ publishing {
                         distribution.set("repo")
                     }
                 }
-
-                /*scm {
-                    connection.set("scm:git:git://github.com/Kotlin/dokka-plugin-template.git")
-                    url.set("https://github.com/Kotlin/dokka-plugin-template/tree/master")
-                }*/
             }
         }
         signPublicationsIfKeyPresent(dokkaTemplatePlugin)
     }
-
-    /*repositories {
-        maven("https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-            credentials {
-                username = System.getenv("SONATYPE_USER")
-                password = System.getenv("SONATYPE_PASSWORD")
-            }
-        }
-    }*/
 }
 
 fun Project.signPublicationsIfKeyPresent(publication: MavenPublication) {

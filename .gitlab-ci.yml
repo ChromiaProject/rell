@@ -1,0 +1,87 @@
+image: gradle:8.5-jdk17-alpine
+include:
+  - project: chromaway/core-infra/gitlab-automation
+    ref: 1.1.9
+    file:
+      - templates/release.yml
+      - templates/report-code-coverage.yml
+
+# Disable the Gradle daemon for Continuous Integration servers as correctness
+# is usually a priority over speed in CI environments. Using a fresh
+# runtime for each build is more reliable since the runtime is completely
+# isolated from any previous builds.
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true"
+  DOCKER_HOST: tcp://docker:2375
+  JACOCO_REPORT_DIR: build/reports/jacoco/testCodeCoverageReport
+  JACOCO_REPORT_XML: testCodeCoverageReport.xml
+  JACOCO_REPORT_HTML: html/index.html
+
+.setup:
+  before_script:
+    - GRADLE_USER_HOME="$(pwd)/.gradle"
+    - export GRADLE_USER_HOME
+  services:
+    - name: docker:23.0.4-dind
+      alias: docker
+      command: [ "--tls=false" , "--experimental" ]
+  artifacts:
+    when: always
+    paths:
+      - "**/*.log"
+      - $JACOCO_REPORT_DIR/*
+    reports:
+      junit:
+        - "*/build/test-results/test/**/TEST-*.xml"
+    expire_in: 1 week
+
+stages:
+  - build-and-test
+  - code-coverage
+  - publish
+  - release
+
+build-and-test:
+  stage: build-and-test
+  interruptible: true
+  extends:
+    - .setup
+    - .visualise-test-coverage
+  script: ./gradlew check --info
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull-push
+    paths:
+      - "**/build"
+      - .gradle
+
+publish:
+  stage: publish
+  extends: .setup
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+$/
+  script: gradle --build-cache publish -Pversion=$CI_COMMIT_TAG
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - "**/build"
+      - .gradle
+
+test-coverage-report:
+  stage: code-coverage
+  dependencies:
+    - build-and-test
+
+pages:
+  stage: release
+  script:
+    - ./gradlew dokkaHtml
+    - mkdir -p public/rell-dokka
+    - mv build/dokka/html public/rell-dokka
+  artifacts:
+      paths:
+          - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+$/
+
