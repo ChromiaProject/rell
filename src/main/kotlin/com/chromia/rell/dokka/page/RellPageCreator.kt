@@ -8,7 +8,6 @@ import com.chromia.rell.dokka.model.isQuery
 import com.chromia.rell.dokka.renderers.html.RellTabbedContentType
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.InternalDokkaApi
-import org.jetbrains.dokka.analysis.kotlin.internal.DocumentableLanguage
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
 import org.jetbrains.dokka.base.resolvers.anchors.SymbolAnchorHint
 import org.jetbrains.dokka.base.signatures.SignatureProvider
@@ -156,9 +155,24 @@ class RellPageCreator(
             extensions: List<Documentable>, //TODO: Remove if not needed
     ) = contentBuilder.contentFor(dri, sourceSets) {
         rellTypesBlock(types)
+        propertiesBlock("Properties", properties, BasicTabbedContentType.PROPERTY)
         rellFunctionsBlock("Functions", functions.filter { it.isFunction() }, listOf(), BasicTabbedContentType.FUNCTION)
         rellFunctionsBlock("Queries", functions.filter { it.isQuery() }, listOf(), RellTabbedContentType.QUERY)
         rellFunctionsBlock("Operations", functions.filter { it.isOperation() }, listOf(), RellTabbedContentType.OPERATION)
+    }
+
+    private fun PageContentBuilder.DocumentableContentBuilder.propertiesBlock(
+            name: String,
+            declarations: List<DProperty>,
+            contentType: TabbedContentType
+    ) {
+        functionsOrPropertiesBlock(
+                name = name,
+                contentKind = ContentKind.Properties,
+                contentType = contentType,
+                declarations = declarations,
+                extensions = listOf()
+        )
     }
 
     private fun PageContentBuilder.DocumentableContentBuilder.rellFunctionsBlock(
