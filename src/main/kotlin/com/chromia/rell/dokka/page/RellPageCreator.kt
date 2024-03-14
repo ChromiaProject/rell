@@ -142,13 +142,4 @@ class RellPageCreator(
         rellFunctionsBlock("Queries", functions.filter { it.isQuery() }, listOf(), RellTabbedContentType.QUERY)
         rellFunctionsBlock("Operations", functions.filter { it.isOperation() }, listOf(), RellTabbedContentType.OPERATION)
     }
-
-    data class NameAndIsExtension(val name: String?, val isExtension: Boolean) {
-        companion object {
-            val comparator = compareBy(
-                    comparator = nullsFirst(canonicalAlphabeticalOrder),
-                    selector = NameAndIsExtension::name
-            ).thenBy(NameAndIsExtension::isExtension)
-        }
-    }
 }

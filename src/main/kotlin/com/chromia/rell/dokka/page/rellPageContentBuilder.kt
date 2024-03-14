@@ -44,13 +44,13 @@ fun PageContentBuilder.DocumentableContentBuilder.functionsOrPropertiesBlock(
 
     // This groupBy should probably use LocationProvider
     val grouped = declarations.groupBy {
-        RellPageCreator.NameAndIsExtension(it.name, isExtension = false)
+        NameAndIsExtension(it.name, isExtension = false)
     } + extensions.groupBy {
-        RellPageCreator.NameAndIsExtension(it.name, isExtension = true)
+        NameAndIsExtension(it.name, isExtension = true)
     }
 
     val groups = grouped.entries
-            .sortedWith(compareBy(RellPageCreator.NameAndIsExtension.comparator) { it.key })
+            .sortedWith(compareBy(NameAndIsExtension.comparator) { it.key })
             .map { (nameAndIsExtension, elements) ->
                 DivergentElementGroup(
                         name = nameAndIsExtension.name,
@@ -212,3 +212,12 @@ private val divergentDocumentableComparator =
                                         .thenBy { it.signature() }
                         )
                 ) { it.dri.callable }
+
+data class NameAndIsExtension(val name: String?, val isExtension: Boolean) {
+    companion object {
+        val comparator = compareBy(
+                comparator = nullsFirst(canonicalAlphabeticalOrder),
+                selector = NameAndIsExtension::name
+        ).thenBy(NameAndIsExtension::isExtension)
+    }
+}
