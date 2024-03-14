@@ -271,7 +271,7 @@ internal class RellModuleVisitor(
                 name = simpleName,
                 isConstructor = false,
                 parameters = params,
-                documentation = simpleDocumentationNode("This $extraProperty is called $simpleName").toSourceSetDependent(),
+                documentation = simpleDocumentationNode("This function is called $simpleName").toSourceSetDependent(),
                 expectPresentInSet = null,
                 visibility = mapOf(),
                 receiver = null,
