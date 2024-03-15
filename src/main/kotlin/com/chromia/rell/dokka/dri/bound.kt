@@ -50,7 +50,7 @@ fun M_Type.toBound(presentableName: String? = null): Bound {
             GenericTypeConstructor(
                     dri = toDRI(),
                     presentableName = presentableName,
-                    projections = typeArgs.mapNotNull { it.toProjection() } // TODO: Not complete
+                    projections = typeArgs.map { it.toProjection() }
             )
         }
 
