@@ -252,7 +252,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/root/set/index.html").firstSignature()
                         .match(
-                                "type ", A("set"), "<", A("T"), "> : ", A("collection"), "<T>", // TODO: Last generic type should be a link
+                                "type ", A("set"), "<T: ", A("-immutable"), "> : ", A("collection"), "<T>", // TODO: Last generic type should be a link
                                 ignoreSpanWithTokenStyle = true)
             }
         }

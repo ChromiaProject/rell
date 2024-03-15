@@ -34,7 +34,7 @@ fun M_TypeSet.toProjection(presentableName: String? = null): Projection {
             Covariance(TypeParameter(boundType.toDRI(), "-" + boundType.strCode(), presentableName))
         }
         is M_TypeSet_SuperOf -> Contravariance(TypeParameter(boundType.toDRI(), "+" + boundType.strCode(), presentableName))
-        is M_TypeSet_One -> Invariance(TypeParameter(type.toDRI(), type.strCode(), presentableName))
+        is M_TypeSet_One -> Invariance(type.toBound())
         else -> Star
     }
 }
@@ -69,7 +69,7 @@ fun M_Type.toBound(presentableName: String? = null): Bound {
             )
         }
 
-        is M_Type_Param -> TypeParameter(toDRI(), this.param.name) // T, V, K
+        is M_Type_Param -> UnresolvedBound(param.name) // T, V, K
         is M_Type_Simple -> UnresolvedBound(strCode())
         is M_Type_Nullable -> Nullable(valueType.toBound())
 
