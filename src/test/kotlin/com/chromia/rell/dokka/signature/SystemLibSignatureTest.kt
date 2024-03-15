@@ -99,7 +99,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/root/integer/integer.html").firstSignature()
                         .match(
-                                "constructor(",
+                                "pure constructor(",
                                 Parameters(
                                         Parameter("value: ", A("text"), ", "),
                                         Parameter("[radix: ", A("integer"), "]"),
@@ -252,7 +252,37 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/root/set/index.html").firstSignature()
                         .match(
-                                "type ", A("set"), "<", A("T"), "> : ", A("collection"), "<T>", // TODO: Last generic type should be a link
+                                "type ", A("set"), "<T: ", A("-immutable"), "> : ", A("collection"), "<T>", // TODO: Last generic type should be a link
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
+
+    @Test
+    fun `Inheritance is shown for map types`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("$projectRoot/root/map/index.html").firstSignature()
+                        .match(
+                                "type ", A("map"), "<K: ", A("-immutable"), ", ", A("V"), "> : ", A("iterable"), "<(K, V)>",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
+
+    @Test
+    fun `Map constructor is pure`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("$projectRoot/root/map/map.html").lastSignature()
+                        .match(
+                                "pure constructor(",
+                                Parameters(
+                                        Parameter("entries: ", A("iterable"), "<", A("-map_entry<K,V>"), ">")
+                                ),
+                                ")",
                                 ignoreSpanWithTokenStyle = true)
             }
         }

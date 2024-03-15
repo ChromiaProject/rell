@@ -8,6 +8,7 @@ import com.chromia.rell.dokka.dri.DriOfRoot
 import com.chromia.rell.dokka.dri.from
 import com.chromia.rell.dokka.dri.toBound
 import com.chromia.rell.dokka.dri.toDRI
+import com.chromia.rell.dokka.dri.toTypeConstructor
 import com.chromia.rell.dokka.dri.withAlias
 import com.chromia.rell.dokka.dri.withSourceSet
 import com.chromia.rell.dokka.model.IsFunction
@@ -46,9 +47,7 @@ import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.DTypeAlias
 import org.jetbrains.dokka.model.Documentable
-import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.KotlinClassKindTypes
-import org.jetbrains.dokka.model.KotlinModifier
 import org.jetbrains.dokka.model.KotlinModifier.Empty
 import org.jetbrains.dokka.model.KotlinModifier.Abstract
 import org.jetbrains.dokka.model.KotlinVisibility.Public
@@ -138,9 +137,9 @@ class SystemLibVisitor(
 
         val generics = typeDef.mGenericType.params.toGenerics(dri.withSourceSet(sourceSet))
 
-        val superTypes = typeDef.mGenericType.parent?.genericType?.commonType?.let {
+        val superTypes = typeDef.mGenericType.parent?.let {
             buildList {
-                add(TypeConstructorWithKind(it.toBound() as GenericTypeConstructor, KotlinClassKindTypes.CLASS))
+                add(TypeConstructorWithKind(it.toTypeConstructor(), KotlinClassKindTypes.CLASS))
             }
         }
         with(typeDefVisitor) {

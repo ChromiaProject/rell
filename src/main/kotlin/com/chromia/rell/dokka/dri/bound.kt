@@ -1,14 +1,13 @@
 package com.chromia.rell.dokka.dri
 
 import com.chromia.rell.dokka.model.IsTuple
-import net.postchain.rell.base.lib.type.R_CollectionType
-import net.postchain.rell.base.lib.type.R_MapType
-import net.postchain.rell.base.model.R_CtErrorType
-import net.postchain.rell.base.model.R_FunctionType
-import net.postchain.rell.base.model.R_NullableType
-import net.postchain.rell.base.model.R_PrimitiveType
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.mtype.M_GenericTypeParent
 import net.postchain.rell.base.mtype.M_Type
+import net.postchain.rell.base.mtype.M_TypeSet
+import net.postchain.rell.base.mtype.M_TypeSet_One
+import net.postchain.rell.base.mtype.M_TypeSet_SubOf
+import net.postchain.rell.base.mtype.M_TypeSet_SuperOf
 import net.postchain.rell.base.mtype.M_Type_Function
 import net.postchain.rell.base.mtype.M_Type_Generic
 import net.postchain.rell.base.mtype.M_Type_Nullable
@@ -16,13 +15,34 @@ import net.postchain.rell.base.mtype.M_Type_Param
 import net.postchain.rell.base.mtype.M_Type_Simple
 import net.postchain.rell.base.mtype.M_Type_Tuple
 import org.jetbrains.dokka.model.Bound
+import org.jetbrains.dokka.model.Contravariance
+import org.jetbrains.dokka.model.Covariance
 import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.GenericTypeConstructor
+import org.jetbrains.dokka.model.Invariance
 import org.jetbrains.dokka.model.Nullable
+import org.jetbrains.dokka.model.Projection
+import org.jetbrains.dokka.model.Star
 import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.UnresolvedBound
 import org.jetbrains.dokka.model.properties.ExtraProperty
 import org.jetbrains.dokka.model.properties.PropertyContainer
+
+fun M_TypeSet.toProjection(presentableName: String? = null): Projection {
+    return when (this) {
+        is M_TypeSet_SubOf -> {
+            Covariance(TypeParameter(boundType.toDRI(), "-" + boundType.strCode(), presentableName))
+        }
+        is M_TypeSet_SuperOf -> Contravariance(TypeParameter(boundType.toDRI(), "+" + boundType.strCode(), presentableName))
+        is M_TypeSet_One -> Invariance(type.toBound())
+        else -> Star
+    }
+}
+
+fun M_GenericTypeParent.toTypeConstructor(): GenericTypeConstructor {
+    val dri = genericType.commonType.toDRI()
+    return GenericTypeConstructor(dri, args.map { it.toBound() })
+}
 
 fun M_Type.toBound(presentableName: String? = null): Bound {
     return when (this) {
@@ -30,7 +50,7 @@ fun M_Type.toBound(presentableName: String? = null): Bound {
             GenericTypeConstructor(
                     dri = toDRI(),
                     presentableName = presentableName,
-                    projections = typeArgs.map { it.canonicalOutType().toBound() } // TODO: Not complete
+                    projections = typeArgs.map { it.toProjection() }
             )
         }
 
@@ -49,7 +69,7 @@ fun M_Type.toBound(presentableName: String? = null): Bound {
             )
         }
 
-        is M_Type_Param -> UnresolvedBound(param.name)
+        is M_Type_Param -> UnresolvedBound(param.name) // T, V, K
         is M_Type_Simple -> UnresolvedBound(strCode())
         is M_Type_Nullable -> Nullable(valueType.toBound())
 
