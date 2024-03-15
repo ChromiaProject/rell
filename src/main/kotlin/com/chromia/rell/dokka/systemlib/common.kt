@@ -16,13 +16,15 @@ import org.jetbrains.dokka.model.Bound
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.DTypeParameter
+import org.jetbrains.dokka.model.DefaultValue
 import org.jetbrains.dokka.model.Invariance
 import org.jetbrains.dokka.model.Star
 import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.Variance
 import org.jetbrains.dokka.model.doc.DocumentationNode
+import org.jetbrains.dokka.model.properties.PropertyContainer
 
-fun makeDProperty(sourceSet: DokkaConfiguration.DokkaSourceSet, parent: DRI, docSymbol: DocSymbol, name: String, type: M_Type) =
+fun makeDProperty(sourceSet: DokkaConfiguration.DokkaSourceSet, parent: DRI, docSymbol: DocSymbol, name: String, type: M_Type, defaultValue: DefaultValue? = null) =
         DProperty(
                 dri = parent.withClass(name),
                 name = name,
@@ -38,6 +40,7 @@ fun makeDProperty(sourceSet: DokkaConfiguration.DokkaSourceSet, parent: DRI, doc
                 receiver = null,
                 setter = null,
                 getter = null,
+                extra = PropertyContainer.withAll(defaultValue)
         )
 
 fun makeDarameter(sourceSet: DokkaConfiguration.DokkaSourceSet,

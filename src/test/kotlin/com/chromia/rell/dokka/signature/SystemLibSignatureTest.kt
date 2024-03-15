@@ -287,4 +287,17 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             }
         }
     }
+
+    @Test
+    fun `type constant values are shown`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("$projectRoot/root/decimal/-i-n-t_-d-i-g-i-t-s.html").firstSignature()
+                        .match(
+                                "val ", A("INT_DIGITS"), ": ", A("integer"), " = 131072",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
 }
