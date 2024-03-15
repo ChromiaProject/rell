@@ -11,25 +11,41 @@ import net.postchain.rell.base.model.R_OperationDefinition
 import net.postchain.rell.base.model.R_QueryBody
 import net.postchain.rell.base.model.R_QueryDefinition
 import net.postchain.rell.base.model.R_RoutineDefinition
+import net.postchain.rell.base.model.expr.R_ConstantValueExpr
+import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.expr.R_ExtendableFunctionUid
 import net.postchain.rell.base.model.expr.R_FunctionExtensions
 import net.postchain.rell.base.model.expr.R_FunctionExtensionsTable
+import net.postchain.rell.base.model.expr.R_StackTraceExpr
+import net.postchain.rell.base.runtime.Rt_Value
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
 
 
+fun R_StackTraceExpr.getSubExprByReflection() =
+        R_StackTraceExpr::class.memberProperties.find { it.name == "subExpr" }!!.let {
+            it.isAccessible = true
+            it.get(this) as R_Expr
+        }
+
+fun R_ConstantValueExpr.getValueByReflection() =
+        R_ConstantValueExpr::class.memberProperties.find { it.name == "value" }!!.let {
+            it.isAccessible = true
+            it.get(this) as Rt_Value
+        }
+
 fun R_FunctionExtensionsTable.getFunctionExtensionsByReflection() =
         R_FunctionExtensionsTable::class.memberProperties.find { it.name == "list" }!!.let {
             it.isAccessible = true
             @Suppress("UNCHECKED_CAST")
-            (it.get(this) as List<R_FunctionExtensions>)
+            it.get(this) as List<R_FunctionExtensions>
         }
 
 fun R_ExtendableFunctionUid.getNameByReflection() =
         R_ExtendableFunctionUid::class.memberProperties.find { it.name == "name" }!!.let {
             it.isAccessible = true
-            (it.get(this) as String)
+            it.get(this) as String
         }
 
 fun R_FunctionBase.getDefNameByReflection() =
