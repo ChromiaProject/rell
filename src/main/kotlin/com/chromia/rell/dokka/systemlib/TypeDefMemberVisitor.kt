@@ -67,7 +67,8 @@ class TypeDefMemberVisitor(
                 generics = listOf(),
                 sources = mapOf(sourceSet to NULL_DESCRIPTOR),
                 documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
-                modifier = mapOf()
+                modifier = mapOf(),
+                extra = PropertyContainer.withAll(IsPure.takeIf { constructor.pure })
         )
     }
 

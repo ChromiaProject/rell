@@ -270,4 +270,21 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             }
         }
     }
+
+    @Test
+    fun `Map constructor is pure`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("$projectRoot/root/map/map.html").lastSignature()
+                        .match(
+                                "pure constructor(",
+                                Parameters(
+                                        Parameter("entries: ", A("iterable"), "<", A("-map_entry<K,V>"), ">")
+                                ),
+                                ")",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
 }
