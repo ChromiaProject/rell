@@ -19,7 +19,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
                         .match(
-                                "val ", A("test"), ": ", A("integer"),
+                                "val ", A("test"), ": ", A("integer"), " = 32",
                                 ignoreSpanWithTokenStyle = true)
             }
         }
