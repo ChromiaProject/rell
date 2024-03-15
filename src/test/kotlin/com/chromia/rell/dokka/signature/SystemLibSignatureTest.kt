@@ -257,4 +257,17 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             }
         }
     }
+
+    @Test
+    fun `Inheritance is shown for map types`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("$projectRoot/root/map/index.html").firstSignature()
+                        .match(
+                                "type ", A("map"), "<K: ", A("-immutable"), ", ", A("V"), "> : ", A("iterable"), "<(K, V)>",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
 }

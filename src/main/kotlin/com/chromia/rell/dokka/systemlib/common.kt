@@ -3,6 +3,7 @@ package com.chromia.rell.dokka.systemlib
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.DRIWithSourceSet
 import com.chromia.rell.dokka.dri.toBound
+import com.chromia.rell.dokka.dri.toProjection
 import com.chromia.rell.dokka.translators.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_TypeParam
@@ -15,6 +16,10 @@ import org.jetbrains.dokka.model.Bound
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.DTypeParameter
+import org.jetbrains.dokka.model.Invariance
+import org.jetbrains.dokka.model.Star
+import org.jetbrains.dokka.model.TypeParameter
+import org.jetbrains.dokka.model.Variance
 import org.jetbrains.dokka.model.doc.DocumentationNode
 
 fun makeDProperty(sourceSet: DokkaConfiguration.DokkaSourceSet, parent: DRI, docSymbol: DocSymbol, name: String, type: M_Type) =
@@ -51,14 +56,24 @@ fun makeDarameter(sourceSet: DokkaConfiguration.DokkaSourceSet,
                 type = type,
         )
 
-fun List<M_TypeParam>.toGenerics(dri: DRIWithSourceSet) = map {
+fun List<M_TypeParam>.toGenerics(dri: DRIWithSourceSet) = mapNotNull {
+    val projection = it.bounds.toProjection()
+    if (projection is Star)
+        DTypeParameter(
+                dri.dri,
+                name = it.name,
+                presentableName = null,
+                documentation = mapOf(dri.sourceSet to DocumentationNode(listOf())),
+                expectPresentInSet = null,
+                sourceSets = setOf(dri.sourceSet),
+                bounds = listOf(it.bounds.canonicalOutType().toBound())
+        )
+        else
     DTypeParameter(
-            dri = dri.dri,
-            name = it.name,
-            presentableName = null,
+            it.bounds.toProjection(it.name) as Variance<TypeParameter>,
             documentation = mapOf(dri.sourceSet to DocumentationNode(listOf())),
             expectPresentInSet = null,
             sourceSets = setOf(dri.sourceSet),
-            bounds = listOf()
+            bounds = listOf(it.bounds.canonicalOutType().toBound())
     )
 }

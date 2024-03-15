@@ -37,6 +37,7 @@ import org.jetbrains.dokka.links.DriOfAny
 import org.jetbrains.dokka.links.sureClassNames
 import org.jetbrains.dokka.links.withTargetToDeclaration
 import org.jetbrains.dokka.model.Bound
+import org.jetbrains.dokka.model.Covariance
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DClasslike
 import org.jetbrains.dokka.model.DEnum
@@ -50,6 +51,7 @@ import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.Dynamic
 import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.GenericTypeConstructor
+import org.jetbrains.dokka.model.Invariance
 import org.jetbrains.dokka.model.Nullable
 import org.jetbrains.dokka.model.PrimaryConstructorExtra
 import org.jetbrains.dokka.model.Projection
@@ -209,7 +211,7 @@ class RellSignatureProvider internal constructor(
             documentable: T,
             sourceSet: DokkaConfiguration.DokkaSourceSet
     ) where T : Documentable, T : WithAbstraction {
-        val modifier = documentable.modifier[sourceSet] ?: return
+        val modifier = documentable.modifier[sourceSet]?.takeIf { it.name.isNotEmpty() } ?: return
         keyword("${modifier.name} ")
     }
 
@@ -218,13 +220,13 @@ class RellSignatureProvider internal constructor(
             group(styles = mainStyles + t.stylesIfDeprecated(it)) {
                 signatureForProjection(t.variantTypeParameter.withDri(t.dri.withTargetToDeclaration()))
             }
-            list(
+            /*list(
                     elements = t.nontrivialBounds,
                     prefix = " : ",
                     surroundingCharactersStyle = mainStyles + TokenStyle.Operator
             ) { bound ->
                 signatureForProjection(bound)
-            }
+            }*/
         }
     }
 
@@ -343,7 +345,6 @@ class RellSignatureProvider internal constructor(
             }
 
             is Variance<*> -> group(styles = emptySet()) {
-                p.takeIf { it.toString().isNotEmpty() }?.let { keyword("$it ") } // Will never happen??
                 signatureForProjection(p.inner, showFullyQualifiedName)
             }
 
@@ -382,6 +383,12 @@ class RellSignatureProvider internal constructor(
             is Dynamic -> {}
             else -> TODO(p.toString())
         }
+    }
+
+    private fun Variance<*>.toRellKeyword() = when (this) {
+        is Covariance -> "-"
+        is Invariance -> "+"
+        else -> ""
     }
 
     private fun DFunction.documentReturnType() = when {
