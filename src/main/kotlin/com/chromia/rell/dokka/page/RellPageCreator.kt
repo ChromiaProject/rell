@@ -154,11 +154,28 @@ class RellPageCreator(
             properties: List<DProperty>,
             extensions: List<Documentable>, //TODO: Remove if not needed
     ) = contentBuilder.contentFor(dri, sourceSets) {
+        require(extensions.isEmpty())
         rellTypesBlock(types)
         propertiesBlock("Properties", properties, BasicTabbedContentType.PROPERTY)
-        rellFunctionsBlock("Functions", functions.filter { it.isFunction() }, listOf(), BasicTabbedContentType.FUNCTION)
-        rellFunctionsBlock("Queries", functions.filter { it.isQuery() }, listOf(), RellTabbedContentType.QUERY)
-        rellFunctionsBlock("Operations", functions.filter { it.isOperation() }, listOf(), RellTabbedContentType.OPERATION)
+        val (funs, queries, operations) = functions.splitFunctionsTypes()
+        rellFunctionsBlock("Functions", funs, listOf(), BasicTabbedContentType.FUNCTION)
+        rellFunctionsBlock("Queries", queries, listOf(), RellTabbedContentType.QUERY)
+        rellFunctionsBlock("Operations", operations, listOf(), RellTabbedContentType.OPERATION)
+    }
+
+    private fun List<DFunction>.splitFunctionsTypes(): Triple<List<DFunction>, List<DFunction>, List<DFunction>> {
+        val funs = mutableListOf<DFunction>()
+        val queries = mutableListOf<DFunction>()
+        val ops = mutableListOf<DFunction>()
+        for (element in this) {
+            when {
+                element.isFunction() -> funs.add(element)
+                element.isOperation() -> ops.add(element)
+                element.isQuery() -> queries.add(element)
+                else -> throw IllegalArgumentException("$element is neither marked as function, query nor operation")
+            }
+        }
+        return Triple(funs, queries, ops)
     }
 
     private fun PageContentBuilder.DocumentableContentBuilder.propertiesBlock(

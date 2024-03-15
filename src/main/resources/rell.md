@@ -29,8 +29,8 @@ operation my_operation() {
     print(op_context.exists()); // Prints true
 }
 
-operation my_query() {
-    return op_context.exists(); // Returns true
+query my_query() {
+    return op_context.exists(); // Returns false
 }
 ```
 

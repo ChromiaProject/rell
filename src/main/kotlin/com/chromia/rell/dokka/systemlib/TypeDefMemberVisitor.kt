@@ -7,6 +7,7 @@ import com.chromia.rell.dokka.dri.from
 import com.chromia.rell.dokka.dri.toBound
 import com.chromia.rell.dokka.dri.withAlias
 import com.chromia.rell.dokka.dri.withSourceSet
+import com.chromia.rell.dokka.model.IsFunction
 import com.chromia.rell.dokka.model.IsPure
 import com.chromia.rell.dokka.model.IsStatic
 import com.chromia.rell.dokka.model.IsVararg
@@ -107,6 +108,7 @@ class TypeDefMemberVisitor(
                 documentation = mapOf(sourceSet to docSymbol.toDocumentationNode(alias?.let { AliasDocTagProvider.aliasDocTag(DRI.from(this, parent), this.simpleName.str) })),
                 modifier = mapOf(),
                 extra = PropertyContainer.withAll(
+                        IsFunction,
                         takeIf { function.flags.isStatic }?.let { IsStatic },
                         takeIf { function.flags.isPure }?.let { IsPure },
                         takeIf { deprecated != null }?.let {

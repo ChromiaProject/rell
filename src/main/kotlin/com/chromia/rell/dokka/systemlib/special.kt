@@ -3,6 +3,7 @@ package com.chromia.rell.dokka.systemlib
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.DriOfRoot
 import com.chromia.rell.dokka.dri.toDRI
+import com.chromia.rell.dokka.model.IsFunction
 import com.chromia.rell.dokka.translators.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import net.postchain.rell.base.lmodel.L_NamespaceMember_SpecialFunction
 import net.postchain.rell.base.lmodel.L_TypeDefMember_SpecialConstructor
@@ -19,6 +20,7 @@ import org.jetbrains.dokka.model.Nullable
 import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.Void
 import org.jetbrains.dokka.model.doc.DocumentationNode
+import org.jetbrains.dokka.model.properties.PropertyContainer
 
 fun existsAndEmptySpecialFunctions(f: L_NamespaceMember_SpecialFunction, sourceSet: DokkaConfiguration.DokkaSourceSet): DFunction {
     val dri = DriOfRoot.copy(callable = Callable(f.simpleName.str, params = listOf(TypeConstructor("T", listOf()))))
@@ -54,6 +56,7 @@ fun existsAndEmptySpecialFunctions(f: L_NamespaceMember_SpecialFunction, sourceS
             sources = mapOf(sourceSet to NULL_DESCRIPTOR),
             documentation = mapOf(sourceSet to f.docSymbol.toDocumentationNode()),
             modifier = mapOf(),
+            extra = PropertyContainer.withAll(IsFunction)
     )
 }
 
@@ -96,6 +99,7 @@ fun metaTypeConstructor(c: L_TypeDefMember_SpecialConstructor, sourceSet: DokkaC
             )),
             sources = mapOf(sourceSet to NULL_DESCRIPTOR),
             documentation = mapOf(sourceSet to c.docSymbol.toDocumentationNode()),
-            modifier = mapOf()
+            modifier = mapOf(),
+            extra = PropertyContainer.withAll(IsFunction)
     )
 }

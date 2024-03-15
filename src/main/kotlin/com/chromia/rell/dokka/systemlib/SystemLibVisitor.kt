@@ -10,6 +10,7 @@ import com.chromia.rell.dokka.dri.toBound
 import com.chromia.rell.dokka.dri.toDRI
 import com.chromia.rell.dokka.dri.withAlias
 import com.chromia.rell.dokka.dri.withSourceSet
+import com.chromia.rell.dokka.model.IsFunction
 import com.chromia.rell.dokka.model.IsHidden
 import com.chromia.rell.dokka.model.IsStruct
 import com.chromia.rell.dokka.model.IsType
@@ -282,6 +283,7 @@ class SystemLibVisitor(
                 documentation = docSymbol.toDocumentationNode(alias?.let { AliasDocTagProvider.aliasDocTag(DRI.from(this), qualifiedName.str()) }).toSourceSetDependent(),
                 modifier = mapOf(),
                 extra = PropertyContainer.withAll(
+                        IsFunction,
                         takeIf { deprecated != null }?.let {
                             Annotations(listOf(deprecated!!.toAnnotation()).toSourceSetDependent())
                         }
