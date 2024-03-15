@@ -385,12 +385,6 @@ class RellSignatureProvider internal constructor(
         }
     }
 
-    private fun Variance<*>.toRellKeyword() = when (this) {
-        is Covariance -> "-"
-        is Invariance -> "+"
-        else -> ""
-    }
-
     private fun DFunction.documentReturnType() = when {
         this.isOperation() -> false
         this.isConstructor -> false

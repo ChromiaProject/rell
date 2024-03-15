@@ -47,7 +47,6 @@ import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.DTypeAlias
 import org.jetbrains.dokka.model.Documentable
-import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.KotlinClassKindTypes
 import org.jetbrains.dokka.model.KotlinModifier.Empty
 import org.jetbrains.dokka.model.KotlinModifier.Abstract
