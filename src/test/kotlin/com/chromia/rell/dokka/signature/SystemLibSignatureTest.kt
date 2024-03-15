@@ -99,7 +99,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/root/integer/integer.html").firstSignature()
                         .match(
-                                "constructor(",
+                                "pure constructor(",
                                 Parameters(
                                         Parameter("value: ", A("text"), ", "),
                                         Parameter("[radix: ", A("integer"), "]"),
