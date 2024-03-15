@@ -12,8 +12,14 @@ import com.chromia.rell.dokka.model.IsPure
 import com.chromia.rell.dokka.model.IsStatic
 import com.chromia.rell.dokka.model.IsVararg
 import com.chromia.rell.dokka.model.IsZeroOne
+import com.chromia.rell.dokka.model.toExpression
 import com.chromia.rell.dokka.translators.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
+import net.postchain.rell.base.lib.type.Rt_BigIntegerValue
+import net.postchain.rell.base.lib.type.Rt_BooleanValue
+import net.postchain.rell.base.lib.type.Rt_DecimalValue
+import net.postchain.rell.base.lib.type.Rt_IntValue
+import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.lmodel.L_FunctionParam
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Alias
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Constant
@@ -22,14 +28,22 @@ import net.postchain.rell.base.lmodel.L_TypeDefMember_Function
 import net.postchain.rell.base.lmodel.L_TypeDefMember_Property
 import net.postchain.rell.base.lmodel.L_TypeDefMember_SpecialConstructor
 import net.postchain.rell.base.mtype.M_ParamArity
+import net.postchain.rell.base.runtime.Rt_Value
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.*
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.Annotations
+import org.jetbrains.dokka.model.BooleanConstant
+import org.jetbrains.dokka.model.ComplexExpression
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
+import org.jetbrains.dokka.model.DefaultValue
 import org.jetbrains.dokka.model.Documentable
+import org.jetbrains.dokka.model.DoubleConstant
+import org.jetbrains.dokka.model.Expression
+import org.jetbrains.dokka.model.IntegerConstant
+import org.jetbrains.dokka.model.StringConstant
 import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
@@ -37,6 +51,7 @@ import org.jetbrains.dokka.model.doc.P
 import org.jetbrains.dokka.model.doc.Text
 import org.jetbrains.dokka.model.properties.PropertyContainer
 import org.jetbrains.dokka.utilities.DokkaLogger
+import java.math.BigInteger
 
 class TypeDefMemberVisitor(
         val sourceSet: DokkaConfiguration.DokkaSourceSet,
@@ -143,5 +158,5 @@ class TypeDefMemberVisitor(
         = makeDProperty(sourceSet, parent, docSymbol, simpleName.str, property.type)
 
     private fun L_TypeDefMember_Constant.visit(parent: DRI)
-        = makeDProperty(sourceSet, parent, docSymbol, constant.simpleName.str, constant.type)
+        = makeDProperty(sourceSet, parent, docSymbol, constant.simpleName.str, constant.type, DefaultValue(mapOf(sourceSet to constant.value.toExpression())))
 }

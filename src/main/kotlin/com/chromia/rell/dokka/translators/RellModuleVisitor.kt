@@ -39,6 +39,7 @@ import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.PointingToCallableParameters
 import org.jetbrains.dokka.links.withClass
+import org.jetbrains.dokka.model.ComplexExpression
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DEnum
 import org.jetbrains.dokka.model.DEnumEntry
@@ -46,6 +47,7 @@ import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DPackage
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
+import org.jetbrains.dokka.model.DefaultValue
 import org.jetbrains.dokka.model.IsVar
 import org.jetbrains.dokka.model.KotlinModifier
 import org.jetbrains.dokka.model.KotlinVisibility
@@ -106,7 +108,10 @@ internal class RellModuleVisitor(
                 sources = NULL_DESCRIPTOR.toSourceSetDependent(),
                 type = getTypeByReflection().toBound(),
                 expectPresentInSet = null,
-                documentation = simpleDocumentationNode("This is constant $simpleName").toSourceSetDependent()
+                documentation = simpleDocumentationNode("This is constant $simpleName").toSourceSetDependent(),
+                extra = PropertyContainer.withAll(
+                        DefaultValue(ComplexExpression(toMetaGtv()["value"].toString()).toSourceSetDependent())
+                )
         )
     }
 

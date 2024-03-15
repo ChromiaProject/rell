@@ -36,7 +36,9 @@ import org.jetbrains.dokka.base.translators.documentables.PageContentBuilder
 import org.jetbrains.dokka.links.DriOfAny
 import org.jetbrains.dokka.links.sureClassNames
 import org.jetbrains.dokka.links.withTargetToDeclaration
+import org.jetbrains.dokka.model.BooleanConstant
 import org.jetbrains.dokka.model.Bound
+import org.jetbrains.dokka.model.ComplexExpression
 import org.jetbrains.dokka.model.Covariance
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DClasslike
@@ -44,17 +46,24 @@ import org.jetbrains.dokka.model.DEnum
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.DInterface
 import org.jetbrains.dokka.model.DObject
+import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.DTypeAlias
 import org.jetbrains.dokka.model.DTypeParameter
+import org.jetbrains.dokka.model.DefaultValue
 import org.jetbrains.dokka.model.Documentable
+import org.jetbrains.dokka.model.DoubleConstant
 import org.jetbrains.dokka.model.Dynamic
+import org.jetbrains.dokka.model.Expression
+import org.jetbrains.dokka.model.FloatConstant
 import org.jetbrains.dokka.model.FunctionalTypeConstructor
 import org.jetbrains.dokka.model.GenericTypeConstructor
+import org.jetbrains.dokka.model.IntegerConstant
 import org.jetbrains.dokka.model.Invariance
 import org.jetbrains.dokka.model.Nullable
 import org.jetbrains.dokka.model.PrimaryConstructorExtra
 import org.jetbrains.dokka.model.Projection
+import org.jetbrains.dokka.model.StringConstant
 import org.jetbrains.dokka.model.TypeAliased
 import org.jetbrains.dokka.model.TypeConstructor
 import org.jetbrains.dokka.model.TypeParameter
@@ -65,6 +74,7 @@ import org.jetbrains.dokka.model.WithAbstraction
 import org.jetbrains.dokka.model.WithConstructors
 import org.jetbrains.dokka.model.WithGenerics
 import org.jetbrains.dokka.model.WithSupertypes
+import org.jetbrains.dokka.model.properties.WithExtraProperties
 import org.jetbrains.dokka.model.withDri
 import org.jetbrains.dokka.pages.ContentKind
 import org.jetbrains.dokka.pages.ContentNode
@@ -241,7 +251,9 @@ class RellSignatureProvider internal constructor(
                 link(d.name, d.dri, styles = mainStyles + deprecationStyles)
                 operator(": ")
                 signatureForProjection(d.type)
-                // Set default value
+                if (!d.isMutable()) {
+                    defaultValueAssign(d, sourceSet)
+                }
             }
         }
 
@@ -401,5 +413,29 @@ class RellSignatureProvider internal constructor(
         val rellTestText = packageName?.takeIf { it.startsWith("rell.test") }?.let { "$it." }.orEmpty()
         val linkText = rellTestText + typeText
         link(linkText, p.dri)
+    }
+
+    private fun <T : Documentable> PageContentBuilder.DocumentableContentBuilder.defaultValueAssign(
+            d: WithExtraProperties<T>,
+            sourceSet: DokkaConfiguration.DokkaSourceSet
+    ) {
+        // a default value of parameter can be got from expect source set
+        // but expect properties cannot have a default value
+        d.extra[DefaultValue]?.expression?.let {
+            it[sourceSet] ?: if (d is DParameter) it[d.expectPresentInSet] else null
+        }?.let { expr ->
+            operator(" = ")
+            highlightValue(expr)
+        }
+    }
+
+    private fun PageContentBuilder.DocumentableContentBuilder.highlightValue(expr: Expression) = when (expr) {
+        is IntegerConstant -> constant(expr.value.toString())
+        is FloatConstant -> constant(expr.value.toString() + "f")
+        is DoubleConstant -> constant(expr.value.toString())
+        is BooleanConstant -> booleanLiteral(expr.value)
+        is StringConstant -> stringLiteral("\"${expr.value}\"")
+        is ComplexExpression -> text(expr.value)
+        else ->  Unit
     }
 }
