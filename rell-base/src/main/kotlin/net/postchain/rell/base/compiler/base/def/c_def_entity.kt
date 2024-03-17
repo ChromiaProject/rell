@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.def
@@ -216,7 +216,8 @@ private class C_EntityAttributeClause(
     }
 
     private fun checkAttrType(attr: C_AttributeDefinition, type: R_Type?) {
-        if (defCtx.definitionType.isEntityOrObject() && type != null && !type.sqlAdapter.isSqlCompatible()) {
+        val isEntity = defCtx.definitionType.isEntityOrObject()
+        if (isEntity && type != null && !type.sqlAdapter.isAllowedForEntityAttributes()) {
             val name = attr.name
             val typeStr = type.strCode()
             msgCtx.error(name.pos, "entity_attr_type:$name:$typeStr", "Attribute '$name' has unallowed type: $typeStr")

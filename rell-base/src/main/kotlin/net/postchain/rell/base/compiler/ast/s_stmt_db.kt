@@ -26,23 +26,25 @@ class C_UpdateTarget(val rTarget: R_UpdateTarget, val cFrom: C_AtFrom_Entities)
 
 sealed class S_UpdateTarget {
     abstract fun compile(
-            ctx: C_ExprContext,
-            stmtPos: S_Pos,
-            atExprId: R_AtExprId,
-            subValues: MutableList<V_Expr>
+        ctx: C_ExprContext,
+        stmtPos: S_Pos,
+        atExprId: R_AtExprId,
+        subValues: MutableList<V_Expr>,
     ): C_UpdateTarget?
 }
 
+class S_UpdateFromItem(val alias: S_Name?, val entityName: S_QualifiedName)
+
 class S_UpdateTarget_Simple(
-        private val cardinality: R_AtCardinality,
-        private val from: List<S_AtExprFrom>,
-        private val where: S_AtExprWhere
+    private val cardinality: R_AtCardinality,
+    private val from: List<S_UpdateFromItem>,
+    private val where: S_AtExprWhere,
 ): S_UpdateTarget() {
     override fun compile(
-            ctx: C_ExprContext,
-            stmtPos: S_Pos,
-            atExprId: R_AtExprId,
-            subValues: MutableList<V_Expr>
+        ctx: C_ExprContext,
+        stmtPos: S_Pos,
+        atExprId: R_AtExprId,
+        subValues: MutableList<V_Expr>,
     ): C_UpdateTarget? {
         val cAtEntities = compileFromEntities(ctx, atExprId, from)
         cAtEntities ?: return null
@@ -52,7 +54,8 @@ class S_UpdateTarget_Simple(
         val extraEntities = rAtEntities.subList(1, rAtEntities.size)
 
         val fromCtx = C_AtFromContext(stmtPos, atExprId, null)
-        val cFrom = C_AtFrom_Entities(ctx, fromCtx, cAtEntities)
+        val fromItems = cAtEntities.map { C_AtFromItem_Entity_Simple(it.declPos, it) }
+        val cFrom = C_AtFrom_Entities(ctx, fromCtx, null, fromItems)
 
         val atCtx = cFrom.innerExprCtx()
         val dbWhere = where.compile(atCtx, cFrom.atExprId, subValues)?.toDbExpr()
@@ -61,13 +64,17 @@ class S_UpdateTarget_Simple(
         return C_UpdateTarget(rTarget, cFrom)
     }
 
-    private fun compileFromEntities(ctx: C_ExprContext, atExprId: R_AtExprId, from: List<S_AtExprFrom>): List<C_AtEntity>? {
+    private fun compileFromEntities(
+        ctx: C_ExprContext,
+        atExprId: R_AtExprId,
+        from: List<S_UpdateFromItem>,
+    ): List<C_AtEntity>? {
         val cFrom0 = from.map { f -> compileFromEntity(ctx, atExprId, f) }
         val cFrom = cFrom0.filterNotNull()
         return if (cFrom.size != cFrom0.size) null else cFrom
     }
 
-    private fun compileFromEntity(ctx: C_ExprContext, atExprId: R_AtExprId, from: S_AtExprFrom): C_AtEntity? {
+    private fun compileFromEntity(ctx: C_ExprContext, atExprId: R_AtExprId, from: S_UpdateFromItem): C_AtEntity? {
         val explicitAliasHand = from.alias?.compile(ctx)
         val entityNameHand = from.entityName.compile(ctx.symCtx)
 
@@ -79,7 +86,10 @@ class S_UpdateTarget_Simple(
 
         val alias = explicitAliasHand?.name ?: entityNameHand.last.name
         val atEntityId = ctx.appCtx.nextAtEntityId(atExprId)
-        return S_AtExpr.makeDbAtEntity(entity, alias, explicitAliasHand, atEntityId, ctx.docFactory)
+        val cAtEntity = S_AtExpr.makeDbAtEntity(entity, alias, explicitAliasHand?.name, atEntityId, ctx.docFactory)
+
+        explicitAliasHand?.setIdeInfo(cAtEntity.aliasIdeDef.defInfo)
+        return cAtEntity
     }
 }
 
@@ -163,14 +173,15 @@ class S_UpdateTarget_Expr(private val expr: S_Expr): S_UpdateTarget() {
         val cAlias = C_Name.make(expr.startPos, rAtEntity.rEntity.rName)
         val cAtEntity = S_AtExpr.makeDbAtEntity(rAtEntity.rEntity, cAlias, null, rAtEntity.id, ctx.docFactory)
         val fromCtx = C_AtFromContext(stmtPos, cAtEntity.atExprId, null)
-        return C_AtFrom_Entities(ctx, fromCtx, immListOf(cAtEntity))
+        val fromItem = C_AtFromItem_Entity_Simple(cAtEntity.declPos, cAtEntity)
+        return C_AtFrom_Entities(ctx, fromCtx, null, immListOf(fromItem))
     }
 
     private class C_TargetContext(
-            val exprCtx: C_ExprContext,
-            val stmtPos: S_Pos,
-            val atExprId: R_AtExprId,
-            val rExpr: R_Expr
+        val exprCtx: C_ExprContext,
+        val stmtPos: S_Pos,
+        val atExprId: R_AtExprId,
+        val rExpr: R_Expr,
     )
 }
 

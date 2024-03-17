@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.ast
@@ -230,16 +230,13 @@ sealed class C_BinOp {
 sealed class C_BinOp_Common: C_BinOp() {
     abstract fun compileOp(left: R_Type, right: R_Type): V_BinaryOp?
 
-    final override fun compile(ctx: C_ExprContext, left: V_Expr, right: V_Expr): V_Expr? {
+    override fun compile(ctx: C_ExprContext, left: V_Expr, right: V_Expr): V_Expr? {
         val (left2, right2) = adaptLeftRight(ctx, left, right)
         return compile0(ctx, left2, right2)
     }
 
     private fun compile0(ctx: C_ExprContext, left: V_Expr, right: V_Expr): V_Expr? {
-        val leftType = left.type
-        val rightType = right.type
-
-        val op = compileOp(leftType, rightType)
+        val op = compileOp(left.type, right.type)
         if (op == null) {
             return null
         }
@@ -248,19 +245,14 @@ sealed class C_BinOp_Common: C_BinOp() {
         return V_BinaryExpr(ctx, left.pos, op, left, right, exprVarFacts)
     }
 
-    fun adaptOperands(ctx: C_ExprContext, operands: List<V_Expr>): List<V_Expr> {
-        val res = adaptOperands0(ctx, operands)
-        checkEquals(res.size, operands.size)
-        return res
+    protected open fun adaptOperands0(ctx: C_ExprContext, left: V_Expr, right: V_Expr): Pair<V_Expr, V_Expr> {
+        val res = promoteNumeric(ctx, listOf(left, right))
+        checkEquals(res.size, 2)
+        return res[0] to res[1]
     }
 
-    protected open fun adaptOperands0(ctx: C_ExprContext, operands: List<V_Expr>): List<V_Expr> {
-        return promoteNumeric(ctx, operands)
-    }
-
-    fun adaptLeftRight(ctx: C_ExprContext, left: V_Expr, right: V_Expr): Pair<V_Expr, V_Expr> {
-        val res = adaptOperands(ctx, listOf(left, right))
-        return Pair(res[0], res[1])
+    private fun adaptLeftRight(ctx: C_ExprContext, left: V_Expr, right: V_Expr): Pair<V_Expr, V_Expr> {
+        return adaptOperands0(ctx, left, right)
     }
 
     open fun adaptRight(ctx: C_ExprContext, leftType: R_Type, right: V_Expr): V_Expr {
@@ -317,18 +309,72 @@ sealed class C_BinOp_Common: C_BinOp() {
     }
 }
 
-sealed class C_BinOp_EqNe(private val eq: Boolean): C_BinOp_Common() {
-    final override fun compileOp(left: R_Type, right: R_Type): V_BinaryOp? {
-        val type = calcCommonType(left, right)
-                ?: calcCommonType(right, left)
-        return if (type == null || type is R_ObjectType) null else createVOp(eq, type)
+sealed class C_BinOp_EqNe(private val eq: Boolean, private val rOp: R_BinaryOp): C_BinOp_Common() {
+    protected open fun isTypeSupported(type: R_Type) = true
+
+    final override fun compile(ctx: C_ExprContext, left: V_Expr, right: V_Expr): V_Expr? {
+        return if (left.type == R_NullType) {
+            compileIsNull(ctx, right)
+        } else if (right.type == R_NullType) {
+            compileIsNull(ctx, left)
+        } else {
+            super.compile(ctx, left, right)
+        }
     }
 
-    final override fun compileExprVarFacts(left: V_Expr, right: V_Expr) = compileExprVarFacts(eq, left, right)
+    private fun compileIsNull(ctx: C_ExprContext, expr: V_Expr): V_Expr? {
+        val realExpr = expr.asNullable().unwrap()
+        return compileIsNull0(ctx, realExpr)
+    }
 
-    final override fun adaptOperands0(ctx: C_ExprContext, operands: List<V_Expr>): List<V_Expr> {
-        val res = adaptOperands(operands)
-        return res ?: super.adaptOperands0(ctx, operands)
+    private fun compileIsNull0(ctx: C_ExprContext, expr: V_Expr): V_Expr? {
+        val type = expr.type
+        if (type !is R_NullableType && type != R_NullType) {
+            return null
+        }
+        if (!isTypeSupported(type)) {
+            return null
+        }
+
+        val baseFacts = C_ExprVarFacts.forSubExpressions(expr)
+        val nullFacts = C_ExprVarFacts.forNullCheck(expr, eq)
+        val exprVarFacts = baseFacts.update(trueFacts = nullFacts.trueFacts, falseFacts = nullFacts.falseFacts)
+
+        val op = V_UnaryOp_IsNull(!eq)
+        return V_UnaryExpr(ctx, expr.pos, op, expr, exprVarFacts)
+    }
+
+    final override fun compileOp(left: R_Type, right: R_Type): V_BinaryOp? {
+        val type = calcCommonType(left, right) ?: calcCommonType(right, left)
+        return if (type == null || type is R_ObjectType || !isTypeSupported(type)) null else {
+            createVOp(type)
+        }
+    }
+
+    private fun calcCommonType(left: R_Type, right: R_Type): R_Type? {
+        return if (left.isAssignableFrom(right)) left else null
+    }
+
+    fun createVOp(type: R_Type): V_BinaryOp {
+        val dbOp: Db_BinaryOp = when (type) {
+            is R_NullableType -> if (eq) Db_BinaryOp_NotDistinct else Db_BinaryOp_Distinct
+            else -> if (eq) Db_BinaryOp_Eq else Db_BinaryOp_Ne
+        }
+        val actDbOp = if (dbOpSupported(type)) dbOp else null
+        return V_BinaryOp.of(R_BooleanType, rOp, actDbOp)
+    }
+
+    private fun dbOpSupported(type: R_Type): Boolean {
+        return type == R_BooleanType
+                || type == R_IntegerType
+                || type == R_BigIntegerType
+                || type == R_DecimalType
+                || type == R_TextType
+                || type == R_ByteArrayType
+                || type == R_RowidType
+                || type is R_EntityType
+                || type is R_EnumType
+                || type is R_NullableType && dbOpSupported(type.valueType)
     }
 
     companion object {
@@ -341,88 +387,18 @@ sealed class C_BinOp_EqNe(private val eq: Boolean): C_BinOp_Common() {
             val op = C_BinOp_Eq.compileOp(left, right)
             return op?.dbOp != null
         }
-
-        private fun calcCommonType(left: R_Type, right: R_Type): R_Type? {
-            return if (left is R_NullableType && right !is R_NullableType && right != R_NullType) {
-                null
-            } else if (left.isAssignableFrom(right)) {
-                left
-            } else {
-                null
-            }
-        }
-
-        fun compileExprVarFacts(eq: Boolean, left: V_Expr, right: V_Expr): C_ExprVarFacts {
-            val postFacts = left.varFacts.postFacts.and(right.varFacts.postFacts)
-
-            val boolFacts = compileExprVarFacts0(eq, left, right)
-                    ?: compileExprVarFacts0(eq, right, left)
-                    ?: C_ExprVarFacts.EMPTY
-
-            return C_ExprVarFacts.of(
-                    trueFacts = boolFacts.trueFacts,
-                    falseFacts = boolFacts.falseFacts,
-                    postFacts = postFacts
-            )
-        }
-
-        private fun compileExprVarFacts0(eq: Boolean, left: V_Expr, right: V_Expr): C_ExprVarFacts? {
-            val rightType = right.type
-            val facts = if (rightType == R_NullType) C_ExprVarFacts.forNullCheck(left, eq) else C_ExprVarFacts.EMPTY
-            return if (facts.isEmpty()) null else facts
-        }
-
-        fun adaptOperands(operands: List<V_Expr>): List<V_Expr>? {
-            val hasNull = operands.any { it.type == R_NullType }
-            return if (hasNull) {
-                operands.map { it.asNullable().unwrap() }
-            } else {
-                null
-            }
-        }
-
-        fun createVOp(eq: Boolean, type: R_Type): V_BinaryOp {
-            val rOp: R_BinaryOp = if (eq) R_BinaryOp_Eq else R_BinaryOp_Ne
-            val dbOp: Db_BinaryOp = if (eq) Db_BinaryOp_Eq else Db_BinaryOp_Ne
-            val actDbOp = if (dbOpSupported(type)) dbOp else null
-            return V_BinaryOp.of(R_BooleanType, rOp, actDbOp)
-        }
-
-        private fun dbOpSupported(type: R_Type): Boolean {
-            return type == R_BooleanType
-                    || type == R_IntegerType
-                    || type == R_BigIntegerType
-                    || type == R_DecimalType
-                    || type == R_TextType
-                    || type == R_ByteArrayType
-                    || type == R_RowidType
-                    || type is R_EntityType
-                    || type is R_EnumType
-        }
     }
 }
 
-object C_BinOp_Eq: C_BinOp_EqNe(true)
-object C_BinOp_Ne: C_BinOp_EqNe(false)
+object C_BinOp_Eq: C_BinOp_EqNe(true, R_BinaryOp_Eq)
+object C_BinOp_Ne: C_BinOp_EqNe(false, R_BinaryOp_Ne)
 
-sealed class C_BinOp_EqNeRef(val eq: Boolean): C_BinOp_Common() {
-    private val rOp: R_BinaryOp = if (eq) R_BinaryOp_EqRef else R_BinaryOp_NeRef
-
-    final override fun compileOp(left: R_Type, right: R_Type): V_BinaryOp? {
-        val type = if (left.isAssignableFrom(right)) left else if (right.isAssignableFrom(left)) right else null
-        return if (type == null || !type.isReference()) null else V_BinaryOp.of(R_BooleanType, rOp, null)
-    }
-
-    override fun compileExprVarFacts(left: V_Expr, right: V_Expr)= C_BinOp_EqNe.compileExprVarFacts(eq, left, right)
-
-    override fun adaptOperands0(ctx: C_ExprContext, operands: List<V_Expr>): List<V_Expr> {
-        val res = C_BinOp_EqNe.adaptOperands(operands)
-        return res ?: super.adaptOperands0(ctx, operands)
-    }
+sealed class C_BinOp_EqNeRef(eq: Boolean, rOp: R_BinaryOp): C_BinOp_EqNe(eq, rOp) {
+    final override fun isTypeSupported(type: R_Type) = type.isReference()
 }
 
-object C_BinOp_EqRef: C_BinOp_EqNeRef(true)
-object C_BinOp_NeRef: C_BinOp_EqNeRef(false)
+object C_BinOp_EqRef: C_BinOp_EqNeRef(true, R_BinaryOp_EqRef)
+object C_BinOp_NeRef: C_BinOp_EqNeRef(false, R_BinaryOp_NeRef)
 
 sealed class C_BinOp_Cmp(val cmpOp: R_CmpOp, val dbOp: Db_BinaryOp): C_BinOp_Common() {
     final override fun compileOp(left: R_Type, right: R_Type): V_BinaryOp? {
@@ -460,17 +436,18 @@ object C_BinOp_Plus: C_BinOp_Common() {
         }
     }
 
-    override fun adaptOperands0(ctx: C_ExprContext, operands: List<V_Expr>): List<V_Expr> {
-        val types = operands.map { it.type }
-        val hasText = types.any { it == R_TextType }
-        val hasNotText = types.any { it != R_TextType }
+    override fun adaptOperands0(ctx: C_ExprContext, left: V_Expr, right: V_Expr): Pair<V_Expr, V_Expr> {
+        val leftType = left.type
+        val rightType = right.type
+        val hasText = leftType == R_TextType || rightType == R_TextType
+        val hasNotText = leftType != R_TextType || rightType != R_TextType
 
         return if (hasText && hasNotText) {
-            operands.mapIndexed { i, operand ->
-                if (types[i] == R_TextType) operand else adaptToText(ctx, operand)
-            }
+            val resLeft = if (leftType == R_TextType) left else adaptToText(ctx, left)
+            val resRight = if (rightType == R_TextType) right else adaptToText(ctx, right)
+            resLeft to resRight
         } else {
-            super.adaptOperands0(ctx, operands)
+            super.adaptOperands0(ctx, left, right)
         }
     }
 
@@ -497,11 +474,25 @@ object C_BinOp_Plus: C_BinOp_Common() {
         return V_FunctionCallExpr(ctx, vExpr.pos, null, vCall, false)
     }
 
+    private val DB_TO_TEXT_CAST_TYPES =
+        immListOf(R_BooleanType, R_IntegerType, R_BigIntegerType, R_RowidType, R_JsonType)
+
+    private val Db_ToText_Cast = Db_SysFunction.cast("to_text", "TEXT")
+    private val Db_ToText_Cast_NullableText = Db_SysFunction.template("to_text(text?)", 1, "COALESCE(#0, 'null')")
+    private val Db_ToText_Cast_NullableAny = Db_SysFunction.template("to_text(any?)", 1, "COALESCE((#0)::TEXT, 'null')")
+
     private fun getDbToStringFunction(type: R_Type): Db_SysFunction? {
         return when (type) {
-            R_BooleanType, R_IntegerType, R_BigIntegerType, R_RowidType, R_JsonType -> Lib_Type_Any.ToText_Db
+            in DB_TO_TEXT_CAST_TYPES -> Db_ToText_Cast
             R_DecimalType -> Lib_Type_Decimal.ToText_Db
-            is R_EntityType -> Lib_Type_Any.ToText_Db
+            //is R_EntityType -> Lib_Type_Any.ToText_Db
+            is R_NullableType -> {
+                when (type.valueType) {
+                    R_TextType -> Db_ToText_Cast_NullableText
+                    in DB_TO_TEXT_CAST_TYPES -> Db_ToText_Cast_NullableAny
+                    else -> null
+                }
+            }
             else -> null
         }
     }

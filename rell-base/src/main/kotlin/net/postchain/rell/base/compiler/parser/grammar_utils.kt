@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.parser
@@ -13,6 +13,7 @@ import com.github.h0tk3y.betterParse.parser.Parser
 import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.compiler.base.utils.C_Parser
 import net.postchain.rell.base.model.expr.R_AtCardinality
+import net.postchain.rell.base.utils.immListOf
 
 sealed class G_BaseExprTail {
     abstract fun toExpr(base: S_Expr): S_Expr
@@ -70,10 +71,15 @@ class G_BaseExprTail_At(
     val where: S_AtExprWhere,
     val what: S_AtExprWhat,
     val limit: S_Expr?,
-    val offset: S_Expr?
+    val offset: S_Expr?,
 ): G_BaseExprTail() {
     override fun toExpr(base: S_Expr): S_Expr {
-        return S_AtExpr(base, S_PosValue(pos, cardinality), where, what, limit, offset)
+        val from = S_AtExprFrom_Simple(base)
+        return toExpr(from)
+    }
+
+    fun toExpr(from: S_AtExprFrom): S_Expr {
+        return S_AtExpr(from, S_PosValue(pos, cardinality), where, what, limit, offset)
     }
 }
 

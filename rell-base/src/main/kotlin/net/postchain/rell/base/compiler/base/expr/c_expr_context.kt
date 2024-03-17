@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.expr
@@ -16,10 +16,10 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.R_DbAtEntity
 
 class C_ExprContext private constructor(
-        val blkCtx: C_BlockContext,
-        val factsCtx: C_VarFactsContext,
-        val atCtx: C_AtContext?,
-        val insideGuardBlock: Boolean,
+    val blkCtx: C_BlockContext,
+    val factsCtx: C_VarFactsContext,
+    val atCtx: C_AtContext?,
+    val insideGuardBlock: Boolean,
 ) {
     val defCtx = blkCtx.defCtx
     val modCtx = defCtx.modCtx

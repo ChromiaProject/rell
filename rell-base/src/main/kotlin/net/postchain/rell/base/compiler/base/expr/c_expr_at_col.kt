@@ -7,41 +7,42 @@ package net.postchain.rell.base.compiler.base.expr
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_BlockEntry_Var
 import net.postchain.rell.base.compiler.base.core.C_LocalVar
-import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_Constants
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.*
+import net.postchain.rell.base.model.R_FrameBlock
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_VarPtr
 import net.postchain.rell.base.model.expr.R_ColAtParam
-import net.postchain.rell.base.utils.ide.IdeLocalSymbolLink
+import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 
 class C_AtFrom_Iterable(
     outerExprCtx: C_ExprContext,
     fromCtx: C_AtFromContext,
-    alias: C_Name?,
+    fromBlock: R_FrameBlock?,
     private val item: C_AtFromItem_Iterable,
-): C_AtFrom(outerExprCtx, fromCtx) {
+): C_AtFrom(outerExprCtx, fromCtx, fromBlock) {
     private val pos = fromCtx.pos
 
     private val placeholderVar: C_LocalVar = let {
+        val alias = item.alias
         val metaName = alias?.str ?: C_Constants.AT_PLACEHOLDER
         innerBlkCtx.newLocalVar(metaName, alias?.rName, item.elemType, false, atExprId)
     }
 
     private val varPtr: R_VarPtr = let {
-        val ideLink = IdeLocalSymbolLink(alias?.pos ?: item.pos)
-        val ideInfo = item.ideInfo.update(defId = null, link = ideLink)
+        val phEntry = C_BlockEntry_Var(placeholderVar, item.aliasIdeDef.refInfo)
 
-        val phEntry = C_BlockEntry_Var(placeholderVar, ideInfo)
+        val alias = item.alias
         if (alias == null) {
             innerBlkCtx.addAtPlaceholder(phEntry)
         } else {
             innerBlkCtx.addEntry(alias.pos, alias.rName, true, phEntry)
         }
+
         placeholderVar.toRef(innerBlkCtx.blockUid).ptr
     }
 
@@ -50,19 +51,20 @@ class C_AtFrom_Iterable(
         outerExprCtx.update(blkCtx = innerBlkCtx, factsCtx = factsCtx, atCtx = innerAtCtx)
     }
 
+    override fun getAllExprs() = immListOf(item.vExpr)
     override fun innerExprCtx() = innerExprCtx
 
-    override fun makeDefaultWhat(): V_DbAtWhat {
+    override fun makeDefaultWhatFields(): List<V_DbAtWhatField> {
         val vExpr = compilePlaceholderRef(pos)
         val field = V_DbAtWhatField(outerExprCtx.appCtx, null, vExpr.type, vExpr, V_AtWhatFieldFlags.DEFAULT, null)
-        return V_DbAtWhat(listOf(field))
+        return immListOf(field)
     }
 
     override fun findMembers(name: R_Name): List<C_AtFromMember> {
         val base = C_AtFromBase_Iterable()
         val selfType = item.elemType
         val members = innerExprCtx.typeMgr.getValueMembers(selfType, name)
-        return members.map { C_AtFromMember(base, selfType, it) }.toImmList()
+        return members.map { C_AtFromMember(base, selfType, it, false) }.toImmList()
     }
 
     override fun findImplicitAttributesByName(name: R_Name): List<C_AtFromImplicitAttr> {
@@ -88,7 +90,7 @@ class C_AtFrom_Iterable(
 
     override fun compile(details: C_AtDetails): V_Expr {
         val rParam = R_ColAtParam(item.elemType, varPtr)
-        val vFrom = item.compile()
+        val vFrom = item.compile(fromBlock)
         val what = compileColWhat(details, details.base.what.allFields)
         val extras = V_AtExprExtras(details.limit, details.offset)
 
@@ -107,6 +109,11 @@ class C_AtFrom_Iterable(
             param = rParam,
             resVarFacts = details.exprFacts,
         )
+    }
+
+    override fun compileJoin(details: C_AtDetails, isOuter: Boolean): C_AtFromItem {
+        msgCtx.error(pos, "expr:at:join:iterable", "Cannot use a collection-at-expression as a join")
+        return item
     }
 
     private inner class C_AtFromBase_Iterable: C_AtFromBase() {

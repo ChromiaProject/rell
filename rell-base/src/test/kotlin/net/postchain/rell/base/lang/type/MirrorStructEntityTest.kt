@@ -300,7 +300,7 @@ class MirrorStructEntityTest: BaseRellTest(false) {
         chk("state.to_struct()", "struct<state>[x=int[123],y=text[abc]]")
 
         chk("user @ {} ( state.to_struct() )", "struct<state>[x=int[123],y=text[abc]]")
-        chk("(user@*{}) @ {} ( state.to_struct() )", "struct<state>[x=int[123],y=text[abc]]")
+        chk("((user@*{})) @ {} ( state.to_struct() )", "struct<state>[x=int[123],y=text[abc]]")
 
         chk("_type_of(state.to_struct(123))", "ct_err:expr_call_badargs:[rell.object_ext(state).to_struct]:[integer]")
         chk("_type_of(state.to_error())", "ct_err:unknown_member:[state]:to_error")

@@ -64,7 +64,13 @@ object Lib_Type_Entity {
         return C_EntityAttrRef.getEntityAttrs(type.rEntity).map { C_TypeValueMember_EntityAttr(it) }
     }
 
-    fun pathToDbExpr(ctx: C_ExprContext, atEntity: R_DbAtEntity, path: List<C_EntityAttrRef>, resType: R_Type, linkPos: S_Pos): Db_Expr {
+    fun pathToDbExpr(
+        ctx: C_ExprContext,
+        atEntity: R_DbAtEntity,
+        path: List<C_EntityAttrRef>,
+        resType: R_Type,
+        linkPos: S_Pos,
+    ): Db_Expr {
         var dbExpr: Db_Expr = Db_EntityExpr(atEntity)
         for (step in path) {
             val dbTableExpr = EntityUtils.asTableExpr(ctx, dbExpr, step, linkPos)
@@ -124,7 +130,7 @@ object Lib_Type_Entity {
             return C_Destination_EntityAttr(base, attrRef.rEntity, path, attr)
         }
 
-        override fun canBeDbExpr() = true
+        override fun canBeDbExpr(safe: Boolean) = true
 
         override fun dbExpr(base: Db_Expr): Db_Expr {
             val path = CommonUtils.chainToList(this) { it.prev }.map { it.attrRef }.asReversed().toImmList()
@@ -214,7 +220,7 @@ private object EntityUtils {
 
         val what = listOf(whatField)
 
-        val from = listOf(atEntity)
+        val from = Db_AtExprFrom(listOf(Db_AtFromItem(atEntity, false, null, null)))
         val atBase = Db_AtExprBase(from, what, where, isMany = false)
         return R_MemberCalculator_DataAttribute(resType, atBase, cLambda.rLambda)
     }
@@ -247,7 +253,8 @@ private class V_SpecialMemberFunctionCall_EntityToStruct(
         return EntityUtils.createCalculator0(atEntity, whatField, structType, cLambda)
     }
 
-    override fun dbExprWhat(base: V_Expr, safe: Boolean): C_DbAtWhatValue {
+    override fun dbExprWhat(base: V_Expr, safe: Boolean): C_DbAtWhatValue? {
+        if (safe) return null
         val dbEntityExpr = base.toDbExpr() as Db_TableExpr
         return createWhatValue(dbEntityExpr)
     }

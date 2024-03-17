@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.ast
@@ -145,7 +145,7 @@ object S_UnaryOp_IsNull: S_UnaryOp("??") {
 
         val preFacts = exprN.varFacts
         val varFacts = C_ExprVarFacts.forNullCheck(exprN, false).update(postFacts = preFacts.postFacts)
-        return V_UnaryExpr(ctx, startPos, V_UnaryOp_IsNull(), exprN, varFacts)
+        return V_UnaryExpr(ctx, startPos, V_UnaryOp_IsNull(true), exprN, varFacts)
     }
 }
 

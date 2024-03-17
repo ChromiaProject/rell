@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.base.model
 
 import net.postchain.gtv.Gtv
@@ -75,7 +79,9 @@ class R_NullableType(val valueType: R_Type): R_Type(calcName(valueType)) {
     }
 
     private inner class R_TypeSqlAdapter_Nullable: R_TypeSqlAdapter_Some(null) {
-        override fun isSqlCompatible() = false
+        override fun isSqlCompatible() = valueType.sqlAdapter.isSqlCompatible()
+        override fun isAllowedForEntityAttributes() = false
+
         override fun metaName(sqlCtx: Rt_SqlContext) = throw Rt_Utils.errNotSupported("Nullable entity attributes are not supported")
 
         override fun toSqlValue(value: Rt_Value) = valueType.sqlAdapter.toSqlValue(value)

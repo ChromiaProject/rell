@@ -9,11 +9,11 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.checkEquals
 
-enum class R_AtCardinality(val zero: Boolean, val many: Boolean) {
-    ZERO_ONE(true, false),
-    ONE(false, false),
-    ZERO_MANY(true, true),
-    ONE_MANY(false, true),
+enum class R_AtCardinality(val code: String, val zero: Boolean, val many: Boolean) {
+    ZERO_ONE("@?", true, false),
+    ONE("@", false, false),
+    ZERO_MANY("@*", true, true),
+    ONE_MANY("@+", false, true),
     ;
 
     fun matches(count: Int): Boolean {
@@ -140,8 +140,11 @@ class R_DbAtExpr(
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val extraVals = extras.evaluate(frame)
 
+        val redFrom = base.toRedFrom(frame)
+
         val records = frame.block(internals.block) {
-            base.execute(frame, extraVals)
+            val redBase = redFrom.toRedBase(frame)
+            redBase.execute(frame, extraVals)
         }
         checkCount(cardinality, records.count(), "records")
 

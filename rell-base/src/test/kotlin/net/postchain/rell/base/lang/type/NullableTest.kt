@@ -546,8 +546,6 @@ class NullableTest: BaseRellTest(false) {
     }
 
     @Test fun testBasicOperators() {
-        tstOperErr("integer", "==")
-        tstOperErr("integer", "!=")
         tstOperErr("integer", "<")
         tstOperErr("integer", ">")
         tstOperErr("integer", "<=")
@@ -575,12 +573,15 @@ class NullableTest: BaseRellTest(false) {
     @Test fun testEq() {
         chkEx("{ val a: integer? = _nullable(123); return a == null; }", "boolean[false]")
         chkEx("{ val a: integer? = _nullable(123); return a != null; }", "boolean[true]")
-        chkEx("{ val a: integer? = _nullable(123); return a == 123; }", "ct_err:binop_operand_type:==:[integer?]:[integer]")
-        chkEx("{ val a: integer? = _nullable(123); return a != 123; }", "ct_err:binop_operand_type:!=:[integer?]:[integer]")
+        chkEx("{ val a: integer? = _nullable(123); return a == 123; }", "boolean[true]")
+        chkEx("{ val a: integer? = _nullable(123); return a == 321; }", "boolean[false]")
+        chkEx("{ val a: integer? = _nullable(123); return a != 123; }", "boolean[false]")
+        chkEx("{ val a: integer? = _nullable(123); return a != 321; }", "boolean[true]")
+
         chkEx("{ val a: integer? = null; return a == null; }", "boolean[true]")
         chkEx("{ val a: integer? = null; return a != null; }", "boolean[false]")
-        chkEx("{ val a: integer? = null; return a == 123; }", "ct_err:binop_operand_type:==:[integer?]:[integer]")
-        chkEx("{ val a: integer? = null; return a != 123; }", "ct_err:binop_operand_type:!=:[integer?]:[integer]")
+        chkEx("{ val a: integer? = null; return a == 123; }", "boolean[false]")
+        chkEx("{ val a: integer? = null; return a != 123; }", "boolean[true]")
 
         chkEx("{ val a: integer? = _nullable(123); val b: integer? = _nullable(123); return a == b; }", "boolean[true]")
         chkEx("{ val a: integer? = _nullable(123); val b: integer? = _nullable(123); return a != b; }", "boolean[false]")

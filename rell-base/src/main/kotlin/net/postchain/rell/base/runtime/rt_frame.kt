@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.runtime
@@ -13,12 +13,13 @@ import java.util.*
 class Rt_CallStack(val prev: Rt_CallStack?, val pos: R_StackPos)
 
 class Rt_CallFrame(
-        val defCtx: Rt_DefinitionContext,
-        private val rFrame: R_CallFrame,
-        private val stack: Rt_CallStack?,
-        state: Rt_CallFrameState?,
+    val defCtx: Rt_DefinitionContext,
+    private val rFrame: R_CallFrame,
+    private val stack: Rt_CallStack?,
+    state: Rt_CallFrameState?,
 ) {
     val exeCtx = defCtx.exeCtx
+    val sqlCtx = defCtx.sqlCtx
     val sqlExec = exeCtx.sqlExec
     val appCtx = exeCtx.appCtx
 
@@ -54,6 +55,14 @@ class Rt_CallFrame(
             for (i in 0 until block.size) {
                 values[block.offset + i] = null
             }
+        }
+    }
+
+    fun <T> blockOpt(block: R_FrameBlock?, code: () -> T): T {
+        return if (block == null) {
+            code()
+        } else {
+            this.block(block, code)
         }
     }
 

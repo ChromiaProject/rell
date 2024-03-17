@@ -301,12 +301,11 @@ class CompilerErrorsTest: BaseRellTest(false) {
         chk("false @* { Y } ( Z )", "ct_err:[at:from:bad_type:boolean][$un:Y][$un:Z]")
 
         chk("(false, true) @* { Y } ( Z )",
-                "ct_err:[at:from:bad_type:boolean][at:from:bad_type:boolean][at:from:many_iterables:2][$un:Y][$un:Z]")
+            "ct_err:[at:from:bad_type:boolean][at:from:bad_type:boolean][at:from:many_iterables:2][$un:Y][$un:Z]")
 
         chk("([123], user) @* { Y } ( Z )", "ct_err:[at:from:mix_entity_iterable][$un:Y][$un:Z]")
-
-        chk("(a = X1, b = X2) @* { Y } ( Z )",
-                "ct_err:[expr:at:from:tuple_name_eq_expr:a][$un:X1][expr:at:from:tuple_name_eq_expr:b][$un:X2][$un:Y][$un:Z]")
+        chk("(a: X1, b: X2) @* { Y } ( Z )", "ct_err:[$un:X1][$un:X2][$un:Y][$un:Z]")
+        chk("(a = X1, b = X2) @* { Y } ( Z )", "ct_err:[$un:X1][$un:X2][$un:Y][$un:Z]")
     }
 
     @Test fun testExprAtFromAlias() {
@@ -330,7 +329,6 @@ class CompilerErrorsTest: BaseRellTest(false) {
     @Test fun testExprTuple() {
         tst.ideDefIdConflictError = false
         chk("(a = $badExpr1, b = $badExpr2)", "ct_err:[$badError1][$badError2]")
-        chk("(a: $badExpr1, b: $badExpr2)", "ct_err:[tuple_name_colon_expr:a][$badError1][tuple_name_colon_expr:b][$badError2]")
         chk("(a = $badExpr1, a = $badExpr2)", "ct_err:[$badError1][expr_tuple_dupname:a][$badError2]")
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.vexpr
@@ -33,7 +33,7 @@ abstract class V_TypeValueMember(val type: R_Type, val ideInfo: C_IdeSymbolInfo)
     abstract fun calculator(): R_MemberCalculator
     abstract fun destination(base: V_Expr): C_Destination
 
-    open fun canBeDbExpr(): Boolean = false
+    open fun canBeDbExpr(safe: Boolean): Boolean = false
     open fun dbExpr(base: Db_Expr): Db_Expr? = null
     open fun dbExprWhat(base: V_Expr, safe: Boolean): C_DbAtWhatValue? = null
 
@@ -70,7 +70,7 @@ class V_ValueMemberExpr(
     override fun exprInfo0() = V_ExprInfo.simple(
         actualType,
         subExprs = immListOf(base) + member.vExprs(),
-        canBeDbExpr = member.canBeDbExpr(),
+        canBeDbExpr = member.canBeDbExpr(safe),
     )
 
     override fun varFacts0(): C_ExprVarFacts {

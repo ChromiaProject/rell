@@ -316,9 +316,15 @@ class R_ColAtLimiter_Late(private val limit: Long, private val offset: Long): R_
     }
 }
 
-class R_ColAtFrom(private val iterableAdapter: R_IterableAdapter, private val expr: R_Expr) {
+class R_ColAtFrom(
+    private val iterableAdapter: R_IterableAdapter,
+    private val expr: R_Expr,
+    private val block: R_FrameBlock?,
+) {
     fun evaluate(frame: Rt_CallFrame): Iterable<Rt_Value> {
-        val value = expr.evaluate(frame)
+        val value = frame.blockOpt(block) {
+            expr.evaluate(frame)
+        }
         return iterableAdapter.iterable(value)
     }
 }

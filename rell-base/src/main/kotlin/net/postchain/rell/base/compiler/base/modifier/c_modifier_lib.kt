@@ -40,6 +40,8 @@ object C_ModifierFields {
     val EXTENDABLE = C_ModifierField.flagAnnotation("extendable")
     val EXTEND = C_Annotation_Extend.FIELD
 
+    val OUTER = C_ModifierField.flagAnnotation("outer")
+
     val OMIT = C_ModifierField.flagAnnotation("omit")
     val SORT = C_ModifierField.choiceAnnotations(mapOf(C_Annotations.SORT to R_AtWhatSort.ASC, C_Annotations.SORT_DESC to R_AtWhatSort.DESC))
     val SUMMARIZATION = C_ModifierField.choiceAnnotations(C_AtSummarizationKind.values().associateBy { it.annotation })

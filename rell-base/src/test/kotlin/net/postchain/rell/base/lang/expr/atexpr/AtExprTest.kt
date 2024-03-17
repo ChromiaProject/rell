@@ -503,7 +503,7 @@ class AtExprTest: BaseRellTest() {
         chkSql("""SELECT A00."company" FROM "c0.user" A00 ORDER BY A00."rowid" LIMIT ?""")
 
         chk("user @ {} ( .company.name ) limit 1", "text[Facebook]")
-        val join = """INNER JOIN "c0.company" A01 ON A00."company" = A01."rowid""""
+        val join = """JOIN "c0.company" A01 ON A00."company" = A01."rowid""""
         chkSql("""SELECT A01."name" FROM "c0.user" A00 $join ORDER BY A00."rowid" LIMIT ?""")
     }
 
@@ -517,8 +517,19 @@ class AtExprTest: BaseRellTest() {
         chkSql(sql1, """SELECT A00."company" FROM "c0.user" A00 WHERE A00."rowid" = ?""")
 
         chkEx("{ val u = user @ {} limit 1; return u.company.name; }", "text[Facebook]")
-        val join = """INNER JOIN "c0.company" A01 ON A00."company" = A01."rowid""""
+        val join = """JOIN "c0.company" A01 ON A00."company" = A01."rowid""""
         chkSql(sql1, """SELECT A01."name" FROM "c0.user" A00 $join WHERE A00."rowid" = ?""")
+    }
+
+    @Test fun testFromAnnotations() {
+        tst.strictToString = false
+        chk("(user) @* {} limit 3", "[user[10], user[20], user[21]]")
+        chk("(@outer user) @* {} limit 3", "ct_err:expr:at:from:bad_outer_join")
+        chk("(@inner user) @* {} limit 3", "ct_err:modifier:invalid:ann:inner")
+        chk("(@log user) @* {} limit 3", "ct_err:modifier:invalid:ann:log")
+        chk("(@log u: user) @* {} limit 3", "ct_err:modifier:invalid:ann:log")
+        chk("(@sum user) @* {} limit 3", "ct_err:modifier:invalid:ann:sum")
+        chk("(@sum u: user) @* {} limit 3", "ct_err:modifier:invalid:ann:sum")
     }
 
     private object Ins {

@@ -6,10 +6,7 @@ package net.postchain.rell.base.compiler.base.expr
 
 import net.postchain.rell.base.compiler.ast.S_CallArgument
 import net.postchain.rell.base.compiler.ast.S_Pos
-import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
-import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfoHandle
-import net.postchain.rell.base.compiler.base.core.C_Name
-import net.postchain.rell.base.compiler.base.core.C_TypeHint
+import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.fn.C_FullCallArguments
 import net.postchain.rell.base.compiler.base.fn.C_FunctionCallArgsUtils
 import net.postchain.rell.base.compiler.base.fn.C_FunctionCallTargetInfo
@@ -106,7 +103,7 @@ class C_TypeValueMember_BasicAttr(
             return C_Destination_Simple(rDstExpr)
         }
 
-        override fun canBeDbExpr() = attr.canBeDbExpr()
+        override fun canBeDbExpr(safe: Boolean) = !safe && attr.canBeDbExpr()
         override fun dbExpr(base: Db_Expr) = attr.dbExpr(base)
     }
 }
@@ -182,7 +179,7 @@ class C_TypeValueMember_Function(
         override fun calculator() = call.calculator()
         override fun destination(base: V_Expr) = throw C_Errors.errBadDestination(memberPos)
 
-        override fun canBeDbExpr() = call.canBeDbExpr()
+        override fun canBeDbExpr(safe: Boolean) = !safe && call.canBeDbExpr()
         override fun dbExpr(base: Db_Expr) = call.dbExpr(base)
         override fun dbExprWhat(base: V_Expr, safe: Boolean) = call.dbExprWhat(base, safe)
     }
@@ -333,8 +330,8 @@ sealed class C_EntityAttrRef(
 }
 
 private class C_EntityAttrRef_Regular(
-        rEntity: R_EntityDefinition,
-        private val attr: R_Attribute,
+    rEntity: R_EntityDefinition,
+    private val attr: R_Attribute,
 ): C_EntityAttrRef(rEntity, attr.ideName, attr.type) {
     override fun attribute() = attr
 
@@ -347,9 +344,14 @@ private class C_EntityAttrRef_Regular(
     }
 
     private fun makeDbAttrExpr(base: Db_TableExpr): Db_Expr {
-        val resultType = attr.type
-        val resultEntity = (resultType as? R_EntityType)?.rEntity
-        return if (resultEntity == null) Db_AttrExpr(base, attr) else Db_RelExpr(base, attr, resultEntity)
+        val attrType = attr.type
+        val resultEntity = (attrType as? R_EntityType)?.rEntity
+        val resultType = if (base.type is R_NullableType) C_Types.toNullable(attrType) else attrType
+        return if (resultEntity == null) {
+            Db_AttrExpr(base, attr, resultType)
+        } else {
+            Db_RelExpr(base, attr, resultEntity, resultType)
+        }
     }
 }
 

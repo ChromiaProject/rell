@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.ast
@@ -24,7 +24,7 @@ class S_NameExpr(val qName: S_QualifiedName): S_Expr(qName.pos) {
         return compile0(ctx, hint, qNameHand)
     }
 
-    private fun compile0(ctx: C_ExprContext, hint: C_ExprHint, qNameHand: C_QualifiedNameHandle): C_Expr {
+    fun compile0(ctx: C_ExprContext, hint: C_ExprHint, qNameHand: C_QualifiedNameHandle): C_Expr {
         val hint0 = if (qNameHand.size == 1) hint else C_ExprHint.DEFAULT
         val res = resolveName(ctx, hint0, qNameHand.first)
         if (res == null) {
@@ -75,19 +75,26 @@ class S_NameExpr(val qName: S_QualifiedName): S_Expr(qName.pos) {
         return if (nameRes.isValid()) NameRes_Global(ctx, nameRes) else null
     }
 
-    override fun compileFromItem(ctx: C_ExprContext, explicitAlias: R_Name?): C_AtFromItem {
+    override fun compileFromItem(ctx: C_ExprContext, itemCtx: C_AtFromItemContext, alias: C_Name?): C_AtFromItem {
         val qNameHand = qName.compile(ctx)
 
         val entity = ctx.nsCtx.getEntity(qNameHand, error = false, unknownInfo = false)
         if (entity != null) {
-            return C_AtFromItem_Entity(qName.pos, qNameHand.last.name, entity)
+            val atEntityId = ctx.appCtx.nextAtEntityId(itemCtx.fromCtx.atExprId)
+            val effectiveAlias = alias ?: qNameHand.last.name
+            val cAtEntity = S_AtExpr.makeDbAtEntity(entity, effectiveAlias, alias, atEntityId, ctx.docFactory)
+            return if (!itemCtx.isJoin) {
+                C_AtFromItem_Entity_Simple(qName.pos, cAtEntity)
+            } else {
+                C_AtFromItem_Entity_Join(qName.pos, cAtEntity, itemCtx.isOuterJoin, null, null)
+            }
         }
 
         val cExpr = ctx.msgCtx.consumeError {
             compile0(ctx, C_ExprHint.DEFAULT, qNameHand)
         } ?: C_ExprUtils.errorExpr(ctx, qName.pos)
 
-        return exprToFromItem(ctx, explicitAlias, cExpr)
+        return exprToFromItem(ctx, itemCtx, alias, cExpr)
     }
 
     override fun compileWhenEnum(ctx: C_ExprContext, type: R_EnumType): C_Expr {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model.expr
@@ -12,6 +12,8 @@ sealed class Db_SysFunction(val name: String) {
     abstract fun toSql(ctx: SqlGenContext, bld: SqlBuilder, args: List<RedDb_Expr>)
 
     companion object {
+        val COALESCE = simple("coalesce", "COALESCE")
+
         fun simple(name: String, sql: String): Db_SysFunction {
             return Db_SysFn_Simple(name, sql)
         }

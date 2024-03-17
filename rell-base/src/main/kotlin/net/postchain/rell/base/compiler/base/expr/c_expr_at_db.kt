@@ -25,8 +25,8 @@ class C_AtEntity(
     val alias: R_Name,
     val explicitAlias: Boolean,
     atEntityId: R_AtEntityId,
-    val ideRefInfo: C_IdeSymbolInfo,
-    val ideRefInfoPh: C_IdeSymbolInfo,
+    val aliasIdeDef: C_IdeSymbolDef,
+    val dollarIdeInfo: C_IdeSymbolInfo,
 ) {
     val atExprId = atEntityId.exprId
 
@@ -36,8 +36,8 @@ class C_AtEntity(
         return rAtEntity
     }
 
-    fun toVExpr(ctx: C_ExprContext, pos: S_Pos, ambiguous: Boolean): V_Expr {
-        return V_AtEntityExpr(ctx, pos, this, ambiguous)
+    fun toVExpr(ctx: C_ExprContext, pos: S_Pos, isOuter: Boolean, isAmbiguous: Boolean): V_Expr {
+        return V_AtEntityExpr(ctx, pos, this, isOuter, isAmbiguous)
     }
 
     fun toRAtEntityValidated(ctx: C_ExprContext, pos: S_Pos, ambiguous: Boolean): R_DbAtEntity {
@@ -56,11 +56,11 @@ class C_AtEntity(
 class C_AtFrom_Entities(
     outerExprCtx: C_ExprContext,
     fromCtx: C_AtFromContext,
-    entities: List<C_AtEntity>,
-): C_AtFrom(outerExprCtx, fromCtx) {
-    val entities = entities.toImmList()
-
-    private val msgCtx = outerExprCtx.msgCtx
+    fromBlock: R_FrameBlock?,
+    items: List<C_AtFromItem_Entity>,
+): C_AtFrom(outerExprCtx, fromCtx, fromBlock) {
+    private val items = items.toImmList()
+    private val entities = this.items.map { it.atEntity }.toImmList()
 
     private val innerExprCtx = outerExprCtx.update(blkCtx = innerBlkCtx, atCtx = innerAtCtx)
 
@@ -68,36 +68,40 @@ class C_AtFrom_Entities(
         check(entities.isNotEmpty())
 
         val atExprIds = entities.map { it.atExprId }.toSet()
-        checkEquals(setOf(atExprId), atExprIds)
+        checkEquals(atExprIds, setOf(atExprId))
 
         val ph = entities.any { !it.explicitAlias }
-        for (entity in entities) {
-            val entry = C_BlockEntry_AtEntity(entity, entity.ideRefInfo)
+        for (item in items) {
+            val entity = item.atEntity
+            val isOuter = item.isOuter()
+            val entry = C_BlockEntry_AtEntity(entity, entity.aliasIdeDef.refInfo, isOuter)
             innerBlkCtx.addEntry(entity.declPos, entity.alias, entity.explicitAlias, entry)
             if (ph) {
-                val phEntry = C_BlockEntry_AtEntity(entity, entity.ideRefInfoPh)
+                val phEntry = C_BlockEntry_AtEntity(entity, entity.dollarIdeInfo, isOuter)
                 innerBlkCtx.addAtPlaceholder(phEntry)
             }
         }
     }
 
+    override fun getAllExprs() = items.flatMap { it.getExprs() }
     override fun innerExprCtx() = innerExprCtx
 
-    override fun makeDefaultWhat(): V_DbAtWhat {
-        val fields = entities.map {
-            val name = if (entities.size == 1) null else R_IdeName(it.alias, C_IdeSymbolInfo.MEM_TUPLE_ATTR)
-            val vExpr = it.toVExpr(innerExprCtx, it.declPos, false)
+    override fun makeDefaultWhatFields(): List<V_DbAtWhatField> {
+        return items.map {
+            val atEntity = it.atEntity
+            val name = if (entities.size == 1) null else R_IdeName(atEntity.alias, C_IdeSymbolInfo.MEM_TUPLE_ATTR)
+            val vExpr = atEntity.toVExpr(innerExprCtx, atEntity.declPos, isOuter = it.isOuter(), isAmbiguous = false)
             V_DbAtWhatField(outerExprCtx.appCtx, name, vExpr.type, vExpr, V_AtWhatFieldFlags.DEFAULT, null)
         }
-        return V_DbAtWhat(fields)
     }
 
     override fun findMembers(name: R_Name): List<C_AtFromMember> {
-        return entities.flatMap { atEntity ->
-            val base = C_AtFromBase_Entity(atEntity)
-            val selfType = atEntity.rEntity.type
+        return items.flatMap { item ->
+            val isOuter = item.isOuter()
+            val base = C_AtFromBase_Entity(item.atEntity, isOuter)
+            val selfType = item.atEntity.rEntity.type
             val members = innerExprCtx.typeMgr.getValueMembers(selfType, name)
-            members.map { C_AtFromMember(base, selfType, it) }
+            members.map { C_AtFromMember(base, selfType, it, isOuter) }
         }.toImmList()
     }
 
@@ -114,12 +118,12 @@ class C_AtFrom_Entities(
     }
 
     private fun findContextAttrs(getter: (R_EntityDefinition) -> List<C_AtTypeImplicitAttr>): List<C_AtFromImplicitAttr> {
-        return entities
-            .flatMap { entity ->
-                val base = C_AtFromBase_Entity(entity)
-                val members = getter(entity.rEntity)
-                members.map { C_AtFromImplicitAttr(base, entity.rEntity.type, it) }
-            }.toImmList()
+        return items.flatMap { item ->
+            val atEntity = item.atEntity
+            val base = C_AtFromBase_Entity(atEntity, item.isOuter())
+            val members = getter(atEntity.rEntity)
+            members.map { C_AtFromImplicitAttr(base, atEntity.rEntity.type, it) }
+        }.toImmList()
     }
 
     override fun compile(details: C_AtDetails): V_Expr {
@@ -134,6 +138,17 @@ class C_AtFrom_Entities(
         } else {
             compileTop(details, cBase)
         }
+    }
+
+    override fun compileJoin(details: C_AtDetails, isOuter: Boolean): C_AtFromItem {
+        if (items.size > 1) {
+            msgCtx.error(items[1].pos, "expr:at:join:many_items", "Join at-expression must have only one entity")
+        }
+
+        val item = items.first()
+        val where = details.compileJoin(msgCtx)
+        val cBlock = innerBlkCtx.buildBlock()
+        return item.compileJoin(msgCtx, isOuter, where, cBlock.rBlock)
     }
 
     private fun isOuterDependent(cBase: C_AtExprBase): Boolean {
@@ -224,7 +239,7 @@ class C_AtFrom_Entities(
             outerExprCtx,
             details.startPos,
             result = details.res,
-            from = V_ColAtFrom(R_IterableAdapter_Direct, innerAtExpr),
+            from = V_ColAtFrom(R_IterableAdapter_Direct, innerAtExpr, null),
             what = compileColWhat(details, colWhat),
             where = null,
             cardinality = details.cardinality.value,
@@ -260,10 +275,12 @@ class C_AtFrom_Entities(
     }
 
     private fun compileBase(details: C_AtDetails): C_AtExprBase {
-        val rFrom = entities.map { it.toRAtEntity() }
+        val vFromItems = items.map { it.compile() }
+        val vFrom = V_DbAtExprFrom(vFromItems, fromBlock)
+        val whatFields = details.base.what.getMaterialFields()
         return C_AtExprBase(
-            rFrom,
-            details.base.what.materialFields,
+            vFrom,
+            whatFields,
             details.base.where,
             isMany = details.cardinality.value.many,
         )
@@ -274,18 +291,21 @@ class C_AtFrom_Entities(
         return cBlock.rBlock
     }
 
-    private inner class C_AtFromBase_Entity(private val atEntity: C_AtEntity): C_AtFromBase() {
+    private inner class C_AtFromBase_Entity(
+        private val atEntity: C_AtEntity,
+        private val isOuter: Boolean,
+    ): C_AtFromBase() {
         override fun nameMsg(): C_CodeMsg {
             return "${atEntity.alias}:${atEntity.rEntity.type.name}" toCodeMsg atEntity.alias.str
         }
 
         override fun compile(pos: S_Pos): V_Expr {
-            return V_AtEntityExpr(innerExprCtx, pos, atEntity, false)
+            return V_AtEntityExpr(innerExprCtx, pos, atEntity, isOuter = isOuter, isAmbiguous = false)
         }
     }
 
     private class C_AtExprBase(
-        val from: List<R_DbAtEntity>,
+        private val from: V_DbAtExprFrom,
         val what: List<V_DbAtWhatField>,
         private val where: V_Expr?,
         private val isMany: Boolean,

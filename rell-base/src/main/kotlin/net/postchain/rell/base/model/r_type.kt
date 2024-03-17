@@ -57,6 +57,7 @@ class R_TypeFlags(
 
 sealed class R_TypeSqlAdapter(val sqlType: DataType<*>?) {
     abstract fun isSqlCompatible(): Boolean
+    open fun isAllowedForEntityAttributes(): Boolean = isSqlCompatible()
     abstract fun toSqlValue(value: Rt_Value): Any
     abstract fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value)
     abstract fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value
@@ -275,6 +276,3 @@ abstract class R_LibSimpleType(name: String, defName: C_DefinitionName): R_Simpl
 }
 
 abstract class R_PrimitiveType(name: String): R_LibSimpleType(name, C_LibUtils.defName(name))
-
-private val GTX_SIGNER_SQL_DATA_TYPE = DefaultDataType(null as SQLDialect?, ByteArray::class.java, "gtx_signer")
-

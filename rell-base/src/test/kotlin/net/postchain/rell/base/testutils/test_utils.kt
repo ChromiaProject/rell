@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.testutils
@@ -24,7 +24,7 @@ import net.postchain.rell.base.utils.*
 import java.util.*
 import kotlin.test.assertEquals
 
-fun String.unwrap(): String = this.replace(Regex("\\n\\s*"), "")
+fun String.unwrap(sep: String = ""): String = this.trim().replace(Regex("\\n\\s*"), sep)
 
 class T_App(val rApp: R_App, val messages: List<C_Message>)
 

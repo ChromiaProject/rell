@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.vexpr
@@ -20,12 +20,12 @@ class V_BinaryOp(val code: String, val resType: R_Type, val rOp: R_BinaryOp, val
 }
 
 class V_BinaryExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        private val op: V_BinaryOp,
-        private val left: V_Expr,
-        private val right: V_Expr,
-        private val resVarFacts: C_ExprVarFacts
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    private val op: V_BinaryOp,
+    private val left: V_Expr,
+    private val right: V_Expr,
+    private val resVarFacts: C_ExprVarFacts,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(op.resType, left, right, canBeDbExpr = op.dbOp != null)
     override fun varFacts0() = resVarFacts
@@ -57,11 +57,11 @@ class V_BinaryExpr(
 }
 
 class V_ElvisExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        private val resType: R_Type,
-        private val left: V_Expr,
-        private val right: V_Expr
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    private val resType: R_Type,
+    private val left: V_Expr,
+    private val right: V_Expr,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(resType, left, right)
     override fun varFacts0() = C_ExprVarFacts.forSubExpressions(left) // left is always evaluated, right is not
@@ -73,8 +73,8 @@ class V_ElvisExpr(
     }
 
     override fun toDbExpr0(): Db_Expr {
-        val rLeft = left.toRExpr() // DB-expressions cannot be nullable...
+        val dbLeft = left.toDbExpr()
         val dbRight = right.toDbExpr()
-        return Db_ElvisExpr(resType, rLeft, dbRight)
+        return Db_ElvisExpr(resType, dbLeft, dbRight)
     }
 }

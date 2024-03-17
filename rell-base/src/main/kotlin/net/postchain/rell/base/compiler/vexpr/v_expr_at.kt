@@ -10,24 +10,37 @@ import net.postchain.rell.base.compiler.base.core.C_AppContext
 import net.postchain.rell.base.compiler.base.core.C_MessageContext
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.C_Errors
-import net.postchain.rell.base.lib.type.R_ListType
-import net.postchain.rell.base.model.*
+import net.postchain.rell.base.model.R_FrameBlock
+import net.postchain.rell.base.model.R_IdeName
+import net.postchain.rell.base.model.R_NullableType
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_IterableAdapter
-import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.immSetOf
+import net.postchain.rell.base.utils.toImmList
 
 class V_AtEntityExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        private val cAtEntity: C_AtEntity,
-        private val ambiguous: Boolean
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    private val cAtEntity: C_AtEntity,
+    private val isOuter: Boolean,
+    private val isAmbiguous: Boolean,
 ): V_Expr(exprCtx, pos) {
-    override fun exprInfo0() = V_ExprInfo(
-            cAtEntity.rEntity.type,
+    private val actualType: R_Type = let {
+        val entityType = cAtEntity.rEntity.type
+        if (isOuter) R_NullableType(entityType) else entityType
+    }
+
+    override fun exprInfo0(): V_ExprInfo {
+        return V_ExprInfo(
+            actualType,
             immListOf(),
             dependsOnDbAtEntity = true,
-            dependsOnAtExprs = immSetOf(cAtEntity.atExprId)
-    )
+            dependsOnAtExprs = immSetOf(cAtEntity.atExprId),
+        )
+    }
 
     override fun isAtExprItem() = true
     override fun implicitTargetAttrName() = cAtEntity.alias
@@ -35,8 +48,20 @@ class V_AtEntityExpr(
     override fun toRExpr0() = throw C_Errors.errExprDbNotAllowed(pos)
 
     override fun toDbExpr0(): Db_Expr {
-        val rAtEntity = cAtEntity.toRAtEntityValidated(exprCtx, pos, ambiguous)
-        return Db_EntityExpr(rAtEntity)
+        val rAtEntity = cAtEntity.toRAtEntityValidated(exprCtx, pos, isAmbiguous)
+        return Db_EntityExpr(rAtEntity, actualType)
+    }
+}
+
+class V_DbAtFromItem(
+    private val entity: R_DbAtEntity,
+    private val isOuter: Boolean,
+    private val where: V_Expr?,
+    private val rBlock: R_FrameBlock?,
+) {
+    fun toDb(): Db_AtFromItem {
+        val dbWhere = where?.toDbExpr()
+        return Db_AtFromItem(entity, isOuter, dbWhere, rBlock)
     }
 }
 
@@ -124,13 +149,18 @@ class V_DbAtWhatField(
     }
 }
 
-class V_DbAtWhat(allFields: List<V_DbAtWhatField>) {
-    val allFields = allFields.toImmList()
-    val materialFields = allFields.filter { !it.isIgnored() }
+class V_DbAtExprFrom(
+    private val items: List<V_DbAtFromItem>,
+    private val block: R_FrameBlock?,
+) {
+    fun toDb(): Db_AtExprFrom {
+        val dbItems = items.map { it.toDb() }
+        return Db_AtExprFrom(dbItems, block)
+    }
 }
 
 class V_AtExprBase(
-    private val from: List<R_DbAtEntity>,
+    private val from: V_DbAtExprFrom,
     private val what: List<V_DbAtWhatField>,
     private val where: V_Expr?,
     private val isMany: Boolean,
@@ -139,9 +169,10 @@ class V_AtExprBase(
     fun innerExprs(): List<V_Expr> = innerExprs
 
     fun toDbBase(nested: Boolean): Db_AtExprBase {
+        val dbFrom = from.toDb()
         val dbWhat = what.map { it.toDbField(nested) }
         val dbWhere = where?.toDbExpr()
-        return Db_AtExprBase(from, dbWhat, dbWhere, isMany)
+        return Db_AtExprBase(dbFrom, dbWhat, dbWhere, isMany)
     }
 }
 
@@ -205,12 +236,16 @@ class V_AtExprExtras(private val limit: V_Expr?, private val offset: V_Expr?) {
     }
 }
 
-class V_ColAtFrom(private val rIterableAdapter: R_IterableAdapter, private val expr: V_Expr) {
+class V_ColAtFrom(
+    private val rIterableAdapter: R_IterableAdapter,
+    private val expr: V_Expr,
+    private val block: R_FrameBlock?,
+) {
     fun innerExprs(): List<V_Expr> = immListOf(expr)
 
     fun toRFrom(): R_ColAtFrom {
         val rExpr = expr.toRExpr()
-        return R_ColAtFrom(rIterableAdapter, rExpr)
+        return R_ColAtFrom(rIterableAdapter, rExpr, block)
     }
 }
 

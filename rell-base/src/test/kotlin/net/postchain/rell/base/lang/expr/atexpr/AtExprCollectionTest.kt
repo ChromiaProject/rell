@@ -143,10 +143,9 @@ class AtExprCollectionTest: BaseRellTest(false) {
         tst.strictToString = false
         chk("(a : [1,2,3,4,5]) @* {}", "[1, 2, 3, 4, 5]")
         chk("(a : [1,2,3,4,5],) @* {}", "[1, 2, 3, 4, 5]")
-        chk("(a = [1,2,3,4,5]) @* {}", "ct_err:expr:at:from:tuple_name_eq_expr:a")
-        chk("(a = [1,2,3,4,5],) @* {}", "ct_err:expr:at:from:tuple_name_eq_expr:a")
-        chk("(a : [1,2,3], b = [4,5,6]) @* {}", "ct_err:[expr:at:from:tuple_name_eq_expr:b][at:from:many_iterables:2]")
-        chk("(a = [1,2,3], b : [4,5,6]) @* {}", "ct_err:[expr:at:from:tuple_name_eq_expr:a][at:from:many_iterables:2]")
+        chk("(a = [1,2,3,4,5]) @* {}", "ct_err:at:from:bad_type:(a:list<integer>)")
+        chk("(a = [1,2,3,4,5],) @* {}", "ct_err:at:from:bad_type:(a:list<integer>)")
+        chk("(a = [1,2,3], b = [4,5,6]) @* {}", "ct_err:at:from:bad_type:(a:list<integer>,b:list<integer>)")
     }
 
     @Test fun testFromListSet() {

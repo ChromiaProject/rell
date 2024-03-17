@@ -132,20 +132,20 @@ class C_BlockEntry_Var(
 class C_BlockEntry_AtEntity(
     private val atEntity: C_AtEntity,
     private val ideInfo: C_IdeSymbolInfo,
+    private val isOuter: Boolean,
 ): C_BlockEntry() {
     override fun toLocalVarOpt() = null
     override fun ideSymbolInfo() = ideInfo
 
     override fun compile(ctx: C_ExprContext, pos: S_Pos, ambiguous: Boolean): V_Expr {
-        return atEntity.toVExpr(ctx, pos, ambiguous)
+        return atEntity.toVExpr(ctx, pos, isOuter, ambiguous)
     }
 }
 
 class C_BlockScopeBuilder(
-        private val fnCtx: C_FunctionContext,
-        private val blockUid: R_FrameBlockUid,
-        startOffset: Int,
-        proto: C_BlockScope
+    private val fnCtx: C_FunctionContext,
+    startOffset: Int,
+    proto: C_BlockScope,
 ) {
     private val explicitEntries = mutableMapOf<R_Name, C_BlockEntry>()
     private val implicitEntries = mutableMultimapOf<R_Name, C_BlockEntry>()
@@ -236,7 +236,14 @@ sealed class C_BlockContext(val frameCtx: C_FrameContext, val blockUid: R_FrameB
     abstract fun lookupAtImplicitAttributesByName(name: R_Name): List<C_AtFromImplicitAttr>
     abstract fun lookupAtImplicitAttributesByType(type: R_Type): List<C_AtFromImplicitAttr>
 
-    abstract fun addEntry(pos: S_Pos, name: R_Name, explicit: Boolean, entry: C_BlockEntry)
+    abstract fun addEntry(
+        pos: S_Pos,
+        name: R_Name,
+        explicit: Boolean,
+        entry: C_BlockEntry,
+        errOnNameConflict: Boolean = true,
+    )
+
     abstract fun addAtPlaceholder(entry: C_BlockEntry)
 
     abstract fun addLocalVar(
@@ -301,7 +308,7 @@ class C_OwnerBlockContext(
     protoBlockScope: C_BlockScope,
 ): C_BlockContext(frameCtx, blockUid) {
     private val startOffset: Int = parent?.scopeBuilder?.endOffset() ?: 0
-    private val scopeBuilder: C_BlockScopeBuilder = C_BlockScopeBuilder(fnCtx, blockUid, startOffset, protoBlockScope)
+    private val scopeBuilder: C_BlockScopeBuilder = C_BlockScopeBuilder(fnCtx, startOffset, protoBlockScope)
     private val atFromBlock: C_AtFromBlock? = if (atFrom == null) parent?.atFromBlock else C_AtFromBlock(parent?.atFromBlock, atFrom)
     private val atPlaceholders = mutableListOf<C_BlockEntry>()
     private var build = false
@@ -384,8 +391,14 @@ class C_OwnerBlockContext(
         return atFromBlock?.from?.findImplicitAttributesByType(type) ?: immListOf()
     }
 
-    override fun addEntry(pos: S_Pos, name: R_Name, explicit: Boolean, entry: C_BlockEntry) {
-        if (explicit && !checkNameConflict(pos, name)) {
+    override fun addEntry(
+        pos: S_Pos,
+        name: R_Name,
+        explicit: Boolean,
+        entry: C_BlockEntry,
+        errOnNameConflict: Boolean,
+    ) {
+        if (explicit && !checkNameConflict(pos, name, errOnNameConflict)) {
             return
         }
         scopeBuilder.addEntry(name, explicit, entry)
@@ -405,9 +418,9 @@ class C_OwnerBlockContext(
         return localVar.toRef(blockUid)
     }
 
-    private fun checkNameConflict(pos: S_Pos, name: R_Name): Boolean {
+    private fun checkNameConflict(pos: S_Pos, name: R_Name, errOnNameConflict: Boolean = true): Boolean {
         val entry = findValue { it.scopeBuilder.lookupExplicit(name) }
-        if (entry != null) {
+        if (entry != null && errOnNameConflict) {
             frameCtx.msgCtx.error(pos, "block:name_conflict:$name", "Name conflict: '$name' already exists")
         }
         return entry == null

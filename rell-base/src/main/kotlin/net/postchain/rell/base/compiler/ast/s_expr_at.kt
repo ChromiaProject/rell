@@ -13,7 +13,7 @@ import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.V_AtWhatFieldFlags
-import net.postchain.rell.base.compiler.vexpr.V_DbAtWhat
+import net.postchain.rell.base.compiler.vexpr.V_ConstantValueEvalContext
 import net.postchain.rell.base.compiler.vexpr.V_DbAtWhatField
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lib.type.*
@@ -28,23 +28,158 @@ import net.postchain.rell.base.utils.doc.DocSymbolName
 import net.postchain.rell.base.utils.ide.IdeLocalSymbolLink
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
+import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.immSetOf
 import net.postchain.rell.base.utils.toImmList
 
-class S_AtExprFrom(val alias: S_Name?, val entityName: S_QualifiedName)
-
-sealed class S_AtExprWhat {
-    abstract fun compile(ctx: C_ExprContext, hint: C_ExprHint, from: C_AtFrom, subValues: MutableList<V_Expr>): V_DbAtWhat
+sealed class S_AtExprFrom(val startPos: S_Pos) {
+    abstract fun compile(ctx: C_ExprContext, fromCtx: C_AtFromContext): C_AtFrom
+    abstract fun compileJoin(ctx: C_ExprContext, fromCtx: C_AtFromContext, alias: C_Name?): C_AtFrom
 }
 
-class S_AtExprWhat_Default: S_AtExprWhat() {
-    override fun compile(ctx: C_ExprContext, hint: C_ExprHint, from: C_AtFrom, subValues: MutableList<V_Expr>): V_DbAtWhat {
-        return from.makeDefaultWhat()
+class S_AtExprFrom_Simple(val expr: S_Expr): S_AtExprFrom(expr.startPos) {
+    override fun compile(ctx: C_ExprContext, fromCtx: C_AtFromContext): C_AtFrom {
+        return compileJoin(ctx, fromCtx, null)
+    }
+
+    override fun compileJoin(ctx: C_ExprContext, fromCtx: C_AtFromContext, alias: C_Name?): C_AtFrom {
+        val itemCtx = C_AtFromItemContext(fromCtx, false, null, true)
+        val item = expr.compileFromItem(ctx, itemCtx, alias)
+        return compile0(ctx, fromCtx, item)
+    }
+
+    private fun compile0(ctx: C_ExprContext, fromCtx: C_AtFromContext, item: C_AtFromItem): C_AtFrom {
+        return when (item) {
+            is C_AtFromItem_Entity -> C_AtFrom_Entities(ctx, fromCtx, null, immListOf(item))
+            is C_AtFromItem_Iterable -> C_AtFrom_Iterable(ctx, fromCtx, null, item)
+        }
     }
 }
 
-class S_AtExprWhat_Simple(val path: List<S_Name>): S_AtExprWhat() {
-    override fun compile(ctx: C_ExprContext, hint: C_ExprHint, from: C_AtFrom, subValues: MutableList<V_Expr>): V_DbAtWhat {
+class S_AtExprFrom_Complex(startPos: S_Pos, val items: List<S_AtExprFromItem>): S_AtExprFrom(startPos) {
+    init {
+        require(items.isNotEmpty())
+    }
+
+    override fun compile(ctx: C_ExprContext, fromCtx: C_AtFromContext): C_AtFrom {
+        val (cItems, rFromBlock) = compileItems(ctx, fromCtx)
+
+        val entities = mutableListOf<C_AtFromItem_Entity>()
+        val iterables = mutableListOf<C_AtFromItem_Iterable>()
+
+        for (item in cItems) {
+            when (item) {
+                is C_AtFromItem_Entity -> processFromItem(ctx, item, entities, iterables)
+                is C_AtFromItem_Iterable -> processFromItem(ctx, item, iterables, entities)
+            }
+        }
+
+        if (entities.isNotEmpty()) {
+            return C_AtFrom_Entities(ctx, fromCtx, rFromBlock, entities)
+        }
+
+        if (iterables.size > 1 && iterables.any { it.vExpr.type.isNotError() }) {
+            ctx.msgCtx.error(iterables[1].pos, "at:from:many_iterables:${iterables.size}",
+                    "Only one collection is allowed in at-expression")
+        }
+
+        val iterable = iterables.first()
+        return C_AtFrom_Iterable(ctx, fromCtx, rFromBlock, iterable)
+    }
+
+    override fun compileJoin(ctx: C_ExprContext, fromCtx: C_AtFromContext, alias: C_Name?): C_AtFrom {
+        ctx.msgCtx.error(startPos, "expr:at:join:complex_from", "Join at-expression must use a simple entity")
+        return compile(ctx, fromCtx)
+    }
+
+    private fun compileItems(ctx: C_ExprContext, fromCtx: C_AtFromContext): Pair<List<C_AtFromItem>, R_FrameBlock> {
+        val res = mutableListOf<C_AtFromItem>()
+
+        var isDb: Boolean? = null
+        val fromBlkCtx = ctx.blkCtx.createSubContext("@from")
+        val fromExprCtx = ctx.update(blkCtx = fromBlkCtx)
+
+        for (item in items) {
+            val cItem = item.compile(fromExprCtx, fromCtx, isDb)
+            res.add(cItem)
+
+            val itemIsDb = when (cItem) {
+                is C_AtFromItem_Iterable -> false
+                is C_AtFromItem_Entity -> {
+                    val entity = cItem.atEntity
+                    val entry = C_BlockEntry_AtEntity(entity, entity.aliasIdeDef.refInfo, cItem.isOuter())
+                    fromBlkCtx.addEntry(
+                        entity.declPos,
+                        entity.alias,
+                        entity.explicitAlias,
+                        entry,
+                        errOnNameConflict = false,
+                    )
+                    true
+                }
+            }
+
+            if (isDb == null) {
+                isDb = itemIsDb
+            }
+        }
+
+        val rBlock = fromBlkCtx.buildBlock().rBlock
+        return res.toImmList() to rBlock
+    }
+
+    private fun <T: C_AtFromItem> processFromItem(
+        ctx: C_ExprContext,
+        item: T,
+        targets: MutableList<T>,
+        opposites: List<*>,
+    ) {
+        if (opposites.isNotEmpty()) {
+            ctx.msgCtx.error(item.pos,
+                "at:from:mix_entity_iterable", "Cannot mix entities and collections in at-expression")
+        }
+        targets.add(item)
+    }
+}
+
+class S_AtExprFromItem(
+    private val modifiers: S_Modifiers,
+    private val alias: S_Name?,
+    private val expr: S_Expr,
+) {
+    fun compile(ctx: C_ExprContext, fromCtx: C_AtFromContext, isDb: Boolean?): C_AtFromItem {
+        val mods = C_ModifierValues(C_ModifierTargetType.EXPRESSION, null)
+        val modOuter = mods.field(C_ModifierFields.OUTER)
+        modifiers.compile(ctx.nsCtx, mods)
+
+        val isJoin = isDb == true
+        val outerPos = modOuter.pos()
+        if (outerPos != null && !isJoin) {
+            ctx.msgCtx.error(outerPos, "expr:at:from:bad_outer_join", "Invalid outer join expression")
+        }
+
+        val itemCtx = C_AtFromItemContext(fromCtx, isJoin, if (isJoin) outerPos else null, isDb != null)
+
+        val aliasNameHand = alias?.compile(ctx)
+        val item = expr.compileFromItem(ctx, itemCtx, aliasNameHand?.name)
+        aliasNameHand?.setIdeInfo(item.aliasIdeDef.defInfo)
+        return item
+    }
+}
+
+sealed class S_AtExprWhat {
+    abstract fun compile(ctx: C_ExprContext, from: C_AtFrom, subValues: MutableList<V_Expr>): C_AtWhat
+}
+
+class S_AtExprWhat_Default: S_AtExprWhat() {
+    override fun compile(ctx: C_ExprContext, from: C_AtFrom, subValues: MutableList<V_Expr>): C_AtWhat {
+        val fields = from.makeDefaultWhatFields()
+        return C_AtWhat(fields, null)
+    }
+}
+
+class S_AtExprWhat_Simple(val startPos: S_Pos, val path: List<S_Name>): S_AtExprWhat() {
+    override fun compile(ctx: C_ExprContext, from: C_AtFrom, subValues: MutableList<V_Expr>): C_AtWhat {
         var expr = S_AttrExpr.compileAttr(ctx, C_ExprHint.DEFAULT, path[0])
 
         for (i in 1 until path.size) {
@@ -55,19 +190,18 @@ class S_AtExprWhat_Simple(val path: List<S_Name>): S_AtExprWhat() {
 
         val vExpr = expr.value()
         val field = V_DbAtWhatField(ctx.appCtx, null, vExpr.type, vExpr, V_AtWhatFieldFlags.DEFAULT, null)
-        val fields = listOf(field)
-        return V_DbAtWhat(fields)
+        return C_AtWhat(immListOf(field), startPos)
     }
 }
 
 class S_AtExprWhatComplexField(
-        val attr: S_Name?,
-        val expr: S_Expr,
-        val modifiers: S_Modifiers
+    val attr: S_Name?,
+    val expr: S_Expr,
+    val modifiers: S_Modifiers,
 )
 
-class S_AtExprWhat_Complex(val fields: List<S_AtExprWhatComplexField>): S_AtExprWhat() {
-    override fun compile(ctx: C_ExprContext, hint: C_ExprHint, from: C_AtFrom, subValues: MutableList<V_Expr>): V_DbAtWhat {
+class S_AtExprWhat_Complex(val startPos: S_Pos, val fields: List<S_AtExprWhatComplexField>): S_AtExprWhat() {
+    override fun compile(ctx: C_ExprContext, from: C_AtFrom, subValues: MutableList<V_Expr>): C_AtWhat {
         val lazyTupleIdeId = lazy { ctx.defCtx.tupleIdeId() }
 
         val procFields = processFields(ctx)
@@ -80,13 +214,13 @@ class S_AtExprWhat_Complex(val fields: List<S_AtExprWhatComplexField>): S_AtExpr
 
         val hasGroup = procFields.any { it.summarization?.isGroup() ?: false }
 
-        val cFields = procFields.map { field ->
+        val vFields = procFields.map { field ->
             val resultType = field.summarization?.getResultType(hasGroup) ?: field.vExpr.type
             val rIdeName = compileFieldName(ctx, lazyTupleIdeId, field, resultType, selFields.size > 1)
             V_DbAtWhatField(ctx.appCtx, rIdeName, resultType, field.vExpr, field.flags, field.summarization)
         }
 
-        return V_DbAtWhat(cFields)
+        return C_AtWhat(vFields, startPos)
     }
 
     private fun processFields(ctx: C_ExprContext): List<WhatField> {
@@ -117,9 +251,7 @@ class S_AtExprWhat_Complex(val fields: List<S_AtExprWhatComplexField>): S_AtExpr
         val modOmit = mods.field(C_ModifierFields.OMIT)
         val modSort = mods.field(C_ModifierFields.SORT)
         val modSumm = mods.field(C_ModifierFields.SUMMARIZATION)
-
-        val modifierCtx = C_ModifierContext(ctx.msgCtx, ctx.symCtx)
-        field.modifiers.compile(modifierCtx, mods)
+        field.modifiers.compile(ctx.nsCtx, mods)
 
         val omit = modOmit.hasValue()
         val sort = modSort.posValue()
@@ -309,11 +441,11 @@ class S_AtExprWhere(val exprs: List<S_Expr>) {
     }
 
     private fun compileWhereExpr(
-            ctx: C_ExprContext,
-            atExprId: R_AtExprId,
-            idx: Int,
-            expr: S_Expr,
-            subValues: MutableList<V_Expr>
+        ctx: C_ExprContext,
+        atExprId: R_AtExprId,
+        idx: Int,
+        expr: S_Expr,
+        subValues: MutableList<V_Expr>,
     ): V_Expr {
         val cExpr = expr.compileSafe(ctx)
         val vExpr = cExpr.value()
@@ -418,11 +550,16 @@ class S_AtExprWhere(val exprs: List<S_Expr>) {
     }
 
     private fun makeWhere(ctx: C_ExprContext, compiledExprs: List<V_Expr>): V_Expr? {
-        return if (compiledExprs.isEmpty()) null else {
-            CommonUtils.foldSimple(compiledExprs) { left, right ->
-                C_BinOp_And.compile(ctx, left, right) ?: C_ExprUtils.errorVExpr(ctx, left.pos)
-            }
+        if (compiledExprs.isEmpty()) {
+            return null
         }
+
+        val vExpr = CommonUtils.foldSimple(compiledExprs) { left, right ->
+            C_BinOp_And.compile(ctx, left, right) ?: C_ExprUtils.errorVExpr(ctx, left.pos)
+        }
+
+        val value = vExpr.constantValue(V_ConstantValueEvalContext())
+        return if (value == Rt_BooleanValue.TRUE) null else vExpr
     }
 
     private fun whereExprMsg(idx: Int): String {
@@ -432,7 +569,7 @@ class S_AtExprWhere(val exprs: List<S_Expr>) {
 }
 
 class S_AtExpr(
-    val from: S_Expr,
+    val from: S_AtExprFrom,
     val cardinality: S_PosValue<R_AtCardinality>,
     val where: S_AtExprWhere,
     val what: S_AtExprWhat,
@@ -440,42 +577,59 @@ class S_AtExpr(
     val offset: S_Expr?,
 ): S_Expr(from.startPos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
-        return compileInternal(ctx, hint, null)
+        return compile0(ctx, null)
     }
 
     override fun compileNestedAt(ctx: C_ExprContext, parentAtCtx: C_AtContext): C_Expr {
-        return compileInternal(ctx, C_ExprHint.DEFAULT, parentAtCtx)
+        return compile0(ctx, parentAtCtx)
     }
 
-    private fun compileInternal(ctx: C_ExprContext, hint: C_ExprHint, parentAtCtx: C_AtContext?): C_Expr {
-        val subValues = mutableListOf<V_Expr>()
+    override fun compileFromItem(ctx: C_ExprContext, itemCtx: C_AtFromItemContext, alias: C_Name?): C_AtFromItem {
+        if (!itemCtx.atExprAllowed) {
+            ctx.msgCtx.error(startPos, "expr:at:from:nested_at", "First from-expression must be a simple entity")
+        }
 
+        if (!itemCtx.isJoin) {
+            return super.compileFromItem(ctx, itemCtx, alias)
+        }
+
+        val fromCtx = itemCtx.fromCtx
+        val atExprId = fromCtx.atExprId
+        val subFromCtx = C_AtFromContext(cardinality.pos, atExprId, fromCtx.parentAtCtx)
+        val cFrom = from.compileJoin(ctx, subFromCtx, alias)
+        val cDetails = compileDetails(ctx, atExprId, cFrom)
+
+        return cFrom.compileJoin(cDetails, itemCtx.isOuterJoin)
+    }
+
+    private fun compile0(ctx: C_ExprContext, parentAtCtx: C_AtContext?): C_Expr {
         val atExprId = ctx.appCtx.nextAtExprId()
-        val fromCtx = C_AtFromContext(cardinality.pos, atExprId, parentAtCtx)
-        val cFrom = from.compileFrom(ctx, fromCtx, subValues)
 
-        val cDetails = compileDetails(ctx, hint, atExprId, cFrom, subValues)
+        val fromCtx = C_AtFromContext(cardinality.pos, atExprId, parentAtCtx)
+        val cFrom = from.compile(ctx, fromCtx)
+        val cDetails = compileDetails(ctx, atExprId, cFrom)
+
         val vExpr = cFrom.compile(cDetails)
         return C_ValueExpr(vExpr)
     }
 
     private fun compileDetails(
         ctx: C_ExprContext,
-        hint: C_ExprHint,
         atExprId: R_AtExprId,
         cFrom: C_AtFrom,
-        subValues: MutableList<V_Expr>,
     ): C_AtDetails {
+        val subValues = cFrom.getAllExprs().toMutableList()
+
         val innerCtx = cFrom.innerExprCtx()
         val vWhere = where.compile(innerCtx, atExprId, subValues)
 
-        val vWhat = what.compile(innerCtx, hint, cFrom, subValues)
-        val cResult = compileAtResult(vWhat.allFields)
+        val cWhat = what.compile(innerCtx, cFrom, subValues)
+        val cResult = compileAtResult(cWhat.allFields)
 
         val vLimit = compileLimitOffset(limit, "limit", ctx, subValues)
         val vOffset = compileLimitOffset(offset, "offset", ctx, subValues)
 
-        val base = C_AtExprBase(vWhat, vWhere)
+        val base = C_AtExprBase(cWhat, vWhere)
         val facts = C_ExprVarFacts.forSubExpressions(subValues)
 
         return C_AtDetails(startPos, cardinality, base, vLimit, vOffset, cResult, facts)
@@ -546,21 +700,20 @@ class S_AtExpr(
         fun makeDbAtEntity(
             entity: R_EntityDefinition,
             alias: C_Name,
-            explicitAliasHand: C_NameHandle?,
+            explicitAlias: C_Name?,
             atEntityId: R_AtEntityId,
             docFactory: DocSymbolFactory,
         ): C_AtEntity {
             val ideDef = makeDbAtIdeDef(docFactory, alias.str, alias.pos, entity)
-            val ideDefPh = makeDbAtIdeDef(docFactory, C_Constants.AT_PLACEHOLDER, alias.pos, entity)
-            explicitAliasHand?.setIdeInfo(ideDef.defInfo)
+            val dollarIdeDef = makeDbAtIdeDef(docFactory, C_Constants.AT_PLACEHOLDER, alias.pos, entity)
             return C_AtEntity(
                 alias.pos,
                 entity,
                 alias.rName,
-                explicitAliasHand != null,
+                explicitAlias != null,
                 atEntityId,
-                ideDef.refInfo,
-                ideDefPh.refInfo,
+                ideDef,
+                dollarIdeDef.refInfo,
             )
         }
 
@@ -579,7 +732,12 @@ class S_AtExpr(
             return C_IdeSymbolDef.make(IdeSymbolKind.LOC_AT_ALIAS, link = IdeLocalSymbolLink(pos), doc = docSymbol)
         }
 
-        fun makeColAtIdeInfo(docFactory: DocSymbolFactory, explicitAlias: R_Name?, itemType: R_Type): C_IdeSymbolInfo {
+        fun makeColAtIdeDef(
+            docFactory: DocSymbolFactory,
+            explicitAlias: R_Name?,
+            pos: S_Pos,
+            itemType: R_Type,
+        ): C_IdeSymbolDef {
             val docName = explicitAlias?.str ?: C_Constants.AT_PLACEHOLDER
             val docType = L_TypeUtils.docType(itemType.mType)
             val docSymbol = docFactory.makeDocSymbol(
@@ -587,7 +745,7 @@ class S_AtExpr(
                 DocSymbolName.local(docName),
                 DocDeclaration_AtVariable(docName, docType),
             )
-            return C_IdeSymbolInfo.direct(IdeSymbolKind.LOC_AT_ALIAS, doc = docSymbol)
+            return C_IdeSymbolDef.make(IdeSymbolKind.LOC_AT_ALIAS, link = IdeLocalSymbolLink(pos), doc = docSymbol)
         }
     }
 }

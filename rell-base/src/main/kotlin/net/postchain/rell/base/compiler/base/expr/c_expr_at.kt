@@ -17,15 +17,31 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_IterableAdapter
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 
 class C_AtContext(
-        val parent: C_AtContext?,
-        val atExprId: R_AtExprId,
-        val dbAt: Boolean
+    val parent: C_AtContext?,
+    val atExprId: R_AtExprId,
+    val dbAt: Boolean,
 )
 
 class C_AtFromContext(val pos: S_Pos, val atExprId: R_AtExprId, val parentAtCtx: C_AtContext?)
+
+class C_AtFromItemContext(
+    val fromCtx: C_AtFromContext,
+    val isJoin: Boolean,
+    val outerJoinPos: S_Pos?,
+    val atExprAllowed: Boolean,
+) {
+    val isOuterJoin = outerJoinPos != null
+
+    init {
+        if (outerJoinPos != null) {
+            require(isJoin)
+        }
+    }
+}
 
 abstract class C_AtFromBase {
     abstract fun nameMsg(): C_CodeMsg
@@ -36,6 +52,7 @@ class C_AtFromMember(
     private val base: C_AtFromBase,
     private val selfType: R_Type,
     private val member: C_TypeValueMember,
+    private val safe: Boolean,
 ) {
     fun nameMsg(): String = member.nameMsg().msg
     fun ownerMsg(): C_CodeMsg = base.nameMsg()
@@ -44,7 +61,7 @@ class C_AtFromMember(
 
     fun compile(ctx: C_ExprContext, cNameHand: C_NameHandle): C_Expr {
         val baseExpr = base.compile(cNameHand.pos)
-        val link = C_MemberLink(baseExpr, selfType, cNameHand.pos, cNameHand.name, false)
+        val link = C_MemberLink(baseExpr, selfType, cNameHand.pos, cNameHand.name, safe)
         return member.compile(ctx, link, cNameHand)
     }
 }
@@ -52,21 +69,27 @@ class C_AtFromMember(
 abstract class C_AtFrom(
     protected val outerExprCtx: C_ExprContext,
     fromCtx: C_AtFromContext,
+    protected val fromBlock: R_FrameBlock?,
 ) {
     val atExprId = fromCtx.atExprId
 
     protected val parentAtCtx = fromCtx.parentAtCtx
     protected val innerBlkCtx = outerExprCtx.blkCtx.createSubContext("@", atFrom = this)
 
+    protected val msgCtx = outerExprCtx.msgCtx
+
     val innerAtCtx = C_AtContext(fromCtx.parentAtCtx, atExprId, this is C_AtFrom_Entities)
 
+    abstract fun getAllExprs(): List<V_Expr>
+
     abstract fun innerExprCtx(): C_ExprContext
-    abstract fun makeDefaultWhat(): V_DbAtWhat
+    abstract fun makeDefaultWhatFields(): List<V_DbAtWhatField>
     abstract fun findMembers(name: R_Name): List<C_AtFromMember>
     abstract fun findImplicitAttributesByName(name: R_Name): List<C_AtFromImplicitAttr>
     abstract fun findImplicitAttributesByType(type: R_Type): List<C_AtFromImplicitAttr>
 
     abstract fun compile(details: C_AtDetails): V_Expr
+    abstract fun compileJoin(details: C_AtDetails, isOuter: Boolean): C_AtFromItem
 
     protected fun compileColWhat(details: C_AtDetails, what: List<V_DbAtWhatField>): V_ColAtWhat {
         val colFields = what.map { it.toColField() }
@@ -104,26 +127,111 @@ abstract class C_AtFrom(
     }
 }
 
-sealed class C_AtFromItem(val pos: S_Pos)
+sealed class C_AtFromItem(
+    val pos: S_Pos,
+    val aliasIdeDef: C_IdeSymbolDef,
+)
 
-class C_AtFromItem_Entity(pos: S_Pos, val alias: C_Name, val entity: R_EntityDefinition): C_AtFromItem(pos)
+sealed class C_AtFromItem_Entity(
+    pos: S_Pos,
+    val atEntity: C_AtEntity,
+): C_AtFromItem(pos, atEntity.aliasIdeDef) {
+    abstract fun isOuter(): Boolean
+    abstract fun getExprs(): List<V_Expr>
+    abstract fun compile(): V_DbAtFromItem
+
+    abstract fun compileJoin(
+        msgCtx: C_MessageContext,
+        isOuter: Boolean,
+        where: V_Expr?,
+        block: R_FrameBlock,
+    ): C_AtFromItem_Entity
+}
+
+class C_AtFromItem_Entity_Simple(
+    pos: S_Pos,
+    atEntity: C_AtEntity,
+): C_AtFromItem_Entity(pos, atEntity) {
+    override fun isOuter() = false
+    override fun getExprs() = immListOf<V_Expr>()
+
+    override fun compile(): V_DbAtFromItem {
+        val rAtEntity = atEntity.toRAtEntity()
+        return V_DbAtFromItem(rAtEntity, false, null, null)
+    }
+
+    override fun compileJoin(
+        msgCtx: C_MessageContext,
+        isOuter: Boolean,
+        where: V_Expr?,
+        block: R_FrameBlock,
+    ): C_AtFromItem_Entity {
+        return C_AtFromItem_Entity_Join(atEntity.declPos, atEntity, isOuter, where, block)
+    }
+}
+
+class C_AtFromItem_Entity_Join(
+    pos: S_Pos,
+    atEntity: C_AtEntity,
+    private val isOuter: Boolean,
+    private val where: V_Expr?,
+    private val block: R_FrameBlock?,
+): C_AtFromItem_Entity(pos, atEntity) {
+    override fun isOuter() = isOuter
+    override fun getExprs() = listOfNotNull(where)
+
+    override fun compile(): V_DbAtFromItem {
+        val rAtEntity = atEntity.toRAtEntity()
+        return V_DbAtFromItem(rAtEntity, isOuter, where, block)
+    }
+
+    override fun compileJoin(
+        msgCtx: C_MessageContext,
+        isOuter: Boolean,
+        where: V_Expr?,
+        block: R_FrameBlock,
+    ): C_AtFromItem_Entity {
+        // Must not happen, but handling the error anyway.
+        msgCtx.error(pos, "expr:at:from:join_as_join", "Cannot use this expression as a join")
+        return this
+    }
+}
 
 class C_AtFromItem_Iterable(
     pos: S_Pos,
+    aliasIdeDef: C_IdeSymbolDef,
+    val alias: C_Name?,
     val vExpr: V_Expr,
     val elemType: R_Type,
-    val ideInfo: C_IdeSymbolInfo,
     private val rIterableAdapter: R_IterableAdapter,
-): C_AtFromItem(pos) {
-    fun compile(): V_ColAtFrom {
-        return V_ColAtFrom(rIterableAdapter, vExpr)
+): C_AtFromItem(pos, aliasIdeDef) {
+    fun compile(fromBlock: R_FrameBlock?): V_ColAtFrom {
+        return V_ColAtFrom(rIterableAdapter, vExpr, fromBlock)
+    }
+}
+
+class C_AtWhat(
+    val allFields: List<V_DbAtWhatField>,
+    private val explicitPos: S_Pos?,
+) {
+    fun getMaterialFields() = allFields.filter { !it.isIgnored() }
+
+    fun compileJoin(msgCtx: C_MessageContext) {
+        if (explicitPos != null) {
+            msgCtx.error(explicitPos, "expr:at:join:explicit_what", "Join at-expression cannot have a what-part")
+        }
     }
 }
 
 class C_AtExprBase(
-    val what: V_DbAtWhat,
+    val what: C_AtWhat,
     val where: V_Expr?,
-)
+) {
+    fun compileJoin(msgCtx: C_MessageContext): V_Expr? {
+        what.compileJoin(msgCtx)
+        return where
+    }
+}
 
 class C_AtExprResult(
     val recordType: R_Type,
@@ -157,7 +265,26 @@ class C_AtDetails(
     val offset: V_Expr?,
     val res: C_AtExprResult,
     val exprFacts: C_ExprVarFacts,
-)
+) {
+    fun compileJoin(msgCtx: C_MessageContext): V_Expr? {
+        val where = base.compileJoin(msgCtx)
+
+        if (cardinality.value != R_AtCardinality.ZERO_MANY) {
+            msgCtx.error(cardinality.pos, "expr:at:join:cardinality:${cardinality.value}",
+                "Join at-expression must use operator '${R_AtCardinality.ZERO_MANY.code}'")
+        }
+
+        checkExtra(msgCtx, limit, "limit")
+        checkExtra(msgCtx, offset, "offset")
+        return where
+    }
+
+    private fun checkExtra(msgCtx: C_MessageContext, expr: V_Expr?, kind: String) {
+        if (expr != null) {
+            msgCtx.error(expr.pos, "expr:at:join:extra:$kind", "Join at-expression cannot have $kind")
+        }
+    }
+}
 
 class C_AtSummarizationPos(val exprPos: S_Pos, val ann: C_AtSummarizationKind)
 

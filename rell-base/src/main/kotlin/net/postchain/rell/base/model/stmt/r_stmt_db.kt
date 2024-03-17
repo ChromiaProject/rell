@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model.stmt
@@ -25,32 +25,39 @@ sealed class R_UpdateTarget {
 }
 
 class R_UpdateTarget_Simple(
-        val entity: R_DbAtEntity,
-        val extraEntities: List<R_DbAtEntity>,
-        val cardinality: R_AtCardinality,
-        val where: Db_Expr?
+    val entity: R_DbAtEntity,
+    val extraEntities: List<R_DbAtEntity>,
+    val cardinality: R_AtCardinality,
+    val where: Db_Expr?,
 ): R_UpdateTarget() {
     init {
         val intersect = extraEntities.filter { it.id == entity.id }
         check(intersect.isEmpty()) { "Extra entities contain main entity: ${entity.id}" }
     }
 
+    private val fromItems = getFromItems(entity, extraEntities)
+
     override fun entity() = entity
     override fun extraEntities() = extraEntities
     override fun where() = where
 
     override fun execute(stmt: R_BaseUpdateStatement, frame: Rt_CallFrame) {
-        execute(stmt, frame, listOf(entity) + extraEntities, cardinality)
+        executeCommon(stmt, frame, fromItems, cardinality)
     }
 
     companion object {
-        fun execute(
-                stmt: R_BaseUpdateStatement,
-                frame: Rt_CallFrame,
-                entities: List<R_DbAtEntity>,
-                cardinality: R_AtCardinality
+        fun getFromItems(entity: R_DbAtEntity, extraEntities: List<R_DbAtEntity>): List<RedDb_AtFromItem> {
+            val allEntities = listOf(entity) + extraEntities
+            return allEntities.map { RedDb_AtFromItem(it, null, false) }.toImmList()
+        }
+
+        fun executeCommon(
+            stmt: R_BaseUpdateStatement,
+            frame: Rt_CallFrame,
+            fromItems: List<RedDb_AtFromItem>,
+            cardinality: R_AtCardinality,
         ) {
-            val count = stmt.executeSqlCount(frame, entities)
+            val count = stmt.executeSqlCount(frame, fromItems)
             R_AtExpr.checkCount(cardinality, count, "records")
         }
     }
@@ -64,7 +71,7 @@ sealed class R_UpdateTarget_Expr(
     private val lambda: R_LambdaBlock,
 ): R_UpdateTarget() {
     private val extraEntities: List<R_DbAtEntity> = extraEntities.toImmList()
-    private val allEntities = (immListOf(entity) + this.extraEntities).toImmList()
+    private val fromItems = R_UpdateTarget_Simple.getFromItems(entity, this.extraEntities)
 
     final override fun entity() = entity
     final override fun extraEntities() = extraEntities
@@ -79,7 +86,7 @@ sealed class R_UpdateTarget_Expr(
 
     fun executeStmt(frame: Rt_CallFrame, stmt: R_BaseUpdateStatement, value: Rt_Value) {
         lambda.execute(frame, value) {
-            stmt.executeSql(frame, allEntities)
+            stmt.executeSql(frame, fromItems)
         }
     }
 }
@@ -123,12 +130,14 @@ class R_UpdateTarget_Expr_Many(
 }
 
 class R_UpdateTarget_Object(private val entity: R_DbAtEntity): R_UpdateTarget() {
+    private val fromItems = R_UpdateTarget_Simple.getFromItems(entity, listOf())
+
     override fun entity() = entity
     override fun extraEntities(): List<R_DbAtEntity> = listOf()
     override fun where() = null
 
     override fun execute(stmt: R_BaseUpdateStatement, frame: Rt_CallFrame) {
-        R_UpdateTarget_Simple.execute(stmt, frame, listOf(entity), R_AtCardinality.ONE)
+        R_UpdateTarget_Simple.executeCommon(stmt, frame, fromItems, R_AtCardinality.ONE)
     }
 }
 
@@ -139,17 +148,17 @@ sealed class R_BaseUpdateStatement(val target: R_UpdateTarget, val fromBlock: R_
     // entities is supported), so keeping it.
     protected abstract fun buildSql(frame: Rt_CallFrame, ctx: SqlGenContext, returning: Boolean): ParameterizedSql
 
-    fun executeSql(frame: Rt_CallFrame, entities: List<R_DbAtEntity>) {
+    fun executeSql(frame: Rt_CallFrame, fromItems: List<RedDb_AtFromItem>) {
         frame.block(fromBlock) {
-            val ctx = SqlGenContext.createTop(frame, entities)
+            val ctx = SqlGenContext.createTop(frame.sqlCtx, fromItems)
             val pSql = buildSql(frame, ctx, false)
             pSql.execute(frame.sqlExec)
         }
     }
 
-    fun executeSqlCount(frame: Rt_CallFrame, entities: List<R_DbAtEntity>): Int {
+    fun executeSqlCount(frame: Rt_CallFrame, fromItems: List<RedDb_AtFromItem>): Int {
         val count: Int = frame.block(fromBlock) {
-            val ctx = SqlGenContext.createTop(frame, entities)
+            val ctx = SqlGenContext.createTop(frame.sqlCtx, fromItems)
             val pSql = buildSql(frame, ctx, false)
             pSql.executeUpdate(frame.sqlExec)
         }

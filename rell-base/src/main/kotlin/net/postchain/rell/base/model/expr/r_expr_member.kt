@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model.expr
@@ -67,13 +67,15 @@ class R_MemberCalculator_VirtualStructAttr(type: R_Type, val attr: R_Attribute):
 }
 
 class R_MemberCalculator_DataAttribute(
-        type: R_Type,
-        private val atBase: Db_AtExprBase,
-        private val lambda: R_LambdaBlock
+    type: R_Type,
+    private val atBase: Db_AtExprBase,
+    private val lambda: R_LambdaBlock,
 ): R_MemberCalculator(type) {
     override fun calculate(frame: Rt_CallFrame, baseValue: Rt_Value): Rt_Value {
         val list = lambda.execute(frame, baseValue) {
-            atBase.execute(frame, Rt_AtExprExtras.NULL)
+            val redFrom = atBase.toRedFrom(frame)
+            val redBase = redFrom.toRedBase(frame)
+            redBase.execute(frame, Rt_AtExprExtras.NULL)
         }
 
         if (list.size != 1) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.atexpr
@@ -122,8 +122,8 @@ class AtExprInTest: BaseRellTest() {
         chk("nums @* { .n in data @*{} ( .v ) } (.n)", "[3, 5, 7, 11, 17]")
         chk("nums @* { .n in data @*{} ( @group .v ) } (.n)", "[3, 5, 7, 11, 17]")
 
-        chk("nums @* { .n in data @*{} ( @min .v ) } (.n)", "ct_err:expr_nosql:integer?")
-        chk("nums @* { .n in data @*{} ( @max .v ) } (.n)", "ct_err:expr_nosql:integer?")
+        chk("nums @* { .n in data @*{} ( @min .v ) } (.n)", "[3]")
+        chk("nums @* { .n in data @*{} ( @max .v ) } (.n)", "[17]")
         chk("nums @* { .n in data @*{} ( @sum .v ) } (.n)", "[56]")
         chk("nums @* { .n in data @*{} ( @sum 1 ) } (.n)", "[6]")
 

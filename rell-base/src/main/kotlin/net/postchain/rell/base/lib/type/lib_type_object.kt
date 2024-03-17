@@ -146,12 +146,14 @@ private class R_ObjectAttrExpr(
     private val atBase: Db_AtExprBase,
 ): R_Expr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
-        var records = atBase.execute(frame, Rt_AtExprExtras.NULL)
+        val redFrom = atBase.toRedFrom(frame)
+        val redBase = redFrom.toRedBase(frame)
+        var records = redBase.execute(frame, Rt_AtExprExtras.NULL)
 
         if (records.isEmpty()) {
             val forced = frame.defCtx.appCtx.forceObjectInit(rObject)
             if (forced) {
-                records = atBase.execute(frame, Rt_AtExprExtras.NULL)
+                records = redBase.execute(frame, Rt_AtExprExtras.NULL)
             }
         }
 
@@ -213,7 +215,7 @@ private object ObjectUtils {
         whatField: Db_AtWhatField,
         resType: R_Type
     ): R_Expr {
-        val from = listOf(atEntity)
+        val from = Db_AtExprFrom(listOf(Db_AtFromItem(atEntity, false, null, null)))
         val what = listOf(whatField)
         val atBase = Db_AtExprBase(from, what, null, isMany = false)
         return R_ObjectAttrExpr(resType, rObject, atBase)

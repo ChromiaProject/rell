@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.vexpr
@@ -43,21 +43,32 @@ class V_UnaryOp_Not: V_UnaryOp(R_BooleanType) {
 class V_UnaryOp_NotNull(resType: R_Type): V_UnaryOp(resType) {
     override fun canBeDbExpr() = false
     override fun compileR(pos: S_Pos, expr: R_Expr) = R_NotNullExpr(resType, expr)
-    override fun compileDb(pos: S_Pos, expr: Db_Expr) = throw C_Error.stop(pos, "expr:is_null:nodb", "Not supported for SQL")
+
+    override fun compileDb(pos: S_Pos, expr: Db_Expr): Db_Expr {
+        throw C_Error.stop(pos, "expr:is_null:nodb", "Not supported for SQL")
+    }
 }
 
-class V_UnaryOp_IsNull: V_UnaryOp(R_BooleanType) {
+class V_UnaryOp_IsNull(private val not: Boolean): V_UnaryOp(R_BooleanType) {
     override fun canBeDbExpr() = false
-    override fun compileR(pos: S_Pos, expr: R_Expr) = R_BinaryExpr(R_BooleanType, R_BinaryOp_Ne, expr, R_ConstantValueExpr.makeNull())
-    override fun compileDb(pos: S_Pos, expr: Db_Expr) = throw C_Error.stop(pos, "expr:is_null:nodb", "Not supported for SQL")
+
+    override fun compileR(pos: S_Pos, expr: R_Expr): R_Expr {
+        val rOp = if (not) R_BinaryOp_Ne else R_BinaryOp_Eq
+        return R_BinaryExpr(R_BooleanType, rOp, expr, R_ConstantValueExpr.makeNull())
+    }
+
+    override fun compileDb(pos: S_Pos, expr: Db_Expr): Db_Expr {
+        val dbOp = if (not) Db_UnaryOp_IsNotNull else Db_UnaryOp_IsNull
+        return Db_UnaryExpr(resType, dbOp, expr)
+    }
 }
 
 class V_UnaryExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        private val op: V_UnaryOp,
-        private val expr: V_Expr,
-        private val resVarFacts: C_ExprVarFacts
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    private val op: V_UnaryOp,
+    private val expr: V_Expr,
+    private val resVarFacts: C_ExprVarFacts,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(op.resType, expr, canBeDbExpr = op.canBeDbExpr())
     override fun varFacts0() = resVarFacts

@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.model.expr
 
+import com.google.common.collect.Lists
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.model.R_FrameBlock
@@ -13,6 +14,62 @@ import net.postchain.rell.base.model.Rt_StructValue
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.toImmList
+
+class Db_AtFromItem(
+    val atEntity: R_DbAtEntity,
+    private val isOuter: Boolean,
+    private val where: Db_Expr?,
+    private val rBlock: R_FrameBlock?,
+) {
+    fun toRed(frame: Rt_CallFrame): RedDb_AtFromItem {
+        val redWhere = frame.blockOpt(rBlock) {
+            where?.toRedExpr(frame)
+        }
+        return RedDb_AtFromItem(atEntity, redWhere, isOuter)
+    }
+}
+
+class RedDb_AtFromItem(val atEntity: R_DbAtEntity, val where: RedDb_Expr?, val isOuter: Boolean)
+
+class RedDb_AtExprFrom(
+    private val items: List<RedDb_AtFromItem>,
+    private val what: List<Db_AtWhatField>,
+    private val where: Db_Expr?,
+    private val isMany: Boolean,
+    private val selWhat: List<Db_AtWhatValue>,
+    private val resultTypes: List<R_Type>,
+) {
+    fun toRedBase(frame: Rt_CallFrame): RedDb_AtExprBase {
+        val redWhere = makeFullWhere(frame)
+
+        val redWhat = what.flatMap { whatField ->
+            val redExprs = whatField.value.toRedExprs(frame)
+            redExprs.map { RedDb_AtWhatField(it, whatField.flags) }
+        }
+
+        return RedDb_AtExprBase(items, redWhere, redWhat, isMany, selWhat, resultTypes)
+    }
+
+    private fun makeFullWhere(frame: Rt_CallFrame): RedDb_Expr? {
+        val exprs = mutableListOf<Db_Expr?>()
+        exprs.add(where)
+
+        for (item in items) {
+            val atEntity = item.atEntity
+            val expr = atEntity.rEntity.sqlMapping.extraWhereExpr(atEntity)
+            exprs.add(expr)
+        }
+
+        val validExprs = exprs.filterNotNull()
+        val expr = if (validExprs.isEmpty()) {
+            null
+        } else {
+            C_ExprUtils.makeDbBinaryExprChain(R_BooleanType, R_BinaryOp_And, Db_BinaryOp_And, validExprs)
+        }
+
+        return expr?.toRedExpr(frame)
+    }
+}
 
 sealed class Rt_AtWhatItem {
     abstract fun value(): Rt_Value
@@ -111,10 +168,10 @@ abstract class Db_ComplexAtWhatEvaluator {
 }
 
 class Db_AtWhatValue_Complex(
-        subWhatValues: List<Db_AtWhatValue>,
-        rExprs: List<R_Expr>,
-        items: List<Pair<Boolean, Int>>,
-        private val evaluator: Db_ComplexAtWhatEvaluator
+    subWhatValues: List<Db_AtWhatValue>,
+    rExprs: List<R_Expr>,
+    items: List<Pair<Boolean, Int>>,
+    private val evaluator: Db_ComplexAtWhatEvaluator,
 ): Db_AtWhatValue() {
     private val subWhatValues = subWhatValues.toImmList()
     private val rawTypes = this.subWhatValues.flatMap { it.rawTypes() }.toImmList()
@@ -199,16 +256,28 @@ class Db_AtWhatField(
 class RedDb_AtWhatField(val expr: RedDb_Expr, val flags: R_AtWhatFieldFlags)
 
 class RedDb_AtExprBase(
-    from: List<R_DbAtEntity>,
+    private val from: List<RedDb_AtFromItem>,
     private val where: RedDb_Expr?,
-    what: List<RedDb_AtWhatField>,
+    private val what: List<RedDb_AtWhatField>,
     private val isMany: Boolean,
+    private val selWhat: List<Db_AtWhatValue>,
+    private val resultTypes: List<R_Type>,
 ) {
-    private val from = from.toImmList()
-    private val what = what.toImmList()
+    private val fromEntities = from.map { it.atEntity }.toImmList()
 
-    fun buildSql(frame: Rt_CallFrame, extras: Rt_AtExprExtras): ParameterizedSql {
-        val ctx = SqlGenContext.createTop(frame, from)
+    fun execute(frame: Rt_CallFrame, extras: Rt_AtExprExtras): List<List<Rt_Value>> {
+        val rtSql = buildSql(frame.sqlCtx, extras)
+        val select = SqlSelect(rtSql, resultTypes)
+        val combiners = selWhat.map { it.combiner(frame) }
+        val records = select.execute(frame.sqlExec) { row ->
+            val items = Rt_AtWhatCombiner.combineValues(combiners, row)
+            items.map { it.value() }
+        }
+        return records
+    }
+
+    private fun buildSql(sqlCtx: Rt_SqlContext, extras: Rt_AtExprExtras): ParameterizedSql {
+        val ctx = SqlGenContext.createTop(sqlCtx, from)
         val b = SqlBuilder()
         buildSql0(ctx, b, extras)
         return b.build()
@@ -222,7 +291,7 @@ class RedDb_AtExprBase(
     private fun buildSql0(ctx: SqlGenContext, b: SqlBuilder, extras: Rt_AtExprExtras) {
         val sqlParts = AtExprSqlParts(ctx, extras)
         appendClause(b, "SELECT", sqlParts.whatSqls)
-        appendClause(b, " FROM", sqlParts.fromSqls)
+        appendClause(b, " FROM", sqlParts.fromSql)
         appendClause(b, " WHERE", sqlParts.whereSql)
         appendClause(b, " GROUP BY", sqlParts.groupBySqls)
         appendClause(b, " ORDER BY", sqlParts.orderBySqls)
@@ -253,22 +322,59 @@ class RedDb_AtExprBase(
         val whatSqls = translateWhat(ctx, what)
         val groupBySqls = translateGroupBy(ctx, what)
         val orderBySqls = translateOrderBy(ctx, what)
-        val fromSqls = translateFrom(ctx, ctx.getFromInfo())
+        val fromSql = translateFrom(ctx)
 
-        private fun translateFrom(ctx: SqlGenContext, fromInfo: SqlFromInfo): List<ParameterizedSql> {
-            return fromInfo.entities.values.map { translateFromItem(ctx.sqlCtx, it) }
-        }
+        private fun translateFrom(ctx: SqlGenContext): ParameterizedSql {
+            val fromWheres = from
+                .mapNotNull {
+                    if (it.where == null) null else {
+                        val b = SqlBuilder()
+                        it.where.toSql(ctx, b, false)
+                        val sql = b.build()
+                        it.atEntity.id to sql
+                    }
+                }
+                .toMap()
 
-        private fun translateFromItem(sqlCtx: Rt_SqlContext, entity: SqlFromEntity): ParameterizedSql {
+            val fromInfo = ctx.getFromInfo()
+
             val b = SqlBuilder()
 
-            val table = entity.alias.entity.sqlMapping.table(sqlCtx)
+            for ((entityId, sqlEntity) in fromInfo.entities) {
+                val joinWhere = fromWheres[entityId]
+                translateFromItem(ctx.sqlCtx, sqlEntity, joinWhere, b)
+            }
+
+            return b.build()
+        }
+
+        private fun translateFromItem(
+            sqlCtx: Rt_SqlContext,
+            sqlEntity: SqlFromEntity,
+            joinWhere: ParameterizedSql?,
+            b: SqlBuilder,
+        ): ParameterizedSql {
+            if (!b.isEmpty()) {
+                val sep = when {
+                    joinWhere == null && !sqlEntity.isOuter -> ", "
+                    sqlEntity.isOuter -> " LEFT OUTER JOIN "
+                    else -> " JOIN "
+                }
+                b.append(sep)
+            }
+
+            val enclose = joinWhere != null && sqlEntity.joins.isNotEmpty()
+            if (enclose) {
+                b.append("(")
+            }
+
+            val table = sqlEntity.alias.entity.sqlMapping.table(sqlCtx)
             b.appendName(table)
             b.append(" ")
-            b.append(entity.alias.str)
+            b.append(sqlEntity.alias.str)
 
-            for (join in entity.joins) {
-                b.append(" INNER JOIN ")
+            for (join in sqlEntity.joins) {
+                b.append(" JOIN ")
                 val joinMapping = join.alias.entity.sqlMapping
                 b.appendName(joinMapping.table(sqlCtx))
                 b.append(" ")
@@ -277,6 +383,15 @@ class RedDb_AtExprBase(
                 b.appendColumn(join.baseAlias, join.attr)
                 b.append(" = ")
                 b.appendColumn(join.alias, joinMapping.rowidColumn())
+            }
+
+            if (enclose) {
+                b.append(")")
+            }
+
+            if (joinWhere != null) {
+                b.append(" ON ")
+                b.append(joinWhere)
             }
 
             return b.build()
@@ -323,7 +438,7 @@ class RedDb_AtExprBase(
                     }
                 }
             } else if (isMany || extras.limit != null || extras.offset != null) {
-                for (entity in from) {
+                for (entity in fromEntities) {
                     elements.add(OrderByElement_Entity(entity))
                 }
             }
@@ -353,74 +468,51 @@ class RedDb_AtExprBase(
     }
 }
 
+class Db_AtExprFrom(
+    from: List<Db_AtFromItem>,
+    private val block: R_FrameBlock? = null,
+) {
+    private val from = from.toImmList()
+
+    init {
+        val fromEntities = Lists.transform(this.from) { it.atEntity }
+        R_DbAtEntity.checkList(fromEntities)
+    }
+
+    fun toRedItems(frame: Rt_CallFrame): List<RedDb_AtFromItem> {
+        return frame.blockOpt(block) {
+            from.map { it.toRed(frame) }
+        }
+    }
+}
+
 class Db_AtExprBase(
-    from: List<R_DbAtEntity>,
+    private val from: Db_AtExprFrom,
     what: List<Db_AtWhatField>,
     private val where: Db_Expr?,
     private val isMany: Boolean,
 ) {
-    private val from = from.toImmList()
     private val what = what.toImmList()
 
-    val selWhat = what.filter { !it.flags.omit }.toImmList()
-    private val resultTypes = selWhat.flatMap { it.value.rawTypes() }.toImmList()
+    private val selWhat = what.filter { !it.flags.omit }.map { it.value }.toImmList()
+    private val resultTypes = selWhat.flatMap { it.rawTypes() }.toImmList()
 
-    init {
-        R_DbAtEntity.checkList(from)
-    }
-
-    fun toRedBase(frame: Rt_CallFrame): RedDb_AtExprBase {
-        val redWhere = makeFullWhere(frame)
-
-        val redWhat = what.flatMap { whatField ->
-            val redExprs = whatField.value.toRedExprs(frame)
-            redExprs.map { RedDb_AtWhatField(it, whatField.flags) }
-        }
-
-        return RedDb_AtExprBase(from, redWhere, redWhat, isMany)
-    }
-
-    private fun makeFullWhere(frame: Rt_CallFrame): RedDb_Expr? {
-        val exprs = mutableListOf<Db_Expr?>()
-        exprs.add(where)
-
-        for (atEntity in from) {
-            val expr = atEntity.rEntity.sqlMapping.extraWhereExpr(atEntity)
-            exprs.add(expr)
-        }
-
-        val validExprs = exprs.filterNotNull()
-        val expr = if (validExprs.isEmpty()) {
-            null
-        } else {
-            C_ExprUtils.makeDbBinaryExprChain(R_BooleanType, R_BinaryOp_And, Db_BinaryOp_And, validExprs)
-        }
-
-        return expr?.toRedExpr(frame)
-    }
-
-    fun execute(frame: Rt_CallFrame, extras: Rt_AtExprExtras): List<List<Rt_Value>> {
-        val redBase = toRedBase(frame)
-        val rtSql = redBase.buildSql(frame, extras)
-        val select = SqlSelect(rtSql, resultTypes)
-        val combiners = selWhat.map { it.value.combiner(frame) }
-        val records = select.execute(frame.sqlExec) { row ->
-            val items = Rt_AtWhatCombiner.combineValues(combiners, row)
-            items.map { it.value() }
-        }
-        return records
+    fun toRedFrom(frame: Rt_CallFrame): RedDb_AtExprFrom {
+        val redItems = from.toRedItems(frame)
+        return RedDb_AtExprFrom(redItems, what, where, isMany, selWhat, resultTypes)
     }
 }
 
 class Db_NestedAtExpr(
-        type: R_Type,
-        private val base: Db_AtExprBase,
-        private val extras: R_AtExprExtras,
-        private val block: R_FrameBlock
+    type: R_Type,
+    private val base: Db_AtExprBase,
+    private val extras: R_AtExprExtras,
+    private val block: R_FrameBlock,
 ): Db_Expr(type) {
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
+        val redFrom = base.toRedFrom(frame)
         val redBase = frame.block(block) {
-            base.toRedBase(frame)
+            redFrom.toRedBase(frame)
         }
 
         val rtExtras = extras.evaluate(frame)
@@ -428,8 +520,8 @@ class Db_NestedAtExpr(
     }
 
     private class RedDb_NestedAtExpr(
-            private val redBase: RedDb_AtExprBase,
-            private val rtExtras: Rt_AtExprExtras
+        private val redBase: RedDb_AtExprBase,
+        private val rtExtras: Rt_AtExprExtras,
     ): RedDb_Expr() {
         override fun toSql0(ctx: SqlGenContext, bld: SqlBuilder) {
             redBase.buildNestedSql(ctx, bld, rtExtras)

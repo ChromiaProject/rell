@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.ast
@@ -7,6 +7,8 @@ package net.postchain.rell.base.compiler.ast
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.compiler.base.core.C_MountContext
 import net.postchain.rell.base.compiler.base.core.C_Name
+import net.postchain.rell.base.compiler.base.core.C_NamespaceContext
+import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.modifier.*
 import net.postchain.rell.base.compiler.parser.S_Keywords
 import net.postchain.rell.base.utils.doc.DocModifier
@@ -78,7 +80,11 @@ class S_Modifiers(val modifiers: List<S_Modifier>) {
     }
 
     fun compile(ctx: C_MountContext, modValues: C_ModifierValues): DocModifiers {
-        val modifierCtx = C_ModifierContext(ctx.msgCtx, ctx.nsCtx.symCtx)
+        return compile(ctx.nsCtx, modValues)
+    }
+
+    fun compile(ctx: C_NamespaceContext, modValues: C_ModifierValues): DocModifiers {
+        val modifierCtx = C_ModifierContext(ctx.msgCtx, ctx.symCtx)
         return compile(modifierCtx, modValues)
     }
 }

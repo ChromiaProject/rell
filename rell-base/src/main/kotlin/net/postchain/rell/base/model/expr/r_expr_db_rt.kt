@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model.expr
@@ -25,7 +25,11 @@ class SqlFromInfo(entities: Map<R_AtEntityId, SqlFromEntity>) {
     val entities = entities.toImmMap()
 }
 
-class SqlFromEntity(val alias: SqlTableAlias, joins: List<SqlFromJoin>) {
+class SqlFromEntity(
+    val alias: SqlTableAlias,
+    val isOuter: Boolean,
+    joins: List<SqlFromJoin>,
+) {
     val joins = joins.toImmList()
 }
 
@@ -41,30 +45,31 @@ private class SqlGenAliasAllocator {
 }
 
 class SqlGenContext private constructor(
-        val sqlCtx: Rt_SqlContext,
-        fromEntities: List<R_DbAtEntity>,
-        private val parent: SqlGenContext?
+    val sqlCtx: Rt_SqlContext,
+    fromItems: List<RedDb_AtFromItem>,
+    private val parent: SqlGenContext?,
 ) {
-    private val fromEntities = fromEntities.toImmList()
+    private val fromItems = fromItems.toImmList()
     private val aliasAllocator: SqlGenAliasAllocator = parent?.aliasAllocator ?: SqlGenAliasAllocator()
 
-    private val atExprId = R_DbAtEntity.checkList(this.fromEntities)
+    private val atExprId = R_DbAtEntity.checkList(this.fromItems.map { it.atEntity })
     private val entityAliasMap = mutableMapOf<R_AtEntityId, EntityAliasTbl>()
     private val aliasTableMap = mutableMapOf<SqlTableAlias, EntityAliasTbl>()
 
     init {
-        for (entity in this.fromEntities) {
-            val alias = aliasAllocator.nextAlias(entity.rEntity, atExprId)
-            val tbl = EntityAliasTbl(alias)
+        for (item in this.fromItems) {
+            val atEntity = item.atEntity
+            val alias = aliasAllocator.nextAlias(atEntity.rEntity, atExprId)
+            val tbl = EntityAliasTbl(alias, item.isOuter)
             check(alias !in aliasTableMap) { "${aliasTableMap.keys} $alias" }
             aliasTableMap[alias] = tbl
-            check(entity.id !in entityAliasMap) { "${entityAliasMap.keys} ${entity.id}" }
-            entityAliasMap[entity.id] = tbl
+            check(atEntity.id !in entityAliasMap) { "${entityAliasMap.keys} ${atEntity.id}" }
+            entityAliasMap[atEntity.id] = tbl
         }
     }
 
-    fun createSub(entities: List<R_DbAtEntity>): SqlGenContext {
-        return SqlGenContext(sqlCtx, entities, this)
+    fun createSub(fromItems: List<RedDb_AtFromItem>): SqlGenContext {
+        return SqlGenContext(sqlCtx, fromItems, this)
     }
 
     fun getEntityAlias(entity: R_DbAtEntity): SqlTableAlias {
@@ -86,14 +91,14 @@ class SqlGenContext private constructor(
     }
 
     fun getFromInfo(): SqlFromInfo {
-        val entities = fromEntities.map { rAtEntity ->
-            val entityId = rAtEntity.id
+        val entities = fromItems.associate {
+            val entityId = it.atEntity.id
             val tbl = entityAliasMap.getValue(entityId)
             val joins = tbl.subAliases.entries.flatMap { (alias, map) ->
                 map.values.map { tblJoin -> SqlFromJoin(alias, tblJoin.attr.sqlMapping, tblJoin.alias) }
             }
-            entityId to SqlFromEntity(tbl.alias, joins)
-        }.toMap()
+            entityId to SqlFromEntity(tbl.alias, it.isOuter, joins)
+        }
         return SqlFromInfo(entities)
     }
 
@@ -102,18 +107,13 @@ class SqlGenContext private constructor(
         return iterable.firstOrNull { it.atExprId == exprId } ?: throw IllegalArgumentException("$exprId")
     }
 
-    private class EntityAliasTbl(val alias: SqlTableAlias) {
+    private class EntityAliasTbl(val alias: SqlTableAlias, val isOuter: Boolean) {
         val subAliases = mutableMapOf<SqlTableAlias, MutableMap<String, SqlTableJoin>>()
     }
 
     companion object {
-        fun createTop(frame: Rt_CallFrame, entities: List<R_DbAtEntity>): SqlGenContext {
-            val sqlCtx = frame.defCtx.sqlCtx
-            return createTop(sqlCtx, entities)
-        }
-
-        fun createTop(sqlCtx: Rt_SqlContext, entities: List<R_DbAtEntity>): SqlGenContext {
-            return SqlGenContext(sqlCtx, entities, null)
+        fun createTop(sqlCtx: Rt_SqlContext, fromItems: List<RedDb_AtFromItem>): SqlGenContext {
+            return SqlGenContext(sqlCtx, fromItems, null)
         }
     }
 }

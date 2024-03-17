@@ -305,3 +305,58 @@ Notes:
 
 2. When annotation @list, @set or @map is used in a database at-expression, all values (which match the where part)
    are read from the database without grouping and aggregation, and then grouped and aggregated in memory.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+16. Language: At-expression join syntax
+
+Each entity in an at-expression can have its own where-expression, which is translated into SQL JOIN ON clause. So
+instead of
+
+    (u: user, c: contract) @* { c.user == u } ( u, c )
+
+one can write:
+
+    (
+        u: user,
+        c: contract @* { c.user == u }
+    ) @* ( u, c )
+
+The first expression is translated into SQL like:
+
+    SELECT U.rowid, C.rowid FROM user U, contract C WHERE C.user = U.rowid
+
+while the second one is translated into:
+
+    SELECT U.rowid, C.rowid FROM user U JOIN contract C ON C.user = U.rowid
+
+The two statements do the same, as inner joins are used by default. But the new syntax makes a difference when using
+outer joins.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+17. Language: Outer joins in at-expressions
+
+With the new join syntax, one can use @outer annotation to make an outer join:
+
+    (
+        u: user,
+        @outer c: contract @* { c.user == u }
+    ) @* ( u, c )
+
+This expression is translated into SQL like:
+
+    SELECT U.rowid, C.rowid FROM user U LEFT OUTER JOIN contract C ON C.user = U.rowid
+
+If there is no matching "contract" for a "user", a null "contract" record is added to the result set. In contrast, for
+a default (inner) join, the "user" record wouldn't be added to the result set if there is no matching "contract".
+
+When outer join is used, the type of "c" is "contract?", not "contract". This means its attributes can't be accessed
+directly, and one shall use null-handling operators, like "?." or "?:".
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+18. Language: Operators "==" and "!=" allow comparing "T?" with "T"
+
+So expressions like
+
+    user?.name == 'Bob'
+
+will work, allowing to compare text? and text.

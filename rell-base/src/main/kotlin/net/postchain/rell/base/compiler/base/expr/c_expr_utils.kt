@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.expr
 
+import net.postchain.rell.base.compiler.ast.C_BinOp_Eq
 import net.postchain.rell.base.compiler.ast.C_BinOp_EqNe
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
@@ -56,7 +57,7 @@ object C_ExprUtils {
     }
 
     fun makeVBinaryExprEq(ctx: C_ExprContext, pos: S_Pos, left: V_Expr, right: V_Expr): V_Expr {
-        val vOp = C_BinOp_EqNe.createVOp(true, left.type)
+        val vOp = C_BinOp_Eq.createVOp(left.type)
         return V_BinaryExpr(ctx, pos, vOp, left, right, C_ExprVarFacts.EMPTY)
     }
 
