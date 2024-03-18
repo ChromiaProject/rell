@@ -12,6 +12,20 @@ This project has a CLI that can be used to generate a site.
 $ ./gradlew run --args="--source /path/to/rell/src --target <out> --modules module1,module2"
 ```
 
+### Running the server
+
+To host the site using a simple web server, you can run the following command from the root of the target folder:
+```shell
+docker run -dit --name my-apache-app -p 8080:80 -v "$PWD":/usr/local/apache2/htdocs/ httpd:2.4
+```
+
+Alternatively, using node
+```shell
+npm init
+npm install http-server
+npx http-server
+```
+
 ### Testing
 
 This project includes a test dependency on `dokka-test-api` and `dokka-base-test-utils` that allows for easy testing. 
