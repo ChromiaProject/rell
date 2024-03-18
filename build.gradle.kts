@@ -86,6 +86,17 @@ tasks {
     }
 }
 
+tasks.withType<JacocoReport> {
+    dependsOn(tasks.test)
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.map {
+            fileTree(it).apply {
+                exclude("**/cli/*")
+            }
+        }))
+    }
+}
+
 tasks.check {
     dependsOn(tasks.named<JacocoReport>("testCodeCoverageReport"))
 }
