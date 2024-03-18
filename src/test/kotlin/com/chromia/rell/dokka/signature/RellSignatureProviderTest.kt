@@ -311,4 +311,55 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
             }
         }
     }
+
+    @Test
+    fun `module args signature`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        singleFileTestInline("""
+            struct module_args {
+              value: integer = 1;
+            }
+        """.trimIndent(), listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("test-dapp/main/module_args/value.html").firstSignature()
+                        .match(
+                                "val", A("value"), ": ", A("integer"), " = 1",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
+
+    @Test
+    fun `entity default value signature`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        singleFileTestInline("""
+            entity test {
+              value: integer = 1;
+            }
+        """.trimIndent(), listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("test-dapp/main/test/value.html").firstSignature()
+                        .match(
+                                "val", A("value"), ": ", A("integer"), " = 1",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
+
+    @Test
+    fun `object default value signature`() {
+        val writerPlugin = TestOutputWriterPlugin()
+        singleFileTestInline("""
+            object test {
+              value: integer = 1;
+            }
+        """.trimIndent(), listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("test-dapp/main/test/value.html").firstSignature()
+                        .match(
+                                "val", A("value"), ": ", A("integer"), " = 1",
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
 }

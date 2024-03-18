@@ -18,8 +18,11 @@ import com.chromia.rell.dokka.model.IsObject
 import com.chromia.rell.dokka.model.IsOperation
 import com.chromia.rell.dokka.model.IsQuery
 import com.chromia.rell.dokka.model.IsStruct
+import com.chromia.rell.dokka.model.toExpression
 import com.chromia.rell.dokka.reflection.getParamsByReflection
 import com.chromia.rell.dokka.reflection.getTypeByReflection
+import com.chromia.rell.dokka.reflection.getValueByReflection
+import com.chromia.rell.dokka.reflection.getSubExprByReflection
 import net.postchain.rell.base.model.R_Attribute
 import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.model.R_EnumAttr
@@ -34,6 +37,8 @@ import net.postchain.rell.base.model.R_OperationDefinition
 import net.postchain.rell.base.model.R_QueryDefinition
 import net.postchain.rell.base.model.R_RoutineDefinition
 import net.postchain.rell.base.model.R_StructDefinition
+import net.postchain.rell.base.model.expr.R_ConstantValueExpr
+import net.postchain.rell.base.model.expr.R_StackTraceExpr
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
@@ -215,7 +220,10 @@ internal class RellModuleVisitor(
                             R_KeyIndexKind.INDEX -> IsIndex
                             else -> null
                         },
-                        IsVar.takeIf { mutable }
+                        IsVar.takeIf { mutable },
+                        expr?.let { it as? R_StackTraceExpr }?.getSubExprByReflection()
+                                ?.let { it as? R_ConstantValueExpr }?.getValueByReflection()
+                                ?.let { DefaultValue(it.toExpression().toSourceSetDependent()) }
                 )
         )
     }
@@ -258,20 +266,20 @@ internal class RellModuleVisitor(
 
     private fun R_FunctionDefinition.visit(): DFunction? {
         val isExtendable = rellAnalysis.isExtendable(this.appLevelName)
-        // TODO: Do not flatten on each function visit..
         if (!isExtendable && rellAnalysis.hasExtension(this)) {
             return null
         }
         return visit(IsFunction, IsExtendable.takeIf { isExtendable })
     }
+
     private fun R_OperationDefinition.visit() = visit(IsOperation)
     private fun R_QueryDefinition.visit() = visit(IsQuery)
 
     private fun R_RoutineDefinition.visit(vararg extraProperty: ExtraProperty<DFunction>?): DFunction {
         val dri = DRI.from(this)
         val params = (if (this is R_FunctionDefinition) getParamsByReflection() else params()) // Temporary hack due to bug in rell
-                .mapIndexed { index, param  -> param.visit(dri, index) }
-        return  DFunction(
+                .mapIndexed { index, param -> param.visit(dri, index) }
+        return DFunction(
                 dri = dri,
                 name = simpleName,
                 isConstructor = false,
@@ -300,8 +308,8 @@ internal class RellModuleVisitor(
         )
         val targetDri = rellAnalysis.findFunctionReference(targetAppLevelName) ?: return null
         if (dri == targetDri) return null
-        val params = fnBase.getHeader().params.mapIndexed { index, param  -> param.visit(dri, index) }
-        return  DFunction(
+        val params = fnBase.getHeader().params.mapIndexed { index, param -> param.visit(dri, index) }
+        return DFunction(
                 dri = dri,
                 name = defName.simpleName,
                 isConstructor = false,
