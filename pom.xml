@@ -27,7 +27,7 @@
     </modules>
 
     <properties>
-        <postchain.version>3.14.19</postchain.version>
+        <postchain.version>3.15.5</postchain.version>
         <dist-classifier>dist</dist-classifier>
 
         <kotlin.version>1.8.21</kotlin.version>
@@ -139,6 +139,12 @@
                 <version>1.17.3</version>
                 <scope>import</scope>
                 <type>pom</type>
+            </dependency>
+            <!-- Only needed to parse a database URL in CLI tools - consider removing. -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>4.5.13</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
