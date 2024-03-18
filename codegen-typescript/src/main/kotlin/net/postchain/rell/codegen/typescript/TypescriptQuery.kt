@@ -1,5 +1,6 @@
 package net.postchain.rell.codegen.typescript
 
+import net.postchain.rell.base.lib.type.R_CollectionType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Query
