@@ -26,13 +26,6 @@ class RellDokkaPluginConfigurationBuilder private constructor(
 
     fun includes(includes: List<File>) = apply { this.includes = includes }
 
-    fun sourceSets(projectRoot: File, includes: List<File>) = apply {
-        when (system) {
-            true -> RellModule.entries.map { it.sourceSet(includes) }
-            else -> rellSourceSets(projectRoot, includes)
-        }
-    }
-
     fun targetFolder(targetFolder: File) = apply {
         this.targetFolder = targetFolder
     }
