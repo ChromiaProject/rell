@@ -23,6 +23,7 @@ class RellDokkaPluginConfigurationBuilder private constructor(
     companion object {
         val SYSTEM = RellDokkaPluginConfigurationBuilder(true, "", null, null)
     }
+
     fun includes(includes: List<File>) = apply { this.includes = includes }
 
     fun sourceSets(projectRoot: File, includes: List<File>) = apply {
