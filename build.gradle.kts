@@ -29,12 +29,12 @@ repositories {
 val dokkaVersion: String by project
 val rellVersion: String by project
 dependencies {
-    compileOnly("org.jetbrains.dokka:dokka-core:$dokkaVersion")
+    implementation(platform("net.postchain.rell:rell:$rellVersion"))
+    implementation(platform("com.fasterxml.jackson:jackson-bom:2.15.3"))
+    implementation("org.jetbrains.dokka:dokka-core:$dokkaVersion")
     implementation("org.jetbrains.dokka:dokka-base:$dokkaVersion")
-    implementation("org.jetbrains.dokka:dokka-cli:$dokkaVersion")
     implementation("org.jetbrains.dokka:analysis-kotlin-descriptors:$dokkaVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.8.0")
-    //runtimeOnly("org.jetbrains.kotlinx:kotlinx-html:0.11.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     //runtimeOnly("org.freemarker:freemaker:2.3.31")
