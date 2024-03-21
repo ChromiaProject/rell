@@ -1,13 +1,13 @@
 package com.chromia.rell.dokka
 
-import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration2
+import com.chromia.rell.dokka.config.RellDokkaPluginConfigurationBuilder
 import org.jetbrains.dokka.DokkaGenerator
 import org.jetbrains.dokka.utilities.DokkaConsoleLogger
 import org.jetbrains.dokka.utilities.LoggingLevel
 
-class RellDokkaGenerator(private val configBuilder: RellDokkaPluginConfiguration2) {
+class RellDokkaGenerator(private val configBuilder: RellDokkaPluginConfigurationBuilder) {
     fun generate() {
-        val config = configBuilder.getConfig()
+        val config = configBuilder.build()
         DokkaGenerator(config, DokkaConsoleLogger(LoggingLevel.WARN)).generate()
     }
 }
