@@ -181,6 +181,7 @@ class RellTestContext(
 
         private inner class TestSqlExecutor(private val exec: SqlExecutor): SqlExecutor() {
             override fun <T> connection(code: (Connection) -> T): T = exec.connection(code)
+            override fun hasRealConnection() = exec.hasRealConnection()
 
             override fun execute(sql: String) {
                 stats.sqls.add(sql)

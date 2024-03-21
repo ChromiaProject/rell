@@ -159,7 +159,7 @@ private class RellGTXOperation(
             )
 
             val heightProvider = Rt_TxChainHeightProvider(ctx)
-            val exeCtx = module.createExecutionContext(ctx, opCtx, heightProvider)
+            val exeCtx = module.createExecutionContext(ctx, opCtx, heightProvider, dbReadOnly = false)
 
             val opArgs = getOpArgs()
 
@@ -269,7 +269,7 @@ private class RellPostchainModule(
 
         errorHandler.handleError({ "Database initialization failed" }) {
             val heightProvider = Rt_ConstantChainHeightProvider(-1)
-            val exeCtx = createExecutionContext(ctx, Rt_NullOpContext, heightProvider)
+            val exeCtx = createExecutionContext(ctx, Rt_NullOpContext, heightProvider, dbReadOnly = false)
             val initLogging = SqlInitLogging.ofLevel(config.dbInitLogLevel)
 
             // Using the null ProjExt, because Postchain must do the initialization itself.
@@ -295,7 +295,7 @@ private class RellPostchainModule(
 
         val heightProvider = Rt_ConstantChainHeightProvider(Long.MAX_VALUE)
 
-        val exeCtx = createExecutionContext(ctx, Rt_NullOpContext, heightProvider)
+        val exeCtx = createExecutionContext(ctx, Rt_NullOpContext, heightProvider, dbReadOnly = true)
         val rtArgs = translateQueryArgs(exeCtx, rQuery, args)
         val rtResult = rQuery.call(exeCtx, rtArgs)
 
@@ -315,7 +315,8 @@ private class RellPostchainModule(
     fun createExecutionContext(
             eCtx: EContext,
             opCtx: Rt_OpContext,
-            heightProvider: Rt_ChainHeightProvider
+            heightProvider: Rt_ChainHeightProvider,
+            dbReadOnly: Boolean
     ): Rt_ExecutionContext {
         val sqlMapping = Rt_ChainSqlMapping(eCtx.chainID)
 
@@ -324,7 +325,7 @@ private class RellPostchainModule(
         val sqlExec = Rt_SqlExecutor(ConnectionSqlExecutor(eCtx.conn, config.sqlLogging), globalCtx.logSqlErrors)
         val sqlCtx = Rt_RegularSqlContext.create(rApp, sqlMapping, chainDeps, sqlExec, heightProvider)
 
-        return Rt_ExecutionContext(appCtx, opCtx, sqlCtx, sqlExec)
+        return Rt_ExecutionContext(appCtx, opCtx, sqlCtx, sqlExec, dbReadOnly)
     }
 
     private fun translateQueryArgs(exeCtx: Rt_ExecutionContext, rQuery: R_QueryDefinition, gtvArgs: Gtv): List<Rt_Value> {

@@ -193,7 +193,7 @@ object RellTestUtils {
 
         return catchRtErr {
             sqlMgr.transaction { sqlExec ->
-                val exeCtx = Rt_ExecutionContext(appCtx, opCtx, sqlCtx, sqlExec)
+                val exeCtx = Rt_ExecutionContext(appCtx, opCtx, sqlCtx, sqlExec, dbReadOnly = false)
                 op.call(exeCtx, rtArgs!!)
                 "OK"
             }

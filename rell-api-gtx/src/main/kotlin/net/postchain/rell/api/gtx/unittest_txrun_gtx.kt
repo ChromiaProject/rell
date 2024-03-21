@@ -34,6 +34,7 @@ import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.Rt_TupleValue
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.sql.SqlUtils.withSavepoint
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.gtx.PostchainBaseUtils
 import net.postchain.rell.gtx.Rt_PostchainTxContext
@@ -83,30 +84,6 @@ class Rt_PostchainUnitTestBlockRunner(
         val pubKey = PubKey(keyPair.pub.toByteArray())
         val privKey = PrivKey(keyPair.priv.toByteArray())
         return PostchainGtvUtils.cryptoSystem.buildSigMaker(KeyPair(pubKey, privKey))
-    }
-
-    private fun withSavepoint(con: Connection, code: () -> Unit) {
-        if (con.autoCommit) {
-            con.autoCommit = false
-            try {
-                withSavepoint0(con, code)
-            } finally {
-                con.autoCommit = true
-            }
-        } else {
-            withSavepoint0(con, code)
-        }
-    }
-
-    private fun withSavepoint0(con: Connection, code: () -> Unit) {
-        val savepoint = con.setSavepoint("withSavepoint_${System.nanoTime()}")
-        try {
-            code()
-            con.releaseSavepoint(savepoint)
-        } catch (e: Throwable) {
-            con.rollback(savepoint)
-            throw e
-        }
     }
 
     private fun processBlock(bcConfig: BlockchainConfiguration, eCtx: EContext, block: Rt_TestBlockValue, time: Long) {

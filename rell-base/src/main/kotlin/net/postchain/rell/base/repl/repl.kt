@@ -153,7 +153,7 @@ class ReplInterpreter private constructor(
             sqlUpdate(rtAppCtx, sqlCtx, forceSqlUpdate)
 
             sqlMgr.access { sqlExec ->
-                val exeCtx = Rt_ExecutionContext(rtAppCtx, Rt_NullOpContext, sqlCtx, sqlExec, exeState)
+                val exeCtx = Rt_ExecutionContext(rtAppCtx, Rt_NullOpContext, sqlCtx, sqlExec, dbReadOnly = false, exeState)
                 codeState = success.code.execute(exeCtx)
                 defsState = success.defsState
                 exeState = exeCtx.toState()
@@ -216,7 +216,7 @@ class ReplInterpreter private constructor(
         if (sqlMgr.hasConnection && (lastDefs == null || !appDefs.same(lastDefs))) {
             val logging = if (force) SQL_INIT_LOGGING_FORCE else SQL_INIT_LOGGING_AUTO
             sqlMgr.transaction { sqlExec ->
-                val exeCtx = Rt_ExecutionContext(appCtx, Rt_NullOpContext, sqlCtx, sqlExec)
+                val exeCtx = Rt_ExecutionContext(appCtx, Rt_NullOpContext, sqlCtx, sqlExec, dbReadOnly = false)
                 val initProjExt = config.projExt.getSqlInitProjExt()
                 SqlInit.init(exeCtx, initProjExt, logging)
             }

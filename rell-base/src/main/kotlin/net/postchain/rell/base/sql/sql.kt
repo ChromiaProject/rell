@@ -110,6 +110,8 @@ abstract class SqlManager {
             return sqlExec.connection(code)
         }
 
+        override fun hasRealConnection() = sqlExec.hasRealConnection()
+
         override fun execute(sql: String) {
             check(valid)
             sqlExec.execute(sql)
@@ -139,6 +141,7 @@ abstract class SqlManager {
 
 abstract class SqlExecutor {
     abstract fun <T> connection(code: (Connection) -> T): T
+    abstract fun hasRealConnection(): Boolean
     abstract fun execute(sql: String)
     abstract fun execute(sql: String, preparator: (PreparedStatement) -> Unit)
     abstract fun executeUpdate(sql: String, preparator: (PreparedStatement) -> Unit): Int
@@ -161,6 +164,7 @@ object NoConnSqlExecutor: SqlExecutor() {
         return res
     }
 
+    override fun hasRealConnection() = false
     override fun execute(sql: String) = throw err()
     override fun execute(sql: String, preparator: (PreparedStatement) -> Unit) = throw err()
     override fun executeUpdate(sql: String, preparator: (PreparedStatement) -> Unit) = throw err()
@@ -229,6 +233,8 @@ class ConnectionSqlExecutor(private val con: Connection, private val conLogger: 
         checkEquals(con.autoCommit, autoCommit)
         return res
     }
+
+    override fun hasRealConnection() = true
 
     override fun execute(sql: String) {
         execute0(sql) { con ->

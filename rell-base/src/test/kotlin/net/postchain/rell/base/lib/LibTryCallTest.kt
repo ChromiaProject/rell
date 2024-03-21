@@ -120,4 +120,86 @@ class LibTryCallTest: BaseRellTest(false) {
         chk("data @ {} ( try_call(f(.value, *), -.value) )", "int[15129]")
         chk("data @ {} ( try_call(f(-.value, *), -.value) )", "int[-123]")
     }
+
+    @Test fun testRollbackOnSqlException() {
+        tstCtx.useSql = true
+        def("entity data { key value: integer; }")
+        def("function create_duplicate(x: integer) { create data(value = 333); create data(value = x);}")
+        chkOp("create data(value = 111);")
+        chkOp("""
+            create data(value = 222);
+            try_call(create_duplicate(111, *));
+            create data(value = 444);
+        """.trimIndent())
+        chk("data @* {} (.value)", "list<integer>[int[111],int[222],int[444]]")
+    }
+
+    @Test fun testRollbackOnCodeException() {
+        tstCtx.useSql = true
+        def("entity data { key value: integer; }")
+        def("function always_an_exception(x: integer) { create data(value = x); require(false);}")
+        chkOp("create data(value = 111);")
+        chkOp("""
+            create data(value = 222);
+            try_call(always_an_exception(333, *));
+            create data(value = 444);
+        """.trimIndent())
+        chk("data @* {} (.value)", "list<integer>[int[111],int[222],int[444]]")
+    }
+
+    @Test fun testReadOnlyCallSqlException() {
+        tstCtx.useSql = true
+        def("entity data { key value: integer; }")
+        def("function sql_exception() { return data@{ .value / 0 == 1 }; }")
+        def("query qq() { try_call(sql_exception(*)); return 0; }")
+        chkOp("create data(value = 111); qq(); create data(value = 222);")
+        chk("data @* {} (.value)", "list<integer>[int[111],int[222]]")
+    }
+
+    @Test fun testWriteOperationAfterFailedSqlRead() {
+        tstCtx.useSql = true
+        def("entity data { key value: integer; }")
+        def("function sql_exception() { return data@{ .value / 0 == 1 }; }")
+        def("query qq() { try_call(sql_exception(*)); return 0; }")
+        chkOp("qq(); create data(value = 111);")
+        chk("data @* {} (.value)", "list<integer>[int[111]]")
+    }
+
+    @Test fun testReadOperationAfterFailedSqlRead() {
+        tstCtx.useSql = true
+        def("entity data { key value: integer; }")
+        def("function sql_exception() { return data@{ .value / 0 == 1 }; }")
+        insert("c0.data", "value", "1,111","2,222")
+        def("query qq() { try_call(sql_exception(*)); return 0; }")
+        chkEx("{print(data @* {} (.value)); qq(); return data @* {} (.value); }" , "list<integer>[int[111],int[222]]")
+    }
+
+    @Test fun testReadOnlyCallCodeException() {
+        tstCtx.useSql = true
+        def("entity data { key value: integer; }")
+        def("function code_exception() { require(false); return 1; }")
+        def("query qq() { try_call(code_exception(*)); return 0; }")
+        chkOp("create data(value = 111); qq(); create data(value = 222);")
+        chk("data @* {} (.value)", "list<integer>[int[111],int[222]]")
+    }
+
+    @Test fun testNoDbConnection() {
+        tstCtx.useSql = false
+        def("entity data { key value: integer; }")
+        def("function create_data(x: integer) { print('started'); create data(value = x); print('finished'); }")
+        chkOp("try_call(create_data(111, *)); print('recovered');")
+        chkOut("started", "recovered")
+    }
+
+    @Test fun testRecursiveCall() {
+        tstCtx.useSql = true
+        def("entity data { key value: integer; }")
+        def("""function f(x: integer): integer {
+            if (x == 0) return 0;
+            create data(value = x);
+            return try_call(f(x - 1, *), 1);
+        }""")
+        chkOp("f(5);")
+        chk("data @* {} (.value).size()", "int[5]")
+    }
 }

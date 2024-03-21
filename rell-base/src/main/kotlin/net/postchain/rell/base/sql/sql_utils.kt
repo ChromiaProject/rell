@@ -153,9 +153,34 @@ object SqlUtils {
                 dropAll(sqlExec, true)
             }
 
-            val exeCtx = Rt_ExecutionContext(appCtx, Rt_NullOpContext, sqlCtx, sqlExec)
+            val exeCtx = Rt_ExecutionContext(appCtx, Rt_NullOpContext, sqlCtx, sqlExec, dbReadOnly = false)
             val initLogging = SqlInitLogging.ofLevel(if (sqlInitLog) SqlInitLogging.LOG_ALL else SqlInitLogging.LOG_NONE)
             SqlInit.init(exeCtx, adapter, initLogging)
+        }
+    }
+
+    fun <T> withSavepoint(con: Connection, code: () -> T): T {
+        return if (con.autoCommit) {
+            con.autoCommit = false
+            try {
+                withSavepoint0(con, code)
+            } finally {
+                con.autoCommit = true
+            }
+        } else {
+            withSavepoint0(con, code)
+        }
+    }
+
+    private fun <T> withSavepoint0(con: Connection, code: () -> T): T {
+        val savepoint = con.setSavepoint("withSavepoint_${System.nanoTime()}")
+        try {
+            val result = code()
+            con.releaseSavepoint(savepoint)
+            return result
+        } catch (e: Throwable) {
+            con.rollback(savepoint)
+            throw e
         }
     }
 }

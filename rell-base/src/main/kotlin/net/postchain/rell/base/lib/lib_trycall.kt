@@ -8,7 +8,9 @@ import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.lib.type.Rt_BooleanValue
 import net.postchain.rell.base.runtime.Rt_CallContext
 import net.postchain.rell.base.model.Rt_NullValue
+import net.postchain.rell.base.runtime.Rt_ExecutionContext
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.sql.SqlUtils.withSavepoint
 import net.postchain.rell.base.utils.immListOf
 
 object Lib_TryCall {
@@ -51,12 +53,31 @@ object Lib_TryCall {
     }
 
     private fun tryCall(ctx: Rt_CallContext, f: Rt_Value, okValue: Rt_Value?, errValueFn: () -> Rt_Value): Rt_Value {
-        val fnValue = f.asFunction()
         return try {
-            val v = fnValue.call(ctx, immListOf())
-            okValue ?: v
-        } catch (e: Throwable) {
+            if (needsSavepoint(ctx.exeCtx)) {
+                ctx.exeCtx.sqlExec.connection { con ->
+                    withSavepoint(con) {
+                        tryCall0(f, ctx, okValue)
+                    }
+                }
+            } else {
+                tryCall0(f, ctx, okValue)
+            }
+        } catch (e: Exception) {
             errValueFn()
         }
+
     }
+
+    private fun tryCall0(f: Rt_Value, ctx: Rt_CallContext, okValue: Rt_Value?): Rt_Value {
+        val fnValue = f.asFunction()
+        val v = fnValue.call(ctx, immListOf())
+        return okValue ?: v
+    }
+
+    /**
+    * In order to optimize performance, we do it by avoiding creating unnecessary savepoints. The savepoints are only
+    * created if there is a possible write operation towards the database
+    */
+    private fun needsSavepoint(ctx: Rt_ExecutionContext) = ctx.sqlExec.hasRealConnection() && !ctx.dbReadOnly
 }

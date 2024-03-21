@@ -106,6 +106,8 @@ class Rt_SqlExecutor(private val sqlExec: SqlExecutor, private val logErrors: Bo
         return res
     }
 
+    override fun hasRealConnection() = sqlExec.hasRealConnection()
+
     override fun execute(sql: String) {
         wrapErr(sql) {
             sqlExec.execute(sql)

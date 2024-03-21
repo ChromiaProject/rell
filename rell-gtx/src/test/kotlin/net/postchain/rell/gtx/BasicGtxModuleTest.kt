@@ -38,6 +38,13 @@ class BasicGtxModuleTest : IntegrationTest() {
         buildBlockAndCommit(node) //TODO check the error somehow
     }
 
+    @Test fun testTryCallRecoversFromSQLError() {
+        val node = setupNode()
+        enqueueTx(node, makeTx(0, "try_insert_cities", gtv("Tbilisi"), gtv("Stockholm")), 0)
+        buildBlockAndCommit(node)
+        chkQuery(node, "get_all_city_names", gtv(mapOf()), gtv(listOf(gtv("Tbilisi"), gtv("Stockholm"))))
+    }
+
     @Test fun testOpErrWrongArgType() {
         val node = setupNode()
         enqueueTx(node, makeTx(0, "insert_city", gtv(12345)), 0)
