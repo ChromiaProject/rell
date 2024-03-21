@@ -9,6 +9,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.file
 import java.io.File
+import java.util.Calendar
 
 class DokkaCommand : CliktCommand() {
 
@@ -26,7 +27,7 @@ class DokkaCommand : CliktCommand() {
         builder.targetFolder(target)
                 .customStyleSheets(styles)
                 .customAssets(assets)
-                .footerMessage("© 2024 Chromia")
+                .footerMessage("© ${Calendar.getInstance().get(Calendar.YEAR)} Chromia")
                 .includes(includes)
         RellDokkaGenerator(builder).generate()
     }
