@@ -20,7 +20,7 @@ class DokkaCommand : CliktCommand() {
     private val styles by option().split(",")
     private val assets by option().split(",")
     private val system by option(help = "Generate system library docs", hidden = true).flag()
-    private val includes by option(help = "Include documentation files").file().split(",").default(listOf(File("src/main/resources/rell.md")))
+    private val includes by option(help = "Include documentation files").file().split(",").default(listOf())
 
     override fun run() {
         val builder = if (system) RellDokkaPluginConfigurationBuilder.SYSTEM else RellDokkaPluginConfigurationBuilder(name, modules, source)
