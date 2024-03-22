@@ -21,6 +21,7 @@ class ChromiaAssetsInstaller(private val dokkaContext: DokkaContext) : PageTrans
             "fonts/NBInternationalBoldWebfont.ttf",
             "fonts/NBInternationalMonoWebfont.ttf",
             "fonts/NBInternationalRegularWebfont.ttf",
+            "README.md",
     ).toRenderSpecificResourcePage()
 
     private val chromiaStyles = listOf(
