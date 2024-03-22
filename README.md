@@ -1,6 +1,8 @@
 # Rell Dokka Plugin
 
 [![Kotlin Beta](https://kotl.in/badges/beta.svg)](https://kotlinlang.org/docs/components-stability.html)
+[![Build Status](https://gitlab.com/chromaway/core-tools/rell-dokka-plugin/badges/dev/pipeline.svg)](https://gitlab.com/chromaway/core-tools/rell-dokka-plugin/)
+[![Coverage Status](https://gitlab.com/chromaway/core-tools/rell-dokka-plugin/badges/dev/coverage.svg)](https://gitlab.com/core-tools/rell-dokka-plugin/)
 
 This repository defines the rell dokka plugin for generating docs from rell sources
 
