@@ -58,6 +58,8 @@ class RellDokkaPlugin : DokkaPlugin() {
             htmlPreprocessors providing ::ChromiaAssetsInstaller order {
                 before(customResourceInstaller)
                 after(rootCreator)
+                after(stylesInstaller)
+                after(assetsInstaller)
             } applyIf { !delayTemplateSubstitution }
         }
     }
