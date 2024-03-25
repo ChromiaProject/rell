@@ -14,7 +14,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `constants signature`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("val test = 32;", listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
@@ -27,7 +27,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `operations signature`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("operation test() {}", listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
@@ -40,7 +40,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `query signature`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("query test() = 13;", listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
@@ -53,7 +53,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `functions signature with primitive types`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("function test(arg: integer, arg2: byte_array) = 13;", listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
@@ -70,7 +70,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `functions signature with nullable types`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("function test(arg: text?): integer? = 13;", listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
@@ -87,7 +87,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `functions signature with list types`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("function test(arg: list<text>): list<integer> = [12];", listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
@@ -104,7 +104,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `functions signature with nullable list types`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("function test(arg: list<text?>): set<integer> = set<integer>();", listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
@@ -121,7 +121,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `functions signature with function arguments types`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("function test(arg: (integer, text) -> text) = 2;", listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
@@ -138,7 +138,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `functions signature with object arguments types`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("""
             entity my_entity {}
             struct my_struct {}
@@ -163,7 +163,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `functions signature with list object arguments types`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("""
             struct my_struct {}
             function test(arg: list<my_struct>) = set<my_struct>();
@@ -183,7 +183,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `functions signature with map arguments types`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("""
             struct my_struct {}
             function test(arg: map<text, my_struct>) = arg;
@@ -203,7 +203,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `functions signature with function arguments types with references`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("""
             struct my_struct {}
             function test(arg: (my_struct) -> my_struct) = arg;
@@ -223,7 +223,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `functions signature with un-named tuple arguments types`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("""
             struct my_struct {}
             function test(arg: (text, my_struct)) = arg;
@@ -243,7 +243,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `functions signature with named tuple arguments types`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("""
             struct my_struct {}
             function test(arg: (x: text, y: my_struct)) = arg;
@@ -263,7 +263,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `extendable functions signature`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("""
             @extendable function test(arg: integer): boolean;
         """.trimIndent(), listOf(writerPlugin)) {
@@ -282,7 +282,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `extension functions signature`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("""
             @extendable function ext(): boolean = true;
             @extend(ext) function test() = true;
@@ -298,7 +298,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `anonymous extension functions signature`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("""
             @extendable function ext(): boolean = true;
             @extend(ext) function () = true;
@@ -314,7 +314,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `module args signature`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("""
             struct module_args {
               value: integer = 1;
@@ -331,7 +331,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `entity default value signature`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("""
             entity test {
               value: integer = 1;
@@ -348,7 +348,7 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `object default value signature`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         singleFileTestInline("""
             object test {
               value: integer = 1;

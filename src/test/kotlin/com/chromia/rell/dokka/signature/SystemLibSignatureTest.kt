@@ -26,7 +26,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
 
     @Test
     fun `function has reference to types`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/root/integer/abs.html").firstSignature()
@@ -37,7 +37,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
 
     @Test
     fun `function in other namespace can reference system lib types`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/crypto/eth_privkey_to_address.html").firstSignature()
@@ -57,7 +57,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
 
     @Test
     fun `function in test namespace can reference test lib types`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/rell.test/op/run_must_fail.html").lastSignature()
@@ -77,7 +77,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
 
     @Test
     fun `function with list typest lib types`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/rell.test/tx/tx.html").firstSignature()
@@ -94,7 +94,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
 
     @Test
     fun `Arity is shown properly`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/root/integer/integer.html").firstSignature()
@@ -122,7 +122,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
 
     @Test
     fun `Links are working for nested inner types (tuple arguments)`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/rell.test/assert_events.html").firstSignature()
@@ -139,7 +139,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
 
     @Test
     fun `Links are worknig on return types of properties`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/rell.test/op/args.html").firstSignature()
@@ -153,7 +153,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
 
     @Test
     fun `Links are worknig on return types of properties2`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/rell.test.keypairs/alice.html").firstSignature()
@@ -167,7 +167,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
 
     @Test
     fun `Meta type (special) constructor does not look too ugly`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/rell/meta/meta.html").firstSignature()
@@ -183,7 +183,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
 
     @Test
     fun `function parameters are displayed correctly`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/root/try_call.html").lastSignature() // TODO: Why the [rell]-prefix
@@ -199,7 +199,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
 
     @Test
     fun `special functions empty and exists displayed correctly`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/root/empty.html").firstSignature()
@@ -215,7 +215,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
 
     @Test
     fun `print function can print anything`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/root/print.html").firstSignature()
@@ -231,7 +231,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
 
     @Test
     fun `generic type parameters are visualized on functions`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/rell.test/assert_equals.html").firstSignature()
@@ -247,7 +247,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
 
     @Test
     fun `Inheritance is shown for collection types`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/root/set/index.html").firstSignature()
@@ -260,7 +260,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
 
     @Test
     fun `Inheritance is shown for map types`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/root/map/index.html").firstSignature()
@@ -273,7 +273,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
 
     @Test
     fun `Map constructor is pure`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/root/map/map.html").lastSignature()
@@ -290,7 +290,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
 
     @Test
     fun `type constant values are shown`() {
-        val writerPlugin = TestOutputWriterPlugin()
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 writerPlugin.writer.renderedContent("$projectRoot/root/decimal/-i-n-t_-d-i-g-i-t-s.html").firstSignature()
