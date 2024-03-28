@@ -32,6 +32,9 @@ abstract class BaseRellTest(useSql: Boolean = true, gtv: Boolean = false): BaseT
         tester(checker)
     }
 
+    fun chkVirtual(type: String, expr: String, arg: Gtv, expected: String) = tst.chkVirtual(type, expr, arg, expected)
+    fun chkVirtualEx(type: String, body: String, arg: Gtv, expected: String) = tst.chkVirtualEx(type, body, arg, expected)
+
     fun chkFull(code: String, expected: String) =  tst.chkFull(code, expected)
     fun chkFull(code: String, args: List<Rt_Value>, expected: String) = tst.chkFull(code, args, expected)
     fun chkFull(code: String, name: String, args: List<Rt_Value>, expected: String) = tst.chkFull(code, name, args, expected)

@@ -125,6 +125,14 @@ class RellCodeTester(
         checkResult(expected, actual)
     }
 
+    fun chkVirtual(type: String, expr: String, arg: Gtv, expected: String) {
+        chkVirtualEx(type, "= $expr;", arg, expected)
+    }
+
+    fun chkVirtualEx(type: String, body: String, arg: Gtv, expected: String) {
+        chkFullGtv("query q(x: $type) $body", listOf(arg), expected)
+    }
+
     fun chkFullGtv(code: String, args: List<Gtv>, expected: String) {
         val encoder = resultEncoder()
         val actual = callQuery0(code, "q", args, GtvTestUtils::decodeGtvQueryArgs, encoder)

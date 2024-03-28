@@ -360,3 +360,41 @@ So expressions like
     user?.name == 'Bob'
 
 will work, allowing to compare text? and text.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+19. Library: Function iterable.join_to_text()
+
+iterable<T>.join_to_text(
+    separator: text = ", ",
+    prefix: text = "",
+    postfix: text = "",
+    limit: integer? = null,
+    truncated: text = "...",
+    transform: (T) -> text = T.to_text()
+): text
+
+Function creates a text from all the elements separated using separator and using the given prefix and
+postfix if supplied. It can be used on all subtypes of iterable<T>: list<T>, set<T>, map<K,V>, byte_array, range.
+If the iterable is large, you can specify a non-negative value of limit, in which case
+only the first limit of elements will be appended, followed by the truncated text (which defaults to "...").
+
+Usage example:
+
+    [1,2,3].join_to_text() // returns "1, 2, 3"
+    [1,2,3].join_to_text("*") // returns "1*2*3"
+    [1,2,3].join_to_text("*", "<", ">") // returns "<1*2*3>"
+
+    function foo(element : integer) { return "foo" + element; }
+    [1,2,3].join_to_text(", ", "", "", null, "", foo(*)) // returns "foo1, foo2, foo3"
+
+Parameter details:
+
+    separator - the text value used between each of the elements in the iterable.
+    prefix - the text to be prefixed to the resulting text.
+    postfix - the text to be appended to the resulting text.
+    limit - the maximum number of elements from the iterable to include in the result.
+            If the number of elements exceeds this limit, the truncated text is appended.
+            The default is null, which means no limit.
+            Limit needs to be a non-negative integer between 0 and (2^31)-1.
+    truncated - the text to be appended if the number of elements exceeds the specified limit.
+    transform - the function to apply to each element before joining.

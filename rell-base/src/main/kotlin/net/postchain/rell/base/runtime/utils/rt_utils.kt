@@ -240,6 +240,10 @@ object Rt_Utils {
         }
     }
 
+    fun <T: Comparable<T>> checkRange(actual: T, min: T, max: T, mgsProvider: () -> C_CodeMsg) {
+        check(actual in min .. max, mgsProvider)
+    }
+
     fun evaluateInNewFrame(
             defCtx: Rt_DefinitionContext,
             frame: Rt_CallFrame?,

@@ -1383,14 +1383,6 @@ class VirtualTest: BaseRellTest(false) {
         chkVirtual(type, expr, gtvArg, "'$expected'")
     }
 
-    private fun chkVirtual(type: String, expr: String, arg: Gtv, expected: String) {
-        chkVirtualEx(type, "= $expr;", arg, expected)
-    }
-
-    private fun chkVirtualEx(type: String, body: String, arg: Gtv, expected: String) {
-        chkFullGtv("query q(x: $type) $body", listOf(arg), expected)
-    }
-
     companion object {
         fun argToGtv(args: String) = VirtualTestUtils.argToGtv(args)
         fun argToGtv(args: String, paths: String) = VirtualTestUtils.argToGtv(args, paths)
