@@ -42,7 +42,7 @@ class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
     override fun formatReturnType(type: R_Type?): String {
         return when (type) {
             null -> ""
-            is R_NullableType -> ".let { v -> if (v is GtvNull) null else v${formatReturnType(type.valueType)} }"
+            is R_NullableType -> ".let { nullable -> if (nullable is GtvNull) null else nullable${formatReturnType(type.valueType)} }"
             is R_BooleanType -> ".asBoolean()"
             is R_EnumType -> ".let { ${CamelCaseClassName.fromRellType(type).className}.valueOf(it.asString()) }"
             is R_TextType -> ".asString()"
