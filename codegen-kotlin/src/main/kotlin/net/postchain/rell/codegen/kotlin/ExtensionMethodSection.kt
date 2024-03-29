@@ -10,8 +10,8 @@ import net.postchain.gtv.GtvNull
 import net.postchain.gtv.mapper.GtvObjectMapper
 import net.postchain.gtv.mapper.Name
 import net.postchain.gtv.mapper.Nullable
-import net.postchain.rell.base.model.R_MountName
 import net.postchain.rell.base.model.R_FunctionParam
+import net.postchain.rell.base.model.R_MountName
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.DependencyFinder
@@ -37,23 +37,23 @@ abstract class ExtensionMethodSection(
         get() = className.module
 
     final override val imports: List<String> = listOf(
-        "import ${BigDecimal::class.qualifiedName}",
-        "import ${BigInteger::class.qualifiedName}",
-        "import ${WrappedByteArray::class.qualifiedName}",
-        "import ${RowId::class.qualifiedName}",
-        "import net.postchain.common.wrap",
-        "import ${extendedClass.qualifiedName}",
-        "import ${Generated::class.qualifiedName}",
-        "import ${Gtv::class.qualifiedName}",
-        "import ${GtvArray::class.qualifiedName}",
-        "import ${GtvNull::class.qualifiedName}",
-        "import ${GtvObjectMapper::class.qualifiedName}",
-        "import ${Name::class.qualifiedName}",
-        "import ${BlockchainRid::class.qualifiedName}",
-        "import ${PubKey::class.qualifiedName}",
-        "import ${Nullable::class.qualifiedName}", // TODO: Propagate imports from [returnStructure]
-        "import net.postchain.gtv.GtvFactory.gtv",
-        "import net.postchain.gtv.mapper.toObject",
+            "import ${BigDecimal::class.qualifiedName}",
+            "import ${BigInteger::class.qualifiedName}",
+            "import ${WrappedByteArray::class.qualifiedName}",
+            "import ${RowId::class.qualifiedName}",
+            "import net.postchain.common.wrap",
+            "import ${extendedClass.qualifiedName}",
+            "import ${Generated::class.qualifiedName}",
+            "import ${Gtv::class.qualifiedName}",
+            "import ${GtvArray::class.qualifiedName}",
+            "import ${GtvNull::class.qualifiedName}",
+            "import ${GtvObjectMapper::class.qualifiedName}",
+            "import ${Name::class.qualifiedName}",
+            "import ${BlockchainRid::class.qualifiedName}",
+            "import ${PubKey::class.qualifiedName}",
+            "import ${Nullable::class.qualifiedName}", // TODO: Propagate imports from [returnStructure]
+            "import net.postchain.gtv.GtvFactory.gtv",
+            "import net.postchain.gtv.mapper.toObject",
     )
     final override val deps: Set<ClassName>
 
@@ -72,7 +72,7 @@ abstract class ExtensionMethodSection(
         val returnTypeString = "\n${returnStructure(returnType)}"
         return StringBuilder()
                 .append(functionString)
-                .append(returnTypeString.ifBlank{""})
+                .append(returnTypeString.ifBlank { "" })
                 .toString()
     }
 
@@ -87,7 +87,7 @@ abstract class ExtensionMethodSection(
         return attributeToGtv(param.name.str.snakeToLowerCamelCase(), param.type)
     }
 
-    abstract fun formatReturnType(type: R_Type?): String
+    abstract fun formatReturnType(type: R_Type?, depth: Int = 0): String
 
     abstract fun returnStructure(returnType: R_Type?): String
 }

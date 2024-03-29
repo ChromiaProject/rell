@@ -39,10 +39,10 @@ class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
         return ", gtv(mapOf(" + params.joinToString(", ") { "\"${it.name}\" to ${parameterToGtv(it)}" } + "))"
     }
 
-    override fun formatReturnType(type: R_Type?): String {
+    override fun formatReturnType(type: R_Type?, depth: Int): String {
         return when (type) {
             null -> ""
-            is R_NullableType -> ".let { nullable -> if (nullable is GtvNull) null else nullable${formatReturnType(type.valueType)} }"
+            is R_NullableType -> ".let { v$depth -> if (v$depth is GtvNull) null else v$depth${formatReturnType(type.valueType, depth + 1)} }"
             is R_BooleanType -> ".asBoolean()"
             is R_EnumType -> ".let { ${CamelCaseClassName.fromRellType(type).className}.valueOf(it.asString()) }"
             is R_TextType -> ".asString()"
@@ -52,24 +52,24 @@ class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
             is R_DecimalType -> ".let { BigDecimal(it.asString()) }"            // Note that decimals are encoded as GtvString(?)
             is R_RowidType -> ".let { RowId(it.asInteger()) }"
             is R_EntityType -> ".let { RowId(it.asInteger()) }"            // Note that entities are encoded as GtvInteger
-            is R_MapType -> formatMapReturnType(type)
+            is R_MapType -> formatMapReturnType(type, depth + 1)
             is R_StructType -> ".toObject<${CamelCaseClassName.fromRellType(type).className}>()"
-            is R_ListType -> ".asArray()${formatNestedReturnType(type.elementType)}"
-            is R_SetType -> ".asArray()${formatNestedReturnType(type.elementType)}.toSet()"
+            is R_ListType -> ".asArray()${formatNestedReturnType(type.elementType, depth + 1)}"
+            is R_SetType -> ".asArray()${formatNestedReturnType(type.elementType, depth + 1)}.toSet()"
             is R_TupleType -> formatTupleType(type)
             is R_GtvType -> ""
             else -> ""                                  // All structs (should be "unknown structs")
         }
     }
 
-    private fun formatNestedReturnType(type: R_Type): String {
-        val returnType = formatReturnType(type)
-        return if (returnType.isEmpty()) "" else ".map { v -> v$returnType }"
+    private fun formatNestedReturnType(type: R_Type, depth: Int): String {
+        val returnType = formatReturnType(type, depth + 1)
+        return if (returnType.isEmpty()) "" else ".map { v$depth -> v$depth$returnType }"
     }
 
-    private fun formatMapReturnType(type: R_MapType) = when (type.keyType) {
-        is R_TextType -> ".asDict().mapValues { (_, v) -> v${formatReturnType(type.valueType)} }"
-        else -> ".asArray().map { pair -> pair.asArray().let { it[0]${formatReturnType(type.keyType)} to it[1]${formatReturnType(type.valueType)} } }"
+    private fun formatMapReturnType(type: R_MapType, depth: Int) = when (type.keyType) {
+        is R_TextType -> ".asDict().mapValues { (_, v$depth) -> v$depth${formatReturnType(type.valueType, depth + 1)} }"
+        else -> ".asArray().map { pair -> pair.asArray().let { it[0]${formatReturnType(type.keyType, depth + 1)} to it[1]${formatReturnType(type.valueType, depth + 1)} } }"
     }
 
     private fun formatTupleType(type: R_TupleType): String {
