@@ -7,6 +7,7 @@ package net.postchain.rell.base.lmodel.dsl
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.lmodel.L_Constructor
 import net.postchain.rell.base.lmodel.L_ConstructorHeader
+import net.postchain.rell.base.lmodel.L_MemberHeader
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.doc.DocComment
@@ -43,7 +44,7 @@ class Ld_ConstructorHeader(
 ) {
     class Finish(val lHeader: L_ConstructorHeader, val comment: DocComment?)
 
-    fun finish(ctx: Ld_TypeFinishContext, fullName: R_FullName, memberHeader: Ld_MemberHeader): Finish {
+    fun finish(ctx: Ld_TypeFinishContext, fullName: R_FullName, memberHeader: L_MemberHeader): Finish {
         val lTypeParams = Ld_TypeParam.finishList(ctx, typeParams)
 
         val subCtx = ctx.subCtx(lTypeParams.map)
@@ -55,15 +56,20 @@ class Ld_ConstructorHeader(
 }
 
 class Ld_Constructor(
-    val memberHeader: Ld_MemberHeader,
+    private val memberHeader: Ld_MemberHeader,
     private val header: Ld_ConstructorHeader,
     private val deprecated: C_Deprecated?,
     private val body: Ld_FunctionBody,
 ) {
-    class Finish(val lConstructor: L_Constructor, val comment: DocComment?)
+    class Finish(
+        val lConstructor: L_Constructor,
+        val memberHeader: L_MemberHeader,
+        val comment: DocComment?,
+    )
 
     fun finish(ctx: Ld_TypeFinishContext, fullName: R_FullName): Finish {
-        val finHeader = header.finish(ctx, fullName, memberHeader)
+        val lMemberHeader = memberHeader.finish(ctx.modCfg, fullName)
+        val finHeader = header.finish(ctx, fullName, lMemberHeader)
         val lBody = body.finish(fullName.qualifiedName)
 
         val lConstructor = L_Constructor(
@@ -73,6 +79,6 @@ class Ld_Constructor(
             pure = body.pure,
         )
 
-        return Finish(lConstructor, finHeader.comment)
+        return Finish(lConstructor, lMemberHeader, finHeader.comment)
     }
 }

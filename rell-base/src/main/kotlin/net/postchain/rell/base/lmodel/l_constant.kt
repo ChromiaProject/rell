@@ -23,15 +23,18 @@ class L_Constant(
 
 class L_NamespaceMember_Constant(
     fullName: R_FullName,
+    header: L_MemberHeader,
     doc: DocSymbol,
     val constant: L_Constant,
-): L_NamespaceMember(fullName, doc) {
+): L_NamespaceMember(fullName, header, doc) {
     override fun strCode() = constant.strCode()
 }
 
 class L_TypeDefMember_Constant(
-    val constant: L_Constant,
+    fullName: R_FullName,
+    header: L_MemberHeader,
     doc: DocSymbol,
-): L_TypeDefMember(constant.simpleName.str, doc) {
+    val constant: L_Constant,
+): L_TypeDefMember(fullName, header, doc) {
     override fun strCode() = constant.strCode()
 }

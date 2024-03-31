@@ -19,12 +19,10 @@ import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.checkEquals
 
-private const val TEST_NS_NAME = "_test"
-
 object Lib_RellHidden {
     val MODULE = C_LibModule.make("rell.hidden", Lib_Rell.MODULE) {
-        namespace(TEST_NS_NAME) {
-            function("crash", result = "unit") {
+        namespace("_test", since = "0.13.2") {
+            function("crash", result = "unit", since = "0.13.2") {
                 param("message", "text")
                 body { a ->
                     val s = a.asString()
@@ -32,7 +30,7 @@ object Lib_RellHidden {
                 }
             }
 
-            function("throw", "unit") {
+            function("throw", "unit", since = "0.13.2") {
                 param("code", "text")
                 param("msg", "text")
                 body { a, b ->
@@ -42,42 +40,44 @@ object Lib_RellHidden {
                 }
             }
 
-            function("external_chain", Lib_Meta.makeMetaGetter(R_NullableType(R_TextType)) { meta ->
+            val fnExternalChain = Lib_Meta.makeMetaGetter(R_NullableType(R_TextType)) { meta ->
                 when {
                     meta.externalChain == null -> null
                     meta.externalChain.value == null -> Rt_NullValue
                     else -> Rt_TextValue.get(meta.externalChain.value)
                 }
-            })
+            }
+
+            function("external_chain", fnExternalChain, since = "0.13.2")
         }
 
-        function("_type_of", C_SysFn_TypeOf)
+        function("_type_of", C_SysFn_TypeOf, since = "0.6.0")
 
-        function("_nullable", pure = true) {
+        function("_nullable", pure = true, since = "0.6.0") {
             generic("T")
             result(type = "T?")
             param("value", type = "T")
             body { a -> a }
         }
 
-        function("_nullable_int", "integer?", pure = true) {
+        function("_nullable_int", "integer?", pure = true, since = "0.6.0") {
             param("value", type = "integer?")
             body { a -> a }
         }
 
-        function("_nullable_text", result = "text?", pure = true) {
+        function("_nullable_text", result = "text?", pure = true, since = "0.6.0") {
             param("value", "text?")
             body { a -> a }
         }
 
-        function("_nop", pure = true) {
+        function("_nop", pure = true, since = "0.6.0") {
             generic("T")
             result("T")
             param("value", "T")
             body { a -> a }
         }
 
-        function("_nop_print", pure = true) {
+        function("_nop_print", pure = true, since = "0.6.0") {
             generic("T")
             result(type = "T")
             param("value", type = "T")
@@ -87,7 +87,7 @@ object Lib_RellHidden {
             }
         }
 
-        function("_strict_str", result = "text") {
+        function("_strict_str", result = "text", since = "0.6.0") {
             param("value", type = "anything")
             body { a ->
                 val s = a.strCode()

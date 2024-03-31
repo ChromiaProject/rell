@@ -35,17 +35,19 @@ object Lib_Type_Text {
     private val CHARSET = Charsets.UTF_8
     private val SPLIT_TYPE = R_ListType(R_TextType)
 
-    val NAMESPACE = Ld_NamespaceDsl.make {
-        alias("name", "text")
-        alias("tuid", "text")
+    private const val SINCE0 = "0.6.0"
 
-        type("text", rType = R_TextType) {
+    val NAMESPACE = Ld_NamespaceDsl.make {
+        alias("name", "text", since = SINCE0)
+        alias("tuid", "text", since = SINCE0)
+
+        type("text", rType = R_TextType, since = SINCE0) {
             comment("An immutable data type for representing character strings.")
 
-            staticFunction("from_bytes", result = "text", pure = true) {
+            staticFunction("from_bytes", result = "text", pure = true, since = "0.9.0") {
                 comment("Creates text from bytes, optionally handling invalid UTF-8 encoding.")
                 param("bytes", type = "byte_array", comment = "The byte array to convert to text.")
-                param( "ignore_errors", type = "boolean", arity = L_ParamArity.ZERO_ONE) {
+                param("ignore_errors", type = "boolean", arity = L_ParamArity.ZERO_ONE) {
                     comment("""
                         If true, replaces invalid characters with a placeholder;
                         if false, throws an exception on encountering invalid bytes.
@@ -68,7 +70,7 @@ object Lib_Type_Text {
                 }
             }
 
-            function("empty", result = "boolean", pure = true) {
+            function("empty", result = "boolean", pure = true, since = SINCE0) {
                 comment("Returns true if the text is empty, otherwise returns false.")
                 dbFunctionTemplate("text.empty", 1, "(LENGTH(#0) = 0)")
                 body { text ->
@@ -77,8 +79,8 @@ object Lib_Type_Text {
                 }
             }
 
-            function("size", result = "integer", pure = true) {
-                alias("len", C_MessageType.ERROR)
+            function("size", result = "integer", pure = true, since = SINCE0) {
+                alias("len", C_MessageType.ERROR, since = SINCE0)
                 dbFunctionSimple("text.size", "LENGTH")
                 comment("Returns the number of characters in the text.")
                 body { text ->
@@ -87,8 +89,8 @@ object Lib_Type_Text {
                 }
             }
 
-            function("upper_case", result = "text", pure = true) {
-                alias("upperCase", C_MessageType.ERROR)
+            function("upper_case", result = "text", pure = true, since = "0.9.0") {
+                alias("upperCase", C_MessageType.ERROR, since = SINCE0)
                 dbFunctionSimple("text.upper_case", "UPPER")
                 comment("Returns a new text with all characters converted to uppercase.")
                 body { text ->
@@ -97,8 +99,8 @@ object Lib_Type_Text {
                 }
             }
 
-            function("lower_case", result = "text", pure = true) {
-                alias("lowerCase", C_MessageType.ERROR)
+            function("lower_case", result = "text", pure = true, since = "0.9.0") {
+                alias("lowerCase", C_MessageType.ERROR, since = SINCE0)
                 dbFunctionSimple("text.lower_case", "LOWER")
                 comment("Returns a new text with all characters converted to lowercase.")
                 body { text ->
@@ -107,8 +109,8 @@ object Lib_Type_Text {
                 }
             }
 
-            function("compare_to", result = "integer", pure = true) {
-                alias("compareTo", C_MessageType.ERROR)
+            function("compare_to", result = "integer", pure = true, since = "0.9.0") {
+                alias("compareTo", C_MessageType.ERROR, since = SINCE0)
                 comment("""
                     Compares this text to another text.
                     @returns the value 0 if equal, a negative number if less than `other`,
@@ -122,7 +124,7 @@ object Lib_Type_Text {
                 }
             }
 
-            function("contains", result = "boolean", pure = true) {
+            function("contains", result = "boolean", pure = true, since = SINCE0) {
                 comment("Returns true if this text contains the specified substring, otherwise returns false.")
                 param("text", type = "text", comment = "The substring to search for.")
                 dbFunctionTemplate("text.contains", 2, "(STRPOS(#0, #1) > 0)")
@@ -133,8 +135,8 @@ object Lib_Type_Text {
                 }
             }
 
-            function("starts_with", result = "boolean", pure = true) {
-                alias("startsWith", C_MessageType.ERROR)
+            function("starts_with", result = "boolean", pure = true, since = "0.9.0") {
+                alias("startsWith", C_MessageType.ERROR, since = SINCE0)
                 comment("Returns true if this text starts with the specified prefix, otherwise returns false.")
                 param("prefix", type = "text", comment = "The prefix to check.")
                 dbFunctionTemplate("text.starts_with", 2, "(LEFT(#0, LENGTH(#1)) = #1)")
@@ -145,8 +147,8 @@ object Lib_Type_Text {
                 }
             }
 
-            function("ends_with", result = "boolean", pure = true) {
-                alias("endsWith", C_MessageType.ERROR)
+            function("ends_with", result = "boolean", pure = true, since = "0.9.0") {
+                alias("endsWith", C_MessageType.ERROR, since = SINCE0)
                 comment("Returns true if this text ends with the specified suffix, otherwise returns false.")
                 param("suffix", type = "text", comment = "The suffix to check.")
                 dbFunctionTemplate("text.ends_with", 2, "(RIGHT(#0, LENGTH(#1)) = #1)")
@@ -157,12 +159,12 @@ object Lib_Type_Text {
                 }
             }
 
-            function("format", result = "text", pure = true) {
+            function("format", result = "text", pure = true, since = SINCE0) {
                 comment("""
                     Uses this string as a format string and returns a string obtained
                     by substituting the specified arguments. Uses `java.lang.String.format` internally.
                 """)
-                param( "args", type = "anything", arity = L_ParamArity.ZERO_MANY) {
+                param("args", type = "anything", arity = L_ParamArity.ZERO_MANY) {
                     comment("""
                         Arguments referenced by the format specifiers in the format string.
                         If there are more arguments than format specifiers, the extra arguments are ignored.
@@ -182,7 +184,7 @@ object Lib_Type_Text {
                 }
             }
 
-            function("replace", result = "text", pure = true) {
+            function("replace", result = "text", pure = true, since = SINCE0) {
                 comment("""
                     Returns a new text resulting from replacing all occurrences of old text in this text with new text.
                 """)
@@ -197,7 +199,7 @@ object Lib_Type_Text {
                 }
             }
 
-            function("split", result = "list<text>", pure = true) {
+            function("split", result = "list<text>", pure = true, since = SINCE0) {
                 comment("Splits this text around matches of the given delimiter.")
                 param("delimiter", type = "text", comment = "The delimiter to split the text by.")
                 body { text, delimiter ->
@@ -209,7 +211,7 @@ object Lib_Type_Text {
                 }
             }
 
-            function("trim", result = "text", pure = true) {
+            function("trim", result = "text", pure = true, since = SINCE0) {
                 comment("Returns a new text with leading and trailing whitespace removed.")
                 //dbFunction(Db_SysFunction.template("text.trim", 1, "TRIM(#0, ' '||CHR(9)||CHR(10)||CHR(13))"))
                 body { text ->
@@ -218,7 +220,7 @@ object Lib_Type_Text {
                 }
             }
 
-            function("like", result = "boolean", pure = true) {
+            function("like", result = "boolean", pure = true, since = "0.10.4") {
                 comment("""
                     Returns true if this text matches the specified pattern using SQL LIKE syntax.
 
@@ -244,7 +246,7 @@ object Lib_Type_Text {
                 }
             }
 
-            function("matches", result = "boolean", pure = true) {
+            function("matches", result = "boolean", pure = true, since = SINCE0) {
                 comment("""
                     Returns true if this text matches the given regular expression.
                     Uses `java.util.regex.Pattern` internally.
@@ -262,8 +264,8 @@ object Lib_Type_Text {
                 }
             }
 
-            function("char_at", result = "integer", pure = true) {
-                alias("charAt", C_MessageType.ERROR)
+            function("char_at", result = "integer", pure = true, since = "0.9.0") {
+                alias("charAt", C_MessageType.ERROR, since = SINCE0)
                 comment("Get a 16-bit code of a character at the specified index.")
                 param("index", type = "integer", comment = "The index of the character.")
                 dbFunctionTemplate("text.char_at", 2, "ASCII(${SqlConstants.FN_TEXT_GETCHAR}(#0, (#1)::INT))")
@@ -281,8 +283,8 @@ object Lib_Type_Text {
                 }
             }
 
-            function("index_of", result = "integer", pure = true) {
-                alias("indexOf", C_MessageType.ERROR)
+            function("index_of", result = "integer", pure = true, since = "0.9.0") {
+                alias("indexOf", C_MessageType.ERROR, since = SINCE0)
                 comment("""
                     Returns the position of the first occurrence of the specified substring within this text,
                     or -1 if the text is not found.
@@ -296,12 +298,12 @@ object Lib_Type_Text {
                 }
             }
 
-            function("index_of", result = "integer", pure = true) {
+            function("index_of", result = "integer", pure = true, since = "0.9.0") {
                 comment("""
                     Returns the position of the first occurrence of the specified substring within this text,
                     starting at the specified index, or -1 if the text is not found.
                 """)
-                alias("indexOf", C_MessageType.ERROR)
+                alias("indexOf", C_MessageType.ERROR, since = SINCE0)
                 param("text", type = "text", comment = "The substring to search for.")
                 param("start", type = "integer", comment = "The index to start the search from.")
                 body { text, substring, start ->
@@ -319,8 +321,8 @@ object Lib_Type_Text {
             }
 
 
-            function("last_index_of", result = "integer", pure = true) {
-                alias("lastIndexOf", C_MessageType.ERROR)
+            function("last_index_of", result = "integer", pure = true, since = "0.9.0") {
+                alias("lastIndexOf", C_MessageType.ERROR, since = SINCE0)
                 comment("""
                     Returns the index within this text of the last occurrence of the specified string,
                     or -1 if not found.
@@ -333,12 +335,12 @@ object Lib_Type_Text {
                 }
             }
 
-            function("last_index_of", result = "integer", pure = true) {
+            function("last_index_of", result = "integer", pure = true, since = "0.9.0") {
                 comment("""
                     Returns the index within this text of the last occurrence of the specified string,
                     starting from the specified startIndex, or -1 if not found.
                 """)
-                alias("lastIndexOf", C_MessageType.ERROR)
+                alias("lastIndexOf", C_MessageType.ERROR, since = SINCE0)
                 param("text", type = "text", comment = "The substring to search for.")
                 param("max", type = "integer", comment = "The index to search before.")
                 body { text, substring, max ->
@@ -355,7 +357,7 @@ object Lib_Type_Text {
                 }
             }
 
-            function("repeat", result = "text", pure = true) {
+            function("repeat", result = "text", pure = true, since = "0.11.0") {
                 comment("Returns the text repeated `n` times. SQL compatible.")
                 param("n", type = "integer", comment = "The number of times to repeat the text.")
                 dbFunctionTemplate("text.repeat", 2, "${SqlConstants.FN_TEXT_REPEAT}(#0, (#1)::INT)")
@@ -370,7 +372,7 @@ object Lib_Type_Text {
                 }
             }
 
-            function("reversed", result = "text", pure = true) {
+            function("reversed", result = "text", pure = true, since = "0.11.0") {
                 comment("Returns a reversed copy of the text. SQL compatible.")
                 dbFunctionTemplate("text.reversed", 1, "REVERSE(#0)")
                 body { text ->
@@ -382,7 +384,7 @@ object Lib_Type_Text {
                 }
             }
 
-            function("sub", result = "text", pure = true) {
+            function("sub", result = "text", pure = true, since = SINCE0) {
                 comment("Returns a substring of this text starting from the specified index.")
                 param("start", type = "integer", comment = "The starting index of the substring.")
                 dbFunctionTemplate("text.sub/1", 2, "${SqlConstants.FN_TEXT_SUBSTR1}(#0, (#1)::INT)")
@@ -393,7 +395,7 @@ object Lib_Type_Text {
                 }
             }
 
-            function("sub", result = "text", pure = true) {
+            function("sub", result = "text", pure = true, since = SINCE0) {
                 comment("""
                     Returns a substring of this text from the specified start index (inclusive)
                     to the specified end index (exclusive).
@@ -409,8 +411,8 @@ object Lib_Type_Text {
                 }
             }
 
-            function("to_bytes", result = "byte_array", pure = true) {
-                alias("encode", C_MessageType.ERROR)
+            function("to_bytes", result = "byte_array", pure = true, since = "0.9.0") {
+                alias("encode", C_MessageType.ERROR, since = SINCE0)
                 comment("Converts the text to UTF-8 encoded bytes.")
                 body { text ->
                     val s = text.asString()

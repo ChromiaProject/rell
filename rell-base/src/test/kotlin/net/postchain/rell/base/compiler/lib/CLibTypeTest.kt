@@ -4,16 +4,13 @@
 
 package net.postchain.rell.base.compiler.lib
 
-import net.postchain.rell.base.compiler.ast.S_Expr
-import net.postchain.rell.base.compiler.base.expr.C_ExprContext
-import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
-import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
-import net.postchain.rell.base.compiler.vexpr.V_Expr
+import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.lib.type.Rt_TextValue
+import net.postchain.rell.base.lib.type.Rt_UnitValue
+import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.testutils.LibModuleTester
-import net.postchain.rell.base.utils.LazyPosString
 import org.junit.Test
 
 class CLibTypeTest: BaseCLibTest() {
@@ -45,12 +42,7 @@ class CLibTypeTest: BaseCLibTest() {
         modTst.extraModule {
             type("data") {
                 modTst.setRTypeFactory(this)
-                constructor(object: C_SpecialLibGlobalFunctionBody() {
-                    override fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: List<S_Expr>): V_Expr {
-                        args.forEach { it.compile(ctx) }
-                        return C_ExprUtils.errorVExpr(ctx, name.pos)
-                    }
-                })
+                constructor(BaseLTest.makeTypeCon())
             }
         }
 
@@ -77,5 +69,21 @@ class CLibTypeTest: BaseCLibTest() {
         chk(extName, "ct_err:unknown_name:$extName")
         chk("$extName()", "ct_err:unknown_name:$extName")
         chk("$extName.f()", "ct_err:unknown_name:$extName")
+    }
+
+    @Test fun testDeprecated() {
+        modTst.extraModule {
+            imports(Lib_Rell.MODULE.lModule)
+            type("data") {
+                modTst.setRTypeFactory(this)
+                constant("X", 123)
+                staticFunction("f", "integer") { body { -> Rt_UnitValue } }
+            }
+            alias("tada", "data", C_MessageType.ERROR) //TODO remove alias when direct type deprecation is supported
+        }
+
+        chkCompile("function f(v: tada) {}", "ct_err:deprecated:ALIAS:[mod:tada]:data")
+        chkCompile("function f() = tada.X;", "ct_err:deprecated:ALIAS:[mod:tada]:data")
+        chkCompile("function f() = tada.f();", "ct_err:deprecated:ALIAS:[mod:tada]:data")
     }
 }

@@ -75,7 +75,8 @@ class L_TypeDefMembers(members: List<L_TypeDefMember>) {
             is L_TypeDefMember_Alias -> {
                 val targetMember = replaceTypeParamsCache(replace, member.targetMember)
                 if (targetMember == null) null else L_TypeDefMember_Alias(
-                    member.simpleName,
+                    member.fullName,
+                    member.header,
                     member.docSymbol,
                     targetMember,
                     member.deprecated,
@@ -105,20 +106,23 @@ abstract class L_TypeDefSupertypeStrategy {
 object L_TypeDefSupertypeStrategy_None: L_TypeDefSupertypeStrategy()
 
 sealed class L_TypeDefMember(
-    val symName: String,
-    override val docSymbol: DocSymbol,
-): DocDefinition {
+    fullName: R_FullName,
+    header: L_MemberHeader,
+    docSymbol: DocSymbol,
+    val symName: String = fullName.last.str,
+): L_AbstractMember(fullName, header, docSymbol) {
     final override fun toString() = strCode()
 
     abstract fun strCode(): String
 }
 
 class L_TypeDefMember_Alias(
-    val simpleName: R_Name,
+    fullName: R_FullName,
+    header: L_MemberHeader,
     doc: DocSymbol,
     val targetMember: L_TypeDefMember,
     val deprecated: C_Deprecated?,
-): L_TypeDefMember(simpleName.str, doc) {
+): L_TypeDefMember(fullName, header, doc) {
     override fun strCode(): String {
         val parts = listOfNotNull(
             L_InternalUtils.deprecatedStrCodeOrNull(deprecated),
@@ -207,9 +211,10 @@ class L_TypeDef(
 
 class L_NamespaceMember_Type(
     fullName: R_FullName,
+    header: L_MemberHeader,
     val typeDef: L_TypeDef,
     val deprecated: C_Deprecated?,
-): L_NamespaceMember(fullName, typeDef.docSymbol) {
+): L_NamespaceMember(fullName, header, typeDef.docSymbol) {
     override fun strCode(): String {
         val parts = listOfNotNull(
             L_InternalUtils.deprecatedStrCodeOrNull(deprecated),

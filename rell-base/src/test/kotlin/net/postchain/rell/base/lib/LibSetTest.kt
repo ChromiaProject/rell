@@ -80,7 +80,7 @@ class LibSetTest: BaseRellTest(false) {
         chk("set([1]).size()", "int[1]")
         chk("set([1, 2, 3, 4, 5]).size()", "int[5]")
         chk("set([1, 2, 3, 2, 3, 4, 5]).size()", "int[5]")
-        chk("set<integer>().len()", "ct_err:deprecated:FUNCTION:[set<integer>.len]:size")
+        chk("set<integer>().len()", "ct_err:deprecated:ALIAS:[rell:collection.len]:size")
     }
 
     @Test fun testEquals() {

@@ -21,30 +21,32 @@ private const val FAILURE_SNAME = "failure"
 private val FAILURE_QNAME = Lib_RellTest.NAMESPACE_NAME.add(FAILURE_SNAME)
 
 object Lib_Test_Assert {
-    val FAILURE_TYPE: R_Type = R_TestFailureType
-
     val NAMESPACE = Ld_NamespaceDsl.make {
         include(Lib_Test_Type_Failure.NAMESPACE)
 
-        alias(target = "rell.test.assert_equals")
-        alias(target = "rell.test.assert_not_equals")
-        alias(target = "rell.test.assert_true")
-        alias(target = "rell.test.assert_false")
-        alias(target = "rell.test.assert_null")
-        alias(target = "rell.test.assert_not_null")
-        alias(target = "rell.test.assert_fails")
+        alias(target = "rell.test.assert_equals", since = "0.10.4")
+        alias(target = "rell.test.assert_not_equals", since = "0.10.4")
+        alias(target = "rell.test.assert_true", since = "0.10.4")
+        alias(target = "rell.test.assert_false", since = "0.10.4")
+        alias(target = "rell.test.assert_null", since = "0.10.4")
+        alias(target = "rell.test.assert_not_null", since = "0.10.4")
+        alias(target = "rell.test.assert_fails", since = "0.10.4")
 
-        alias(target = "rell.test.assert_lt")
-        alias(target = "rell.test.assert_gt")
-        alias(target = "rell.test.assert_le")
-        alias(target = "rell.test.assert_ge")
-        alias(target = "rell.test.assert_gt_lt")
-        alias(target = "rell.test.assert_gt_le")
-        alias(target = "rell.test.assert_ge_lt")
-        alias(target = "rell.test.assert_ge_le")
+        alias(target = "rell.test.assert_lt", since = "0.10.4")
+        alias(target = "rell.test.assert_gt", since = "0.10.4")
+        alias(target = "rell.test.assert_le", since = "0.10.4")
+        alias(target = "rell.test.assert_ge", since = "0.10.4")
+        alias(target = "rell.test.assert_gt_lt", since = "0.10.4")
+        alias(target = "rell.test.assert_gt_le", since = "0.10.4")
+        alias(target = "rell.test.assert_ge_lt", since = "0.10.4")
+        alias(target = "rell.test.assert_ge_le", since = "0.10.4")
 
-        namespace("rell.test") {
-            function("assert_equals", pure = true) {
+        // Needed to specify "since".
+        namespace("rell", since = "0.10.4") {
+        }
+
+        namespace("rell.test", since = "0.10.4") {
+            function("assert_equals", pure = true, since = "0.10.4") {
                 comment("Asserts that two values are equal.")
                 generic("T")
                 result("unit")
@@ -55,7 +57,7 @@ object Lib_Test_Assert {
                 }
             }
 
-            function("assert_not_equals", pure = true) {
+            function("assert_not_equals", pure = true, since = "0.10.4") {
                 comment("Asserts that two values are not equal.")
                 generic("T")
                 result("unit")
@@ -71,7 +73,7 @@ object Lib_Test_Assert {
                 }
             }
 
-            function("assert_true", "unit", pure = true) {
+            function("assert_true", "unit", pure = true, since = "0.10.4") {
                 comment("Asserts that the value is `true`.")
                 param("actual", "boolean", comment = "Actual value")
                 body { arg ->
@@ -79,7 +81,7 @@ object Lib_Test_Assert {
                 }
             }
 
-            function("assert_false", "unit", pure = true) {
+            function("assert_false", "unit", pure = true, since = "0.10.4") {
                 comment("Asserts that the value is `false`.")
                 param("actual", "boolean", comment = "Actual value")
                 body { arg ->
@@ -87,7 +89,7 @@ object Lib_Test_Assert {
                 }
             }
 
-            function("assert_null", "unit", pure = true) {
+            function("assert_null", "unit", pure = true, since = "0.10.4") {
                 comment("Asserts that the value is `null`.")
                 param("actual", type = "anything", nullable = true, comment = "Actual value")
                 body { arg ->
@@ -98,7 +100,7 @@ object Lib_Test_Assert {
                 }
             }
 
-            function("assert_not_null", "unit", pure = true) {
+            function("assert_not_null", "unit", pure = true, since = "0.10.4") {
                 comment("Asserts that the value is not `null`.")
                 generic("T", subOf = "any")
                 param("actual", type = "T?", nullable = true, implies = L_ParamImplication.NOT_NULL) {
@@ -112,7 +114,7 @@ object Lib_Test_Assert {
                 }
             }
 
-            function("assert_fails", "rell.test.failure") {
+            function("assert_fails", "rell.test.failure", since = "0.11.0") {
                 comment("Asserts that a function fails to evaluate")
                 generic("T")
                 param("fn", type = "() -> T", comment = "Function to evaluate")
@@ -122,7 +124,7 @@ object Lib_Test_Assert {
                 }
             }
 
-            function("assert_fails", "rell.test.failure") {
+            function("assert_fails", "rell.test.failure", since = "0.11.0") {
                 comment("Asserts that a function fails with an expected message")
                 generic("T")
                 param("expected_message", type = "text") {
@@ -149,7 +151,7 @@ object Lib_Test_Assert {
     }
 
     private fun defAssertCompare(mk: Ld_NamespaceDsl, name: String, op: R_CmpOp) = with(mk) {
-        function(name, "unit", pure = true) {
+        function(name, "unit", pure = true, since = "0.10.4") {
             comment("Asserts that the value is ${op.str} the expected value")
             generic("T", subOf = "comparable")
             param("actual", type = "T", comment = "Actual value to compare")
@@ -165,7 +167,7 @@ object Lib_Test_Assert {
     }
 
     private fun defAssertRange(m: Ld_NamespaceDsl, name: String, op1: R_CmpOp, op2: R_CmpOp) = with(m) {
-        function(name, "unit", pure = true) {
+        function(name, "unit", pure = true, since = "0.10.4") {
             comment("Asserts that the value is ${op1.str} the first value and ${op2.str} the second value.")
             generic("T", subOf = "comparable")
             param("actual", type = "T", comment = "The actual value to compare")
@@ -261,8 +263,8 @@ object Lib_Test_Assert {
 private object Lib_Test_Type_Failure {
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell.test") {
-            type("failure", rType = R_TestFailureType) {
-                property("message", type = "text", pure = true) {
+            type("failure", rType = R_TestFailureType, since = "0.11.0") {
+                property("message", type = "text", pure = true, since = "0.11.0") {
                     value { a ->
                         val v = a as Rt_TestFailureValue
                         v.messageValue

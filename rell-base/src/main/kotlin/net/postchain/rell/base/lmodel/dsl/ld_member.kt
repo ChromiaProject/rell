@@ -4,6 +4,8 @@
 
 package net.postchain.rell.base.lmodel.dsl
 
+import net.postchain.rell.base.lmodel.L_MemberHeader
+import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.doc.*
@@ -12,7 +14,21 @@ class Ld_MemberHeader(
     val since: R_LangVersion?,
     val comment: String?,
 ) {
-    fun docComment(): DocComment? {
+    fun update(since: R_LangVersion? = this.since, comment: String? = this.comment): Ld_MemberHeader {
+        return if (since == this.since && comment == this.comment) this else Ld_MemberHeader(since, comment)
+    }
+
+    fun finish(modCfg: Ld_ModuleConfig, fullName: R_FullName, requireSince: Boolean = true): L_MemberHeader {
+        if (modCfg.requireSince && requireSince && since == null) {
+            throw Ld_Exception("missing_since:$fullName", "Missing 'since' for '$fullName'")
+        }
+
+        val actualSince = if (modCfg.versionControl) since else null
+        val docComment = docComment()
+        return L_MemberHeader(actualSince, docComment)
+    }
+
+    private fun docComment(): DocComment? {
         return if (since == null && comment == null) null else {
             val c = if (comment == null) DocComment.EMPTY else parseComment(comment)
             if (since == null) c else {

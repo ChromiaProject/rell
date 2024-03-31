@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.testutils
@@ -10,6 +10,7 @@ import net.postchain.common.toHex
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvNull
+import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.lib.type.Rt_BooleanValue
@@ -21,10 +22,10 @@ import net.postchain.rell.base.utils.*
 import kotlin.test.assertEquals
 
 class RellCodeTester(
-        tstCtx: RellTestContext,
-        entityDefs: List<String> = listOf(),
-        inserts: List<String> = listOf(),
-        gtv: Boolean = false,
+    tstCtx: RellTestContext,
+    entityDefs: List<String> = listOf(),
+    inserts: List<String> = listOf(),
+    gtv: Boolean = false,
 ): RellBaseTester(tstCtx, entityDefs, inserts, gtv) {
     var gtvResult: Boolean = gtv
         set(value) {
@@ -117,7 +118,8 @@ class RellCodeTester(
         chkFull("query q($params) $code", args2.map { it.second }, expected)
     }
 
-    fun chkFull(code: String, expected: String) = chkFull(code, listOf(), expected)
+    override fun chkFull(code: String, expected: String) = chkFull(code, listOf(), expected)
+
     fun chkFull(code: String, args: List<Rt_Value>, expected: String) = chkFull(code, "q", args, expected)
 
     fun chkFull(code: String, name: String, args: List<Rt_Value>, expected: String) {
@@ -293,6 +295,10 @@ class RellCodeTester(
         tstCtx.chkSqlCtr(expected)
     }
 
+    fun chkVerCt(code: String, version: String, expOld: String, expNew: String) {
+        chkVer0(code, version, expOld, expNew, ::chkCompile)
+    }
+
     fun createRepl(): RellReplTester {
         val files = files()
         val moduleNameStr = replModule
@@ -302,7 +308,7 @@ class RellCodeTester(
         val globalCtx = createGlobalCtx()
 
         val sqlMgr = tstCtx.sqlMgr()
-        val modArgsSource = createModuleArgsSource()
+        val modArgsSource = createModuleArgsSource(globalCtx.compilerOptions)
         return RellReplTester(tstCtx.projExt, globalCtx, sourceDir, sqlMgr, modArgsSource, module)
     }
 
@@ -383,7 +389,7 @@ class RellCodeTester(
                 globalCtx = globalCtx,
                 chainCtx = createChainContext(),
                 blockRunner = blockRunner,
-                moduleArgsSource = createModuleArgsSource(),
+                moduleArgsSource = createModuleArgsSource(globalCtx.compilerOptions),
                 app = app,
             )
 
@@ -414,7 +420,7 @@ class RellCodeTester(
         return Rt_ChainContext(gtvConfig, bcRid)
     }
 
-    private fun createModuleArgsSource(): Rt_GtvModuleArgsSource {
+    private fun createModuleArgsSource(options: C_CompilerOptions): Rt_GtvModuleArgsSource {
         val modArgs = getModuleArgs()
         val gtvMap = modArgs
             .map {
@@ -422,7 +428,7 @@ class RellCodeTester(
                 val gtv = GtvTestUtils.strToGtv(it.value)
                 modName to gtv
             }.toImmMap()
-        return Rt_GtvModuleArgsSource(gtvMap)
+        return Rt_GtvModuleArgsSource(gtvMap, options)
     }
 
     fun createAppCtx(
@@ -433,7 +439,7 @@ class RellCodeTester(
     ): Rt_AppContext {
         val chainCtx = createChainContext(GtvNull)
         val blockRunner = createBlockRunner(sourceDir, app)
-        val moduleArgsSource = createModuleArgsSource()
+        val moduleArgsSource = createModuleArgsSource(globalCtx.compilerOptions)
         return Rt_AppContext(
             globalCtx,
             chainCtx,

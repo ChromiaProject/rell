@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.gtx
@@ -9,6 +9,7 @@ import net.postchain.base.data.DatabaseAccess
 import net.postchain.base.data.DatabaseAccessFactory
 import net.postchain.common.exception.UserMistake
 import net.postchain.gtv.Gtv
+import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.runtime.Rt_GtvModuleArgsSource
@@ -29,7 +30,7 @@ object PostchainBaseUtils {
         return DatabaseAccessFactory.createDatabaseAccess(DatabaseAccessFactory.POSTGRES_DRIVER_CLASS)
     }
 
-    fun createModuleArgsSource(app: R_App, configGtv: Gtv): Rt_ModuleArgsSource {
+    fun createModuleArgsSource(app: R_App, configGtv: Gtv, compilerOptions: C_CompilerOptions): Rt_ModuleArgsSource {
         val gtxNode = configGtv.asDict().getValue("gtx").asDict()
         val rellNode = gtxNode.getValue("rell").asDict()
 
@@ -37,15 +38,17 @@ object PostchainBaseUtils {
             .mapKeys { R_ModuleName.of(it.key) }
             .toImmMap()
 
+        val defaultValuesSupported = Rt_GtvModuleArgsSource.DEFAULT_VALUES_SWITCH.isActive(compilerOptions)
+
         for ((moduleName, argsStruct) in app.moduleArgs) {
             if (moduleName !in gtvs) {
-                if (!argsStruct.hasDefaultConstructor) {
+                if (!(defaultValuesSupported && argsStruct.hasDefaultConstructor)) {
                     throw UserMistake("No moduleArgs for module '$moduleName' in blockchain configuration, " +
                             "but type ${argsStruct.moduleLevelName} defined in the code")
                 }
             }
         }
 
-        return Rt_GtvModuleArgsSource(gtvs)
+        return Rt_GtvModuleArgsSource(gtvs, compilerOptions)
     }
 }

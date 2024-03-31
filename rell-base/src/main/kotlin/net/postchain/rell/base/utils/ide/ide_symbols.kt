@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils.ide
@@ -54,7 +54,6 @@ enum class IdeSymbolKind {
 }
 
 enum class IdeSymbolCategory(@JvmField val code: String) {
-    NONE("none"),
     ATTRIBUTE("attr"),
     CONSTANT("constant"),
     ENTITY("entity"),

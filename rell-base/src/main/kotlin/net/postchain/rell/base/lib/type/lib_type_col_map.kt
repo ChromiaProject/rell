@@ -28,8 +28,10 @@ import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.immListOf
 
 object Lib_Type_Map {
+    private const val SINCE0 = "0.6.0"
+
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("map_entry", hidden = true) {
+        type("map_entry", hidden = true, since = "0.13.2") {
             comment("""
                 A parent type for all two-element tuples (with named and unnamed fields).
                 Is used for iterating through maps and constructing maps from iterables
@@ -42,7 +44,7 @@ object Lib_Type_Map {
             }
         }
 
-        type("map") {
+        type("map", since = SINCE0) {
             comment("Represents a mutable map that preserves entry iteration order.")
             generic("K", subOf = "immutable")
             generic("V")
@@ -52,7 +54,7 @@ object Lib_Type_Map {
 
             defCommonFunctions(this)
 
-            constructor(pure = true) {
+            constructor(pure = true, since = SINCE0) {
                 comment("Creates an empty map.")
                 bodyMeta {
                     val (keyType, valueType) = fnBodyMeta.typeArgs("K", "V")
@@ -63,7 +65,7 @@ object Lib_Type_Map {
                 }
             }
 
-            constructor(pure = true) {
+            constructor(pure = true, since = SINCE0) {
                 comment("Creates a map with the provided entries")
                 param("entries", type = "iterable<-map_entry<K,V>>", comment = "Entries to populate the map with")
                 bodyMeta {
@@ -90,7 +92,7 @@ object Lib_Type_Map {
                 }
             }
 
-            function("keys", result = "set<K>", pure = true) {
+            function("keys", result = "set<K>", pure = true, since = SINCE0) {
                 comment("Returns a new set containing the keys of this map.")
                 body { a ->
                     val mapValue = a.asMapValue()
@@ -100,7 +102,7 @@ object Lib_Type_Map {
                 }
             }
 
-            function("values", result = "list<V>", pure = true) {
+            function("values", result = "list<V>", pure = true, since = SINCE0) {
                 comment("Returns a new list containing the values of this map.")
                 body { a ->
                     val mapValue = a.asMapValue()
@@ -110,7 +112,7 @@ object Lib_Type_Map {
                 }
             }
 
-            function("clear", result = "unit") {
+            function("clear", result = "unit", since = SINCE0) {
                 comment("Clears the map.")
                 body { a ->
                     val map = a.asMutableMap()
@@ -119,7 +121,7 @@ object Lib_Type_Map {
                 }
             }
 
-            function("put", result = "unit") {
+            function("put", result = "unit", since = SINCE0) {
                 comment("Associates the specified value with the specified key in the map.")
                 param("key", type = "K", comment = "The key to put into the map.")
                 param("value", type = "V", comment = "The value to associate with the key.")
@@ -130,9 +132,9 @@ object Lib_Type_Map {
                 }
             }
 
-            function("put_all", result = "unit") {
+            function("put_all", result = "unit", since = "0.9.0") {
                 comment("Updates this map with key/value pairs from the specified map.")
-                alias("putAll", C_MessageType.ERROR)
+                alias("putAll", C_MessageType.ERROR, since = SINCE0)
                 param("map", type = "map<-K,-V>", comment = "The map to put key-value pairs from.")
                 body { a, b ->
                     val map1 = a.asMutableMap()
@@ -142,7 +144,7 @@ object Lib_Type_Map {
                 }
             }
 
-            function("remove", result = "V") {
+            function("remove", result = "V", since = SINCE0) {
                 comment("Removes a key-value pair from the map. Fails if the key is not found in the map.")
                 param("key", type = "K", comment = "The key of the pair to remove.")
                 body { a, b ->
@@ -152,7 +154,7 @@ object Lib_Type_Map {
                 }
             }
 
-            function("remove_or_null", result = "V?") {
+            function("remove_or_null", result = "V?", since = "0.11.0") {
                 comment("Removes a key-value pair from the map, returning `null` if the key is not found.")
                 param("key", type = "K", comment = "The key of the pair to remove.")
                 body { a, b ->
@@ -165,13 +167,13 @@ object Lib_Type_Map {
     }
 
     fun defCommonFunctions(m: Ld_TypeDefDsl) = with(m) {
-        function("to_text", result = "text") {
+        function("to_text", result = "text", since = SINCE0) {
             comment("Converts the map to text.")
-            alias("str")
+            alias("str", since = SINCE0)
             bodyRaw(Lib_Type_Any.ToText_NoDb)
         }
 
-        function("empty", result = "boolean", pure = true) {
+        function("empty", result = "boolean", pure = true, since = SINCE0) {
             comment("Checks if the map is empty.")
             body { a ->
                 val map = a.asMap()
@@ -179,16 +181,16 @@ object Lib_Type_Map {
             }
         }
 
-        function("size", result = "integer", pure = true) {
+        function("size", result = "integer", pure = true, since = SINCE0) {
             comment("Gets the size of the map.")
-            alias("len", C_MessageType.ERROR)
+            alias("len", C_MessageType.ERROR, since = SINCE0)
             body { a ->
                 val map = a.asMap()
                 Rt_IntValue.get(map.size.toLong())
             }
         }
 
-        function("get", result = "V", pure = true) {
+        function("get", result = "V", pure = true, since = SINCE0) {
             comment("Gets the value associated with a key in the map. Fails if the key is not found.")
             param("key", type = "K", comment = "The key to look up.")
             body { self, a ->
@@ -198,7 +200,7 @@ object Lib_Type_Map {
             }
         }
 
-        function("get_or_null", result = "V?", pure = true) {
+        function("get_or_null", result = "V?", pure = true, since = "0.11.0") {
             comment("Gets the value associated with a key in the map, returning `null` if the key is not found.")
             param("key", type = "K", comment = "The key to look up.")
             body { self, a ->
@@ -208,7 +210,7 @@ object Lib_Type_Map {
             }
         }
 
-        function("get_or_default", pure = true) {
+        function("get_or_default", pure = true, since = "0.11.0") {
             comment("""
                 Gets the value associated with a key in the map, or a default value if the key is not found.
                 @returns The value associated with the key, or the default value if the key is not found.
@@ -225,7 +227,7 @@ object Lib_Type_Map {
             }
         }
 
-        function("contains", result = "boolean", pure = true) {
+        function("contains", result = "boolean", pure = true, since = SINCE0) {
             comment("Checks if the map contains a key.")
             param("key", type = "K", comment = "The key to check.")
             body { self, a ->

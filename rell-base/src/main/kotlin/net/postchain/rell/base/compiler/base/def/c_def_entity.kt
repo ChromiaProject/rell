@@ -217,10 +217,14 @@ private class C_EntityAttributeClause(
 
     private fun checkAttrType(attr: C_AttributeDefinition, type: R_Type?) {
         val isEntity = defCtx.definitionType.isEntityOrObject()
-        if (isEntity && type != null && !type.sqlAdapter.isAllowedForEntityAttributes()) {
-            val name = attr.name
-            val typeStr = type.strCode()
-            msgCtx.error(name.pos, "entity_attr_type:$name:$typeStr", "Attribute '$name' has unallowed type: $typeStr")
+        if (isEntity && type != null) {
+            val allowed = type.sqlAdapter.isAllowedForEntityAttributes(defCtx.globalCtx.compilerOptions)
+            if (!allowed) {
+                val name = attr.name
+                val typeStr = type.strCode()
+                msgCtx.error(name.pos, "entity_attr_type:$name:$typeStr",
+                    "Attribute '$name' has unallowed type: $typeStr")
+            }
         }
     }
 
@@ -320,7 +324,7 @@ class C_EntityContext(
             cAttrs.add(compiledAttr)
         }
 
-        return cAttrs.map { it.rAttr.rName to it }.toMap().toImmMap()
+        return cAttrs.associateBy { it.rAttr.rName }.toImmMap()
     }
 
     private fun <T: R_KeyIndex> keyIndexMap(list: List<T>): Multimap<R_Name, T> {

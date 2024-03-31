@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.type
@@ -15,10 +15,10 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 
 object Lib_Type_Iterable {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("iterable", abstract = true, hidden = true) {
+        type("iterable", abstract = true, hidden = true, since = "0.10.6") {
             generic("T")
 
-            function("join_to_text", "text", pure = true) {
+            function("join_to_text", "text", pure = true, since = "0.14.0") {
                 comment("""
                      Creates a text from all the elements separated using `separator` and using the given `prefix` and
                      `postfix` if supplied.

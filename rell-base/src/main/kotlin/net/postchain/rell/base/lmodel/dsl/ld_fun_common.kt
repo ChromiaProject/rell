@@ -4,17 +4,17 @@
 
 package net.postchain.rell.base.lmodel.dsl
 
+import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
+import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
-import net.postchain.rell.base.lmodel.L_FunctionParam
-import net.postchain.rell.base.lmodel.L_ParamArity
-import net.postchain.rell.base.lmodel.L_ParamImplication
-import net.postchain.rell.base.lmodel.L_TypeUtils
+import net.postchain.rell.base.lmodel.*
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.mtype.M_FunctionParam
 import net.postchain.rell.base.mtype.M_ParamArity
 import net.postchain.rell.base.mtype.M_Type_Nullable
 import net.postchain.rell.base.mtype.M_Types
+import net.postchain.rell.base.utils.associateNotNullValues
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.toImmList
 
@@ -208,7 +208,12 @@ class Ld_FunctionParam(
     private val lazy: Boolean,
     private val implies: L_ParamImplication?,
 ) {
-    fun finish(ctx: Ld_TypeFinishContext, comments: Map<R_Name, DocComment>): L_FunctionParam {
+    fun finish(
+        ctx: Ld_TypeFinishContext,
+        fullName: R_FullName,
+        lMemberHeader: L_MemberHeader,
+        comment: DocComment?,
+    ): L_FunctionParam {
         val mType = type.finish(ctx)
 
         if (nullable) {
@@ -233,14 +238,17 @@ class Ld_FunctionParam(
             symbolName = DocSymbolName.local(name.str),
             mountName = null,
             declaration = DocDeclaration_Parameter(docParam, lazy, implies, null),
-            comment = comments[name],
+            comment = comment,
         )
+
+        val restrictions = C_MemberRestrictions.makeLib0(fullName, C_DeclarationType.PARAMETER, lMemberHeader, null)
 
         return L_FunctionParam(
             name = name,
             mParam = mParam,
             lazy = lazy,
             implies = implies,
+            restrictions = restrictions,
             docSymbol = doc,
         )
     }
@@ -250,12 +258,34 @@ class Ld_FunctionParam(
             ctx: Ld_TypeFinishContext,
             fullName: R_FullName,
             params: List<Ld_FunctionParam>,
-            funMemberHeader: Ld_MemberHeader,
+            funMemberHeader: L_MemberHeader,
         ): Pair<List<L_FunctionParam>, DocComment?> {
-            val paramMemberHeaders = params.associate { it.name to it.memberHeader }
-            val comments = Ld_FunctionParamComments.make(fullName, funMemberHeader, paramMemberHeaders)
+            val paramNames = params.map { it.name }
+            val paramFullNames = params.map { fullName.append(it.name) }
 
-            val lParams = params.map { it.finish(ctx, comments.paramComments) }.toImmList()
+            val paramMemberHeaders = params.mapIndexed { i, param ->
+                val paramFullName = paramFullNames[i]
+                param.memberHeader.finish(ctx.modCfg, paramFullName, requireSince = false)
+            }
+
+            val paramComments = params.withIndex().associateNotNullValues { (i, param) ->
+                param.name to paramMemberHeaders[i].docComment
+            }
+
+            val comments = Ld_FunctionParamComments.make(
+                fullName,
+                funMemberHeader.docComment,
+                paramNames,
+                paramComments,
+            )
+
+            val lParams = params.mapIndexed { i, param ->
+                val paramFullName = paramFullNames[i]
+                val header = paramMemberHeaders[i]
+                val comment = comments.paramComments[param.name]
+                param.finish(ctx, paramFullName, header, comment)
+            }.toImmList()
+
             return lParams to comments.functionComment
         }
     }

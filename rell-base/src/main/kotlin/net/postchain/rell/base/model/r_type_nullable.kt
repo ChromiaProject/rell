@@ -6,9 +6,11 @@ package net.postchain.rell.base.model
 
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvNull
+import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.core.C_TypeAdapter
 import net.postchain.rell.base.compiler.base.core.C_TypeAdapter_Nullable
 import net.postchain.rell.base.compiler.base.lib.C_LibType
+import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.mtype.M_Types
 import net.postchain.rell.base.runtime.GtvRtConversion
 import net.postchain.rell.base.runtime.GtvToRtContext
@@ -69,18 +71,13 @@ class R_NullableType(val valueType: R_Type): R_Type(calcName(valueType)) {
             "value" to valueType.toMetaGtv()
     ).toGtv()
 
-    companion object {
-        private fun calcName(valueType: R_Type): String {
-            return when (valueType) {
-                is R_FunctionType -> "(${valueType.name})?"
-                else -> "${valueType.name}?"
-            }
-        }
-    }
-
     private inner class R_TypeSqlAdapter_Nullable: R_TypeSqlAdapter_Some(null) {
-        override fun isSqlCompatible() = valueType.sqlAdapter.isSqlCompatible()
-        override fun isAllowedForEntityAttributes() = false
+        override fun isSqlCompatible(compilerOptions: C_CompilerOptions): Boolean {
+            val enabled = SQL_COMPATIBILITY_SWITCH.isActive(compilerOptions)
+            return enabled && valueType.sqlAdapter.isSqlCompatible(compilerOptions)
+        }
+
+        override fun isAllowedForEntityAttributes(compilerOptions: C_CompilerOptions) = false
 
         override fun metaName(sqlCtx: Rt_SqlContext) = throw Rt_Utils.errNotSupported("Nullable entity attributes are not supported")
 
@@ -92,6 +89,17 @@ class R_NullableType(val valueType: R_Type): R_Type(calcName(valueType)) {
 
         override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
             return valueType.sqlAdapter.fromSql(rs, idx, true)
+        }
+    }
+
+    companion object {
+        private val SQL_COMPATIBILITY_SWITCH = C_FeatureSwitch("0.14.0")
+
+        private fun calcName(valueType: R_Type): String {
+            return when (valueType) {
+                is R_FunctionType -> "(${valueType.name})?"
+                else -> "${valueType.name}?"
+            }
         }
     }
 }

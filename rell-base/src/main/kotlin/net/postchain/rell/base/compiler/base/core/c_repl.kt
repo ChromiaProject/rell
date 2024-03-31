@@ -65,7 +65,8 @@ class C_ExtReplCommand(
                 componentNsAssembler.futureNs()
         )
 
-        val fileCtx = C_FileContext(modCtx, C_NopSymbolContext)
+        val symCtx = C_NopSymbolContext(appCtx.msgCtx, appCtx.globalCtx.compilerOptions)
+        val fileCtx = C_FileContext(modCtx, symCtx)
 
         appCtx.executor.onPass(C_CompilerPass.MODULES) {
             val mntTables = fileCtx.mntBuilder.build()

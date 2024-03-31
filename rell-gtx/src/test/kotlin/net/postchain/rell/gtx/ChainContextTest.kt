@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.gtx
@@ -180,6 +180,34 @@ class ChainContextTest: BaseGtxTest() {
         chkFull("import b;", "", "rt_err:const:recursion:modargs:b")
         chkFull("import c;", "", "rt_err:const:recursion:const:0:c:p")
         chkFull("import d;", "", "rt_err:const:recursion:const:0:d:q")
+    }
+
+    @Test fun testModuleArgsDefaultValueVersionControl() {
+        def("struct module_args { s: text; n: integer = 123; }")
+
+        tst.moduleArgs("" to "{'s':'Hello'}")
+        tst.compatibilityVer(null)
+        chk("chain_context.args", "{'n':123,'s':'Hello'}")
+
+        tst.compatibilityVer("0.13.5")
+        chk("chain_context.args", "{'n':123,'s':'Hello'}")
+
+        tst.compatibilityVer("0.13.4")
+        chkUserMistake("", "Module initialization failed: Key missing in Gtv dictionary: field 'module_args.n'")
+    }
+
+    @Test fun testModuleArgsDefaultValueVersionControlAllAttrs() {
+        def("struct module_args { s: text = 'Hello'; n: integer = 123; }")
+
+        tst.moduleArgs()
+        tst.compatibilityVer(null)
+        chk("chain_context.args", "{'n':123,'s':'Hello'}")
+
+        tst.compatibilityVer("0.13.5")
+        chk("chain_context.args", "{'n':123,'s':'Hello'}")
+
+        tst.compatibilityVer("0.13.4")
+        chkUserMistake("", "Module initialization failed: No moduleArgs for module '' in blockchain configuration")
     }
 
     private fun chkModArgs(args: String, expected: String) {

@@ -277,7 +277,7 @@ class C_MountContext(
     }
 
     private fun failExternal(pos: S_Pos, decType: C_DeclarationType, place: String) {
-        val type = decType.msg.capitalize()
+        val type = decType.msg.capitalizeEx()
         throw C_Error.stop(pos, "def_external:$place:$decType", "$type not allowed in external $place")
     }
 
@@ -361,17 +361,21 @@ class C_MountContext(
     }
 }
 
-enum class C_DefinitionType(val ideCategory: IdeSymbolCategory, val docKind: DocSymbolKind) {
-    REPL(IdeSymbolCategory.NONE, DocSymbolKind.NONE),
-    CONSTANT(IdeSymbolCategory.CONSTANT, DocSymbolKind.CONSTANT),
-    ENTITY(IdeSymbolCategory.ENTITY, DocSymbolKind.ENTITY),
-    ENUM(IdeSymbolCategory.ENUM, DocSymbolKind.ENUM),
-    FUNCTION(IdeSymbolCategory.FUNCTION, DocSymbolKind.FUNCTION),
-    IMPORT(IdeSymbolCategory.IMPORT, DocSymbolKind.IMPORT),
-    OBJECT(IdeSymbolCategory.OBJECT, DocSymbolKind.OBJECT),
-    OPERATION(IdeSymbolCategory.OPERATION, DocSymbolKind.OPERATION),
-    QUERY(IdeSymbolCategory.QUERY, DocSymbolKind.QUERY),
-    STRUCT(IdeSymbolCategory.STRUCT, DocSymbolKind.STRUCT),
+enum class C_DefinitionType(
+    val decType: C_DeclarationType,
+    val ideCategory: IdeSymbolCategory,
+    val docKind: DocSymbolKind,
+) {
+    REPL(C_DeclarationType.NAMESPACE, IdeSymbolCategory.NAMESPACE, DocSymbolKind.NONE),
+    CONSTANT(C_DeclarationType.CONSTANT, IdeSymbolCategory.CONSTANT, DocSymbolKind.CONSTANT),
+    ENTITY(C_DeclarationType.ENTITY, IdeSymbolCategory.ENTITY, DocSymbolKind.ENTITY),
+    ENUM(C_DeclarationType.ENUM, IdeSymbolCategory.ENUM, DocSymbolKind.ENUM),
+    FUNCTION(C_DeclarationType.FUNCTION, IdeSymbolCategory.FUNCTION, DocSymbolKind.FUNCTION),
+    IMPORT(C_DeclarationType.IMPORT, IdeSymbolCategory.IMPORT, DocSymbolKind.IMPORT),
+    OBJECT(C_DeclarationType.OBJECT, IdeSymbolCategory.OBJECT, DocSymbolKind.OBJECT),
+    OPERATION(C_DeclarationType.OPERATION, IdeSymbolCategory.OPERATION, DocSymbolKind.OPERATION),
+    QUERY(C_DeclarationType.QUERY, IdeSymbolCategory.QUERY, DocSymbolKind.QUERY),
+    STRUCT(C_DeclarationType.STRUCT, IdeSymbolCategory.STRUCT, DocSymbolKind.STRUCT),
     ;
 
     fun isEntityOrObject() = this == ENTITY || this == OBJECT

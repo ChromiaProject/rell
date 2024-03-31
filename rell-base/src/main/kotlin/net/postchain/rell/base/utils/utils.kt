@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils
@@ -76,6 +76,10 @@ fun String.formatSafe(vararg args: Any?): String {
     }
 }
 
+fun String.capitalizeEx(): String {
+    val c = first()
+    return if (!c.isLowerCase()) this else replaceFirstChar { it.titlecase(Locale.US) }
+}
 
 class Bytes {
     private val bytes: ByteArray

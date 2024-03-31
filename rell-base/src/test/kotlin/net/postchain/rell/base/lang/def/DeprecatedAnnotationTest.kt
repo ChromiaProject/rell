@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.def
@@ -75,9 +75,9 @@ class DeprecatedAnnotationTest: BaseRellTest(useSql = false) {
 
     @Test fun testDefFunctionAbstract() {
         file("lib.rell", "abstract module; @deprecated abstract function f();")
-        chkCompile("import lib; override function lib.f() {}", "ct_err:deprecated:FUNCTION:[f]")
+        chkCompile("import lib; override function lib.f() {}", "ct_err:deprecated:FUNCTION:[lib:f]")
         chkCompile("import lib; function g(){ lib.f(); }",
-            "ct_err:[override:missing:[lib:f]:[lib.rell:1]][deprecated:FUNCTION:[f]]")
+            "ct_err:[override:missing:[lib:f]:[lib.rell:1]][deprecated:FUNCTION:[lib:f]]")
     }
 
     @Test fun testDefFunctionExtendable() {
@@ -114,13 +114,13 @@ class DeprecatedAnnotationTest: BaseRellTest(useSql = false) {
         file("a.rell", "module; @deprecated namespace ns { function f() = 123; }")
         file("b.rell", "module; namespace ns { function g() = 456; }")
         chkCompile("import a.*; import b.*; function h() = ns.f();",
-            "ct_err:[deprecated:NAMESPACE:[ns]][namespace:ambig:ns:[NAMESPACE:a:ns,NAMESPACE:b:ns]]")
+            "ct_err:[deprecated:NAMESPACE:[a:ns]][namespace:ambig:ns:[NAMESPACE:[a:ns],NAMESPACE:[b:ns]]]")
         chkCompile("import b.*; import a.*; function h() = ns.f();",
-            "ct_err:[namespace:ambig:ns:[NAMESPACE:b:ns,NAMESPACE:a:ns]][unknown_name:[b:ns]:f]")
+            "ct_err:[namespace:ambig:ns:[NAMESPACE:[b:ns],NAMESPACE:[a:ns]]][unknown_name:[b:ns]:f]")
         chkCompile("import a.*; import b.*; function h() = ns.g();",
-            "ct_err:[deprecated:NAMESPACE:[ns]][namespace:ambig:ns:[NAMESPACE:a:ns,NAMESPACE:b:ns]][unknown_name:[a:ns]:g]")
+            "ct_err:[deprecated:NAMESPACE:[a:ns]][namespace:ambig:ns:[NAMESPACE:[a:ns],NAMESPACE:[b:ns]]][unknown_name:[a:ns]:g]")
         chkCompile("import b.*; import a.*; function h() = ns.g();",
-            "ct_err:namespace:ambig:ns:[NAMESPACE:b:ns,NAMESPACE:a:ns]")
+            "ct_err:namespace:ambig:ns:[NAMESPACE:[b:ns],NAMESPACE:[a:ns]]")
     }
 
     @Test fun testDefObject() {
@@ -171,10 +171,10 @@ class DeprecatedAnnotationTest: BaseRellTest(useSql = false) {
     @Test fun testImportDeprecatedDef() {
         file("lib.rell", "module; @deprecated function f() = 123; @deprecated struct s { x: integer; }")
         def("import lib;")
-        chkCompile("function g() = lib.f();", "ct_err:deprecated:FUNCTION:[f]")
-        chkCompile("function g() = lib.f(*);", "ct_err:deprecated:FUNCTION:[f]")
-        chkCompile("function g() = lib.s(123);", "ct_err:deprecated:STRUCT:[s]")
-        chkCompile("function g(x: lib.s) {}", "ct_err:deprecated:STRUCT:[s]")
+        chkCompile("function g() = lib.f();", "ct_err:deprecated:FUNCTION:[lib:f]")
+        chkCompile("function g() = lib.f(*);", "ct_err:deprecated:FUNCTION:[lib:f]")
+        chkCompile("function g() = lib.s(123);", "ct_err:deprecated:STRUCT:[lib:s]")
+        chkCompile("function g(x: lib.s) {}", "ct_err:deprecated:STRUCT:[lib:s]")
     }
 
     @Test fun testNamespacePath() {

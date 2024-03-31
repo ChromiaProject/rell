@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.ast
@@ -19,12 +19,12 @@ class S_ReplCommand(steps: List<S_ReplStep>, expr: S_Expr?) {
     private val stmts = (steps.mapNotNull { it.statement() } + listOfNotNull(expr).map { S_ExprStatement(it) }).toImmList()
 
     fun compile(
-            msgCtx: C_MessageContext,
-            sourceDir: C_SourceDir,
-            currentModuleName: R_ModuleName?,
-            appState: C_ReplAppState,
+        msgCtx: C_MessageContext,
+        sourceDir: C_SourceDir,
+        currentModuleName: R_ModuleName?,
+        appState: C_ReplAppState,
     ): C_ExtReplCommand {
-        val symCtxManager = C_SymbolContextManager(C_CompilerOptions.DEFAULT)
+        val symCtxManager = C_SymbolContextManager(msgCtx, C_CompilerOptions.DEFAULT)
         val modLdr = C_ModuleLoader(msgCtx, symCtxManager.provider, sourceDir, appState.moduleHeaders)
 
         if (currentModuleName != null) {

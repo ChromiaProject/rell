@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.api.shell
@@ -45,7 +45,7 @@ object ReplShell {
             sqlMgr,
             projExt,
             outChannel,
-            Rt_GtvModuleArgsSource(options.moduleArgs),
+            Rt_GtvModuleArgsSource(options.moduleArgs, options.compilerOptions),
         )
 
         val repl = ReplInterpreter.create(config)

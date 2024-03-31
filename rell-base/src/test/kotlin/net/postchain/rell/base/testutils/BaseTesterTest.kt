@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.testutils
@@ -26,4 +26,12 @@ abstract class BaseTesterTest(useSql: Boolean): BaseContextTest(useSql) {
     fun chkData(vararg expected: String) = tst.chkData(*expected)
     fun chkDataNew(vararg expected: String) = tst.chkDataNew(*expected)
     fun chkDataRaw(vararg expected: String) = tst.chkDataRaw(*expected)
+
+    fun chkVerRt(code: String, version: String, expOld: String, expNew: String) {
+        tst.chkVerRt(code, version, expOld, expNew)
+    }
+
+    fun chkVerRtExpr(expr: String, version: String, expOld: String, expNew: String) {
+        tst.chkVerRt("query q() = $expr;", version, expOld, expNew)
+    }
 }

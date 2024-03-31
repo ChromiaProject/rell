@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.tools
@@ -435,7 +435,7 @@ private class RellAppLauncher(
         val rtRes = sqlMgr.execute(entryPoint.transaction) { sqlExec ->
             val exeCtx = Rt_ExecutionContext(appCtx, opCtx, sqlCtx, sqlExec)
 
-            val gtvCtx = GtvToRtContext.make(pretty = true)
+            val gtvCtx = GtvToRtContext.make(pretty = true, compilerOptions = exeCtx.globalCtx.compilerOptions)
             val rtArgs = parseArgs(entryPoint, gtvCtx, args.args ?: listOf(), args.json || args.jsonArgs)
             gtvCtx.finish(exeCtx)
 

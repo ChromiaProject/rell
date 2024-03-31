@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.ast
 
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
-import net.postchain.rell.base.compiler.base.modifier.C_ModifierContext
+import net.postchain.rell.base.compiler.base.utils.C_FeatureRestrictions
 import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.parser.RellTokenMatch
@@ -16,6 +16,7 @@ import net.postchain.rell.base.utils.ThreadLocalContext
 import net.postchain.rell.base.utils.ide.IdeFilePath
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.toImmMap
 import java.util.*
 import java.util.function.Supplier
 
@@ -91,23 +92,16 @@ data class S_NameOptValue<T>(val name: S_Name?, val value: T)
 class S_Name(val pos: S_Pos, private val rName: R_Name): S_Node() {
     private val str = rName.str
 
-    fun compile(ctx: C_SymbolContext): C_NameHandle {
+    fun compile(ctx: C_SymbolContext, def: Boolean = false): C_NameHandle {
+        if (def) {
+            val restrictions = NAME_RESTRICTIONS[rName]
+            restrictions?.access(ctx.msgMgr, pos, "name", ctx.compilerOptions)
+        }
         return ctx.addName(this, rName)
     }
 
-    fun compile(ctx: C_ModifierContext) = compile(ctx.symCtx)
-    fun compile(ctx: C_MountContext) = compile(ctx.symCtx)
-    fun compile(ctx: C_NamespaceContext) = compile(ctx.symCtx)
-    fun compile(ctx: C_DefinitionContext) = compile(ctx.symCtx)
-    fun compile(ctx: C_ExprContext) = compile(ctx.symCtx)
-
-    fun compile(ctx: C_SymbolContext, ideInfo: C_IdeSymbolInfo): C_Name {
-        val hand = ctx.addName(this, rName)
-        hand.setIdeInfo(ideInfo)
-        return hand.name
-    }
-
-    fun compile(ctx: C_ExprContext, ideInfo: C_IdeSymbolInfo) = compile(ctx.symCtx, ideInfo)
+    fun compile(ctx: C_MountContext, def: Boolean = false) = compile(ctx.symCtx, def = def)
+    fun compile(ctx: C_ExprContext, def: Boolean = false) = compile(ctx.symCtx, def = def)
 
     fun getRNameSpecial(): R_Name {
         // This method shall be called only in special cases. Whenever possible, one of compile(...) methods must be
@@ -116,6 +110,21 @@ class S_Name(val pos: S_Pos, private val rName: R_Name): S_Node() {
     }
 
     override fun toString() = str
+
+    companion object {
+        private val NAME_RESTRICTIONS: Map<R_Name, C_FeatureRestrictions> =
+            mapOf(
+                "list" to "0.11.0",
+                "set" to "0.11.0",
+                "map" to "0.11.0",
+            )
+            .mapKeys { R_Name.of(it.key) }
+            .mapValues {
+                val name = it.key.str
+                C_FeatureRestrictions.make(it.value, name, "Name '$name' is")
+            }
+            .toImmMap()
+    }
 }
 
 class S_QualifiedName(parts: List<S_Name>): S_Node() {
@@ -135,11 +144,11 @@ class S_QualifiedName(parts: List<S_Name>): S_Node() {
     fun str() = parts.joinToString(".")
     override fun toString() = str()
 
-    fun compile(ctx: C_SymbolContext) = C_QualifiedNameHandle(parts.map { it.compile(ctx) })
-    fun compile(ctx: C_ExprContext) = compile(ctx.symCtx)
-    fun compile(ctx: C_MountContext) = compile(ctx.symCtx)
-    fun compile(ctx: C_NamespaceContext) = compile(ctx.symCtx)
-    fun compile(ctx: C_DefinitionContext) = compile(ctx.symCtx)
+    fun compile(ctx: C_SymbolContext, def: Boolean = false): C_QualifiedNameHandle {
+        val cParts = parts.map { it.compile(ctx, def = def) }
+        return C_QualifiedNameHandle(cParts)
+    }
 
-    fun compile(ctx: C_SymbolContext, ideInfo: C_IdeSymbolInfo) = C_QualifiedName(parts.map { it.compile(ctx, ideInfo) })
+    fun compile(ctx: C_ExprContext) = compile(ctx.symCtx)
+    fun compile(ctx: C_DefinitionContext) = compile(ctx.symCtx)
 }

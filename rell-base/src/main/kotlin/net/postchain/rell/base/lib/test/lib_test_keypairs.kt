@@ -23,48 +23,48 @@ object Lib_Test_KeyPairs {
 
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell.test") {
-            struct("keypair") {
+            struct("keypair", since = "0.10.4") {
                 comment("Keypair that can be used for testing.")
                 attribute("pub", type = "byte_array", comment = "Public key")
                 attribute("priv", type = "byte_array", comment = "Private key")
             }
 
-            constant("BLOCKCHAIN_SIGNER_KEYPAIR", type = "rell.test.keypair") {
+            constant("BLOCKCHAIN_SIGNER_KEYPAIR", type = "rell.test.keypair", since = "0.11.0") {
                 comment("Keypair that signs all blocks built in the test context.")
                 value { rType -> keyPairToStruct(rType, Lib_RellTest.BLOCK_RUNNER_KEYPAIR) }
             }
 
-            namespace("keypairs") {
+            namespace("keypairs", since = "0.10.4") {
                 comment("Predefined constant keypairs to be used when testing.")
                 for ((name, keyPair) in PREDEFINED_KEYPAIRS) {
-                    constant(name, type = "rell.test.keypair") {
+                    constant(name, type = "rell.test.keypair", since = "0.10.4") {
                         comment("Keypair representing actor $name")
                         value { rType -> keyPairToStruct(rType, keyPair) }
                     }
                 }
             }
 
-            namespace("privkeys") {
+            namespace("privkeys", since = "0.10.4") {
                 comment("""
                     Predefined constant private keys to be used when testing.
                     The keys are the same as the ones found in `rell.test.keypairs`.
                 """)
                 for ((name, keyPair) in PREDEFINED_KEYPAIRS) {
                     val value = Rt_ByteArrayValue.get(keyPair.priv.toByteArray())
-                    constant(name, type = "byte_array", value = value) {
+                    constant(name, type = "byte_array", value = value, since = "0.10.4") {
                         comment("Private key representing actor $name")
                     }
                 }
             }
 
-            namespace("pubkeys") {
+            namespace("pubkeys", since = "0.10.4") {
                 comment("""
                     Predefined constant public keys to be used when testing.
                     The keys are the same as the ones found in `rell.test.keypairs`.
                 """)
                 for ((name, keyPair) in PREDEFINED_KEYPAIRS) {
                     val value = Rt_ByteArrayValue.get(keyPair.pub.toByteArray())
-                    constant(name, type = "byte_array", value = value) {
+                    constant(name, type = "byte_array", value = value, since = "0.10.4") {
                         comment("Private key representing actor $name")
                     }
                 }

@@ -475,7 +475,7 @@ class LTypeTest: BaseLTest() {
     }
 
     private companion object {
-        val BASIC_TYPES = Ld_ModuleDsl.make("test.types") {
+        val BASIC_TYPES = Ld_ModuleDsl.make("test.types", Ld_ModuleConfig(requireSince = false)) {
             type("boolean") {}
             type("integer") {}
             type("text") {}

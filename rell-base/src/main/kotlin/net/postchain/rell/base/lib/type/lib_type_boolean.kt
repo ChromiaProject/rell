@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.type
@@ -21,7 +21,7 @@ import java.sql.ResultSet
 
 object Lib_Type_Boolean {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("boolean", rType = R_BooleanType) {
+        type("boolean", rType = R_BooleanType, since = "0.6.0") {
             comment("A simple data type that represents two values: true and false.")
         }
     }

@@ -8,10 +8,7 @@ import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.lib.C_LibUtils
 import net.postchain.rell.base.compiler.base.modifier.*
-import net.postchain.rell.base.compiler.base.utils.C_Constants
-import net.postchain.rell.base.compiler.base.utils.C_Error
-import net.postchain.rell.base.compiler.base.utils.C_Errors
-import net.postchain.rell.base.compiler.base.utils.toCodeMsg
+import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.V_AtWhatFieldFlags
 import net.postchain.rell.base.compiler.vexpr.V_ConstantValueEvalContext
 import net.postchain.rell.base.compiler.vexpr.V_DbAtWhatField
@@ -148,6 +145,10 @@ class S_AtExprFromItem(
     private val expr: S_Expr,
 ) {
     fun compile(ctx: C_ExprContext, fromCtx: C_AtFromContext, isDb: Boolean?): C_AtFromItem {
+        if (modifiers.pos != null) {
+            RESTRICTIONS.access(ctx.msgCtx, modifiers.pos)
+        }
+
         val mods = C_ModifierValues(C_ModifierTargetType.EXPRESSION, null)
         val modOuter = mods.field(C_ModifierFields.OUTER)
         modifiers.compile(ctx.nsCtx, mods)
@@ -160,10 +161,17 @@ class S_AtExprFromItem(
 
         val itemCtx = C_AtFromItemContext(fromCtx, isJoin, if (isJoin) outerPos else null, isDb != null)
 
-        val aliasNameHand = alias?.compile(ctx)
+        val aliasNameHand = alias?.compile(ctx, def = true)
+
         val item = expr.compileFromItem(ctx, itemCtx, aliasNameHand?.name)
         aliasNameHand?.setIdeInfo(item.aliasIdeDef.defInfo)
         return item
+    }
+
+    companion object {
+        private val RESTRICTIONS = C_FeatureRestrictions.make("0.14.0",
+            "at_expr_from_annotation", "At-expression-from annotations are",
+        )
     }
 }
 
@@ -257,11 +265,13 @@ class S_AtExprWhat_Complex(val startPos: S_Pos, val fields: List<S_AtExprWhatCom
         val sort = modSort.posValue()
         val summ = modSumm.posValue()
 
+        summ?.value?.restrictions?.access(ctx.msgCtx, summ.pos)
+
         val flags = V_AtWhatFieldFlags(
-                omit = omit,
-                sort = sort,
-                group = if (summ?.value == C_AtSummarizationKind.GROUP) summ.pos else null,
-                aggregate = if (summ != null && summ.value != C_AtSummarizationKind.GROUP) summ.pos else null
+            omit = omit,
+            sort = sort,
+            group = if (summ?.value == C_AtSummarizationKind.GROUP) summ.pos else null,
+            aggregate = if (summ != null && summ.value != C_AtSummarizationKind.GROUP) summ.pos else null,
         )
 
         val vExpr = field.expr.compileSafe(ctx).value()
@@ -273,7 +283,7 @@ class S_AtExprWhat_Complex(val startPos: S_Pos, val fields: List<S_AtExprWhatCom
         val attr = field.attr
 
         if (attr != null) {
-            val attrNameHand = attr.compile(ctx)
+            val attrNameHand = attr.compile(ctx, def = true)
             val cAttr = attrNameHand.name
             if (cAttr.str != "_") {
                 explicitNameHand = attrNameHand
@@ -555,7 +565,8 @@ class S_AtExprWhere(val exprs: List<S_Expr>) {
         }
 
         val vExpr = CommonUtils.foldSimple(compiledExprs) { left, right ->
-            C_BinOp_And.compile(ctx, left, right) ?: C_ExprUtils.errorVExpr(ctx, left.pos)
+            val opCtx = C_BinOpContext(ctx, right.pos)
+            C_BinOp_And.compile(opCtx, left, right) ?: C_ExprUtils.errorVExpr(ctx, left.pos)
         }
 
         val value = vExpr.constantValue(V_ConstantValueEvalContext())
@@ -592,6 +603,8 @@ class S_AtExpr(
         if (!itemCtx.isJoin) {
             return super.compileFromItem(ctx, itemCtx, alias)
         }
+
+        RESTRICTIONS.access(ctx.msgCtx, startPos)
 
         val fromCtx = itemCtx.fromCtx
         val atExprId = fromCtx.atExprId
@@ -689,6 +702,8 @@ class S_AtExpr(
     }
 
     companion object {
+        private val RESTRICTIONS = C_FeatureRestrictions.make("0.14.0", "at_expr_join", "Join syntax is")
+
         fun findWhereContextAttrsByType(ctx: C_ExprContext, type: R_Type): List<C_AtFromImplicitAttr> {
             return if (type == R_BooleanType) {
                 listOf()

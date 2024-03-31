@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.module
@@ -43,7 +43,7 @@ class C_ExtModuleFile(
     fun compile(modCtx: C_ModuleContext): C_CompiledRellFile {
         modCtx.executor.checkPass(C_CompilerPass.DEFINITIONS)
 
-        val actualSymCtx = if (modCtx.extChain != null) C_NopSymbolContext else symCtx
+        val actualSymCtx = if (modCtx.extChain != null) symCtx.nopContext() else symCtx
         val fileCtx = C_FileContext(modCtx, actualSymCtx)
         val mntCtx = fileCtx.createMountContext()
 

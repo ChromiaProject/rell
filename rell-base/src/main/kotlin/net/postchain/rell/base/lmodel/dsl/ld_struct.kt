@@ -5,7 +5,10 @@
 package net.postchain.rell.base.lmodel.dsl
 
 import net.postchain.rell.base.compiler.base.def.C_SysAttribute
+import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
+import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.utils.C_Utils
+import net.postchain.rell.base.lmodel.L_MemberHeader
 import net.postchain.rell.base.lmodel.L_Struct
 import net.postchain.rell.base.lmodel.L_StructAttribute
 import net.postchain.rell.base.lmodel.L_TypeUtils
@@ -52,26 +55,27 @@ class Ld_StructDslImpl(
 }
 
 class Ld_StructAttribute(
-    val memberHeader: Ld_MemberHeader,
+    private val memberHeader: Ld_MemberHeader,
     val name: R_Name,
     val type: Ld_Type,
     val mutable: Boolean,
 ) {
     fun finish(ctx: Ld_TypeFinishContext, outerFullName: R_FullName): L_StructAttribute {
         val mType = type.finish(ctx)
-        val doc = finishDoc(outerFullName, mType)
-        return L_StructAttribute(name, mType, mutable = mutable, docSymbol = doc)
+        val fullName = outerFullName.append(name)
+        val lMemberHeader = memberHeader.finish(ctx.modCfg, fullName, requireSince = false)
+        val doc = finishDoc(fullName, lMemberHeader, mType)
+        return L_StructAttribute(fullName, mType, mutable = mutable, header = lMemberHeader, docSymbol = doc)
     }
 
-    private fun finishDoc(outerFullName: R_FullName, mType: M_Type): DocSymbol {
-        val fullName = outerFullName.append(name)
+    private fun finishDoc(fullName: R_FullName, lMemberHeader: L_MemberHeader, mType: M_Type): DocSymbol {
         val docType = L_TypeUtils.docType(mType)
         return DocSymbol(
             kind = DocSymbolKind.STRUCT_ATTR,
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
             mountName = null,
             declaration = DocDeclaration_StructAttribute(fullName.last, docType, mutable),
-            comment = memberHeader.docComment(),
+            comment = lMemberHeader.docComment,
         )
     }
 }
@@ -90,11 +94,11 @@ class Ld_Struct(
                     .toImmList()
 
                 val rAttributes = lAttributes
-                    .mapIndexed { i, lAttr -> lAttr.name to finishAttr(fullName.qualifiedName, lAttr, i) }
+                    .mapIndexed { i, lAttr -> lAttr.simpleName to finishAttr(fullName.qualifiedName, lAttr, i) }
                     .toImmMap()
                 rStruct.setAttributes(rAttributes)
 
-                lAttributes.associateBy { it.name.str }.toImmMap()
+                lAttributes.associateBy { it.simpleName.str }.toImmMap()
             }
 
             L_Struct(fullName.last, rStruct, attributesFuture)
@@ -102,7 +106,7 @@ class Ld_Struct(
     }
 
     private fun finishAttr(qualifiedName: R_QualifiedName, lAttr: L_StructAttribute, i: Int): R_Attribute {
-        val name = lAttr.name
+        val name = lAttr.simpleName
         val mType = lAttr.type
 
         val rType = L_TypeUtils.getRType(mType)
@@ -110,7 +114,14 @@ class Ld_Struct(
             "Cannot convert type of struct attribute $qualifiedName.$name to R_Type: ${mType.strCode()}"
         }
 
-        val cAttr = C_SysAttribute(name.str, rType, mutable = lAttr.mutable, docSymbol = lAttr.docSymbol)
+        val cAttr = C_SysAttribute(
+            name.str,
+            rType,
+            mutable = lAttr.mutable,
+            docSymbol = lAttr.docSymbol,
+            restrictions = C_MemberRestrictions.makeLib(lAttr, C_DeclarationType.ATTRIBUTE, null),
+        )
+
         return cAttr.compile(i, false)
     }
 }

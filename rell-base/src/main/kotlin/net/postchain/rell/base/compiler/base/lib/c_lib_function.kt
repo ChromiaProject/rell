@@ -4,27 +4,30 @@
 
 package net.postchain.rell.base.compiler.base.lib
 
-import net.postchain.rell.base.compiler.ast.S_CallArgument
-import net.postchain.rell.base.compiler.ast.S_CallArgumentValue_Expr
-import net.postchain.rell.base.compiler.ast.S_CallArgumentValue_Wildcard
-import net.postchain.rell.base.compiler.ast.S_Expr
+import net.postchain.rell.base.compiler.ast.*
+import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.compiler.base.core.C_TypeHint
 import net.postchain.rell.base.compiler.base.def.C_GlobalFunction
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.fn.*
 import net.postchain.rell.base.compiler.base.utils.C_Errors
+import net.postchain.rell.base.compiler.base.utils.C_FeatureRestrictions
+import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.*
 import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_MemberCalculator
-import net.postchain.rell.base.utils.LazyPosString
-import net.postchain.rell.base.utils.immMapOf
-import net.postchain.rell.base.utils.mapOrSame
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.*
 
 object C_LibFunctionUtils {
+    val RESTRICTIONS_NAMED_ARGS = C_FeatureRestrictions.make(
+        "0.13.9",
+        "lib_call_named_arg" toCodeMsg "Named arguments of library functions are",
+        C_CompilerOptions::allowLibNamedArgsAnyVersion,
+    )
+
     fun makeGlobalFunction(
         naming: C_MemberNaming,
         cases: List<C_LibFuncCase<V_GlobalFunctionCall>>,
@@ -76,6 +79,7 @@ abstract class C_SpecialLibGlobalFunctionBody {
 class C_SpecialLibGlobalFunction(
     private val body: C_SpecialLibGlobalFunctionBody,
     private val ideInfo: C_IdeSymbolInfo,
+    private val restrictions: C_MemberRestrictions,
 ): C_LibGlobalFunction() {
     override fun replaceTypeParams(rep: C_TypeMemberReplacement): C_LibGlobalFunction {
         return this
@@ -87,6 +91,8 @@ class C_SpecialLibGlobalFunction(
         args: List<S_CallArgument>,
         resTypeHint: C_TypeHint,
     ): V_GlobalFunctionCall {
+        restrictions.access(ctx.msgCtx, name.pos)
+
         val errPartial = ctx.msgCtx.firstErrorReporter()
 
         val argExprsZ = args.map {
@@ -146,6 +152,7 @@ abstract class V_SpecialMemberFunctionCall(protected val exprCtx: C_ExprContext,
 class C_SpecialLibMemberFunction(
     private val body: C_SpecialLibMemberFunctionBody,
     private val ideInfo: C_IdeSymbolInfo,
+    private val restrictions: C_MemberRestrictions,
 ): C_LibMemberFunction() {
     override fun getDefaultIdeInfo() = ideInfo
     override fun getDefaultArgIdeInfos() = immMapOf<R_Name, C_IdeSymbolInfo>()
@@ -160,6 +167,7 @@ class C_SpecialLibMemberFunction(
         args: C_FullCallArguments,
         resTypeHint: C_TypeHint,
     ): V_MemberFunctionCall {
+        restrictions.access(ctx.msgCtx, callCtx.linkPos)
         val vArgs = args.compileSimpleArgs(callCtx.fullNameLazy)
         val vCall = body.compileCall(ctx, callCtx, selfType, vArgs)
         vCall ?: return V_MemberFunctionCall_Error(ctx, ideInfo)
@@ -173,6 +181,7 @@ class C_SpecialLibMemberFunction(
         args: C_PartialCallArguments,
         resTypeHint: R_FunctionType?,
     ): V_MemberFunctionCall? {
+        restrictions.access(ctx.msgCtx, caseCtx.linkPos)
         args.errPartialNotSupportedFn(caseCtx.qualifiedNameMsg())
         return null
     }
@@ -255,6 +264,10 @@ private class C_RegularLibGlobalFunction(
             args: C_PartialCallArguments,
             resTypeHint: R_FunctionType?
         ): CallT? {
+            if (args.firstNamedArg != null) {
+                C_LibFunctionUtils.RESTRICTIONS_NAMED_ARGS.access(ctx.msgCtx, args.firstNamedArg.pos)
+            }
+
             val caseTargets = cases.mapNotNull { it.getPartialCallTarget(caseCtx, selfType) }
             if (caseTargets.isEmpty()) {
                 val name = getFunctionNameForMessage(caseCtx, cases.map { it.getSpecificName(selfType) })
@@ -306,14 +319,14 @@ private class C_RegularLibGlobalFunction(
             args: C_PartialCallArguments,
             match: PartMatch<CallT>,
         ): CallT? {
-            val rParamTypes = match.match.paramTypes()
-            if (rParamTypes == null) {
+            val params = match.match.parameters()
+            if (params == null) {
                 args.errPartialNotSupportedCase(match.target.codeMsg())
                 return null
             }
 
             val callInfo = C_FunctionCallInfo(caseCtx.linkPos, match.target.fullName)
-            val callParams = C_FunctionCallParameters.fromTypes(rParamTypes)
+            val callParams = C_FunctionCallParameters(params)
             val effArgs = args.compileEffectiveArgs(callInfo, callParams)
             effArgs ?: return null
 
@@ -321,8 +334,8 @@ private class C_RegularLibGlobalFunction(
         }
 
         private class PartMatch<CallT: V_FunctionCall>(
-            val target: C_PartialCallTarget<CallT>,
-            val match: C_PartialCallTargetMatch<CallT>,
+            val target: C_LibPartialCallTarget<CallT>,
+            val match: C_LibPartialCallTargetMatch<CallT>,
         )
     }
 }

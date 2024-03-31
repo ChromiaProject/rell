@@ -90,6 +90,13 @@ fun <T, R: Any> Iterable<T>.mapIndexedNotNullAllOrNull(f: (Int, T) -> R?): List<
     return res.toImmList()
 }
 
+fun <T, K: Any, V: Any> Iterable<T>.associateNotNullValues(f: (T) -> Pair<K, V?>): Map<K, V> {
+    return mapNotNull {
+        val (k, v) = f(it)
+        if (v == null) null else (k to v)
+    }.toImmMap()
+}
+
 fun <T: Any> List<T>.mapOrSame(f: (T) -> T): List<T> {
     var res: MutableList<T>? = null
 
@@ -134,6 +141,22 @@ fun <T> List<T>.countWhile(predicate: (T) -> Boolean): Int {
 fun <T> List<T>.countLastWhile(predicate: (T) -> Boolean): Int {
     val i = this.indexOfLast { !predicate(it) }
     return if (i >= 0) (this.size - 1 - i) else this.size
+}
+
+fun <T: Any> MutableList<T?>.computeIfAbsent(index: Int, f: () -> T): T {
+    var n = this.size
+    while (n <= index) {
+        add(null)
+        n += 1
+    }
+
+    var res = this[index]
+    if (res == null) {
+        res = f()
+        this[index] = res
+    }
+
+    return res
 }
 
 fun <K: Any, V: Any> Map<K, V>.unionNoConflicts(m: Map<K, V>): Map<K, V> {

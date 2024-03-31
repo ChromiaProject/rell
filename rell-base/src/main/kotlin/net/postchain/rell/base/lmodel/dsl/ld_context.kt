@@ -17,8 +17,11 @@ import net.postchain.rell.base.utils.futures.FcCycleException
 import net.postchain.rell.base.utils.futures.FcExecutor
 import net.postchain.rell.base.utils.futures.FcFuture
 
+class Ld_ModuleConfig(val requireSince: Boolean = true, val versionControl: Boolean = true)
+
 class Ld_ModuleContext(
     val moduleName: R_ModuleName,
+    val modCfg: Ld_ModuleConfig,
     val fcExec: FcExecutor,
     val finishCtxFuture: FcFuture<Ld_NamespaceFinishContext>,
 ) {
@@ -39,14 +42,15 @@ class Ld_ModuleContext(
             }
         }
 
-        val tables = Ld_NamespaceFinishTables(
+        val finModCtx = Ld_ModuleFinishContext(
             moduleName,
+            modCfg,
             PREDEF_TYPES,
             imports = imports,
             members = resMembers.toImmMap(),
         )
 
-        return Ld_NamespaceFinishContext(fcExec, tables = tables)
+        return Ld_NamespaceFinishContext(fcExec, modCtx = finModCtx)
     }
 
     companion object {
@@ -64,8 +68,9 @@ class Ld_ModuleContext(
 
 class Ld_NamespaceContext(
     private val moduleCtx: Ld_ModuleContext,
-    val namePath: C_RFullNamePath,
+    private val namePath: C_RFullNamePath,
 ) {
+    val modCfg = moduleCtx.modCfg
     val fcExec = moduleCtx.fcExec
     val finishCtxFuture = moduleCtx.finishCtxFuture
 
@@ -88,8 +93,9 @@ class Ld_NamespaceContext(
     }
 }
 
-class Ld_NamespaceFinishTables(
+class Ld_ModuleFinishContext(
     val moduleName: R_ModuleName,
+    val modCfg: Ld_ModuleConfig,
     val predefTypes: Map<String, L_AbstractTypeDef>,
     val imports: Map<R_ModuleName, L_Module>,
     val members: Map<R_QualifiedName, FcFuture<List<L_NamespaceMember>>>,
@@ -97,9 +103,10 @@ class Ld_NamespaceFinishTables(
 
 class Ld_NamespaceFinishContext(
     val fcExec: FcExecutor,
-    private val tables: Ld_NamespaceFinishTables,
+    private val modCtx: Ld_ModuleFinishContext,
 ) {
-    val moduleName = tables.moduleName
+    val moduleName = modCtx.moduleName
+    val modCfg = modCtx.modCfg
     val typeCtx = Ld_TypeFinishContext(this, typeParams = immMapOf())
 
     fun getMType(fullName: Ld_FullName, errPos: Exception? = null): M_Type {
@@ -120,7 +127,7 @@ class Ld_NamespaceFinishContext(
 
     private fun getTypeDefOrNull(fullName: Ld_FullName): L_AbstractTypeDef? {
         if (fullName.moduleName != null) {
-            val mod = tables.imports[fullName.moduleName]
+            val mod = modCtx.imports[fullName.moduleName]
             val typeDef = mod?.getAbstractTypeDefOrNull(fullName.qualifiedName)
             return typeDef
         }
@@ -128,13 +135,13 @@ class Ld_NamespaceFinishContext(
         val found = mutableListOf<Pair<L_AbstractTypeDef, R_ModuleName?>>()
 
         if (fullName.qualifiedName.size() == 1) {
-            val predef = tables.predefTypes[fullName.qualifiedName.last.str]
+            val predef = modCtx.predefTypes[fullName.qualifiedName.last.str]
             if (predef != null) {
                 found.add(predef to null)
             }
         }
 
-        val localDefF = tables.members[fullName.qualifiedName]
+        val localDefF = modCtx.members[fullName.qualifiedName]
         if (localDefF != null) {
             val localDef = try {
                 localDefF.getResult()
@@ -148,7 +155,7 @@ class Ld_NamespaceFinishContext(
             }
         }
 
-        val imported = tables.imports.values
+        val imported = modCtx.imports.values
             .mapNotNull {
                 val typeDef = it.getAbstractTypeDefOrNull(fullName.qualifiedName)
                 if (typeDef == null) null else (typeDef to it.moduleName)
@@ -167,7 +174,7 @@ class Ld_NamespaceFinishContext(
         // (attachments), the named future is not necessarily the first and the last one.
         // Not completely predictable, but fine for such error handling. Make sure first and last names are the same.
         if (cycle.isEmpty()) {
-            val fullName = R_FullName(tables.moduleName, qualifiedName)
+            val fullName = R_FullName(modCtx.moduleName, qualifiedName)
             cycle = listOf(fullName, fullName)
         } else if (cycle.last() != cycle.first()) {
             cycle = cycle + listOf(cycle.first())
@@ -187,8 +194,8 @@ class Ld_NamespaceFinishContext(
         }
     }
 
-    fun getNamespaceMembers(qualifiedName: R_QualifiedName, errPos: Exception): List<L_NamespaceMember> {
-        val future = tables.members[qualifiedName]
+    fun getNamespaceMembers(qualifiedName: R_QualifiedName): List<L_NamespaceMember> {
+        val future = modCtx.members[qualifiedName]
         return future?.getResult() ?: immListOf()
     }
 }
@@ -197,6 +204,8 @@ class Ld_TypeFinishContext(
     val defCtx: Ld_NamespaceFinishContext,
     private val typeParams: Map<R_Name, M_Type>,
 ) {
+    val modCfg = defCtx.modCfg
+
     fun subCtx(typeParams: Map<R_Name, M_Type>): Ld_TypeFinishContext {
         return if (typeParams.isEmpty()) this else {
             val resTypeParams = this.typeParams.unionNoConflicts(typeParams)

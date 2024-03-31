@@ -6,6 +6,7 @@ package net.postchain.rell.base.lmodel
 
 import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
+import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.mtype.M_TypeParam
 import net.postchain.rell.base.utils.doc.DocDefinition
@@ -45,9 +46,11 @@ class L_Constructor(
 }
 
 class L_TypeDefMember_Constructor(
-    val constructor: L_Constructor,
+    typeName: R_FullName,
+    header: L_MemberHeader,
     doc: DocSymbol,
-): L_TypeDefMember("!init", doc) {
+    val constructor: L_Constructor,
+): L_TypeDefMember(typeName, header, doc, "!init") {
     override fun strCode() = constructor.strCode()
 
     override fun getDocMember(name: String): DocDefinition? {
@@ -56,8 +59,10 @@ class L_TypeDefMember_Constructor(
 }
 
 class L_TypeDefMember_SpecialConstructor(
-    val fn: C_SpecialLibGlobalFunctionBody,
+    typeName: R_FullName,
+    header: L_MemberHeader,
     doc: DocSymbol,
-): L_TypeDefMember("!init", doc) {
+    val fn: C_SpecialLibGlobalFunctionBody,
+): L_TypeDefMember(typeName, header, doc, "!init") {
     override fun strCode() = "special constructor (...)"
 }

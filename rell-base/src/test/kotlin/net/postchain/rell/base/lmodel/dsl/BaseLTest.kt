@@ -30,7 +30,8 @@ import kotlin.test.assertEquals
 
 abstract class BaseLTest {
     protected fun makeModule(name: String, block: Ld_ModuleDsl.() -> Unit): L_Module {
-        return Ld_ModuleDsl.make(name, block)
+        val modCfg = Ld_ModuleConfig(requireSince = false)
+        return Ld_ModuleDsl.make(name, modCfg, block)
     }
 
     protected fun chkDefs(mod: L_Module, vararg expected: String) {
@@ -126,6 +127,15 @@ abstract class BaseLTest {
                     name: LazyPosString,
                     args: List<S_Expr>
                 ): V_Expr {
+                    return C_ExprUtils.errorVExpr(ctx, name.pos)
+                }
+            }
+        }
+
+        fun makeTypeCon(): C_SpecialLibGlobalFunctionBody {
+            return object: C_SpecialLibGlobalFunctionBody() {
+                override fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: List<S_Expr>): V_Expr {
+                    args.forEach { it.compile(ctx) }
                     return C_ExprUtils.errorVExpr(ctx, name.pos)
                 }
             }

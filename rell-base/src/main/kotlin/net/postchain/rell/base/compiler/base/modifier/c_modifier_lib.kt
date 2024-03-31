@@ -6,17 +6,27 @@ package net.postchain.rell.base.compiler.base.modifier
 
 import net.postchain.rell.base.compiler.ast.S_KeywordModifierKind
 import net.postchain.rell.base.compiler.base.core.C_QualifiedNameHandle
+import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.expr.R_AtWhatSort
 
-enum class C_AtSummarizationKind(val annotation: String) {
+enum class C_AtSummarizationKind(
+    val annotation: String,
+    since: String? = null,
+) {
     GROUP("group"),
     SUM("sum"),
     MIN("min"),
     MAX("max"),
-    LIST("list"),
-    SET("set"),
-    MAP("map"),
+    LIST("list", "0.13.9"),
+    SET("set", "0.13.9"),
+    MAP("map", "0.13.9"),
+    ;
+
+    val restrictions = if (since == null) C_MemberRestrictions.NULL else {
+        C_MemberRestrictions.makeAnnotation(annotation, R_LangVersion.of(since))
+    }
 }
 
 object C_Annotations {

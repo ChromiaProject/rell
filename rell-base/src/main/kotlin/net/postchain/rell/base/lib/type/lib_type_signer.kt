@@ -14,7 +14,7 @@ import org.jooq.impl.DefaultDataType
 
 object Lib_Type_Signer {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("signer", rType = R_SignerType)
+        type("signer", rType = R_SignerType, since = "0.6.0")
     }
 }
 

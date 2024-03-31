@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.api.gtx
@@ -219,7 +219,7 @@ object RellApiGtxInternal {
                 globalCtx = globalCtx,
                 chainCtx = chainCtx,
                 blockRunner = blockRunner,
-                moduleArgsSource = Rt_GtvModuleArgsSource(config.compileConfig.moduleArgs),
+                moduleArgsSource = Rt_GtvModuleArgsSource(config.compileConfig.moduleArgs, options),
                 printTestCases = config.printTestCases,
                 stopOnError = config.stopOnError,
                 onTestCaseStart = config.onTestCaseStart,

@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.gtx
 
 import net.postchain.gtv.Gtv
@@ -9,7 +13,6 @@ import org.junit.Ignore
 import org.junit.Test
 
 class GtxStrictModeTest: BaseGtxTest() {
-
     private var isVirtualTypeTest = false
 
     @Test fun testByteArray() {

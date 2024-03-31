@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.namespace
@@ -452,15 +452,15 @@ private class C_NsAsm_InternalReplAssembler(
             return oldDef
         }
 
-        if (oldDef is C_NsImp_Def_Namespace && newDef is C_NsImp_Def_Namespace) {
+        return if (oldDef is C_NsImp_Def_Namespace && newDef is C_NsImp_Def_Namespace) {
             val oldNs = oldDef.ns()
             val newNs = newDef.ns()
             val resNs = mergeReplNamespace(oldNs, newNs)
             val resDeprecated = oldDef.deprecated ?: newDef.deprecated
             val getter = LateGetter.of(resNs)
-            return C_NsImp_Def_Namespace(getter, oldDef.defName, oldDef.ideInfo, resDeprecated)
+            C_NsImp_Def_Namespace(getter, oldDef.defName, oldDef.ideInfo, resDeprecated)
         } else {
-            return oldDef
+            oldDef
         }
     }
 }
@@ -671,12 +671,12 @@ private class C_NsAsm_InternalModuleAssembler(
 }
 
 private class C_NsAsm_InternalAppAssembler(
-        private val executor: C_CompilerExecutor,
-        private val msgCtx: C_MessageContext,
-        private val stamp: R_AppUid,
-        private val preModules: Map<C_ModuleKey, C_PrecompiledModule>
+    private val executor: C_CompilerExecutor,
+    private val msgCtx: C_MessageContext,
+    private val stamp: R_AppUid,
+    private val preModules: Map<C_ModuleKey, C_PrecompiledModule>,
 ): C_NsAsm_InternalAssembler(), C_NsAsm_AppAssembler {
-    private val nsLinker = C_NsAsm_InternalNamespaceLinker()
+    private val nsLinker = C_NsAsm_InternalNamespaceLinker(msgCtx.globalCtx.compilerOptions)
 
     private val moduleAsms = mutableMapOf<C_ModuleKey, C_NsAsm_InternalModuleAssembler>()
     private var replAsm: C_NsAsm_InternalReplAssembler? = null
@@ -864,7 +864,11 @@ private sealed class C_NsAsm_NamespaceLinker {
     abstract fun getLink(nsKey: C_NsAsm_NamespaceKey): Getter<C_Namespace>
 }
 
-private class C_NsAsm_InternalNamespaceLinker: C_NsAsm_NamespaceLinker() {
+private class C_NsAsm_InternalNamespaceLinker(
+    compilerOptions: C_CompilerOptions,
+): C_NsAsm_NamespaceLinker() {
+    private val langVersion = compilerOptions.compatibility
+
     private val links = mutableMapOf<C_NsAsm_NamespaceKey, NamespaceLink>()
     private val containerNamespaces = mutableMapOf<C_ContainerKey, C_Namespace>()
     private var completed = false
@@ -885,7 +889,7 @@ private class C_NsAsm_InternalNamespaceLinker: C_NsAsm_NamespaceLinker() {
         var ns = containerNamespaces[nsKey.container]
         for (name in nsKey.path.parts) {
             if (ns == null) return C_Namespace.EMPTY
-            ns = ns.getElement(name, C_NamespaceMemberTag.NAMESPACE.list)?.member?.getNamespaceOpt()
+            ns = ns.getElement(name, langVersion, C_NamespaceMemberTag.NAMESPACE.list)?.member?.getNamespaceOpt()
         }
         return ns ?: C_Namespace.EMPTY
     }

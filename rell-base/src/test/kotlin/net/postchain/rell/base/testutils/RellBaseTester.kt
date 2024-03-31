@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.testutils
@@ -11,21 +11,23 @@ import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_Message
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.R_App
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
 import net.postchain.rell.base.runtime.Rt_Printer
 import net.postchain.rell.base.sql.SqlExecutor
+import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.immMapOf
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 import kotlin.test.assertEquals
 
 abstract class RellBaseTester(
-        val tstCtx: RellTestContext,
-        entityDefs: List<String> = listOf(),
-        inserts: List<String> = listOf(),
-        gtv: Boolean = false
-){
+    val tstCtx: RellTestContext,
+    entityDefs: List<String> = listOf(),
+    inserts: List<String> = listOf(),
+    gtv: Boolean = false,
+) {
     private var inited = false
     private var lastInserts = listOf<String>()
     private var appProto: R_App? = null
@@ -40,6 +42,8 @@ abstract class RellBaseTester(
     var hiddenLib = true
     var extraMod: C_LibModule? = null
     var allowDbModificationsInObjectExprs = C_CompilerOptions.DEFAULT.allowDbModificationsInObjectExprs
+    var allowLibNamedArgsAnyVersion = C_CompilerOptions.DEFAULT.allowLibNamedArgsAnyVersion
+    var allowOlderCompatibilityVersion = true
     var complexWhatEnabled = true
     var ideDefIdConflictError = true
     var compatibilityVer = C_CompilerOptions.DEFAULT.compatibility
@@ -132,6 +136,8 @@ abstract class RellBaseTester(
         mountConflictError = true,
         appModuleInTestsError = false,
         useTestDependencyExtensions = false,
+        allowLibNamedArgsAnyVersion = allowLibNamedArgsAnyVersion,
+        allowOlderCompatibilityVersion = allowOlderCompatibilityVersion,
         ide = false,
         ideDocSymbolsEnabled = false,
         ideDefIdConflictError = ideDefIdConflictError,
@@ -187,6 +193,10 @@ abstract class RellBaseTester(
         moduleArgs = args.toMap().toImmMap()
     }
 
+    fun compatibilityVer(v: String?) {
+        compatibilityVer = if (v == null) null else R_LangVersion.of(v)
+    }
+
     fun getModuleArgs() = moduleArgs
 
     protected fun checkNotInited() {
@@ -217,6 +227,7 @@ abstract class RellBaseTester(
     }
 
     abstract fun chkEx(code: String, expected: String)
+    abstract fun chkFull(code: String, expected: String)
 
     fun chk(expr: String, expected: String) = chkEx("= $expr;", expected)
 
@@ -302,6 +313,33 @@ abstract class RellBaseTester(
     fun chkExOut(code: String, expected: String, vararg expectedOut: String) {
         chkEx(code, expected)
         chkOut(*expectedOut)
+    }
+
+    fun chkVerRt(code: String, version: String, expOld: String, expNew: String) {
+        chkVer0(code, version, expOld, expNew, ::chkFull)
+    }
+
+    protected fun chkVer0(
+        code: String,
+        version: String,
+        expOld: String,
+        expNew: String,
+        tester: (String, String) -> Unit,
+    ) {
+        val sinceVer = R_LangVersion.of(version)
+        val prevVer = RellVersions.SUPPORTED_VERSIONS.asSequence().filter { it < sinceVer }.max()
+
+        compatibilityVer = null
+        tester(code, expNew)
+        compatibilityVer = sinceVer
+        tester(code, expNew)
+
+        val fullExpOld = if (!expOld.startsWith("VER:")) expOld else {
+            "ct_err:version:${expOld.substring(4)}:$sinceVer:$prevVer"
+        }
+
+        compatibilityVer = prevVer
+        tester(code, fullExpOld)
     }
 
     fun compileModule(code: String): String {

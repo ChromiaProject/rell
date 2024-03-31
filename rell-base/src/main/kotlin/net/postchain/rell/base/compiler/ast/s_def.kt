@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.ast
@@ -45,7 +45,7 @@ class S_NamedAttrHeader(private val name: S_Name, private val type: S_Type): S_A
     }
 
     override fun compile(ctx: C_DefinitionContext): C_AttrHeaderHandle {
-        val nameHand = name.compile(ctx)
+        val nameHand = name.compile(ctx.symCtx, def = true)
         val rType = type.compileOpt(ctx) ?: R_CtErrorType
         val rResType = checkUnitType(ctx.msgCtx, type.pos, rType, nameHand.name)
         return C_NamedAttrHeaderHandle(nameHand, rResType)
@@ -199,7 +199,7 @@ class S_EntityDefinition(
                     "Keyword 'class' is deprecated, use 'entity' instead")
         }
 
-        val nameHand = name.compile(ctx)
+        val nameHand = name.compile(ctx, def = true)
         val cName = nameHand.name
 
         if (body == null) {
@@ -332,7 +332,7 @@ class S_EntityDefinition(
         if (link != null) {
             val codeMsg = link.key.codeMsg()
             val code = "def_entity_hdr:modifier:${codeMsg.code}"
-            val msg = "${codeMsg.msg.capitalize()} not allowed for an entity header"
+            val msg = "${codeMsg.msg.capitalizeEx()} not allowed for an entity header"
             ctx.msgCtx.error(link.pos, code, msg)
         }
     }
@@ -422,23 +422,30 @@ class S_EntityDefinition(
                 C_Constants.TRANSACTION_ENTITY to { sysDefs: C_SystemDefsCommon -> sysDefs.transactionEntity }
         )
 
+        private val NAME_LEN_SWITCH = C_FeatureSwitch("0.12.0")
         private const val MAX_ENTITY_MOUNT_NAME_LEN = 60 // Postgres allows 63, minimal prefix is "c0.", i. e. 3 characters.
         private const val MAX_ATTR_NAME_LEN = 63
 
         fun checkEntityMountNameLen(msgCtx: C_MessageContext, name: C_Name, mountName: R_MountName) {
             val s = mountName.str()
-            val n = s.length
-            val max = MAX_ENTITY_MOUNT_NAME_LEN
-            if (n > max) {
-                msgCtx.error(name.pos, "mount:too_long:entity:$max:$n:$s", "Mount name '$s' is too long: $n (max $max)")
-            }
+            checkNameLen(msgCtx, name.pos, s, MAX_ENTITY_MOUNT_NAME_LEN, "entity", "Mount")
         }
 
         fun checkAttrNameLen(msgCtx: C_MessageContext, name: C_Name) {
-            val n = name.str.length
-            val max = MAX_ATTR_NAME_LEN
-            if (n > max) {
-                msgCtx.error(name.pos, "mount:too_long:attr:$max:$n:$name", "Attribute name '$name' is too long: $n (max $max)")
+            checkNameLen(msgCtx, name.pos, name.str, MAX_ATTR_NAME_LEN, "attr", "Attribute")
+        }
+
+        private fun checkNameLen(
+            msgCtx: C_MessageContext,
+            pos: S_Pos,
+            name: String,
+            max: Int,
+            code: String,
+            msg: String,
+        ) {
+            val n = name.length
+            if (n > max && NAME_LEN_SWITCH.isActive(msgCtx.globalCtx)) {
+                msgCtx.error(pos, "mount:too_long:$code:$max:$n:$name", "$msg name '$name' is too long: $n (max $max)")
             }
         }
     }
@@ -463,7 +470,7 @@ class S_ObjectDefinition(
                 log = false
         )
 
-        val nameHand = name.compile(ctx)
+        val nameHand = name.compile(ctx, def = true)
         val cName = nameHand.name
 
         val mods = C_ModifierValues(C_ModifierTargetType.OBJECT, cName)
@@ -523,11 +530,11 @@ class S_ObjectDefinition(
 }
 
 class S_StructDefinition(
-        pos: S_Pos,
-        modifiers: S_Modifiers,
-        val deprecatedKwPos: S_Pos?,
-        val name: S_Name,
-        val attrs: List<S_AttributeDefinition>
+    pos: S_Pos,
+    modifiers: S_Modifiers,
+    val deprecatedKwPos: S_Pos?,
+    val name: S_Name,
+    val attrs: List<S_AttributeDefinition>,
 ): S_BasicDefinition(pos, modifiers) {
     override fun compileBasic(ctx: C_MountContext) {
         if (deprecatedKwPos != null) {
@@ -537,7 +544,7 @@ class S_StructDefinition(
 
         ctx.checkNotExternal(name.pos, C_DeclarationType.STRUCT)
 
-        val nameHand = name.compile(ctx)
+        val nameHand = name.compile(ctx, def = true)
         val cName = nameHand.name
 
         val mods = C_ModifierValues(C_ModifierTargetType.STRUCT, cName)
@@ -747,7 +754,7 @@ class S_GlobalConstantDefinition(
         val expr: S_Expr
 ): S_BasicDefinition(pos, modifiers) {
     override fun compileBasic(ctx: C_MountContext) {
-        val nameHand = name.compile(ctx)
+        val nameHand = name.compile(ctx, def = true)
         val cName = nameHand.name
 
         val mods = C_ModifierValues(C_ModifierTargetType.CONSTANT, cName)

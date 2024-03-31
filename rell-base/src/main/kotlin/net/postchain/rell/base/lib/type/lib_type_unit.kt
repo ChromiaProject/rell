@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.type
@@ -14,8 +14,8 @@ import net.postchain.rell.base.runtime.Rt_Value
 
 object Lib_Type_Unit {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("unit", rType = R_UnitType) {
-            constructor(pure = true) {
+        type("unit", rType = R_UnitType, since = "0.6.0") {
+            constructor(pure = true, since = "0.6.0") {
                 body { ->
                     Rt_UnitValue
                 }

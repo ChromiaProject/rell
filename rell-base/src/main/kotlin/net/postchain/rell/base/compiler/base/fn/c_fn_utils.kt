@@ -9,6 +9,7 @@ import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.*
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
+import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.lib.type.R_UnitType
@@ -80,7 +81,7 @@ object C_FunctionUtils {
         args: List<S_CallArgument>,
         resTypeHint: C_TypeHint
     ): V_GlobalFunctionCall {
-        val res = C_FunctionCallArgsUtils.compileCall(base.ctx, args, resTypeHint, callTarget, base.callParams.map)
+        val res = C_FunctionCallArgsUtils.compileCall(base.ctx, args, resTypeHint, callTarget, base.argIdeInfos)
         return res ?: C_ExprUtils.errorVGlobalCall(base.ctx, base.callInfo.callPos, callTarget.retType() ?: R_CtErrorType)
     }
 
@@ -105,5 +106,24 @@ object C_FunctionUtils {
         }
 
         return retTypeRes.value
+    }
+
+    fun checkParamRestrictions(
+        msgCtx: C_MessageContext,
+        mapping: List<C_ArgMatchParamArg>,
+        restrictionsGetter: (C_ArgMatchParam) -> C_MemberRestrictions,
+    ) {
+        var last = C_MemberRestrictions.NULL
+
+        for (m in mapping) {
+            if (m.callArg != null) {
+                val restrictions = restrictionsGetter(m.param)
+                // Do not report error for each argument of the same vararg parameter.
+                if (restrictions !== last) {
+                    restrictions.access(msgCtx, m.callArg.value.pos)
+                    last = restrictions
+                }
+            }
+        }
     }
 }

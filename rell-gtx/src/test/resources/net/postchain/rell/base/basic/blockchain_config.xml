@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <!--
-  ~ Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+  ~ Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
   -->
 
 <dict>
@@ -51,7 +51,10 @@
                             <string></string>
                         </array>
                     </entry>
-                    <entry key = "files_v0.10">
+                    <entry key = "version">
+                        <string>0.13.0</string>
+                    </entry>
+                    <entry key = "files">
                         <dict>
                             <entry key = "mymodule.rell">
                                 <string>classpath:/net/postchain/rell/base/module/mymodule.rell</string>

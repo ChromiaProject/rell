@@ -160,7 +160,7 @@ class CLibFunctionLazyParamTest: BaseCLibTest() {
     private object IfIntDefs {
         private const val TYPE_NAME = "test_type"
 
-        val MODULE: C_LibModule = C_LibModule.make("test", Lib_Rell.MODULE) {
+        val MODULE: C_LibModule = C_LibModule.make("test", Lib_Rell.MODULE, requireSince = false) {
             extension("boolean_ext", type = "boolean") {
                 function("if_int", result = "integer") {
                     param("a", type = "integer", lazy = true)

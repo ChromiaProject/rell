@@ -463,6 +463,23 @@ class AtExprJoinTest: BaseRellTest() {
             "[(Bob,home[200]), (Alice,home[201]), (Alice,home[202]), (Trudy,home[200])]")
     }
 
+    @Test fun testVersionControlJoin() {
+        initData()
+        chkVerCtExpr("(p: person, h: home @* {}) @* {}", "0.14.0", "VER:feature:at_expr_join")
+        chkVerCtExpr("(p: person, h: home @* { .person == p }) @* {}", "0.14.0", "VER:feature:at_expr_join")
+    }
+
+    @Test fun testVersionControlOuterJoin() {
+        initData()
+
+        val err = "feature:at_expr_from_annotation"
+        chkVerCtExpr("(p: person, @outer h: home) @* {}", "0.14.0", "VER:$err")
+
+        val err2 = "ct_err:[version:$err:0.14.0:0.13.9][version:feature:at_expr_join:0.14.0:0.13.9]"
+        chkVerCtExpr("(p: person, @outer h: home @* {}) @* {}", "0.14.0", err2)
+        chkVerCtExpr("(p: person, @outer h: home @* { .person == p }) @* {}", "0.14.0", err2)
+    }
+
     private fun initData() {
         tst.strictToString = false
         def("entity person { name; score: integer; }")

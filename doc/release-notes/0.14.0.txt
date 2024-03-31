@@ -398,3 +398,18 @@ Parameter details:
             Limit needs to be a non-negative integer between 0 and (2^31)-1.
     truncated - the text to be appended if the number of elements exceeds the specified limit.
     transform - the function to apply to each element before joining.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+20. Language version control
+
+Language version specified in the compiler configuration (e.g. via blockchain configuration option gtx.rell.version)
+will disable features added in newer versions of Rell, even if the actual version of the Rell interpreter supports them.
+
+For example, the "rell.meta" type will be available only if the configured Rell version is 0.13.5 or higher.
+
+Purpose: to control Rell app source code compatibility with nodes. Different nodes may run different versions of Rell.
+The new version control will make all nodes handle a Rell app the same way.
+
+Details:
+1. The minimum supported language version is 0.10.10.
+2. Version control works only for production features. Test features (e.g. rell.test.* library API) is not affected.

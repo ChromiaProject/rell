@@ -11,7 +11,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 
 abstract class BaseCLibTest: BaseRellTest(useSql = false) {
     protected fun makeModule(block: Ld_NamespaceBodyDsl.() -> Unit): C_LibModule {
-        return C_LibModule.make("test", Lib_Rell.MODULE) {
+        return C_LibModule.make("test", Lib_Rell.MODULE, requireSince = false) {
             block(this)
         }
     }

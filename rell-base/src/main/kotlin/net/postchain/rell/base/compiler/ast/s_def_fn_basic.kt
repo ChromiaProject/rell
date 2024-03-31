@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.ast
@@ -45,7 +45,7 @@ class S_FunctionDefinition(
     override fun compileBasic(ctx: C_MountContext) {
         ctx.checkNotExternal(fnPos, C_DeclarationType.FUNCTION)
 
-        val cQualifiedNameHand = qualifiedName?.compile(ctx)
+        val cQualifiedNameHand = qualifiedName?.compile(ctx.symCtx, def = true)
 
         val simpleName = cQualifiedNameHand?.last?.name
         val mods = C_ModifierValues(C_ModifierTargetType.FUNCTION, simpleName)

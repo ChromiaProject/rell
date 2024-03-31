@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.parser
@@ -75,7 +75,7 @@ class RellTokenizer(tokensEx: List<RellToken>) : Tokenizer {
             } else if (p.matches(Regex("[A-Za-z_][A-Za-z_0-9]*"))) {
                 require(p !in keywords) { "Duplicate keyword: '$p'" }
                 keywords[p] = token
-            } else if (!p.isEmpty() && p.firstOrNull { !isDelim(it) } == null) {
+            } else if (p.isNotEmpty() && p.firstOrNull { !isDelim(it) } == null) {
                 require(p !in delims) { "Duplicate token: '$p'" }
                 delims[p] = token
             } else {

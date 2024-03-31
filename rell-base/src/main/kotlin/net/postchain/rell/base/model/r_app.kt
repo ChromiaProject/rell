@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model
@@ -7,6 +7,7 @@ package net.postchain.rell.base.model
 import net.postchain.gtv.Gtv
 import net.postchain.rell.base.compiler.base.core.C_DefinitionName
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
+import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.namespace.C_Namespace
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.model.expr.R_Expr
@@ -120,6 +121,7 @@ class R_Attribute(
     val mutable: Boolean,
     val keyIndexKind: R_KeyIndexKind?,
     val ideInfo: C_IdeSymbolInfo,
+    val restrictions: C_MemberRestrictions = C_MemberRestrictions.NULL,
     val canSetInCreate: Boolean = true,
     val sqlMapping: String = rName.str,
     private val exprGetter: C_LateGetter<R_DefaultValue>?,
@@ -144,15 +146,16 @@ class R_Attribute(
 
     fun copy(mutable: Boolean, ideInfo: C_IdeSymbolInfo): R_Attribute {
         return R_Attribute(
-                index = index,
-                rName = rName,
-                type = type,
-                mutable = mutable,
-                keyIndexKind = keyIndexKind,
-                ideInfo = ideInfo,
-                canSetInCreate = true,
-                sqlMapping = sqlMapping,
-                exprGetter = if (canSetInCreate) exprGetter else null // Not copying default value e. g. for "transaction".
+            index = index,
+            rName = rName,
+            type = type,
+            mutable = mutable,
+            keyIndexKind = keyIndexKind,
+            ideInfo = ideInfo,
+            restrictions = restrictions,
+            canSetInCreate = true,
+            sqlMapping = sqlMapping,
+            exprGetter = if (canSetInCreate) exprGetter else null, // Not copying default value e. g. for "transaction".
         )
     }
 
@@ -227,7 +230,7 @@ class R_Module(
     }
 
     override fun getDocMember(name: String): DocDefinition? {
-        val elem = nsLazy.getElement(R_Name.of(name))
+        val elem = nsLazy.getElement(R_Name.of(name), null)
         return elem?.item
     }
 }

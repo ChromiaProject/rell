@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.api.base
@@ -19,6 +19,7 @@ import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_StructDefinition
 import net.postchain.rell.base.runtime.GtvToRtDefaultValueEvaluator
 import net.postchain.rell.base.runtime.Rt_Exception
+import net.postchain.rell.base.runtime.Rt_GtvModuleArgsSource
 import net.postchain.rell.base.utils.*
 import java.io.File
 
@@ -199,7 +200,7 @@ object RellApiBaseInternal {
 
         val rApp = cRes.app
         if (rApp != null && cRes.errors.isEmpty()) {
-            validateAllModuleArgs(rApp, config.moduleArgs, config.moduleArgsMissingError)
+            validateAllModuleArgs(rApp, options, config.moduleArgs, config.moduleArgsMissingError)
         }
 
         return RellApiCompilationResult(cRes)
@@ -272,6 +273,7 @@ object RellApiBaseInternal {
 
     private fun validateAllModuleArgs(
         app: R_App,
+        compilerOptions: C_CompilerOptions,
         actualArgs: Map<R_ModuleName, Gtv>,
         missingError: Boolean,
     ) {
@@ -280,10 +282,12 @@ object RellApiBaseInternal {
             .mapValues { it.value.moduleArgs!! }
             .toImmMap()
 
+        val defaultValuesSupported = Rt_GtvModuleArgsSource.DEFAULT_VALUES_SWITCH.isActive(compilerOptions)
         val missingModules = expectedArgs
-            .filter { it.key !in actualArgs && !it.value.hasDefaultConstructor }
+            .filter { it.key !in actualArgs && !(defaultValuesSupported && it.value.hasDefaultConstructor) }
             .map { it.key }
             .sorted().toImmList()
+
         if (missingModules.isNotEmpty() && missingError) {
             val modulesCode = missingModules.joinToString(",") { it.str() }
             val modulesMsg = missingModules.joinToString(", ") { it.displayStr() }
@@ -294,7 +298,7 @@ object RellApiBaseInternal {
             val expectedStruct = expectedArgs.getValue(module)
             val actualGtv = actualArgs[module]
             if (actualGtv != null) {
-                validateOneModuleArgs(module, expectedStruct, actualGtv)
+                validateOneModuleArgs(module, expectedStruct, actualGtv, compilerOptions)
             }
         }
     }
@@ -303,6 +307,7 @@ object RellApiBaseInternal {
         module: R_ModuleName,
         expectedStruct: R_StructDefinition,
         actualGtv: Gtv,
+        compilerOptions: C_CompilerOptions,
     ) {
         val defaultValueEvaluator = GtvToRtDefaultValueEvaluator {
             throw UnsupportedOperationException("Default values evaluation not supported during module args validation")
@@ -314,6 +319,7 @@ object RellApiBaseInternal {
                 actualGtv,
                 validateOnly = true,
                 defaultValueEvaluator = defaultValueEvaluator,
+                compilerOptions = compilerOptions,
             )
         } catch (e: Rt_Exception) {
             val msg = "Bad module_args for module '${module.str()}': ${e.err.message()}"

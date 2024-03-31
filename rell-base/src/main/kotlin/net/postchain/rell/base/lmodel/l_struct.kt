@@ -13,11 +13,12 @@ import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.futures.FcFuture
 
 class L_StructAttribute(
-    val name: R_Name,
+    fullName: R_FullName,
     val type: M_Type,
     val mutable: Boolean,
-    override val docSymbol: DocSymbol,
-): DocDefinition
+    header: L_MemberHeader,
+    docSymbol: DocSymbol,
+): L_AbstractMember(fullName, header, docSymbol)
 
 class L_Struct(
     val simpleName: R_Name,
@@ -29,9 +30,10 @@ class L_Struct(
 
 class L_NamespaceMember_Struct(
     fullName: R_FullName,
+    header: L_MemberHeader,
     doc: DocSymbol,
     val struct: L_Struct,
-): L_NamespaceMember(fullName, doc) {
+): L_NamespaceMember(fullName, header, doc) {
     override fun strCode() = "struct $qualifiedName"
 
     override fun getAbstractTypeDefOrNull(): L_AbstractTypeDef = L_MTypeDef(struct.rStruct.type.mType)

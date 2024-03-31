@@ -21,15 +21,15 @@ import net.postchain.rell.base.utils.checkEquals
 
 object Lib_ChainContext {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        namespace("chain_context") {
-            property("raw_config", type = "gtv", pure = false) {
+        namespace("chain_context", since = "0.7.0") {
+            property("raw_config", type = "gtv", pure = false, since = "0.7.0") {
                 comment("Blockchain configuration object for this blockchain in Gtv format.")
                 value { ctx ->
                     Rt_GtvValue.get(ctx.chainCtx.rawConfig)
                 }
             }
 
-            property("blockchain_rid", type = "byte_array", pure = false) {
+            property("blockchain_rid", type = "byte_array", pure = false, since = "0.9.0") {
                 comment("Blockchain RID of this blockchain.")
                 value { ctx ->
                     val bcRid = ctx.chainCtx.blockchainRid
@@ -37,7 +37,7 @@ object Lib_ChainContext {
                 }
             }
 
-            property("args", C_NsProperty_ChainContext_Args) {
+            property("args", C_NsProperty_ChainContext_Args, since = "0.7.0") {
                 comment("Module arguments for this module.")
             }
         }

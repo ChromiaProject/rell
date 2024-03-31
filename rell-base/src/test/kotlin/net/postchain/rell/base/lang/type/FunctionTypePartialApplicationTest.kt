@@ -380,7 +380,7 @@ class FunctionTypePartialApplicationTest: BaseRellTest(false) {
 
     @Test fun testSysGlobalFunctionDeprecated() {
         chkEx("{ val f: (list<integer>)->byte_array = byte_array(*); return f; }",
-                "ct_err:deprecated:FUNCTION:[byte_array]:byte_array.from_list")
+                "ct_err:deprecated:CONSTRUCTOR:[rell:byte_array]:byte_array.from_list")
     }
 
     @Test fun testSysGlobalFunctionSpecial() {

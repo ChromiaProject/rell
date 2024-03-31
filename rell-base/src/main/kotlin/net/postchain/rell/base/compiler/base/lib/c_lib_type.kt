@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.lib
@@ -176,7 +176,7 @@ private class C_RTypeDef(
 class C_LibTypeItem<T>(
     val simpleName: R_Name,
     val docSymbol: DocSymbol,
-    val deprecated: C_Deprecated?,
+    val restrictions: C_MemberRestrictions,
     val member: T,
 )
 

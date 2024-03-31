@@ -107,9 +107,9 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
         }
 
         chkSyms("query q() = f();", "f=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|mod:f",
-            err = "deprecated:FUNCTION:[f]:new_f")
+            err = "deprecated:FUNCTION:[mod:f]:new_f")
         chkSyms("query q() = g();", "g=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|mod:g",
-            warn = "deprecated:FUNCTION:[g]:new_g")
+            warn = "deprecated:FUNCTION:[mod:g]:new_g")
     }
 
     @Test fun testNamespaceFunctionAlias() {
@@ -129,12 +129,12 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
         chkSyms("query q() = h();",
             "h=DEF_FUNCTION_SYSTEM|-|-",
             "?doc=ALIAS|mod:h|@deprecated\n<alias> h = [f]\n\n<function> f(): [text]",
-            warn = "deprecated:FUNCTION:[h]:f",
+            warn = "deprecated:ALIAS:[mod:h]:f",
         )
         chkSyms("query q() = k();",
             "k=DEF_FUNCTION_SYSTEM|-|-",
             "?doc=ALIAS|mod:k|@deprecated(ERROR)\n<alias> k = [f]\n\n<function> f(): [text]",
-            err = "deprecated:FUNCTION:[k]:f",
+            err = "deprecated:ALIAS:[mod:k]:f",
         )
     }
 
@@ -187,19 +187,19 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
             type("data", rType = R_IntegerType)
         }
 
-        val msg = "deprecated:TYPE"
+        val msg = "deprecated:ALIAS"
 
         chkSyms("struct _s { _x: data_1; }",
             "data_1=DEF_TYPE|-|-", "?doc=ALIAS|mod:data_1|<alias> data_1 = [data]\n\n<type> data")
         chkSyms("struct _s { _x: data_2; }",
             "data_2=DEF_TYPE|-|-",
             "?doc=ALIAS|mod:data_2|@deprecated\n<alias> data_2 = [data]\n\n<type> data",
-            warn = "$msg:[data_2]:data",
+            warn = "$msg:[mod:data_2]:data",
         )
         chkSyms("struct _s { _x: data_3; }",
             "data_3=DEF_TYPE|-|-",
             "?doc=ALIAS|mod:data_3|@deprecated(ERROR)\n<alias> data_3 = [data]\n\n<type> data",
-            err = "$msg:[data_3]:data",
+            err = "$msg:[mod:data_3]:data",
         )
     }
 
@@ -247,7 +247,7 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
 
         chkSyms("function f() = data(123);", "data=DEF_TYPE|-|-", "?head=CONSTRUCTOR|mod:data")
         chkSyms("function f() = data(x'1234');", "data=DEF_TYPE|-|-", "?head=CONSTRUCTOR|mod:data",
-            warn = "deprecated:FUNCTION:[data]:something_else",
+            warn = "deprecated:CONSTRUCTOR:[mod:data]:something_else",
         )
     }
 
@@ -303,13 +303,13 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
         }
 
         chkSyms("function _f(d: data) = d.f();", "f=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|mod:data.f",
-            err = "deprecated:FUNCTION:[data.f]:new_f",
+            err = "deprecated:FUNCTION:[mod:data.f]:new_f",
         )
         chkSyms("function _f(d: data) = d.g();", "g=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|mod:data.g",
-            warn = "deprecated:FUNCTION:[data.g]:new_g",
+            warn = "deprecated:FUNCTION:[mod:data.g]:new_g",
         )
         chkSyms("function _f() = data.h();", "h=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|mod:data.h",
-            warn = "deprecated:FUNCTION:[data.h]:new_h",
+            warn = "deprecated:FUNCTION:[mod:data.h]:new_h",
         )
     }
 
@@ -337,12 +337,12 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
         chkSyms("function _f(d: data) = d.h();",
             "h=DEF_FUNCTION_SYSTEM|-|-",
             "?doc=ALIAS|mod:data.h|@deprecated\n<alias> h = [f]\n\n<function> f(): [text]",
-            warn = "deprecated:FUNCTION:[data.h]:f",
+            warn = "deprecated:ALIAS:[mod:data.h]:f",
         )
         chkSyms("function _f(d: data) = d.k();",
             "k=DEF_FUNCTION_SYSTEM|-|-",
             "?doc=ALIAS|mod:data.k|@deprecated(ERROR)\n<alias> k = [f]\n\n<function> f(): [text]",
-            err = "deprecated:FUNCTION:[data.k]:f",
+            err = "deprecated:ALIAS:[mod:data.k]:f",
         )
     }
 

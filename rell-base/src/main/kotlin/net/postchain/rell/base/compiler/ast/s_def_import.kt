@@ -263,7 +263,7 @@ class S_ExactImportTargetItem(
         nsBuilder: C_UserNsProtoBuilder,
         targetModule: C_ModuleKey,
     ) {
-        val aliasHand = alias?.compile(ctx.symCtx)
+        val aliasHand = alias?.compile(ctx.symCtx, def = true)
         val nameHand = name.compile(ctx.symCtx)
 
         if (wildcard) {
@@ -416,7 +416,7 @@ class S_ImportDefinition(
 
         val moduleName = cModulePath.moduleName
 
-        val cAliasHand = alias?.compile(ctx.symCtx)
+        val cAliasHand = alias?.compile(ctx.symCtx, def = true)
         val cTarget = target.compile(ctx, moduleName, cAliasHand?.name, cModulePath.implicitAlias, docModifiers)
 
         val moduleInfos = try {
@@ -440,7 +440,8 @@ class S_ImportDefinition(
 
     override fun ideGetImportedModules(moduleName: R_ModuleName, res: MutableSet<R_ModuleName>) {
         val msgMgr = C_DefaultMessageManager()
-        val cModulePath = modulePath.compile(msgMgr, C_NopSymbolContext, kwPos, moduleName)
+        val symCtx = C_NopSymbolContext(msgMgr, C_CompilerOptions.DEFAULT)
+        val cModulePath = modulePath.compile(msgMgr, symCtx, kwPos, moduleName)
         if (cModulePath != null) {
             res.add(cModulePath.moduleName)
         }

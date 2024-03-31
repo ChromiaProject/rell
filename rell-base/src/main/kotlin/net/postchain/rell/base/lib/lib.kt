@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib
@@ -30,7 +30,7 @@ object Lib_Rell {
         include(Lib_OpContext.NAMESPACE)
 
         // At least an empty namespace "rell" must be defined.
-        namespace("rell") {
+        namespace("rell", since = "0.6.0") {
         }
     }
 
@@ -56,7 +56,7 @@ object Lib_Rell {
     val VIRTUAL_SET_TYPE = MODULE.getTypeDef("virtual_set")
     val VIRTUAL_MAP_TYPE = MODULE.getTypeDef("virtual_map")
 
-    val NULL_EXTENSION_TYPE = MODULE.getTypeDef("null_extension")
+    val NULL_EXTENSION_TYPE = MODULE.getTypeDef("null_ext")
 
     val IMMUTABLE_MIRROR_STRUCT = MODULE.getTypeDef("immutable_mirror_struct")
     val MUTABLE_MIRROR_STRUCT = MODULE.getTypeDef("mutable_mirror_struct")

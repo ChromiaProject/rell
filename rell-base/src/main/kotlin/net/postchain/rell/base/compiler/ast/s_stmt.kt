@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.ast
@@ -236,7 +236,11 @@ class S_ExprStatement(val expr: S_Expr): S_Statement(expr.startPos) {
     }
 }
 
-class S_AssignStatement(val dstExpr: S_Expr, val op: S_PosValue<S_AssignOpCode>, val srcExpr: S_Expr): S_Statement(dstExpr.startPos) {
+class S_AssignStatement(
+    private val dstExpr: S_Expr,
+    private val op: S_PosValue<S_AssignOpCode>,
+    private val srcExpr: S_Expr,
+): S_Statement(dstExpr.startPos) {
     override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val cDstExpr = dstExpr.compileOpt(ctx)
 
@@ -247,9 +251,10 @@ class S_AssignStatement(val dstExpr: S_Expr, val op: S_PosValue<S_AssignOpCode>,
             return C_Statement.EMPTY
         }
 
+        val opCtx = C_BinOpContext(ctx.exprCtx, op.pos)
         val cDstValue = cDstExpr.value()
         val cSrcValue = cSrcExpr.value()
-        return op.value.op.compile(ctx.exprCtx, op.pos, cDstValue, cSrcValue)
+        return op.value.op.compile(opCtx, cDstValue, cSrcValue)
     }
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {

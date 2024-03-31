@@ -23,11 +23,13 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 
 object Lib_Type_Json {
+    private const val SINCE0 = "0.6.0"
+
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("json", rType = R_JsonType) {
+        type("json", rType = R_JsonType, since = SINCE0) {
             comment("Wrapper object for a JSON-string.")
 
-            constructor(pure = true) {
+            constructor(pure = true, since = SINCE0) {
                 comment("Constructs a JSON value from a string. Fails if the string is not valid json.")
                 param("value", type = "text", comment = "The JSON string.")
                 dbFunctionCast("json", "JSONB")
@@ -42,9 +44,9 @@ object Lib_Type_Json {
                 }
             }
 
-            function("to_text", result = "text", pure = true) {
+            function("to_text", result = "text", pure = true, since = "0.9.0") {
                 comment("Converts the JSON value to a string.")
-                alias("str")
+                alias("str", since = SINCE0)
                 dbFunctionCast("json.to_text", "TEXT")
                 body { json ->
                     val jsonString = json.asJsonString()
@@ -52,7 +54,6 @@ object Lib_Type_Json {
                 }
             }
         }
-
     }
 }
 

@@ -36,15 +36,19 @@ class M_FunctionParam(
         return parts.joinToString(" ")
     }
 
-    fun replaceTypeParams(map: Map<M_TypeParam, M_TypeSet>): M_FunctionParam {
-        val resType = type.replaceParams(map, true).type()
-        return M_FunctionParam(
+    fun replaceType(type: M_Type): M_FunctionParam {
+        return if (type == this.type) this else M_FunctionParam(
             name = name,
-            type = resType,
+            type = type,
             arity = arity,
             exact = exact,
             nullable = nullable,
         )
+    }
+
+    fun replaceTypeParams(map: Map<M_TypeParam, M_TypeSet>): M_FunctionParam {
+        val resType = type.replaceParams(map, true).type()
+        return replaceType(resType)
     }
 
     fun toSimpleParam(): M_FunctionParam {

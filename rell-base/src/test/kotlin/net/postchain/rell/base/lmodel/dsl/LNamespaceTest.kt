@@ -255,14 +255,14 @@ class LNamespaceTest: BaseLTest() {
                     namespace("c") {
                         type("data")
                     }
-                    alias("c_data", "c.data")
+                    //alias("c_data", "c.data")
                     alias("ac_data", "a.c.data")
                     alias("abc_data", "a.b.c.data")
                 }
                 namespace("c") {
                     type("data")
                 }
-                alias("c_data", "c.data")
+                //alias("c_data", "c.data")
                 alias("ac_data", "a.c.data")
                 alias("abc_data", "a.b.c.data")
             }
@@ -273,12 +273,12 @@ class LNamespaceTest: BaseLTest() {
             "namespace a.b",
             "namespace a.b.c",
             "type a.b.c.data",
-            "alias a.b.c_data = a.b.c.data",
+            //"alias a.b.c_data = a.b.c.data",
             "alias a.b.ac_data = a.c.data",
             "alias a.b.abc_data = a.b.c.data",
             "namespace a.c",
             "type a.c.data",
-            "alias a.c_data = a.c.data",
+            //"alias a.c_data = a.c.data",
             "alias a.ac_data = a.c.data",
             "alias a.abc_data = a.b.c.data",
         )

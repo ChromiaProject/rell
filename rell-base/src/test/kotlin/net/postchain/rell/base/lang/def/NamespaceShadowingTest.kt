@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.def
@@ -213,45 +213,45 @@ class NamespaceShadowingTest: BaseRellTest() {
     @Test fun testMirrorWildcardImportEntity() {
         initMirrorWildcardImport()
         chkFull("import lib_entity.*; import lib_object.*; query q() = struct<foo>();",
-            "ct_err:namespace:ambig:foo:[ENTITY:lib_entity:foo,OBJECT:lib_object:foo]")
+            "ct_err:namespace:ambig:foo:[ENTITY:[lib_entity:foo],OBJECT:[lib_object:foo]]")
         chkFull("import lib_entity.*; import lib_operation.*; query q() = struct<foo>();",
-            "ct_err:namespace:ambig:foo:[ENTITY:lib_entity:foo,OPERATION:lib_operation:foo]")
+            "ct_err:namespace:ambig:foo:[ENTITY:[lib_entity:foo],OPERATION:[lib_operation:foo]]")
         chkFull("import lib_entity.*; import lib_struct.*; query q() = struct<foo>();",
-            "ct_err:namespace:ambig:foo:[ENTITY:lib_entity:foo,STRUCT:lib_struct:foo]")
+            "ct_err:namespace:ambig:foo:[ENTITY:[lib_entity:foo],STRUCT:[lib_struct:foo]]")
         chkFull("import lib_entity.*; import lib_enum.*; query q() = struct<foo>();",
-            "ct_err:namespace:ambig:foo:[ENTITY:lib_entity:foo,ENUM:lib_enum:foo]")
+            "ct_err:namespace:ambig:foo:[ENTITY:[lib_entity:foo],ENUM:[lib_enum:foo]]")
         chkFull("import lib_entity.*; import lib_function.*; query q() = struct<foo>();",
-            "ct_err:namespace:ambig:foo:[ENTITY:lib_entity:foo,FUNCTION:lib_function:foo]")
+            "ct_err:namespace:ambig:foo:[ENTITY:[lib_entity:foo],FUNCTION:[lib_function:foo]]")
         chkFull("import lib_entity.*; import lib_const.*; query q() = struct<foo>();", "struct<lib_entity:foo>[]")
     }
 
     @Test fun testMirrorWildcardImportObject() {
         initMirrorWildcardImport()
         chkFull("import lib_object.*; import lib_entity.*; query q() = struct<foo>();",
-            "ct_err:namespace:ambig:foo:[OBJECT:lib_object:foo,ENTITY:lib_entity:foo]")
+            "ct_err:namespace:ambig:foo:[OBJECT:[lib_object:foo],ENTITY:[lib_entity:foo]]")
         chkFull("import lib_object.*; import lib_operation.*; query q() = struct<foo>();",
-            "ct_err:namespace:ambig:foo:[OBJECT:lib_object:foo,OPERATION:lib_operation:foo]")
+            "ct_err:namespace:ambig:foo:[OBJECT:[lib_object:foo],OPERATION:[lib_operation:foo]]")
         chkFull("import lib_object.*; import lib_struct.*; query q() = struct<foo>();",
-            "ct_err:namespace:ambig:foo:[OBJECT:lib_object:foo,STRUCT:lib_struct:foo]")
+            "ct_err:namespace:ambig:foo:[OBJECT:[lib_object:foo],STRUCT:[lib_struct:foo]]")
         chkFull("import lib_object.*; import lib_enum.*; query q() = struct<foo>();",
-            "ct_err:namespace:ambig:foo:[OBJECT:lib_object:foo,ENUM:lib_enum:foo]")
+            "ct_err:namespace:ambig:foo:[OBJECT:[lib_object:foo],ENUM:[lib_enum:foo]]")
         chkFull("import lib_object.*; import lib_function.*; query q() = struct<foo>();",
-            "ct_err:namespace:ambig:foo:[OBJECT:lib_object:foo,FUNCTION:lib_function:foo]")
+            "ct_err:namespace:ambig:foo:[OBJECT:[lib_object:foo],FUNCTION:[lib_function:foo]]")
         chkFull("import lib_object.*; import lib_const.*; query q() = struct<foo>();", "struct<lib_object:foo>[]")
     }
 
     @Test fun testMirrorWildcardImportOperation() {
         initMirrorWildcardImport()
         chkFull("import lib_operation.*; import lib_entity.*; query q() = struct<foo>();",
-            "ct_err:namespace:ambig:foo:[OPERATION:lib_operation:foo,ENTITY:lib_entity:foo]")
+            "ct_err:namespace:ambig:foo:[OPERATION:[lib_operation:foo],ENTITY:[lib_entity:foo]]")
         chkFull("import lib_operation.*; import lib_object.*; query q() = struct<foo>();",
-            "ct_err:namespace:ambig:foo:[OPERATION:lib_operation:foo,OBJECT:lib_object:foo]")
+            "ct_err:namespace:ambig:foo:[OPERATION:[lib_operation:foo],OBJECT:[lib_object:foo]]")
         chkFull("import lib_operation.*; import lib_struct.*; query q() = struct<foo>();",
-            "ct_err:namespace:ambig:foo:[OPERATION:lib_operation:foo,STRUCT:lib_struct:foo]")
+            "ct_err:namespace:ambig:foo:[OPERATION:[lib_operation:foo],STRUCT:[lib_struct:foo]]")
         chkFull("import lib_operation.*; import lib_enum.*; query q() = struct<foo>();",
-            "ct_err:namespace:ambig:foo:[OPERATION:lib_operation:foo,ENUM:lib_enum:foo]")
+            "ct_err:namespace:ambig:foo:[OPERATION:[lib_operation:foo],ENUM:[lib_enum:foo]]")
         chkFull("import lib_operation.*; import lib_function.*; query q() = struct<foo>();",
-            "ct_err:namespace:ambig:foo:[OPERATION:lib_operation:foo,FUNCTION:lib_function:foo]")
+            "ct_err:namespace:ambig:foo:[OPERATION:[lib_operation:foo],FUNCTION:[lib_function:foo]]")
         chkFull("import lib_operation.*; import lib_const.*; query q() = struct<foo>();", "struct<lib_operation:foo>[]")
     }
 

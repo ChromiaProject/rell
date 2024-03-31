@@ -20,7 +20,7 @@ object S_Keywords {
     const val OVERRIDE = "override"
 }
 
-object S_Grammar : Grammar<S_RellFile>() {
+object S_Grammar: Grammar<S_RellFile>() {
     private val rellTokens = arrayListOf<RellToken>()
 
     private val LPAR by relltok("(")

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.testutils
@@ -12,7 +12,9 @@ import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.*
 
 abstract class BaseRellTest(useSql: Boolean = true, gtv: Boolean = false): BaseTesterTest(useSql) {
-    final override val tst = RellCodeTester(tstCtx, entityDefs(), objInserts(), gtv = gtv)
+    final override val tst: RellCodeTester by lazy {
+        RellCodeTester(tstCtx, entityDefs(), objInserts(), gtv = gtv)
+    }
 
     val repl by lazy { tst.createRepl() }
 
@@ -65,6 +67,14 @@ abstract class BaseRellTest(useSql: Boolean = true, gtv: Boolean = false): BaseT
     fun chkSqlCtr(expected: Int) = tst.chkSqlCtr(expected)
 
     fun chkTests(testModule: String, expected: String) = tst.chkTests(testModule, expected)
+
+    fun chkVerCt(code: String, version: String, expOld: String, expNew: String = "OK") {
+        tst.chkVerCt(code, version, expOld, expNew)
+    }
+
+    fun chkVerCtExpr(expr: String, version: String, expOld: String, expNew: String = "OK") {
+        tst.chkVerCt("query q() = $expr;", version, expOld, expNew)
+    }
 
     private fun rtVal(v: Long?) = if (v == null) Rt_NullValue else Rt_IntValue.get(v)
     private fun rtVal(v: String?) = if (v == null) Rt_NullValue else Rt_TextValue.get(v)

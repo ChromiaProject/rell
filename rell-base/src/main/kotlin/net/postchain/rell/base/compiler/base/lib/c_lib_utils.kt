@@ -4,8 +4,12 @@
 
 package net.postchain.rell.base.compiler.base.lib
 
+import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_DefinitionName
+import net.postchain.rell.base.compiler.base.core.C_MessageContext
+import net.postchain.rell.base.lmodel.L_AbstractMember
 import net.postchain.rell.base.lmodel.L_TypeUtils
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_Type_Tuple

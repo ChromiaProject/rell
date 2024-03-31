@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.expr
@@ -9,8 +9,8 @@ import org.junit.Test
 
 class CreateTest: BaseRellTest() {
     override fun entityDefs() = listOf(
-            "entity city { name: text; }",
-            "entity person { name: text; city; street: text; house: integer; score: integer; }"
+        "entity city { name: text; }",
+        "entity person { name: text; city; street: text; house: integer; score: integer; }",
     )
 
     @Test fun testCreateCity() {
@@ -292,5 +292,12 @@ class CreateTest: BaseRellTest() {
         val expSum = 3123750
         chk("2499*2500/2", "int[$expSum]")
         chk("data @{} ( @sum 1, @sum .x )", "(int[2500],int[$expSum])")
+    }
+
+    @Test fun testListOfStructVersionControl() {
+        def("entity data { x: integer; }")
+        val err = "VER:feature:create_list_of_structs"
+        chkVerCt("function f() { create data(list<struct<data>>()); }", "0.13.5", err)
+        chkVerCt("function f() { create data(list<struct<mutable data>>()); }", "0.13.5", err)
     }
 }

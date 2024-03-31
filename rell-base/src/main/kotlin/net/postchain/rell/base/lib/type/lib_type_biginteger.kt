@@ -47,22 +47,31 @@ object Lib_Type_BigInteger {
         Rt_BigIntegerValue.get(s)
     }
 
+    private const val SINCE0 = "0.12.0"
+
     private val BIGINT_MIN_LONG = BigInteger.valueOf(Long.MIN_VALUE)
     private val BIGINT_MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE)
 
-    private val BIGINT_MINUS_ONE = BigInteger.ONE.negate()
-
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("big_integer", rType = R_BigIntegerType) {
+        type("big_integer", rType = R_BigIntegerType, since = SINCE0) {
             comment("""
                 A data type that represents large integers with high precision, capable of handling very large numbers.
                 Uses `java.math.BigInteger` internally.
             """)
-            constant("PRECISION", (Lib_BigIntegerMath.PRECISION).toLong(), comment = "The maximum number of digits (131072)")
-            constant("MIN_VALUE", Lib_BigIntegerMath.MIN_VALUE, comment = "Minimum value (-(10^131072)+1)")
-            constant("MAX_VALUE", Lib_BigIntegerMath.MAX_VALUE, comment = "Maximum value ((10^131072)-1)")
 
-            constructor {
+            constant("PRECISION", Lib_BigIntegerMath.PRECISION.toLong(), since = SINCE0) {
+                comment("The maximum number of digits (131072)")
+            }
+
+            constant("MIN_VALUE", Lib_BigIntegerMath.MIN_VALUE, since = SINCE0) {
+                comment("Minimum value (-(10^131072)+1)")
+            }
+
+            constant("MAX_VALUE", Lib_BigIntegerMath.MAX_VALUE, since = SINCE0) {
+                comment("Maximum value ((10^131072)-1)")
+            }
+
+            constructor(since = SINCE0) {
                 comment("""
                     Creates a big_integer from a decimal string representation, possibly with a sign.
                     Fails if the string is not valid.
@@ -71,13 +80,13 @@ object Lib_Type_BigInteger {
                 bodyRaw(FromText_1)
             }
 
-            constructor {
+            constructor(since = SINCE0) {
                 comment("Creates a big_integer from an integer.")
                 param("value", type = "integer", comment = "The integer value.")
                 bodyRaw(FromInteger)
             }
 
-            staticFunction("from_bytes", result = "big_integer", pure = true) {
+            staticFunction("from_bytes", result = "big_integer", pure = true, since = SINCE0) {
                 comment("Creates a big_integer from a byte_array.")
                 param("value", type = "byte_array", comment = "The byte array to convert.")
                 body { a ->
@@ -87,7 +96,7 @@ object Lib_Type_BigInteger {
                 }
             }
 
-            staticFunction("from_bytes_unsigned", result = "big_integer", pure = true) {
+            staticFunction("from_bytes_unsigned", result = "big_integer", pure = true, since = SINCE0) {
                 comment("Creates a big_integer from an unsigned byte_array.")
                 param("value", type = "byte_array", comment = "The byte array to convert.")
                 body { a ->
@@ -97,13 +106,13 @@ object Lib_Type_BigInteger {
                 }
             }
 
-            staticFunction("from_text", result = "big_integer", pure = true) {
+            staticFunction("from_text", result = "big_integer", pure = true, since = SINCE0) {
                 comment("Creates a big_integer from a text representation")
                 param("value", type = "text", comment = "The decimal string representation.")
                 bodyRaw(FromText_1)
             }
 
-            staticFunction("from_text", result = "big_integer", pure = true) {
+            staticFunction("from_text", result = "big_integer", pure = true, since = SINCE0) {
                 comment("""
                     Creates a big_integer from a string representation with a specific base (radix, from 2 to 36).
                 """)
@@ -121,7 +130,7 @@ object Lib_Type_BigInteger {
                 }
             }
 
-            staticFunction("from_hex", result = "big_integer", pure = true) {
+            staticFunction("from_hex", result = "big_integer", pure = true, since = SINCE0) {
                 comment("Creates a big_integer from a hexadecimal string representation")
                 param("value", type = "text", comment = "Hexadecimal string.")
                 body { a ->
@@ -130,18 +139,18 @@ object Lib_Type_BigInteger {
                 }
             }
 
-            function("abs", "big_integer") {
+            function("abs", "big_integer", since = SINCE0) {
                 comment("Absolute value of the big_integer.")
                 bodyRaw(Lib_Math.Abs_BigInteger)
             }
 
-            function("min", "big_integer") {
+            function("min", "big_integer", since = SINCE0) {
                 comment("Minimum of two big_integer values.")
                 param("value", "big_integer", comment = "The value to compare against.")
                 bodyRaw(Lib_Math.Min_BigInteger)
             }
 
-            function("min", "decimal", pure = true) {
+            function("min", "decimal", pure = true, since = SINCE0) {
                 comment("Minimum of a big_integer and a decimal value.")
                 param("value", "decimal", comment = "The decimal value to compare against.")
                 dbFunctionSimple("big_integer.min", "LEAST")
@@ -153,13 +162,13 @@ object Lib_Type_BigInteger {
                 }
             }
 
-            function("max", "big_integer") {
+            function("max", "big_integer", since = SINCE0) {
                 comment("Maximum of two big_integer values.")
                 param("value", "big_integer", comment = "The value to compare against.")
                 bodyRaw(Lib_Math.Max_BigInteger)
             }
 
-            function("max", "decimal", pure = true) {
+            function("max", "decimal", pure = true, since = SINCE0) {
                 comment("Maximum of a big_integer and a decimal value.")
                 param("value", "decimal", comment = "The decimal value to compare against.")
                 dbFunctionSimple("big_integer.max", "GREATEST")
@@ -171,7 +180,7 @@ object Lib_Type_BigInteger {
                 }
             }
 
-            function("pow", result = "big_integer", pure = true) {
+            function("pow", result = "big_integer", pure = true, since = "0.13.6") {
                 comment("""
                     Raises this big_integer to the power of the given exponent.
                     Can be used in a database at-expression.
@@ -199,7 +208,7 @@ object Lib_Type_BigInteger {
             }
 
             // Function: sign
-            function("sign", "integer", pure = true) {
+            function("sign", "integer", pure = true, since = SINCE0) {
                 comment("Returns -1, 0, or 1 depending on the sign.")
                 dbFunctionSimple("big_integer.sign", "SIGN")
                 body { a ->
@@ -210,7 +219,7 @@ object Lib_Type_BigInteger {
             }
 
             // Function: to_bytes
-            function("to_bytes", "byte_array", pure = true) {
+            function("to_bytes", "byte_array", pure = true, since = SINCE0) {
                 comment("Converts this big_integer to a byte_array.")
                 body { a ->
                     val bigInt = a.asBigInteger()
@@ -219,7 +228,7 @@ object Lib_Type_BigInteger {
                 }
             }
 
-            function("to_bytes_unsigned", "byte_array", pure = true) {
+            function("to_bytes_unsigned", "byte_array", pure = true, since = SINCE0) {
                 comment("Converts this big_integer to an unsigned byte_array.")
                 body { a ->
                     val bigInt = a.asBigInteger()
@@ -237,13 +246,13 @@ object Lib_Type_BigInteger {
             }
 
             // Function: to_decimal
-            function("to_decimal", "decimal") {
+            function("to_decimal", "decimal", since = SINCE0) {
                 comment("Converts this big_integer to a decimal value.")
                 bodyRaw(Lib_Type_Decimal.FromBigInteger)
             }
 
             // Function: to_hex
-            function("to_hex", "text", pure = true) {
+            function("to_hex", "text", pure = true, since = SINCE0) {
                 comment("Converts this big_integer to an unsigned hexadecimal representation.")
                 body { a ->
                     val v = a.asBigInteger()
@@ -253,7 +262,7 @@ object Lib_Type_BigInteger {
             }
 
             // Function: to_integer
-            function("to_integer", "integer", pure = true) {
+            function("to_integer", "integer", pure = true, since = SINCE0) {
                 comment("Converts this big_integer to an integer value.")
                 dbFunctionTemplate("big_integer.to_integer", 1, "(#0)::BIGINT")
                 body { a ->
@@ -268,7 +277,7 @@ object Lib_Type_BigInteger {
             }
 
             // Function: to_text
-            function("to_text", "text", pure = true) {
+            function("to_text", "text", pure = true, since = SINCE0) {
                 comment("Converts this big_integer to a decimal string representation.")
                 dbFunctionTemplate("decimal.to_text", 1, "(#0)::TEXT")
                 body { a ->
@@ -279,7 +288,7 @@ object Lib_Type_BigInteger {
             }
 
             // Function: to_text with radix
-            function("to_text", "text", pure = true) {
+            function("to_text", "text", pure = true, since = SINCE0) {
                 comment("""
                     Converts this big_integer to a string representation with a specific base (radix, from 2 to 36).
                 """)

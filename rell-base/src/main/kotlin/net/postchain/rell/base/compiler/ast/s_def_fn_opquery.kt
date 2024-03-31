@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.ast
@@ -41,7 +41,7 @@ class S_OperationDefinition(
         ctx.checkNotExternal(name.pos, C_DeclarationType.OPERATION)
         ctx.checkNotReplOrTest(name.pos, C_DeclarationType.OPERATION)
 
-        val nameHand = name.compile(ctx)
+        val nameHand = name.compile(ctx, def = true)
         val cName = nameHand.name
 
         val mods = C_ModifierValues(C_ModifierTargetType.OPERATION, cName)
@@ -156,7 +156,7 @@ class S_QueryDefinition(
         ctx.checkNotExternal(name.pos, C_DeclarationType.QUERY)
         ctx.checkNotReplOrTest(name.pos, C_DeclarationType.QUERY)
 
-        val nameHand = name.compile(ctx)
+        val nameHand = name.compile(ctx, def = true)
         val cName = nameHand.name
 
         val mods = C_ModifierValues(C_ModifierTargetType.QUERY, cName)

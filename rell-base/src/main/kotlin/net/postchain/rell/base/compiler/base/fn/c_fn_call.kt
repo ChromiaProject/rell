@@ -9,6 +9,7 @@ import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.compiler.base.core.C_TypeHint
 import net.postchain.rell.base.compiler.base.expr.C_CallTypeHints
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
+import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_ParameterDefaultValue
 import net.postchain.rell.base.compiler.base.utils.C_Utils
@@ -18,10 +19,7 @@ import net.postchain.rell.base.model.R_FunctionType
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.mtype.M_ParamArity
-import net.postchain.rell.base.utils.LazyPosString
-import net.postchain.rell.base.utils.LazyString
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
+import net.postchain.rell.base.utils.*
 
 abstract class C_FunctionCallTargetInfo {
     abstract fun retType(): R_Type?
@@ -37,6 +35,7 @@ class C_FunctionCallTargetBase(
     val ctx: C_ExprContext,
     val callInfo: C_FunctionCallInfo,
     val callParams: C_FunctionCallParameters,
+    val argIdeInfos: Map<R_Name, C_IdeSymbolInfo>,
 ) {
     companion object {
         fun forDirectFunction(
@@ -45,23 +44,23 @@ class C_FunctionCallTargetBase(
             params: C_FormalParameters,
         ): C_FunctionCallTargetBase {
             val callInfo = C_FunctionCallInfo(name.pos, name.lazyStr)
-            return C_FunctionCallTargetBase(ctx, callInfo, params.callParameters)
+            return C_FunctionCallTargetBase(ctx, callInfo, params.callParameters, params.argIdeInfos)
         }
 
         fun forFunctionType(ctx: C_ExprContext, callPos: S_Pos, fnType: R_FunctionType): C_FunctionCallTargetBase {
             val callInfo = C_FunctionCallInfo(callPos, null)
-            return C_FunctionCallTargetBase(ctx, callInfo, fnType.callParameters)
+            return C_FunctionCallTargetBase(ctx, callInfo, fnType.callParameters, immMapOf())
         }
     }
 }
 
 abstract class C_FunctionCallTarget_Regular(
-    base: C_FunctionCallTargetBase,
+    private val targetBase: C_FunctionCallTargetBase,
     private val retType: R_Type?,
 ): C_FunctionCallTarget() {
-    private val ctx = base.ctx
-    private val callInfo = base.callInfo
-    private val callParams = base.callParams
+    private val ctx = targetBase.ctx
+    private val callInfo = targetBase.callInfo
+    private val callParams = targetBase.callParams
 
     protected open fun vBase(): V_Expr? = null
     protected open fun safe() = false
@@ -84,22 +83,25 @@ abstract class C_FunctionCallTarget_Regular(
 
         // Ide info is null, because user functions always use the default ide info of the function, as there is no
         // overloading (using C_UniqueDefaultIdeInfoPtr).
-        return V_GlobalFunctionCall(vExpr, null, callParams.map)
+        return V_GlobalFunctionCall(vExpr, null, targetBase.argIdeInfos)
     }
 
-    final override fun compilePartial(args: C_PartialCallArguments, resTypeHint: R_FunctionType?): V_GlobalFunctionCall? {
+    final override fun compilePartial(
+        args: C_PartialCallArguments,
+        resTypeHint: R_FunctionType?,
+    ): V_GlobalFunctionCall? {
         val vBase = vBase()
         val effArgs = args.compileEffectiveArgs(callInfo, callParams)
         effArgs ?: return null
 
         val fnType = R_FunctionType(effArgs.wildArgs, retType ?: R_CtErrorType)
         val vTarget = createVTarget()
-        val mapping = effArgs.toRMapping()
+        val mapping = effArgs.toRMapping(ctx.msgCtx)
 
         val safe = safe()
         val vCall = V_CommonFunctionCall_Partial(callInfo.callPos, fnType, vTarget, effArgs.exprArgs, mapping)
         val vExpr = V_FunctionCallExpr(ctx, callInfo.callPos, vBase, vCall, safe)
-        return V_GlobalFunctionCall(vExpr, null, callParams.map)
+        return V_GlobalFunctionCall(vExpr, null, targetBase.argIdeInfos)
     }
 }
 
@@ -114,20 +116,6 @@ class C_FunctionCallTarget_FunctionType(
     override fun createVTarget(): V_FunctionCallTarget = V_FunctionCallTarget_FunctionValue
 }
 
-abstract class C_PartialCallTargetMatch<CallT: V_FunctionCall>(val exact: Boolean) {
-    abstract fun paramTypes(): List<R_Type>?
-    abstract fun compileCall(ctx: C_ExprContext, args: C_EffectivePartialArguments): CallT
-}
-
-abstract class C_PartialCallTarget<CallT: V_FunctionCall>(
-    val callPos: S_Pos,
-    val fullName: LazyString,
-) {
-    abstract fun codeMsg(): C_CodeMsg
-    abstract fun match(): C_PartialCallTargetMatch<CallT>
-    abstract fun match(fnType: R_FunctionType): C_PartialCallTargetMatch<CallT>?
-}
-
 class C_FunctionCallInfo(
     val callPos: S_Pos,
     val functionName: LazyString?,
@@ -137,16 +125,17 @@ class C_FunctionCallInfo(
 
 class C_FunctionCallParameters(list: List<C_FunctionCallParameter>) {
     val list = list.toImmList()
-    val set = list.mapNotNull { it.name }.toImmList()
-    val map = list.mapNotNull { if (it.name == null) null else (it.name to it.namedArgIdeInfo) }.toImmMap()
     val typeHints: C_CallTypeHints = C_FunctionCallParametersTypeHints(this.list)
 
-    val bindParams = C_ArgMatchParams(list.map { C_ArgMatchParam(it.index, it.name, M_ParamArity.ONE, it.defaultValue) })
+    val bindParams: C_ArgMatchParams = let {
+        val params = list.map { C_ArgMatchParam(it.index, it.name, M_ParamArity.ONE, it.defaultValue) }
+        C_ArgMatchParams(params)
+    }
 
     companion object {
         fun fromTypes(types: List<R_Type>): C_FunctionCallParameters {
             val params = types.mapIndexed { index, rType ->
-                C_FunctionCallParameter(null, rType, index, C_IdeSymbolInfo.UNKNOWN, C_IdeSymbolInfo.UNKNOWN, null)
+                C_FunctionCallParameter(null, rType, index, null, C_MemberRestrictions.NULL)
             }
             return C_FunctionCallParameters(params)
         }
@@ -157,9 +146,8 @@ class C_FunctionCallParameter(
     val name: R_Name?,
     val type: R_Type,
     val index: Int,
-    val ideInfo: C_IdeSymbolInfo,
-    val namedArgIdeInfo: C_IdeSymbolInfo,
     val defaultValue: C_ParameterDefaultValue?,
+    val restrictions: C_MemberRestrictions,
 ) {
     fun nameCodeMsg(): C_CodeMsg {
         val code = if (name != null) "$index:$name" else "$index"

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.tools.runcfg
@@ -181,7 +181,12 @@ private fun runTests(args: CommonArgs, matcher: UnitTestMatcher, targetChains: C
             val globalCtx = RellApiBaseUtils.createGlobalContext(compilerOptions, typeCheck = true)
             val sqlCtx = Rt_RegularSqlContext.createNoExternalChains(tChain.rApp, Rt_ChainSqlMapping(tChain.chain.iid))
             val chainCtx = Rt_ChainContext(tChain.gtvConfig, tChain.chain.brid)
-            val moduleArgsSource = PostchainBaseUtils.createModuleArgsSource(tChain.rApp, tChain.gtvConfig)
+
+            val moduleArgsSource = PostchainBaseUtils.createModuleArgsSource(
+                tChain.rApp,
+                tChain.gtvConfig,
+                compilerOptions,
+            )
 
             val blockRunner = createBlockRunner(args, keyPair, tChain.gtvConfig)
 

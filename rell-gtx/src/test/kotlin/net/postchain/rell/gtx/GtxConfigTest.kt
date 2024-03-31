@@ -11,8 +11,8 @@ import org.junit.Test
 import kotlin.test.assertEquals
 
 class GtxConfigTest: BaseGtxTest() {
-    @Test fun testLegacyOK() {
-        chkLegacy("v0.10", "OK")
+    @Test fun testLegacyUnsupportedVersion() {
+        chkLegacy("v0.10", "ERR:Unsupported language version: 0.10.4 (minimum supported version: 0.10.10)")
     }
 
     @Test fun testLegacyWrongVersionFormat() {
@@ -70,21 +70,13 @@ class GtxConfigTest: BaseGtxTest() {
                 "ERR:Multiple source code nodes specified in the configuration: files, sources")
     }
 
-    @Test fun testSourcesOK() {
-        chkVersion("0.10.0", "OK")
-        chkVersion("0.10.1", "OK")
-        chkVersion("0.10.2", "OK")
-        chkVersion("0.10.3", "OK")
-        chkVersion("0.10.4", "OK")
-        chkVersion("0.10.5", "OK")
-        chkVersion("0.10.6", "OK")
-        chkVersion("0.10.7", "OK")
-        chkVersion("0.10.8", "OK")
-        chkVersion("0.10.9", "OK")
+    @Test fun testSourcesVersionOK() {
         chkVersion("0.10.10", "OK")
         chkVersion("0.10.11", "OK")
+
         chkVersion("0.11.0", "OK")
         chkVersion("0.12.0", "OK")
+
         chkVersion("0.13.0", "OK")
         chkVersion("0.13.1", "OK")
         chkVersion("0.13.2", "OK")
@@ -95,21 +87,45 @@ class GtxConfigTest: BaseGtxTest() {
         chkVersion("0.13.7", "OK")
         chkVersion("0.13.8", "OK")
         chkVersion("0.13.9", "OK")
+
         chkVersion("0.14.0", "OK")
     }
 
-    @Test fun testSourcesWithVersionOutOfRange() {
-        val msg = "ERR:Unsupported language version"
-        chkVersion("0.9.0", "$msg: 0.9.0")
-        chkVersion("0.9.1", "$msg: 0.9.1")
-        chkVersion("0.9.999", "$msg: 0.9.999")
-        chkVersion("0.10.12", "$msg: 0.10.12")
-        chkVersion("0.11.1", "$msg: 0.11.1")
-        chkVersion("0.12.1", "$msg: 0.12.1")
-        chkVersion("0.13.10", "$msg: 0.13.10")
-        chkVersion("0.14.1", "$msg: 0.14.1")
-        chkVersion("0.15.0", "$msg: 0.15.0")
-        chkVersion("1.0.0", "$msg: 1.0.0")
+    @Test fun testSourcesVersionUnsupported() {
+        val err = "ERR:Unsupported language version: %s (minimum supported version: 0.10.10)"
+        chkVersion("0.6.0", err)
+        chkVersion("0.6.1", err)
+        chkVersion("0.7.0", err)
+        chkVersion("0.8.0", err)
+        chkVersion("0.9.0", err)
+        chkVersion("0.9.1", err)
+
+        chkVersion("0.10.0", err)
+        chkVersion("0.10.1", err)
+        chkVersion("0.10.2", err)
+        chkVersion("0.10.3", err)
+        chkVersion("0.10.4", err)
+        chkVersion("0.10.5", err)
+        chkVersion("0.10.6", err)
+        chkVersion("0.10.7", err)
+        chkVersion("0.10.8", err)
+        chkVersion("0.10.9", err)
+    }
+
+    @Test fun testSourcesVersionUnknown() {
+        val err = "ERR:Unknown language version: %s"
+        chkVersion("0.5.0", err)
+        chkVersion("0.5.1", err)
+        chkVersion("0.5.999", err)
+        chkVersion("0.6.2", err)
+        chkVersion("0.9.2", err)
+        chkVersion("0.10.12", err)
+        chkVersion("0.11.1", err)
+        chkVersion("0.12.1", err)
+        chkVersion("0.13.10", err)
+        chkVersion("0.14.1", err)
+        chkVersion("0.15.0", err)
+        chkVersion("1.0.0", err)
     }
 
     @Test fun testSourcesWithBadVersion() {
@@ -132,8 +148,9 @@ class GtxConfigTest: BaseGtxTest() {
     }
 
     private fun chkVersion(version: String, expected: String) {
-        chkConfig("sources", "'sources':SOURCES,'version':'$version'", expected)
-        chkConfig("files", "'files':FILES,'version':'$version'", expected)
+        val expected2 = expected.format(version)
+        chkConfig("sources", "'sources':SOURCES,'version':'$version'", expected2)
+        chkConfig("files", "'files':FILES,'version':'$version'", expected2)
     }
 
     private fun chkConfig(sources: String, expected: String) {
@@ -152,13 +169,13 @@ class GtxConfigTest: BaseGtxTest() {
                 .replace("FILES", "{'a.rell':'classpath:/net/postchain/rell/base/42.rell'}")
         tst.configTemplate = "{'gtx':{'rell':{'modules':'{MODULES}','moduleArgs':'{MODULE_ARGS}',$s}}}"
 
-        try {
+        return try {
             val res = tst.callQuery("q", mapOf())
-            return if (res == "42") "OK" else "OK:$res"
+            if (res == "42") "OK" else "OK:$res"
         } catch (e: UserMistake) {
             //e.printStackTrace()
             val msg = StringUtils.removeStart(e.message ?: "", "Module initialization failed: ")
-            return "ERR:$msg"
+            "ERR:$msg"
         }
     }
 }

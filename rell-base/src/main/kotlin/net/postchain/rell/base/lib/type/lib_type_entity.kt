@@ -9,10 +9,7 @@ import net.postchain.rell.base.compiler.base.core.C_LambdaBlock
 import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.compiler.base.core.C_NameHandle
 import net.postchain.rell.base.compiler.base.expr.*
-import net.postchain.rell.base.compiler.base.lib.C_LibFuncCaseCtx
-import net.postchain.rell.base.compiler.base.lib.C_LibFuncCaseUtils
-import net.postchain.rell.base.compiler.base.lib.C_SpecialLibMemberFunctionBody
-import net.postchain.rell.base.compiler.base.lib.V_SpecialMemberFunctionCall
+import net.postchain.rell.base.compiler.base.lib.*
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
@@ -32,7 +29,7 @@ import net.postchain.rell.base.utils.toImmList
 
 object Lib_Type_Entity {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("entity", abstract = true, hidden = true) {
+        type("entity", abstract = true, hidden = true, since = "0.6.0") {
             comment("""
                 Common parent type of all entity types. An entity is a data structure that reside in the SQL database.
             """)
@@ -43,18 +40,18 @@ object Lib_Type_Entity {
         }
 
         namespace("rell") {
-            extension("entity_ext", type = "entity") {
-                function("to_struct", C_Fn_ToStruct(false)) {
+            extension("entity_ext", type = "entity", since = "0.10.4") {
+                function("to_struct", C_Fn_ToStruct(false), since = "0.10.4") {
                     comment("""
                         Convert this instance to a `struct<T>`.
                         Note that this will read all values from the database.
                     """)
                 }
-                function("to_mutable_struct", C_Fn_ToStruct(true)) {
+                function("to_mutable_struct", C_Fn_ToStruct(true), since = "0.10.4") {
                     comment("""
                         Convert this instance to a `mutable struct<T>`.
                         Note that this will read all values from the database.
-                    """.trimIndent())
+                    """)
                 }
             }
         }
@@ -82,7 +79,7 @@ object Lib_Type_Entity {
 
     private class C_TypeValueMember_EntityAttr(
         val attr: C_EntityAttrRef,
-    ): C_TypeValueMember_Value(attr.ideName, attr.type) {
+    ): C_TypeValueMember_Value(attr.ideName, attr.type, attr.attribute()?.restrictions ?: C_MemberRestrictions.NULL) {
         override fun kindMsg() = "attribute"
         override fun nameMsg(): C_CodeMsg = attr.attrName.str toCodeMsg attr.attrName.str
 

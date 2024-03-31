@@ -1,9 +1,10 @@
 /*
- * Copyright (C) 2021 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.vexpr
 
+import net.postchain.rell.base.compiler.ast.C_BinOpContext
 import net.postchain.rell.base.compiler.ast.C_BinOp_EqNe
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
@@ -13,11 +14,11 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 
 class V_InCollectionExpr(
-        exprCtx: C_ExprContext,
-        private val elemType: R_Type,
-        private val left: V_Expr,
-        private val right: V_Expr,
-        private val not: Boolean
+    exprCtx: C_ExprContext,
+    private val elemType: R_Type,
+    private val left: V_Expr,
+    private val right: V_Expr,
+    private val not: Boolean,
 ): V_Expr(exprCtx, left.pos) {
     override fun exprInfo0() = V_ExprInfo.simple(R_BooleanType, left, right)
 
@@ -34,7 +35,10 @@ class V_InCollectionExpr(
     override fun toDbExpr0(): Db_Expr {
         val dbLeft = left.toDbExpr()
 
-        if (!C_BinOp_EqNe.checkTypesDb(elemType, elemType) || !elemType.sqlAdapter.isSqlCompatible()) {
+        val opCtx = C_BinOpContext(exprCtx, right.pos)
+        if (!C_BinOp_EqNe.checkTypesDb(opCtx, elemType, elemType)
+            || !elemType.sqlAdapter.isSqlCompatible(exprCtx.globalCtx.compilerOptions)
+        ) {
             C_Errors.errExprNoDb(msgCtx, pos, elemType)
             return C_ExprUtils.errorDbExpr(R_BooleanType)
         }

@@ -18,7 +18,11 @@ import net.postchain.rell.base.utils.toImmList
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
-class LibModuleTester(private val tst: RellCodeTester, vararg importedModules: C_LibModule) {
+class LibModuleTester(
+    private val tst: RellCodeTester,
+    vararg importedModules: C_LibModule,
+    private val moduleName: String = "mod",
+) {
     private val importedModules = importedModules.toImmList()
 
     private var curModRef: AtomicReference<C_LibModule>? = null
@@ -28,7 +32,7 @@ class LibModuleTester(private val tst: RellCodeTester, vararg importedModules: C
         val modRefLoc = AtomicReference<C_LibModule>()
         curModRef = modRefLoc
         try {
-            val mod = C_LibModule.make("mod", *importedModules.toTypedArray()) {
+            val mod = C_LibModule.make(moduleName, *importedModules.toTypedArray(), requireSince = false) {
                 block(this)
             }
             tst.extraMod = mod

@@ -6,10 +6,7 @@ package net.postchain.rell.base.compiler.ast
 
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.*
-import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
-import net.postchain.rell.base.compiler.base.utils.C_Errors
-import net.postchain.rell.base.compiler.base.utils.C_Utils
-import net.postchain.rell.base.compiler.base.utils.toCodeMsg
+import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.*
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.type.*
@@ -299,6 +296,7 @@ class S_CreateExpr(pos: S_Pos, val entityName: S_QualifiedName, val args: List<S
 
         val listType = R_ListType(struct.type)
         return if (!listType.isAssignableFrom(vExpr.type)) null else {
+            RESTRICTIONS_LIST_OF_STRUCTS.access(ctx.msgCtx, vExpr.pos)
             V_StructListCreateExpr(ctx, startPos, entity, struct.type, vExpr)
         }
     }
@@ -310,6 +308,13 @@ class S_CreateExpr(pos: S_Pos, val entityName: S_QualifiedName, val args: List<S
             is C_CallArgumentValue_Wildcard -> null
             is C_CallArgumentValue_Expr -> arg.value.vExpr
         }
+    }
+
+    companion object {
+        private val RESTRICTIONS_LIST_OF_STRUCTS = C_FeatureRestrictions.make(
+            "0.13.5",
+            "create_list_of_structs" toCodeMsg "create(list<struct<T>>) is",
+        )
     }
 }
 
@@ -331,7 +336,7 @@ class S_TupleExpr(startPos: S_Pos, val fields: List<S_TupleExprField>): S_Expr(s
         val tupleIdeId = ctx.defCtx.tupleIdeId()
 
         val cFields = fields.map {
-            val nameHand = it.name?.compile(ctx)
+            val nameHand = it.name?.compile(ctx, def = true)
             C_TupleField(nameHand, it.expr)
         }
 
@@ -600,7 +605,7 @@ class S_CallArgument(val name: S_Name?, val value: S_CallArgumentValue) {
         positional: Boolean,
         typeHints: C_CallTypeHints,
     ): C_CallArgumentHandle {
-        val nameHand = name?.compile(ctx)
+        val nameHand = name?.compile(ctx, def = true)
         val hintIndex = if (positional) index else null
         val typeHint = typeHints.getTypeHint(hintIndex, nameHand?.rName)
         val argValue = value.compile(ctx, typeHint)

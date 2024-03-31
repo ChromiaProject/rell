@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.core
@@ -10,6 +10,7 @@ import net.postchain.rell.base.compiler.base.expr.C_Expr
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.lib.C_LibUtils
+import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.lib.C_TypeDef
 import net.postchain.rell.base.compiler.base.modifier.C_ModifierValue
 import net.postchain.rell.base.compiler.base.namespace.*
@@ -138,11 +139,12 @@ class C_CommonDefinitionBase(
     }
 
     fun nsMemBase(
-        deprecated: C_Deprecated? = null,
         defName: C_DefinitionName = cDefName,
+        deprecated: C_Deprecated? = null,
         ideRefInfo: C_IdeSymbolInfo,
     ): C_NamespaceMemberBase {
-        return C_NamespaceMemberBase(defName, ideRefInfo, deprecated)
+        val restrictions = C_MemberRestrictions.makeUser(defName, defType.decType, deprecated = deprecated)
+        return C_NamespaceMemberBase(defName, ideRefInfo, restrictions)
     }
 
     fun memberIdeDef(
@@ -245,10 +247,10 @@ class C_UserDefinitionBase(
     }
 
     fun nsMemBase(
-        deprecated: C_Deprecated? = null,
         defName: C_DefinitionName = comBase.cDefName,
+        deprecated: C_Deprecated? = null,
     ): C_NamespaceMemberBase {
-        return comBase.nsMemBase(deprecated, defName, ideRefInfo)
+        return comBase.nsMemBase(defName, deprecated, ideRefInfo)
     }
 
     fun setDocDeclaration(declaration: DocDeclaration) {
@@ -270,7 +272,7 @@ private class C_NamePath(private val nodes: List<C_NameNode>) {
             if (i < nodes.size - 1) {
                 node.nameHand.setIdeInfo(node.ideInfo)
             }
-            node.elem?.access(msgCtx) { getQualifiedName(i + 1) }
+            node.elem?.access(msgCtx, getQualifiedName(i + 1).toLazyPosString())
         }
         return nodes.last().nameHand
     }
@@ -440,7 +442,8 @@ private object C_GlobalNameResolver {
         val firstTags = if (qName.size == 1) tags else C_NamespaceMemberTag.NAMESPACE.list
         val firstEntry = scope.findEntry(qName.first.rName, firstTags)
 
-        var node = entryToNode(qName.first, firstEntry, firstTags)
+        val langVersion = msgCtx.globalCtx.compilerOptions.compatibility
+        var node = entryToNode(qName.first, firstEntry, firstTags, langVersion)
         val nodes = mutableListOf(node)
 
         for ((i, name) in qName.parts.withIndex().drop(1)) {
@@ -448,7 +451,7 @@ private object C_GlobalNameResolver {
             val entry = ns?.getEntry(name.rName)
             val isLast = i == qName.parts.indices.last
             val curTags = if (isLast) tags else C_NamespaceMemberTag.NAMESPACE.list
-            node = entryToNode(name, entry, curTags)
+            node = entryToNode(name, entry, curTags, langVersion)
             nodes.add(node)
         }
 
@@ -460,8 +463,9 @@ private object C_GlobalNameResolver {
         name: C_NameHandle,
         entry: C_NamespaceEntry?,
         tags: List<C_NamespaceMemberTag>,
+        langVersion: R_LangVersion?,
     ): C_NameNode {
-        val elem = entry?.element(tags)
+        val elem = entry?.element(langVersion, tags)
         return C_NameNode(valid = entry != null, nameHand = name, elem = elem)
     }
 }

@@ -75,7 +75,7 @@ class S_UpdateTarget_Simple(
     }
 
     private fun compileFromEntity(ctx: C_ExprContext, atExprId: R_AtExprId, from: S_UpdateFromItem): C_AtEntity? {
-        val explicitAliasHand = from.alias?.compile(ctx)
+        val explicitAliasHand = from.alias?.compile(ctx, def = true)
         val entityNameHand = from.entityName.compile(ctx.symCtx)
 
         val entity = ctx.nsCtx.getEntity(entityNameHand)
@@ -232,7 +232,7 @@ class S_UpdateStatement(pos: S_Pos, val target: S_UpdateTarget, val what: List<S
             subValues: MutableList<V_Expr>
     ): List<R_UpdateStatementWhat> {
         val args = what.mapIndexed { i, w ->
-            val nameHand = w.name?.compile(ctx)
+            val nameHand = w.name?.compile(ctx, def = true)
             if (nameHand != null) {
                 val ideInfo = entity.attributes[nameHand.rName]?.ideInfo ?: C_IdeSymbolInfo.UNKNOWN
                 nameHand.setIdeInfo(ideInfo)
@@ -251,7 +251,8 @@ class S_UpdateStatement(pos: S_Pos, val target: S_UpdateTarget, val what: List<S
         val updAttrs = attrs.mapNotNull { (arg, attr) ->
             val w = what[arg.index]
             val op = if (w.op == null) S_AssignOp_Eq else w.op.op
-            op.compileDbUpdate(ctx, w.pos, atEntity, attr, arg.vExpr)
+            val opCtx = C_BinOpContext(ctx, w.pos)
+            op.compileDbUpdate(opCtx, atEntity, attr, arg.vExpr)
         }.toImmList()
 
         return updAttrs

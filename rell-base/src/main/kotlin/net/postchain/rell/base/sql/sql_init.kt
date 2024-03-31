@@ -6,6 +6,7 @@ package net.postchain.rell.base.sql
 
 import mu.KLogger
 import mu.KLogging
+import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.model.R_KeyIndex
 import net.postchain.rell.base.model.R_ObjectDefinition
@@ -25,13 +26,13 @@ private val ORD_TABLES = SqlInitStepOrder.TABLES
 private val ORD_RECORDS = SqlInitStepOrder.RECORDS
 
 class SqlInitLogging(
-        val header: Boolean = false,
-        val plan: Boolean = false,
-        val planEmptyDb: Boolean = false,
-        val step: Boolean = false,
-        val stepEmptyDb: Boolean = false,
-        val metaNoCode: Boolean = false,
-        val allOther: Boolean = false
+    val header: Boolean = false,
+    val plan: Boolean = false,
+    val planEmptyDb: Boolean = false,
+    val step: Boolean = false,
+    val stepEmptyDb: Boolean = false,
+    val metaNoCode: Boolean = false,
+    val allOther: Boolean = false,
 ) {
     companion object {
         const val LOG_NONE = 0
@@ -43,13 +44,13 @@ class SqlInitLogging(
         const val LOG_ALL = Integer.MAX_VALUE
 
         fun ofLevel(level: Int) = SqlInitLogging(
-                header = level >= LOG_HEADER,
-                plan = level >= LOG_PLAN_COMPLEX,
-                planEmptyDb = level >= LOG_PLAN_SIMPLE,
-                step = level >= LOG_STEP_COMPLEX,
-                stepEmptyDb = level >= LOG_STEP_SIMPLE,
-                metaNoCode = level > LOG_NONE,
-                allOther = level >= LOG_ALL
+            header = level >= LOG_HEADER,
+            plan = level >= LOG_PLAN_COMPLEX,
+            planEmptyDb = level >= LOG_PLAN_SIMPLE,
+            step = level >= LOG_STEP_COMPLEX,
+            stepEmptyDb = level >= LOG_STEP_SIMPLE,
+            metaNoCode = level > LOG_NONE,
+            allOther = level >= LOG_ALL,
         )
     }
 }
@@ -126,7 +127,10 @@ class SqlInit private constructor(
     }
 }
 
-private class SqlInitPlanner private constructor(private val exeCtx: Rt_ExecutionContext, private val initCtx: SqlInitCtx) {
+private class SqlInitPlanner private constructor(
+    private val exeCtx: Rt_ExecutionContext,
+    private val initCtx: SqlInitCtx,
+) {
     private val sqlCtx = exeCtx.sqlCtx
     private val mapping = sqlCtx.mainChainMapping()
 
@@ -182,10 +186,10 @@ private class SqlInitPlanner private constructor(private val exeCtx: Rt_Executio
 }
 
 private class SqlEntityIniter private constructor(
-        private val exeCtx: Rt_ExecutionContext,
-        private val initCtx: SqlInitCtx,
-        private val metaData: Map<String, MetaEntity>,
-        private val sqlTables: Map<String, SqlTable>
+    private val exeCtx: Rt_ExecutionContext,
+    private val initCtx: SqlInitCtx,
+    private val metaData: Map<String, MetaEntity>,
+    private val sqlTables: Map<String, SqlTable>,
 ) {
     private val sqlCtx = exeCtx.sqlCtx
 
@@ -326,6 +330,10 @@ private class SqlEntityIniter private constructor(
         val entityName = msgEntityName(entity)
         val res = mutableListOf<R_CreateExprAttr>()
 
+        val keys = entity.keys.flatMap { it.attribs }.map { it.str }.toSet()
+        val indexes = entity.indexes.flatMap { it.attribs }.map { it.str }.toSet()
+        val keyIndexChangesEnabled = KEY_INDEX_CHANGE_SWITCH.isActive(exeCtx.globalCtx.compilerOptions)
+
         for (name in newAttrs) {
             val attr = entity.strAttributes.getValue(name)
 
@@ -334,7 +342,16 @@ private class SqlEntityIniter private constructor(
                 res.add(R_CreateExprAttr(attr, expr))
             } else {
                 initCtx.msgs.error("meta:attr:new_no_def_value:${entity.metaName}:$name",
-                        "New attribute '$name' of entity $entityName has no default value")
+                    "New attribute '$name' of entity $entityName has no default value")
+            }
+
+            if (!keyIndexChangesEnabled && name in keys) {
+                initCtx.msgs.error("meta:attr:new_key:${entity.metaName}:$name",
+                    "New attribute '$name' of entity $entityName is a key, adding key attributes not supported")
+            }
+            if (!keyIndexChangesEnabled && name in indexes) {
+                initCtx.msgs.error("meta:attr:new_index:${entity.metaName}:$name",
+                    "New attribute '$name' of entity $entityName is an index, adding index attributes not supported")
             }
         }
 
@@ -371,6 +388,7 @@ private class SqlEntityIniter private constructor(
                 val sql = "ALTER TABLE \"${tableName}\" DROP CONSTRAINT \"${sqlKey.name}\";"
                 val msg = "Drop key of entity $entityName: ${sqlKey.name} ${sqlKey.cols}"
                 initCtx.step(ORD_RECORDS, msg, SqlStepAction_ExecSql(sql))
+                processIndexDiff(entity, sqlKey.cols, "key", "database", "code")
             }
         }
 
@@ -379,6 +397,7 @@ private class SqlEntityIniter private constructor(
                 val sql = "DROP INDEX \"${sqlIndex.name}\";"
                 val msg = "Drop index of entity $entityName: ${sqlIndex.name} ${sqlIndex.cols}"
                 initCtx.step(ORD_RECORDS, msg, SqlStepAction_ExecSql(sql))
+                processIndexDiff(entity, sqlIndex.cols, "index", "database", "code")
             }
         }
     }
@@ -398,6 +417,7 @@ private class SqlEntityIniter private constructor(
                 val sql = SqlGen.genCreateKeySql(tableName, rKey, keyNameGen)
                 val msg = "Create key of entity $entityName: ${rKey.attribs}"
                 initCtx.step(ORD_RECORDS, msg, SqlStepAction_ExecSql(sql))
+                processIndexDiff(entity, rKey.strAttribs, "key", "code", "database")
             }
         }
 
@@ -407,7 +427,23 @@ private class SqlEntityIniter private constructor(
                 val sql = SqlGen.genCreateIndexSql(entity, tableName, rIndex, indexNameGen)
                 val msg = "Create index of entity $entityName: ${rIndex.attribs}"
                 initCtx.step(ORD_RECORDS, msg, SqlStepAction_ExecSql(sql))
+                processIndexDiff(entity, rIndex.strAttribs, "index", "code", "database")
             }
+        }
+    }
+
+    private fun processIndexDiff(
+        entity: R_EntityDefinition,
+        cols: List<String>,
+        indexType: String,
+        place1: String,
+        place2: String,
+    ) {
+        if (!KEY_INDEX_CHANGE_SWITCH.isActive(exeCtx.globalCtx.compilerOptions)) {
+            val entityName = msgEntityName(entity)
+            val colsShort = cols.joinToString(",")
+            initCtx.msgs.error("dbinit:index_diff:${entity.metaName}:$place1:$indexType:$colsShort",
+                "Entity $entityName: $indexType $cols exists in $place1, but not in $place2")
         }
     }
 
@@ -423,11 +459,13 @@ private class SqlEntityIniter private constructor(
     }
 
     companion object {
+        private val KEY_INDEX_CHANGE_SWITCH = C_FeatureSwitch("0.13.9")
+
         fun processEntities(
-                exeCtx: Rt_ExecutionContext,
-                initCtx: SqlInitCtx,
-                metaData: Map<String, MetaEntity>,
-                sqlTables: Map<String, SqlTable>
+            exeCtx: Rt_ExecutionContext,
+            initCtx: SqlInitCtx,
+            metaData: Map<String, MetaEntity>,
+            sqlTables: Map<String, SqlTable>,
         ) {
             val obj = SqlEntityIniter(exeCtx, initCtx, metaData, sqlTables)
             obj.processEntities()

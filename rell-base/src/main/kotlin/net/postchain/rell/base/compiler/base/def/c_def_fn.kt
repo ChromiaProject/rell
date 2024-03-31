@@ -156,8 +156,8 @@ class C_UserFunctionBody(
 }
 
 class C_RegularUserGlobalFunction(
-        rFunction: R_FunctionDefinition,
-        private val abstractDescriptor: C_AbstractFunctionDescriptor?,
+    rFunction: R_FunctionDefinition,
+    private val abstractDescriptor: C_AbstractFunctionDescriptor?,
 ): C_UserGlobalFunction(rFunction) {
     override fun getAbstractDescriptor() = abstractDescriptor
 

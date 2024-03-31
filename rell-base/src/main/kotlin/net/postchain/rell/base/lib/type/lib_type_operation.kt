@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.type
@@ -17,7 +17,7 @@ import net.postchain.rell.base.utils.doc.DocCode
 
 object Lib_Type_Operation {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("operation", abstract = true, hidden = true) {
+        type("operation", abstract = true, hidden = true, since = "0.10.4") {
             supertypeStrategySpecial { mType ->
                 val rType = L_TypeUtils.getRType(mType)
                 rType is R_OperationType

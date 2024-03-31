@@ -19,14 +19,14 @@ object Lib_Test_BlockClock {
 
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell.test") {
-            constant("DEFAULT_FIRST_BLOCK_TIME", DEFAULT_FIRST_BLOCK_TIME) {
+            constant("DEFAULT_FIRST_BLOCK_TIME", DEFAULT_FIRST_BLOCK_TIME, since = "0.13.3") {
                 comment("Timestamp in milliseconds of the first block by default. (2020-01-01 00:00:00 UTC)")
             }
-            constant("DEFAULT_BLOCK_INTERVAL", DEFAULT_BLOCK_INTERVAL) {
+            constant("DEFAULT_BLOCK_INTERVAL", DEFAULT_BLOCK_INTERVAL, since = "0.13.3") {
                 comment("Default time interval in milliseconds between each block. (10 seconds)")
             }
 
-            property("last_block_time", type = "timestamp") {
+            property("last_block_time", type = "timestamp", since = "0.13.3") {
                 comment("Timestamp in milliseconds of the previous block. Read will fail if no block has been built.")
                 value { ctx ->
                     val t0 = ctx.exeCtx.testBlockClock.getLastBlockTime()
@@ -37,7 +37,7 @@ object Lib_Test_BlockClock {
                 }
             }
 
-            property("last_block_time_or_null", type = "timestamp?") {
+            property("last_block_time_or_null", type = "timestamp?", since = "0.13.3") {
                 comment("Timestamp in milliseconds of the previous block or `null` if no block has been built.")
                 value { ctx ->
                     val t = ctx.exeCtx.testBlockClock.getLastBlockTime()
@@ -45,7 +45,7 @@ object Lib_Test_BlockClock {
                 }
             }
 
-            property("next_block_time", type = "timestamp") {
+            property("next_block_time", type = "timestamp", since = "0.13.3") {
                 comment("Timestamp in milliseconds which will be used for the next block.")
                 value { ctx ->
                     val t = ctx.exeCtx.testBlockClock.getNextBlockTime()
@@ -53,7 +53,7 @@ object Lib_Test_BlockClock {
                 }
             }
 
-            property("block_interval", type = "timestamp") {
+            property("block_interval", type = "timestamp", since = "0.13.3") {
                 comment("Time interval in milliseconds between current block and next block to be used.")
                 value { ctx ->
                     val t = ctx.exeCtx.testBlockClock.getBlockInterval()
@@ -61,7 +61,7 @@ object Lib_Test_BlockClock {
                 }
             }
 
-            function("set_block_interval", result = "integer") {
+            function("set_block_interval", result = "integer", since = "0.13.3") {
                 comment("""
                     Set the time interval in milliseconds between current block and the next one.
                     This property is not respected if a timestamp has been explicitly set by calling
@@ -76,7 +76,7 @@ object Lib_Test_BlockClock {
                 }
             }
 
-            function("set_next_block_time", result = "unit") {
+            function("set_next_block_time", result = "unit", since = "0.13.3") {
                 comment("Explicitly set the timestamp in milliseconds to use on the next block.")
                 param(name = "time", type = "timestamp", comment = "timestamp to use on next block")
                 bodyContext { ctx, a ->
@@ -85,7 +85,7 @@ object Lib_Test_BlockClock {
                 }
             }
 
-            function("set_next_block_time_delta", result = "unit") {
+            function("set_next_block_time_delta", result = "unit", since = "0.13.3") {
                 comment("""
                     Explicitly set the timestamp in milliseconds to use on next block by specifying a time delay from the last block.
                 """)
@@ -162,12 +162,6 @@ class Rt_TestBlockClock(state: State = DEFAULT_STATE) {
                         "Block time must be newer than the last time (last: $last, next: $time)"
             }
         }
-    }
-
-    fun moveNextBlockTime(diff: Long) {
-        val next = getNextBlockTime()
-        val newNext = checkedAdd(next, diff)
-        setNextBlockTime(newNext)
     }
 
     private fun checkedAdd(a: Long, b: Long): Long {

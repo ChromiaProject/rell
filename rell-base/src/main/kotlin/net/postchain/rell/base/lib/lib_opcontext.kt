@@ -18,7 +18,8 @@ import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
-import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.Rt_CallContext
+import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.LazyString
 import net.postchain.rell.base.utils.toBytes
 
@@ -34,25 +35,25 @@ object Lib_OpContext {
     private val GET_SIGNERS_RETURN_TYPE: R_Type = R_ListType(R_ByteArrayType)
 
     val NAMESPACE = Ld_NamespaceDsl.make {
-        struct("gtx_operation") {
+        struct("gtx_operation", since = "0.10.4") {
             attribute("name", type = "text")
             attribute("args", type = "list<gtv>")
         }
 
-        struct("gtx_transaction_body") {
+        struct("gtx_transaction_body", since = "0.10.4") {
             attribute("blockchain_rid", type = "byte_array")
             attribute("operations", type = "list<gtx_operation>")
             attribute("signers", type = "list<gtv>")
         }
 
-        struct("gtx_transaction") {
+        struct("gtx_transaction", since = "0.10.4") {
             attribute("body", type = "gtx_transaction_body")
             attribute("signatures", type = "list<gtv>")
         }
 
         // When turning deprecated warning into error in the future, keep backwards-compatibility (version-dependent behavior) -
         // the function is used in existing code.
-        function("is_signer", result = "boolean") {
+        function("is_signer", result = "boolean", since = "0.6.0") {
             deprecated(newName = "op_context.is_signer", error = false)
             param("pubkey", type = "byte_array")
             validate { ctx -> checkCtx(ctx.exprCtx, ctx.callPos, allowTest = true) }
@@ -63,10 +64,10 @@ object Lib_OpContext {
             }
         }
 
-        namespace("op_context") {
-            extension( "struct_op_ext", type = "mirror_struct<-operation>") {
-                function("to_gtx_operation", "gtx_operation") {
-                    comment( """
+        namespace("op_context", since = "0.7.0") {
+            extension("struct_op_ext", type = "mirror_struct<-operation>", since = "0.10.4") {
+                function("to_gtx_operation", "gtx_operation", since = "0.13.4") {
+                    comment("""
                         Converts a mirror struct representing an operation to a `gtx_operation`.
                         The mirror struct should contain the mount name and arguments of the operation.
                     """)
@@ -81,7 +82,7 @@ object Lib_OpContext {
                 }
             }
 
-            property( "exists", type = "boolean", pure = false) {
+            property("exists", type = "boolean", pure = false, since = "0.11.0") {
                 comment("Indicates whether the code is being called from an operation.")
                 value { ctx ->
                     val v = ctx.exeCtx.opCtx.exists()
@@ -89,7 +90,7 @@ object Lib_OpContext {
                 }
             }
 
-            property( "last_block_time", type = "integer", pure = false) {
+            property("last_block_time", type = "integer", pure = false, since = "0.6.1") {
                 comment("Returns the timestamp of the last block in milliseconds.")
                 validate(::checkCtx)
                 value { ctx ->
@@ -97,7 +98,7 @@ object Lib_OpContext {
                 }
             }
 
-            property( "block_height", type = "integer", pure = false) {
+            property("block_height", type = "integer", pure = false, since = "0.9.0") {
                 comment("Provides the height of the block currently being built.")
                 validate(::checkCtx)
                 value { ctx ->
@@ -105,7 +106,7 @@ object Lib_OpContext {
                 }
             }
 
-            property("op_index", type = "integer", pure = false) {
+            property("op_index", type = "integer", pure = false, since = "0.10.4") {
                 comment("Indicates the index of the operation being executed within the transaction.")
                 validate(::checkCtx)
                 value { ctx ->
@@ -113,9 +114,9 @@ object Lib_OpContext {
                 }
             }
 
-            property("transaction", PropTransaction)
+            property("transaction", PropTransaction, since = "0.7.0")
 
-            function("get_signers", result = "list<byte_array>") {
+            function("get_signers", result = "list<byte_array>", since = "0.10.4") {
                 comment("Returns a list of pubkeys representing the signers of the current transaction.")
                 validate(::checkCtx)
                 bodyContext { ctx ->
@@ -125,7 +126,7 @@ object Lib_OpContext {
                 }
             }
 
-            function("is_signer", result = "boolean") {
+            function("is_signer", result = "boolean", since = "0.10.4") {
                 comment("Checks if the provided public key is one of the signers of the current transaction.")
                 param("pubkey", type = "byte_array", comment = "The public key to check.")
                 validate(::checkCtx)
@@ -136,8 +137,8 @@ object Lib_OpContext {
                 }
             }
 
-            function("get_all_operations", result = "list<gtx_operation>") {
-                comment( """
+            function("get_all_operations", result = "list<gtx_operation>", since = "0.10.4") {
+                comment("""
                     Gets all operations in this transaction.
                     @returns a list of all operations within the current transaction.
                 """)
@@ -148,7 +149,7 @@ object Lib_OpContext {
                 }
             }
 
-            function("get_current_operation", result = "gtx_operation") {
+            function("get_current_operation", result = "gtx_operation", since = "0.13.3") {
                 comment("Retrieves the current operation.")
                 validate(::checkCtx)
                 bodyContext { ctx ->
@@ -156,7 +157,7 @@ object Lib_OpContext {
                 }
             }
 
-            function("emit_event", result = "unit") {
+            function("emit_event", result = "unit", since = "0.10.4") {
                 comment("Emits an event with the provided type and data.")
                 param("type", type = "text", comment = "Name of the event to emit.")
                 param("data", type = "gtv", comment = "Data to emit")

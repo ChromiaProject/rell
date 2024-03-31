@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.modifier
@@ -191,7 +191,7 @@ private class C_FixedModifierValues_Impl(
     }
 
     override fun compileAnnotation(ctx: C_ModifierContext, name: S_Name, args: List<C_AnnotationArg>): DocModifier {
-        val nameHand = name.compile(ctx)
+        val nameHand = name.compile(ctx.symCtx)
 
         val key = C_ModifierKey_Annotation.of(nameHand.rName)
         val link = C_ModifierLink(key, nameHand.name, target)

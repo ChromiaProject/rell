@@ -1,15 +1,17 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.namespace
 
-import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.C_Expr
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
+import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
+import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDefinition
@@ -51,6 +53,7 @@ class C_Deprecated(
 enum class C_DeclarationType(val msg: String, val article: String = "a") {
     MODULE("module"),
     NAMESPACE("namespace"),
+    ALIAS("alias", "an"),
     TYPE("type"),
     ENTITY("entity", "an"),
     STRUCT("struct"),
@@ -62,12 +65,14 @@ enum class C_DeclarationType(val msg: String, val article: String = "a") {
     IMPORT("import", "an"),
     CONSTANT("constant"),
     PROPERTY("property"),
+    CONSTRUCTOR("constructor"),
+    ATTRIBUTE("attribute", "an"),
+    PARAMETER("parameter"),
+    ANNOTATION("annotation"),
     ;
 
-    val capitalizedMsg = msg.capitalize()
+    val capitalizedMsg = msg.capitalizeEx()
 }
-
-class C_DefDeprecation(val defName: C_DefinitionName, val deprecated: C_Deprecated)
 
 class C_NamespaceElement(
     val item: C_NamespaceItem,
@@ -77,30 +82,24 @@ class C_NamespaceElement(
 
     val member: C_NamespaceMember = item.member
 
-    fun access(msgCtx: C_MessageContext, nameFn: () -> C_QualifiedName) {
+    fun access(msgCtx: C_MessageContext, lazyName: LazyPosString) {
         if (allItems.size > 1) {
-            val qName = nameFn()
-            val qNameStr = qName.str()
+            val nameStr = lazyName.str
             val listCodeMsg = allItems.map {
                 val declType = it.member.declarationType()
                 val defName = it.member.defName.appLevelName
-                "$declType:$defName" toCodeMsg "${declType.msg} $defName"
+                "$declType:[$defName]" toCodeMsg "${declType.msg} '$defName'"
             }
             val listCode = listCodeMsg.joinToString(",") { it.code }
             val listMsg = listCodeMsg.joinToString { it.msg }
-            msgCtx.error(qName.last.pos, "namespace:ambig:$qNameStr:[$listCode]", "Name '$qNameStr' is ambiguous: $listMsg")
+            msgCtx.error(lazyName.pos, "namespace:ambig:$nameStr:[$listCode]", "Name '$nameStr' is ambiguous: $listMsg")
         }
 
-        val deprecation = item.deprecation
-        if (deprecation != null) {
-            val qName = nameFn()
-            val nameStr = deprecation.defName.qualifiedName.str()
-            deprecatedMessage(msgCtx, qName.last.pos, nameStr, member.declarationType(), deprecation.deprecated)
-        }
+        item.access(msgCtx, lazyName)
     }
 
-    fun toExprMember(ctx: C_ExprContext, qName: C_QualifiedName, ideInfoHand: C_IdeSymbolInfoHandle): C_Expr {
-        access(ctx.msgCtx) { qName }
+    fun toExpr(ctx: C_ExprContext, qName: C_QualifiedName, ideInfoHand: C_IdeSymbolInfoHandle): C_Expr {
+        access(ctx.msgCtx, qName.toLazyPosString())
 
         val ideInfoPtr = C_UniqueDefaultIdeInfoPtr(ideInfoHand, item.ideInfo)
         val expr = member.toExpr(ctx, qName, ideInfoPtr)
@@ -111,27 +110,6 @@ class C_NamespaceElement(
 
         return expr
     }
-
-    companion object {
-        fun deprecatedMessage(
-            msgCtx: C_MessageContext,
-            pos: S_Pos,
-            nameMsg: String,
-            declarationType: C_DeclarationType,
-            deprecated: C_Deprecated,
-        ) {
-            val typeStr = declarationType.msg.capitalize()
-            val depCode = deprecated.detailsCode()
-            val depStr = deprecated.detailsMessage()
-            val code = "deprecated:$declarationType:[$nameMsg]$depCode"
-            val msg = "$typeStr '$nameMsg' is deprecated$depStr"
-
-            val error = deprecated.error || msgCtx.globalCtx.compilerOptions.deprecatedError
-            val msgType = if (error) C_MessageType.ERROR else C_MessageType.WARNING
-
-            msgCtx.message(msgType, pos, code, msg)
-        }
-    }
 }
 
 // This class is needed to override IDE info. Exact import alias must have different IDE info than the referenced
@@ -139,12 +117,16 @@ class C_NamespaceElement(
 class C_NamespaceItem(
     val member: C_NamespaceMember,
     val ideInfo: C_IdeSymbolInfo = member.ideInfo,
-    val deprecation: C_DefDeprecation? = member.deprecation,
+    private val restrictions: C_MemberRestrictions = member.restrictions,
 ): DocDefinition {
     override val docSymbol: DocSymbol get() = ideInfo.getIdeInfo().doc ?: DocSymbol.NONE
 
     override fun getDocMember(name: String): DocDefinition? {
         return member.getDocMember(name)
+    }
+
+    fun access(msgCtx: C_MessageContext, lazyName: LazyPosString) {
+        restrictions.access(msgCtx, lazyName.pos)
     }
 }
 
@@ -163,23 +145,27 @@ class C_NamespaceEntry(
         return directItems.any { it.member.hasTag(tags) } || importItems.any { it.member.hasTag(tags) }
     }
 
-    fun element(tag: C_NamespaceMemberTag): C_NamespaceElement {
-        return element(immListOf(tag))
+    fun element(langVersion: R_LangVersion?, tags: List<C_NamespaceMemberTag> = immListOf()): C_NamespaceElement {
+        return element0(langVersion, tags) ?: element0(langVersion, immListOf())!!
     }
 
-    fun element(tags: List<C_NamespaceMemberTag> = immListOf()): C_NamespaceElement {
-        return element0(tags) ?: element0(immListOf())!!
-    }
-
-    private fun element0(tags: List<C_NamespaceMemberTag>): C_NamespaceElement? {
-        val items = directItems.filter { it.member.hasTag(tags) }
+    private fun element0(langVersion: R_LangVersion?, tags: List<C_NamespaceMemberTag>): C_NamespaceElement? {
+        var items = directItems.filter { it.member.hasTag(tags) }
             .ifEmpty { importItems.filter { it.member.hasTag(tags) } }
-            .toSet().toImmList()
+
+        if (UNIQUE_ITEMS_SWITCH.isActive(langVersion)) {
+            items = items.toSet().toImmList()
+        }
+
         return when {
             items.isEmpty() -> null
             items.size == 1 -> C_NamespaceElement(items[0], immListOf())
             else -> C_NamespaceElement(items[0], items)
         }
+    }
+
+    companion object {
+        private val UNIQUE_ITEMS_SWITCH = C_FeatureSwitch("0.13.5")
     }
 }
 
@@ -187,9 +173,13 @@ sealed class C_Namespace {
     abstract fun getEntries(): Map<R_Name, C_NamespaceEntry>
     abstract fun getEntry(name: R_Name): C_NamespaceEntry?
 
-    fun getElement(name: R_Name, tags: List<C_NamespaceMemberTag> = immListOf()): C_NamespaceElement? {
+    fun getElement(
+        name: R_Name,
+        langVersion: R_LangVersion?,
+        tags: List<C_NamespaceMemberTag> = immListOf(),
+    ): C_NamespaceElement? {
         val entry = getEntry(name)
-        return entry?.element(tags)
+        return entry?.element(langVersion, tags)
     }
 
     companion object {

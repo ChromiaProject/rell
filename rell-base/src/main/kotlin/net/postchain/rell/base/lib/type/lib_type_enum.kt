@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.lib.type
 
+import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.compiler.base.lib.C_TypeStaticMember
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty_RtValue
@@ -16,17 +17,17 @@ import net.postchain.rell.base.utils.toImmList
 
 object Lib_Type_Enum {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("enum", abstract = true, hidden = true) {
+        type("enum", abstract = true, hidden = true, since = "0.7.0") {
             supertypeStrategySpecial { mType ->
                 L_TypeUtils.getRType(mType) is R_EnumType
             }
         }
 
         namespace("rell") {
-            extension("enum_ext", type = "T") {
+            extension("enum_ext", type = "T", since = "0.7.0") {
                 generic("T", subOf = "enum")
 
-                property("name", type = "text", pure = true) {
+                property("name", type = "text", pure = true, since = "0.7.0") {
                     comment("Gets the name of the enum value.")
                     value { a ->
                         val attr = a.asEnum()
@@ -35,7 +36,7 @@ object Lib_Type_Enum {
                 }
 
                 // Db-function is effectively a no-op, as enums are represented by their numeric values on SQL level.
-                property("value", type = "integer", body = C_SysFunctionBody.simple(
+                property("value", type = "integer", since = "0.7.0", body = C_SysFunctionBody.simple(
                     pure = true,
                     dbFn = Db_SysFunction.template("enum_value", 1, "(#0)")
                 ) { a ->
@@ -45,7 +46,7 @@ object Lib_Type_Enum {
                     comment("Gets the numeric value of the enum.")
                 }
 
-                staticFunction("values", result = "list<T>", pure = true) {
+                staticFunction("values", result = "list<T>", pure = true, since = "0.7.0") {
                     comment("Gets all values of the enum.")
                     bodyMeta {
                         val listType = fnBodyMeta.rResultType as R_ListType
@@ -59,7 +60,7 @@ object Lib_Type_Enum {
                     }
                 }
 
-                staticFunction("value", result = "T", pure = true) {
+                staticFunction("value", result = "T", pure = true, since = "0.7.0") {
                     comment("Gets the enum value by name. Fails if `name` is not found.")
                     param("name", type = "text", comment = "The name of the enum value.")
                     bodyMeta {
@@ -79,7 +80,7 @@ object Lib_Type_Enum {
                     }
                 }
 
-                staticFunction("value", result = "T", pure = true) {
+                staticFunction("value", result = "T", pure = true, since = "0.7.0") {
                     comment("Gets the enum value by ordinal value. Fails if the ordinal is not found.")
                     param("value", type = "integer", comment = "The ordinal value of the enum to get.")
                     bodyMeta {
@@ -108,7 +109,8 @@ object Lib_Type_Enum {
             .map { attr ->
                 val defName = defPath.subName(attr.rName)
                 val prop = C_NamespaceProperty_RtValue(type.getValue(attr))
-                C_TypeStaticMember.makeProperty(defName, attr.rName, prop, type, attr.ideInfo)
+                val restrictions = C_MemberRestrictions.NULL
+                C_TypeStaticMember.makeProperty(defName, attr.rName, prop, type, attr.ideInfo, restrictions)
             }
             .toImmList()
     }

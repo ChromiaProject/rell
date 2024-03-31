@@ -15,7 +15,7 @@ import net.postchain.rell.base.utils.immListOf
 
 object Lib_TryCall {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        function("try_call", "boolean") {
+        function("try_call", "boolean", since = "0.13.0") {
             comment("""
                 Calls a function that doesn't return a value and handles exceptions gracefully.
                 @returns `true` if call succeeds, `false` otherwise.
@@ -26,7 +26,7 @@ object Lib_TryCall {
             }
         }
 
-        function("try_call", result = "T?") {
+        function("try_call", result = "T?", since = "0.13.0") {
             comment("""
                 Calls a function and handles exceptions gracefully, returning null if an exception occurs.
                 @returns `T` if call succeeds, `null` otherwise.
@@ -38,7 +38,7 @@ object Lib_TryCall {
             }
         }
 
-        function("try_call", result = "T") {
+        function("try_call", result = "T", since = "0.13.0") {
             comment("""
                 Calls a function and handles exceptions gracefully, providing a fallback value if an exception occurs.
                 @returns `T` if call succeeds and the supplied default value otherwise.

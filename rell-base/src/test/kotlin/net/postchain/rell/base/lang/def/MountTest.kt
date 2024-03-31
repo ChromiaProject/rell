@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.def
@@ -112,6 +112,18 @@ class MountTest: BaseRellTest() {
 
         chkCompile("struct data { $name63: integer; }", "OK")
         chkCompile("struct data { $name64: integer; }", "OK")
+    }
+
+    @Test fun testNameTooLongVersionControl() {
+        val name61 = "b".repeat(61)
+        chkVerCt("entity $name61 {}", "0.12.0", "OK", "ct_err:mount:too_long:entity:60:61:$name61")
+        chkVerCt("object $name61 {}", "0.12.0", "OK", "ct_err:mount:too_long:entity:60:61:$name61")
+        chkVerCt("@mount('$name61') entity data {}", "0.12.0", "OK", "ct_err:mount:too_long:entity:60:61:$name61")
+        chkVerCt("@mount('$name61') object data {}", "0.12.0", "OK", "ct_err:mount:too_long:entity:60:61:$name61")
+
+        val name64 = "b".repeat(64)
+        chkVerCt("entity data { $name64: integer; }", "0.12.0", "OK", "ct_err:mount:too_long:attr:63:64:$name64")
+        chkVerCt("object data { $name64: integer = 0; }", "0.12.0", "OK", "ct_err:mount:too_long:attr:63:64:$name64")
     }
 
     @Test fun testOperation() {

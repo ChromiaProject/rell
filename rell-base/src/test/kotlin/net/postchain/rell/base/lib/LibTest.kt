@@ -98,25 +98,25 @@ class LibTest: BaseRellTest(false) {
     @Test fun testDeprecatedError() {
         tst.deprecatedError = true
 
-        chkCompile("function f(v: GTXValue){}", "ct_err:deprecated:TYPE:[GTXValue]:gtv")
-        chkCompile("function f(v: list<GTXValue>){}", "ct_err:deprecated:TYPE:[GTXValue]:gtv")
-        chkCompile("struct rec { v: GTXValue; }", "ct_err:deprecated:TYPE:[GTXValue]:gtv")
-        chkCompile("struct rec { v: list<GTXValue>; }", "ct_err:deprecated:TYPE:[GTXValue]:gtv")
-        chkCompile("struct rec { v: map<text,GTXValue>; }", "ct_err:deprecated:TYPE:[GTXValue]:gtv")
-        chkCompile("struct rec { v: map<text,list<GTXValue?>>?; }", "ct_err:deprecated:TYPE:[GTXValue]:gtv")
+        chkCompile("function f(v: GTXValue){}", "ct_err:deprecated:ALIAS:[rell:GTXValue]:gtv")
+        chkCompile("function f(v: list<GTXValue>){}", "ct_err:deprecated:ALIAS:[rell:GTXValue]:gtv")
+        chkCompile("struct rec { v: GTXValue; }", "ct_err:deprecated:ALIAS:[rell:GTXValue]:gtv")
+        chkCompile("struct rec { v: list<GTXValue>; }", "ct_err:deprecated:ALIAS:[rell:GTXValue]:gtv")
+        chkCompile("struct rec { v: map<text,GTXValue>; }", "ct_err:deprecated:ALIAS:[rell:GTXValue]:gtv")
+        chkCompile("struct rec { v: map<text,list<GTXValue?>>?; }", "ct_err:deprecated:ALIAS:[rell:GTXValue]:gtv")
 
-        chkCompile("function f() { GTXValue.from_bytes(x''); }", "ct_err:deprecated:TYPE:[GTXValue]:gtv")
-        chkCompile("function f() { GTXValue.from_json(''); }", "ct_err:deprecated:TYPE:[GTXValue]:gtv")
+        chkCompile("function f() { GTXValue.from_bytes(x''); }", "ct_err:deprecated:ALIAS:[rell:GTXValue]:gtv")
+        chkCompile("function f() { GTXValue.from_json(''); }", "ct_err:deprecated:ALIAS:[rell:GTXValue]:gtv")
     }
 
     @Test fun testDeprecatedDefaultMode() {
-        chkCompile("function f(v: GTXValue){}", "ct_err:deprecated:TYPE:[GTXValue]:gtv")
-        chkCompile("struct rec { v: list<GTXValue>; }", "ct_err:deprecated:TYPE:[GTXValue]:gtv")
-        chkCompile("function f() { GTXValue.from_bytes(x''); }", "ct_err:deprecated:TYPE:[GTXValue]:gtv")
+        chkCompile("function f(v: GTXValue){}", "ct_err:deprecated:ALIAS:[rell:GTXValue]:gtv")
+        chkCompile("struct rec { v: list<GTXValue>; }", "ct_err:deprecated:ALIAS:[rell:GTXValue]:gtv")
+        chkCompile("function f() { GTXValue.from_bytes(x''); }", "ct_err:deprecated:ALIAS:[rell:GTXValue]:gtv")
 
         chkWarn()
         chkFn("= is_signer(x'1234');", "boolean[false]")
-        chkWarn("deprecated:FUNCTION:[is_signer]:op_context.is_signer")
+        chkWarn("deprecated:FUNCTION:[rell:is_signer]:op_context.is_signer")
 
         chkFn("= op_context.is_signer(x'1234');", "boolean[false]")
         chkWarn()
@@ -126,70 +126,69 @@ class LibTest: BaseRellTest(false) {
         tst.deprecatedError = true
 
         chkCompile("function f(x: integer?) { requireNotEmpty(x); }",
-                "ct_err:deprecated:FUNCTION:[requireNotEmpty]:require_not_empty")
+                "ct_err:deprecated:ALIAS:[rell:requireNotEmpty]:require_not_empty")
 
         chk("empty(_nullable_int(123))", "boolean[false]")
 
-        chk("byte_array([1,2,3,4])", "ct_err:deprecated:FUNCTION:[byte_array]:byte_array.from_list")
+        chk("byte_array([1,2,3,4])", "ct_err:deprecated:CONSTRUCTOR:[rell:byte_array]:byte_array.from_list")
         chk("byte_array('1234')", "byte_array[1234]")
-        chk("x'1234'.len()", "ct_err:deprecated:FUNCTION:[byte_array.len]:size")
-        chk("x'1234'.decode()", "ct_err:deprecated:FUNCTION:[byte_array.decode]:text.from_bytes")
-        chk("x'1234'.toList()", "ct_err:deprecated:FUNCTION:[byte_array.toList]:to_list")
+        chk("x'1234'.len()", "ct_err:deprecated:ALIAS:[rell:byte_array.len]:size")
+        chk("x'1234'.decode()", "ct_err:deprecated:FUNCTION:[rell:byte_array.decode]:text.from_bytes")
+        chk("x'1234'.toList()", "ct_err:deprecated:ALIAS:[rell:byte_array.toList]:to_list")
 
-        chk("(123).hex()", "ct_err:deprecated:FUNCTION:[integer.hex]:to_hex")
-        chk("integer.parseHex('1234')", "ct_err:deprecated:FUNCTION:[integer.parseHex]:from_hex")
+        chk("(123).hex()", "ct_err:deprecated:ALIAS:[rell:integer.hex]:to_hex")
+        chk("integer.parseHex('1234')", "ct_err:deprecated:ALIAS:[rell:integer.parseHex]:from_hex")
 
-        chk("'Hello'.len()", "ct_err:deprecated:FUNCTION:[text.len]:size")
-        chk("'Hello'.upperCase()", "ct_err:deprecated:FUNCTION:[text.upperCase]:upper_case")
-        chk("'Hello'.lowerCase()", "ct_err:deprecated:FUNCTION:[text.lowerCase]:lower_case")
-        chk("'Hello'.compareTo('Bye')", "ct_err:deprecated:FUNCTION:[text.compareTo]:compare_to")
-        chk("'Hello'.startsWith('Hell')", "ct_err:deprecated:FUNCTION:[text.startsWith]:starts_with")
-        chk("'Hello'.endsWith('Hell')", "ct_err:deprecated:FUNCTION:[text.endsWith]:ends_with")
-        chk("'Hello'.charAt(3)", "ct_err:deprecated:FUNCTION:[text.charAt]:char_at")
-        chk("'Hello'.indexOf('ll')", "ct_err:deprecated:FUNCTION:[text.indexOf]:index_of")
-        chk("'Hello'.lastIndexOf('ll')", "ct_err:deprecated:FUNCTION:[text.lastIndexOf]:last_index_of")
-        chk("'Hello'.encode()", "ct_err:deprecated:FUNCTION:[text.encode]:to_bytes")
+        chk("'Hello'.len()", "ct_err:deprecated:ALIAS:[rell:text.len]:size")
+        chk("'Hello'.upperCase()", "ct_err:deprecated:ALIAS:[rell:text.upperCase]:upper_case")
+        chk("'Hello'.lowerCase()", "ct_err:deprecated:ALIAS:[rell:text.lowerCase]:lower_case")
+        chk("'Hello'.compareTo('Bye')", "ct_err:deprecated:ALIAS:[rell:text.compareTo]:compare_to")
+        chk("'Hello'.startsWith('Hell')", "ct_err:deprecated:ALIAS:[rell:text.startsWith]:starts_with")
+        chk("'Hello'.endsWith('Hell')", "ct_err:deprecated:ALIAS:[rell:text.endsWith]:ends_with")
+        chk("'Hello'.charAt(3)", "ct_err:deprecated:ALIAS:[rell:text.charAt]:char_at")
+        chk("'Hello'.indexOf('ll')", "ct_err:deprecated:ALIAS:[rell:text.indexOf]:index_of")
+        chk("'Hello'.lastIndexOf('ll')", "ct_err:deprecated:ALIAS:[rell:text.lastIndexOf]:last_index_of")
+        chk("'Hello'.encode()", "ct_err:deprecated:ALIAS:[rell:text.encode]:to_bytes")
 
-        chk("[1,2,3].indexOf(1)", "ct_err:deprecated:FUNCTION:[list<integer>.indexOf]:index_of")
-        chk("[1,2,3].removeAt(1)", "ct_err:deprecated:FUNCTION:[list<integer>.removeAt]:remove_at")
-        chk("[1,2,3].containsAll([1,3])", "ct_err:deprecated:FUNCTION:[list<integer>.containsAll]:contains_all")
-        chk("[1,2,3].removeAll([1,2])", "ct_err:deprecated:FUNCTION:[list<integer>.removeAll]:remove_all")
-        chk("[1,2,3].addAll([4,5,6])", "ct_err:deprecated:FUNCTION:[list<integer>.addAll]:add_all")
-        chk("[1,2,3].len()", "ct_err:deprecated:FUNCTION:[list<integer>.len]:size")
-        chk("[1,2,3]._set(0, 1)", "ct_err:deprecated:FUNCTION:[list<integer>._set]:set")
+        chk("[1,2,3].indexOf(1)", "ct_err:deprecated:ALIAS:[rell:list.indexOf]:index_of")
+        chk("[1,2,3].removeAt(1)", "ct_err:deprecated:ALIAS:[rell:list.removeAt]:remove_at")
+        chk("[1,2,3].containsAll([1,3])", "ct_err:deprecated:ALIAS:[rell:collection.containsAll]:contains_all")
+        chk("[1,2,3].removeAll([1,2])", "ct_err:deprecated:ALIAS:[rell:collection.removeAll]:remove_all")
+        chk("[1,2,3].addAll([4,5,6])", "ct_err:deprecated:ALIAS:[rell:collection.addAll]:add_all")
+        chk("[1,2,3].len()", "ct_err:deprecated:ALIAS:[rell:collection.len]:size")
+        chk("[1,2,3]._set(0, 1)", "ct_err:deprecated:ALIAS:[rell:list._set]:set")
 
-        chk("set([1,2,3]).containsAll([1,3])", "ct_err:deprecated:FUNCTION:[set<integer>.containsAll]:contains_all")
-        chk("set([1,2,3]).removeAll([1,2])", "ct_err:deprecated:FUNCTION:[set<integer>.removeAll]:remove_all")
-        chk("set([1,2,3]).addAll([4,5,6])", "ct_err:deprecated:FUNCTION:[set<integer>.addAll]:add_all")
-        chk("set([1,2,3]).len()", "ct_err:deprecated:FUNCTION:[set<integer>.len]:size")
+        chk("set([1,2,3]).containsAll([1,3])", "ct_err:deprecated:ALIAS:[rell:collection.containsAll]:contains_all")
+        chk("set([1,2,3]).removeAll([1,2])", "ct_err:deprecated:ALIAS:[rell:collection.removeAll]:remove_all")
+        chk("set([1,2,3]).addAll([4,5,6])", "ct_err:deprecated:ALIAS:[rell:collection.addAll]:add_all")
+        chk("set([1,2,3]).len()", "ct_err:deprecated:ALIAS:[rell:collection.len]:size")
 
-        chk("[123:'Hello'].len()", "ct_err:deprecated:FUNCTION:[map<integer,text>.len]:size")
-        chkEx("{ [123:'Hello'].putAll([456:'Bye']); return 0; }",
-            "ct_err:deprecated:FUNCTION:[map<integer,text>.putAll]:put_all")
+        chk("[123:'Hello'].len()", "ct_err:deprecated:ALIAS:[rell:map.len]:size")
+        chkEx("{ [123:'Hello'].putAll([456:'Bye']); return 0; }", "ct_err:deprecated:ALIAS:[rell:map.putAll]:put_all")
 
-        chk("(123).signum()", "ct_err:deprecated:FUNCTION:[integer.signum]:sign")
-        chk("(123.0).signum()", "ct_err:deprecated:FUNCTION:[decimal.signum]:sign")
+        chk("(123).signum()", "ct_err:deprecated:ALIAS:[rell:integer.signum]:sign")
+        chk("(123.0).signum()", "ct_err:deprecated:ALIAS:[rell:decimal.signum]:sign")
     }
 
     @Test fun testDeprecatedFunctionsGtv() {
         tst.deprecatedError = true
         def("struct rec { x: integer; }")
 
-        chk("gtv.fromBytes(x'1234')", "ct_err:deprecated:FUNCTION:[gtv.fromBytes]:from_bytes")
-        chk("gtv.fromJSON('{}')", "ct_err:deprecated:FUNCTION:[gtv.fromJSON]:from_json")
-        chk("gtv.fromJSON(json('{}'))", "ct_err:deprecated:FUNCTION:[gtv.fromJSON]:from_json")
-        chk("rec(5).to_gtv().toBytes()", "ct_err:deprecated:FUNCTION:[gtv.toBytes]:to_bytes")
-        chk("rec(5).to_gtv().toJSON()", "ct_err:deprecated:FUNCTION:[gtv.toJSON]:to_json")
+        chk("gtv.fromBytes(x'1234')", "ct_err:deprecated:ALIAS:[rell:gtv.fromBytes]:from_bytes")
+        chk("gtv.fromJSON('{}')", "ct_err:deprecated:ALIAS:[rell:gtv.fromJSON]:from_json")
+        chk("gtv.fromJSON(json('{}'))", "ct_err:deprecated:ALIAS:[rell:gtv.fromJSON]:from_json")
+        chk("rec(5).to_gtv().toBytes()", "ct_err:deprecated:ALIAS:[rell:gtv.toBytes]:to_bytes")
+        chk("rec(5).to_gtv().toJSON()", "ct_err:deprecated:ALIAS:[rell:gtv.toJSON]:to_json")
 
-        chk("rec.fromBytes(x'1234')", "ct_err:deprecated:FUNCTION:[rell.struct_ext(rec).fromBytes]:from_bytes")
+        chk("rec.fromBytes(x'1234')", "ct_err:deprecated:ALIAS:[rell:rell.struct_ext.fromBytes]:from_bytes")
         chk("rec.fromGTXValue(gtv.from_bytes(x'1234'))",
-            "ct_err:deprecated:FUNCTION:[rell.struct_ext(rec).fromGTXValue]:from_gtv")
+            "ct_err:deprecated:FUNCTION:[rell:rell.struct_ext.fromGTXValue]:from_gtv")
         chk("rec.fromPrettyGTXValue(gtv.from_bytes(x'1234'))",
-            "ct_err:deprecated:FUNCTION:[rell.struct_ext(rec).fromPrettyGTXValue]:from_gtv_pretty")
-        chk("rec(5).toBytes()", "ct_err:deprecated:FUNCTION:[rell.struct_ext(rec).toBytes]:to_bytes")
-        chk("rec(5).toGTXValue()", "ct_err:deprecated:FUNCTION:[rell.struct_ext(rec).toGTXValue]:to_gtv")
+            "ct_err:deprecated:FUNCTION:[rell:rell.struct_ext.fromPrettyGTXValue]:from_gtv_pretty")
+        chk("rec(5).toBytes()", "ct_err:deprecated:ALIAS:[rell:rell.struct_ext.toBytes]:to_bytes")
+        chk("rec(5).toGTXValue()", "ct_err:deprecated:FUNCTION:[rell:rell.struct_ext.toGTXValue]:to_gtv")
         chk("rec(5).toPrettyGTXValue()",
-            "ct_err:deprecated:FUNCTION:[rell.struct_ext(rec).toPrettyGTXValue]:to_gtv_pretty")
+            "ct_err:deprecated:FUNCTION:[rell:rell.struct_ext.toPrettyGTXValue]:to_gtv_pretty")
     }
 
     @Test fun testRellNamespaceConflict() {
@@ -200,5 +199,21 @@ class LibTest: BaseRellTest(false) {
     @Test fun testSysQueries() {
         chk("rell.get_rell_version()", "ct_err:unknown_name:[rell:rell]:get_rell_version")
         chk("rell.get_app_structure()", "ct_err:unknown_name:[rell:rell]:get_app_structure")
+    }
+
+    @Test fun testVersionProdLib() {
+        chkVerCt("function f() = crypto.eth_privkey_to_address(x'');", "0.13.5",
+            "VER:lib:FUNCTION:[rell:crypto.eth_privkey_to_address]")
+        chkVerCt("function f(m: rell.meta) {}", "0.13.5", "VER:lib:TYPE:[rell:rell.meta]")
+        chkVerCt("function f() = null.to_gtv();", "0.10.6", "VER:lib:FUNCTION:[rell:null_ext.to_gtv]")
+    }
+
+    @Test fun testVersionTestLib() {
+        tst.testLib = true
+        tst.compatibilityVer("0.11.0")
+        chkCompile("function f(m: rell.meta) {}", "ct_err:version:lib:TYPE:[rell:rell.meta]:0.13.5:0.11.0")
+        chkCompile("function f() = rell.test.DEFAULT_FIRST_BLOCK_TIME;", "OK")
+        chkCompile("function f() = rell.test.block_interval;", "OK")
+        chkCompile("function f() { rell.test.set_block_interval(0); }", "OK")
     }
 }

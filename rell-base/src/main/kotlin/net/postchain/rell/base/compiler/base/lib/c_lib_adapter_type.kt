@@ -8,6 +8,7 @@ import net.postchain.rell.base.compiler.base.core.C_DefinitionPath
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.compiler.base.def.C_GlobalFunction
 import net.postchain.rell.base.compiler.base.expr.*
+import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty_RtValue
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
@@ -61,46 +62,48 @@ object C_LibTypeAdapter {
         return when (member) {
             is L_TypeDefMember_Constant -> {
                 val m = Member_Constant(member.constant)
-                makeItem(member.constant.simpleName, member.docSymbol, null, m)
+                makeItem(member, C_DeclarationType.CONSTANT, null, m)
             }
             is L_TypeDefMember_Property -> {
                 val m = Member_Property(member.property)
-                makeItem(member.simpleName, member.docSymbol, null, m)
+                makeItem(member, C_DeclarationType.PROPERTY, null, m)
             }
             is L_TypeDefMember_Constructor -> {
                 val m = Member_Constructor(member.constructor)
-                makeItem(typeName.last, member.docSymbol, null, m)
+                makeItem(member, C_DeclarationType.CONSTRUCTOR, member.constructor.deprecated, m)
             }
             is L_TypeDefMember_SpecialConstructor -> {
                 val m = Member_SpecialConstructor(member.fn)
-                makeItem(typeName.last, member.docSymbol, null, m)
+                makeItem(member, C_DeclarationType.CONSTRUCTOR, null, m)
             }
             is L_TypeDefMember_ValueSpecialFunction -> {
                 val m = Member_ValueSpecialFunction(member.fn)
-                makeItem(member.simpleName, member.docSymbol, null, m)
+                makeItem(member, C_DeclarationType.FUNCTION, null, m)
             }
             is L_TypeDefMember_StaticSpecialFunction -> {
                 val m = Member_StaticSpecialFunction(member.fn)
-                makeItem(member.simpleName, member.docSymbol, null, m)
+                makeItem(member, C_DeclarationType.FUNCTION, null, m)
             }
             is L_TypeDefMember_Function -> {
                 val m = Member_Function(member.function)
-                makeItem(member.simpleName, member.docSymbol, member.deprecated, m)
+                makeItem(member, C_DeclarationType.FUNCTION, member.deprecated, m)
             }
             is L_TypeDefMember_Alias -> {
                 val targetItem = convertTypeMemberCached(typeName, member.targetMember, cache)
-                makeItem(member.simpleName, member.docSymbol, member.deprecated, targetItem.member)
+                makeItem(member, C_DeclarationType.ALIAS, member.deprecated, targetItem.member)
             }
         }
     }
 
     private fun makeItem(
-        simpleName: R_Name,
-        docSymbol: DocSymbol,
+        lMember: L_TypeDefMember,
+        declarationType: C_DeclarationType,
         deprecated: C_Deprecated?,
         member: Member,
     ): Item {
-        val header = C_LibTypeMemberHeader(simpleName, docSymbol, deprecated)
+        val simpleName = lMember.fullName.last
+        val restrictions = C_MemberRestrictions.makeLib(lMember, declarationType, deprecated)
+        val header = C_LibTypeMemberHeader(simpleName, lMember.docSymbol, restrictions)
         return Item(header, member)
     }
 
@@ -177,15 +180,15 @@ private object C_LibTypeAdapterInternal {
         naming: C_MemberNaming,
     ): C_LibGlobalFunction? {
         val cases = constructorsToCases(lTypeDef, constructors, typeParams, mSpecificType, naming)
-        return if (cases.isEmpty()) {
+        return if (cases.isNotEmpty()) {
+            check(constructors.specialConstructors.isEmpty())
+            C_LibFunctionUtils.makeGlobalFunction(naming, cases)
+        } else {
             val con = constructors.specialConstructors.firstOrNull()
             if (con == null) null else {
                 val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_TYPE, doc = con.docSymbol)
-                C_SpecialLibGlobalFunction(con.member, ideInfo)
+                C_SpecialLibGlobalFunction(con.member, ideInfo, con.restrictions)
             }
-        } else {
-            check(constructors.specialConstructors.isEmpty())
-            C_LibFunctionUtils.makeGlobalFunction(naming, cases)
         }
     }
 
@@ -217,10 +220,6 @@ private object C_LibTypeAdapterInternal {
         }
 
         return immListOf()
-    }
-
-    private fun constructorsToCases() {
-
     }
 
     private fun constructorToCase(
@@ -265,17 +264,17 @@ private object C_LibTypeAdapterInternal {
         val flags = L_FunctionFlags(isPure = con.pure, isStatic = false)
         val function = L_Function(typeName, header, flags, con.body)
         val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_TYPE, doc = mem.docSymbol)
-        return C_LibFuncCaseUtils.makeGlobalCase(naming, function, outerTypeArgTypes, con.deprecated, ideInfo)
+        return C_LibFuncCaseUtils.makeGlobalCase(naming, function, outerTypeArgTypes, mem.restrictions, ideInfo)
     }
 }
 
 private class C_LibTypeMemberHeader(
     val simpleName: R_Name,
     val docSymbol: DocSymbol,
-    val deprecated: C_Deprecated?,
+    val restrictions: C_MemberRestrictions,
 ) {
     fun <T> toItem(member: T): C_LibTypeItem<T> {
-        return C_LibTypeItem(simpleName, docSymbol, deprecated, member)
+        return C_LibTypeItem(simpleName, docSymbol, restrictions, member)
     }
 }
 
@@ -295,10 +294,10 @@ private class C_LibTypeBodyBuilder(
 
     fun addConstant(header: C_LibTypeMemberHeader, constant: L_Constant) {
         val defName = defPath.subName(header.simpleName)
+        val prop = C_NamespaceProperty_RtValue(constant.value)
         val rType = L_TypeUtils.getRTypeNotNull(constant.type)
         val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_CONSTANT, doc = header.docSymbol)
-        val prop = C_NamespaceProperty_RtValue(constant.value)
-        val cMember = C_TypeStaticMember.makeProperty(defName, header.simpleName, prop, rType, ideInfo)
+        val cMember = C_TypeStaticMember.makeProperty(defName, header.simpleName, prop, rType, ideInfo, header.restrictions)
         staticMembers.add(cMember)
     }
 
@@ -309,7 +308,7 @@ private class C_LibTypeBodyBuilder(
         val rResType = L_TypeUtils.getRTypeNotNull(property.type)
         val fn = C_SysFunction.direct(property.body)
         val naming = namingFactory(header.simpleName)
-        val attr: C_MemberAttr = C_MemberAttr_SysProperty(ideName, rResType, fn, naming)
+        val attr: C_MemberAttr = C_MemberAttr_SysProperty(ideName, rResType, fn, naming, header.restrictions)
         val cMember = C_TypeValueMember_BasicAttr(attr)
         valueMembers.add(cMember)
     }
@@ -337,14 +336,14 @@ private class C_LibTypeBodyBuilder(
         val defName = defPath.subName(header.simpleName)
         val naming = namingFactory(header.simpleName)
         val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_FUNCTION_SYSTEM, doc = header.docSymbol)
-        val cFn = C_SpecialLibGlobalFunction(fn, ideInfo)
+        val cFn = C_SpecialLibGlobalFunction(fn, ideInfo, header.restrictions)
         val cMember = C_TypeStaticMember.makeFunction(defName, header.simpleName, naming, cFn, ideInfo)
         staticMembers.add(cMember)
     }
 
     fun addFunction(header: C_LibTypeMemberHeader, fn: C_SpecialLibMemberFunctionBody) {
         val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_FUNCTION_SYSTEM, doc = header.docSymbol)
-        val cFn = C_SpecialLibMemberFunction(fn, ideInfo)
+        val cFn = C_SpecialLibMemberFunction(fn, ideInfo, header.restrictions)
         val naming = namingFactory(header.simpleName)
         val cMember = C_TypeValueMember_Function(header.simpleName, cFn, naming)
         valueMembers.add(cMember)
@@ -367,7 +366,7 @@ private class C_LibTypeBodyBuilder(
                 val naming = namingFactory(name)
                 val cases = mems.map { m ->
                     val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_FUNCTION_SYSTEM, doc = m.docSymbol)
-                    C_LibFuncCaseUtils.makeMemberCase(m.member, ideInfo, naming, m.deprecated)
+                    C_LibFuncCaseUtils.makeMemberCase(m.member, ideInfo, naming, m.restrictions)
                 }
                 val fn = C_LibFunctionUtils.makeMemberFunction(cases)
                 C_TypeValueMember_Function(name, fn, naming)
@@ -382,7 +381,7 @@ private class C_LibTypeBodyBuilder(
             val defName = defPath.subName(simpleName)
             val naming = namingFactory(simpleName)
             val cases = mems.map { m ->
-                C_LibAdapter.convertFunctionCase(m.member, naming, m.docSymbol, m.deprecated)
+                C_LibAdapter.convertFunctionCase(m.member, naming, m.docSymbol, m.restrictions)
             }
             val cFn = C_LibFunctionUtils.makeGlobalFunction(naming, cases)
             val ideInfo = cases.first().ideInfo

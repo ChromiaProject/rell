@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.module
@@ -186,8 +186,8 @@ class C_MidModuleMember_Namespace(
 }
 
 class C_MidModuleCompiler(
-        private val msgCtx: C_MessageContext,
-        midModules: List<C_MidModule>,
+    private val msgCtx: C_MessageContext,
+    midModules: List<C_MidModule>,
 ) {
     private val midModulesMap = midModules.associateBy { it.moduleName }.toImmMap()
 
@@ -208,7 +208,8 @@ class C_MidModuleCompiler(
         check(!done)
 
         val moduleCtx = C_MidModuleContext(msgCtx, modImporter, moduleName, null)
-        val modifierCtx = C_ModifierContext(msgCtx, C_NopSymbolContext)
+        val symCtx = C_NopSymbolContext(msgCtx, msgCtx.globalCtx.compilerOptions)
+        val modifierCtx = C_ModifierContext(msgCtx, symCtx)
         val memberCtx = C_MidMemberContext(moduleCtx, modifierCtx, null)
         val res = members.map { it.compile(memberCtx) }.toImmList()
 

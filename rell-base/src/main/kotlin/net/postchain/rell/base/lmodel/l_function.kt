@@ -10,6 +10,7 @@ import net.postchain.rell.base.compiler.base.core.C_VarUid
 import net.postchain.rell.base.compiler.base.expr.C_VarFact
 import net.postchain.rell.base.compiler.base.expr.C_VarFacts
 import net.postchain.rell.base.compiler.base.fn.C_ArgMatching
+import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
 import net.postchain.rell.base.compiler.base.lib.C_SpecialLibMemberFunctionBody
 import net.postchain.rell.base.compiler.base.lib.C_SysFunction
@@ -46,6 +47,7 @@ class L_FunctionParam(
     val mParam: M_FunctionParam,
     val lazy: Boolean,
     val implies: L_ParamImplication?,
+    val restrictions: C_MemberRestrictions,
     override val docSymbol: DocSymbol,
 ): DocDefinition {
     val type = mParam.type
@@ -67,6 +69,7 @@ class L_FunctionParam(
             newMParam,
             lazy = lazy,
             implies = implies,
+            restrictions = restrictions,
             docSymbol = docSymbol,
         )
     }
@@ -248,10 +251,11 @@ sealed class L_FunctionBody {
 
 class L_NamespaceMember_Function(
     fullName: R_FullName,
+    header: L_MemberHeader,
     docSymbol: DocSymbol,
     val function: L_Function,
     val deprecated: C_Deprecated?,
-): L_NamespaceMember(fullName, docSymbol) {
+): L_NamespaceMember(fullName, header, docSymbol) {
     override fun strCode(): String {
         val parts = listOfNotNull(
             L_InternalUtils.deprecatedStrCodeOrNull(deprecated),
@@ -267,18 +271,20 @@ class L_NamespaceMember_Function(
 
 class L_NamespaceMember_SpecialFunction(
     fullName: R_FullName,
+    header: L_MemberHeader,
     doc: DocSymbol,
     val fn: C_SpecialLibGlobalFunctionBody,
-): L_NamespaceMember(fullName, doc) {
+): L_NamespaceMember(fullName, header, doc) {
     override fun strCode() = "special function ${qualifiedName.str()}()"
 }
 
 class L_TypeDefMember_Function(
-    val simpleName: R_Name,
+    fullName: R_FullName,
+    header: L_MemberHeader,
     doc: DocSymbol,
     val function: L_Function,
     val deprecated: C_Deprecated?,
-): L_TypeDefMember(simpleName.str, doc) {
+): L_TypeDefMember(fullName, header, doc) {
     override fun strCode(): String {
         val parts = listOfNotNull(
             L_InternalUtils.deprecatedStrCodeOrNull(deprecated),
@@ -291,7 +297,7 @@ class L_TypeDefMember_Function(
         val function2 = function.replaceTypeParams(map)
         return if (function2 === function) this else {
             function2.validate()
-            L_TypeDefMember_Function(simpleName, docSymbol, function2, deprecated)
+            L_TypeDefMember_Function(fullName, header, docSymbol, function2, deprecated)
         }
     }
 
@@ -301,17 +307,19 @@ class L_TypeDefMember_Function(
 }
 
 class L_TypeDefMember_ValueSpecialFunction(
-    val simpleName: R_Name,
+    fullName: R_FullName,
+    header: L_MemberHeader,
     doc: DocSymbol,
     val fn: C_SpecialLibMemberFunctionBody,
-): L_TypeDefMember(simpleName.str, doc) {
+): L_TypeDefMember(fullName, header, doc) {
     override fun strCode() = "special function $simpleName(...)"
 }
 
 class L_TypeDefMember_StaticSpecialFunction(
-    val simpleName: R_Name,
+    fullName: R_FullName,
+    header: L_MemberHeader,
     doc: DocSymbol,
     val fn: C_SpecialLibGlobalFunctionBody,
-): L_TypeDefMember(simpleName.str, doc) {
+): L_TypeDefMember(fullName, header, doc) {
     override fun strCode() = "static special function $simpleName(...)"
 }

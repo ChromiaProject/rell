@@ -26,19 +26,22 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 
 object Lib_Type_Integer {
-    val NAMESPACE = Ld_NamespaceDsl.make {
-        alias("timestamp", "integer")
+    private const val SINCE0 = "0.6.0"
 
-        type("integer", rType = R_IntegerType) {
+    val NAMESPACE = Ld_NamespaceDsl.make {
+        alias("timestamp", "integer", since = SINCE0)
+
+        type("integer", rType = R_IntegerType, since = SINCE0) {
             comment("Represents a 64-bit signed integer")
-            constant("MIN_VALUE", Long.MIN_VALUE) {
+
+            constant("MIN_VALUE", Long.MIN_VALUE, since = SINCE0) {
                 comment("A constant representing the minimum value an integer can have (-9223372036854775808)")
             }
-            constant("MAX_VALUE", Long.MAX_VALUE) {
+            constant("MAX_VALUE", Long.MAX_VALUE, since = SINCE0) {
                 comment("A constant representing the maximum value an integer can have (9223372036854775807)")
             }
 
-            constructor(pure = true) {
+            constructor(pure = true, since = SINCE0) {
                 comment("Parses a signed string representation of an integer.")
                 param("value", "text", comment = "The string to be parsed.")
                 param("radix", "integer", arity = L_ParamArity.ZERO_ONE) {
@@ -50,13 +53,13 @@ object Lib_Type_Integer {
                 }
             }
 
-            constructor {
+            constructor(since = "0.9.1") {
                 comment("Converts a decimal to an integer, rounding towards 0.")
                 param("value", "decimal", comment = "The decimal value to be converted to an integer.")
                 bodyRaw(Lib_Type_Decimal.ToInteger)
             }
 
-            staticFunction("from_text", "integer", pure = true) {
+            staticFunction("from_text", "integer", pure = true, since = "0.9.0") {
                 comment("Parses a signed string representation of an integer.")
                 param("value", "text", comment = "The string to be parsed.")
                 param("radix", "integer", arity = L_ParamArity.ZERO_ONE) {
@@ -68,9 +71,9 @@ object Lib_Type_Integer {
                 }
             }
 
-            staticFunction("from_hex", "integer", pure = true) {
+            staticFunction("from_hex", "integer", pure = true, since = "0.9.0") {
                 comment("Parses an unsigned hexadecimal representation of an integer.")
-                alias("parseHex", C_MessageType.ERROR)
+                alias("parseHex", C_MessageType.ERROR, since = "0.6.0")
                 param("value", "text", comment = "The hexadecimal string to be parsed.")
                 body { value ->
                     val s = value.asString()
@@ -83,18 +86,18 @@ object Lib_Type_Integer {
                 }
             }
 
-            function("abs", "integer") {
+            function("abs", "integer", since = SINCE0) {
                 comment("Calculates the absolute value of the integer.")
                 bodyRaw(Lib_Math.Abs_Integer)
             }
 
-            function("min", "integer") {
+            function("min", "integer", since = SINCE0) {
                 comment("Finds the minimum of this integer and the given value.")
                 param("value", "integer", comment = "The integer value to compare.")
                 bodyRaw(Lib_Math.Min_Integer)
             }
 
-            function("min", "big_integer", pure = true) {
+            function("min", "big_integer", pure = true, since = "0.12.0") {
                 comment("Finds the minimum of this integer and the given big integer value.")
                 param("value", "big_integer", comment = "The big integer value to compare.")
                 dbFunctionSimple("min", "LEAST")
@@ -106,7 +109,7 @@ object Lib_Type_Integer {
                 }
             }
 
-            function("min", "decimal", pure = true) {
+            function("min", "decimal", pure = true, since = SINCE0) {
                 comment("Finds the minimum of this integer and the given decimal value.")
                 param("value", "decimal", comment = "The decimal value to compare.")
                 dbFunctionSimple("min", "LEAST")
@@ -118,13 +121,13 @@ object Lib_Type_Integer {
                 }
             }
 
-            function("max", "integer") {
+            function("max", "integer", since = SINCE0) {
                 comment("Finds the maximum of this integer and the given value.")
                 param("value", "integer", comment = "The integer value to compare.")
                 bodyRaw(Lib_Math.Max_Integer)
             }
 
-            function("max", "big_integer", pure = true) {
+            function("max", "big_integer", pure = true, since = "0.12.0") {
                 comment("Finds the maximum of this integer and the given big integer value.")
                 param("value", "big_integer", comment = "The big integer value to compare.")
                 dbFunctionSimple("max", "GREATEST")
@@ -136,7 +139,7 @@ object Lib_Type_Integer {
                 }
             }
 
-            function("max", "decimal", pure = true) {
+            function("max", "decimal", pure = true, since = SINCE0) {
                 comment("Finds the maximum of this integer and the given decimal value.")
                 param("value", "decimal", comment = "The decimal value to compare.")
                 dbFunctionSimple("max", "GREATEST")
@@ -148,7 +151,7 @@ object Lib_Type_Integer {
                 }
             }
 
-            function("pow", result = "integer", pure = true) {
+            function("pow", result = "integer", pure = true, since = "0.13.6") {
                 comment("""
                     Raises this integer to the power of the given exponent.
                     Can be used in a database at-expression.
@@ -171,9 +174,9 @@ object Lib_Type_Integer {
                 }
             }
 
-            function("sign", "integer", pure = true) {
+            function("sign", "integer", pure = true, since = SINCE0) {
                 comment("Returns the sign of the integer: -1 if negative, 0 if zero, and 1 if positive.")
-                alias("signum", C_MessageType.ERROR)
+                alias("signum", C_MessageType.ERROR, since = SINCE0)
                 dbFunctionSimple("sign", "SIGN")
                 body { self ->
                     val intValue = self.asInteger()
@@ -182,19 +185,19 @@ object Lib_Type_Integer {
                 }
             }
 
-            function("to_big_integer", "big_integer") {
+            function("to_big_integer", "big_integer", since = "0.12.0") {
                 comment("Converts this integer to a big integer.")
                 bodyRaw(Lib_Type_BigInteger.FromInteger)
             }
 
-            function("to_decimal", "decimal") {
+            function("to_decimal", "decimal", since = "0.9.1") {
                 comment("Converts this integer to a decimal.")
                 bodyRaw(Lib_Type_Decimal.FromInteger)
             }
 
-            function("to_text", "text", pure = true) {
+            function("to_text", "text", pure = true, since = "0.9.0") {
                 comment("Converts this integer to a text string.")
-                alias("str")
+                alias("str", since = SINCE0)
                 dbFunctionCast("int.to_text", "TEXT")
                 body { self ->
                     val intValue = self.asInteger()
@@ -202,9 +205,9 @@ object Lib_Type_Integer {
                 }
             }
 
-            function("to_text", "text", pure = true) {
+            function("to_text", "text", pure = true, since = "0.9.0") {
                 comment("Converts this integer to a text string with the specified radix.")
-                alias("str")
+                alias("str", since = SINCE0)
                 param("radix", "integer", comment = "The radix (base) to use for the string representation.")
                 body { self, radix ->
                     val intValue = self.asInteger()
@@ -217,8 +220,8 @@ object Lib_Type_Integer {
                 }
             }
 
-            function("to_hex", "text", pure = true) {
-                alias("hex", C_MessageType.ERROR)
+            function("to_hex", "text", pure = true, since = SINCE0) {
+                alias("hex", C_MessageType.ERROR, since = SINCE0)
                 comment("Converts this integer to a hexadecimal string.")
                 body { self ->
                     val v = self.asInteger()

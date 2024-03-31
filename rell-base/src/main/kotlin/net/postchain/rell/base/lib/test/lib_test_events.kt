@@ -18,15 +18,14 @@ private val EVENT_LIST_TYPE: R_Type = R_ListType(Lib_Test_Events.EVENT_TYPE)
 object Lib_Test_Events {
     val EVENT_TUPLE_TYPE = R_TupleType.create(R_TextType, R_GtvType)
     val EVENT_TYPE: R_Type = EVENT_TUPLE_TYPE
-    private const val EVENT_TYPE_STR = "(text,gtv)"
 
     val NAMESPACE = Ld_NamespaceDsl.make {
-        alias(target = "rell.test.assert_events")
+        alias(target = "rell.test.assert_events", since = "0.13.0")
 
         namespace("rell.test") {
-            function("assert_events", "unit") {
+            function("assert_events", "unit", since = "0.13.0") {
                 comment("Asserts that the expected events has been emitted during last block")
-                param("expected", EVENT_TYPE_STR, arity = L_ParamArity.ZERO_MANY) {
+                param("expected", "(text,gtv)", arity = L_ParamArity.ZERO_MANY) {
                     comment("Events that are expected to be emitted")
                 }
                 bodyContextN { ctx, args ->
@@ -37,7 +36,7 @@ object Lib_Test_Events {
                 }
             }
 
-            function("get_events", "list<$EVENT_TYPE_STR>") {
+            function("get_events", "list<(text,gtv)>", since = "0.13.0") {
                 comment("Get all events that have been emitted from the last block.")
                 bodyContext { ctx ->
                     val events = ctx.exeCtx.emittedEvents

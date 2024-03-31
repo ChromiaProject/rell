@@ -178,6 +178,42 @@ class CLibFunctionNamedArgsTest: BaseCLibTest() {
         chkNamedArgs("(b = 'A', a = x)", "OK", "text[integer]", body = body)
     }
 
+    @Test fun testPartCall() {
+        initNamedArgs {
+            param("a", type = "text")
+            param("b", type = "integer")
+        }
+
+        //TODO make normal tests (w/o chkCompile) when custom test types are supported
+        chkPartCall("f", ::chkFull, null)
+        chkPartCall("g", ::chkCompile, "OK")
+        chkPartCall("data().h", ::chkCompile, "OK")
+    }
+
+    private fun chkPartCall(fn: String, tester: (String, String) -> Unit, exp: String?) {
+        tester("query q() = $fn(a = 'a', b = 123);", exp ?: "text[#0:a,123]")
+        tester("query q() = $fn(a = 'a', b = 123, *);", exp ?: "fn[f(text[a],int[123])]")
+        tester("query q() = $fn(a = 'a', b = 123, *)();", exp ?: "text[#0:a,123]")
+        tester("query q() = $fn(a = *, b = *);", exp ?: "fn[f(*,*)]")
+        tester("query q() = $fn(a = *, b = *)('a', 123);", exp ?: "text[#0:a,123]")
+
+        tester("query q() = $fn(b = 123, a = 'a');", exp ?: "text[#0:a,123]")
+        tester("query q() = $fn(b = 123, a = 'a', *);", exp ?: "fn[f(text[a],int[123])]")
+        tester("query q() = $fn(b = 123, a = 'a', *)();", exp ?: "text[#0:a,123]")
+        tester("query q() = $fn(b = *, a = *);", exp ?: "fn[f(*,*)]")
+        tester("query q() = $fn(b = *, a = *)(123, 'a');", exp ?: "text[#0:a,123]")
+
+        tester("query q() = $fn(a = 'a', *);", exp ?: "fn[f(text[a],*)]")
+        tester("query q() = $fn(a = 'a', *)(123);", exp ?: "text[#0:a,123]")
+        tester("query q() = $fn(a = *);", exp ?: "fn[f(*,*)]")
+        tester("query q() = $fn(a = *)('a', 123);", exp ?: "text[#0:a,123]")
+
+        tester("query q() = $fn(b = 123, *);", exp ?: "fn[f(*,int[123])]")
+        tester("query q() = $fn(b = 123, *)('a');", exp ?: "text[#0:a,123]")
+        tester("query q() = $fn(b = *);", exp ?: "fn[f(*,*)]")
+        tester("query q() = $fn(b = *)(123, 'a');", exp ?: "text[#0:a,123]")
+    }
+
     private fun initNamedArgs(block: Ld_CommonFunctionDsl.() -> Unit) {
         initNamedArgsOverload(listOf(block))
     }

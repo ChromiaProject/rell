@@ -302,6 +302,16 @@ class ExpressionTest: BaseRellTest(false) {
         chk("null in map<integer?,text>([5:'a', 6:'b'])", "boolean[false]")
     }
 
+    @Test fun testInNullableVersionControl() {
+        val err = "ct_err:binop_operand_type:in"
+        chkVerCtExpr("5 in list<integer?>([5, null])", "0.11.0", "$err:[integer]:[list<integer?>]")
+        chkVerCtExpr("null in list<integer?>([5, null])", "0.11.0", "$err:[null]:[list<integer?>]")
+        chkVerCtExpr("5 in set<integer?>([5, null])", "0.11.0", "$err:[integer]:[set<integer?>]")
+        chkVerCtExpr("null in set<integer?>([5, null])", "0.11.0", "$err:[null]:[set<integer?>]")
+        chkVerCtExpr("5 in map<integer?,text>([5:'a', null:'b'])", "0.11.0", "$err:[integer]:[map<integer?,text>]")
+        chkVerCtExpr("null in map<integer?,text>([5:'a', null:'b'])", "0.11.0", "$err:[null]:[map<integer?,text>]")
+    }
+
     @Test fun testInPromotion() {
         chk("5 in list<decimal>([5.0, 7.0])", "boolean[true]")
         chk("6 in list<decimal>([5.0, 7.0])", "boolean[false]")

@@ -1,15 +1,14 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.core
 
 import net.postchain.rell.base.compiler.ast.S_Name
 import net.postchain.rell.base.compiler.ast.S_Pos
-import net.postchain.rell.base.compiler.base.utils.C_LateGetter
-import net.postchain.rell.base.compiler.base.utils.C_RNamePath
-import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.R_IdeName
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.utils.*
@@ -45,6 +44,7 @@ class C_QualifiedName(parts: List<C_Name>) {
     fun parentPath() = parts.dropLast(1).toImmList()
     fun toRName() = R_QualifiedName(parts.map { it.rName })
     fun toPath() = C_RNamePath.of(parts.map { it.rName })
+    fun toLazyPosString() = LazyPosString.of(last.pos) { str() }
 
     fun str() = parts.joinToString(".")
     override fun toString() = str()
@@ -313,14 +313,20 @@ class C_QualifiedNameHandle(parts: List<C_NameHandle>) {
     override fun toString() = str()
 }
 
-sealed class C_SymbolContext {
+sealed class C_SymbolContext(val msgMgr: C_MessageManager, val compilerOptions: C_CompilerOptions) {
+    abstract fun nopContext(): C_SymbolContext
     abstract fun addName(sName: S_Name, rName: R_Name): C_NameHandle
     abstract fun addSymbol(pos: S_Pos, ideInfo: C_IdeSymbolInfo)
     abstract fun setDefId(pos: S_Pos, defId: IdeSymbolId)
     abstract fun setLink(pos: S_Pos, link: IdeSymbolLink)
 }
 
-object C_NopSymbolContext: C_SymbolContext() {
+class C_NopSymbolContext(
+    msgMgr: C_MessageManager,
+    compilerOptions: C_CompilerOptions,
+): C_SymbolContext(msgMgr, compilerOptions) {
+    override fun nopContext() = this
+
     override fun addName(sName: S_Name, rName: R_Name): C_NameHandle {
         return C_NopNameHandle(sName.pos, rName)
     }
@@ -349,11 +355,18 @@ object C_NopSymbolContext: C_SymbolContext() {
 }
 
 private class C_DefaultSymbolContext(
-    private val checkDefIdConflicts: Boolean,
-): C_SymbolContext() {
+    msgMgr: C_MessageManager,
+    compilerOptions: C_CompilerOptions,
+): C_SymbolContext(msgMgr, compilerOptions) {
+    private val checkDefIdConflicts = compilerOptions.ideDefIdConflictError
+
     private val nameMap = mutableMapOf<S_Pos, C_NameHandleImpl>()
     private val symbolMap = mutableMapOf<S_Pos, C_IdeSymbolInfo>()
     private val extraMap = mutableMapOf<S_Pos, ExtraInfo>()
+
+    override fun nopContext(): C_SymbolContext {
+        return C_NopSymbolContext(msgMgr, compilerOptions)
+    }
 
     override fun addName(sName: S_Name, rName: R_Name): C_NameHandle {
         val pos = sName.pos
@@ -514,12 +527,15 @@ interface C_SymbolContextProvider {
     fun getSymbolContext(path: C_SourcePath): C_SymbolContext
 }
 
-class C_SymbolContextManager(opts: C_CompilerOptions) {
+class C_SymbolContextManager(
+    private val msgMgr: C_MessageManager,
+    private val opts: C_CompilerOptions,
+) {
     private val mainFile = opts.symbolInfoFile
 
     val provider: C_SymbolContextProvider = C_SymbolContextProviderImpl()
 
-    private val mainSymCtx = C_DefaultSymbolContext(opts.ideDefIdConflictError)
+    private val mainSymCtx = C_DefaultSymbolContext(msgMgr, opts)
 
     fun finish(): Map<S_Pos, IdeSymbolInfo> {
         val res = mainSymCtx.finish()
@@ -528,7 +544,7 @@ class C_SymbolContextManager(opts: C_CompilerOptions) {
 
     private inner class C_SymbolContextProviderImpl: C_SymbolContextProvider {
         override fun getSymbolContext(path: C_SourcePath): C_SymbolContext {
-            return if (path == mainFile) mainSymCtx else C_NopSymbolContext
+            return if (path == mainFile) mainSymCtx else C_NopSymbolContext(msgMgr, opts)
         }
     }
 }

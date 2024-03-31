@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.module
@@ -572,10 +572,14 @@ class C_ParsedRellFile(
         val moduleName = modCtx.moduleName
         val pos = ast?.startPos
         if (!C_ModuleUtils.isAllowedModuleName(moduleName) && pos != null) {
-            modCtx.msgCtx.error(pos, "module:reserved_name:${moduleName}", "Defining a module called '${moduleName}' is not allowed")
+            modCtx.msgCtx.error(pos, "module:reserved_name:${moduleName}",
+                "Defining a module called '${moduleName}' is not allowed")
         }
 
-        ast ?: return C_MidModuleFile(path, immListOf(), null, C_NopSymbolContext)
+        if (ast == null) {
+            val symCtx = C_NopSymbolContext(modCtx.msgCtx, modCtx.msgCtx.globalCtx.compilerOptions)
+            return C_MidModuleFile(path, immListOf(), null, symCtx)
+        }
 
         val fileCtx = modCtx.createFileContext(path, idePath)
         return ast.compile(fileCtx)

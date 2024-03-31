@@ -38,8 +38,9 @@ class L_TypeExtension(
 
 class L_NamespaceMember_TypeExtension(
     fullName: R_FullName,
+    header: L_MemberHeader,
     val typeExt: L_TypeExtension,
-): L_NamespaceMember(fullName, typeExt.docSymbol) {
+): L_NamespaceMember(fullName, header, typeExt.docSymbol) {
     override fun strCode(): String {
         return typeExt.strCode()
     }

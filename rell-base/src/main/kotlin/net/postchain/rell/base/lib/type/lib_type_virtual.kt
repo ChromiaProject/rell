@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.type
@@ -17,7 +17,7 @@ object Lib_Type_Virtual {
     }
 
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("virtual", hidden = true) {
+        type("virtual", hidden = true, since = "0.9.0") {
             generic("T")
 
             rType { t ->
@@ -30,7 +30,7 @@ object Lib_Type_Virtual {
                     .build()
             }
 
-            function("to_full", result = "T") {
+            function("to_full", result = "T", since = "0.9.0") {
                 bodyRaw(ToFull)
             }
         }

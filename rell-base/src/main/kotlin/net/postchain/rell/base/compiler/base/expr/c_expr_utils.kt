@@ -31,7 +31,7 @@ object C_ExprUtils {
 
     fun toDbExpr(msgCtx: C_MessageContext, errPos: S_Pos, rExpr: R_Expr): Db_Expr {
         val type = rExpr.type
-        return if (!type.sqlAdapter.isSqlCompatible()) {
+        return if (!type.sqlAdapter.isSqlCompatible(msgCtx.globalCtx.compilerOptions)) {
             C_Errors.errExprNoDb(msgCtx, errPos, type)
             errorDbExpr()
         } else {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.module
@@ -128,10 +128,10 @@ class Rt_TimestampPrinter(private val printer: Rt_Printer): Rt_Printer {
 }
 
 private class RellGTXOperation(
-        private val module: RellPostchainModule,
-        private val rOperation: R_OperationDefinition,
-        private val errorHandler: ErrorHandler,
-        opData: ExtOpData
+    private val module: RellPostchainModule,
+    private val rOperation: R_OperationDefinition,
+    private val errorHandler: ErrorHandler,
+    opData: ExtOpData,
 ): GTXOperation(opData) {
     private val gtvArgs = data.args.toImmList()
 
@@ -189,7 +189,11 @@ private class RellGTXOperation(
             )
         }
 
-        val gtvCtx = GtvToRtContext.make(pretty = GTV_OPERATION_PRETTY, strictGtvConversion = module.config.strictGtvConversion)
+        val gtvCtx = GtvToRtContext.make(
+            pretty = GTV_OPERATION_PRETTY,
+            strictGtvConversion = module.config.strictGtvConversion,
+            compilerOptions = module.config.compilerOptions,
+        )
         val rtArgs = convertArgs(gtvCtx, params, gtvArgs)
 
         opArgs = Rt_OperationArgs(gtvCtx, rtArgs)
@@ -217,11 +221,11 @@ private class RellGTXOperation(
 }
 
 private class RellModuleConfig(
-        val sqlLogging: Boolean,
-        val typeCheck: Boolean,
-        val dbInitLogLevel: Int,
-        val compilerOptions: C_CompilerOptions,
-        val strictGtvConversion: Boolean
+    val sqlLogging: Boolean,
+    val typeCheck: Boolean,
+    val dbInitLogLevel: Int,
+    val compilerOptions: C_CompilerOptions,
+    val strictGtvConversion: Boolean,
 )
 
 private class RellPostchainModule(
@@ -342,7 +346,11 @@ private class RellPostchainModule(
             throw Rt_Exception.common(code, "Wrong arguments: $actArgNames instead of $expArgNames")
         }
 
-        val gtvToRtCtx = GtvToRtContext.make(pretty = GTV_QUERY_PRETTY)
+        val gtvToRtCtx = GtvToRtContext.make(
+            pretty = GTV_QUERY_PRETTY,
+            compilerOptions = exeCtx.globalCtx.compilerOptions,
+        )
+
         val args = params.map { argMap.getValue(it.name.str) }
         val rtArgs = convertArgs(gtvToRtCtx, params, args)
         gtvToRtCtx.finish(exeCtx)
@@ -404,7 +412,7 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
             val bcRid = Bytes32(blockchainRID.data)
             val chainCtx = Rt_ChainContext(config, bcRid)
             val chainDeps = getGtxChainDependencies(config)
-            val moduleArgsSource = PostchainBaseUtils.createModuleArgsSource(modApp.app, config)
+            val moduleArgsSource = PostchainBaseUtils.createModuleArgsSource(modApp.app, config, modApp.compilerOptions)
             val strictGtvConversion = (rellNode["strictGtvConversion"]?.asBoolean() ?: false)
 
             val modLogPrinter = getModulePrinter(env.logPrinter, Rt_TimestampPrinter(combinedPrinter), copyOutput)
@@ -462,11 +470,11 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
     }
 
     private fun compileApp(
-            sourceDir: C_SourceDir,
-            modules: List<R_ModuleName>,
-            compilerOptions: C_CompilerOptions,
-            errorHandler: ErrorHandler,
-            copyOutput: Boolean
+        sourceDir: C_SourceDir,
+        modules: List<R_ModuleName>,
+        compilerOptions: C_CompilerOptions,
+        errorHandler: ErrorHandler,
+        copyOutput: Boolean,
     ): R_App {
         val cResult = C_Compiler.compile(sourceDir, modules, compilerOptions)
         val app = processCompilationResult(cResult, errorHandler, copyOutput)
@@ -482,9 +490,9 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
     }
 
     private fun processCompilationResult(
-            cResult: C_CompilationResult,
-            errorHandler: ErrorHandler,
-            copyOutput: Boolean
+        cResult: C_CompilationResult,
+        errorHandler: ErrorHandler,
+        copyOutput: Boolean,
     ): R_App {
         for (message in cResult.messages) {
             val str = message.toString()
@@ -595,6 +603,8 @@ private class SourceCodeConfig(rellNode: Map<String, Gtv>) {
                 .mapValues { (k, v) -> C_TextSourceFile(k, v) }
                 .toImmMap()
 
+        RellVersions.checkCompatibilityVersion(source.version) { UserMistake(it) }
+
         dir = C_SourceDir.mapDir(fileMap)
         version = source.version
     }
@@ -610,7 +620,7 @@ private class SourceCodeConfig(rellNode: Map<String, Gtv>) {
         }
 
         if (ver !in RellVersions.SUPPORTED_VERSIONS) {
-            throw UserMistake("Unsupported language version: $ver")
+            throw UserMistake("Unknown language version: $ver")
         }
 
         return ver

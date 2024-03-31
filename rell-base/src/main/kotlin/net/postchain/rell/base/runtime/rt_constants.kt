@@ -1,19 +1,18 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.runtime
 
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory
+import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_Constants
+import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.type.Rt_UnitValue
-import net.postchain.rell.base.model.R_DefinitionName
-import net.postchain.rell.base.model.R_GlobalConstantId
-import net.postchain.rell.base.model.R_ModuleName
-import net.postchain.rell.base.model.R_StructDefinition
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.NoConnSqlExecutor
 import net.postchain.rell.base.utils.*
@@ -32,7 +31,12 @@ private object Rt_NullModuleArgsSource: Rt_ModuleArgsSource() {
     override fun getModuleArgs(exeCtx: Rt_ExecutionContext, moduleName: R_ModuleName) = null
 }
 
-class Rt_GtvModuleArgsSource(private val gtvs: Map<R_ModuleName, Gtv>): Rt_ModuleArgsSource() {
+class Rt_GtvModuleArgsSource(
+    private val gtvs: Map<R_ModuleName, Gtv>,
+    private val compilerOptions: C_CompilerOptions,
+): Rt_ModuleArgsSource() {
+    private val defaultValuesSupported = DEFAULT_VALUES_SWITCH.isActive(compilerOptions)
+
     override fun getModuleArgs(exeCtx: Rt_ExecutionContext, moduleName: R_ModuleName): Rt_Value? {
         val rModule = exeCtx.appCtx.app.moduleMap[moduleName]
         val argsStruct = Rt_Utils.checkNotNull(rModule?.moduleArgs) {
@@ -45,21 +49,29 @@ class Rt_GtvModuleArgsSource(private val gtvs: Map<R_ModuleName, Gtv>): Rt_Modul
         gtv ?: return null
 
         val frame = Rt_CallFrame.createInitFrame(exeCtx, argsStruct, modsAllowed = false)
-        val defaultValueEvaluator = GtvToRtDefaultValueEvaluator { expr ->
+        val defaultValueEvaluator = if (!defaultValuesSupported) null else GtvToRtDefaultValueEvaluator { expr ->
             expr.evaluate(frame)
         }
 
-        val res = PostchainGtvUtils.moduleArgsGtvToRt(argsStruct, gtv, defaultValueEvaluator = defaultValueEvaluator)
-        return res
+        return PostchainGtvUtils.moduleArgsGtvToRt(
+            argsStruct,
+            gtv,
+            defaultValueEvaluator = defaultValueEvaluator,
+            compilerOptions = compilerOptions,
+        )
     }
 
     private fun getArgsGtv(moduleName: R_ModuleName, struct: R_StructDefinition): Gtv? {
         val gtv = gtvs[moduleName]
         return when {
             gtv != null -> gtv
-            struct.hasDefaultConstructor -> GtvFactory.gtv(immMapOf())
+            defaultValuesSupported && struct.hasDefaultConstructor -> GtvFactory.gtv(immMapOf())
             else -> null
         }
+    }
+
+    companion object {
+        val DEFAULT_VALUES_SWITCH = C_FeatureSwitch("0.13.5")
     }
 }
 

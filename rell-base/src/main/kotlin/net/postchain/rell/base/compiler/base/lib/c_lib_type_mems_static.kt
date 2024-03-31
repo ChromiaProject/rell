@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.lib
@@ -22,7 +22,7 @@ sealed class C_TypeStaticMember(
 ): C_TypeMember(simpleName) {
     abstract override fun replaceTypeParams(rep: C_TypeMemberReplacement): C_TypeStaticMember
 
-    abstract fun toExprMember(
+    abstract fun toExpr(
         ctx: C_ExprContext,
         qName: C_QualifiedName,
         selfType: R_Type,
@@ -36,8 +36,9 @@ sealed class C_TypeStaticMember(
             prop: C_NamespaceProperty,
             rType: R_Type,
             ideInfo: C_IdeSymbolInfo,
+            restrictions: C_MemberRestrictions,
         ): C_TypeStaticMember {
-            return C_TypeStaticMember_Property(defName, simpleName, prop, rType, ideInfo)
+            return C_TypeStaticMember_Property(defName, simpleName, prop, rType, ideInfo, restrictions)
         }
 
         fun makeFunction(
@@ -58,6 +59,7 @@ private class C_TypeStaticMember_Property(
     private val prop: C_NamespaceProperty,
     private val rType: R_Type,
     private val ideInfo: C_IdeSymbolInfo,
+    private val restrictions: C_MemberRestrictions,
 ): C_TypeStaticMember(defName, simpleName) {
     override fun kindMsg() = "property"
     override fun isValue() = true
@@ -68,7 +70,7 @@ private class C_TypeStaticMember_Property(
         return this
     }
 
-    override fun toExprMember(
+    override fun toExpr(
         ctx: C_ExprContext,
         qName: C_QualifiedName,
         selfType: R_Type,
@@ -77,6 +79,7 @@ private class C_TypeStaticMember_Property(
         val propCtx = C_NamespacePropertyContext(ctx)
         val vExpr = prop.toExpr(propCtx, qName)
         ideInfoHand.setIdeInfo(ideInfo)
+        restrictions.access(ctx.msgCtx, qName.pos)
         return C_ValueExpr(vExpr)
     }
 }
@@ -100,7 +103,7 @@ private class C_TypeStaticMember_Function(
         }
     }
 
-    override fun toExprMember(
+    override fun toExpr(
         ctx: C_ExprContext,
         qName: C_QualifiedName,
         selfType: R_Type,

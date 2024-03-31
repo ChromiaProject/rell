@@ -141,7 +141,7 @@ class LibMapTest: BaseRellTest(false) {
         chk("map<text,integer>().size()", "int[0]")
         chk("['Bob':123].size()", "int[1]")
         chk("['Bob':123,'Alice':456].size()", "int[2]")
-        chk("map<text,integer>().len()", "ct_err:deprecated:FUNCTION:[map<text,integer>.len]:size")
+        chk("map<text,integer>().len()", "ct_err:deprecated:ALIAS:[rell:map.len]:size")
     }
 
     @Test fun testContains() {

@@ -56,8 +56,12 @@ class R_TypeFlags(
 }
 
 sealed class R_TypeSqlAdapter(val sqlType: DataType<*>?) {
-    abstract fun isSqlCompatible(): Boolean
-    open fun isAllowedForEntityAttributes(): Boolean = isSqlCompatible()
+    abstract fun isSqlCompatible(compilerOptions: C_CompilerOptions): Boolean
+
+    open fun isAllowedForEntityAttributes(compilerOptions: C_CompilerOptions): Boolean {
+        return isSqlCompatible(compilerOptions)
+    }
+
     abstract fun toSqlValue(value: Rt_Value): Any
     abstract fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value)
     abstract fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value
@@ -65,7 +69,7 @@ sealed class R_TypeSqlAdapter(val sqlType: DataType<*>?) {
 }
 
 private class R_TypeSqlAdapter_None(private val type: R_Type): R_TypeSqlAdapter(null) {
-    override fun isSqlCompatible(): Boolean = false
+    override fun isSqlCompatible(compilerOptions: C_CompilerOptions): Boolean = false
 
     override fun toSqlValue(value: Rt_Value): Any {
         throw Rt_Utils.errNotSupported("Type cannot be converted to SQL: ${type.strCode()}")
@@ -85,7 +89,7 @@ private class R_TypeSqlAdapter_None(private val type: R_Type): R_TypeSqlAdapter(
 }
 
 abstract class R_TypeSqlAdapter_Some(sqlType: DataType<*>?): R_TypeSqlAdapter(sqlType) {
-    override fun isSqlCompatible() = true
+    override fun isSqlCompatible(compilerOptions: C_CompilerOptions) = true
 
     protected fun checkSqlNull(suspect: Boolean, rs: ResultSet, type: R_Type, nullable: Boolean): Rt_Value? {
         return if (suspect && rs.wasNull()) {
@@ -100,14 +104,10 @@ abstract class R_TypeSqlAdapter_Some(sqlType: DataType<*>?): R_TypeSqlAdapter(sq
     }
 
     protected fun checkSqlNull(value: Any?, type: R_Type, nullable: Boolean): Rt_Value? {
-        if (value == null) {
-            if (nullable) {
-                return Rt_NullValue
-            } else {
-                throw errSqlNull(type)
-            }
+        return if (value == null) {
+            if (nullable) Rt_NullValue else throw errSqlNull(type)
         } else {
-            return null
+            null
         }
     }
 

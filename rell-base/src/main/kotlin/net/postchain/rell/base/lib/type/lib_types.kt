@@ -10,13 +10,13 @@ import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 
 object Lib_Types {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("immutable", abstract = true, hidden = true) {
+        type("immutable", abstract = true, hidden = true, since = "0.13.2") {
             supertypeStrategySpecial { mType ->
                 C_LibUtils.isImmutableType(mType)
             }
         }
 
-        type("comparable", abstract = true, hidden = true) {
+        type("comparable", abstract = true, hidden = true, since = "0.13.2") {
             supertypeStrategySpecial { mType ->
                 val rType = L_TypeUtils.getRType(mType)
                 rType?.comparator() != null

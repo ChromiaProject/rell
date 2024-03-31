@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.expr
@@ -39,7 +39,6 @@ class C_CreateAttributes(
 }
 
 class C_AttrArgument(val index: Int, val name: C_Name?, val vExpr: V_Expr)
-
 class C_AttrMatch(val attr: R_Attribute, val vExpr: V_Expr)
 
 object C_AttributeResolver {
@@ -67,8 +66,9 @@ object C_AttributeResolver {
         checkMissingAttrs(defName, attributes, explicitAttrs, implicitAttrs, pos)
 
         for ((arg, attrMatch) in matchedAttrs) {
-            val exprPos = arg.vExpr.pos
-            C_Errors.check(attrMatch.attr.canSetInCreate, exprPos) {
+            val attrPos = arg.name?.pos ?: arg.vExpr.pos
+            attrMatch.attr.restrictions.access(ctx.msgCtx, attrPos)
+            C_Errors.check(attrMatch.attr.canSetInCreate, attrPos) {
                 val name = attrMatch.attr.name
                 "create_attr_cantset:$name" toCodeMsg "Cannot set value of system attribute '$name'"
             }

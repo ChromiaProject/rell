@@ -1,12 +1,14 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.runtime
 
 import net.postchain.common.exception.UserMistake
 import net.postchain.gtv.*
+import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
+import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
@@ -27,8 +29,9 @@ fun interface GtvToRtDefaultValueEvaluator {
 private class GtvToRtState(
     val pretty: Boolean,
     val validateOnly: Boolean,
-    val defaultValueEvaluator: GtvToRtDefaultValueEvaluator?,
     val strictGtvConversion: Boolean,
+    val bigIntegerSupport: Boolean,
+    val defaultValueEvaluator: GtvToRtDefaultValueEvaluator?,
 ) {
     private val entityRowids: MultiValuedMap<R_EntityDefinition, Long> = HashSetValuedHashMap()
 
@@ -86,6 +89,7 @@ class GtvToRtContext private constructor(
 ) {
     val pretty = state.pretty
     val strictGtvConversion = state.strictGtvConversion
+    val bigIntegerSupport = state.bigIntegerSupport
     val defaultValueEvaluator = state.defaultValueEvaluator
 
     fun updateSymbol(symbol: GtvToRtSymbol, keep: Boolean = false): GtvToRtContext {
@@ -101,17 +105,21 @@ class GtvToRtContext private constructor(
     fun finish(exeCtx: Rt_ExecutionContext) = state.finish(exeCtx)
 
     companion object {
+        private val BIG_INTEGER_SWITCH = C_FeatureSwitch("0.11.0")
+
         fun make(
             pretty: Boolean,
             validateOnly: Boolean = false,
-            defaultValueEvaluator: GtvToRtDefaultValueEvaluator? = null,
             strictGtvConversion: Boolean = false,
+            defaultValueEvaluator: GtvToRtDefaultValueEvaluator? = null,
+            compilerOptions: C_CompilerOptions = C_CompilerOptions.DEFAULT,
         ): GtvToRtContext {
             val state = GtvToRtState(
                 pretty = pretty,
                 validateOnly = validateOnly,
+                strictGtvConversion = strictGtvConversion,
+                bigIntegerSupport = BIG_INTEGER_SWITCH.isActive(compilerOptions),
                 defaultValueEvaluator = defaultValueEvaluator,
-                strictGtvConversion = strictGtvConversion
             )
             return GtvToRtContext(state, null, false)
         }
@@ -138,7 +146,7 @@ object GtvRtUtils {
             }
             GtvType.BIGINTEGER -> {
                 val v = gtv.asBigInteger()
-                if (ctx.strictGtvConversion) {
+                if (ctx.strictGtvConversion || !ctx.bigIntegerSupport) {
                     throw errGtvType(ctx, rellType, gtv, GtvType.INTEGER, "invalid value: '$v'")
                 }
                 try {

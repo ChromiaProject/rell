@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.type
@@ -9,7 +9,7 @@ import net.postchain.rell.base.utils.doc.DocCode
 
 object Lib_Type_VirtualMap {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("virtual_map", hidden = true) {
+        type("virtual_map", hidden = true, since = "0.9.0") {
             generic("K", subOf = "immutable")
             generic("V0")
             generic("V")
@@ -29,7 +29,7 @@ object Lib_Type_VirtualMap {
 
             Lib_Type_Map.defCommonFunctions(this)
 
-            function("keys", result = "set<K>", pure = true) {
+            function("keys", result = "set<K>", pure = true, since = "0.9.0") {
                 bodyMeta {
                     val keyType = fnBodyMeta.typeArg("K")
                     val keySetType = R_SetType(keyType)
@@ -41,7 +41,7 @@ object Lib_Type_VirtualMap {
                 }
             }
 
-            function("values", result = "list<V>", pure = true) {
+            function("values", result = "list<V>", pure = true, since = "0.9.0") {
                 bodyMeta {
                     val valueType = fnBodyMeta.typeArg("V")
                     val valueListType = R_ListType(valueType)
@@ -53,7 +53,7 @@ object Lib_Type_VirtualMap {
                 }
             }
 
-            function("to_full", result = "map<K,V0>") {
+            function("to_full", result = "map<K,V0>", since = "0.9.0") {
                 bodyRaw(Lib_Type_Virtual.ToFull)
             }
         }

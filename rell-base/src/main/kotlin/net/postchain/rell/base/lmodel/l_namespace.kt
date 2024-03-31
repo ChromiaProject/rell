@@ -7,22 +7,30 @@ package net.postchain.rell.base.lmodel
 import com.google.common.collect.Iterables
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.model.R_FullName
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
-import net.postchain.rell.base.utils.doc.DocDefinition
-import net.postchain.rell.base.utils.doc.DocSymbol
+import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 
-sealed class L_NamespaceMember(
-    fullName: R_FullName,
+class L_MemberHeader(val since: R_LangVersion?, val docComment: DocComment?)
+
+abstract class L_AbstractMember(
+    val fullName: R_FullName,
+    val header: L_MemberHeader,
     override val docSymbol: DocSymbol,
 ): DocDefinition {
-    val fullName: R_FullName = R_FullName(fullName.moduleName, fullName.qualifiedName)
     val qualifiedName: R_QualifiedName = fullName.qualifiedName
     val simpleName: R_Name = qualifiedName.last
+}
 
+sealed class L_NamespaceMember(
+    fullName: R_FullName,
+    header: L_MemberHeader,
+    docSymbol: DocSymbol,
+): L_AbstractMember(fullName, header, docSymbol) {
     abstract fun strCode(): String
 
     open fun getTypeDefOrNull(): L_TypeDef? = null
@@ -111,9 +119,10 @@ class L_Namespace(members: List<L_NamespaceMember>) {
 
 class L_NamespaceMember_Namespace(
     fullName: R_FullName,
-    val namespace: L_Namespace,
+    header: L_MemberHeader,
     doc: DocSymbol,
-): L_NamespaceMember(fullName, doc) {
+    val namespace: L_Namespace,
+): L_NamespaceMember(fullName, header, doc) {
     override fun strCode() = "namespace $qualifiedName"
 
     override fun getDocMember(name: String): DocDefinition? {
@@ -123,11 +132,12 @@ class L_NamespaceMember_Namespace(
 
 class L_NamespaceMember_Alias(
     fullName: R_FullName,
+    header: L_MemberHeader,
     doc: DocSymbol,
     val targetMember: L_NamespaceMember,
     val finalTargetMember: L_NamespaceMember,
     val deprecated: C_Deprecated?,
-): L_NamespaceMember(fullName, doc) {
+): L_NamespaceMember(fullName, header, doc) {
     override fun strCode(): String {
         val parts = listOfNotNull(
             L_InternalUtils.deprecatedStrCodeOrNull(deprecated),

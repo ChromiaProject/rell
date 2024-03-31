@@ -9,7 +9,7 @@ import net.postchain.rell.base.utils.doc.DocCode
 
 object Lib_Type_VirtualList {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("virtual_list", hidden = true) {
+        type("virtual_list", hidden = true, since = "0.9.0") {
             generic("T")
             generic("T2")
             parent("virtual_collection<T2>")
@@ -26,7 +26,7 @@ object Lib_Type_VirtualList {
                     .build()
             }
 
-            function("get", result = "T2", pure = true) {
+            function("get", result = "T2", pure = true, since = "0.9.0") {
                 param("index", type = "integer")
                 body { a, b ->
                     val list = a.asVirtualList()
@@ -36,7 +36,7 @@ object Lib_Type_VirtualList {
                 }
             }
 
-            function("to_full", result = "list<T>") {
+            function("to_full", result = "list<T>", since = "0.9.0") {
                 bodyRaw(Lib_Type_Virtual.ToFull)
             }
         }

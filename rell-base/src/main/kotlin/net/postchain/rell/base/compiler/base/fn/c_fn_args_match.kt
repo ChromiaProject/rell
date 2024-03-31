@@ -71,7 +71,7 @@ sealed class C_ArgMatchArg(val param: C_ArgMatchParam)
 class C_ArgMatchArg_Expr(param: C_ArgMatchParam, val vExpr: V_Expr): C_ArgMatchArg(param)
 class C_ArgMatchArg_Default(param: C_ArgMatchParam, val defaultValue: C_ParameterDefaultValue): C_ArgMatchArg(param)
 
-class C_ArgMatchParamArg(val param: C_ArgMatchParam, val wild: Boolean, val index: Int)
+class C_ArgMatchParamArg(val param: C_ArgMatchParam, val wild: Boolean, val index: Int, val callArg: C_CallArgument?)
 
 class C_ArgMatcherResult(
     val matching: C_ArgMatching?,
@@ -233,19 +233,24 @@ object C_ArgMatcher {
         fun addArgument(paramIndex: Int, param: C_ArgMatchParam, arg: C_CallArgument) {
             checkNotBound(paramIndex)
             when (arg.value) {
-                is C_CallArgumentValue_Expr -> addExpr0(paramIndex, param, C_ArgMatchArg_Expr(param, arg.value.vExpr))
-                is C_CallArgumentValue_Wildcard -> addWild0(paramIndex, param)
+                is C_CallArgumentValue_Expr -> {
+                    val argMatch = C_ArgMatchArg_Expr(param, arg.value.vExpr)
+                    addExpr0(paramIndex, param, argMatch, arg)
+                }
+                is C_CallArgumentValue_Wildcard -> {
+                    addWild0(paramIndex, param, arg)
+                }
             }
         }
 
         fun addDefault(paramIndex: Int, param: C_ArgMatchParam, defaultValue: C_ParameterDefaultValue) {
             checkNotBound(paramIndex)
-            addExpr0(paramIndex, param, C_ArgMatchArg_Default(param, defaultValue))
+            addExpr0(paramIndex, param, C_ArgMatchArg_Default(param, defaultValue), null)
         }
 
         fun addWildcard(paramIndex: Int, param: C_ArgMatchParam) {
             checkNotBound(paramIndex)
-            addWild0(paramIndex, param)
+            addWild0(paramIndex, param, null)
         }
 
         fun errNamedArg(name: C_Name, code: String, lazyMsg: () -> String) {
@@ -261,16 +266,16 @@ object C_ArgMatcher {
             check(mappings[paramIndex] == null)
         }
 
-        private fun addExpr0(paramIndex: Int, param: C_ArgMatchParam, arg: C_ArgMatchArg) {
+        private fun addExpr0(paramIndex: Int, param: C_ArgMatchParam, arg: C_ArgMatchArg, callArg: C_CallArgument?) {
             val index = exprArgs.size
             exprArgs.add(arg)
-            mappings[paramIndex] = C_ArgMatchParamArg(param, false, index)
+            mappings[paramIndex] = C_ArgMatchParamArg(param, false, index, callArg)
         }
 
-        private fun addWild0(paramIndex: Int, param: C_ArgMatchParam) {
+        private fun addWild0(paramIndex: Int, param: C_ArgMatchParam, callArg: C_CallArgument?) {
             val index = wildArgs.size
             wildArgs.add(param)
-            mappings[paramIndex] = C_ArgMatchParamArg(param, true, index)
+            mappings[paramIndex] = C_ArgMatchParamArg(param, true, index, callArg)
         }
 
         fun build(valid: Boolean): C_ArgMatcherResult {

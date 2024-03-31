@@ -29,13 +29,14 @@ class Ld_NamespaceMember_TypeExtension(
             .after(ctx.finishCtxFuture)
             .after(resultF)
             .delegate { (finCtx, result) ->
-                finish(finCtx, fullName, result.typeDef, result.membersFuture)
+                finish(finCtx, fullName, result.memberHeader, result.typeDef, result.membersFuture)
             }
     }
 
     private fun finish(
         ctx: Ld_NamespaceFinishContext,
         fullName: R_FullName,
+        memberHeader: L_MemberHeader,
         lTypeDef: L_TypeDef,
         membersF: FcFuture<L_TypeDefMembers>,
     ): FcFuture<List<L_NamespaceMember>> {
@@ -50,7 +51,7 @@ class Ld_NamespaceMember_TypeExtension(
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
             mountName = null,
             declaration = DocDeclaration_TypeExtension(fullName.last, docTypeParams, docSelfType),
-            comment = typeDef.memberHeader.docComment(),
+            comment = memberHeader.docComment,
         )
 
         return ctx.fcExec.future().after(membersF).compute { members ->
@@ -62,7 +63,7 @@ class Ld_NamespaceMember_TypeExtension(
                 docSymbol,
             )
 
-            val member = L_NamespaceMember_TypeExtension(fullName, lTypeExt)
+            val member = L_NamespaceMember_TypeExtension(fullName, memberHeader, lTypeExt)
             immListOf(member)
         }
     }

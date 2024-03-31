@@ -8,6 +8,7 @@ import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.compiler.base.core.C_QualifiedName
 import net.postchain.rell.base.compiler.base.expr.*
+import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.lib.V_SpecialMemberFunctionCall
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_Errors
@@ -29,7 +30,7 @@ import net.postchain.rell.base.utils.immListOf
 
 object Lib_Type_Object {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("object", abstract = true, hidden = true) {
+        type("object", abstract = true, hidden = true, since = "0.7.0") {
             supertypeStrategySpecial { mType ->
                 val rType = L_TypeUtils.getRType(mType)
                 rType is R_ObjectType
@@ -37,14 +38,14 @@ object Lib_Type_Object {
         }
 
         namespace("rell") {
-            extension("object_ext", type = "object") {
-                function("to_struct", C_Fn_ToStruct(false)) {
+            extension("object_ext", type = "object", since = "0.7.0") {
+                function("to_struct", C_Fn_ToStruct(false), since = "0.10.4") {
                     comment("""
                         Convert this instance to a `struct<T>`.
                         Note that this will read all values from the database.
                     """)
                 }
-                function("to_mutable_struct", C_Fn_ToStruct(true)) {
+                function("to_mutable_struct", C_Fn_ToStruct(true), since = "0.10.4") {
                     comment("""
                         Convert this instance to a `mutable struct<T>`.
                         Note that this will read all values from the database.
@@ -62,7 +63,7 @@ object Lib_Type_Object {
     private class C_TypeValueMember_ObjectAttr(
         private val rObject: R_ObjectDefinition,
         private val attr: R_Attribute,
-    ): C_TypeValueMember_Value(attr.ideName, attr.type) {
+    ): C_TypeValueMember_Value(attr.ideName, attr.type, attr.restrictions) {
         override fun kindMsg() = "attribute"
         override fun nameMsg(): C_CodeMsg = attr.rName.str toCodeMsg attr.rName.str
 

@@ -1,9 +1,10 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.namespace
 
+import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.module.C_ModuleKey
 import net.postchain.rell.base.utils.LateInit
 import net.postchain.rell.base.utils.ListVsMap
@@ -78,8 +79,10 @@ private class C_NsRes_InternalMaker {
             is C_NsImp_Def_Simple -> def.item
             is C_NsImp_Def_Namespace -> {
                 val impNs = def.ns()
+                val decType = C_DeclarationType.NAMESPACE
+                val restrictions = C_MemberRestrictions.makeUser(def.defName, decType, def.deprecated)
+                val base = C_NamespaceMemberBase(def.defName, def.ideInfo, restrictions)
                 val ns = makeNamespace(impNs)
-                val base = C_NamespaceMemberBase(def.defName, def.ideInfo, def.deprecated)
                 C_NamespaceItem(C_NamespaceMember_Namespace(base, ns))
             }
         }

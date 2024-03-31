@@ -17,9 +17,11 @@ import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.lib.C_SystemLibrary
 import net.postchain.rell.base.lib.Lib_SysQueries
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
+import java.lang.IllegalArgumentException
 
 class C_Entity(val defPos: S_Pos?, val entity: R_EntityDefinition)
 
@@ -184,31 +186,40 @@ class C_CompilerOptions(
     val mountConflictError: Boolean,
     val appModuleInTestsError: Boolean,
     val useTestDependencyExtensions: Boolean,
+    val allowLibNamedArgsAnyVersion: Boolean,
+    val allowOlderCompatibilityVersion: Boolean,
     val ide: Boolean,
     val ideDocSymbolsEnabled: Boolean,
     val ideDefIdConflictError: Boolean,
 ) {
+    init {
+        if (!allowOlderCompatibilityVersion) {
+            RellVersions.checkCompatibilityVersion(compatibility) { IllegalArgumentException(it) }
+        }
+    }
+
     fun toBuilder() = Builder(this)
 
     fun toPojoMap(): Map<String, Any> {
         val map = mutableMapOf(
-                "gtv"  to gtv,
-                "deprecatedError" to deprecatedError,
-                "ide" to ide,
-                "atAttrShadowing" to atAttrShadowing.name,
-                "testLib" to testLib,
-                "hiddenLib" to hiddenLib,
-                "allowDbModificationsInObjectExprs" to allowDbModificationsInObjectExprs,
-                "complexWhatEnabled" to complexWhatEnabled,
-                "mountConflictError" to mountConflictError,
-                "appModuleInTestsError" to appModuleInTestsError,
-                "useTestDependencyExtensions" to useTestDependencyExtensions,
+            "gtv" to gtv,
+            "deprecatedError" to deprecatedError,
+            "ide" to ide,
+            "atAttrShadowing" to atAttrShadowing.name,
+            "testLib" to testLib,
+            "hiddenLib" to hiddenLib,
+            "allowDbModificationsInObjectExprs" to allowDbModificationsInObjectExprs,
+            "complexWhatEnabled" to complexWhatEnabled,
+            "mountConflictError" to mountConflictError,
+            "appModuleInTestsError" to appModuleInTestsError,
+            "useTestDependencyExtensions" to useTestDependencyExtensions,
         )
 
         putNotNull(map, "symbolInfoFile", symbolInfoFile?.str())
         putNotNull(map, "compatibility", compatibility?.str())
-        putNotDefault(map, "ideDocSymbolsEnabled", DEFAULT.ideDocSymbolsEnabled, ideDocSymbolsEnabled)
-        putNotDefault(map, "ideDefIdConflictError", DEFAULT.ideDefIdConflictError, ideDefIdConflictError)
+        putNotDefault(map, "ideDocSymbolsEnabled") { it.ideDocSymbolsEnabled }
+        putNotDefault(map, "ideDefIdConflictError") { it.ideDefIdConflictError }
+        putNotDefault(map, "allowLibNamedArgsAnyVersion") { it.allowLibNamedArgsAnyVersion }
 
         return map.toImmMap()
     }
@@ -219,7 +230,9 @@ class C_CompilerOptions(
         }
     }
 
-    private fun <K, V: Any> putNotDefault(map: MutableMap<K, V>, key: K, defaultValue: V, value: V) {
+    private fun <K, V: Any> putNotDefault(map: MutableMap<K, V>, key: K, getter: (C_CompilerOptions) -> V) {
+        val value = getter(this)
+        val defaultValue = getter(DEFAULT)
         if (value != defaultValue) {
             map[key] = value
         }
@@ -240,6 +253,8 @@ class C_CompilerOptions(
             mountConflictError = true,
             appModuleInTestsError = false,
             useTestDependencyExtensions = false,
+            allowLibNamedArgsAnyVersion = false,
+            allowOlderCompatibilityVersion = false,
             ide = false,
             ideDocSymbolsEnabled = false,
             ideDefIdConflictError = false,
@@ -268,6 +283,10 @@ class C_CompilerOptions(
                 appModuleInTestsError = getBoolOpt(map, "appModuleInTestsError", DEFAULT.appModuleInTestsError),
                 useTestDependencyExtensions =
                         getBoolOpt(map, "useTestDependencyExtensions", DEFAULT.useTestDependencyExtensions),
+                allowLibNamedArgsAnyVersion =
+                        getBoolOpt(map, "allowLibNamedArgsAnyVersion", DEFAULT.allowLibNamedArgsAnyVersion),
+                allowOlderCompatibilityVersion =
+                        getBoolOpt(map, "allowOlderCompatibilityVersion", DEFAULT.allowOlderCompatibilityVersion),
                 ideDocSymbolsEnabled = getBoolOpt(map, "ideDocSymbolsEnabled", DEFAULT.ideDocSymbolsEnabled),
                 ideDefIdConflictError = getBoolOpt(map, "ideDefIdConflictError", DEFAULT.ideDefIdConflictError),
             )
@@ -294,6 +313,8 @@ class C_CompilerOptions(
         private var mountConflictError = proto.mountConflictError
         private var appModuleInTestsError = proto.appModuleInTestsError
         private var useTestDependencyExtensions = proto.useTestDependencyExtensions
+        private var allowLibNamedArgsAnyVersion = proto.allowLibNamedArgsAnyVersion
+        private var allowOlderCompatibilityVersion = proto.allowOlderCompatibilityVersion
         private var ide = proto.ide
         private var ideDocSymbolsEnabled = proto.ideDocSymbolsEnabled
         private var ideDefIdConflictError = proto.ideDefIdConflictError
@@ -311,6 +332,8 @@ class C_CompilerOptions(
         @Suppress("UNUSED") fun mountConflictError(v: Boolean) = apply { mountConflictError = v }
         @Suppress("UNUSED") fun appModuleInTestsError(v: Boolean) = apply { appModuleInTestsError = v }
         @Suppress("UNUSED") fun useTestDependencyExtensions(v: Boolean) = apply { useTestDependencyExtensions = v }
+        @Suppress("UNUSED") fun allowLibNamedArgsAnyVersion(v: Boolean) = apply { allowLibNamedArgsAnyVersion = v }
+        @Suppress("UNISED") fun allowOlderCompatibilityVersion(v: Boolean) = apply { allowOlderCompatibilityVersion = v }
         @Suppress("UNUSED") fun ide(v: Boolean) = apply { ide = v }
         @Suppress("UNISED") fun ideDocSymbolsEnabled(v: Boolean) = apply { ideDocSymbolsEnabled = v }
         @Suppress("UNUSED") fun ideDefIdConflictError(v: Boolean) = apply { ideDefIdConflictError = v }
@@ -329,6 +352,8 @@ class C_CompilerOptions(
             mountConflictError = mountConflictError,
             appModuleInTestsError = appModuleInTestsError,
             useTestDependencyExtensions = useTestDependencyExtensions,
+            allowLibNamedArgsAnyVersion = allowLibNamedArgsAnyVersion,
+            allowOlderCompatibilityVersion = allowOlderCompatibilityVersion,
             ide = ide,
             ideDocSymbolsEnabled = ideDocSymbolsEnabled,
             ideDefIdConflictError = ideDefIdConflictError,
@@ -387,7 +412,7 @@ object C_Compiler {
         moduleSelection: C_CompilerModuleSelection,
         extraLibMod: C_LibModule?,
     ): C_CompilationResult {
-        val symCtxManager = C_SymbolContextManager(msgCtx.globalCtx.compilerOptions)
+        val symCtxManager = C_SymbolContextManager(msgCtx, msgCtx.globalCtx.compilerOptions)
         val symCtxProvider = symCtxManager.provider
 
         val midModules = msgCtx.consumeError {

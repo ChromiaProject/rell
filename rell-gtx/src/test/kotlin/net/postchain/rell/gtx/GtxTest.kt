@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.gtx
@@ -144,5 +144,16 @@ class GtxTest : BaseGtxTest() {
         val decMax = DecimalTest.LIMIT.subtract(BigInteger.ONE)
         chkCallQuery("qdec", mapOf("x" to GtvBigInteger(decMax)), "'$decMax'")
         chkCallQuery("qdec", mapOf("x" to GtvBigInteger(DecimalTest.LIMIT)), "rt_err:decimal:overflow")
+    }
+
+    @Test fun testVersionControl() {
+        chkVer("function f() = crypto.eth_privkey_to_address(x'');", "0.13.5",
+            "VER:lib:FUNCTION:[rell:crypto.eth_privkey_to_address]")
+        chkVer("function f(m: rell.meta) {}", "0.13.5", "VER:lib:TYPE:[rell:rell.meta]")
+        chkVer("function f(x: integer?) = x == 123;", "0.14.0", "VER:feature:binop_nullable_eq_value")
+    }
+
+    private fun chkVer(code: String, v1: String, err: String) {
+        chkVerRt("$code query q() = 0;", v1, err, "0")
     }
 }

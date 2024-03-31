@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.def
@@ -7,6 +7,7 @@ package net.postchain.rell.base.compiler.base.def
 import net.postchain.rell.base.compiler.ast.S_AttrHeader
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.*
+import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.lmodel.L_TypeUtils
@@ -143,6 +144,7 @@ class C_SysAttribute(
     val sqlMapping: String,
     val canSetInCreate: Boolean,
     val docSymbol: DocSymbol?,
+    val restrictions: C_MemberRestrictions,
 ) {
     // Name as String, not R_Name.
     constructor(
@@ -154,6 +156,7 @@ class C_SysAttribute(
         sqlMapping: String = name,
         canSetInCreate: Boolean = true,
         docSymbol: DocSymbol? = null,
+        restrictions: C_MemberRestrictions = C_MemberRestrictions.NULL,
     ): this(
         name = R_Name.of(name),
         type = type,
@@ -163,6 +166,7 @@ class C_SysAttribute(
         sqlMapping = sqlMapping,
         canSetInCreate = canSetInCreate,
         docSymbol = docSymbol,
+        restrictions = restrictions,
     )
 
     fun compile(index: Int, persistent: Boolean): R_Attribute {
@@ -174,15 +178,16 @@ class C_SysAttribute(
         val ideInfo = C_IdeSymbolInfo.direct(ideKind, doc = docSymbol)
 
         return R_Attribute(
-                index,
-                name,
-                type,
-                mutable = mutable,
-                keyIndexKind = keyIndexKind,
-                ideInfo = ideInfo,
-                canSetInCreate = canSetInCreate,
-                exprGetter = exprGetter,
-                sqlMapping = sqlMapping
+            index,
+            name,
+            type,
+            mutable = mutable,
+            keyIndexKind = keyIndexKind,
+            ideInfo = ideInfo,
+            restrictions = restrictions,
+            canSetInCreate = canSetInCreate,
+            exprGetter = exprGetter,
+            sqlMapping = sqlMapping,
         )
     }
 

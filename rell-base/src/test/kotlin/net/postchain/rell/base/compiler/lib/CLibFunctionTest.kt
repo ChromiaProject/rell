@@ -276,4 +276,33 @@ class CLibFunctionTest: BaseCLibTest() {
         //TODO right error message on stack overflow
         //chk("data()", "...")
     }
+
+    @Test fun testVersionControlNamedArguments() {
+        modTst.extraModule {
+            function("f", "integer") {
+                param("x", "integer")
+                param("y", "integer")
+                body { -> Rt_UnitValue }
+            }
+            type("data") {
+                modTst.setRTypeFactory(this)
+                constructor { body { -> Rt_UnitValue } }
+                function("g", "integer") {
+                    param("x", "integer")
+                    param("y", "integer")
+                    body { -> Rt_UnitValue }
+                }
+            }
+        }
+
+        chkVerCtExpr("f(x = 1, y = 2)", "0.13.9", "VER:feature:lib_call_named_arg")
+        chkVerCtExpr("f(x = 1, y = 2, *)", "0.13.9", "VER:feature:lib_call_named_arg")
+        chkVerCtExpr("f(x = 1, y = *)", "0.13.9", "VER:feature:lib_call_named_arg")
+        chkVerCtExpr("f(x = *, y = *)", "0.13.9", "VER:feature:lib_call_named_arg")
+
+        chkVerCtExpr("data().g(x = 1, y = 2)", "0.13.9", "VER:feature:lib_call_named_arg")
+        chkVerCtExpr("data().g(x = 1, y = 2, *)", "0.13.9", "VER:feature:lib_call_named_arg")
+        chkVerCtExpr("data().g(x = 1, y = *)", "0.13.9", "VER:feature:lib_call_named_arg")
+        chkVerCtExpr("data().g(x = *, y = *)", "0.13.9", "VER:feature:lib_call_named_arg")
+    }
 }

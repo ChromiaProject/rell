@@ -13,8 +13,10 @@ import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.immListOf
 
 object Lib_Type_Set {
+    private const val SINCE0 = "0.6.0"
+
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("set") {
+        type("set", since = SINCE0) {
             comment("""
                 Represents a mutable set of elements. The set is a hash-set with an iteration order
                 determined by the order the elements was first added to the set.
@@ -24,7 +26,7 @@ object Lib_Type_Set {
 
             rType { t -> R_SetType(t) }
 
-            constructor(pure = true) {
+            constructor(pure = true, since = SINCE0) {
                 comment("Constructs an empty set.")
                 bodyMeta {
                     val elementType = fnBodyMeta.typeArg("T")
@@ -35,7 +37,7 @@ object Lib_Type_Set {
                 }
             }
 
-            constructor(pure = true) {
+            constructor(pure = true, since = SINCE0) {
                 comment("Constructs a set from the elements of the provided iterable.")
                 param("values", type = "iterable<-T>") {
                     comment("The iterable containing elements to include in the set.")

@@ -24,16 +24,24 @@ import net.postchain.rell.base.utils.toImmList
 // public part
 
 class C_EffectivePartialArguments(
+    private val callParams: C_FunctionCallParameters,
     exprArgs: List<V_Expr>,
     wildArgs: List<R_Type>,
-    combinedArgs: List<R_PartialArgMapping>,
+    mapping: List<C_ArgMatchParamArg>,
 ) {
     val exprArgs = exprArgs.toImmList()
     val wildArgs = wildArgs.toImmList()
 
-    private val combinedArgs = combinedArgs.toImmList()
+    private val mapping = mapping.toImmList()
 
-    fun toRMapping() = R_PartialCallMapping(exprArgs.size, wildArgs.size, combinedArgs)
+    fun toRMapping(msgCtx: C_MessageContext): R_PartialCallMapping {
+        C_FunctionUtils.checkParamRestrictions(msgCtx, mapping) { param ->
+            callParams.list[param.index].restrictions
+        }
+
+        val combinedArgs = mapping.map { R_PartialArgMapping(it.wild, it.index) }
+        return R_PartialCallMapping(exprArgs.size, wildArgs.size, combinedArgs)
+    }
 }
 
 sealed class C_AbstractCallArguments(private val argHands: List<C_CallArgumentHandle>) {
@@ -61,6 +69,7 @@ sealed class C_PartialCallArguments(
     protected val ctx: C_ExprContext,
     val wildcardPos: S_Pos,
     rawArgs: List<C_CallArgumentHandle>,
+    val firstNamedArg: C_Name?,
 ): C_AbstractCallArguments(rawArgs) {
     abstract fun compileEffectiveArgs(
         callInfo: C_FunctionCallInfo,
@@ -189,7 +198,7 @@ private class C_PartialCallArguments_Impl(
     rawArgs: List<C_CallArgumentHandle>,
     private val args: C_CallArguments,
     private val firstWildcardPos: S_Pos,
-): C_PartialCallArguments(ctx, firstWildcardPos, rawArgs) {
+): C_PartialCallArguments(ctx, firstWildcardPos, rawArgs, args.named.firstOrNull()?.name) {
     override fun compileEffectiveArgs(
         callInfo: C_FunctionCallInfo,
         callParams: C_FunctionCallParameters,
@@ -206,9 +215,8 @@ private class C_PartialCallArguments_Impl(
 
         val exprArgs = C_InternalFnArgsUtils.makeExprArgs(ctx, callInfo, callParams, matching)
         val wildArgs = matching.wildArgs.map { callParams.list[it.index].type }
-        val mapping = matching.mapping.map { R_PartialArgMapping(it.wild, it.index) }
 
-        val res = C_EffectivePartialArguments(exprArgs, wildArgs, mapping)
+        val res = C_EffectivePartialArguments(callParams, exprArgs, wildArgs, matching.mapping)
         return if (errWatcher.hasNewErrors()) null else res
     }
 

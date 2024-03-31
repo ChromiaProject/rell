@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.expr
@@ -55,7 +55,7 @@ class C_SpecificTypeExpr(
         }
 
         val qName = C_QualifiedName(memberName)
-        return member.toExprMember(ctx, qName, type, memberNameHand)
+        return member.toExpr(ctx, qName, type, memberNameHand)
     }
 
     override fun isCallable(): Boolean {

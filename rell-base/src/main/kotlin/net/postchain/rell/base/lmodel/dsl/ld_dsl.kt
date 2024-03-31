@@ -11,8 +11,8 @@ interface Ld_ModuleDsl: Ld_NamespaceBodyDsl {
     fun imports(module: L_Module)
 
     companion object {
-        fun make(name: String, block: Ld_ModuleDsl.() -> Unit): L_Module {
-            return Ld_ModuleDslImpl.make(name, block)
+        fun make(name: String, modCfg: Ld_ModuleConfig, block: Ld_ModuleDsl.() -> Unit): L_Module {
+            return Ld_ModuleDslImpl.make(name, modCfg, block)
         }
     }
 }

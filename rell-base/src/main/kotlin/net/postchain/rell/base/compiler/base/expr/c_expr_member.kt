@@ -60,6 +60,7 @@ abstract class C_TypeValueMember(optionalName: R_Name?): C_TypeMember(optionalNa
 abstract class C_TypeValueMember_Value(
     private val ideName: R_IdeName?,
     val valueType: R_Type,
+    private val restrictions: C_MemberRestrictions,
 ): C_TypeValueMember(ideName?.rName) {
     final override fun isValue() = true
     final override fun isCallable() = valueType is R_FunctionType
@@ -71,13 +72,14 @@ abstract class C_TypeValueMember_Value(
         val expr: C_Expr = C_ValueMemberExpr(ctx, link, this, C_IdeSymbolInfoHandle.NOP_HANDLE)
         val ideInfo = ideName?.ideInfo ?: C_IdeSymbolInfo.UNKNOWN
         ideInfoHand.setIdeInfo(ideInfo)
+        restrictions.access(ctx.msgCtx, link.linkPos)
         return expr
     }
 }
 
 class C_TypeValueMember_BasicAttr(
     private val attr: C_MemberAttr,
-): C_TypeValueMember_Value(attr.ideName, attr.type) {
+): C_TypeValueMember_Value(attr.ideName, attr.type, attr.restrictions()) {
     override fun kindMsg() = "attribute"
     override fun nameMsg() = attr.nameMsg()
 
@@ -193,8 +195,12 @@ class C_TypeValueMember_Function(
     }
 }
 
-abstract class C_MemberAttr(val ideName: R_IdeName?, val type: R_Type) {
+abstract class C_MemberAttr(
+    val ideName: R_IdeName?,
+    val type: R_Type,
+) {
     abstract fun nameMsg(): C_CodeMsg
+    abstract fun restrictions(): C_MemberRestrictions
     abstract fun vAttr(exprCtx: C_ExprContext, pos: S_Pos): V_MemberAttr
 }
 
@@ -218,6 +224,8 @@ abstract class C_MemberAttr_TupleAttr(
         }
     }
 
+    final override fun restrictions() = C_MemberRestrictions.NULL
+
     protected abstract class V_MemberAttr_TupleAttr(
         type: R_Type,
         protected val fieldIndex: Int,
@@ -228,6 +236,7 @@ abstract class C_MemberAttr_TupleAttr(
 
 abstract class C_MemberAttr_StructAttr(type: R_Type, protected val attr: R_Attribute): C_MemberAttr(attr.ideName, type) {
     final override fun nameMsg() = attr.rName.str toCodeMsg attr.rName.str
+    final override fun restrictions() = attr.restrictions
 
     protected abstract class V_MemberAttr_StructAttr(type: R_Type, protected val attr: R_Attribute): V_MemberAttr(type)
 }
@@ -237,10 +246,12 @@ class C_MemberAttr_SysProperty(
     type: R_Type,
     private val fn: C_SysFunction,
     private val naming: C_MemberNaming,
+    private val restrictions: C_MemberRestrictions,
 ): C_MemberAttr(ideName, type) {
     private val name = ideName.rName
 
     override fun nameMsg() = name.str toCodeMsg name.str
+    override fun restrictions() = restrictions
 
     override fun vAttr(exprCtx: C_ExprContext, pos: S_Pos): V_MemberAttr {
         val cBody = fn.compileCall(C_SysFunctionCtx(exprCtx, pos))

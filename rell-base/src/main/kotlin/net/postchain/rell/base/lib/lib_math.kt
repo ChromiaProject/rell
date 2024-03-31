@@ -78,30 +78,36 @@ object Lib_Math {
     }
 
     val NAMESPACE = Ld_NamespaceDsl.make {
-        defFnAbs(this, "integer", Abs_Integer)
-        defFnAbs(this, "big_integer", Abs_BigInteger)
-        defFnAbs(this, "decimal", Abs_Decimal)
+        defFnAbs(this, "integer", Abs_Integer, since = "0.6.0")
+        defFnAbs(this, "big_integer", Abs_BigInteger, since = "0.12.0")
+        defFnAbs(this, "decimal", Abs_Decimal, since = "0.9.1")
 
-        defFnMinMax(this, "integer", Min_Integer, Max_Integer)
-        defFnMinMax(this, "big_integer", Min_BigInteger, Max_BigInteger)
-        defFnMinMax(this, "decimal", Min_Decimal, Max_Decimal)
+        defFnMinMax(this, "integer", Min_Integer, Max_Integer, since = "0.6.0")
+        defFnMinMax(this, "big_integer", Min_BigInteger, Max_BigInteger, since = "0.12.0")
+        defFnMinMax(this, "decimal", Min_Decimal, Max_Decimal, since = "0.9.1")
     }
 
-    private fun defFnAbs(d: Ld_NamespaceBodyDsl, type: String, fn: C_SysFunctionBody) {
-        d.function("abs", type, comment = "Gets the absolute value of a $type.") {
+    private fun defFnAbs(d: Ld_NamespaceBodyDsl, type: String, fn: C_SysFunctionBody, since: String) {
+        d.function("abs", type, since = since, comment = "Gets the absolute value of a $type.") {
             param("a", type, comment = "The $type for which to calculate the absolute value.")
             bodyRaw(fn)
         }
     }
 
-    private fun defFnMinMax(d: Ld_NamespaceBodyDsl, type: String, fnMin: C_SysFunctionBody, fnMax: C_SysFunctionBody) {
-        d.function("min", type, comment = "Determines the smaller of two $type values.") {
+    private fun defFnMinMax(
+        d: Ld_NamespaceBodyDsl,
+        type: String,
+        fnMin: C_SysFunctionBody,
+        fnMax: C_SysFunctionBody,
+        since: String,
+    ) {
+        d.function("min", type, since = since, comment = "Determines the smaller of two $type values.") {
             param("a", type, comment = "The first $type to compare.")
             param("b", type, comment = "The second $type to compare.")
             bodyRaw(fnMin)
         }
 
-        d.function("max", type, comment = "Identifies the larger of two $type values.") {
+        d.function("max", type, since = since, comment = "Identifies the larger of two $type values.") {
             param("a", type, comment = "The first $type to compare.")
             param("b", type, comment = "The second $type to compare.")
             bodyRaw(fnMax)

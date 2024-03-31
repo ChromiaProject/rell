@@ -27,15 +27,16 @@ object Lib_Type_Gtv {
     val LIST_OF_GTV_TYPE = R_ListType(R_GtvType)
 
     val NAMESPACE = Ld_NamespaceDsl.make {
-        alias("GTXValue", "gtv", C_MessageType.ERROR)
+        alias("GTXValue", "gtv", C_MessageType.ERROR, since = "0.6.1")
 
-        type("gtv", rType = R_GtvType) {
+        type("gtv", rType = R_GtvType, since = "0.9.0") {
             comment("""
                 Generic Transfer Value (GTV) is a general-purpose type for sending and decoding any data structure.
             """)
-            staticFunction("from_bytes", "gtv", pure = true) {
+
+            staticFunction("from_bytes", "gtv", pure = true, since = "0.9.0") {
                 comment("Decodes a `gtv` from a `byte_array`. Fails if it cannod be decoded.")
-                alias("fromBytes", C_MessageType.ERROR)
+                alias("fromBytes", C_MessageType.ERROR, since = "0.6.1")
                 param("bytes", "byte_array", comment = "Bytes to decode.")
                 body { a ->
                     val bytes = a.asByteArray()
@@ -46,7 +47,7 @@ object Lib_Type_Gtv {
                 }
             }
 
-            staticFunction("from_bytes_or_null", "gtv?", pure = true) {
+            staticFunction("from_bytes_or_null", "gtv?", pure = true, since = "0.13.0") {
                 comment("Tries to decode a gtv from a `byte_array` and returns `null` if it fails.")
                 param("bytes", "byte_array", comment = "Bytes to decode.")
                 body { a ->
@@ -60,9 +61,9 @@ object Lib_Type_Gtv {
                 }
             }
 
-            staticFunction("from_json", "gtv", pure = true) {
+            staticFunction("from_json", "gtv", pure = true, since = "0.9.0") {
                 comment("Decodes a `gtv` from a JSON string representation.")
-                alias("fromJSON", C_MessageType.ERROR)
+                alias("fromJSON", C_MessageType.ERROR, since = "0.6.1")
                 param("json", "text", comment = "JSON string to decode")
                 body { a ->
                     val str = a.asString()
@@ -73,9 +74,9 @@ object Lib_Type_Gtv {
                 }
             }
 
-            staticFunction("from_json", "gtv", pure = true) {
+            staticFunction("from_json", "gtv", pure = true, since = "0.9.0") {
                 comment("Decodes a `gtv` from a `json` representation.")
-                alias("fromJSON", C_MessageType.ERROR)
+                alias("fromJSON", C_MessageType.ERROR, since = "0.6.1")
                 param("json", "json", comment = "json to decode")
                 body { a ->
                     val str = a.asJsonString()
@@ -86,9 +87,9 @@ object Lib_Type_Gtv {
                 }
             }
 
-            function("to_bytes", "byte_array", pure = true) {
+            function("to_bytes", "byte_array", pure = true, since = "0.9.0") {
                 comment("Encodes this `gtv` to a `byte_array`.")
-                alias("toBytes", C_MessageType.ERROR)
+                alias("toBytes", C_MessageType.ERROR, since = "0.6.1")
                 body { a ->
                     val gtv = a.asGtv()
                     val bytes = PostchainGtvUtils.gtvToBytes(gtv)
@@ -96,9 +97,9 @@ object Lib_Type_Gtv {
                 }
             }
 
-            function("to_json", "json", pure = true) {
+            function("to_json", "json", pure = true, since = "0.9.0") {
                 comment("Encodes this `gtv` to a `json` representation.")
-                alias("toJSON", C_MessageType.ERROR)
+                alias("toJSON", C_MessageType.ERROR, since = "0.6.1")
                 body { a ->
                     val gtv = a.asGtv()
                     val json = PostchainGtvUtils.gtvToJson(gtv)
@@ -110,22 +111,22 @@ object Lib_Type_Gtv {
 
         namespace("rell") {
             // Functions that are implicitly added to all types (subtypes of any): .hash(), .to_gtv(), .from_gtv(), etc.
-            extension("gtv_ext", type = "T") {
+            extension("gtv_ext", type = "T", since = "0.9.0") {
                 generic("T", subOf = "any")
 
-                staticFunction("from_gtv", result = "T", pure = true) {
+                staticFunction("from_gtv", result = "T", pure = true, since = "0.9.0") {
                     comment("Constructs this type from a `gtv`.")
                     param("gtv", type = "gtv", comment = "gtv to decode.")
                     makeFromGtvBody(this, pretty = false)
                 }
 
-                staticFunction("from_gtv_pretty", result = "T", pure = true) {
+                staticFunction("from_gtv_pretty", result = "T", pure = true, since = "0.9.0") {
                     comment("Constructs this type from a pretty formatted `gtv`.")
                     param("gtv", type = "gtv", comment = "gtv to decode.")
                     makeFromGtvBody(this, pretty = true, allowVirtual = false)
                 }
 
-                function("hash", result = "byte_array", pure = true) {
+                function("hash", result = "byte_array", pure = true, since = "0.9.0") {
                     comment("Computes the hash of this value.")
                     bodyMeta {
                         val selfType = this.fnBodyMeta.rSelfType
@@ -151,12 +152,12 @@ object Lib_Type_Gtv {
                     }
                 }
 
-                function("to_gtv", result = "gtv", pure = true) {
+                function("to_gtv", result = "gtv", pure = true, since = "0.9.0") {
                     comment("Encodes this value to a `gtv` representation.")
                     makeToGtvBody(this, pretty = false)
                 }
 
-                function("to_gtv_pretty", result = "gtv", pure = true) {
+                function("to_gtv_pretty", result = "gtv", pure = true, since = "0.9.0") {
                     comment("Encodes this value to a pretty formatted `gtv` representation.")
                     makeToGtvBody(this, pretty = true)
                 }
@@ -196,7 +197,7 @@ object Lib_Type_Gtv {
             bodyContext { ctx, a ->
                 val gtv = a.asGtv()
                 Rt_Utils.wrapErr({ "fn:[${resType.strCode()}]:from_gtv:$pretty" }) {
-                    val convCtx = GtvToRtContext.make(pretty = pretty)
+                    val convCtx = GtvToRtContext.make(pretty = pretty, compilerOptions = ctx.globalCtx.compilerOptions)
                     val res = resType.gtvToRt(convCtx, gtv)
                     convCtx.finish(ctx.exeCtx)
                     res

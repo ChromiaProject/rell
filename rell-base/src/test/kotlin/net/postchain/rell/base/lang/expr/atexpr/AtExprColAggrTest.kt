@@ -147,6 +147,13 @@ abstract class AtExprColAggrTest: AtExprBaseTest() {
             "[[D], [B, F], [A, C, E]]")
     }
 
+    @Test fun testVersionControl() {
+        initData()
+        chkVerCtExpr("$fromData @*{} ( @group _=.k, @list .v )", "0.13.9", "VER:lib:ANNOTATION:[@list]")
+        chkVerCtExpr("$fromData @*{} ( @group _=.k, @set .v )", "0.13.9", "VER:lib:ANNOTATION:[@set]")
+        chkVerCtExpr("$fromData @*{} ( @group _=.k, @map (.k, .v) )", "0.13.9", "VER:lib:ANNOTATION:[@map]")
+    }
+
     private fun chkAt(expr: String, expType: String, expValue: String) {
         chk("_type_of($expr)", expType)
         chk(expr, expValue)

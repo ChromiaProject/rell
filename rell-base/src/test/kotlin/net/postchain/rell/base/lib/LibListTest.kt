@@ -101,7 +101,7 @@ class LibListTest: BaseRellTest(false) {
         chk("list<integer>().size()", "int[0]")
         chk("list([1]).size()", "int[1]")
         chk("list([1, 2, 3, 4, 5]).size()", "int[5]")
-        chk("list<integer>().len()", "ct_err:deprecated:FUNCTION:[list<integer>.len]:size")
+        chk("list<integer>().len()", "ct_err:deprecated:ALIAS:[rell:collection.len]:size")
     }
 
     @Test fun testGet() {
@@ -292,9 +292,9 @@ class LibListTest: BaseRellTest(false) {
 
         chkWarn()
         chkEx("{ $init val r = x._set(0, 5); return ''+r+' '+x; }", "1 [5, 2, 3]")
-        chkWarn("deprecated:FUNCTION:[list<integer>._set]:set")
+        chkWarn("deprecated:ALIAS:[rell:list._set]:set")
         chkEx("{ $init val r = x._set(1, 5); return ''+r+' '+x; }", "2 [1, 5, 3]")
-        chkWarn("deprecated:FUNCTION:[list<integer>._set]:set")
+        chkWarn("deprecated:ALIAS:[rell:list._set]:set")
     }
 
     @Test fun testSubscriptSet() {
@@ -335,7 +335,7 @@ class LibListTest: BaseRellTest(false) {
 
         chkWarn()
         chkEx("{ val l = [ 5, 4, 3, 2, 1 ]; l._sort(); return l; }", "[1, 2, 3, 4, 5]")
-        chkWarn("deprecated:FUNCTION:[list<integer>._sort]:sort")
+        chkWarn("deprecated:ALIAS:[rell:list._sort]:sort")
     }
 
     @Test fun testRepeat() {

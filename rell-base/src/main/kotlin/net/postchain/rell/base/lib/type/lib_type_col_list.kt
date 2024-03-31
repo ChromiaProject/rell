@@ -17,15 +17,17 @@ import net.postchain.rell.base.utils.immListOf
 import java.util.Comparator
 
 object Lib_Type_List {
+    private const val SINCE0 = "0.6.0"
+
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("list") {
+        type("list", since = SINCE0) {
             comment("Represents a mutable array list.")
             generic("T")
             parent("collection<T>")
 
             rType { t -> R_ListType(t) }
 
-            constructor(pure = true) {
+            constructor(pure = true, since = SINCE0) {
                 comment("Constructor for an empty list.")
                 bodyMeta {
                     val elementType = fnBodyMeta.typeArg("T")
@@ -36,7 +38,7 @@ object Lib_Type_List {
                 }
             }
 
-            constructor(pure = true) {
+            constructor(pure = true, since = SINCE0) {
                 comment("Constructor for a list initialized with values from an iterable.")
                 param("values", type = "iterable<-T>") {
                     comment("An iterable containing values to initialize the list.")
@@ -51,7 +53,7 @@ object Lib_Type_List {
                 }
             }
 
-            function("get", "T", pure = true) {
+            function("get", "T", pure = true, since = SINCE0) {
                 comment("Gets the element at the specified index. Fails if provided index is out of bounds.")
                 param("index", "integer", comment = "The index of the element to retrieve.")
                 body { self, index ->
@@ -67,9 +69,9 @@ object Lib_Type_List {
                 }
             }
 
-            function("index_of", "integer", pure = true) {
+            function("index_of", "integer", pure = true, since = "0.9.0") {
                 comment("Gets the index of the first occurrence of a value in the list, or -1 if not found.")
-                alias("indexOf", deprecated = C_MessageType.ERROR)
+                alias("indexOf", deprecated = C_MessageType.ERROR, since = SINCE0)
                 param("value", "T", comment = "The value to search for.")
                 body { self, value ->
                     val list = self.asList()
@@ -77,11 +79,11 @@ object Lib_Type_List {
                 }
             }
 
-            function("remove_at", "T") {
+            function("remove_at", "T", since = "0.9.0") {
                 comment("""
                     Removes and returns the element at the specified index. Fails if provided index is out of bounds.
                 """)
-                alias("removeAt", deprecated = C_MessageType.ERROR)
+                alias("removeAt", deprecated = C_MessageType.ERROR, since = SINCE0)
                 param("index", "integer", comment = "The index of the element to remove.")
                 body { self, index ->
                     val list = self.asList()
@@ -99,7 +101,7 @@ object Lib_Type_List {
                 }
             }
 
-            function("sub", "list<T>", pure = true) {
+            function("sub", "list<T>", pure = true, since = SINCE0) {
                 comment("Gets a sublist from the start index to the end of the list.")
                 param("start", "integer", comment = "The start index of the sublist.")
                 body { self, start ->
@@ -110,7 +112,7 @@ object Lib_Type_List {
                 }
             }
 
-            function("sub", "list<T>", pure = true) {
+            function("sub", "list<T>", pure = true, since = SINCE0) {
                 comment("Gets a sublist from the start index (inclusive) to the end index (exclusive).")
                 param("start", "integer", comment = "The start index of the sublist.")
                 param("end", "integer", comment = "The end index of the sublist (exclusive).")
@@ -123,9 +125,9 @@ object Lib_Type_List {
                 }
             }
 
-            function("set", "T") {
+            function("set", "T", since = SINCE0) {
                 comment("Sets the element at the specified index. Fails if the provided index is out of bounds.")
-                alias("_set", deprecated = C_MessageType.WARNING)
+                alias("_set", deprecated = C_MessageType.WARNING, since = SINCE0)
                 param("index", "integer", comment = "The index of the element to set.")
                 param("value", "T", comment = "The value to set.")
                 body { self, index, value ->
@@ -144,7 +146,7 @@ object Lib_Type_List {
                 }
             }
 
-            function("add", "boolean") {
+            function("add", "boolean", since = SINCE0) {
                 comment("Inserts a value at the specified index. Fails if the provided index is out of bounds.")
                 param("index", "integer", comment = "The index at which to add the element.")
                 param("value", "T", comment = "The value to add.")
@@ -164,12 +166,12 @@ object Lib_Type_List {
                 }
             }
 
-            function("add_all", "boolean") {
+            function("add_all", "boolean", since = "0.9.0") {
                 comment("""
                     Inserts all elements from a collection at the specified index.
                     Fails if the specified index is out of bounds.
                 """)
-                alias("addAll", deprecated = C_MessageType.ERROR)
+                alias("addAll", deprecated = C_MessageType.ERROR, since = SINCE0)
                 param("index", "integer", comment = "The starting index at which to add the elements.")
                 param("values", "collection<-T>", comment = "The collection containing elements to add.")
                 body { self, index, values ->
@@ -186,9 +188,9 @@ object Lib_Type_List {
                 }
             }
 
-            function("sort", "unit") {
+            function("sort", "unit", since = "0.11.0") {
                 comment("Sorts the list in place.")
-                alias("_sort", deprecated = C_MessageType.WARNING)
+                alias("_sort", deprecated = C_MessageType.WARNING, since = "0.8.0")
                 bodyMeta {
                     val valueType = fnBodyMeta.typeArg("T")
                     val comparator = Lib_Type_Collection.getSortComparator(this, valueType)
@@ -200,7 +202,7 @@ object Lib_Type_List {
                 }
             }
 
-            function("repeat", "list<T>") {
+            function("repeat", "list<T>", since = "0.11.0") {
                 comment("Returns a new list with the elements from this list repeated a specified number of times.")
                 param("n", "integer", comment = "The number of times to repeat the list.")
                 body { self, n ->
@@ -220,7 +222,7 @@ object Lib_Type_List {
                 }
             }
 
-            function("reverse", "unit") {
+            function("reverse", "unit", since = "0.11.0") {
                 comment("Reverses the order of elements in the list in place.")
                 body { self ->
                     val list = self.asList()
@@ -229,7 +231,7 @@ object Lib_Type_List {
                 }
             }
 
-            function("reversed", "list<T>") {
+            function("reversed", "list<T>", since = "0.11.0") {
                 comment("Gets a new list with elements in reversed order.")
                 body { self ->
                     val list = self.asList()
@@ -314,7 +316,7 @@ class Rt_ListValue(private val type: R_Type, private val elements: MutableList<R
             }
         }
 
-        fun strCode(type: R_Type, elements: List<out Rt_Value?>): String {
+        fun strCode(type: R_Type, elements: List<Rt_Value?>): String {
             val elems = elements.joinToString(",") { it?.strCode(false) ?: "null" }
             return "${type.strCode()}[$elems]"
         }

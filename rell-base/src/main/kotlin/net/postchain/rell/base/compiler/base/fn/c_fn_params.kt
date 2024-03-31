@@ -10,6 +10,7 @@ import net.postchain.rell.base.compiler.base.def.C_AttrUtils
 import net.postchain.rell.base.compiler.base.expr.C_StmtContext
 import net.postchain.rell.base.compiler.base.expr.C_VarFact
 import net.postchain.rell.base.compiler.base.expr.C_VarFacts
+import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_ParameterDefaultValue
 import net.postchain.rell.base.compiler.base.utils.C_Utils
@@ -38,8 +39,7 @@ class C_FormalParameter(
     val docDeclaration: DocDeclaration get() = docDeclarationGetter.get()
 
     fun toCallParameter(): C_FunctionCallParameter {
-        val namedArgIdeInfo = ideInfo.update(kind = IdeSymbolKind.EXPR_CALL_ARG)
-        return C_FunctionCallParameter(name.rName, type, index, ideInfo, namedArgIdeInfo, defaultValue)
+        return C_FunctionCallParameter(name.rName, type, index, defaultValue, C_MemberRestrictions.NULL)
     }
 
     fun createMirrorAttr(mutable: Boolean): R_Attribute {
@@ -67,6 +67,15 @@ class C_FormalParameters(list: List<C_FormalParameter>) {
     val callParameters by lazy {
         val params = this.list.map { it.toCallParameter() }
         C_FunctionCallParameters(params)
+    }
+
+    val argIdeInfos: Map<R_Name, C_IdeSymbolInfo> by lazy {
+        this.list
+            .map {
+                val ideInfo = it.ideInfo.update(kind = IdeSymbolKind.EXPR_CALL_ARG)
+                it.name.rName to ideInfo
+            }
+            .toImmMap()
     }
 
     val docParams: List<DocFunctionParam> by lazy {

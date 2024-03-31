@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.ast
@@ -239,9 +239,9 @@ class S_WhenExpr(pos: S_Pos, val expr: S_Expr?, val cases: List<S_WhenExprCase>)
 
     companion object {
         fun compileChooser(
-                ctx: C_ExprContext,
-                expr: S_Expr?,
-                conds: List<S_WhenCondition>
+            ctx: C_ExprContext,
+            expr: S_Expr?,
+            conds: List<S_WhenCondition>,
         ): C_WhenChooser? {
             val chooserDetails = compileChooserDetails(ctx, expr, conds)
             if (chooserDetails == null) {
@@ -251,9 +251,9 @@ class S_WhenExpr(pos: S_Pos, val expr: S_Expr?, val cases: List<S_WhenExprCase>)
         }
 
         private fun compileChooserDetails(
-                ctx: C_ExprContext,
-                expr: S_Expr?,
-                conds: List<S_WhenCondition>
+            ctx: C_ExprContext,
+            expr: S_Expr?,
+            conds: List<S_WhenCondition>,
         ): C_WhenChooserDetails? {
             val keyValue = if (expr == null) null else {
                 val keyExpr = expr.compileOpt(ctx)
@@ -279,13 +279,13 @@ class S_WhenExpr(pos: S_Pos, val expr: S_Expr?, val cases: List<S_WhenExprCase>)
                 cond.compile(bodyCtx, builder, keyVarId, keyType, i, i == conds.size - 1)
             }
 
-            checkTypes(builder)
+            checkTypes(ctx, builder)
             builder.fullCoverage = checkFullCoverage(ctx, builder)
 
             return C_WhenChooserDetails(builder)
         }
 
-        private fun checkTypes(builder: C_WhenChooserDetailsBuilder) {
+        private fun checkTypes(ctx: C_ExprContext, builder: C_WhenChooserDetailsBuilder) {
             val keyValue = builder.keyExpr
 
             if (keyValue == null) {
@@ -296,7 +296,7 @@ class S_WhenExpr(pos: S_Pos, val expr: S_Expr?, val cases: List<S_WhenExprCase>)
                 val keyType = keyValue.type
                 for (case in builder.variableCases) {
                     val caseType = case.value.type
-                    C_Errors.check(checkCaseType(keyType, caseType), case.value.pos) {
+                    C_Errors.check(checkCaseType(ctx, case.value.pos, keyType, caseType), case.value.pos) {
                         "when_case_type:${keyType.strCode()}:${caseType.strCode()}" toCodeMsg
                         "Type mismatch: ${caseType.str()} instead of ${keyType.str()}"
                     }
@@ -322,12 +322,13 @@ class S_WhenExpr(pos: S_Pos, val expr: S_Expr?, val cases: List<S_WhenExprCase>)
             return allValuesCovered || builder.elseCase != null
         }
 
-        private fun checkCaseType(keyType: R_Type, caseType: R_Type): Boolean {
-            val eq = C_BinOp_EqNe.checkTypes(keyType, caseType)
+        private fun checkCaseType(ctx: C_ExprContext, pos: S_Pos, keyType: R_Type, caseType: R_Type): Boolean {
+            val opCtx = C_BinOpContext(ctx, pos)
+            val eq = C_BinOp_EqNe.checkTypes(opCtx, keyType, caseType)
             if (eq) return true
 
             if (keyType is R_NullableType) {
-                val eq2 = C_BinOp_EqNe.checkTypes(keyType.valueType, caseType)
+                val eq2 = C_BinOp_EqNe.checkTypes(opCtx, keyType.valueType, caseType)
                 return eq2
             }
 

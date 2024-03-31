@@ -99,6 +99,7 @@ class V_ExprWrapper(
     private val expr: V_Expr,
     private val msgSupplier: () -> C_PosCodeMsg? = { null },
 ) {
+    val pos = expr.pos
     val type: R_Type = expr.type
 
     fun unwrap(): V_Expr {
@@ -153,8 +154,9 @@ abstract class V_Expr(protected val exprCtx: C_ExprContext, val pos: S_Pos) {
     }
 
     fun toDbExprWhat(): C_DbAtWhatValue {
-        val direct = (info.canBeDbExpr && type.sqlAdapter.isSqlCompatible())
-            || !exprCtx.globalCtx.compilerOptions.complexWhatEnabled
+        val compilerOptions = exprCtx.globalCtx.compilerOptions
+        val direct = (info.canBeDbExpr && type.sqlAdapter.isSqlCompatible(compilerOptions))
+                || !compilerOptions.complexWhatEnabled
         return if (direct) {
             toDbExprWhatDirect()
         } else {

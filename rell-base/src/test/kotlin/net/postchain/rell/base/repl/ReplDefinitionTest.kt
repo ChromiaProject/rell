@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.repl
@@ -88,7 +88,7 @@ class ReplDefinitionTest: BaseRellTest(false) {
         repl.chk("f()", "RES:int[123]")
         repl.chk("g()", "RES:int[456]")
         repl.chk("import other.*;")
-        repl.chk("f()", "CTE:<console>:namespace:ambig:f:[FUNCTION:lib:f,FUNCTION:other:f]")
+        repl.chk("f()", "CTE:<console>:namespace:ambig:f:[FUNCTION:[lib:f],FUNCTION:[other:f]]")
         repl.chk("g()", "RES:int[456]")
     }
 
@@ -163,7 +163,7 @@ class ReplDefinitionTest: BaseRellTest(false) {
     @Test fun testFunctionRecursiveIndirect() {
         repl.chk("""
             function f(x: integer): integer = if (x == 0) 1 else x * g(x - 1);
-            function g(x: integer): integer = f(x);            
+            function g(x: integer): integer = f(x);
         """)
         repl.chk("f(5)", "RES:int[120]")
     }

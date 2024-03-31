@@ -22,17 +22,19 @@ class L_NamespaceProperty(
 
 class L_NamespaceMember_Property(
     fullName: R_FullName,
+    header: L_MemberHeader,
     doc: DocSymbol,
     val property: L_NamespaceProperty,
-): L_NamespaceMember(fullName, doc) {
+): L_NamespaceMember(fullName, header, doc) {
     override fun strCode() = "property $qualifiedName: ${property.type.strCode()}"
 }
 
 class L_NamespaceMember_SpecialProperty(
     fullName: R_FullName,
+    header: L_MemberHeader,
     doc: DocSymbol,
     val property: C_NamespaceProperty,
-): L_NamespaceMember(fullName, doc) {
+): L_NamespaceMember(fullName, header, doc) {
     override fun strCode() = "property $qualifiedName"
 }
 
@@ -48,14 +50,15 @@ class L_TypeProperty(val simpleName: R_Name, val type: M_Type, val body: C_SysFu
 }
 
 class L_TypeDefMember_Property(
-    val simpleName: R_Name,
+    fullName: R_FullName,
+    header: L_MemberHeader,
     doc: DocSymbol,
     val property: L_TypeProperty,
-) : L_TypeDefMember(simpleName.str, doc) {
+): L_TypeDefMember(fullName, header, doc) {
     override fun strCode() = property.strCode()
 
     fun replaceTypeParams(map: Map<M_TypeParam, M_TypeSet>): L_TypeDefMember_Property {
         val property2 = property.replaceTypeParams(map)
-        return if (property2 === property) this else L_TypeDefMember_Property(simpleName, docSymbol, property2)
+        return if (property2 === property) this else L_TypeDefMember_Property(fullName, header, docSymbol, property2)
     }
 }

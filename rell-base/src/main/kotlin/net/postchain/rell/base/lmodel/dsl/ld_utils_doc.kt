@@ -6,10 +6,7 @@ package net.postchain.rell.base.lmodel.dsl
 
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.compiler.base.utils.C_DocUtils
-import net.postchain.rell.base.lmodel.L_FunctionFlags
-import net.postchain.rell.base.lmodel.L_FunctionHeader
-import net.postchain.rell.base.lmodel.L_FunctionParam
-import net.postchain.rell.base.lmodel.L_TypeUtils
+import net.postchain.rell.base.lmodel.*
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.mtype.M_Type
@@ -47,17 +44,17 @@ object Ld_DocSymbols {
         )
     }
 
-    fun specialFunction(fullName: R_FullName, memberHeader: Ld_MemberHeader, isStatic: Boolean): DocSymbol {
+    fun specialFunction(fullName: R_FullName, memberHeader: L_MemberHeader, isStatic: Boolean): DocSymbol {
         return DocSymbol(
             kind = DocSymbolKind.FUNCTION,
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
             mountName = null,
             declaration = DocDeclaration_SpecialFunction(fullName.last, isStatic = isStatic),
-            comment = memberHeader.docComment(),
+            comment = memberHeader.docComment,
         )
     }
 
-    fun constant(fullName: R_FullName, memberHeader: Ld_MemberHeader, mType: M_Type, rValue: Rt_Value): DocSymbol {
+    fun constant(fullName: R_FullName, memberHeader: L_MemberHeader, mType: M_Type, rValue: Rt_Value): DocSymbol {
         val docType = L_TypeUtils.docType(mType)
         val docValue = C_DocUtils.docValue(rValue)
         val dec = DocDeclaration_Constant(DocModifiers.NONE, fullName.last, docType, docValue)
@@ -67,18 +64,18 @@ object Ld_DocSymbols {
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
             mountName = null,
             declaration = dec,
-            comment = memberHeader.docComment(),
+            comment = memberHeader.docComment,
         )
     }
 
-    fun property(fullName: R_FullName, memberHeader: Ld_MemberHeader, mType: M_Type, pure: Boolean): DocSymbol {
+    fun property(fullName: R_FullName, memberHeader: L_MemberHeader, mType: M_Type, pure: Boolean): DocSymbol {
         val docType = L_TypeUtils.docType(mType)
         return DocSymbol(
             kind = DocSymbolKind.PROPERTY,
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
             mountName = null,
             declaration = DocDeclaration_Property(fullName.last, docType, pure),
-            comment = memberHeader.docComment(),
+            comment = memberHeader.docComment,
         )
     }
 }
@@ -90,21 +87,12 @@ class Ld_FunctionParamComments(
     companion object {
         fun make(
             fullName: R_FullName,
-            funMemberHeader: Ld_MemberHeader,
-            paramMemberHeaders: Map<R_Name, Ld_MemberHeader>,
+            funComment: DocComment?,
+            paramNames: List<R_Name>,
+            paramComments: Map<R_Name, DocComment>,
         ): Ld_FunctionParamComments {
-            val rawFunComment = funMemberHeader.docComment()
-
-            val rawParamComments = paramMemberHeaders
-                .mapNotNull {
-                    val c = it.value.docComment()
-                    if (c == null) null else (it.key to c)
-                }
-                .toMap()
-
-            val paramNames = paramMemberHeaders.keys.toList()
-            val resParamComments = getCombinedParamComments(fullName, rawFunComment, rawParamComments, paramNames)
-            val resFunComment = getCombinedFunctionComment(rawFunComment, resParamComments)
+            val resParamComments = getCombinedParamComments(fullName, funComment, paramComments, paramNames)
+            val resFunComment = getCombinedFunctionComment(funComment, resParamComments)
             return Ld_FunctionParamComments(resFunComment, resParamComments)
         }
 
@@ -167,51 +155,5 @@ class Ld_FunctionParamComments(
 
             return b.build()
         }
-    }
-}
-
-object Ld_DocUtils {
-    fun functionComment(memberHeader: Ld_MemberHeader, params: List<L_FunctionParam>): DocComment? {
-        val rawComment = memberHeader.docComment()
-        val paramComments = params
-            .mapNotNull {
-                val c = it.docSymbol.comment
-                if (c == null) null else (it.name to c)
-            }
-            .toImmMap()
-
-        if (rawComment == null && paramComments.isEmpty()) {
-            return null
-        }
-
-        val resParams = mutableListOf<DocCommentItem>()
-
-        for (param in params) {
-            val funComment = rawComment?.getItems(DocCommentTag.PARAM, param.name.str).orEmpty().firstOrNull()?.text
-            val paramComment = paramComments[param.name]?.description
-            check(funComment == null || paramComment == null) // TODO handle
-            val resComment = funComment ?: paramComment
-            if (resComment != null) {
-                resParams.add(DocCommentItem(param.name.str, resComment))
-            }
-        }
-
-        val b = DocCommentBuilder()
-        if (rawComment != null) {
-            b.description(rawComment.description)
-            for ((tag, items) in rawComment.tags) {
-                if (tag != DocCommentTag.PARAM) {
-                    for (item in items) {
-                        b.tag(tag, item)
-                    }
-                }
-            }
-        }
-
-        for (paramItem in resParams) {
-            b.tag(DocCommentTag.PARAM, paramItem)
-        }
-
-        return b.build()
     }
 }

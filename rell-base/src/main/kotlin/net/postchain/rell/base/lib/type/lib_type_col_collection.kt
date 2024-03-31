@@ -18,18 +18,20 @@ import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.lib.type.Lib_Type_Any as AnyFns
 
 object Lib_Type_Collection {
+    private const val SINCE0 = "0.6.0"
+
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("collection", abstract = true, hidden = true) {
+        type("collection", abstract = true, hidden = true, since = SINCE0) {
             generic("T")
             parent("iterable<T>")
 
-            function("to_text", "text") {
+            function("to_text", "text", since = "0.9.0") {
                 comment("Converts the collection to a text representation.")
-                alias("str")
+                alias("str", since = SINCE0)
                 bodyRaw(AnyFns.ToText_NoDb)
             }
 
-            function("empty", "boolean", pure = true) {
+            function("empty", "boolean", pure = true, since = SINCE0) {
                 comment("Checks if the collection is empty.")
                 body { self ->
                     val col = self.asCollection()
@@ -37,16 +39,16 @@ object Lib_Type_Collection {
                 }
             }
 
-            function("size", "integer", pure = true) {
+            function("size", "integer", pure = true, since = SINCE0) {
                 comment("Returns the size of the collection.")
-                alias("len", deprecated = C_MessageType.ERROR)
+                alias("len", deprecated = C_MessageType.ERROR, since = SINCE0)
                 body { self ->
                     val col = self.asCollection()
                     Rt_IntValue.get(col.size.toLong())
                 }
             }
 
-            function("contains", "boolean", pure = true) {
+            function("contains", "boolean", pure = true, since = SINCE0) {
                 comment("Checks if the collection contains a specific element.")
                 param("value", "T", comment = "The element to check for.")
                 body { self, value ->
@@ -55,9 +57,9 @@ object Lib_Type_Collection {
                 }
             }
 
-            function("contains_all", "boolean", pure = true) {
+            function("contains_all", "boolean", pure = true, since = "0.9.0") {
                 comment("Checks if the collection contains all elements of another collection.")
-                alias("containsAll", deprecated = C_MessageType.ERROR)
+                alias("containsAll", deprecated = C_MessageType.ERROR, since = SINCE0)
                 param("values", type = "collection<-T>", comment = "The collection to check against.")
                 body { self, values ->
                     val col1 = self.asCollection()
@@ -66,7 +68,7 @@ object Lib_Type_Collection {
                 }
             }
 
-            function("add", "boolean") {
+            function("add", "boolean", since = SINCE0) {
                 comment("""
                     Adds an element to the collection.
                     @returns `true` if the element was added, and `false` if the collection does not allow duplicates
@@ -79,13 +81,13 @@ object Lib_Type_Collection {
                 }
             }
 
-            function("add_all", "boolean") {
+            function("add_all", "boolean", since = "0.9.0") {
                 comment("""
                     Adds all elements from another collection to this collection.
                     @returns `true` if any of the specified elements was added to the collection,
                     `false` if the collection was not modified.
                 """)
-                alias("addAll", deprecated = C_MessageType.ERROR)
+                alias("addAll", deprecated = C_MessageType.ERROR, since = SINCE0)
                 param("values", type = "collection<-T>", comment = "The collection to add elements from.")
                 body { self, values ->
                     val col = self.asCollection()
@@ -93,7 +95,7 @@ object Lib_Type_Collection {
                 }
             }
 
-            function("remove", "boolean") {
+            function("remove", "boolean", since = SINCE0) {
                 comment("""
                     Removes an element from the collection.
                     @returns `true` if the element has been successfully removed;
@@ -106,13 +108,13 @@ object Lib_Type_Collection {
                 }
             }
 
-            function("remove_all", "boolean") {
+            function("remove_all", "boolean", since = "0.9.0") {
                 comment("""
                     Removes all elements from the collection that are present in another collection.
                     @returns `true` if any of the specified elements was removed from the collection,
                     `false` if the collection was not modified.
                 """)
-                alias("removeAll", deprecated = C_MessageType.ERROR)
+                alias("removeAll", deprecated = C_MessageType.ERROR, since = SINCE0)
                 param("values", type = "collection<-T>", comment = "The collection containing elements to remove.")
                 body { self, values ->
                     val col1 = self.asCollection()
@@ -121,7 +123,7 @@ object Lib_Type_Collection {
                 }
             }
 
-            function("clear", "unit") {
+            function("clear", "unit", since = SINCE0) {
                 comment("Clears the collection.")
                 body { self ->
                     val col = self.asCollection()
@@ -130,7 +132,7 @@ object Lib_Type_Collection {
                 }
             }
 
-            function("sorted", "list<T>", pure = true) {
+            function("sorted", "list<T>", pure = true, since = "0.8.0") {
                 comment("Returns a new sorted list of elements from the collection.")
                 bodyMeta {
                     val valueType = fnBodyMeta.typeArg("T")

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils
@@ -12,6 +12,7 @@ import net.postchain.gtv.gtvml.GtvMLEncoder
 import net.postchain.gtv.gtvml.GtvMLParser
 import net.postchain.gtv.merkle.GtvMerkleHashCalculator
 import net.postchain.gtv.merkle.MerkleHashCalculator
+import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.model.R_StructDefinition
 import net.postchain.rell.base.runtime.GtvToRtContext
 import net.postchain.rell.base.runtime.GtvToRtDefaultValueEvaluator
@@ -46,7 +47,8 @@ object PostchainGtvUtils {
         struct: R_StructDefinition,
         gtv: Gtv,
         validateOnly: Boolean = false,
-        defaultValueEvaluator: GtvToRtDefaultValueEvaluator,
+        defaultValueEvaluator: GtvToRtDefaultValueEvaluator?,
+        compilerOptions: C_CompilerOptions,
     ): Rt_Value {
         // GtvToRtContext.finish() is not called, because there is no execution context.
         // It's not really needed, because module_args can't use entities, and .finish() is needed only for them.
@@ -54,6 +56,7 @@ object PostchainGtvUtils {
             pretty = true,
             validateOnly = validateOnly,
             defaultValueEvaluator = defaultValueEvaluator,
+            compilerOptions = compilerOptions,
         )
         return struct.type.gtvToRt(convCtx, gtv)
     }

@@ -7,6 +7,7 @@ package net.postchain.rell.base.lib.type
 import net.postchain.gtv.Gtv
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.expr.*
+import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
@@ -25,17 +26,17 @@ import net.postchain.rell.base.utils.toImmList
 
 object Lib_Type_Struct {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("struct", abstract = true, hidden = true) {
+        type("struct", abstract = true, hidden = true, since = "0.10.0") {
             supertypeStrategySpecial { mType ->
                 L_TypeUtils.getRType(mType) is R_StructType
             }
         }
 
-        type("mirror_struct", abstract = true, hidden = true) {
+        type("mirror_struct", abstract = true, hidden = true, since = "0.10.4") {
             generic("T")
         }
 
-        type("mutable_mirror_struct", abstract = true, hidden = true) {
+        type("mutable_mirror_struct", abstract = true, hidden = true, since = "0.10.4") {
             generic("T")
             parent("mirror_struct<T>")
 
@@ -59,7 +60,7 @@ object Lib_Type_Struct {
                 rType is R_StructType && rType.struct == rType.struct.mirrorStructs?.mutable
             }
 
-            function("to_immutable", result = "immutable_mirror_struct<T>", pure = true) {
+            function("to_immutable", result = "immutable_mirror_struct<T>", pure = true, since = "0.10.4") {
                 comment("Convert this struct to an immutable version.")
                 body { a ->
                     toMutableOrImmutable(a, false, "to_immutable")
@@ -67,7 +68,7 @@ object Lib_Type_Struct {
             }
         }
 
-        type("immutable_mirror_struct", abstract = true, hidden = true) {
+        type("immutable_mirror_struct", abstract = true, hidden = true, since = "0.10.4") {
             generic("T")
             parent("mirror_struct<T>")
 
@@ -91,7 +92,7 @@ object Lib_Type_Struct {
                 rType is R_StructType && rType.struct == rType.struct.mirrorStructs?.immutable
             }
 
-            function("to_mutable", result = "mutable_mirror_struct<T>", pure = true) {
+            function("to_mutable", result = "mutable_mirror_struct<T>", pure = true, since = "0.10.4") {
                 comment("Convert this structure to a mutable version.")
                 body { a ->
                     toMutableOrImmutable(a, true, "to_mutable")
@@ -100,16 +101,16 @@ object Lib_Type_Struct {
         }
 
         namespace("rell") {
-            extension("struct_ext", type = "T") {
+            extension("struct_ext", type = "T", since = "0.6.1") {
                 generic("T", subOf = "struct")
 
-                function("to_bytes", "byte_array", pure = true) {
+                function("to_bytes", "byte_array", pure = true, since = "0.9.0") {
                     comment("""
                         Convert this structure to a `byte_array` representation.
 
                         Same as `.to_gtv().to_bytes()`.
                     """)
-                    alias("toBytes", C_MessageType.ERROR)
+                    alias("toBytes", C_MessageType.ERROR, since = "0.6.1")
                     bodyMeta {
                         val selfType = this.fnBodyMeta.rSelfType
                         Lib_Type_Gtv.validateToGtvBody(this, selfType)
@@ -124,19 +125,19 @@ object Lib_Type_Struct {
 
                 // Right to_gtv*() functions are added by default, and here we add deprecated functions for compatibility
                 // (they used to exist only for structs, not for all types).
-                function("toGTXValue", "gtv", pure = true) {
+                function("toGTXValue", "gtv", pure = true, since = "0.6.1") {
                     deprecated(newName = "to_gtv")
                     Lib_Type_Gtv.makeToGtvBody(this, pretty = false)
                 }
 
-                function("toPrettyGTXValue", "gtv", pure = true) {
+                function("toPrettyGTXValue", "gtv", pure = true, since = "0.6.1") {
                     deprecated(newName = "to_gtv_pretty")
                     Lib_Type_Gtv.makeToGtvBody(this, pretty = true)
                 }
 
-                staticFunction("from_bytes", result = "T", pure = true) {
+                staticFunction("from_bytes", result = "T", pure = true, since = "0.9.0") {
                     comment("Decodes a struct from a byte_array. Fails if the bytes cannot represent this struct.")
-                    alias("fromBytes", C_MessageType.ERROR)
+                    alias("fromBytes", C_MessageType.ERROR, since = "0.6.1")
                     param("bytes", type = "byte_array", comment = "Bytes to decode from.")
 
                     bodyMeta {
@@ -147,7 +148,10 @@ object Lib_Type_Struct {
                             val bytes = a.asByteArray()
                             Rt_Utils.wrapErr("fn:struct:from_bytes") {
                                 val gtv = PostchainGtvUtils.bytesToGtv(bytes)
-                                val convCtx = GtvToRtContext.make(pretty = false)
+                                val convCtx = GtvToRtContext.make(
+                                    pretty = false,
+                                    compilerOptions = ctx.globalCtx.compilerOptions,
+                                )
                                 val res = resType.gtvToRt(convCtx, gtv)
                                 convCtx.finish(ctx.exeCtx)
                                 res
@@ -158,13 +162,13 @@ object Lib_Type_Struct {
 
                 // Right from_gtv*() functions are added by default, and here we add deprecated functions for compatibility
                 // (they used to exist only for structs, not for all types).
-                staticFunction("fromGTXValue", result = "T", pure = true) {
+                staticFunction("fromGTXValue", result = "T", pure = true, since = "0.6.1") {
                     deprecated(newName = "from_gtv")
                     param("gtv", type = "gtv")
                     Lib_Type_Gtv.makeFromGtvBody(this, pretty = false)
                 }
 
-                staticFunction("fromPrettyGTXValue", result = "T", pure = true) {
+                staticFunction("fromPrettyGTXValue", result = "T", pure = true, since = "0.6.1") {
                     deprecated(newName = "from_gtv_pretty")
                     param("gtv", type = "gtv")
                     Lib_Type_Gtv.makeFromGtvBody(this, pretty = true)

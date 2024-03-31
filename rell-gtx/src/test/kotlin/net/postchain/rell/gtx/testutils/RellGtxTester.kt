@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.gtx.testutils
@@ -27,11 +27,9 @@ import net.postchain.gtx.GTXModule
 import net.postchain.gtx.GTXSchemaManager
 import net.postchain.gtx.data.ExtOpData
 import net.postchain.rell.base.model.R_App
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.sql.SqlExecutor
-import net.postchain.rell.base.testutils.GtvTestUtils
-import net.postchain.rell.base.testutils.RellBaseTester
-import net.postchain.rell.base.testutils.RellTestContext
-import net.postchain.rell.base.testutils.RellTestUtils
+import net.postchain.rell.base.testutils.*
 import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.gtx.PostchainBaseUtils
 import net.postchain.rell.module.RellPostchainModuleEnvironment
@@ -41,11 +39,11 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class RellGtxTester(
-        tstCtx: RellTestContext,
-        entityDefs: List<String> = listOf(),
-        inserts: List<String> = listOf(),
-        gtv: Boolean = false,
-        chainId: Long = 995511,
+    tstCtx: RellTestContext,
+    entityDefs: List<String> = listOf(),
+    inserts: List<String> = listOf(),
+    gtv: Boolean = false,
+    chainId: Long = 995511,
 ): RellBaseTester(tstCtx, entityDefs, inserts, gtv) {
     var wrapRtErrors = true
     val extraModuleConfig = mutableMapOf<String, String>()
@@ -73,6 +71,10 @@ class RellGtxTester(
 
     override fun chkEx(code: String, expected: String) {
         chkQueryEx("query q() $code", "", expected)
+    }
+
+    override fun chkFull(code: String, expected: String) {
+        chkQueryEx(code, "", expected)
     }
 
     fun chkQueryEx(code: String, args: String, expected: String) {
@@ -222,7 +224,7 @@ class RellGtxTester(
         return module
     }
 
-    fun getModuleConfig(moduleCode: String): Gtv {
+    private fun getModuleConfig(moduleCode: String): Gtv {
         val sourceCodes = files(moduleCode)
         val modArgs = getModuleArgs()
         val parts = ModuleConfigParts(modules, sourceCodes, modArgs, extraModuleConfig)
@@ -257,6 +259,7 @@ class RellGtxTester(
                     "{MODULES}" -> {
                         if (parts.modules == null) null else GtvFactory.gtv(parts.modules.map { GtvFactory.gtv(it) })
                     }
+                    "{VERSION}" -> GtvFactory.gtv(compatibilityVer?.str() ?: RellTestUtils.RELL_VER)
                     "{SOURCES}" -> GtvFactory.gtv(parts.sourceCodes.mapValues { (_, v) -> GtvString(v) })
                     "{MODULE_ARGS}" -> GtvTestUtils.moduleArgsToGtv(parts.moduleArgs)
                     else -> tpl
@@ -267,11 +270,16 @@ class RellGtxTester(
     }
 
     private fun getDefaultConfigTemplate(): String {
-        val v = RellTestUtils.RELL_VER
-        return "{'gtx':{'rell':{'modules':'{MODULES}','sources':'{SOURCES}','version':'$v','moduleArgs':'{MODULE_ARGS}','strictGtvConversion':'{STRICT_GTV_CONVERSION}'}}}"
+        return """
+            {'gtx':{'rell':{
+                'modules':'{MODULES}',
+                'version':'{VERSION}',
+                'sources':'{SOURCES}',
+                'moduleArgs':'{MODULE_ARGS}',
+                'strictGtvConversion':'{STRICT_GTV_CONVERSION}'
+            }}}
+        """.unwrap()
     }
-
-    private fun createDatabaseAccess(): SQLDatabaseAccess = PostgreSQLDatabaseAccess()
 
     private class TransactorTransaction(val transactor: Transactor): Transaction {
         override fun apply(ctx: TxEContext): Boolean = transactor.apply(ctx)
@@ -285,9 +293,9 @@ class RellGtxTester(
     }
 
     private class ModuleConfigParts(
-            val modules: List<String>?,
-            val sourceCodes: Map<String, String>,
-            val moduleArgs: Map<String, String>,
-            val extraModuleConfig: Map<String, String>
+        val modules: List<String>?,
+        val sourceCodes: Map<String, String>,
+        val moduleArgs: Map<String, String>,
+        val extraModuleConfig: Map<String, String>,
     )
 }

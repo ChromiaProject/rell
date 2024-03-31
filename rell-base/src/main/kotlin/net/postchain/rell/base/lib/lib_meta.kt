@@ -22,17 +22,19 @@ import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.checkEquals
 
 object Lib_Meta {
+    private const val SINCE0 = "0.13.5"
+
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell") {
-            type("meta", rType = R_RellMetaType) {
-                constructor(C_SysFn_Meta) {
+            type("meta", rType = R_RellMetaType, since = SINCE0) {
+                constructor(C_SysFn_Meta, since = SINCE0) {
                     comment("""
                        Returns a value of type `rell.meta` describing the given definition (specified by name).
                        The definition can be: entity, object, operation, query."
                     """)
                 }
 
-                property("simple_name", type = "text", pure = true) {
+                property("simple_name", type = "text", pure = true, since = SINCE0) {
                     comment("Gets the simple name of the meta-information.")
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
@@ -40,7 +42,7 @@ object Lib_Meta {
                     }
                 }
 
-                property("full_name", type = "text", pure = true) {
+                property("full_name", type = "text", pure = true, since = SINCE0) {
                     comment("Gets the full name, including the module name.")
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
@@ -48,7 +50,7 @@ object Lib_Meta {
                     }
                 }
 
-                property("module_name", type = "text", pure = true) {
+                property("module_name", type = "text", pure = true, since = SINCE0) {
                     comment("Gets the module name.")
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
@@ -56,7 +58,7 @@ object Lib_Meta {
                     }
                 }
 
-                property("mount_name", type = "text", pure = true) {
+                property("mount_name", type = "text", pure = true, since = SINCE0) {
                     comment("Gets the mount name.")
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
