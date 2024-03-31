@@ -131,7 +131,7 @@ class V_ObjectExpr(
     override fun toRExpr0(): R_Expr = R_ObjectExpr(rObject.type)
 
     override fun getDefMeta(): R_DefinitionMeta {
-        return R_DefinitionMeta(rObject.defName, mountName = rObject.rEntity.mountName)
+        return R_DefinitionMeta("object", rObject.defName, mountName = rObject.rEntity.mountName)
     }
 }
 

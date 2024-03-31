@@ -11,13 +11,16 @@ import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
 import net.postchain.rell.base.compiler.vexpr.V_ConstantValueExpr
 import net.postchain.rell.base.compiler.vexpr.V_Expr
-import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.lib.type.Rt_TextValue
+import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_DefinitionMeta
 import net.postchain.rell.base.model.R_LibSimpleType
 import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.GtvRtConversion
+import net.postchain.rell.base.runtime.GtvRtConversion_None
+import net.postchain.rell.base.runtime.Rt_LibValueType
+import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.checkEquals
 
@@ -30,7 +33,7 @@ object Lib_Meta {
                 constructor(C_SysFn_Meta, since = SINCE0) {
                     comment("""
                        Returns a value of type `rell.meta` describing the given definition (specified by name).
-                       The definition can be: entity, object, operation, query."
+                       The definition can be: module, entity, object, operation, query."
                     """)
                 }
 
@@ -64,6 +67,27 @@ object Lib_Meta {
                         val v = Rt_RellMetaValue.get(a)
                         v.mountName
                     }
+                }
+
+                property("kind_text", type = "text", pure = true, since = "0.14.0") {
+                    comment("""
+                        Kind of the definition described by this meta value.
+                        Possible values are: `module`, `entity`, `object`, `operation`, `query`.
+                    """)
+                    value { a ->
+                        val v = Rt_RellMetaValue.get(a)
+                        v.kindText
+                    }
+                }
+
+                staticFunction("current_module", C_SysFn_Meta_CurrentModule, since = "0.14.0") {
+                    comment("""
+                        Returns meta information about the current module.
+
+                        Property `full_name` is the same as `module_name`, `simple_name` is the last part of the module
+                        name, and `mount_name` is the effective mount name of the module (which is defined by `@mount`s
+                        of this module and its parent modules).
+                    """)
                 }
             }
         }
@@ -107,6 +131,17 @@ private object C_SysFn_Meta: C_SysFn_BaseMeta(R_RellMetaType) {
     override fun getResultValue(meta: R_DefinitionMeta) = Rt_RellMetaValue(meta)
 }
 
+private object C_SysFn_Meta_CurrentModule: C_SpecialLibGlobalFunctionBody() {
+    override fun paramCount() = 0 .. 0
+
+    override fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: List<S_Expr>): V_Expr {
+        checkEquals(args.size, 0)
+        val meta = ctx.modCtx.getModuleDefMeta()
+        val value = Rt_RellMetaValue(meta)
+        return V_ConstantValueExpr(ctx, name.pos, value, R_RellMetaType)
+    }
+}
+
 private object R_RellMetaType: R_LibSimpleType("rell.meta", C_DefinitionName("rell", "rell.meta")) {
     override fun isReference() = true
     override fun isDirectPure() = true
@@ -115,6 +150,7 @@ private object R_RellMetaType: R_LibSimpleType("rell.meta", C_DefinitionName("re
 }
 
 private class Rt_RellMetaValue(private val meta: R_DefinitionMeta): Rt_Value() {
+    val kindText: Rt_Value by lazy { Rt_TextValue.get(meta.kind) }
     val simpleName: Rt_Value by lazy { Rt_TextValue.get(meta.simpleName) }
     val moduleName: Rt_Value by lazy { Rt_TextValue.get(meta.moduleName) }
     val fullName: Rt_Value by lazy { Rt_TextValue.get(meta.fullName) }

@@ -104,7 +104,7 @@ class C_ExtModuleMember_Import(
             return
         }
 
-        target.addToNamespace(mntCtx, importDef, module.key)
+        target.addToNamespace(mntCtx, importDef, module)
 
         if ((extChain != null || mntCtx.modCtx.external) && !module.header.external) {
             mntCtx.msgCtx.error(pos, "import:module_not_external:$moduleName", "Module '$moduleName' is not external")

@@ -92,15 +92,19 @@ object C_ReplContainerKey: C_ContainerKey() {
 }
 
 class C_ModuleDescriptor(
-        val key: C_ModuleKey,
-        val header: C_ModuleHeader,
-        val directory: Boolean,
-        private val importsDescriptorGetter: C_LateGetter<C_ModuleImportsDescriptor>
+    val key: C_ModuleKey,
+    val header: C_ModuleHeader,
+    val directory: Boolean,
+    private val importsDescriptorGetter: C_LateGetter<C_ModuleImportsDescriptor>,
 ) {
     val name = key.name
     val extChain = key.extChain
 
     val containerKey = C_ModuleContainerKey.of(key)
+
+    val defMeta: R_DefinitionMeta by lazy {
+        R_DefinitionMeta.forModule(key.name, header.mountName)
+    }
 
     fun importsDescriptor() = importsDescriptorGetter.get()
 }
@@ -120,10 +124,10 @@ class C_ModuleInternals(
 }
 
 class C_Module(
-        private val executor: C_CompilerExecutor,
-        val descriptor: C_ModuleDescriptor,
-        val parentKey: C_ModuleKey?,
-        private val internalsGetter: C_LateGetter<C_ModuleInternals>
+    private val executor: C_CompilerExecutor,
+    val descriptor: C_ModuleDescriptor,
+    val parentKey: C_ModuleKey?,
+    private val internalsGetter: C_LateGetter<C_ModuleInternals>,
 ) {
     val key = descriptor.key
     val header = descriptor.header

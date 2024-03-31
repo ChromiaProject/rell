@@ -13,6 +13,7 @@ import net.postchain.rell.base.compiler.base.lib.C_LibTypeDef
 import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.lib.C_TypeDef
 import net.postchain.rell.base.compiler.base.module.C_ModuleDefsBuilder
+import net.postchain.rell.base.compiler.base.module.C_ModuleDescriptor
 import net.postchain.rell.base.compiler.base.module.C_ModuleKey
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.V_Expr
@@ -113,6 +114,7 @@ private class C_NamespaceMember_Property(
 class C_NamespaceMember_Namespace(
     base: C_NamespaceMemberBase,
     val ns: C_Namespace,
+    private val importModule: C_ModuleDescriptor? = null,
 ): C_NamespaceMember(base) {
     override fun declarationType() = C_DeclarationType.NAMESPACE
 
@@ -127,7 +129,7 @@ class C_NamespaceMember_Namespace(
         qName: C_QualifiedName,
         ideInfoPtr: C_UniqueDefaultIdeInfoPtr,
     ): C_Expr {
-        return C_NamespaceExpr(qName, ns, defName)
+        return C_NamespaceExpr(qName, ns, defName, importModule)
     }
 
     override fun getDocMember(name: String): DocDefinition? {
@@ -139,8 +141,10 @@ class C_NamespaceMember_Namespace(
         private val qName: C_QualifiedName,
         private val ns: C_Namespace,
         private val defName: C_DefinitionName,
+        private val importModule: C_ModuleDescriptor?,
     ): C_NoValueExpr() {
         override fun startPos() = qName.pos
+        override fun getDefMeta() = importModule?.defMeta
 
         override fun member(ctx: C_ExprContext, memberNameHand: C_NameHandle, exprHint: C_ExprHint): C_Expr {
             val memberName = memberNameHand.name
@@ -574,7 +578,7 @@ class C_UserNsProtoBuilder(private val assembler: C_NsAsm_ComponentAssembler) {
         return C_UserNsProtoBuilder(subAssembler)
     }
 
-    fun addModuleImport(alias: C_Name, module: C_ModuleKey, ideInfo: C_IdeSymbolInfo) {
+    fun addModuleImport(alias: C_Name, module: C_ModuleDescriptor, ideInfo: C_IdeSymbolInfo) {
         assembler.addModuleImport(alias, module, ideInfo)
     }
 

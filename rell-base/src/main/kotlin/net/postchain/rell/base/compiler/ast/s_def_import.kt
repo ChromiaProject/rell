@@ -138,7 +138,7 @@ sealed class C_ImportTarget {
     open fun moduleIdeDefId(): IdeSymbolId? = null
 
     abstract fun aliasIdeInfo(): C_IdeSymbolInfo
-    abstract fun addToNamespace(ctx: C_MountContext, def: C_ImportDefinition, module: C_ModuleKey)
+    abstract fun addToNamespace(ctx: C_MountContext, def: C_ImportDefinition, module: C_ModuleDescriptor)
 
     protected fun getNsBuilder(
         ctx: C_MountContext,
@@ -234,7 +234,7 @@ object S_DefaultImportTarget: S_ImportTarget() {
             return C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_IMPORT_ALIAS, defId = explicitAliasIdeDefId, doc = docSymbol)
         }
 
-        override fun addToNamespace(ctx: C_MountContext, def: C_ImportDefinition, module: C_ModuleKey) {
+        override fun addToNamespace(ctx: C_MountContext, def: C_ImportDefinition, module: C_ModuleDescriptor) {
             val alias = def.alias ?: def.implicitAlias
             if (alias == null) {
                 ctx.msgCtx.error(def.pos, "import:no_alias", "Cannot infer an alias, specify import alias explicitly")
@@ -360,11 +360,11 @@ class S_ExactImportTarget(private val items: List<S_ExactImportTargetItem>): S_I
     ): C_ImportTarget() {
         override fun aliasIdeInfo() = aliasIdeDef.defInfo
 
-        override fun addToNamespace(ctx: C_MountContext, def: C_ImportDefinition, module: C_ModuleKey) {
+        override fun addToNamespace(ctx: C_MountContext, def: C_ImportDefinition, module: C_ModuleDescriptor) {
             checkEquals(def.alias, explicitAlias)
             val nsBuilder = getNsBuilder(ctx, def.alias, aliasIdeDef.refInfo)
             for (item in items) {
-                item.addToNamespace(ctx, docModifiers, def.alias, ctx.modCtx.moduleName, nsBuilder, module)
+                item.addToNamespace(ctx, docModifiers, def.alias, ctx.modCtx.moduleName, nsBuilder, module.key)
             }
         }
     }
@@ -390,10 +390,10 @@ object S_WildcardImportTarget: S_ImportTarget() {
     ): C_ImportTarget() {
         override fun aliasIdeInfo() = aliasIdeDef.defInfo
 
-        override fun addToNamespace(ctx: C_MountContext, def: C_ImportDefinition, module: C_ModuleKey) {
+        override fun addToNamespace(ctx: C_MountContext, def: C_ImportDefinition, module: C_ModuleDescriptor) {
             checkEquals(def.alias, explicitAlias)
             val nsBuilder = getNsBuilder(ctx, def.alias, aliasIdeDef.refInfo)
-            nsBuilder.addWildcardImport(module, listOf())
+            nsBuilder.addWildcardImport(module.key, listOf())
         }
     }
 }

@@ -35,7 +35,7 @@ class C_QueryGlobalFunction(val rQuery: R_QueryDefinition): C_GlobalFunction() {
     private val headerLate = C_LateInit(C_CompilerPass.MEMBERS, C_QueryFunctionHeader.ERROR)
 
     override fun getDefMeta(): R_DefinitionMeta {
-        return R_DefinitionMeta(rQuery.defName, mountName = rQuery.mountName)
+        return R_DefinitionMeta("query", rQuery.defName, mountName = rQuery.mountName)
     }
 
     fun setHeader(header: C_QueryFunctionHeader) {

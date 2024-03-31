@@ -28,6 +28,7 @@ class C_SpecificTypeExpr(
             is R_EntityType -> {
                 val entity = type.rEntity
                 R_DefinitionMeta(
+                    "entity",
                     entity.defName,
                     mountName = entity.mountName,
                     externalChain = Nullable.of(entity.external?.chain?.name),

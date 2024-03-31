@@ -64,13 +64,39 @@ abstract class R_Definition(base: R_DefinitionBase): DocDefinition {
 }
 
 class R_DefinitionMeta(
-    defName: R_DefinitionName,
+    val kind: String,
+    val moduleName: String,
+    val fullName: String,
+    val simpleName: String,
     val mountName: R_MountName,
     val externalChain: Nullable<String>? = null,
 ) {
-    val fullName: String = defName.strictAppLevelName
-    val simpleName: String = defName.simpleName
-    val moduleName: String = defName.module
+    constructor(
+        kind: String,
+        defName: R_DefinitionName,
+        mountName: R_MountName,
+        externalChain: Nullable<String>? = null,
+    ): this(
+        kind = kind,
+        moduleName = defName.module,
+        fullName = defName.strictAppLevelName,
+        simpleName = defName.simpleName,
+        mountName = mountName,
+        externalChain = externalChain,
+    )
+
+    companion object {
+        fun forModule(moduleName: R_ModuleName, mountName: R_MountName): R_DefinitionMeta {
+            val moduleNameStr = moduleName.str()
+            return R_DefinitionMeta(
+                kind = "module",
+                moduleName = moduleNameStr,
+                fullName = moduleNameStr,
+                simpleName = moduleName.parts.lastOrNull()?.str ?: "",
+                mountName = mountName,
+            )
+        }
+    }
 }
 
 class R_ExternalChainsRoot

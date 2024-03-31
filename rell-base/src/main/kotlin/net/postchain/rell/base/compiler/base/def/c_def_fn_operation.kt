@@ -30,7 +30,7 @@ class C_OperationGlobalFunction(val rOp: R_OperationDefinition): C_GlobalFunctio
     private val headerLate = C_LateInit(C_CompilerPass.MEMBERS, C_OperationFunctionHeader.ERROR)
 
     override fun getDefMeta(): R_DefinitionMeta {
-        return R_DefinitionMeta(rOp.defName, mountName = rOp.mountName)
+        return R_DefinitionMeta("operation", rOp.defName, mountName = rOp.mountName)
     }
 
     fun setHeader(header: C_OperationFunctionHeader) {

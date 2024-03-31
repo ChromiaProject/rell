@@ -83,7 +83,7 @@ private class C_NsRes_InternalMaker {
                 val restrictions = C_MemberRestrictions.makeUser(def.defName, decType, def.deprecated)
                 val base = C_NamespaceMemberBase(def.defName, def.ideInfo, restrictions)
                 val ns = makeNamespace(impNs)
-                C_NamespaceItem(C_NamespaceMember_Namespace(base, ns))
+                C_NamespaceItem(C_NamespaceMember_Namespace(base, ns, def.importModule))
             }
         }
     }

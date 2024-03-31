@@ -153,7 +153,11 @@ New type "rell.meta" has the following members:
 constructor(definition);
 
     Constructor. Returns a value of type "rell.meta" describing the given definition (specified by name).
-    The definition can be: entity, object, operation, query.
+    The definition can be: module, entity, object, operation, query.
+
+kind_text: text;
+
+    Kind of the definition. Possible values: "module", "entity", "object", "operation", "query".
 
 simple_name: text;
 
@@ -172,6 +176,10 @@ mount_name: text;
 
     Mount name. Throws an error (at runtime) if the kind of the definition doesn't have a mount name.
     (All definitions supported so far have mount names.)
+
+current_module(): rell.meta;
+
+    Returns meta information about the current module.
 
 Example. Getting a mount name of an operation:
 

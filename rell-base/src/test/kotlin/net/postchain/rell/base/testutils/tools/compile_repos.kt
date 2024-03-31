@@ -142,13 +142,10 @@ private class ReposCompiler {
             C_CompilerModuleSelection(modules, modules)
         }
 
-        val opts = if (runInfo.rellVer == null) {
-            C_CompilerOptions.DEFAULT
-        } else {
-            C_CompilerOptions.forLangVersion(runInfo.rellVer)
-        }
-
         val res = try {
+            val opts = if (runInfo.rellVer == null) C_CompilerOptions.DEFAULT else {
+                C_CompilerOptions.builder().compatibility(runInfo.rellVer).allowOlderCompatibilityVersion(true).build()
+            }
             C_Compiler.compile(sourceDir, modSel, opts)
         } catch (e: Throwable) {
             println("crashed: ${runInfo.srcDir} [${runInfo.module}]")

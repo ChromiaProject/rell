@@ -39,7 +39,7 @@ interface C_NsAsm_ComponentAssembler: C_NsAsm_BasicAssembler {
         deprecated: C_Deprecated?,
     ): C_NsAsm_ComponentAssembler
 
-    fun addModuleImport(alias: C_Name, module: C_ModuleKey, ideInfo: C_IdeSymbolInfo)
+    fun addModuleImport(alias: C_Name, module: C_ModuleDescriptor, ideInfo: C_IdeSymbolInfo)
 
     fun addExactImport(
         alias: C_Name,
@@ -181,11 +181,15 @@ sealed class C_NsAsm_Def
 class C_NsAsm_Def_Simple(val item: C_NamespaceItem): C_NsAsm_Def()
 
 class C_NsAsm_Def_ExactImport(
-        val imp: C_NsAsm_ExactImport,
-        val names: C_NsAsm_ExactImportNames
+    val imp: C_NsAsm_ExactImport,
+    val names: C_NsAsm_ExactImportNames,
 ): C_NsAsm_Def()
 
-sealed class C_NsAsm_Def_Namespace(val defName: C_DefinitionName, val deprecated: C_Deprecated?): C_NsAsm_Def() {
+sealed class C_NsAsm_Def_Namespace(
+    val defName: C_DefinitionName,
+    val deprecated: C_Deprecated?,
+    val importModule: C_ModuleDescriptor?,
+): C_NsAsm_Def() {
     abstract fun ns(): C_NsAsm_Namespace
     abstract fun ideSymbolInfo(): C_IdeSymbolInfo
 
@@ -193,19 +197,21 @@ sealed class C_NsAsm_Def_Namespace(val defName: C_DefinitionName, val deprecated
         fun createDirect(
             ns: C_NsAsm_Namespace,
             defName: C_DefinitionName,
-            ideInfo: C_IdeSymbolInfo,
             deprecated: C_Deprecated?,
+            ideInfo: C_IdeSymbolInfo,
+            importModule: C_ModuleDescriptor?,
         ): C_NsAsm_Def {
-            return C_NsAsm_Def_DirectNamespace(defName, deprecated, ns, ideInfo)
+            return C_NsAsm_Def_DirectNamespace(defName, deprecated, importModule, ns, ideInfo)
         }
 
         fun createLate(
             defName: C_DefinitionName,
             deprecated: C_Deprecated?,
             ideInfo: C_IdeSymbolInfo,
+            importModule: C_ModuleDescriptor?,
             getter: LateGetter<C_NsAsm_Namespace>,
         ): C_NsAsm_Def {
-            return C_NsAsm_Def_LateNamespace(defName, deprecated, ideInfo, getter)
+            return C_NsAsm_Def_LateNamespace(defName, deprecated, importModule, ideInfo, getter)
         }
     }
 }
@@ -213,9 +219,10 @@ sealed class C_NsAsm_Def_Namespace(val defName: C_DefinitionName, val deprecated
 private class C_NsAsm_Def_DirectNamespace(
     defName: C_DefinitionName,
     deprecated: C_Deprecated?,
+    importModule: C_ModuleDescriptor?,
     private val ns: C_NsAsm_Namespace,
     private val ideInfo: C_IdeSymbolInfo,
-): C_NsAsm_Def_Namespace(defName, deprecated) {
+): C_NsAsm_Def_Namespace(defName, deprecated, importModule) {
     override fun ns() = ns
     override fun ideSymbolInfo() = ideInfo
 }
@@ -223,9 +230,10 @@ private class C_NsAsm_Def_DirectNamespace(
 private class C_NsAsm_Def_LateNamespace(
     defName: C_DefinitionName,
     deprecated: C_Deprecated?,
+    importModule: C_ModuleDescriptor?,
     private val ideInfo: C_IdeSymbolInfo,
     private val getter: LateGetter<C_NsAsm_Namespace>,
-): C_NsAsm_Def_Namespace(defName, deprecated) {
+): C_NsAsm_Def_Namespace(defName, deprecated, importModule) {
     override fun ns() = getter.get()
     override fun ideSymbolInfo() = ideInfo
 }
@@ -283,15 +291,15 @@ private class C_NsAsm_MutableDef_Namespace(
 ): C_NsAsm_MutableDef() {
     override fun assemble(): C_NsAsm_RawDef {
         val ns = asm.assemble()
-        return C_NsAsm_RawDef_Namespace(ns, merge, defName, ideInfo, deprecated)
+        return C_NsAsm_RawDef_Namespace(ns, merge, defName, ideInfo, deprecated, null)
     }
 }
 
 private class C_NsAsm_InternalComponentAssembler(
-        private val executor: C_CompilerExecutor,
-        nsLinker: C_NsAsm_NamespaceLinker,
-        nsKey: C_NsAsm_NamespaceKey,
-        stamp: R_AppUid
+    private val executor: C_CompilerExecutor,
+    nsLinker: C_NsAsm_NamespaceLinker,
+    nsKey: C_NsAsm_NamespaceKey,
+    stamp: R_AppUid,
 ): C_NsAsm_InternalBasicAssembler(nsLinker, nsKey, stamp), C_NsAsm_ComponentAssembler {
     private val entries = mutableListOf<C_NsAsm_MutableEntry>()
     private val wildcardImports = mutableListOf<C_NsAsm_RawWildcardImport>()
@@ -323,15 +331,15 @@ private class C_NsAsm_InternalComponentAssembler(
         return asm
     }
 
-    override fun addModuleImport(alias: C_Name, module: C_ModuleKey, ideInfo: C_IdeSymbolInfo) {
+    override fun addModuleImport(alias: C_Name, module: C_ModuleDescriptor, ideInfo: C_IdeSymbolInfo) {
         checkCanModify()
         val asm = createSubAssembler(alias)
-        asm.addWildcardImport(module, immListOf())
+        asm.addWildcardImport(module.key, immListOf())
         val ns = asm.assemble()
         val defName = nsKey.toDefPath().subName(alias.rName)
-        val def = C_NsAsm_RawDef_Namespace(ns, false, defName, ideInfo, null)
+        val def = C_NsAsm_RawDef_Namespace(ns, false, defName, ideInfo, null, module)
         val mutDef = C_NsAsm_MutableDef_Simple(def)
-        addEntry(alias, C_DeclarationType.IMPORT, mutDef, C_NsAsm_Identity_ModuleImport(module))
+        addEntry(alias, C_DeclarationType.IMPORT, mutDef, C_NsAsm_Identity_ModuleImport(module.key))
     }
 
     private fun createSubAssembler(name: C_Name): C_NsAsm_InternalComponentAssembler {
@@ -468,8 +476,8 @@ private class C_NsAsm_InternalReplAssembler(
 private class C_NsAsm_RawModule(val rawNs: C_NsAsm_RawNamespace, val ns: C_NsAsm_Namespace)
 
 class C_NsAsm_RawNamespace(
-        entries: List<C_NsAsm_RawEntry>,
-        wildcardImports: List<C_NsAsm_RawWildcardImport>
+    entries: List<C_NsAsm_RawEntry>,
+    wildcardImports: List<C_NsAsm_RawWildcardImport>,
 ) {
     val entries = entries.toImmList()
     val wildcardImports = wildcardImports.toImmList()
@@ -572,17 +580,20 @@ private class C_NsAsm_RawDef_Namespace(
     val defName: C_DefinitionName,
     val ideInfo: C_IdeSymbolInfo,
     val deprecated: C_Deprecated?,
+    val importModule: C_ModuleDescriptor? = null,
 ): C_NsAsm_RawDef() {
     override fun filterByStamp(targetStamp: R_AppUid): C_NsAsm_RawDef {
         val resNs = ns.filterByStamp(targetStamp)
-        return if (resNs === ns) this else C_NsAsm_RawDef_Namespace(resNs, merge, defName, ideInfo, deprecated)
+        return if (resNs === ns) this else {
+            C_NsAsm_RawDef_Namespace(resNs, merge, defName, ideInfo, deprecated, importModule)
+        }
     }
 
     override fun addToDefs(b: C_ModuleDefsBuilder) = ns.addToDefs(b)
 
     override fun assemble(): C_NsAsm_Def {
         val ns2 = ns.assemble(immListOf())
-        return C_NsAsm_Def_Namespace.createDirect(ns2, defName, ideInfo, deprecated)
+        return C_NsAsm_Def_Namespace.createDirect(ns2, defName, deprecated, ideInfo, importModule)
     }
 }
 
@@ -962,10 +973,10 @@ private object C_NsAsm_Utils {
     }
 
     fun transformNamespaces(
-            ns: C_NsAsm_RawNamespace,
-            pre: Boolean,
-            stamp: R_AppUid,
-            f: (C_NsAsm_RawNamespace, C_NsAsm_RawNamespace) -> C_NsAsm_RawNamespace
+        ns: C_NsAsm_RawNamespace,
+        pre: Boolean,
+        stamp: R_AppUid,
+        f: (C_NsAsm_RawNamespace, C_NsAsm_RawNamespace) -> C_NsAsm_RawNamespace,
     ): C_NsAsm_RawNamespace {
         val preNs = if (pre) f(ns, ns) else ns
         val transNs = transformNamespacesSub(preNs, pre, stamp, f)
@@ -974,16 +985,23 @@ private object C_NsAsm_Utils {
     }
 
     private fun transformNamespacesSub(
-            ns: C_NsAsm_RawNamespace,
-            pre: Boolean,
-            stamp: R_AppUid,
-            f: (C_NsAsm_RawNamespace, C_NsAsm_RawNamespace) -> C_NsAsm_RawNamespace
+        ns: C_NsAsm_RawNamespace,
+        pre: Boolean,
+        stamp: R_AppUid,
+        f: (C_NsAsm_RawNamespace, C_NsAsm_RawNamespace) -> C_NsAsm_RawNamespace,
     ): C_NsAsm_RawNamespace {
         val entries = mutableListOf<C_NsAsm_RawEntry>()
         for (entry in ns.entries) {
             val entry2 = if (entry.def !is C_NsAsm_RawDef_Namespace) entry else {
                 val ns2 = transformNamespaces(entry.def.ns, pre, stamp, f)
-                val def2 = C_NsAsm_RawDef_Namespace(ns2, entry.def.merge, entry.def.defName, entry.def.ideInfo, entry.def.deprecated)
+                val def2 = C_NsAsm_RawDef_Namespace(
+                    ns2,
+                    entry.def.merge,
+                    entry.def.defName,
+                    entry.def.ideInfo,
+                    entry.def.deprecated,
+                    entry.def.importModule,
+                )
                 C_NsAsm_RawEntry(entry.name, entry.type, def2, entry.identity, entry.container, stamp)
             }
             entries.add(entry2)

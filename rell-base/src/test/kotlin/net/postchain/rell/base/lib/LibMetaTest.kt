@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib
@@ -51,15 +51,12 @@ class LibMetaTest: BaseRellTest(false) {
     }
 
     @Test fun testConstructorUnsupportedDef() {
-        file("lib.rell", "module;")
-        def("import lib;")
         def("struct rec {}")
         def("enum color { red }")
         def("function f() {}")
         def("val X = 123;")
         def("namespace ns {}")
 
-        chk("rell.meta(lib)", "ct_err:expr_call:bad_arg:[rell.meta]")
         chk("rell.meta(rec)", "ct_err:expr_call:bad_arg:[rell.meta]")
         chk("rell.meta(color)", "ct_err:expr_call:bad_arg:[rell.meta]")
         chk("rell.meta(f)", "ct_err:expr_call:bad_arg:[rell.meta]")
@@ -92,16 +89,8 @@ class LibMetaTest: BaseRellTest(false) {
         file("app/lib.rell", "module; namespace a.b { entity data {} }")
         def("object state {}")
         def("import app.lib.{a.b.data};")
-
-        chk("rell.meta(data)", "rell.meta[app.lib:a.b.data]")
-        chk("rell.meta(data).simple_name", "text[data]")
-        chk("rell.meta(data).module_name", "text[app.lib]")
-        chk("rell.meta(data).full_name", "text[app.lib:a.b.data]")
-
-        chk("rell.meta(state)", "rell.meta[:state]")
-        chk("rell.meta(state).simple_name", "text[state]")
-        chk("rell.meta(state).module_name", "text[]")
-        chk("rell.meta(state).full_name", "text[:state]")
+        chkMeta("", "rell.meta(data)", "entity", "app.lib:a.b.data", "app.lib", "app.lib:a.b.data", "data", "a.b.data")
+        chkMeta("", "rell.meta(state)", "object", ":state", "", ":state", "state", "state")
     }
 
     @Test fun testMountName() {
@@ -145,5 +134,138 @@ class LibMetaTest: BaseRellTest(false) {
         chk("'' + rell.meta(data)", "text[meta[app.lib:a.b.data]]")
         chk("'' + rell.meta(ns.state)", "text[meta[:ns.state]]")
         chk("'' + rell.meta(op)", "text[meta[:op]]")
+    }
+
+    @Test fun testCurrentModule() {
+        val fn = "rell.meta.current_module()"
+        file("module.rell", "function x() = $fn; namespace ns { function y() = $fn; }")
+        file("dir/module.rell", "function m() = $fn; namespace ns1 { function m2() = $fn; }")
+        file("dir/a.rell", "function a() = $fn; namespace ns2 { function a2() = $fn; }")
+        file("file.rell", "module; function f() = $fn; namespace ns { function g() = $fn; }")
+        def("import dir;")
+        def("import file;")
+
+        chkMetaMod("", fn, "", "", "")
+        chkMetaMod("", "x()", "", "", "")
+        chkMetaMod("", "ns.y()", "", "", "")
+
+        chkMetaMod("", "dir.m()", "dir", "dir", "")
+        chkMetaMod("", "dir.ns1.m2()", "dir", "dir", "")
+        chkMetaMod("", "dir.a()", "dir", "dir", "")
+        chkMetaMod("", "dir.ns2.a2()", "dir", "dir", "")
+
+        chkMetaMod("", "file.f()", "file", "file", "")
+        chkMetaMod("", "file.ns.g()", "file", "file", "")
+    }
+
+    @Test fun testCurrentModuleNested() {
+        val fn = "rell.meta.current_module()"
+        file("a/module.rell", "function f() = $fn;")
+        file("a/b/module.rell", "function f() = $fn;")
+        file("a/b/c/module.rell", "function f() = $fn;")
+        def("import a; import a.b; import a.b.c;")
+
+        chkMetaMod("", "a.f()", "a", "a", "")
+        chkMetaMod("", "b.f()", "a.b", "b", "")
+        chkMetaMod("", "c.f()", "a.b.c", "c", "")
+    }
+
+    @Test fun testCurrentModuleMountName() {
+        val fn = "rell.meta.current_module()"
+        file("a.rell", "module; function f() = $fn;")
+        file("b.rell", "@mount('mnt_b') module; function f() = $fn;")
+        file("c/module.rell", "@mount('mnt_c') module; function f() = $fn;")
+        file("c/d.rell", "module; function f() = $fn;")
+        file("e/module.rell", "module; function f() = $fn;")
+        file("e/f/module.rell", "@mount('mnt_f') module; function f() = $fn;")
+        file("e/f/g/module.rell", "module; function f() = $fn;")
+        file("e/f/g/h/module.rell", "@mount('.mnt_h') module; function f() = $fn;")
+        file("e/f/g/h/i/module.rell", "@mount('mnt_i') module; function f() = $fn;")
+        def("import a; import b; import c; import c.d;")
+        def("import e; import e.f; import e.f.g; import e.f.g.h; import e.f.g.h.i;")
+
+        chkMetaMod("", "a.f()", "a", "a", "")
+        chkMetaMod("", "b.f()", "b", "b", "mnt_b")
+        chkMetaMod("", "c.f()", "c", "c", "mnt_c")
+        chkMetaMod("", "d.f()", "c.d", "d", "mnt_c")
+        chkMetaMod("", "e.f()", "e", "e", "")
+        chkMetaMod("", "f.f()", "e.f", "f", "mnt_f")
+        chkMetaMod("", "g.f()", "e.f.g", "g", "mnt_f")
+        chkMetaMod("", "h.f()", "e.f.g.h", "h", "mnt_f.mnt_h")
+        chkMetaMod("", "i.f()", "e.f.g.h.i", "i", "mnt_i")
+    }
+
+    @Test fun testKindText() {
+        def("entity data {}")
+        def("object state {}")
+        def("operation op() {}")
+        def("query qq() = 0;")
+
+        chk("rell.meta(data).kind_text", "text[entity]")
+        chk("rell.meta(state).kind_text", "text[object]")
+        chk("rell.meta(op).kind_text", "text[operation]")
+        chk("rell.meta(qq).kind_text", "text[query]")
+    }
+
+    @Test fun testModule() {
+        file("a.rell", "module;")
+        file("b.rell", "@mount('mnt_b') module;")
+        file("c/module.rell", "module;")
+        file("c/d.rell", "@mount('mnt_d') module;")
+        file("c/d/e/module.rell", "module;")
+        def("import a; import b; import c; import c.d; import c.d.e;")
+
+        chkMetaMod("", "rell.meta(a)", "a", "a", "")
+        chkMetaMod("", "rell.meta(b)", "b", "b", "mnt_b")
+        chkMetaMod("", "rell.meta(c)", "c", "c", "")
+        chkMetaMod("", "rell.meta(d)", "c.d", "d", "mnt_d")
+        chkMetaMod("", "rell.meta(e)", "c.d.e", "e", "mnt_d")
+    }
+
+    @Test fun testModuleComplex() {
+        file("lib.rell", "module;")
+        file("mid.rell", "module; import lib; import bil:lib;")
+        file("s1.rell", "module; import lib;")
+        file("s2.rell", "module; import bil:lib;")
+
+        chkMetaMod("import lib;", "rell.meta(lib)", "lib", "lib", "")
+        chkMetaMod("import mid;", "rell.meta(mid.lib)", "lib", "lib", "")
+        chkMetaMod("import mid;", "rell.meta(mid.bil)", "lib", "lib", "")
+        chkMetaMod("import mid.*;", "rell.meta(lib)", "lib", "lib", "")
+        chkMetaMod("import mid.*;", "rell.meta(bil)", "lib", "lib", "")
+        chkMetaMod("import a:mid.*;", "rell.meta(a.lib)", "lib", "lib", "")
+        chkMetaMod("import a:mid.*;", "rell.meta(a.bil)", "lib", "lib", "")
+
+        chkMetaMod("import mid.{lib,bil};", "rell.meta(lib)", "lib", "lib", "")
+        chkMetaMod("import mid.{lib,bil};", "rell.meta(bil)", "lib", "lib", "")
+        chkMetaMod("import a:mid.{lib,bil};", "rell.meta(a.lib)", "lib", "lib", "")
+        chkMetaMod("import a:mid.{lib,bil};", "rell.meta(a.bil)", "lib", "lib", "")
+        chkMetaMod("import mid.{x:lib,y:bil};", "rell.meta(x)", "lib", "lib", "")
+        chkMetaMod("import mid.{x:lib,y:bil};", "rell.meta(y)", "lib", "lib", "")
+
+        chkMetaMod("import s1.*; import s2.*;", "rell.meta(lib)", "lib", "lib", "")
+        chkMetaMod("import s1.*; import s2.*;", "rell.meta(bil)", "lib", "lib", "")
+    }
+
+    private fun chkMetaMod(defs: String, expr: String, moduleName: String, simpleName: String, mountName: String) {
+        chkMeta(defs, expr, "module", moduleName, moduleName, moduleName, simpleName, mountName)
+    }
+
+    private fun chkMeta(
+        defs: String,
+        expr: String,
+        kind: String,
+        value: String,
+        moduleName: String,
+        fullName: String,
+        simpleName: String,
+        mountName: String,
+    ) {
+        chkFull("$defs query q() = $expr;", "rell.meta[$value]")
+        chkFull("$defs query q() = $expr.kind_text;", "text[$kind]")
+        chkFull("$defs query q() = $expr.module_name;", "text[$moduleName]")
+        chkFull("$defs query q() = $expr.full_name;", "text[$fullName]")
+        chkFull("$defs query q() = $expr.simple_name;", "text[$simpleName]")
+        chkFull("$defs query q() = $expr.mount_name;", "text[$mountName]")
     }
 }

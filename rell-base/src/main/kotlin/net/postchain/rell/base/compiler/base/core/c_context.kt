@@ -128,6 +128,7 @@ sealed class C_ModuleContext(
     abstract fun createFileNsAssembler(): C_NsAsm_ComponentAssembler
     abstract fun getModuleDefs(): C_ModuleDefs
     abstract fun getModuleArgsStruct(): C_Struct?
+    abstract fun getModuleDefMeta(): R_DefinitionMeta
 }
 
 class C_RegularModuleContext(
@@ -172,6 +173,8 @@ class C_RegularModuleContext(
         val struct = contents.defs.structs[C_Constants.MODULE_ARGS_STRUCT]
         return struct
     }
+
+    override fun getModuleDefMeta() = module.descriptor.defMeta
 }
 
 class C_ReplModuleContext(
@@ -199,6 +202,7 @@ class C_ReplModuleContext(
     override fun createFileNsAssembler() = throw UnsupportedOperationException()
     override fun getModuleDefs() = C_ModuleDefs.EMPTY
     override fun getModuleArgsStruct() = null
+    override fun getModuleDefMeta() = R_DefinitionMeta.forModule(moduleName, mountName)
 }
 
 class C_FileContext(
