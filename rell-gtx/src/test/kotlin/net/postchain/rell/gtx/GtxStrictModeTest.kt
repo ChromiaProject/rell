@@ -9,7 +9,6 @@ import net.postchain.gtv.GtvType
 import net.postchain.gtv.parse.GtvParser
 import net.postchain.rell.base.lang.type.VirtualTest.Companion.argToGtv
 import net.postchain.rell.gtx.testutils.BaseGtxTest
-import org.junit.Ignore
 import org.junit.Test
 
 class GtxStrictModeTest: BaseGtxTest() {
@@ -53,8 +52,7 @@ class GtxStrictModeTest: BaseGtxTest() {
             "gtv_err:type:[boolean]:bad_value:10:param:x")
     }
 
-    // TODO: This test should be enabled when postchain-gtv version 3.14.22 is released
-    @Ignore @Test fun testJson() {
+    @Test fun testJson() {
         chkStrictMode("json", "'{\"a\": 2}'", "OK", "OK")
     }
 
@@ -243,7 +241,7 @@ class GtxStrictModeTest: BaseGtxTest() {
     }
 
     private fun gtvArgWithType(arg: String, type: String): Pair<Gtv, String> {
-        var gtvArg = GtvParser.parse(tst.normalizeQuotes(arg))
+        var gtvArg = GtvParser.parse(arg)
         var argType = type
         if (isVirtualTypeTest) {
             argType = "virtual<$type>"
