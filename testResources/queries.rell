@@ -33,6 +33,7 @@ query return_type_nullable_list_struct(): list<test_struct>? = list<test_struct>
 query return_type_list_entity() = test_entity @* { .a };
 query return_type_nullable_list_entity(): list<test_entity>? = null;
 query return_type_list_gtv() = list<gtv>();
+query return_type_list_list_list() = list<list<list<gtv>>>();
 query return_type_set_gtv() = set<gtv>();
 query return_type_map() = map<text, text>();
 query return_type_nullable_map(): map<text, text>? = map<text, text>();

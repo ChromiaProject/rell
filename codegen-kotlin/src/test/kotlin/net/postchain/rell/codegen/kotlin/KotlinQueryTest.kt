@@ -88,6 +88,7 @@ internal class KotlinQueryTest {
             "return_type_list_entity,).asArray().map { v1 -> v1.let { RowId(it.asInteger()) } }",
             "return_type_nullable_list_entity,.let { v0 -> if (v0 is GtvNull) null else v0.asArray().map { v2 -> v2.let { RowId(it.asInteger()) } } }",
             "return_type_list_gtv,).asArray()",
+            "return_type_list_list_list,).asArray().map { v1 -> v1.asArray().map { v3 -> v3.asArray() } }",
             "return_type_set_gtv,).asArray().toSet()",
             "return_type_map,').asDict().mapValues { (_, v1) -> v1.asString() }'",
             "return_type_nullable_map,'.let { v0 -> if (v0 is GtvNull) null else v0.asDict().mapValues { (_, v2) -> v2.asString() } }'",
