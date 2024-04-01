@@ -27,7 +27,7 @@ class KotlinOperation(op: R_OperationDefinition) : ExtensionMethodSection(
         return ", ${params.joinToString(",\n\t") { parameterToGtv(it) }}"
     }
 
-    override fun formatReturnType(type: R_Type?): String = ""
+    override fun formatReturnType(type: R_Type?, depth: Int): String = ""
 
     override fun returnStructure(returnType: R_Type?): String = ""
 }
