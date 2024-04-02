@@ -169,7 +169,7 @@ class S_AtExprFromItem(
     }
 
     companion object {
-        private val RESTRICTIONS = C_FeatureRestrictions.make("0.14.0",
+        private val RESTRICTIONS = C_FeatureRestrictions.make("0.13.10",
             "at_expr_from_annotation", "At-expression-from annotations are",
         )
     }
@@ -702,7 +702,7 @@ class S_AtExpr(
     }
 
     companion object {
-        private val RESTRICTIONS = C_FeatureRestrictions.make("0.14.0", "at_expr_join", "Join syntax is")
+        private val RESTRICTIONS = C_FeatureRestrictions.make("0.13.10", "at_expr_join", "Join syntax is")
 
         fun findWhereContextAttrsByType(ctx: C_ExprContext, type: R_Type): List<C_AtFromImplicitAttr> {
             return if (type == R_BooleanType) {

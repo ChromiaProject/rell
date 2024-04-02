@@ -389,7 +389,7 @@ sealed class C_BinOp_EqNe(private val eq: Boolean, private val rOp: R_BinaryOp):
 
     companion object {
         private val RESTRICTIONS_NULLABLE_OP = C_FeatureRestrictions.make(
-            "0.14.0",
+            "0.13.10",
             "binop_nullable_eq_value" toCodeMsg "Operator T == T? is"
         )
 

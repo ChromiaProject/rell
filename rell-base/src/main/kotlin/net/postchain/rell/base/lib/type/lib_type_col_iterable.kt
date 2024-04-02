@@ -18,7 +18,7 @@ object Lib_Type_Iterable {
         type("iterable", abstract = true, hidden = true, since = "0.10.6") {
             generic("T")
 
-            function("join_to_text", "text", pure = true, since = "0.14.0") {
+            function("join_to_text", "text", pure = true, since = "0.13.10") {
                 comment("""
                      Creates a text from all the elements separated using `separator` and using the given `prefix` and
                      `postfix` if supplied.
