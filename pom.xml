@@ -30,7 +30,7 @@
         <postchain.version>3.15.9</postchain.version>
         <dist-classifier>dist</dist-classifier>
 
-        <kotlin.version>1.8.21</kotlin.version>
+        <kotlin.version>1.9.23</kotlin.version>
         <kotlin.compiler.jvmTarget>17</kotlin.compiler.jvmTarget>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
