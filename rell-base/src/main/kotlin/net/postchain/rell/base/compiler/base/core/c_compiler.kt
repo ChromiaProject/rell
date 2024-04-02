@@ -17,11 +17,9 @@ import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.lib.C_SystemLibrary
 import net.postchain.rell.base.lib.Lib_SysQueries
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import java.lang.IllegalArgumentException
 
 class C_Entity(val defPos: S_Pos?, val entity: R_EntityDefinition)
 
@@ -220,6 +218,7 @@ class C_CompilerOptions(
         putNotDefault(map, "ideDocSymbolsEnabled") { it.ideDocSymbolsEnabled }
         putNotDefault(map, "ideDefIdConflictError") { it.ideDefIdConflictError }
         putNotDefault(map, "allowLibNamedArgsAnyVersion") { it.allowLibNamedArgsAnyVersion }
+        putNotDefault(map, "allowOlderCompatibilityVersion") { it.allowOlderCompatibilityVersion }
 
         return map.toImmMap()
     }
