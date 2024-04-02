@@ -12,5 +12,5 @@ java {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-test:1.8.21")
+    implementation("org.jetbrains.kotlin:kotlin-test")
 }
