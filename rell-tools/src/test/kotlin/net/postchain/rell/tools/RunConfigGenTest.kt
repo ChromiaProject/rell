@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.tools
@@ -283,7 +283,7 @@ class RunConfigGenTest {
 
         chkFile(files, "node-config.properties", "x=123")
 
-        chkFile(files, "blockchains/33/brid.txt", "31AC73525B6B871294127C5B49DD9B05B8DE95590B3262BF07D396C0805AEC4E")
+        chkFile(files, "blockchains/33/brid.txt", "85E27E656B4816227A4E1931D64D3B4C44A6931BD6D968D1B2F4F4293886A11C")
 
         chkFile(files, "blockchains/33/0.xml", """
             <?xml version="1.0" encoding="UTF-8" standalone="yes"?>

@@ -766,9 +766,9 @@ class NullableTest: BaseRellTest(false) {
     }
 
     @Test fun testVersionControlEqualityCheck() {
-        chkVerCt("function f(x: integer, y: integer?) = x == y;", "0.14.0", "VER:feature:binop_nullable_eq_value")
-        chkVerCt("function f(x: integer, y: integer?) = y == x;", "0.14.0", "VER:feature:binop_nullable_eq_value")
-        chkVerCt("function f(x: integer, y: integer?) = x != y;", "0.14.0", "VER:feature:binop_nullable_eq_value")
-        chkVerCt("function f(x: integer, y: integer?) = y != x;", "0.14.0", "VER:feature:binop_nullable_eq_value")
+        chkVerCt("function f(x: integer, y: integer?) = x == y;", "0.13.10", "VER:feature:binop_nullable_eq_value")
+        chkVerCt("function f(x: integer, y: integer?) = y == x;", "0.13.10", "VER:feature:binop_nullable_eq_value")
+        chkVerCt("function f(x: integer, y: integer?) = x != y;", "0.13.10", "VER:feature:binop_nullable_eq_value")
+        chkVerCt("function f(x: integer, y: integer?) = y != x;", "0.13.10", "VER:feature:binop_nullable_eq_value")
     }
 }

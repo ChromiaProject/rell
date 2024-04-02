@@ -150,7 +150,7 @@ class GtxTest : BaseGtxTest() {
         chkVer("function f() = crypto.eth_privkey_to_address(x'');", "0.13.5",
             "VER:lib:FUNCTION:[rell:crypto.eth_privkey_to_address]")
         chkVer("function f(m: rell.meta) {}", "0.13.5", "VER:lib:TYPE:[rell:rell.meta]")
-        chkVer("function f(x: integer?) = x == 123;", "0.14.0", "VER:feature:binop_nullable_eq_value")
+        chkVer("function f(x: integer?) = x == 123;", "0.13.10", "VER:feature:binop_nullable_eq_value")
     }
 
     private fun chkVer(code: String, v1: String, err: String) {

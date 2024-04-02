@@ -87,8 +87,7 @@ class GtxConfigTest: BaseGtxTest() {
         chkVersion("0.13.7", "OK")
         chkVersion("0.13.8", "OK")
         chkVersion("0.13.9", "OK")
-
-        chkVersion("0.14.0", "OK")
+        chkVersion("0.13.10", "OK")
     }
 
     @Test fun testSourcesVersionUnsupported() {
@@ -122,7 +121,8 @@ class GtxConfigTest: BaseGtxTest() {
         chkVersion("0.10.12", err)
         chkVersion("0.11.1", err)
         chkVersion("0.12.1", err)
-        chkVersion("0.13.10", err)
+        chkVersion("0.13.11", err)
+        chkVersion("0.14.0", err)
         chkVersion("0.14.1", err)
         chkVersion("0.15.0", err)
         chkVersion("1.0.0", err)

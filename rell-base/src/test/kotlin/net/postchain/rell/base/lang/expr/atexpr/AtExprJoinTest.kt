@@ -465,19 +465,19 @@ class AtExprJoinTest: BaseRellTest() {
 
     @Test fun testVersionControlJoin() {
         initData()
-        chkVerCtExpr("(p: person, h: home @* {}) @* {}", "0.14.0", "VER:feature:at_expr_join")
-        chkVerCtExpr("(p: person, h: home @* { .person == p }) @* {}", "0.14.0", "VER:feature:at_expr_join")
+        chkVerCtExpr("(p: person, h: home @* {}) @* {}", "0.13.10", "VER:feature:at_expr_join")
+        chkVerCtExpr("(p: person, h: home @* { .person == p }) @* {}", "0.13.10", "VER:feature:at_expr_join")
     }
 
     @Test fun testVersionControlOuterJoin() {
         initData()
 
         val err = "feature:at_expr_from_annotation"
-        chkVerCtExpr("(p: person, @outer h: home) @* {}", "0.14.0", "VER:$err")
+        chkVerCtExpr("(p: person, @outer h: home) @* {}", "0.13.10", "VER:$err")
 
-        val err2 = "ct_err:[version:$err:0.14.0:0.13.9][version:feature:at_expr_join:0.14.0:0.13.9]"
-        chkVerCtExpr("(p: person, @outer h: home @* {}) @* {}", "0.14.0", err2)
-        chkVerCtExpr("(p: person, @outer h: home @* { .person == p }) @* {}", "0.14.0", err2)
+        val err2 = "ct_err:[version:$err:0.13.10:0.13.9][version:feature:at_expr_join:0.13.10:0.13.9]"
+        chkVerCtExpr("(p: person, @outer h: home @* {}) @* {}", "0.13.10", err2)
+        chkVerCtExpr("(p: person, @outer h: home @* { .person == p }) @* {}", "0.13.10", err2)
     }
 
     private fun initData() {

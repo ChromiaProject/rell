@@ -93,7 +93,7 @@ class R_NullableType(val valueType: R_Type): R_Type(calcName(valueType)) {
     }
 
     companion object {
-        private val SQL_COMPATIBILITY_SWITCH = C_FeatureSwitch("0.14.0")
+        private val SQL_COMPATIBILITY_SWITCH = C_FeatureSwitch("0.13.10")
 
         private fun calcName(valueType: R_Type): String {
             return when (valueType) {

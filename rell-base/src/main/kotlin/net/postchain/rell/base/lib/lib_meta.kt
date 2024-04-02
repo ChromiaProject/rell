@@ -69,7 +69,7 @@ object Lib_Meta {
                     }
                 }
 
-                property("kind_text", type = "text", pure = true, since = "0.14.0") {
+                property("kind_text", type = "text", pure = true, since = "0.13.10") {
                     comment("""
                         Kind of the definition described by this meta value.
                         Possible values are: `module`, `entity`, `object`, `operation`, `query`.
@@ -80,7 +80,7 @@ object Lib_Meta {
                     }
                 }
 
-                staticFunction("current_module", C_SysFn_Meta_CurrentModule, since = "0.14.0") {
+                staticFunction("current_module", C_SysFn_Meta_CurrentModule, since = "0.13.10") {
                     comment("""
                         Returns meta information about the current module.
 

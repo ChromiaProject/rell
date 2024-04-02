@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.gtx.testutils
@@ -24,7 +24,7 @@ fun main() {
         {
             "gtx":{
                 "rell":{
-                    "version":"0.14.0",
+                    "version":"0.13.10",
                     "modules":["main"],
                     "sources":{
                         "main.rell":"module; $code"
