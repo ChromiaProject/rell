@@ -8,7 +8,6 @@ dependencies {
     antlr(libs.antlr)
     implementation(libs.antlr)
     implementation(libs.bundles.rell)
-    implementation(libs.bundles.koin)
     implementation(libs.bundles.jackson)
     implementation(libs.bundles.logging)
 
@@ -42,15 +41,11 @@ tasks.generateGrammarSource {
         "-long-messages",
         "-package", "net.postchain.rell.toolbox.core.parser"
     )
-    outputDirectory = file("src/main/gen")
+    outputDirectory = layout.buildDirectory.dir("generated/antlr").get().asFile
 }
 
 sourceSets.getByName("main") {
-    java.srcDir("src/main/gen")
+    java.srcDir(tasks.generateGrammarSource)
     java.srcDir("src/main/java")
     kotlin.srcDir("src/main/kotlin")
-}
-
-sourceSets.getByName("test") {
-    output.setResourcesDir(file("build/classes/kotlin/test"))
 }
