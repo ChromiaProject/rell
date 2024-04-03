@@ -20,7 +20,10 @@ import java.util.zip.ZipOutputStream
 object TestSnippetsRecorder {
     private val enabled = System.getProperty("test.snippets.recorder.enabled", "false").toBoolean()
     private const val RELL_BASE_PACKAGE_NAME = "net.postchain.rell"
-    private val SOURCES_FILE: String = System.getProperty("user.home") + "/testsources-${RellVersions.VERSION_STR}.zip"
+    private val ZIP_FILE: Boolean = System.getProperty("test.snippets.recorder.zipfile", "true").toBoolean()
+    private val SOURCES_TARGET: String =
+        System.getProperty("test.snippets.recorder.target", System.getProperty("user.home"))
+    private val SOURCES_FILE: String = (SOURCES_TARGET + "/testsources-${RellVersions.VERSION_STR}.zip")
 
     private val sync = Any()
     private val snippets = mutableMapOf<String, MutableSet<IdeCodeSnippet>>()
@@ -108,7 +111,11 @@ object TestSnippetsRecorder {
     private fun saveSources() {
         synchronized (sync) {
             try {
-                saveSourcesZipFile(File(SOURCES_FILE))
+                if (ZIP_FILE) {
+                    saveSourcesZipFile(File(SOURCES_FILE))
+                } else {
+                    saveSourcesToFolder(File(SOURCES_TARGET))
+                }
             } catch (e: Throwable) {
                 System.err.println("Snippets saving failed")
                 e.printStackTrace()
@@ -116,7 +123,19 @@ object TestSnippetsRecorder {
         }
     }
 
+    private fun saveSourcesToFolder(f: File) {
+        snippets.forEach { (path, snippetSet) ->
+            val entries = IdeCodeSnippet.serialize(snippetSet)
+            with(File(f, path)) {
+                parentFile.mkdirs()
+                writeText(entries)
+            }
+        }
+        println("Test snippets (${snippets.values.sumOf { it.size }}) written to folder: $SOURCES_TARGET")
+    }
+
     private fun saveSourcesZipFile(f: File) {
+        f.parentFile.mkdirs()
         FileOutputStream(f).use { fout ->
             ZipOutputStream(fout).use { zout ->
                 for ((filePath, snippetSet) in snippets) {

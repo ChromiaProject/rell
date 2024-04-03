@@ -122,6 +122,23 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>generate-test-cases</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemProperties>
+                                <test.snippets.recorder.enabled>true</test.snippets.recorder.enabled>
+                                <test.snippets.recorder.target>${project.build.directory}/rell-test-cases</test.snippets.recorder.target>
+                                <test.snippets.recorder.zipfile>false</test.snippets.recorder.zipfile>
+                            </systemProperties>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <dependencyManagement>
