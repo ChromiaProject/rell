@@ -12,11 +12,6 @@ dependencies {
     testImplementation(project(":codegen", "testConfiguration"))
 }
 
-val copy by tasks.register<Copy>("copy-resources") {
-    from("${rootProject.rootDir}/testResources")
-    into("${project.buildDir}/resources/test")
-}
-
-val test by tasks.getting {
-    dependsOn(copy)
+sourceSets.getByName("test") {
+    resources.srcDir("${rootProject.rootDir}/testResources")
 }
