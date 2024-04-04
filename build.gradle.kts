@@ -1,6 +1,4 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.jetbrains.dokka.gradle.GradleExternalDocumentationLinkBuilder
-import java.net.URL
 
 plugins {
     kotlin("jvm") version "1.9.10"
@@ -43,6 +41,7 @@ dependencies {
     implementation("net.postchain.rell:rell-base:$rellVersion")
 
     implementation("com.github.ajalt.clikt:clikt:3.5.2")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     //testImplementation(kotlin("test"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:1.9.10")
