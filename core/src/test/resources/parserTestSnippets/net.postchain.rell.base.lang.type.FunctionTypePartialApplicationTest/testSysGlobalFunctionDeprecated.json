@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -51,15 +53,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:50)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:byte_array:byte_array.from_list",
-        "text" : "Function 'byte_array' is deprecated, use 'byte_array.from_list' instead"
+        "code" : "deprecated:CONSTRUCTOR:[rell:byte_array]:byte_array.from_list",
+        "text" : "Constructor 'rell:byte_array' is deprecated, use 'byte_array.from_list' instead"
       }
     ],
     "parsing" : {

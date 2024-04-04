@@ -1,0 +1,512 @@
+[
+  {
+    "files" : {
+      "lib.rell" : "module; struct data {} namespace sub { struct sub_data {} }",
+      "main.rell" : "import mid.{lib};",
+      "mid.rell" : "\n            module;\n            import lib;\n            import mid_lib: lib;\n            import lib.{data};\n            import lib.{mid_data: data};\n            import mid_wild: lib.*;\n            import mid_ns1: lib.{data};\n            import mid_ns2: lib.{tada:data};\n            import mid_ns3: lib.{sub.*};\n            import lib.{mid_ns4: sub.*};\n            import mid_ns5: lib.{mid_ns6: sub.*};\n        "
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; struct data {} namespace sub { struct sub_data {} }",
+      "main.rell" : "import mid.{mid_lib};",
+      "mid.rell" : "\n            module;\n            import lib;\n            import mid_lib: lib;\n            import lib.{data};\n            import lib.{mid_data: data};\n            import mid_wild: lib.*;\n            import mid_ns1: lib.{data};\n            import mid_ns2: lib.{tada:data};\n            import mid_ns3: lib.{sub.*};\n            import lib.{mid_ns4: sub.*};\n            import mid_ns5: lib.{mid_ns6: sub.*};\n        "
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; struct data {} namespace sub { struct sub_data {} }",
+      "main.rell" : "import mid.{data};",
+      "mid.rell" : "\n            module;\n            import lib;\n            import mid_lib: lib;\n            import lib.{data};\n            import lib.{mid_data: data};\n            import mid_wild: lib.*;\n            import mid_ns1: lib.{data};\n            import mid_ns2: lib.{tada:data};\n            import mid_ns3: lib.{sub.*};\n            import lib.{mid_ns4: sub.*};\n            import mid_ns5: lib.{mid_ns6: sub.*};\n        "
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; struct data {} namespace sub { struct sub_data {} }",
+      "main.rell" : "import mid.{mid_data};",
+      "mid.rell" : "\n            module;\n            import lib;\n            import mid_lib: lib;\n            import lib.{data};\n            import lib.{mid_data: data};\n            import mid_wild: lib.*;\n            import mid_ns1: lib.{data};\n            import mid_ns2: lib.{tada:data};\n            import mid_ns3: lib.{sub.*};\n            import lib.{mid_ns4: sub.*};\n            import mid_ns5: lib.{mid_ns6: sub.*};\n        "
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; struct data {} namespace sub { struct sub_data {} }",
+      "main.rell" : "import mid.{mid_wild};",
+      "mid.rell" : "\n            module;\n            import lib;\n            import mid_lib: lib;\n            import lib.{data};\n            import lib.{mid_data: data};\n            import mid_wild: lib.*;\n            import mid_ns1: lib.{data};\n            import mid_ns2: lib.{tada:data};\n            import mid_ns3: lib.{sub.*};\n            import lib.{mid_ns4: sub.*};\n            import mid_ns5: lib.{mid_ns6: sub.*};\n        "
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; struct data {} namespace sub { struct sub_data {} }",
+      "main.rell" : "import mid.{mid_ns1};",
+      "mid.rell" : "\n            module;\n            import lib;\n            import mid_lib: lib;\n            import lib.{data};\n            import lib.{mid_data: data};\n            import mid_wild: lib.*;\n            import mid_ns1: lib.{data};\n            import mid_ns2: lib.{tada:data};\n            import mid_ns3: lib.{sub.*};\n            import lib.{mid_ns4: sub.*};\n            import mid_ns5: lib.{mid_ns6: sub.*};\n        "
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; struct data {} namespace sub { struct sub_data {} }",
+      "main.rell" : "import mid.{mid_ns2};",
+      "mid.rell" : "\n            module;\n            import lib;\n            import mid_lib: lib;\n            import lib.{data};\n            import lib.{mid_data: data};\n            import mid_wild: lib.*;\n            import mid_ns1: lib.{data};\n            import mid_ns2: lib.{tada:data};\n            import mid_ns3: lib.{sub.*};\n            import lib.{mid_ns4: sub.*};\n            import mid_ns5: lib.{mid_ns6: sub.*};\n        "
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; struct data {} namespace sub { struct sub_data {} }",
+      "main.rell" : "import mid.{mid_ns2.tada};",
+      "mid.rell" : "\n            module;\n            import lib;\n            import mid_lib: lib;\n            import lib.{data};\n            import lib.{mid_data: data};\n            import mid_wild: lib.*;\n            import mid_ns1: lib.{data};\n            import mid_ns2: lib.{tada:data};\n            import mid_ns3: lib.{sub.*};\n            import lib.{mid_ns4: sub.*};\n            import mid_ns5: lib.{mid_ns6: sub.*};\n        "
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; struct data {} namespace sub { struct sub_data {} }",
+      "main.rell" : "import mid.{mid_ns3};",
+      "mid.rell" : "\n            module;\n            import lib;\n            import mid_lib: lib;\n            import lib.{data};\n            import lib.{mid_data: data};\n            import mid_wild: lib.*;\n            import mid_ns1: lib.{data};\n            import mid_ns2: lib.{tada:data};\n            import mid_ns3: lib.{sub.*};\n            import lib.{mid_ns4: sub.*};\n            import mid_ns5: lib.{mid_ns6: sub.*};\n        "
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; struct data {} namespace sub { struct sub_data {} }",
+      "main.rell" : "import mid.{mid_ns3.sub_data};",
+      "mid.rell" : "\n            module;\n            import lib;\n            import mid_lib: lib;\n            import lib.{data};\n            import lib.{mid_data: data};\n            import mid_wild: lib.*;\n            import mid_ns1: lib.{data};\n            import mid_ns2: lib.{tada:data};\n            import mid_ns3: lib.{sub.*};\n            import lib.{mid_ns4: sub.*};\n            import mid_ns5: lib.{mid_ns6: sub.*};\n        "
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; struct data {} namespace sub { struct sub_data {} }",
+      "main.rell" : "import mid.{mid_ns4};",
+      "mid.rell" : "\n            module;\n            import lib;\n            import mid_lib: lib;\n            import lib.{data};\n            import lib.{mid_data: data};\n            import mid_wild: lib.*;\n            import mid_ns1: lib.{data};\n            import mid_ns2: lib.{tada:data};\n            import mid_ns3: lib.{sub.*};\n            import lib.{mid_ns4: sub.*};\n            import mid_ns5: lib.{mid_ns6: sub.*};\n        "
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; struct data {} namespace sub { struct sub_data {} }",
+      "main.rell" : "import mid.{mid_ns4.sub_data};",
+      "mid.rell" : "\n            module;\n            import lib;\n            import mid_lib: lib;\n            import lib.{data};\n            import lib.{mid_data: data};\n            import mid_wild: lib.*;\n            import mid_ns1: lib.{data};\n            import mid_ns2: lib.{tada:data};\n            import mid_ns3: lib.{sub.*};\n            import lib.{mid_ns4: sub.*};\n            import mid_ns5: lib.{mid_ns6: sub.*};\n        "
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; struct data {} namespace sub { struct sub_data {} }",
+      "main.rell" : "import mid.{mid_ns5};",
+      "mid.rell" : "\n            module;\n            import lib;\n            import mid_lib: lib;\n            import lib.{data};\n            import lib.{mid_data: data};\n            import mid_wild: lib.*;\n            import mid_ns1: lib.{data};\n            import mid_ns2: lib.{tada:data};\n            import mid_ns3: lib.{sub.*};\n            import lib.{mid_ns4: sub.*};\n            import mid_ns5: lib.{mid_ns6: sub.*};\n        "
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; struct data {} namespace sub { struct sub_data {} }",
+      "main.rell" : "import mid.{mid_ns5.mid_ns6};",
+      "mid.rell" : "\n            module;\n            import lib;\n            import mid_lib: lib;\n            import lib.{data};\n            import lib.{mid_data: data};\n            import mid_wild: lib.*;\n            import mid_ns1: lib.{data};\n            import mid_ns2: lib.{tada:data};\n            import mid_ns3: lib.{sub.*};\n            import lib.{mid_ns4: sub.*};\n            import mid_ns5: lib.{mid_ns6: sub.*};\n        "
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; struct data {} namespace sub { struct sub_data {} }",
+      "main.rell" : "import mid.{mid_ns5.mid_ns6.sub_data};",
+      "mid.rell" : "\n            module;\n            import lib;\n            import mid_lib: lib;\n            import lib.{data};\n            import lib.{mid_data: data};\n            import mid_wild: lib.*;\n            import mid_ns1: lib.{data};\n            import mid_ns2: lib.{tada:data};\n            import mid_ns3: lib.{sub.*};\n            import lib.{mid_ns4: sub.*};\n            import mid_ns5: lib.{mid_ns6: sub.*};\n        "
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "mid.rell" : [ ]
+    }
+  }
+]

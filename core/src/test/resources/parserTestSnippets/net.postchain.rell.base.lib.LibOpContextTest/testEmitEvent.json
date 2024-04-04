@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -51,8 +53,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -81,15 +85,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:28)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[op_context.emit_event]:",
-        "text" : "Function 'op_context.emit_event' undefined for arguments ()"
+        "code" : "expr:call:missing_args:[op_context.emit_event]:[0:type,1:data]",
+        "text" : "Missing argument(s): type, data"
       }
     ],
     "parsing" : {
@@ -118,15 +124,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:28)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[op_context.emit_event]:text",
-        "text" : "Function 'op_context.emit_event' undefined for arguments (text)"
+        "code" : "expr:call:missing_args:[op_context.emit_event]:[1:data]",
+        "text" : "Missing argument(s): data"
       }
     ],
     "parsing" : {
@@ -155,14 +163,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:28)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[op_context.emit_event]:text,text",
+        "code" : "expr_call_badargs:[op_context.emit_event]:[text,text]",
         "text" : "Function 'op_context.emit_event' undefined for arguments (text, text)"
       }
     ],
@@ -192,15 +202,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:28)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[op_context.emit_event]:text,gtv,integer",
-        "text" : "Function 'op_context.emit_event' undefined for arguments (text, gtv, integer)"
+        "code" : "expr:call:too_many_args:[op_context.emit_event]:2:3",
+        "text" : "Too many arguments for function 'op_context.emit_event': 3 instead of 2"
       }
     ],
     "parsing" : {
@@ -229,15 +241,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:28)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[op_context.emit_event]:text,gtv,text",
-        "text" : "Function 'op_context.emit_event' undefined for arguments (text, gtv, text)"
+        "code" : "expr:call:too_many_args:[op_context.emit_event]:2:3",
+        "text" : "Too many arguments for function 'op_context.emit_event': 3 instead of 2"
       }
     ],
     "parsing" : {

@@ -21,14 +21,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:44)",
         "type" : "ERROR",
-        "code" : "fn_type_recursion:QUERY:foo",
+        "code" : "fn_type_recursion:QUERY:[foo]",
         "text" : "Query 'foo' is recursive, cannot infer the type; specify type explicitly"
       }
     ],
@@ -58,20 +60,22 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:28)",
         "type" : "ERROR",
-        "code" : "fn_type_recursion:QUERY:bar",
+        "code" : "fn_type_recursion:QUERY:[bar]",
         "text" : "Query 'bar' is recursive, cannot infer the type; specify type explicitly"
       },
       {
         "pos" : "main.rell(1:83)",
         "type" : "ERROR",
-        "code" : "fn_type_recursion:FUNCTION:foo",
+        "code" : "fn_type_recursion:FUNCTION:[foo]",
         "text" : "Function 'foo' is recursive, cannot infer the type; specify type explicitly"
       }
     ],

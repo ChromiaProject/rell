@@ -21,26 +21,28 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(3:33)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "code" : "expr_call_badargs:[abs]:[byte_array]",
         "text" : "Function 'abs' undefined for arguments (byte_array)"
       },
       {
         "pos" : "main.rell(3:46)",
         "type" : "ERROR",
-        "code" : "update_attr_not_mutable:i",
-        "text" : "Attribute is not mutable: 'i'"
+        "code" : "attr_not_mutable:data.i",
+        "text" : "Attribute 'i' is not mutable"
       },
       {
         "pos" : "main.rell(3:50)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[min]:",
+        "code" : "expr_call_badargs:[min]:[]",
         "text" : "Function 'min' undefined for arguments ()"
       }
     ],
@@ -70,32 +72,34 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(3:36)",
         "type" : "ERROR",
-        "code" : "update_attr_not_mutable:i",
-        "text" : "Attribute is not mutable: 'i'"
+        "code" : "attr_not_mutable:data.i",
+        "text" : "Attribute 'i' is not mutable"
       },
       {
         "pos" : "main.rell(3:40)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "code" : "expr_call_badargs:[abs]:[byte_array]",
         "text" : "Function 'abs' undefined for arguments (byte_array)"
       },
       {
         "pos" : "main.rell(3:50)",
         "type" : "ERROR",
-        "code" : "update_attr_not_mutable:j",
-        "text" : "Attribute is not mutable: 'j'"
+        "code" : "attr_not_mutable:data.j",
+        "text" : "Attribute 'j' is not mutable"
       },
       {
         "pos" : "main.rell(3:54)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[min]:",
+        "code" : "expr_call_badargs:[min]:[]",
         "text" : "Function 'min' undefined for arguments ()"
       }
     ],
@@ -125,27 +129,29 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(3:33)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "code" : "expr_call_badargs:[abs]:[byte_array]",
         "text" : "Function 'abs' undefined for arguments (byte_array)"
       },
       {
         "pos" : "main.rell(3:43)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[min]:",
+        "code" : "expr_call_badargs:[min]:[]",
         "text" : "Function 'min' undefined for arguments ()"
       },
       {
         "pos" : "main.rell(3:53)",
         "type" : "ERROR",
-        "code" : "update_attr_not_mutable:i",
-        "text" : "Attribute is not mutable: 'i'"
+        "code" : "attr_not_mutable:data.i",
+        "text" : "Attribute 'i' is not mutable"
       }
     ],
     "parsing" : {
@@ -174,8 +180,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -187,13 +195,13 @@
       {
         "pos" : "main.rell(3:37)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "code" : "expr_call_badargs:[abs]:[byte_array]",
         "text" : "Function 'abs' undefined for arguments (byte_array)"
       },
       {
         "pos" : "main.rell(3:54)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[min]:",
+        "code" : "expr_call_badargs:[min]:[]",
         "text" : "Function 'min' undefined for arguments ()"
       }
     ],
@@ -223,8 +231,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -236,13 +246,13 @@
       {
         "pos" : "main.rell(3:37)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "code" : "expr_call_badargs:[abs]:[byte_array]",
         "text" : "Function 'abs' undefined for arguments (byte_array)"
       },
       {
         "pos" : "main.rell(3:47)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[min]:",
+        "code" : "expr_call_badargs:[min]:[]",
         "text" : "Function 'min' undefined for arguments ()"
       }
     ],
@@ -272,8 +282,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -285,13 +297,13 @@
       {
         "pos" : "main.rell(3:44)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "code" : "expr_call_badargs:[abs]:[byte_array]",
         "text" : "Function 'abs' undefined for arguments (byte_array)"
       },
       {
         "pos" : "main.rell(3:58)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[min]:",
+        "code" : "expr_call_badargs:[min]:[]",
         "text" : "Function 'min' undefined for arguments ()"
       }
     ],

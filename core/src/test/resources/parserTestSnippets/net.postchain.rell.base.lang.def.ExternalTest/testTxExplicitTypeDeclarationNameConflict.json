@@ -21,7 +21,9 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell"
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -63,7 +65,9 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell"
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {

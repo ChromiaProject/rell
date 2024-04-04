@@ -27,8 +27,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -69,15 +71,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:30)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:c.f:[FUNCTION:c:f,FUNCTION:a:f,FUNCTION:b:f]",
-        "text" : "Name 'c.f' is ambiguous: function c:f, function a:f, function b:f"
+        "code" : "namespace:ambig:c.f:[FUNCTION:[c:f],FUNCTION:[a:f],FUNCTION:[b:f]]",
+        "text" : "Name 'c.f' is ambiguous: function 'c:f', function 'a:f', function 'b:f'"
       }
     ],
     "parsing" : {
@@ -118,8 +122,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {

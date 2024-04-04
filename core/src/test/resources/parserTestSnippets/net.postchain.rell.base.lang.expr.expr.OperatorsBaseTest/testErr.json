@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -58,8 +60,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -95,8 +99,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -132,8 +138,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -169,8 +177,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -206,8 +216,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -243,8 +255,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -280,8 +294,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -317,8 +333,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -354,8 +372,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -391,8 +411,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -428,8 +450,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -465,8 +489,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -502,8 +528,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -539,8 +567,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -576,8 +606,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -613,8 +645,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -650,8 +684,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -687,8 +723,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -724,8 +762,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -761,8 +801,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -798,8 +840,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -835,8 +879,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -872,8 +918,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -909,8 +957,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -946,8 +996,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -983,8 +1035,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1020,8 +1074,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1057,8 +1113,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1094,8 +1152,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1131,8 +1191,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1168,8 +1230,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1205,8 +1269,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1242,8 +1308,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1279,8 +1347,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1316,8 +1386,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1353,8 +1425,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1390,8 +1464,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1427,8 +1503,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1464,8 +1542,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1501,8 +1581,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1538,8 +1620,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1575,8 +1659,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1612,8 +1698,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1649,8 +1737,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1686,8 +1776,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1723,8 +1815,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1760,8 +1854,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1797,8 +1893,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1834,8 +1932,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1871,8 +1971,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1908,8 +2010,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1945,8 +2049,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -1982,8 +2088,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2019,8 +2127,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2056,8 +2166,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2093,8 +2205,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2130,8 +2244,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2167,8 +2283,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2204,8 +2322,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2241,8 +2361,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2278,8 +2400,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2315,8 +2439,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2352,8 +2478,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2389,8 +2517,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2426,8 +2556,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2463,8 +2595,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2500,8 +2634,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2537,8 +2673,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2574,8 +2712,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2611,8 +2751,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2648,8 +2790,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2685,8 +2829,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2722,8 +2868,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2759,8 +2907,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2796,8 +2946,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2833,8 +2985,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2870,8 +3024,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2907,8 +3063,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2944,8 +3102,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -2981,8 +3141,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3018,8 +3180,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3055,8 +3219,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3092,8 +3258,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3129,8 +3297,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3166,8 +3336,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3203,8 +3375,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3240,8 +3414,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3277,8 +3453,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3314,8 +3492,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3351,8 +3531,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3388,8 +3570,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3425,8 +3609,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3462,8 +3648,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3499,8 +3687,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3536,8 +3726,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3573,8 +3765,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3610,8 +3804,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3647,8 +3843,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3684,8 +3882,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3721,8 +3921,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3758,8 +3960,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3795,8 +3999,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3832,8 +4038,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3869,8 +4077,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3906,8 +4116,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3943,8 +4155,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -3980,8 +4194,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4017,8 +4233,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4054,8 +4272,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4091,8 +4311,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4128,8 +4350,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4165,8 +4389,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4202,8 +4428,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4239,8 +4467,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4276,8 +4506,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4313,8 +4545,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4350,8 +4584,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4387,8 +4623,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4424,8 +4662,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4461,8 +4701,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4498,8 +4740,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4535,8 +4779,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4572,8 +4818,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4609,8 +4857,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4646,8 +4896,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4683,8 +4935,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4720,8 +4974,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4757,8 +5013,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4794,8 +5052,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4831,8 +5091,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4868,8 +5130,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4905,8 +5169,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4942,8 +5208,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -4979,8 +5247,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5016,8 +5286,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5053,8 +5325,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5090,8 +5364,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5127,8 +5403,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5164,8 +5442,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5201,8 +5481,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5238,8 +5520,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5275,8 +5559,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5312,8 +5598,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5349,8 +5637,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5386,8 +5676,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5423,8 +5715,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5460,8 +5754,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5497,8 +5793,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5534,8 +5832,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5571,8 +5871,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5608,8 +5910,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5645,8 +5949,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5682,8 +5988,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5719,8 +6027,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5756,8 +6066,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5793,8 +6105,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5830,8 +6144,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5867,8 +6183,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5904,8 +6222,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5941,8 +6261,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -5978,8 +6300,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6015,8 +6339,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6052,8 +6378,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6089,8 +6417,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6126,8 +6456,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6163,8 +6495,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6200,8 +6534,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6237,8 +6573,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6274,8 +6612,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6311,8 +6651,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6348,8 +6690,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6385,8 +6729,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6422,8 +6768,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6459,8 +6807,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6496,8 +6846,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6533,8 +6885,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6570,8 +6924,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6607,8 +6963,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6644,8 +7002,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6681,8 +7041,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6718,8 +7080,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6755,8 +7119,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6792,8 +7158,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6829,8 +7197,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6866,8 +7236,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6903,8 +7275,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6940,8 +7314,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -6977,8 +7353,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -7014,8 +7392,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -7051,8 +7431,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -7088,8 +7470,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -7125,8 +7509,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -7162,8 +7548,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -7199,8 +7587,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -7236,8 +7626,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -7273,8 +7665,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -7310,8 +7704,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -7347,8 +7743,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -7383,7 +7781,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -7418,7 +7817,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -7453,7 +7853,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -7488,7 +7889,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -7523,7 +7925,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -7558,7 +7961,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -7593,7 +7997,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -7628,7 +8033,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -7663,7 +8069,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -7698,7 +8105,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -7733,7 +8141,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -7768,7 +8177,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -7803,7 +8213,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -7838,7 +8249,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -7873,7 +8285,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -7908,7 +8321,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -7943,7 +8357,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -7978,7 +8393,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8013,7 +8429,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8048,7 +8465,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8083,7 +8501,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8118,7 +8537,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8153,7 +8573,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8188,7 +8609,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8223,7 +8645,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8258,7 +8681,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8293,7 +8717,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8328,7 +8753,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8363,7 +8789,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8398,7 +8825,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8433,7 +8861,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8468,7 +8897,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8503,7 +8933,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8538,7 +8969,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8573,7 +9005,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8608,7 +9041,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8643,7 +9077,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8678,7 +9113,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8713,7 +9149,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8748,7 +9185,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8783,7 +9221,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8818,7 +9257,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8853,7 +9293,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8888,7 +9329,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8923,7 +9365,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8958,7 +9401,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -8993,7 +9437,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9028,7 +9473,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9063,7 +9509,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9098,7 +9545,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9133,7 +9581,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9168,7 +9617,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9203,7 +9653,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9238,7 +9689,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9273,7 +9725,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9308,7 +9761,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9343,7 +9797,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9378,7 +9833,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9413,7 +9869,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9448,7 +9905,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9483,7 +9941,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9518,7 +9977,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9553,7 +10013,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9588,7 +10049,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9623,7 +10085,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9658,7 +10121,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9693,7 +10157,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9728,7 +10193,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9763,7 +10229,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9798,7 +10265,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9833,7 +10301,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9868,7 +10337,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9903,7 +10373,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9938,7 +10409,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -9973,7 +10445,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10008,7 +10481,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10043,7 +10517,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10078,7 +10553,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10113,7 +10589,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10148,7 +10625,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10183,7 +10661,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10218,7 +10697,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10253,7 +10733,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10288,7 +10769,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10323,7 +10805,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10358,7 +10841,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10393,7 +10877,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10428,7 +10913,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10463,7 +10949,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10498,7 +10985,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10533,7 +11021,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10568,7 +11057,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10603,7 +11093,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10638,7 +11129,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10673,7 +11165,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10708,7 +11201,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10743,7 +11237,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10778,7 +11273,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10813,7 +11309,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10848,7 +11345,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10883,7 +11381,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10918,7 +11417,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10953,7 +11453,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -10988,7 +11489,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11023,7 +11525,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11058,7 +11561,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11093,7 +11597,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11128,7 +11633,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11163,7 +11669,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11198,7 +11705,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11233,7 +11741,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11268,7 +11777,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11303,7 +11813,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11338,7 +11849,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11373,7 +11885,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11408,7 +11921,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11443,7 +11957,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11478,7 +11993,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11513,7 +12029,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11548,7 +12065,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11583,7 +12101,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11618,7 +12137,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11653,7 +12173,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11688,7 +12209,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11723,7 +12245,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11758,7 +12281,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11793,7 +12317,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11828,7 +12353,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11863,7 +12389,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11898,7 +12425,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11933,7 +12461,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -11968,7 +12497,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12003,7 +12533,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12038,7 +12569,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12073,7 +12605,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12108,7 +12641,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12143,7 +12677,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12178,7 +12713,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12213,7 +12749,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12248,7 +12785,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12283,7 +12821,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12318,7 +12857,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12353,7 +12893,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12388,7 +12929,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12423,7 +12965,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12458,7 +13001,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12493,7 +13037,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12528,7 +13073,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12563,7 +13109,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12598,7 +13145,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12633,7 +13181,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12668,7 +13217,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12703,7 +13253,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12738,7 +13289,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12773,7 +13325,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12808,7 +13361,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12843,7 +13397,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12878,7 +13433,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12913,7 +13469,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12948,7 +13505,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -12983,7 +13541,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13018,7 +13577,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13053,7 +13613,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13088,7 +13649,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13123,7 +13685,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13158,7 +13721,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13193,7 +13757,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13228,7 +13793,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13263,7 +13829,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13298,7 +13865,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13333,7 +13901,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13368,7 +13937,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13403,7 +13973,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13438,7 +14009,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13473,7 +14045,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13508,7 +14081,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13543,7 +14117,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13578,7 +14153,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13613,7 +14189,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13648,7 +14225,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13683,7 +14261,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13718,7 +14297,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13753,7 +14333,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13788,7 +14369,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13823,7 +14405,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13858,7 +14441,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13893,7 +14477,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13928,7 +14513,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13963,7 +14549,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -13998,7 +14585,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -14033,7 +14621,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -14068,7 +14657,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -14103,7 +14693,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -14138,7 +14729,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -14173,7 +14765,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -14208,7 +14801,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -14243,7 +14837,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -14278,7 +14873,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {
@@ -14313,7 +14909,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [
       {

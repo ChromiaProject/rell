@@ -1,0 +1,724 @@
+[
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = a.f();",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = a.f().kind_text;",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = a.f().module_name;",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = a.f().full_name;",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = a.f().simple_name;",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = a.f().mount_name;",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = b.f();",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = b.f().kind_text;",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = b.f().module_name;",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = b.f().full_name;",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = b.f().simple_name;",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = b.f().mount_name;",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = c.f();",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = c.f().kind_text;",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = c.f().module_name;",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = c.f().full_name;",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = c.f().simple_name;",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "import a; import a.b; import a.b.c;\n query q() = c.f().mount_name;",
+      "a/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/module.rell" : "function f() = rell.meta.current_module();",
+      "a/b/c/module.rell" : "function f() = rell.meta.current_module();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ]
+    }
+  }
+]

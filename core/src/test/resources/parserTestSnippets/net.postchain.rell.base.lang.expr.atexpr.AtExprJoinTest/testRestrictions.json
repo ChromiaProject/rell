@@ -1,0 +1,649 @@
+[
+  {
+    "files" : {
+      "main.rell" : "entity person { name; score: integer; }\nentity country { name; }\nentity city { name; country; }\nentity home { person; city; key person, city; }\nentity company { name; city; }\nentity job { key person, company; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity person { name; score: integer; }\nentity country { name; }\nentity city { name; country; }\nentity home { person; city; key person, city; }\nentity company { name; city; }\nentity job { key person, company; }\nquery q() = (p: person, (home) @* {}) @* {};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:25)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:complex_from",
+        "text" : "Join at-expression must use a simple entity"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity person { name; score: integer; }\nentity country { name; }\nentity city { name; country; }\nentity home { person; city; key person, city; }\nentity company { name; city; }\nentity job { key person, company; }\nquery q() = (p: person, h: (home) @* {}) @* {};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:28)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:complex_from",
+        "text" : "Join at-expression must use a simple entity"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity person { name; score: integer; }\nentity country { name; }\nentity city { name; country; }\nentity home { person; city; key person, city; }\nentity company { name; city; }\nentity job { key person, company; }\nquery q() = (p: person, h: (i: home) @* {}) @* {};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:28)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:complex_from",
+        "text" : "Join at-expression must use a simple entity"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity person { name; score: integer; }\nentity country { name; }\nentity city { name; country; }\nentity home { person; city; key person, city; }\nentity company { name; city; }\nentity job { key person, company; }\nquery q() = (p: person, (a: home, b: home) @* {}) @* {};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:25)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:complex_from",
+        "text" : "Join at-expression must use a simple entity"
+      },
+      {
+        "pos" : "main.rell(7:38)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:many_items",
+        "text" : "Join at-expression must have only one entity"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity person { name; score: integer; }\nentity country { name; }\nentity city { name; country; }\nentity home { person; city; key person, city; }\nentity company { name; city; }\nentity job { key person, company; }\nquery q() = (p: person, h: (a: home, b: home) @* {}) @* {};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:28)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:complex_from",
+        "text" : "Join at-expression must use a simple entity"
+      },
+      {
+        "pos" : "main.rell(7:41)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:many_items",
+        "text" : "Join at-expression must have only one entity"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity person { name; score: integer; }\nentity country { name; }\nentity city { name; country; }\nentity home { person; city; key person, city; }\nentity company { name; city; }\nentity job { key person, company; }\nquery q() = (p: person, h: home @ {}) @* {};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:33)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:cardinality:ONE",
+        "text" : "Join at-expression must use operator '@*'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity person { name; score: integer; }\nentity country { name; }\nentity city { name; country; }\nentity home { person; city; key person, city; }\nentity company { name; city; }\nentity job { key person, company; }\nquery q() = (p: person, h: home @? {}) @* {};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:33)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:cardinality:ZERO_ONE",
+        "text" : "Join at-expression must use operator '@*'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity person { name; score: integer; }\nentity country { name; }\nentity city { name; country; }\nentity home { person; city; key person, city; }\nentity company { name; city; }\nentity job { key person, company; }\nquery q() = (p: person, h: home @+ {}) @* {};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:33)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:cardinality:ONE_MANY",
+        "text" : "Join at-expression must use operator '@*'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity person { name; score: integer; }\nentity country { name; }\nentity city { name; country; }\nentity home { person; city; key person, city; }\nentity company { name; city; }\nentity job { key person, company; }\nquery q() = (p: person, h: home @* {}.city) @* {};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:38)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:explicit_what",
+        "text" : "Join at-expression cannot have a what-part"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity person { name; score: integer; }\nentity country { name; }\nentity city { name; country; }\nentity home { person; city; key person, city; }\nentity company { name; city; }\nentity job { key person, company; }\nquery q() = (p: person, h: home @* {} (.city)) @* {};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:39)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:explicit_what",
+        "text" : "Join at-expression cannot have a what-part"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity person { name; score: integer; }\nentity country { name; }\nentity city { name; country; }\nentity home { person; city; key person, city; }\nentity company { name; city; }\nentity job { key person, company; }\nquery q() = (p: person, h: home @* {} limit 1) @* {};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:45)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:extra:limit",
+        "text" : "Join at-expression cannot have limit"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity person { name; score: integer; }\nentity country { name; }\nentity city { name; country; }\nentity home { person; city; key person, city; }\nentity company { name; city; }\nentity job { key person, company; }\nquery q() = (p: person, h: home @* {} offset 1) @* {};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:46)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:extra:offset",
+        "text" : "Join at-expression cannot have offset"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity person { name; score: integer; }\nentity country { name; }\nentity city { name; country; }\nentity home { person; city; key person, city; }\nentity company { name; city; }\nentity job { key person, company; }\nquery q() = (p: person, h: home @* {} limit 1 offset 1) @* {};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:45)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:extra:limit",
+        "text" : "Join at-expression cannot have limit"
+      },
+      {
+        "pos" : "main.rell(7:54)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:extra:offset",
+        "text" : "Join at-expression cannot have offset"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity person { name; score: integer; }\nentity country { name; }\nentity city { name; country; }\nentity home { person; city; key person, city; }\nentity company { name; city; }\nentity job { key person, company; }\nquery q() = (p: person, h: [0] @* {}) @* {};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:28)",
+        "type" : "ERROR",
+        "code" : "at:from:mix_entity_iterable",
+        "text" : "Cannot mix entities and collections in at-expression"
+      },
+      {
+        "pos" : "main.rell(7:32)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:iterable",
+        "text" : "Cannot use a collection-at-expression as a join"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity person { name; score: integer; }\nentity country { name; }\nentity city { name; country; }\nentity home { person; city; key person, city; }\nentity company { name; city; }\nentity job { key person, company; }\nquery q() = (p: person, [0] @* {}) @* {};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(7:25)",
+        "type" : "ERROR",
+        "code" : "at:from:mix_entity_iterable",
+        "text" : "Cannot mix entities and collections in at-expression"
+      },
+      {
+        "pos" : "main.rell(7:29)",
+        "type" : "ERROR",
+        "code" : "expr:at:join:iterable",
+        "text" : "Cannot use a collection-at-expression as a join"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

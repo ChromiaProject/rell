@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -51,14 +53,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:20)",
         "type" : "ERROR",
-        "code" : "expr:call:partial_not_supported:if_int",
+        "code" : "expr:call:partial_not_supported:[if_int]",
         "text" : "Partial application not supported for function 'if_int'"
       }
     ],
@@ -88,14 +92,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:26)",
         "type" : "ERROR",
-        "code" : "expr:call:partial_not_supported:if_int",
+        "code" : "expr:call:partial_not_supported:[if_int]",
         "text" : "Partial application not supported for function 'if_int'"
       }
     ],
@@ -125,14 +131,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:27)",
         "type" : "ERROR",
-        "code" : "expr:call:partial_not_supported:if_int",
+        "code" : "expr:call:partial_not_supported:[if_int]",
         "text" : "Partial application not supported for function 'if_int'"
       }
     ],
@@ -162,14 +170,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:20)",
         "type" : "ERROR",
-        "code" : "expr:call:partial_not_supported:if_int",
+        "code" : "expr:call:partial_not_supported:[if_int]",
         "text" : "Partial application not supported for function 'if_int'"
       }
     ],
@@ -199,14 +209,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:20)",
         "type" : "ERROR",
-        "code" : "expr:call:partial_not_supported:if_int",
+        "code" : "expr:call:partial_not_supported:[if_int]",
         "text" : "Partial application not supported for function 'if_int'"
       }
     ],
@@ -236,14 +248,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:20)",
         "type" : "ERROR",
-        "code" : "expr:call:partial_not_supported:if_int",
+        "code" : "expr:call:partial_not_supported:[if_int]",
         "text" : "Partial application not supported for function 'if_int'"
       }
     ],
@@ -273,15 +287,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:27)",
         "type" : "ERROR",
-        "code" : "expr:call:partial_not_supported:boolean.if_int",
-        "text" : "Partial application not supported for function 'boolean.if_int'"
+        "code" : "expr:call:partial_not_supported:[boolean_ext(boolean).if_int]",
+        "text" : "Partial application not supported for function 'boolean_ext(boolean).if_int'"
       }
     ],
     "parsing" : {
@@ -310,15 +326,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:28)",
         "type" : "ERROR",
-        "code" : "expr:call:partial_not_supported:boolean.if_int",
-        "text" : "Partial application not supported for function 'boolean.if_int'"
+        "code" : "expr:call:partial_not_supported:[boolean_ext(boolean).if_int]",
+        "text" : "Partial application not supported for function 'boolean_ext(boolean).if_int'"
       }
     ],
     "parsing" : {
@@ -347,15 +365,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:32)",
         "type" : "ERROR",
-        "code" : "expr:call:partial_not_supported:boolean.if_int",
-        "text" : "Partial application not supported for function 'boolean.if_int'"
+        "code" : "expr:call:partial_not_supported:[boolean_ext(boolean).if_int]",
+        "text" : "Partial application not supported for function 'boolean_ext(boolean).if_int'"
       }
     ],
     "parsing" : {
@@ -384,15 +404,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:27)",
         "type" : "ERROR",
-        "code" : "expr:call:partial_not_supported:boolean.if_int",
-        "text" : "Partial application not supported for function 'boolean.if_int'"
+        "code" : "expr:call:partial_not_supported:[boolean_ext(boolean).if_int]",
+        "text" : "Partial application not supported for function 'boolean_ext(boolean).if_int'"
       }
     ],
     "parsing" : {

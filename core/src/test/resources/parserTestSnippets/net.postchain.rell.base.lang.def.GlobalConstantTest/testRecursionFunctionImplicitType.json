@@ -21,32 +21,34 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:9)",
         "type" : "ERROR",
-        "code" : "fn_type_recursion:FUNCTION:y",
+        "code" : "fn_type_recursion:FUNCTION:[y]",
         "text" : "Function 'y' is recursive, cannot infer the type; specify type explicitly"
       },
       {
         "pos" : "main.rell(1:9)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:fn:y",
+        "code" : "def:const:bad_expr:[0::X]:fn:y",
         "text" : "Bad expression for a global constant: user function call"
       },
       {
         "pos" : "main.rell(2:16)",
         "type" : "ERROR",
-        "code" : "fn_type_recursion:CONSTANT:Z",
+        "code" : "fn_type_recursion:CONSTANT:[Z]",
         "text" : "Constant 'Z' is recursive, cannot infer the type; specify type explicitly"
       },
       {
         "pos" : "main.rell(3:9)",
         "type" : "ERROR",
-        "code" : "fn_type_recursion:CONSTANT:X",
+        "code" : "fn_type_recursion:CONSTANT:[X]",
         "text" : "Constant 'X' is recursive, cannot infer the type; specify type explicitly"
       }
     ],

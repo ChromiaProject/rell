@@ -1,0 +1,40 @@
+[
+  {
+    "files" : {
+      "app.rell" : "\n            module;\n            struct module_args { x: text; y: integer = 123; }\n            function f() = chain_context.args;\n        ",
+      "main.rell" : "",
+      "test.rell" : "@test module; import app; function test() { print(app.f()); }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [
+        "test"
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "app.rell" : [ ],
+      "main.rell" : [ ],
+      "test.rell" : [ ]
+    }
+  }
+]

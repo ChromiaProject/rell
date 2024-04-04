@@ -1,0 +1,126 @@
+[
+  {
+    "files" : {
+      "bar.rell" : "module; struct module_args { r: text = 'Hello'; s: integer = 456; }",
+      "foo.rell" : "module; struct module_args { p: text; q: integer = 123; }"
+    },
+    "modules" : {
+      "modules" : [ ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "useTestDependencyExtensions" : false,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "module; struct module_args { r: text = 'Hello'; s: integer = 456; }",
+      "foo.rell" : "module; struct module_args { p: text; q: integer = 123; }"
+    },
+    "modules" : {
+      "modules" : [
+        "bar"
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "useTestDependencyExtensions" : false,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "module; struct module_args { r: text = 'Hello'; s: integer = 456; }",
+      "foo.rell" : "module; struct module_args { p: text; q: integer = 123; }"
+    },
+    "modules" : {
+      "modules" : [
+        "foo"
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "useTestDependencyExtensions" : false,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "bar.rell" : "module; struct module_args { r: text = 'Hello'; s: integer = 456; }",
+      "foo.rell" : "module; struct module_args { p: text; q: integer = 123; }"
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : false,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : true,
+      "useTestDependencyExtensions" : false,
+      "compatibility" : "0.14.0"
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "bar.rell" : [ ],
+      "foo.rell" : [ ]
+    }
+  }
+]

@@ -21,14 +21,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:18)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:fn:y",
+        "code" : "def:const:bad_expr:[0::X]:fn:y",
         "text" : "Bad expression for a global constant: user function call"
       }
     ],

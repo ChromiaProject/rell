@@ -21,38 +21,10 @@
       "complexWhatEnabled" : false,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
-    },
-    "messages" : [ ],
-    "parsing" : {
-      "main.rell" : [ ]
-    }
-  },
-  {
-    "files" : {
-      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @* { .i1 == .i2 };"
-    },
-    "modules" : {
-      "modules" : [
-        ""
-      ],
-      "test_root_modules" : [ ],
-      "test_sub_modules" : true
-    },
-    "options" : {
-      "gtv" : false,
-      "deprecatedError" : false,
-      "ide" : false,
-      "atAttrShadowing" : "FULL",
-      "testLib" : false,
-      "hiddenLib" : true,
-      "allowDbModificationsInObjectExprs" : true,
-      "complexWhatEnabled" : false,
-      "mountConflictError" : true,
-      "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -81,8 +53,10 @@
       "complexWhatEnabled" : false,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -91,7 +65,7 @@
   },
   {
     "files" : {
-      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @* { .i1 != .i2 };"
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @* { .i1 == .i2 };"
     },
     "modules" : {
       "modules" : [
@@ -111,8 +85,10 @@
       "complexWhatEnabled" : false,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -141,8 +117,10 @@
       "complexWhatEnabled" : false,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -151,7 +129,7 @@
   },
   {
     "files" : {
-      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @* { .i1 < .i2 };"
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @* { .i1 != .i2 };"
     },
     "modules" : {
       "modules" : [
@@ -171,8 +149,10 @@
       "complexWhatEnabled" : false,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -201,8 +181,10 @@
       "complexWhatEnabled" : false,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -211,7 +193,7 @@
   },
   {
     "files" : {
-      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @* { .i1 <= .i2 };"
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @* { .i1 < .i2 };"
     },
     "modules" : {
       "modules" : [
@@ -231,8 +213,10 @@
       "complexWhatEnabled" : false,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -261,8 +245,10 @@
       "complexWhatEnabled" : false,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -271,7 +257,7 @@
   },
   {
     "files" : {
-      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @* { .i1 > .i2 };"
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @* { .i1 <= .i2 };"
     },
     "modules" : {
       "modules" : [
@@ -291,8 +277,10 @@
       "complexWhatEnabled" : false,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -321,8 +309,10 @@
       "complexWhatEnabled" : false,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -331,7 +321,7 @@
   },
   {
     "files" : {
-      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @* { .i1 >= .i2 };"
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @* { .i1 > .i2 };"
     },
     "modules" : {
       "modules" : [
@@ -351,8 +341,10 @@
       "complexWhatEnabled" : false,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -381,8 +373,42 @@
       "complexWhatEnabled" : false,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity company { name: text; }\nentity user { name: text; company; }\nentity optest { b1: boolean;b2: boolean;b3: boolean;b4: boolean;i1: integer;i2: integer;i3: integer;i4: integer;l1: big_integer;l2: big_integer;l3: big_integer;l4: big_integer;d1: decimal;d2: decimal;d3: decimal;d4: decimal;t1: text;t2: text;t3: text;t4: text;ba1: byte_array;ba2: byte_array;ba3: byte_array;ba4: byte_array;r1: rowid;r2: rowid;r3: rowid;r4: rowid;j1: json;j2: json;j3: json;j4: json;user1: user;user2: user;user3: user;user4: user;company1: company;company2: company;company3: company;company4: company; }\nquery q() = optest @* { .i1 >= .i2 };"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : false,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -410,7 +436,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -438,7 +465,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -466,7 +494,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -494,7 +523,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -522,7 +552,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -550,7 +581,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {

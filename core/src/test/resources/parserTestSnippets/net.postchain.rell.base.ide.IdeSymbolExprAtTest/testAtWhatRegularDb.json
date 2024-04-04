@@ -1,0 +1,653 @@
+[
+  {
+    "files" : {
+      "main.rell" : "function __main() = data @ {} ( .n1 );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = data @ {} ( .n2 );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = data @ {} ( .k1 );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = data @ {} ( .k2 );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = data @ {} ( .i1 );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = data @ {} ( .i2 );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = data @ {} ( .ref );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = data @ {} ( .rowid );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = data @* {} ( .bad );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:35)",
+        "type" : "ERROR",
+        "code" : "expr_attr_unknown:bad",
+        "text" : "Unknown attribute: 'bad'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = data @ {} ( .ref.n1 );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = data @ {} ( .ref.n2 );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = data @ {} ( .ref.k1 );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = data @ {} ( .ref.k2 );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = data @ {} ( .ref.i1 );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = data @ {} ( .ref.i2 );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = data @ {} ( .ref.rowid );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = data @* {} ( .ref.bad );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:39)",
+        "type" : "ERROR",
+        "code" : "unknown_member:[ref]:bad",
+        "text" : "Type ref has no member 'bad'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = (a:data,b:data) @* {} ( .n1 );",
+      "module.rell" : "\n            entity data {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n                ref;\n            }\n            entity ref {\n                n1: integer = 0; mutable n2: integer = 0;\n                key k1: integer = 0; key mutable k2: integer = 0;\n                index i1: integer = 0; index mutable i2: integer = 0;\n            }\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:46)",
+        "type" : "ERROR",
+        "code" : "at_attr_name_ambig:n1:[a:data:n1,b:data:n1]",
+        "text" : "Multiple attributes with name 'n1': a.n1, b.n1"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  }
+]

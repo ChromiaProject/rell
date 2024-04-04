@@ -1,7 +1,7 @@
 [
   {
     "files" : {
-      "main.rell" : "entity transaction{}"
+      "main.rell" : "entity block {}"
     },
     "modules" : {
       "modules" : [
@@ -21,15 +21,23 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:8)",
         "type" : "ERROR",
-        "code" : "name_conflict:sys:transaction:ENTITY",
-        "text" : "Name conflict: system entity 'transaction'"
+        "code" : "name_conflict:sys:block:ENTITY",
+        "text" : "Name conflict: system entity 'block'"
+      },
+      {
+        "pos" : "main.rell(1:8)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:sys:[block]:block",
+        "text" : "Mount name conflict: 'block' is a system mount name"
       }
     ],
     "parsing" : {
@@ -38,7 +46,7 @@
   },
   {
     "files" : {
-      "main.rell" : "entity block{}"
+      "main.rell" : "entity transaction {}"
     },
     "modules" : {
       "modules" : [
@@ -58,15 +66,23 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:8)",
         "type" : "ERROR",
-        "code" : "name_conflict:sys:block:ENTITY",
-        "text" : "Name conflict: system entity 'block'"
+        "code" : "name_conflict:sys:transaction:ENTITY",
+        "text" : "Name conflict: system entity 'transaction'"
+      },
+      {
+        "pos" : "main.rell(1:8)",
+        "type" : "ERROR",
+        "code" : "mnt_conflict:sys:[transaction]:transaction",
+        "text" : "Mount name conflict: 'transaction' is a system mount name"
       }
     ],
     "parsing" : {
@@ -95,8 +111,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -125,8 +143,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -155,8 +175,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -185,8 +207,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -222,8 +246,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {

@@ -23,8 +23,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -57,14 +59,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "op.rell(1:27)",
         "type" : "ERROR",
-        "code" : "unknown_name:[rell]:test",
+        "code" : "unknown_name:[rell:rell]:test",
         "text" : "Unknown name: 'rell.test'"
       }
     ],
@@ -98,14 +102,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "fn.rell(1:26)",
         "type" : "ERROR",
-        "code" : "unknown_name:[rell]:test",
+        "code" : "unknown_name:[rell:rell]:test",
         "text" : "Unknown name: 'rell.test'"
       }
     ],

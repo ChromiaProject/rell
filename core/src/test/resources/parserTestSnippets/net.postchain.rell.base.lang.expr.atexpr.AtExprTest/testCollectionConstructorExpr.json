@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -31,7 +33,7 @@
   },
   {
     "files" : {
-      "main.rell" : "entity company { name: text; }\nentity user { firstName: text; lastName: text; company; }\nquery q() = user @ { .firstName == 'Bill' } (_=.lastName, '' + list([1,2,3]));"
+      "main.rell" : "entity company { name: text; }\nentity user { firstName: text; lastName: text; company; }\nquery q() = user @ { .firstName == 'Bill' } (_=.lastName, ''+list([1,2,3]));"
     },
     "modules" : {
       "modules" : [
@@ -51,8 +53,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -61,7 +65,7 @@
   },
   {
     "files" : {
-      "main.rell" : "entity company { name: text; }\nentity user { firstName: text; lastName: text; company; }\nquery q() = user @ { .firstName == 'Bill' } (_=.lastName, '' + set([1,2,3]));"
+      "main.rell" : "entity company { name: text; }\nentity user { firstName: text; lastName: text; company; }\nquery q() = user @ { .firstName == 'Bill' } (_=.lastName, ''+set([1,2,3]));"
     },
     "modules" : {
       "modules" : [
@@ -81,8 +85,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -91,7 +97,7 @@
   },
   {
     "files" : {
-      "main.rell" : "entity company { name: text; }\nentity user { firstName: text; lastName: text; company; }\nquery q() = user @ { .firstName == 'Bill' } (_=.lastName, '' + map([123:'Hello']));"
+      "main.rell" : "entity company { name: text; }\nentity user { firstName: text; lastName: text; company; }\nquery q() = user @ { .firstName == 'Bill' } (_=.lastName, ''+map([123:'Hello']));"
     },
     "modules" : {
       "modules" : [
@@ -111,8 +117,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -121,7 +129,7 @@
   },
   {
     "files" : {
-      "main.rell" : "entity company { name: text; }\nentity user { firstName: text; lastName: text; company; }\nquery q() = user @ { .firstName == 'Bill' } (_=.lastName, '' + list(.firstName));"
+      "main.rell" : "entity company { name: text; }\nentity user { firstName: text; lastName: text; company; }\nquery q() = user @ { .firstName == 'Bill' } (_=.lastName, ''+list(.firstName));"
     },
     "modules" : {
       "modules" : [
@@ -141,14 +149,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
-        "pos" : "main.rell(3:64)",
+        "pos" : "main.rell(3:62)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[list]:text",
+        "code" : "expr_call_badargs:[list]:[text]",
         "text" : "Function 'list' undefined for arguments (text)"
       }
     ],
@@ -158,7 +168,7 @@
   },
   {
     "files" : {
-      "main.rell" : "entity company { name: text; }\nentity user { firstName: text; lastName: text; company; }\nquery q() = user @ { .firstName == 'Bill' } (_=.lastName, '' + set(.firstName));"
+      "main.rell" : "entity company { name: text; }\nentity user { firstName: text; lastName: text; company; }\nquery q() = user @ { .firstName == 'Bill' } (_=.lastName, ''+set(.firstName));"
     },
     "modules" : {
       "modules" : [
@@ -178,14 +188,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
-        "pos" : "main.rell(3:64)",
+        "pos" : "main.rell(3:62)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[set]:text",
+        "code" : "expr_call_badargs:[set]:[text]",
         "text" : "Function 'set' undefined for arguments (text)"
       }
     ],
@@ -195,7 +207,7 @@
   },
   {
     "files" : {
-      "main.rell" : "entity company { name: text; }\nentity user { firstName: text; lastName: text; company; }\nquery q() = user @ { .firstName == 'Bill' } (_=.lastName, '' + map(.firstName));"
+      "main.rell" : "entity company { name: text; }\nentity user { firstName: text; lastName: text; company; }\nquery q() = user @ { .firstName == 'Bill' } (_=.lastName, ''+map(.firstName));"
     },
     "modules" : {
       "modules" : [
@@ -215,14 +227,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
-        "pos" : "main.rell(3:64)",
+        "pos" : "main.rell(3:62)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[map]:text",
+        "code" : "expr_call_badargs:[map]:[text]",
         "text" : "Function 'map' undefined for arguments (text)"
       }
     ],

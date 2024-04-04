@@ -21,14 +21,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:8)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:not_pure:0::X:()->text",
+        "code" : "def:const:bad_type:not_pure:[0::X]:[()->text]",
         "text" : "Bad type for a global constant"
       },
       {
@@ -64,14 +66,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:8)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:not_pure:0::X:(integer)->text",
+        "code" : "def:const:bad_type:not_pure:[0::X]:[(integer)->text]",
         "text" : "Bad type for a global constant"
       },
       {
@@ -107,14 +111,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:8)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:not_pure:0::X:virtual<list<integer>>",
+        "code" : "def:const:bad_type:not_pure:[0::X]:[virtual<list<integer>>]",
         "text" : "Bad type for a global constant"
       },
       {
@@ -150,14 +156,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:8)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:not_pure:0::X:virtual<set<integer>>",
+        "code" : "def:const:bad_type:not_pure:[0::X]:[virtual<set<integer>>]",
         "text" : "Bad type for a global constant"
       },
       {
@@ -193,14 +201,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:8)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:not_pure:0::X:virtual<map<text,integer>>",
+        "code" : "def:const:bad_type:not_pure:[0::X]:[virtual<map<text,integer>>]",
         "text" : "Bad type for a global constant"
       },
       {
@@ -236,14 +246,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:8)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:not_pure:0::X:virtual<(integer,text)>",
+        "code" : "def:const:bad_type:not_pure:[0::X]:[virtual<(integer,text)>]",
         "text" : "Bad type for a global constant"
       },
       {
@@ -279,14 +291,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:8)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:not_pure:0::X:virtual<s>",
+        "code" : "def:const:bad_type:not_pure:[0::X]:[virtual<s>]",
         "text" : "Bad type for a global constant"
       },
       {

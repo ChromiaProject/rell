@@ -22,8 +22,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -54,8 +56,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -86,8 +90,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -118,15 +124,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:41)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:x:[NAMESPACE:a:ns.x,STRUCT:a:st.x]",
-        "text" : "Name 'x' is ambiguous: namespace a:ns.x, struct a:st.x"
+        "code" : "namespace:ambig:x:[NAMESPACE:[a:ns.x],STRUCT:[a:st.x]]",
+        "text" : "Name 'x' is ambiguous: namespace 'a:ns.x', struct 'a:st.x'"
       }
     ],
     "parsing" : {
@@ -157,8 +165,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -189,8 +199,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -221,15 +233,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:41)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:x:[NAMESPACE:a:ns.x,ENUM:a:en.x]",
-        "text" : "Name 'x' is ambiguous: namespace a:ns.x, enum a:en.x"
+        "code" : "namespace:ambig:x:[NAMESPACE:[a:ns.x],ENUM:[a:en.x]]",
+        "text" : "Name 'x' is ambiguous: namespace 'a:ns.x', enum 'a:en.x'"
       },
       {
         "pos" : "main.rell(1:41)",
@@ -266,15 +280,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:41)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:x:[NAMESPACE:a:ns.x,ENUM:a:en.x]",
-        "text" : "Name 'x' is ambiguous: namespace a:ns.x, enum a:en.x"
+        "code" : "namespace:ambig:x:[NAMESPACE:[a:ns.x],ENUM:[a:en.x]]",
+        "text" : "Name 'x' is ambiguous: namespace 'a:ns.x', enum 'a:en.x'"
       }
     ],
     "parsing" : {
@@ -305,8 +321,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -337,8 +355,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -369,8 +389,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -401,15 +423,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:46)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:x:[STRUCT:a:st.x,ENUM:a:en.x]",
-        "text" : "Name 'x' is ambiguous: struct a:st.x, enum a:en.x"
+        "code" : "namespace:ambig:x:[STRUCT:[a:st.x],ENUM:[a:en.x]]",
+        "text" : "Name 'x' is ambiguous: struct 'a:st.x', enum 'a:en.x'"
       }
     ],
     "parsing" : {
@@ -440,15 +464,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:41)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:x:[STRUCT:a:st.x,ENUM:a:en.x]",
-        "text" : "Name 'x' is ambiguous: struct a:st.x, enum a:en.x"
+        "code" : "namespace:ambig:x:[STRUCT:[a:st.x],ENUM:[a:en.x]]",
+        "text" : "Name 'x' is ambiguous: struct 'a:st.x', enum 'a:en.x'"
       },
       {
         "pos" : "main.rell(1:43)",
@@ -485,15 +511,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:41)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:x:[STRUCT:a:st.x,ENUM:a:en.x]",
-        "text" : "Name 'x' is ambiguous: struct a:st.x, enum a:en.x"
+        "code" : "namespace:ambig:x:[STRUCT:[a:st.x],ENUM:[a:en.x]]",
+        "text" : "Name 'x' is ambiguous: struct 'a:st.x', enum 'a:en.x'"
       }
     ],
     "parsing" : {
@@ -524,15 +552,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:41)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:x:[STRUCT:a:st.x,ENUM:a:en.x]",
-        "text" : "Name 'x' is ambiguous: struct a:st.x, enum a:en.x"
+        "code" : "namespace:ambig:x:[STRUCT:[a:st.x],ENUM:[a:en.x]]",
+        "text" : "Name 'x' is ambiguous: struct 'a:st.x', enum 'a:en.x'"
       },
       {
         "pos" : "main.rell(1:43)",
@@ -569,8 +599,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -601,8 +633,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -633,15 +667,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:41)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:x:[STRUCT:a:st.x,FUNCTION:a:fn.x]",
-        "text" : "Name 'x' is ambiguous: struct a:st.x, function a:fn.x"
+        "code" : "namespace:ambig:x:[STRUCT:[a:st.x],FUNCTION:[a:fn.x]]",
+        "text" : "Name 'x' is ambiguous: struct 'a:st.x', function 'a:fn.x'"
       }
     ],
     "parsing" : {
@@ -672,8 +708,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -704,8 +742,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -736,8 +776,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {

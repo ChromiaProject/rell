@@ -274,6 +274,7 @@ X_BaseExpr
 
 X_BaseExprHead
    : X_GenericTypeExpr
+   | X_AtExpr
    | X_NameExpr
    | X_DollarExpr
    | X_AttrExpr
@@ -282,8 +283,8 @@ X_BaseExprHead
    | X_DecimalExpr
    | X_StringExpr
    | X_BytesExpr
-   | {X_BaseExprHead_9} 'false'
-   | {X_BaseExprHead_10} 'true'
+   | {X_BaseExprHead_10} 'false'
+   | {X_BaseExprHead_11} 'true'
    | X_NullLiteralExpr
    | X_ParenthesesExpr
    | X_CreateExpr
@@ -319,6 +320,83 @@ X_CallArgValue
    | {X_CallArgValue_1} a=X_ExpressionRef
    ;
 
+X_AtExpr
+   : {X_AtExpr} a=X_AtExprFrom b=X_BaseExprTailAt
+   ;
+
+X_AtExprFrom
+   : {X_AtExprFrom} a=X_tkLPAR b+=X_AtExprFromItem (',' b+=X_AtExprFromItem)* (',')? ')'
+   ;
+
+X_AtExprFromItem
+   : {X_AtExprFromItem} (a+=X_Annotation)* (b=X_Name ':')? c=X_ExpressionRef
+   ;
+
+X_BaseExprTailAt
+   : {X_BaseExprTailAt} a=X_AtExprAt b=X_AtExprWhere (c=X_AtExprWhat)? (d=X_AtExprModifiers)?
+   ;
+
+X_AtExprAt
+   : {X_AtExprAt_0} a=X_tkAT b=X_tkQUESTION
+   | {X_AtExprAt_1} a=X_tkAT b=X_tkMUL
+   | {X_AtExprAt_2} a=X_tkAT b=X_tkPLUS
+   | {X_AtExprAt_3} '@'
+   ;
+
+X_tkAT
+   : {X_Token} '@'
+   ;
+
+X_tkMUL
+   : {X_Token} '*'
+   ;
+
+X_tkPLUS
+   : {X_Token} '+'
+   ;
+
+X_AtExprWhere
+   : {X_AtExprWhere} '{' (a+=X_ExpressionRef (',' a+=X_ExpressionRef)*)? '}'
+   ;
+
+X_AtExprWhat
+   : X_AtExprWhatSimple
+   | X_AtExprWhatComplex
+   ;
+
+X_AtExprWhatSimple
+   : {X_AtExprWhatSimple} a=X_tkDOT b+=X_Name ('.' b+=X_Name)*
+   ;
+
+X_tkDOT
+   : {X_Token} '.'
+   ;
+
+X_AtExprWhatComplex
+   : {X_AtExprWhatComplex} a=X_tkLPAR b+=X_AtExprWhatComplexItem (',' b+=X_AtExprWhatComplexItem)* ')'
+   ;
+
+X_AtExprWhatComplexItem
+   : {X_AtExprWhatComplexItem} (a+=X_Annotation)* (b=X_AtExprWhatName)? c=X_ExpressionRef
+   ;
+
+X_AtExprWhatName
+   : {X_AtExprWhatName} a=X_Name '='
+   ;
+
+X_AtExprModifiers
+   : {X_AtExprModifiers_0} 'limit' a=X_ExpressionRef (b=X_AtExprOffset)?
+   | {X_AtExprModifiers_1} 'offset' a=X_ExpressionRef (b=X_AtExprLimit)?
+   ;
+
+X_AtExprOffset
+   : {X_AtExprOffset} 'offset' a=X_ExpressionRef
+   ;
+
+X_AtExprLimit
+   : {X_AtExprLimit} 'limit' a=X_ExpressionRef
+   ;
+
 X_NameExpr
    : {X_NameExpr} a=X_Name
    ;
@@ -331,38 +409,12 @@ X_AttrExpr
    : {X_AttrExpr} a=X_tkDOT b=X_Name
    ;
 
-X_tkDOT
-   : {X_Token} '.'
-   ;
-
 X_ParenthesesExpr
    : {X_ParenthesesExpr} a=X_tkLPAR b=X_TupleExprField (c=X_TupleExprTail)? ')'
    ;
 
 X_TupleExprField
-   : X_TupleExprFieldNameEqExpr
-   | X_TupleExprFieldNameColonExpr
-   | X_TupleExprFieldExpr
-   ;
-
-X_TupleExprFieldNameEqExpr
-   : {X_TupleExprFieldNameEqExpr} a=X_Name b=X_tkASSIGN c=X_ExpressionRef
-   ;
-
-X_tkASSIGN
-   : {X_Token} '='
-   ;
-
-X_TupleExprFieldNameColonExpr
-   : {X_TupleExprFieldNameColonExpr} a=X_Name b=X_tkCOLON c=X_ExpressionRef
-   ;
-
-X_tkCOLON
-   : {X_Token} ':'
-   ;
-
-X_TupleExprFieldExpr
-   : {X_TupleExprFieldExpr} a=X_ExpressionRef
+   : {X_TupleExprField} (a=X_Name '=')? b=X_ExpressionRef
    ;
 
 X_TupleExprTail
@@ -438,67 +490,6 @@ X_BaseExprTailUnaryPostfixOp
 X_UnaryPostfixOperator
    : {X_UnaryPostfixOperator_0} a=X_IncrementOperator
    | {X_UnaryPostfixOperator_1} '??'
-   ;
-
-X_BaseExprTailAt
-   : {X_BaseExprTailAt} a=X_AtExprAt b=X_AtExprWhere (c=X_AtExprWhat)? (d=X_AtExprModifiers)?
-   ;
-
-X_AtExprAt
-   : {X_AtExprAt_0} a=X_tkAT b=X_tkQUESTION
-   | {X_AtExprAt_1} a=X_tkAT b=X_tkMUL
-   | {X_AtExprAt_2} a=X_tkAT b=X_tkPLUS
-   | {X_AtExprAt_3} '@'
-   ;
-
-X_tkAT
-   : {X_Token} '@'
-   ;
-
-X_tkMUL
-   : {X_Token} '*'
-   ;
-
-X_tkPLUS
-   : {X_Token} '+'
-   ;
-
-X_AtExprWhere
-   : {X_AtExprWhere} '{' (a+=X_ExpressionRef (',' a+=X_ExpressionRef)*)? '}'
-   ;
-
-X_AtExprWhat
-   : X_AtExprWhatSimple
-   | X_AtExprWhatComplex
-   ;
-
-X_AtExprWhatSimple
-   : {X_AtExprWhatSimple} ('.' a+=X_Name)+
-   ;
-
-X_AtExprWhatComplex
-   : {X_AtExprWhatComplex} '(' a+=X_AtExprWhatComplexItem (',' a+=X_AtExprWhatComplexItem)* ')'
-   ;
-
-X_AtExprWhatComplexItem
-   : {X_AtExprWhatComplexItem} (a+=X_Annotation)* (b=X_AtExprWhatName)? c=X_ExpressionRef
-   ;
-
-X_AtExprWhatName
-   : {X_AtExprWhatName} a=X_Name '='
-   ;
-
-X_AtExprModifiers
-   : {X_AtExprModifiers_0} 'limit' a=X_ExpressionRef (b=X_AtExprOffset)?
-   | {X_AtExprModifiers_1} 'offset' a=X_ExpressionRef (b=X_AtExprLimit)?
-   ;
-
-X_AtExprOffset
-   : {X_AtExprOffset} 'offset' a=X_ExpressionRef
-   ;
-
-X_AtExprLimit
-   : {X_AtExprLimit} 'limit' a=X_ExpressionRef
    ;
 
 X_IfExpr
@@ -776,24 +767,24 @@ X_UpdateTarget
    ;
 
 X_UpdateTargetAt
-   : {X_UpdateTargetAt} a=X_AtExprFrom b=X_AtExprAt c=X_AtExprWhere
+   : {X_UpdateTargetAt} a=X_UpdateFrom b=X_AtExprAt c=X_AtExprWhere
    ;
 
-X_AtExprFrom
-   : X_AtExprFromSingle
-   | X_AtExprFromMulti
+X_UpdateFrom
+   : X_UpdateFromSingle
+   | X_UpdateFromMulti
    ;
 
-X_AtExprFromSingle
-   : {X_AtExprFromSingle} a=X_QualifiedName
+X_UpdateFromSingle
+   : {X_UpdateFromSingle} a=X_QualifiedName
    ;
 
-X_AtExprFromMulti
-   : {X_AtExprFromMulti} a=X_tkLPAR b+=X_AtExprFromItem (',' b+=X_AtExprFromItem)* ')'
+X_UpdateFromMulti
+   : {X_UpdateFromMulti} a=X_tkLPAR b+=X_UpdateFromItem (',' b+=X_UpdateFromItem)* ')'
    ;
 
-X_AtExprFromItem
-   : {X_AtExprFromItem} (a=X_Name ':')? b=X_QualifiedName
+X_UpdateFromItem
+   : {X_UpdateFromItem} (a=X_Name ':')? b=X_QualifiedName
    ;
 
 X_UpdateTargetExpr

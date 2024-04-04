@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -51,8 +53,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -81,14 +85,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:41)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:mutable:0::X:s",
+        "code" : "def:const:bad_type:mutable:[0::X]:[s]",
         "text" : "Global constant cannot have a mutable type"
       }
     ],
@@ -118,14 +124,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:39)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:mutable:0::X:s",
+        "code" : "def:const:bad_type:mutable:[0::X]:[s]",
         "text" : "Global constant cannot have a mutable type"
       }
     ],
@@ -155,14 +163,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:38)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:mutable:0::X:s",
+        "code" : "def:const:bad_type:mutable:[0::X]:[s]",
         "text" : "Global constant cannot have a mutable type"
       }
     ],
@@ -192,14 +202,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:43)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:mutable:0::X:s",
+        "code" : "def:const:bad_type:mutable:[0::X]:[s]",
         "text" : "Global constant cannot have a mutable type"
       }
     ],
@@ -229,14 +241,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:53)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:not_pure:0::X:s",
+        "code" : "def:const:bad_type:not_pure:[0::X]:[s]",
         "text" : "Bad type for a global constant"
       }
     ],
@@ -266,8 +280,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -296,14 +312,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:69)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:mutable:0::X:s",
+        "code" : "def:const:bad_type:mutable:[0::X]:[s]",
         "text" : "Global constant cannot have a mutable type"
       }
     ],
@@ -333,14 +351,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:61)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:mutable:0::X:s",
+        "code" : "def:const:bad_type:mutable:[0::X]:[s]",
         "text" : "Global constant cannot have a mutable type"
       }
     ],
@@ -370,14 +390,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:59)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:mutable:0::X:s",
+        "code" : "def:const:bad_type:mutable:[0::X]:[s]",
         "text" : "Global constant cannot have a mutable type"
       }
     ],
@@ -407,8 +429,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -437,14 +461,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:43)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:attr_default_value:x",
+        "code" : "def:const:bad_expr:[0::X]:attr_default_value:x",
         "text" : "Bad expression for a global constant: using default value for attribute 'x' (not supported yet)"
       }
     ],

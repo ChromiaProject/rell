@@ -1,7 +1,7 @@
 [
   {
     "files" : {
-      "sys.rell" : "module; @mount('block') entity user {}"
+      "sys.rell" : "module; @mount('blocks') entity user {}"
     },
     "modules" : {
       "modules" : null,
@@ -19,14 +19,15 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : true,
+      "useTestDependencyExtensions" : false,
       "compatibility" : "0.14.0"
     },
     "messages" : [
       {
-        "pos" : "sys.rell(1:32)",
+        "pos" : "sys.rell(1:33)",
         "type" : "ERROR",
-        "code" : "mnt_conflict:sys:[sys:user]:block:ENTITY:[block]",
-        "text" : "Mount name conflict: system entity 'block' has mount name 'block'"
+        "code" : "mnt_conflict:sys:[sys:user]:blocks",
+        "text" : "Mount name conflict: 'blocks' is a system mount name"
       }
     ],
     "parsing" : {
@@ -35,7 +36,7 @@
   },
   {
     "files" : {
-      "sys.rell" : "module; @mount('block') entity user {}"
+      "sys.rell" : "module; @mount('blocks') entity user {}"
     },
     "modules" : {
       "modules" : null,
@@ -53,6 +54,7 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : false,
       "appModuleInTestsError" : true,
+      "useTestDependencyExtensions" : false,
       "compatibility" : "0.14.0"
     },
     "messages" : [ ],
@@ -62,7 +64,7 @@
   },
   {
     "files" : {
-      "sys.rell" : "module; @mount('block') entity user {}"
+      "sys.rell" : "module; @mount('blocks') entity user {}"
     },
     "modules" : {
       "modules" : [
@@ -82,14 +84,15 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : true,
+      "useTestDependencyExtensions" : false,
       "compatibility" : "0.14.0"
     },
     "messages" : [
       {
-        "pos" : "sys.rell(1:32)",
+        "pos" : "sys.rell(1:33)",
         "type" : "ERROR",
-        "code" : "mnt_conflict:sys:[sys:user]:block:ENTITY:[block]",
-        "text" : "Mount name conflict: system entity 'block' has mount name 'block'"
+        "code" : "mnt_conflict:sys:[sys:user]:blocks",
+        "text" : "Mount name conflict: 'blocks' is a system mount name"
       }
     ],
     "parsing" : {
@@ -98,7 +101,7 @@
   },
   {
     "files" : {
-      "sys.rell" : "module; @mount('block') entity user {}"
+      "sys.rell" : "module; @mount('blocks') entity user {}"
     },
     "modules" : {
       "modules" : [
@@ -118,6 +121,7 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : false,
       "appModuleInTestsError" : true,
+      "useTestDependencyExtensions" : false,
       "compatibility" : "0.14.0"
     },
     "messages" : [ ],

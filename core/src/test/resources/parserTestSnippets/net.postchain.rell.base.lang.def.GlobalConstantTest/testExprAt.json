@@ -21,20 +21,22 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:5)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:not_pure:0::X:user",
+        "code" : "def:const:bad_type:not_pure:[0::X]:[user]",
         "text" : "Bad type for a global constant: user"
       },
       {
         "pos" : "main.rell(2:9)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:at_expr",
+        "code" : "def:const:bad_expr:[0::X]:at_expr",
         "text" : "Bad expression for a global constant"
       }
     ],
@@ -64,20 +66,22 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:9)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:at_expr",
+        "code" : "def:const:bad_expr:[0::X]:at_expr",
         "text" : "Bad expression for a global constant"
       },
       {
         "pos" : "main.rell(2:21)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:entity_attr",
+        "code" : "def:const:bad_expr:[0::X]:entity_attr",
         "text" : "Bad expression for a global constant"
       }
     ],
@@ -107,26 +111,28 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:9)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:at_expr",
+        "code" : "def:const:bad_expr:[0::X]:at_expr",
         "text" : "Bad expression for a global constant"
       },
       {
         "pos" : "main.rell(2:27)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:at_expr",
+        "code" : "def:const:bad_expr:[0::X]:at_expr",
         "text" : "Bad expression for a global constant"
       },
       {
         "pos" : "main.rell(2:50)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:entity_attr",
+        "code" : "def:const:bad_expr:[0::X]:entity_attr",
         "text" : "Bad expression for a global constant"
       }
     ],
@@ -156,8 +162,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -186,8 +194,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {

@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -51,15 +53,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:33)",
         "type" : "ERROR",
-        "code" : "expr:call:partial_not_supported:data.to_struct",
-        "text" : "Partial application not supported for function 'data.to_struct'"
+        "code" : "expr:call:partial_not_supported:[rell.entity_ext(data).to_struct]",
+        "text" : "Partial application not supported for function 'rell.entity_ext(data).to_struct'"
       }
     ],
     "parsing" : {
@@ -88,15 +92,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:41)",
         "type" : "ERROR",
-        "code" : "expr:call:partial_not_supported:data.to_mutable_struct",
-        "text" : "Partial application not supported for function 'data.to_mutable_struct'"
+        "code" : "expr:call:partial_not_supported:[rell.entity_ext(data).to_mutable_struct]",
+        "text" : "Partial application not supported for function 'rell.entity_ext(data).to_mutable_struct'"
       }
     ],
     "parsing" : {

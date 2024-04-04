@@ -21,15 +21,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:27)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:requireNotEmpty:require_not_empty",
-        "text" : "Function 'requireNotEmpty' is deprecated, use 'require_not_empty' instead"
+        "code" : "deprecated:ALIAS:[rell:requireNotEmpty]:require_not_empty",
+        "text" : "Alias 'rell:requireNotEmpty' is deprecated, use 'require_not_empty' instead"
       }
     ],
     "parsing" : {
@@ -58,8 +60,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -88,8 +92,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -118,15 +124,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:byte_array:byte_array.from_list",
-        "text" : "Function 'byte_array' is deprecated, use 'byte_array.from_list' instead"
+        "code" : "deprecated:CONSTRUCTOR:[rell:byte_array]:byte_array.from_list",
+        "text" : "Constructor 'rell:byte_array' is deprecated, use 'byte_array.from_list' instead"
       }
     ],
     "parsing" : {
@@ -155,8 +163,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -185,15 +195,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:byte_array.len:size",
-        "text" : "Function 'byte_array.len' is deprecated, use 'size' instead"
+        "code" : "deprecated:ALIAS:[rell:byte_array.len]:size",
+        "text" : "Alias 'rell:byte_array.len' is deprecated, use 'size' instead"
       }
     ],
     "parsing" : {
@@ -222,15 +234,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:byte_array.decode:text.from_bytes",
-        "text" : "Function 'byte_array.decode' is deprecated, use 'text.from_bytes' instead"
+        "code" : "deprecated:FUNCTION:[rell:byte_array.decode]:text.from_bytes",
+        "text" : "Function 'rell:byte_array.decode' is deprecated, use 'text.from_bytes' instead"
       }
     ],
     "parsing" : {
@@ -259,15 +273,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:byte_array.toList:to_list",
-        "text" : "Function 'byte_array.toList' is deprecated, use 'to_list' instead"
+        "code" : "deprecated:ALIAS:[rell:byte_array.toList]:to_list",
+        "text" : "Alias 'rell:byte_array.toList' is deprecated, use 'to_list' instead"
       }
     ],
     "parsing" : {
@@ -296,15 +312,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:19)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:integer.hex:to_hex",
-        "text" : "Function 'integer.hex' is deprecated, use 'to_hex' instead"
+        "code" : "deprecated:ALIAS:[rell:integer.hex]:to_hex",
+        "text" : "Alias 'rell:integer.hex' is deprecated, use 'to_hex' instead"
       }
     ],
     "parsing" : {
@@ -333,15 +351,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:integer.parseHex:from_hex",
-        "text" : "Function 'integer.parseHex' is deprecated, use 'from_hex' instead"
+        "code" : "deprecated:ALIAS:[rell:integer.parseHex]:from_hex",
+        "text" : "Alias 'rell:integer.parseHex' is deprecated, use 'from_hex' instead"
       }
     ],
     "parsing" : {
@@ -370,15 +390,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:text.len:size",
-        "text" : "Function 'text.len' is deprecated, use 'size' instead"
+        "code" : "deprecated:ALIAS:[rell:text.len]:size",
+        "text" : "Alias 'rell:text.len' is deprecated, use 'size' instead"
       }
     ],
     "parsing" : {
@@ -407,15 +429,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:text.upperCase:upper_case",
-        "text" : "Function 'text.upperCase' is deprecated, use 'upper_case' instead"
+        "code" : "deprecated:ALIAS:[rell:text.upperCase]:upper_case",
+        "text" : "Alias 'rell:text.upperCase' is deprecated, use 'upper_case' instead"
       }
     ],
     "parsing" : {
@@ -444,15 +468,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:text.lowerCase:lower_case",
-        "text" : "Function 'text.lowerCase' is deprecated, use 'lower_case' instead"
+        "code" : "deprecated:ALIAS:[rell:text.lowerCase]:lower_case",
+        "text" : "Alias 'rell:text.lowerCase' is deprecated, use 'lower_case' instead"
       }
     ],
     "parsing" : {
@@ -481,15 +507,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:text.compareTo:compare_to",
-        "text" : "Function 'text.compareTo' is deprecated, use 'compare_to' instead"
+        "code" : "deprecated:ALIAS:[rell:text.compareTo]:compare_to",
+        "text" : "Alias 'rell:text.compareTo' is deprecated, use 'compare_to' instead"
       }
     ],
     "parsing" : {
@@ -518,15 +546,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:text.startsWith:starts_with",
-        "text" : "Function 'text.startsWith' is deprecated, use 'starts_with' instead"
+        "code" : "deprecated:ALIAS:[rell:text.startsWith]:starts_with",
+        "text" : "Alias 'rell:text.startsWith' is deprecated, use 'starts_with' instead"
       }
     ],
     "parsing" : {
@@ -555,15 +585,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:text.endsWith:ends_with",
-        "text" : "Function 'text.endsWith' is deprecated, use 'ends_with' instead"
+        "code" : "deprecated:ALIAS:[rell:text.endsWith]:ends_with",
+        "text" : "Alias 'rell:text.endsWith' is deprecated, use 'ends_with' instead"
       }
     ],
     "parsing" : {
@@ -592,15 +624,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:text.charAt:char_at",
-        "text" : "Function 'text.charAt' is deprecated, use 'char_at' instead"
+        "code" : "deprecated:ALIAS:[rell:text.charAt]:char_at",
+        "text" : "Alias 'rell:text.charAt' is deprecated, use 'char_at' instead"
       }
     ],
     "parsing" : {
@@ -629,15 +663,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:text.indexOf:index_of",
-        "text" : "Function 'text.indexOf' is deprecated, use 'index_of' instead"
+        "code" : "deprecated:ALIAS:[rell:text.indexOf]:index_of",
+        "text" : "Alias 'rell:text.indexOf' is deprecated, use 'index_of' instead"
       }
     ],
     "parsing" : {
@@ -666,15 +702,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:text.lastIndexOf:last_index_of",
-        "text" : "Function 'text.lastIndexOf' is deprecated, use 'last_index_of' instead"
+        "code" : "deprecated:ALIAS:[rell:text.lastIndexOf]:last_index_of",
+        "text" : "Alias 'rell:text.lastIndexOf' is deprecated, use 'last_index_of' instead"
       }
     ],
     "parsing" : {
@@ -703,15 +741,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:text.encode:to_bytes",
-        "text" : "Function 'text.encode' is deprecated, use 'to_bytes' instead"
+        "code" : "deprecated:ALIAS:[rell:text.encode]:to_bytes",
+        "text" : "Alias 'rell:text.encode' is deprecated, use 'to_bytes' instead"
       }
     ],
     "parsing" : {
@@ -740,15 +780,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:list<integer>.indexOf:index_of",
-        "text" : "Function 'list<integer>.indexOf' is deprecated, use 'index_of' instead"
+        "code" : "deprecated:ALIAS:[rell:list.indexOf]:index_of",
+        "text" : "Alias 'rell:list.indexOf' is deprecated, use 'index_of' instead"
       }
     ],
     "parsing" : {
@@ -777,15 +819,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:list<integer>.removeAt:remove_at",
-        "text" : "Function 'list<integer>.removeAt' is deprecated, use 'remove_at' instead"
+        "code" : "deprecated:ALIAS:[rell:list.removeAt]:remove_at",
+        "text" : "Alias 'rell:list.removeAt' is deprecated, use 'remove_at' instead"
       }
     ],
     "parsing" : {
@@ -814,15 +858,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:list<integer>.containsAll:contains_all",
-        "text" : "Function 'list<integer>.containsAll' is deprecated, use 'contains_all' instead"
+        "code" : "deprecated:ALIAS:[rell:collection.containsAll]:contains_all",
+        "text" : "Alias 'rell:collection.containsAll' is deprecated, use 'contains_all' instead"
       }
     ],
     "parsing" : {
@@ -851,15 +897,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:list<integer>.removeAll:remove_all",
-        "text" : "Function 'list<integer>.removeAll' is deprecated, use 'remove_all' instead"
+        "code" : "deprecated:ALIAS:[rell:collection.removeAll]:remove_all",
+        "text" : "Alias 'rell:collection.removeAll' is deprecated, use 'remove_all' instead"
       }
     ],
     "parsing" : {
@@ -888,15 +936,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:list<integer>.addAll:add_all",
-        "text" : "Function 'list<integer>.addAll' is deprecated, use 'add_all' instead"
+        "code" : "deprecated:ALIAS:[rell:collection.addAll]:add_all",
+        "text" : "Alias 'rell:collection.addAll' is deprecated, use 'add_all' instead"
       }
     ],
     "parsing" : {
@@ -925,15 +975,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:list<integer>.len:size",
-        "text" : "Function 'list<integer>.len' is deprecated, use 'size' instead"
+        "code" : "deprecated:ALIAS:[rell:collection.len]:size",
+        "text" : "Alias 'rell:collection.len' is deprecated, use 'size' instead"
       }
     ],
     "parsing" : {
@@ -962,15 +1014,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:list<integer>._set:set",
-        "text" : "Function 'list<integer>._set' is deprecated, use 'set' instead"
+        "code" : "deprecated:ALIAS:[rell:list._set]:set",
+        "text" : "Alias 'rell:list._set' is deprecated, use 'set' instead"
       }
     ],
     "parsing" : {
@@ -999,15 +1053,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:26)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:set<integer>.containsAll:contains_all",
-        "text" : "Function 'set<integer>.containsAll' is deprecated, use 'contains_all' instead"
+        "code" : "deprecated:ALIAS:[rell:collection.containsAll]:contains_all",
+        "text" : "Alias 'rell:collection.containsAll' is deprecated, use 'contains_all' instead"
       }
     ],
     "parsing" : {
@@ -1036,15 +1092,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:26)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:set<integer>.removeAll:remove_all",
-        "text" : "Function 'set<integer>.removeAll' is deprecated, use 'remove_all' instead"
+        "code" : "deprecated:ALIAS:[rell:collection.removeAll]:remove_all",
+        "text" : "Alias 'rell:collection.removeAll' is deprecated, use 'remove_all' instead"
       }
     ],
     "parsing" : {
@@ -1073,15 +1131,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:26)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:set<integer>.addAll:add_all",
-        "text" : "Function 'set<integer>.addAll' is deprecated, use 'add_all' instead"
+        "code" : "deprecated:ALIAS:[rell:collection.addAll]:add_all",
+        "text" : "Alias 'rell:collection.addAll' is deprecated, use 'add_all' instead"
       }
     ],
     "parsing" : {
@@ -1110,15 +1170,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:26)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:set<integer>.len:size",
-        "text" : "Function 'set<integer>.len' is deprecated, use 'size' instead"
+        "code" : "deprecated:ALIAS:[rell:collection.len]:size",
+        "text" : "Alias 'rell:collection.len' is deprecated, use 'size' instead"
       }
     ],
     "parsing" : {
@@ -1147,15 +1209,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:27)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:map<integer,text>.len:size",
-        "text" : "Function 'map<integer,text>.len' is deprecated, use 'size' instead"
+        "code" : "deprecated:ALIAS:[rell:map.len]:size",
+        "text" : "Alias 'rell:map.len' is deprecated, use 'size' instead"
       }
     ],
     "parsing" : {
@@ -1184,15 +1248,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:27)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:map<integer,text>.putAll:put_all",
-        "text" : "Function 'map<integer,text>.putAll' is deprecated, use 'put_all' instead"
+        "code" : "deprecated:ALIAS:[rell:map.putAll]:put_all",
+        "text" : "Alias 'rell:map.putAll' is deprecated, use 'put_all' instead"
       }
     ],
     "parsing" : {
@@ -1221,15 +1287,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:19)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:integer.signum:sign",
-        "text" : "Function 'integer.signum' is deprecated, use 'sign' instead"
+        "code" : "deprecated:ALIAS:[rell:integer.signum]:sign",
+        "text" : "Alias 'rell:integer.signum' is deprecated, use 'sign' instead"
       }
     ],
     "parsing" : {
@@ -1258,15 +1326,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:21)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:decimal.signum:sign",
-        "text" : "Function 'decimal.signum' is deprecated, use 'sign' instead"
+        "code" : "deprecated:ALIAS:[rell:decimal.signum]:sign",
+        "text" : "Alias 'rell:decimal.signum' is deprecated, use 'sign' instead"
       }
     ],
     "parsing" : {

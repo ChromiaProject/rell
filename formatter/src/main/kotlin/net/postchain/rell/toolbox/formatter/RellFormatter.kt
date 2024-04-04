@@ -7,6 +7,8 @@ import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AnnotationArgsCon
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AnnotationContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AssignOpContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AtExprAtContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AtExprFromContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AtExprFromItemContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AtExprModifiers_0Context
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AtExprModifiers_1Context
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AtExprWhatComplexContext
@@ -47,7 +49,7 @@ import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_RelKeyIndexClause
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_ReturnStmtContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_RootParserContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_StructDefContext
-import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_TupleExprFieldNameEqExprContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_TupleExprFieldContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_TupleVarDeclaratorContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_UpdateStmtContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_UpdateTargetAtContext
@@ -613,8 +615,29 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         formatSemicolon(xUpdateStmt, doc)
     }
 
+    fun format(xAtExprFrom: RuleX_AtExprFromContext, doc: FormattableDocument) {
+        formatArguments(
+            xAtExprFrom.ruleX_AtExprFromItem(),
+            doc,
+            formatAsMultiLine = lineSeparateArguments(xAtExprFrom, BracePairTypes.PARENTHESES)
+        )
+        xAtExprFrom.ruleX_AtExprFromItem().forEach {
+            doc.format(it)
+        }
+    }
+
+    fun format(xAtExprFromItem: RuleX_AtExprFromItemContext, doc: FormattableDocument) {
+        doc.append(tokenFor(xAtExprFromItem, ":")) { it.oneSpace() }
+        xAtExprFromItem.ruleX_Annotation().forEach { xAnnotation ->
+            doc.append(xAnnotation) { it.oneSpace() }
+        }
+        doc.interiorIndentRangeIncludeLast(xAtExprFromItem, xAtExprFromItem.ruleX_ExpressionRef())
+        doc.format(xAtExprFromItem.ruleX_ExpressionRef())
+    }
+
     fun format(xUpdateTargetAt: RuleX_UpdateTargetAtContext, doc: FormattableDocument) {
-        doc.append(xUpdateTargetAt.ruleX_AtExprFrom()) { it.oneSpace() }
+        //doc.append(xUpdateTargetAt.ruleX_AtExprFrom()) { it.oneSpace() }
+        doc.append(xUpdateTargetAt.ruleX_UpdateFrom()) { it.oneSpace() }
         doc.append(xUpdateTargetAt.ruleX_AtExprAt()) { it.oneSpace() }
         val atExprWhere = xUpdateTargetAt.ruleX_AtExprWhere()
         formatBracePairWithSpace(atExprWhere, doc, BracePairTypes.CURLY)
@@ -780,7 +803,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         }
     }
 
-    fun format(xTupleEqExpr: RuleX_TupleExprFieldNameEqExprContext, doc: FormattableDocument) {
+    fun format(xTupleEqExpr: RuleX_TupleExprFieldContext, doc: FormattableDocument) {
         doc.surround(xTupleEqExpr.ruleX_Name()) { it.oneSpace() }
         doc.surround(xTupleEqExpr.ruleX_tkASSIGN()) { it.oneSpace() }
         doc.format(xTupleEqExpr.ruleX_ExpressionRef())

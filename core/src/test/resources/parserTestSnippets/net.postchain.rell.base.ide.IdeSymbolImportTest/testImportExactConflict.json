@@ -1,0 +1,50 @@
+[
+  {
+    "files" : {
+      "lib.rell" : "module; function f(): integer = 123;",
+      "main.rell" : "function f(): integer = 123; import lib.{f};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:10)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:f:IMPORT:main.rell(1:42)",
+        "text" : "Name conflict: import 'f' defined at main.rell:1"
+      },
+      {
+        "pos" : "main.rell(1:42)",
+        "type" : "ERROR",
+        "code" : "name_conflict:user:f:FUNCTION:main.rell(1:10)",
+        "text" : "Name conflict: function 'f' defined at main.rell:1"
+      }
+    ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

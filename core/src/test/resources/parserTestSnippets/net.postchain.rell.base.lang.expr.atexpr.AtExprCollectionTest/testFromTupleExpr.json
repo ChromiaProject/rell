@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -51,8 +53,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -81,8 +85,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -111,15 +117,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
-        "pos" : "main.rell(1:16)",
+        "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr:at:from:tuple_name_eq_expr:a",
-        "text" : "Syntax error"
+        "code" : "at:from:bad_type:(a:list<integer>)",
+        "text" : "Invalid type for at-expression: (a:list<integer>)"
       }
     ],
     "parsing" : {
@@ -148,15 +156,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
-        "pos" : "main.rell(1:16)",
+        "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr:at:from:tuple_name_eq_expr:a",
-        "text" : "Syntax error"
+        "code" : "at:from:bad_type:(a:list<integer>)",
+        "text" : "Invalid type for at-expression: (a:list<integer>)"
       }
     ],
     "parsing" : {
@@ -165,7 +175,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() = (a : [1,2,3], b = [4,5,6]) @* {};"
+      "main.rell" : "query q() = (a = [1,2,3], b = [4,5,6]) @* {};"
     },
     "modules" : {
       "modules" : [
@@ -185,64 +195,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
-        "pos" : "main.rell(1:29)",
+        "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr:at:from:tuple_name_eq_expr:b",
-        "text" : "Syntax error"
-      },
-      {
-        "pos" : "main.rell(1:31)",
-        "type" : "ERROR",
-        "code" : "at:from:many_iterables:2",
-        "text" : "Only one collection is allowed in at-expression"
-      }
-    ],
-    "parsing" : {
-      "main.rell" : [ ]
-    }
-  },
-  {
-    "files" : {
-      "main.rell" : "query q() = (a = [1,2,3], b : [4,5,6]) @* {};"
-    },
-    "modules" : {
-      "modules" : [
-        ""
-      ],
-      "test_root_modules" : [ ],
-      "test_sub_modules" : true
-    },
-    "options" : {
-      "gtv" : false,
-      "deprecatedError" : false,
-      "ide" : false,
-      "atAttrShadowing" : "FULL",
-      "testLib" : false,
-      "hiddenLib" : true,
-      "allowDbModificationsInObjectExprs" : true,
-      "complexWhatEnabled" : true,
-      "mountConflictError" : true,
-      "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
-    },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:16)",
-        "type" : "ERROR",
-        "code" : "expr:at:from:tuple_name_eq_expr:a",
-        "text" : "Syntax error"
-      },
-      {
-        "pos" : "main.rell(1:31)",
-        "type" : "ERROR",
-        "code" : "at:from:many_iterables:2",
-        "text" : "Only one collection is allowed in at-expression"
+        "code" : "at:from:bad_type:(a:list<integer>,b:list<integer>)",
+        "text" : "Invalid type for at-expression: (a:list<integer>,b:list<integer>)"
       }
     ],
     "parsing" : {

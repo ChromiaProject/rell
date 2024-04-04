@@ -51,14 +51,26 @@ public final class AntlrToRell {
     private static final RellcTransformer TRANS_XCALL_ARG = RellcUtils.transformer("X_CallArg");
     private static final RellcTransformer TRANS_XBASE_EXPR_TAIL_CALL = RellcUtils.transformer("X_BaseExprTailCall");
     private static final RellcTransformer TRANS_XGENERIC_TYPE_EXPR = RellcUtils.transformer("X_GenericTypeExpr");
+    private static final RellcTransformer TRANS_XAT_EXPR_FROM_ITEM = RellcUtils.transformer("X_AtExprFromItem");
+    private static final RellcTransformer TRANS_XAT_EXPR_FROM = RellcUtils.transformer("X_AtExprFrom");
+    private static final RellcTransformer TRANS_XAT_EXPR_AT_0 = RellcUtils.transformer("X_AtExprAt_0");
+    private static final RellcTransformer TRANS_XAT_EXPR_AT_1 = RellcUtils.transformer("X_AtExprAt_1");
+    private static final RellcTransformer TRANS_XAT_EXPR_AT_2 = RellcUtils.transformer("X_AtExprAt_2");
+    private static final RellcTransformer TRANS_XAT_EXPR_AT_3 = RellcUtils.transformer("X_AtExprAt_3");
+    private static final RellcTransformer TRANS_XAT_EXPR_WHERE = RellcUtils.transformer("X_AtExprWhere");
+    private static final RellcTransformer TRANS_XAT_EXPR_WHAT_SIMPLE = RellcUtils.transformer("X_AtExprWhatSimple");
+    private static final RellcTransformer TRANS_XAT_EXPR_WHAT_COMPLEX_ITEM = RellcUtils.transformer("X_AtExprWhatComplexItem");
+    private static final RellcTransformer TRANS_XAT_EXPR_WHAT_COMPLEX = RellcUtils.transformer("X_AtExprWhatComplex");
+    private static final RellcTransformer TRANS_XAT_EXPR_MODIFIERS_0 = RellcUtils.transformer("X_AtExprModifiers_0");
+    private static final RellcTransformer TRANS_XAT_EXPR_MODIFIERS_1 = RellcUtils.transformer("X_AtExprModifiers_1");
+    private static final RellcTransformer TRANS_XBASE_EXPR_TAIL_AT = RellcUtils.transformer("X_BaseExprTailAt");
+    private static final RellcTransformer TRANS_XAT_EXPR = RellcUtils.transformer("X_AtExpr");
     private static final RellcTransformer TRANS_XNAME_EXPR = RellcUtils.transformer("X_NameExpr");
     private static final RellcTransformer TRANS_XDOLLAR_EXPR = RellcUtils.transformer("X_DollarExpr");
     private static final RellcTransformer TRANS_XATTR_EXPR = RellcUtils.transformer("X_AttrExpr");
-    private static final RellcTransformer TRANS_XBASE_EXPR_HEAD_9 = RellcUtils.transformer("X_BaseExprHead_9");
     private static final RellcTransformer TRANS_XBASE_EXPR_HEAD_10 = RellcUtils.transformer("X_BaseExprHead_10");
-    private static final RellcTransformer TRANS_XTUPLE_EXPR_FIELD_NAME_EQ_EXPR = RellcUtils.transformer("X_TupleExprFieldNameEqExpr");
-    private static final RellcTransformer TRANS_XTUPLE_EXPR_FIELD_NAME_COLON_EXPR = RellcUtils.transformer("X_TupleExprFieldNameColonExpr");
-    private static final RellcTransformer TRANS_XTUPLE_EXPR_FIELD_EXPR = RellcUtils.transformer("X_TupleExprFieldExpr");
+    private static final RellcTransformer TRANS_XBASE_EXPR_HEAD_11 = RellcUtils.transformer("X_BaseExprHead_11");
+    private static final RellcTransformer TRANS_XTUPLE_EXPR_FIELD = RellcUtils.transformer("X_TupleExprField");
     private static final RellcTransformer TRANS_XPARENTHESES_EXPR = RellcUtils.transformer("X_ParenthesesExpr");
     private static final RellcTransformer TRANS_XCREATE_EXPR_ARG = RellcUtils.transformer("X_CreateExprArg");
     private static final RellcTransformer TRANS_XCREATE_EXPR = RellcUtils.transformer("X_CreateExpr");
@@ -74,17 +86,6 @@ public final class AntlrToRell {
     private static final RellcTransformer TRANS_XUNARY_POSTFIX_OPERATOR_0 = RellcUtils.transformer("X_UnaryPostfixOperator_0");
     private static final RellcTransformer TRANS_XUNARY_POSTFIX_OPERATOR_1 = RellcUtils.transformer("X_UnaryPostfixOperator_1");
     private static final RellcTransformer TRANS_XBASE_EXPR_TAIL_UNARY_POSTFIX_OP = RellcUtils.transformer("X_BaseExprTailUnaryPostfixOp");
-    private static final RellcTransformer TRANS_XAT_EXPR_AT_0 = RellcUtils.transformer("X_AtExprAt_0");
-    private static final RellcTransformer TRANS_XAT_EXPR_AT_1 = RellcUtils.transformer("X_AtExprAt_1");
-    private static final RellcTransformer TRANS_XAT_EXPR_AT_2 = RellcUtils.transformer("X_AtExprAt_2");
-    private static final RellcTransformer TRANS_XAT_EXPR_AT_3 = RellcUtils.transformer("X_AtExprAt_3");
-    private static final RellcTransformer TRANS_XAT_EXPR_WHERE = RellcUtils.transformer("X_AtExprWhere");
-    private static final RellcTransformer TRANS_XAT_EXPR_WHAT_SIMPLE = RellcUtils.transformer("X_AtExprWhatSimple");
-    private static final RellcTransformer TRANS_XAT_EXPR_WHAT_COMPLEX_ITEM = RellcUtils.transformer("X_AtExprWhatComplexItem");
-    private static final RellcTransformer TRANS_XAT_EXPR_WHAT_COMPLEX = RellcUtils.transformer("X_AtExprWhatComplex");
-    private static final RellcTransformer TRANS_XAT_EXPR_MODIFIERS_0 = RellcUtils.transformer("X_AtExprModifiers_0");
-    private static final RellcTransformer TRANS_XAT_EXPR_MODIFIERS_1 = RellcUtils.transformer("X_AtExprModifiers_1");
-    private static final RellcTransformer TRANS_XBASE_EXPR_TAIL_AT = RellcUtils.transformer("X_BaseExprTailAt");
     private static final RellcTransformer TRANS_XBASE_EXPR = RellcUtils.transformer("X_BaseExpr");
     private static final RellcTransformer TRANS_XIF_EXPR = RellcUtils.transformer("X_IfExpr");
     private static final RellcTransformer TRANS_XWHEN_CONDITION_EXPR = RellcUtils.transformer("X_WhenConditionExpr");
@@ -148,9 +149,9 @@ public final class AntlrToRell {
     private static final RellcTransformer TRANS_XFOR_STMT = RellcUtils.transformer("X_ForStmt");
     private static final RellcTransformer TRANS_XBREAK_STMT = RellcUtils.transformer("X_BreakStmt");
     private static final RellcTransformer TRANS_XCONTINUE_STMT = RellcUtils.transformer("X_ContinueStmt");
-    private static final RellcTransformer TRANS_XAT_EXPR_FROM_SINGLE = RellcUtils.transformer("X_AtExprFromSingle");
-    private static final RellcTransformer TRANS_XAT_EXPR_FROM_ITEM = RellcUtils.transformer("X_AtExprFromItem");
-    private static final RellcTransformer TRANS_XAT_EXPR_FROM_MULTI = RellcUtils.transformer("X_AtExprFromMulti");
+    private static final RellcTransformer TRANS_XUPDATE_FROM_SINGLE = RellcUtils.transformer("X_UpdateFromSingle");
+    private static final RellcTransformer TRANS_XUPDATE_FROM_ITEM = RellcUtils.transformer("X_UpdateFromItem");
+    private static final RellcTransformer TRANS_XUPDATE_FROM_MULTI = RellcUtils.transformer("X_UpdateFromMulti");
     private static final RellcTransformer TRANS_XUPDATE_TARGET_AT = RellcUtils.transformer("X_UpdateTargetAt");
     private static final RellcTransformer TRANS_XBASE_EXPR_NO_CALL_NO_AT = RellcUtils.transformer("X_BaseExprNoCallNoAt");
     private static final RellcTransformer TRANS_XUPDATE_TARGET_EXPR = RellcUtils.transformer("X_UpdateTargetExpr");
@@ -452,6 +453,25 @@ public final class AntlrToRell {
                 Object tup = RellcUtils.tuple(var_0, var_1);
                 return TRANS_XGENERIC_TYPE_EXPR.transform(ctx, node, tup);
             }
+            case RULE_ruleX_AtExprFromItem: {
+                Object var_0 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_AnnotationContext.class));
+                Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_NameContext.class, 0));
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionRefContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
+                return TRANS_XAT_EXPR_FROM_ITEM.transform(ctx, node, tup);
+            }
+            case RULE_ruleX_AtExprFrom: {
+                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
+                Object var_1 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_AtExprFromItemContext.class));
+                Object tup = RellcUtils.tuple(var_0, var_1);
+                return TRANS_XAT_EXPR_FROM.transform(ctx, node, tup);
+            }
+            case RULE_ruleX_AtExpr: {
+                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_AtExprFromContext.class, 0));
+                Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_BaseExprTailAtContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1);
+                return TRANS_XAT_EXPR.transform(ctx, node, tup);
+            }
             case RULE_ruleX_NameExpr: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_NameContext.class, 0));
                 Object tup = RellcUtils.tuple(var_0);
@@ -468,34 +488,21 @@ public final class AntlrToRell {
                 Object tup = RellcUtils.tuple(var_0, var_1);
                 return TRANS_XATTR_EXPR.transform(ctx, node, tup);
             }
-            case RULE_ruleX_BaseExprHead_9: {
-                Object var_0 = RellcUtils.token(node);
-                Object tup = RellcUtils.tuple(var_0);
-                return TRANS_XBASE_EXPR_HEAD_9.transform(ctx, node, tup);
-            }
             case RULE_ruleX_BaseExprHead_10: {
                 Object var_0 = RellcUtils.token(node);
                 Object tup = RellcUtils.tuple(var_0);
                 return TRANS_XBASE_EXPR_HEAD_10.transform(ctx, node, tup);
             }
-            case RULE_ruleX_TupleExprFieldNameEqExpr: {
-                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_NameContext.class, 0));
-                Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkASSIGNContext.class, 0));
-                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionRefContext.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
-                return TRANS_XTUPLE_EXPR_FIELD_NAME_EQ_EXPR.transform(ctx, node, tup);
-            }
-            case RULE_ruleX_TupleExprFieldNameColonExpr: {
-                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_NameContext.class, 0));
-                Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkCOLONContext.class, 0));
-                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionRefContext.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
-                return TRANS_XTUPLE_EXPR_FIELD_NAME_COLON_EXPR.transform(ctx, node, tup);
-            }
-            case RULE_ruleX_TupleExprFieldExpr: {
-                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionRefContext.class, 0));
+            case RULE_ruleX_BaseExprHead_11: {
+                Object var_0 = RellcUtils.token(node);
                 Object tup = RellcUtils.tuple(var_0);
-                return TRANS_XTUPLE_EXPR_FIELD_EXPR.transform(ctx, node, tup);
+                return TRANS_XBASE_EXPR_HEAD_11.transform(ctx, node, tup);
+            }
+            case RULE_ruleX_TupleExprField: {
+                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_NameContext.class, 0));
+                Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionRefContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1);
+                return TRANS_XTUPLE_EXPR_FIELD.transform(ctx, node, tup);
             }
             case RULE_ruleX_TupleExprTail: {
                 Object var_0 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_TupleExprFieldContext.class));
@@ -616,9 +623,9 @@ public final class AntlrToRell {
                 return TRANS_XAT_EXPR_WHERE.transform(ctx, node, tup);
             }
             case RULE_ruleX_AtExprWhatSimple: {
-                // Manual fix. generated used RuleX_tkDOTContext instead of RuleX_NameContext
-                Object var_0 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_NameContext.class));
-                Object tup = RellcUtils.tuple(var_0);
+                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkDOTContext.class, 0));
+                Object var_1 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_NameContext.class));
+                Object tup = RellcUtils.tuple(var_0, var_1);
                 return TRANS_XAT_EXPR_WHAT_SIMPLE.transform(ctx, node, tup);
             }
             case RULE_ruleX_AtExprWhatName: {
@@ -633,8 +640,9 @@ public final class AntlrToRell {
                 return TRANS_XAT_EXPR_WHAT_COMPLEX_ITEM.transform(ctx, node, tup);
             }
             case RULE_ruleX_AtExprWhatComplex: {
-                Object var_0 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_AtExprWhatComplexItemContext.class));
-                Object tup = RellcUtils.tuple(var_0);
+                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
+                Object var_1 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_AtExprWhatComplexItemContext.class));
+                Object tup = RellcUtils.tuple(var_0, var_1);
                 return TRANS_XAT_EXPR_WHAT_COMPLEX.transform(ctx, node, tup);
             }
             case RULE_ruleX_AtExprOffset: {
@@ -1048,25 +1056,25 @@ public final class AntlrToRell {
                 Object tup = RellcUtils.tuple(var_0);
                 return TRANS_XCONTINUE_STMT.transform(ctx, node, tup);
             }
-            case RULE_ruleX_AtExprFromSingle: {
+            case RULE_ruleX_UpdateFromSingle: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_QualifiedNameContext.class, 0));
                 Object tup = RellcUtils.tuple(var_0);
-                return TRANS_XAT_EXPR_FROM_SINGLE.transform(ctx, node, tup);
+                return TRANS_XUPDATE_FROM_SINGLE.transform(ctx, node, tup);
             }
-            case RULE_ruleX_AtExprFromItem: {
+            case RULE_ruleX_UpdateFromItem: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_NameContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_QualifiedNameContext.class, 0));
                 Object tup = RellcUtils.tuple(var_0, var_1);
-                return TRANS_XAT_EXPR_FROM_ITEM.transform(ctx, node, tup);
+                return TRANS_XUPDATE_FROM_ITEM.transform(ctx, node, tup);
             }
-            case RULE_ruleX_AtExprFromMulti: {
+            case RULE_ruleX_UpdateFromMulti: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
-                Object var_1 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_AtExprFromItemContext.class));
+                Object var_1 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_UpdateFromItemContext.class));
                 Object tup = RellcUtils.tuple(var_0, var_1);
-                return TRANS_XAT_EXPR_FROM_MULTI.transform(ctx, node, tup);
+                return TRANS_XUPDATE_FROM_MULTI.transform(ctx, node, tup);
             }
             case RULE_ruleX_UpdateTargetAt: {
-                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_AtExprFromContext.class, 0));
+                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_UpdateFromContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_AtExprAtContext.class, 0));
                 Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_AtExprWhereContext.class, 0));
                 Object tup = RellcUtils.tuple(var_0, var_1, var_2);
@@ -1246,6 +1254,7 @@ public final class AntlrToRell {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkVALContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_NameContext.class, 0));
                 Object var_2 = RellcUtils.processObject(ctx, ((RuleX_ConstantDefContext) node).ruleX_TypeRef());
+                //Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkCOLONContext.class, 0));
                 Object var_3 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionRefContext.class, 0));
                 Object tup = RellcUtils.tuple(var_0, var_1, var_2, var_3);
                 return TRANS_XCONSTANT_DEF.transform(ctx, node, tup);

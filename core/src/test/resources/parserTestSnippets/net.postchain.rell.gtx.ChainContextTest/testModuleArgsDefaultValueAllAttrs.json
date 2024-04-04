@@ -1,0 +1,38 @@
+[
+  {
+    "files" : {
+      "a.rell" : "module; val args = chain_context.args; struct module_args { x: integer; y: integer = 123; }",
+      "b.rell" : "module; val args = chain_context.args; struct module_args { p: integer = 456; q: integer = 789; }",
+      "main.rell" : "import a; import b;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "a.rell" : [ ],
+      "b.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

@@ -21,20 +21,22 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:5)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:not_pure:0::X:state",
+        "code" : "def:const:bad_type:not_pure:[0::X]:[state]",
         "text" : "Bad type for a global constant: state"
       },
       {
         "pos" : "main.rell(2:9)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:object",
+        "code" : "def:const:bad_expr:[0::X]:object",
         "text" : "Bad expression for a global constant"
       }
     ],
@@ -64,20 +66,22 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:9)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:object_attr",
+        "code" : "def:const:bad_expr:[0::X]:object_attr",
         "text" : "Bad expression for a global constant"
       },
       {
         "pos" : "main.rell(2:9)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:object",
+        "code" : "def:const:bad_expr:[0::X]:object",
         "text" : "Bad expression for a global constant"
       }
     ],
@@ -107,20 +111,22 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:9)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:object_to_struct",
+        "code" : "def:const:bad_expr:[0::X]:object_to_struct",
         "text" : "Bad expression for a global constant"
       },
       {
         "pos" : "main.rell(2:9)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:object",
+        "code" : "def:const:bad_expr:[0::X]:object",
         "text" : "Bad expression for a global constant"
       }
     ],
@@ -150,26 +156,28 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:5)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:mutable:0::X:struct<mutable state>",
+        "code" : "def:const:bad_type:mutable:[0::X]:[struct<mutable state>]",
         "text" : "Global constant cannot have a mutable type: struct<mutable state>"
       },
       {
         "pos" : "main.rell(2:9)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:object_to_struct",
+        "code" : "def:const:bad_expr:[0::X]:object_to_struct",
         "text" : "Bad expression for a global constant"
       },
       {
         "pos" : "main.rell(2:9)",
         "type" : "ERROR",
-        "code" : "def:const:bad_expr:0::X:object",
+        "code" : "def:const:bad_expr:[0::X]:object",
         "text" : "Bad expression for a global constant"
       }
     ],

@@ -24,27 +24,29 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "lib1.rell(1:52)",
         "type" : "ERROR",
-        "code" : "fn_type_recursion:FUNCTION:lib2:g",
-        "text" : "Function 'lib2:g' is recursive, cannot infer the type; specify type explicitly"
+        "code" : "fn_type_recursion:FUNCTION:[g]",
+        "text" : "Function 'g' is recursive, cannot infer the type; specify type explicitly"
       },
       {
         "pos" : "lib2.rell(1:52)",
         "type" : "ERROR",
-        "code" : "fn_type_recursion:FUNCTION:lib3:h",
-        "text" : "Function 'lib3:h' is recursive, cannot infer the type; specify type explicitly"
+        "code" : "fn_type_recursion:FUNCTION:[h]",
+        "text" : "Function 'h' is recursive, cannot infer the type; specify type explicitly"
       },
       {
         "pos" : "lib3.rell(1:52)",
         "type" : "ERROR",
-        "code" : "fn_type_recursion:FUNCTION:lib1:f",
-        "text" : "Function 'lib1:f' is recursive, cannot infer the type; specify type explicitly"
+        "code" : "fn_type_recursion:FUNCTION:[f]",
+        "text" : "Function 'f' is recursive, cannot infer the type; specify type explicitly"
       }
     ],
     "parsing" : {
