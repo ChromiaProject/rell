@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -51,8 +53,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -81,8 +85,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -111,8 +117,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -141,8 +149,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -171,8 +181,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -201,8 +213,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -231,8 +245,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -261,8 +277,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -291,8 +309,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -321,8 +341,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -351,8 +373,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -381,8 +405,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -411,8 +437,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -441,8 +469,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -471,8 +501,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -501,8 +533,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -531,8 +565,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -561,8 +597,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -591,8 +629,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -621,8 +661,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -651,8 +693,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -681,8 +725,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -711,8 +757,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -741,8 +789,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -771,8 +821,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -801,8 +853,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -831,8 +885,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -861,8 +917,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -891,8 +949,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -921,8 +981,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -951,8 +1013,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -981,8 +1045,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -1011,14 +1077,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_equals]:(integer,text),(text,integer)",
+        "code" : "expr_call_badargs:[assert_equals]:[(integer,text),(text,integer)]",
         "text" : "Function 'assert_equals' undefined for arguments ((integer,text), (text,integer))"
       }
     ],
@@ -1048,14 +1116,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_equals]:(integer,text),(text,integer)",
+        "code" : "expr_call_badargs:[rell.test.assert_equals]:[(integer,text),(text,integer)]",
         "text" : "Function 'rell.test.assert_equals' undefined for arguments ((integer,text), (text,integer))"
       }
     ],
@@ -1085,14 +1155,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_not_equals]:(integer,text),(text,integer)",
+        "code" : "expr_call_badargs:[assert_not_equals]:[(integer,text),(text,integer)]",
         "text" : "Function 'assert_not_equals' undefined for arguments ((integer,text), (text,integer))"
       }
     ],
@@ -1122,14 +1194,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_not_equals]:(integer,text),(text,integer)",
+        "code" : "expr_call_badargs:[rell.test.assert_not_equals]:[(integer,text),(text,integer)]",
         "text" : "Function 'rell.test.assert_not_equals' undefined for arguments ((integer,text), (text,integer))"
       }
     ],
@@ -1159,14 +1233,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_equals]:(integer,text),(integer,integer)",
+        "code" : "expr_call_badargs:[assert_equals]:[(integer,text),(integer,integer)]",
         "text" : "Function 'assert_equals' undefined for arguments ((integer,text), (integer,integer))"
       }
     ],
@@ -1196,14 +1272,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_equals]:(integer,text),(integer,integer)",
+        "code" : "expr_call_badargs:[rell.test.assert_equals]:[(integer,text),(integer,integer)]",
         "text" : "Function 'rell.test.assert_equals' undefined for arguments ((integer,text), (integer,integer))"
       }
     ],
@@ -1233,14 +1311,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_not_equals]:(integer,text),(integer,integer)",
+        "code" : "expr_call_badargs:[assert_not_equals]:[(integer,text),(integer,integer)]",
         "text" : "Function 'assert_not_equals' undefined for arguments ((integer,text), (integer,integer))"
       }
     ],
@@ -1270,14 +1350,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_not_equals]:(integer,text),(integer,integer)",
+        "code" : "expr_call_badargs:[rell.test.assert_not_equals]:[(integer,text),(integer,integer)]",
         "text" : "Function 'rell.test.assert_not_equals' undefined for arguments ((integer,text), (integer,integer))"
       }
     ],
@@ -1307,14 +1389,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_equals]:(integer,text),(integer,text,integer)",
+        "code" : "expr_call_badargs:[assert_equals]:[(integer,text),(integer,text,integer)]",
         "text" : "Function 'assert_equals' undefined for arguments ((integer,text), (integer,text,integer))"
       }
     ],
@@ -1344,14 +1428,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_equals]:(integer,text),(integer,text,integer)",
+        "code" : "expr_call_badargs:[rell.test.assert_equals]:[(integer,text),(integer,text,integer)]",
         "text" : "Function 'rell.test.assert_equals' undefined for arguments ((integer,text), (integer,text,integer))"
       }
     ],
@@ -1381,14 +1467,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_not_equals]:(integer,text),(integer,text,integer)",
+        "code" : "expr_call_badargs:[assert_not_equals]:[(integer,text),(integer,text,integer)]",
         "text" : "Function 'assert_not_equals' undefined for arguments ((integer,text), (integer,text,integer))"
       }
     ],
@@ -1418,14 +1506,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_not_equals]:(integer,text),(integer,text,integer)",
+        "code" : "expr_call_badargs:[rell.test.assert_not_equals]:[(integer,text),(integer,text,integer)]",
         "text" : "Function 'rell.test.assert_not_equals' undefined for arguments ((integer,text), (integer,text,integer))"
       }
     ],
@@ -1455,14 +1545,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_equals]:(x:integer,y:text),(x:integer,z:text)",
+        "code" : "expr_call_badargs:[assert_equals]:[(x:integer,y:text),(x:integer,z:text)]",
         "text" : "Function 'assert_equals' undefined for arguments ((x:integer,y:text), (x:integer,z:text))"
       }
     ],
@@ -1492,14 +1584,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_equals]:(x:integer,y:text),(x:integer,z:text)",
+        "code" : "expr_call_badargs:[rell.test.assert_equals]:[(x:integer,y:text),(x:integer,z:text)]",
         "text" : "Function 'rell.test.assert_equals' undefined for arguments ((x:integer,y:text), (x:integer,z:text))"
       }
     ],
@@ -1529,14 +1623,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_not_equals]:(x:integer,y:text),(x:integer,z:text)",
+        "code" : "expr_call_badargs:[assert_not_equals]:[(x:integer,y:text),(x:integer,z:text)]",
         "text" : "Function 'assert_not_equals' undefined for arguments ((x:integer,y:text), (x:integer,z:text))"
       }
     ],
@@ -1566,17 +1662,787 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_not_equals]:(x:integer,y:text),(x:integer,z:text)",
+        "code" : "expr_call_badargs:[rell.test.assert_not_equals]:[(x:integer,y:text),(x:integer,z:text)]",
         "text" : "Function 'rell.test.assert_not_equals' undefined for arguments ((x:integer,y:text), (x:integer,z:text))"
       }
     ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { assert_equals((x\"AB\".to_gtv(),), (x\"CE\".to_gtv(),)); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { rell.test.assert_equals((x\"AB\".to_gtv(),), (x\"CE\".to_gtv(),)); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { assert_equals((x\"AB\".to_gtv(),), (x\"AB\".to_gtv(),)); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { rell.test.assert_equals((x\"AB\".to_gtv(),), (x\"AB\".to_gtv(),)); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { assert_equals((x\"CE\".to_gtv(),), (x\"CE\".to_gtv(),)); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { rell.test.assert_equals((x\"CE\".to_gtv(),), (x\"CE\".to_gtv(),)); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { assert_not_equals((x\"AB\".to_gtv(),), (x\"CE\".to_gtv(),)); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { rell.test.assert_not_equals((x\"AB\".to_gtv(),), (x\"CE\".to_gtv(),)); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { assert_not_equals((x\"AB\".to_gtv(),), (x\"AB\".to_gtv(),)); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { rell.test.assert_not_equals((x\"AB\".to_gtv(),), (x\"AB\".to_gtv(),)); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { assert_not_equals((x\"CE\".to_gtv(),), (x\"CE\".to_gtv(),)); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { rell.test.assert_not_equals((x\"CE\".to_gtv(),), (x\"CE\".to_gtv(),)); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { assert_equals([x\"AB\".to_gtv(), x\"CD\".to_gtv()], [\"AB\".to_gtv(), \"CD\".to_gtv()]); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { rell.test.assert_equals([x\"AB\".to_gtv(), x\"CD\".to_gtv()], [\"AB\".to_gtv(), \"CD\".to_gtv()]); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { assert_equals([x\"AB\".to_gtv(), x\"CD\".to_gtv()], [x\"AB\".to_gtv(), x\"CD\".to_gtv()]); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { rell.test.assert_equals([x\"AB\".to_gtv(), x\"CD\".to_gtv()], [x\"AB\".to_gtv(), x\"CD\".to_gtv()]); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { assert_equals([\"AB\".to_gtv(), \"CD\".to_gtv()], [\"AB\".to_gtv(), \"CD\".to_gtv()]); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { rell.test.assert_equals([\"AB\".to_gtv(), \"CD\".to_gtv()], [\"AB\".to_gtv(), \"CD\".to_gtv()]); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { assert_not_equals([x\"AB\".to_gtv(), x\"CD\".to_gtv()], [\"AB\".to_gtv(), \"CD\".to_gtv()]); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { rell.test.assert_not_equals([x\"AB\".to_gtv(), x\"CD\".to_gtv()], [\"AB\".to_gtv(), \"CD\".to_gtv()]); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { assert_not_equals([x\"AB\".to_gtv(), x\"CD\".to_gtv()], [x\"AB\".to_gtv(), x\"CD\".to_gtv()]); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { rell.test.assert_not_equals([x\"AB\".to_gtv(), x\"CD\".to_gtv()], [x\"AB\".to_gtv(), x\"CD\".to_gtv()]); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { assert_not_equals([\"AB\".to_gtv(), \"CD\".to_gtv()], [\"AB\".to_gtv(), \"CD\".to_gtv()]); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "struct rec { x: integer; }\nquery q() { rell.test.assert_not_equals([\"AB\".to_gtv(), \"CD\".to_gtv()], [\"AB\".to_gtv(), \"CD\".to_gtv()]); return 0; }"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }

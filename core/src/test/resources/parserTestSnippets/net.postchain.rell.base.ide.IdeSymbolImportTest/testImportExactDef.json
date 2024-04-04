@@ -1,0 +1,107 @@
+[
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            function f() = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "import k: lib.{data, state, f};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            function f() = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "import lib.{p: data, q: state, r: f};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            function f() = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "import lib.{ns.p};"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

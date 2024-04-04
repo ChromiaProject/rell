@@ -1,0 +1,266 @@
+[
+  {
+    "files" : {
+      "main.rell" : "function __main() = abs(a = 123);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = min(a = 123, b = 456L);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = require(value = true);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = require(value = true, message = 'hello');"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = integer(value = '123');"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = integer(value = '123', radix = 10);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = 'hello'.sub(start = 2);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "function __main() = 'hello'.sub(start = 2, end = 3);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

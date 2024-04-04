@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -51,8 +53,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -81,15 +85,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[json]:",
-        "text" : "Function 'json' undefined for arguments ()"
+        "code" : "expr:call:missing_args:[json]:[0:value]",
+        "text" : "Missing argument(s): value"
       }
     ],
     "parsing" : {
@@ -118,14 +124,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[json]:integer",
+        "code" : "expr_call_badargs:[json]:[integer]",
         "text" : "Function 'json' undefined for arguments (integer)"
       }
     ],
@@ -155,14 +163,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[json]:json",
+        "code" : "expr_call_badargs:[json]:[json]",
         "text" : "Function 'json' undefined for arguments (json)"
       }
     ],
@@ -192,8 +202,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -222,8 +234,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {

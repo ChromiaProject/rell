@@ -28,6 +28,7 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : true,
+      "useTestDependencyExtensions" : false,
       "compatibility" : "0.14.0"
     },
     "messages" : [ ],
@@ -71,6 +72,7 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : true,
+      "useTestDependencyExtensions" : false,
       "compatibility" : "0.14.0"
     },
     "messages" : [ ],
@@ -114,6 +116,7 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : true,
+      "useTestDependencyExtensions" : false,
       "compatibility" : "0.14.0"
     },
     "messages" : [ ],
@@ -157,6 +160,7 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : true,
+      "useTestDependencyExtensions" : false,
       "compatibility" : "0.14.0"
     },
     "messages" : [ ],
@@ -200,6 +204,7 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : true,
+      "useTestDependencyExtensions" : false,
       "compatibility" : "0.14.0"
     },
     "messages" : [ ],
@@ -244,6 +249,7 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : true,
+      "useTestDependencyExtensions" : false,
       "compatibility" : "0.14.0"
     },
     "messages" : [ ],

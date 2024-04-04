@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -51,8 +53,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -81,8 +85,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -111,8 +117,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -154,8 +162,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -184,8 +194,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -214,8 +226,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -244,8 +258,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -274,8 +290,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -317,8 +335,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -347,8 +367,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -377,17 +399,51 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
-        "pos" : "main.rell(1:26)",
+        "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr:call:named_args_not_allowed:[set<integer>]:x",
-        "text" : "Named arguments not supported for function 'set<integer>'"
+        "code" : "expr_call_badargs:[set<integer>]:[x:list<integer>]",
+        "text" : "Function 'set<integer>' undefined for arguments (x: list<integer>)"
       }
     ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = set<integer>(values=[1,2,3]);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
     "parsing" : {
       "main.rell" : [ ]
     }
@@ -414,8 +470,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -444,8 +502,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {

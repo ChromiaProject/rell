@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -51,8 +53,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -81,8 +85,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -111,8 +117,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -141,8 +149,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -171,8 +181,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -208,8 +220,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -245,8 +259,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -282,8 +298,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -319,14 +337,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:35)",
         "type" : "ERROR",
-        "code" : "attr_not_mutable:y",
+        "code" : "attr_not_mutable:foo.y",
         "text" : "Attribute 'y' is not mutable"
       }
     ],
@@ -356,14 +376,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:35)",
         "type" : "ERROR",
-        "code" : "attr_not_mutable:y",
+        "code" : "attr_not_mutable:foo.y",
         "text" : "Attribute 'y' is not mutable"
       }
     ],
@@ -393,14 +415,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:37)",
         "type" : "ERROR",
-        "code" : "attr_not_mutable:y",
+        "code" : "attr_not_mutable:foo.y",
         "text" : "Attribute 'y' is not mutable"
       }
     ],
@@ -430,14 +454,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:37)",
         "type" : "ERROR",
-        "code" : "attr_not_mutable:y",
+        "code" : "attr_not_mutable:foo.y",
         "text" : "Attribute 'y' is not mutable"
       }
     ],
@@ -467,8 +493,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -504,8 +532,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -541,8 +571,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -578,8 +610,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {

@@ -1,0 +1,171 @@
+[
+  {
+    "files" : {
+      "lib.rell" : "module; namespace ns { entity data { name = 'Bob'; } }",
+      "main.rell" : "function __main() = create lib.ns.data();",
+      "module.rell" : "import lib;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; namespace ns { entity data { name = 'Bob'; } }",
+      "main.rell" : "function __main() = create lib.ns.c();",
+      "module.rell" : "import lib;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:28)",
+        "type" : "ERROR",
+        "code" : "unknown_name:lib.ns.c",
+        "text" : "Unknown name: 'lib.ns.c'"
+      }
+    ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; namespace ns { entity data { name = 'Bob'; } }",
+      "main.rell" : "function __main() = create lib.b.c();",
+      "module.rell" : "import lib;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:28)",
+        "type" : "ERROR",
+        "code" : "unknown_name:lib.b",
+        "text" : "Unknown name: 'lib.b'"
+      }
+    ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module; namespace ns { entity data { name = 'Bob'; } }",
+      "main.rell" : "function __main() = create a.b.c();",
+      "module.rell" : "import lib;"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:28)",
+        "type" : "ERROR",
+        "code" : "unknown_name:a",
+        "text" : "Unknown name: 'a'"
+      }
+    ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  }
+]

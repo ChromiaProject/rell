@@ -28,8 +28,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -72,15 +74,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:62)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:foo:[OBJECT:lib_object:foo,ENTITY:lib_entity:foo]",
-        "text" : "Name 'foo' is ambiguous: object lib_object:foo, entity lib_entity:foo"
+        "code" : "namespace:ambig:foo:[OBJECT:[lib_object:foo],ENTITY:[lib_entity:foo]]",
+        "text" : "Name 'foo' is ambiguous: object 'lib_object:foo', entity 'lib_entity:foo'"
       }
     ],
     "parsing" : {
@@ -123,15 +127,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:65)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:foo:[OBJECT:lib_object:foo,OPERATION:lib_operation:foo]",
-        "text" : "Name 'foo' is ambiguous: object lib_object:foo, operation lib_operation:foo"
+        "code" : "namespace:ambig:foo:[OBJECT:[lib_object:foo],OPERATION:[lib_operation:foo]]",
+        "text" : "Name 'foo' is ambiguous: object 'lib_object:foo', operation 'lib_operation:foo'"
       }
     ],
     "parsing" : {
@@ -174,15 +180,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:62)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:foo:[OBJECT:lib_object:foo,STRUCT:lib_struct:foo]",
-        "text" : "Name 'foo' is ambiguous: object lib_object:foo, struct lib_struct:foo"
+        "code" : "namespace:ambig:foo:[OBJECT:[lib_object:foo],STRUCT:[lib_struct:foo]]",
+        "text" : "Name 'foo' is ambiguous: object 'lib_object:foo', struct 'lib_struct:foo'"
       }
     ],
     "parsing" : {
@@ -225,15 +233,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:60)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:foo:[OBJECT:lib_object:foo,ENUM:lib_enum:foo]",
-        "text" : "Name 'foo' is ambiguous: object lib_object:foo, enum lib_enum:foo"
+        "code" : "namespace:ambig:foo:[OBJECT:[lib_object:foo],ENUM:[lib_enum:foo]]",
+        "text" : "Name 'foo' is ambiguous: object 'lib_object:foo', enum 'lib_enum:foo'"
       }
     ],
     "parsing" : {
@@ -276,15 +286,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:64)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:foo:[OBJECT:lib_object:foo,FUNCTION:lib_function:foo]",
-        "text" : "Name 'foo' is ambiguous: object lib_object:foo, function lib_function:foo"
+        "code" : "namespace:ambig:foo:[OBJECT:[lib_object:foo],FUNCTION:[lib_function:foo]]",
+        "text" : "Name 'foo' is ambiguous: object 'lib_object:foo', function 'lib_function:foo'"
       }
     ],
     "parsing" : {
@@ -327,8 +339,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {

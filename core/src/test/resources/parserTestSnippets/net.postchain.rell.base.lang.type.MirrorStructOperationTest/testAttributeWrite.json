@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -51,14 +53,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:52)",
         "type" : "ERROR",
-        "code" : "attr_not_mutable:name",
+        "code" : "attr_not_mutable:struct<new_user>.name",
         "text" : "Attribute 'name' is not mutable"
       }
     ],
@@ -88,14 +92,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:52)",
         "type" : "ERROR",
-        "code" : "attr_not_mutable:rating",
+        "code" : "attr_not_mutable:struct<new_user>.rating",
         "text" : "Attribute 'rating' is not mutable"
       }
     ],

@@ -1,0 +1,229 @@
+[
+  {
+    "files" : {
+      "main.rell" : "entity data {}"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data {}\nquery q() = rell.meta();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:13)",
+        "type" : "ERROR",
+        "code" : "fn:sys:wrong_arg_count:1:1:0",
+        "text" : "Wrong number of arguments for function 'rell.meta': 0 instead of 1"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data {}\nquery q() = rell.meta(0);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:13)",
+        "type" : "ERROR",
+        "code" : "expr_call:bad_arg:[rell.meta]",
+        "text" : "Bad argument for function 'rell.meta'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data {}\nquery q() = rell.meta('data');"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:13)",
+        "type" : "ERROR",
+        "code" : "expr_call:bad_arg:[rell.meta]",
+        "text" : "Bad argument for function 'rell.meta'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data {}\nquery q() = rell.meta(data, 0);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:13)",
+        "type" : "ERROR",
+        "code" : "fn:sys:wrong_arg_count:1:1:2",
+        "text" : "Wrong number of arguments for function 'rell.meta': 2 instead of 1"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "entity data {}\nquery q() = rell.meta(foo);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(2:23)",
+        "type" : "ERROR",
+        "code" : "unknown_name:foo",
+        "text" : "Unknown name: 'foo'"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  }
+]

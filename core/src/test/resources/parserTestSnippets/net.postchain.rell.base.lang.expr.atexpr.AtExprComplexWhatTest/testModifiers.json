@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -51,15 +53,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:group",
-        "text" : "Cannot group this expression"
+        "code" : "expr:at:nodb:group",
+        "text" : "Cannot group this expression in the database mode"
       }
     ],
     "parsing" : {
@@ -88,15 +92,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:aggregate",
-        "text" : "Cannot aggregate this expression"
+        "code" : "expr:at:nodb:aggregate",
+        "text" : "Cannot aggregate this expression in the database mode"
       }
     ],
     "parsing" : {
@@ -125,15 +131,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:aggregate",
-        "text" : "Cannot aggregate this expression"
+        "code" : "expr:at:nodb:aggregate",
+        "text" : "Cannot aggregate this expression in the database mode"
       }
     ],
     "parsing" : {
@@ -162,15 +170,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:aggregate",
-        "text" : "Cannot aggregate this expression"
+        "code" : "expr:at:nodb:aggregate",
+        "text" : "Cannot aggregate this expression in the database mode"
       },
       {
         "pos" : "main.rell(6:31)",
@@ -205,15 +215,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:sort",
-        "text" : "Cannot sort this expression"
+        "code" : "expr:at:nodb:sort",
+        "text" : "Cannot sort this expression in the database mode"
       }
     ],
     "parsing" : {
@@ -242,8 +254,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -272,15 +286,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:group",
-        "text" : "Cannot group this expression"
+        "code" : "expr:at:nodb:group",
+        "text" : "Cannot group this expression in the database mode"
       }
     ],
     "parsing" : {
@@ -309,15 +325,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:aggregate",
-        "text" : "Cannot aggregate this expression"
+        "code" : "expr:at:nodb:aggregate",
+        "text" : "Cannot aggregate this expression in the database mode"
       }
     ],
     "parsing" : {
@@ -346,15 +364,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:aggregate",
-        "text" : "Cannot aggregate this expression"
+        "code" : "expr:at:nodb:aggregate",
+        "text" : "Cannot aggregate this expression in the database mode"
       }
     ],
     "parsing" : {
@@ -383,15 +403,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:aggregate",
-        "text" : "Cannot aggregate this expression"
+        "code" : "expr:at:nodb:aggregate",
+        "text" : "Cannot aggregate this expression in the database mode"
       },
       {
         "pos" : "main.rell(6:31)",
@@ -426,15 +448,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:sort",
-        "text" : "Cannot sort this expression"
+        "code" : "expr:at:nodb:sort",
+        "text" : "Cannot sort this expression in the database mode"
       }
     ],
     "parsing" : {
@@ -463,8 +487,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -493,15 +519,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:group",
-        "text" : "Cannot group this expression"
+        "code" : "expr:at:nodb:group",
+        "text" : "Cannot group this expression in the database mode"
       }
     ],
     "parsing" : {
@@ -530,15 +558,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:aggregate",
-        "text" : "Cannot aggregate this expression"
+        "code" : "expr:at:nodb:aggregate",
+        "text" : "Cannot aggregate this expression in the database mode"
       }
     ],
     "parsing" : {
@@ -567,15 +597,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:aggregate",
-        "text" : "Cannot aggregate this expression"
+        "code" : "expr:at:nodb:aggregate",
+        "text" : "Cannot aggregate this expression in the database mode"
       }
     ],
     "parsing" : {
@@ -604,15 +636,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:aggregate",
-        "text" : "Cannot aggregate this expression"
+        "code" : "expr:at:nodb:aggregate",
+        "text" : "Cannot aggregate this expression in the database mode"
       },
       {
         "pos" : "main.rell(6:31)",
@@ -647,15 +681,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:sort",
-        "text" : "Cannot sort this expression"
+        "code" : "expr:at:nodb:sort",
+        "text" : "Cannot sort this expression in the database mode"
       }
     ],
     "parsing" : {
@@ -684,8 +720,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -714,15 +752,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:group",
-        "text" : "Cannot group this expression"
+        "code" : "expr:at:nodb:group",
+        "text" : "Cannot group this expression in the database mode"
       }
     ],
     "parsing" : {
@@ -751,15 +791,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:aggregate",
-        "text" : "Cannot aggregate this expression"
+        "code" : "expr:at:nodb:aggregate",
+        "text" : "Cannot aggregate this expression in the database mode"
       },
       {
         "pos" : "main.rell(6:31)",
@@ -794,15 +836,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:aggregate",
-        "text" : "Cannot aggregate this expression"
+        "code" : "expr:at:nodb:aggregate",
+        "text" : "Cannot aggregate this expression in the database mode"
       },
       {
         "pos" : "main.rell(6:31)",
@@ -837,15 +881,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:aggregate",
-        "text" : "Cannot aggregate this expression"
+        "code" : "expr:at:nodb:aggregate",
+        "text" : "Cannot aggregate this expression in the database mode"
       },
       {
         "pos" : "main.rell(6:31)",
@@ -880,15 +926,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(6:27)",
         "type" : "ERROR",
-        "code" : "expr:at:sort",
-        "text" : "Cannot sort this expression"
+        "code" : "expr:at:nodb:sort",
+        "text" : "Cannot sort this expression in the database mode"
       }
     ],
     "parsing" : {
@@ -917,8 +965,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {

@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -51,14 +53,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(12:18)",
         "type" : "ERROR",
-        "code" : "deprecated:NAMESPACE:a.b",
+        "code" : "deprecated:NAMESPACE:[a.b]",
         "text" : "Namespace 'a.b' is deprecated"
       }
     ],
@@ -88,14 +92,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(12:18)",
         "type" : "ERROR",
-        "code" : "deprecated:NAMESPACE:a.b",
+        "code" : "deprecated:NAMESPACE:[a.b]",
         "text" : "Namespace 'a.b' is deprecated"
       }
     ],
@@ -125,8 +131,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -155,14 +163,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(12:25)",
         "type" : "ERROR",
-        "code" : "deprecated:NAMESPACE:a.b",
+        "code" : "deprecated:NAMESPACE:[a.b]",
         "text" : "Namespace 'a.b' is deprecated"
       }
     ],
@@ -192,14 +202,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(12:25)",
         "type" : "ERROR",
-        "code" : "deprecated:NAMESPACE:a.b",
+        "code" : "deprecated:NAMESPACE:[a.b]",
         "text" : "Namespace 'a.b' is deprecated"
       }
     ],
@@ -229,8 +241,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -259,14 +273,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(12:25)",
         "type" : "ERROR",
-        "code" : "deprecated:NAMESPACE:a.b",
+        "code" : "deprecated:NAMESPACE:[a.b]",
         "text" : "Namespace 'a.b' is deprecated"
       }
     ],
@@ -296,14 +312,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(12:25)",
         "type" : "ERROR",
-        "code" : "deprecated:NAMESPACE:a.b",
+        "code" : "deprecated:NAMESPACE:[a.b]",
         "text" : "Namespace 'a.b' is deprecated"
       }
     ],
@@ -333,8 +351,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -363,14 +383,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(12:17)",
         "type" : "ERROR",
-        "code" : "deprecated:NAMESPACE:a.b",
+        "code" : "deprecated:NAMESPACE:[a.b]",
         "text" : "Namespace 'a.b' is deprecated"
       }
     ],
@@ -400,14 +422,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(12:17)",
         "type" : "ERROR",
-        "code" : "deprecated:NAMESPACE:a.b",
+        "code" : "deprecated:NAMESPACE:[a.b]",
         "text" : "Namespace 'a.b' is deprecated"
       }
     ],

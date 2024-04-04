@@ -29,7 +29,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -79,7 +80,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -129,7 +131,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -179,7 +182,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -229,7 +233,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -279,7 +284,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -329,7 +335,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -379,7 +386,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -429,7 +437,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -479,7 +488,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -529,7 +539,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -579,7 +590,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -629,7 +641,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -680,7 +693,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {

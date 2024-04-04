@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -51,15 +53,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_equals]:",
-        "text" : "Function 'assert_equals' undefined for arguments ()"
+        "code" : "expr:call:missing_args:[assert_equals]:[0:actual,1:expected]",
+        "text" : "Missing argument(s): actual, expected"
       }
     ],
     "parsing" : {
@@ -88,15 +92,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_equals]:",
-        "text" : "Function 'rell.test.assert_equals' undefined for arguments ()"
+        "code" : "expr:call:missing_args:[rell.test.assert_equals]:[0:actual,1:expected]",
+        "text" : "Missing argument(s): actual, expected"
       }
     ],
     "parsing" : {
@@ -125,15 +131,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_equals]:integer",
-        "text" : "Function 'assert_equals' undefined for arguments (integer)"
+        "code" : "expr:call:missing_args:[assert_equals]:[1:expected]",
+        "text" : "Missing argument(s): expected"
       }
     ],
     "parsing" : {
@@ -162,15 +170,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_equals]:integer",
-        "text" : "Function 'rell.test.assert_equals' undefined for arguments (integer)"
+        "code" : "expr:call:missing_args:[rell.test.assert_equals]:[1:expected]",
+        "text" : "Missing argument(s): expected"
       }
     ],
     "parsing" : {
@@ -199,15 +209,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_equals]:integer,integer,text",
-        "text" : "Function 'assert_equals' undefined for arguments (integer, integer, text)"
+        "code" : "expr:call:too_many_args:[assert_equals]:2:3",
+        "text" : "Too many arguments for function 'assert_equals': 3 instead of 2"
       }
     ],
     "parsing" : {
@@ -236,15 +248,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_equals]:integer,integer,text",
-        "text" : "Function 'rell.test.assert_equals' undefined for arguments (integer, integer, text)"
+        "code" : "expr:call:too_many_args:[rell.test.assert_equals]:2:3",
+        "text" : "Too many arguments for function 'rell.test.assert_equals': 3 instead of 2"
       }
     ],
     "parsing" : {
@@ -273,15 +287,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_equals]:integer,integer,integer",
-        "text" : "Function 'assert_equals' undefined for arguments (integer, integer, integer)"
+        "code" : "expr:call:too_many_args:[assert_equals]:2:3",
+        "text" : "Too many arguments for function 'assert_equals': 3 instead of 2"
       }
     ],
     "parsing" : {
@@ -310,15 +326,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_equals]:integer,integer,integer",
-        "text" : "Function 'rell.test.assert_equals' undefined for arguments (integer, integer, integer)"
+        "code" : "expr:call:too_many_args:[rell.test.assert_equals]:2:3",
+        "text" : "Too many arguments for function 'rell.test.assert_equals': 3 instead of 2"
       }
     ],
     "parsing" : {
@@ -347,14 +365,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_equals]:integer,text",
+        "code" : "expr_call_badargs:[assert_equals]:[integer,text]",
         "text" : "Function 'assert_equals' undefined for arguments (integer, text)"
       }
     ],
@@ -384,14 +404,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_equals]:integer,text",
+        "code" : "expr_call_badargs:[rell.test.assert_equals]:[integer,text]",
         "text" : "Function 'rell.test.assert_equals' undefined for arguments (integer, text)"
       }
     ],
@@ -421,15 +443,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_not_equals]:",
-        "text" : "Function 'assert_not_equals' undefined for arguments ()"
+        "code" : "expr:call:missing_args:[assert_not_equals]:[0:actual,1:illegal]",
+        "text" : "Missing argument(s): actual, illegal"
       }
     ],
     "parsing" : {
@@ -458,15 +482,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_not_equals]:",
-        "text" : "Function 'rell.test.assert_not_equals' undefined for arguments ()"
+        "code" : "expr:call:missing_args:[rell.test.assert_not_equals]:[0:actual,1:illegal]",
+        "text" : "Missing argument(s): actual, illegal"
       }
     ],
     "parsing" : {
@@ -495,15 +521,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_not_equals]:integer",
-        "text" : "Function 'assert_not_equals' undefined for arguments (integer)"
+        "code" : "expr:call:missing_args:[assert_not_equals]:[1:illegal]",
+        "text" : "Missing argument(s): illegal"
       }
     ],
     "parsing" : {
@@ -532,15 +560,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_not_equals]:integer",
-        "text" : "Function 'rell.test.assert_not_equals' undefined for arguments (integer)"
+        "code" : "expr:call:missing_args:[rell.test.assert_not_equals]:[1:illegal]",
+        "text" : "Missing argument(s): illegal"
       }
     ],
     "parsing" : {
@@ -569,15 +599,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_not_equals]:integer,integer,text",
-        "text" : "Function 'assert_not_equals' undefined for arguments (integer, integer, text)"
+        "code" : "expr:call:too_many_args:[assert_not_equals]:2:3",
+        "text" : "Too many arguments for function 'assert_not_equals': 3 instead of 2"
       }
     ],
     "parsing" : {
@@ -606,15 +638,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_not_equals]:integer,integer,text",
-        "text" : "Function 'rell.test.assert_not_equals' undefined for arguments (integer, integer, text)"
+        "code" : "expr:call:too_many_args:[rell.test.assert_not_equals]:2:3",
+        "text" : "Too many arguments for function 'rell.test.assert_not_equals': 3 instead of 2"
       }
     ],
     "parsing" : {
@@ -643,15 +677,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_not_equals]:integer,integer,integer",
-        "text" : "Function 'assert_not_equals' undefined for arguments (integer, integer, integer)"
+        "code" : "expr:call:too_many_args:[assert_not_equals]:2:3",
+        "text" : "Too many arguments for function 'assert_not_equals': 3 instead of 2"
       }
     ],
     "parsing" : {
@@ -680,15 +716,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_not_equals]:integer,integer,integer",
-        "text" : "Function 'rell.test.assert_not_equals' undefined for arguments (integer, integer, integer)"
+        "code" : "expr:call:too_many_args:[rell.test.assert_not_equals]:2:3",
+        "text" : "Too many arguments for function 'rell.test.assert_not_equals': 3 instead of 2"
       }
     ],
     "parsing" : {
@@ -717,14 +755,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_not_equals]:integer,text",
+        "code" : "expr_call_badargs:[assert_not_equals]:[integer,text]",
         "text" : "Function 'assert_not_equals' undefined for arguments (integer, text)"
       }
     ],
@@ -754,14 +794,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:23)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[rell.test.assert_not_equals]:integer,text",
+        "code" : "expr_call_badargs:[rell.test.assert_not_equals]:[integer,text]",
         "text" : "Function 'rell.test.assert_not_equals' undefined for arguments (integer, text)"
       }
     ],

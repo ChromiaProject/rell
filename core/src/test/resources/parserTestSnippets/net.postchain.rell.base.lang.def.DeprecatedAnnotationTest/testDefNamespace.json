@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -51,8 +53,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -81,14 +85,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(4:13)",
         "type" : "ERROR",
-        "code" : "deprecated:NAMESPACE:b",
+        "code" : "deprecated:NAMESPACE:[b]",
         "text" : "Namespace 'b' is deprecated"
       }
     ],
@@ -118,26 +124,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
-        "pos" : "main.rell(4:13)",
-        "type" : "ERROR",
-        "code" : "deprecated:NAMESPACE:c",
-        "text" : "Namespace 'c' is deprecated"
-      },
-      {
-        "pos" : "main.rell(4:15)",
-        "type" : "ERROR",
-        "code" : "deprecated:NAMESPACE:c.d",
-        "text" : "Namespace 'c.d' is deprecated"
-      },
-      {
         "pos" : "main.rell(4:17)",
         "type" : "ERROR",
-        "code" : "deprecated:NAMESPACE:c.d.e",
+        "code" : "deprecated:NAMESPACE:[c.d.e]",
         "text" : "Namespace 'c.d.e' is deprecated"
       }
     ],
@@ -167,8 +163,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {

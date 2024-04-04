@@ -22,8 +22,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -54,8 +56,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -86,15 +90,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr:call:too_many_args:[lib:f]:0:1",
-        "text" : "Too many arguments for function 'lib:f': 1 instead of 0"
+        "code" : "expr:call:too_many_args:[f]:0:1",
+        "text" : "Too many arguments for function 'f': 1 instead of 0"
       }
     ],
     "parsing" : {
@@ -125,15 +131,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr:call:too_many_args:[lib:f]:0:1",
-        "text" : "Too many arguments for function 'lib:f': 1 instead of 0"
+        "code" : "expr:call:too_many_args:[f]:0:1",
+        "text" : "Too many arguments for function 'f': 1 instead of 0"
       }
     ],
     "parsing" : {
@@ -164,15 +172,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr:call:too_many_args:[lib:f]:0:2",
-        "text" : "Too many arguments for function 'lib:f': 2 instead of 0"
+        "code" : "expr:call:too_many_args:[f]:0:2",
+        "text" : "Too many arguments for function 'f': 2 instead of 0"
       }
     ],
     "parsing" : {
@@ -203,8 +213,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -235,8 +247,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -267,14 +281,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr:call:missing_args:[lib:g]:0:x",
+        "code" : "expr:call:missing_args:[g]:[0:x]",
         "text" : "Missing argument(s): x"
       }
     ],
@@ -306,14 +322,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr_call_argtype:[lib:g]:0:x:integer:text",
+        "code" : "expr_call_argtype:[g]:0:x:integer:text",
         "text" : "Wrong argument type for parameter 'x': text instead of integer"
       }
     ],
@@ -345,14 +363,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr_call_argtype:[lib:g]:0:x:integer:text",
+        "code" : "expr_call_argtype:[g]:0:x:integer:text",
         "text" : "Wrong argument type for parameter 'x': text instead of integer"
       }
     ],
@@ -384,14 +404,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr_call_argtype:[lib:g]:0:x:integer:boolean",
+        "code" : "expr_call_argtype:[g]:0:x:integer:boolean",
         "text" : "Wrong argument type for parameter 'x': boolean instead of integer"
       }
     ],
@@ -423,15 +445,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr:call:too_many_args:[lib:g]:1:2",
-        "text" : "Too many arguments for function 'lib:g': 2 instead of 1"
+        "code" : "expr:call:too_many_args:[g]:1:2",
+        "text" : "Too many arguments for function 'g': 2 instead of 1"
       }
     ],
     "parsing" : {
@@ -462,8 +486,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -494,8 +520,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -526,8 +554,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -558,14 +588,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr:call:missing_args:[lib:h]:0:x,1:y",
+        "code" : "expr:call:missing_args:[h]:[0:x,1:y]",
         "text" : "Missing argument(s): x, y"
       }
     ],
@@ -597,14 +629,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr:call:missing_args:[lib:h]:1:y",
+        "code" : "expr:call:missing_args:[h]:[1:y]",
         "text" : "Missing argument(s): y"
       }
     ],
@@ -636,14 +670,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr:call:missing_args:[lib:h]:1:y",
+        "code" : "expr:call:missing_args:[h]:[1:y]",
         "text" : "Missing argument(s): y"
       }
     ],
@@ -675,21 +711,23 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr_call_argtype:[lib:h]:0:x:text:boolean",
-        "text" : "Wrong argument type for parameter 'x': boolean instead of text"
+        "code" : "expr:call:missing_args:[h]:[1:y]",
+        "text" : "Missing argument(s): y"
       },
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr:call:missing_args:[lib:h]:1:y",
-        "text" : "Missing argument(s): y"
+        "code" : "expr_call_argtype:[h]:0:x:text:boolean",
+        "text" : "Wrong argument type for parameter 'x': boolean instead of text"
       }
     ],
     "parsing" : {
@@ -720,21 +758,23 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr_call_argtype:[lib:h]:0:x:text:boolean",
-        "text" : "Wrong argument type for parameter 'x': boolean instead of text"
+        "code" : "expr:call:missing_args:[h]:[1:y]",
+        "text" : "Missing argument(s): y"
       },
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr:call:missing_args:[lib:h]:1:y",
-        "text" : "Missing argument(s): y"
+        "code" : "expr_call_argtype:[h]:0:x:text:boolean",
+        "text" : "Wrong argument type for parameter 'x': boolean instead of text"
       }
     ],
     "parsing" : {
@@ -765,14 +805,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr:call:missing_args:[lib:h]:0:x",
+        "code" : "expr:call:missing_args:[h]:[0:x]",
         "text" : "Missing argument(s): x"
       }
     ],
@@ -804,14 +846,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr_call_argtype:[lib:h]:1:y:boolean:integer",
+        "code" : "expr_call_argtype:[h]:1:y:boolean:integer",
         "text" : "Wrong argument type for parameter 'y': integer instead of boolean"
       }
     ],
@@ -843,20 +887,22 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr_call_argtype:[lib:h]:0:x:text:boolean",
+        "code" : "expr_call_argtype:[h]:0:x:text:boolean",
         "text" : "Wrong argument type for parameter 'x': boolean instead of text"
       },
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr_call_argtype:[lib:h]:1:y:boolean:text",
+        "code" : "expr_call_argtype:[h]:1:y:boolean:text",
         "text" : "Wrong argument type for parameter 'y': text instead of boolean"
       }
     ],
@@ -888,15 +934,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "expr:call:too_many_args:[lib:h]:2:3",
-        "text" : "Too many arguments for function 'lib:h': 3 instead of 2"
+        "code" : "expr:call:too_many_args:[h]:2:3",
+        "text" : "Too many arguments for function 'h': 3 instead of 2"
       }
     ],
     "parsing" : {

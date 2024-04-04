@@ -1,0 +1,34 @@
+[
+  {
+    "files" : {
+      "lib.rell" : "\n            @mount('foo') module;\n            entity data {}\n            object state {}\n            operation op(){}\n            query q() = 0;\n        ",
+      "main.rell" : ""
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

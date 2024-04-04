@@ -21,20 +21,22 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:9)",
         "type" : "ERROR",
-        "code" : "fn_type_recursion:CONSTANT:Y",
+        "code" : "fn_type_recursion:CONSTANT:[Y]",
         "text" : "Constant 'Y' is recursive, cannot infer the type; specify type explicitly"
       },
       {
         "pos" : "main.rell(1:24)",
         "type" : "ERROR",
-        "code" : "fn_type_recursion:CONSTANT:X",
+        "code" : "fn_type_recursion:CONSTANT:[X]",
         "text" : "Constant 'X' is recursive, cannot infer the type; specify type explicitly"
       }
     ],

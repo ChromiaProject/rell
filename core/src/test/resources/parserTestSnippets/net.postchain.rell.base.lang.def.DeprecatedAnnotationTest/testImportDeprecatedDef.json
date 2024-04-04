@@ -22,14 +22,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:20)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:lib:f",
+        "code" : "deprecated:FUNCTION:[lib:f]",
         "text" : "Function 'lib:f' is deprecated"
       }
     ],
@@ -61,14 +63,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:20)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:lib:f",
+        "code" : "deprecated:FUNCTION:[lib:f]",
         "text" : "Function 'lib:f' is deprecated"
       }
     ],
@@ -100,14 +104,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:20)",
         "type" : "ERROR",
-        "code" : "deprecated:STRUCT:lib:s",
+        "code" : "deprecated:STRUCT:[lib:s]",
         "text" : "Struct 'lib:s' is deprecated"
       }
     ],
@@ -139,14 +145,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:19)",
         "type" : "ERROR",
-        "code" : "deprecated:STRUCT:lib:s",
+        "code" : "deprecated:STRUCT:[lib:s]",
         "text" : "Struct 'lib:s' is deprecated"
       }
     ],

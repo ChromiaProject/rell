@@ -1,0 +1,72 @@
+[
+  {
+    "files" : {
+      "def.rell" : "operation op(x: integer, y: decimal = 123, z: text) { if (x>0 and y>0 and z!='') {} }",
+      "main.rell" : ""
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "def.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "def.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "def.rell" : "operation op(x: integer, y: decimal = 123, z: text) { if (x>0 and y>0 and z!='') {} }",
+      "main.rell" : "function __main() = op(x = 123, y = 456, z = 'Hello');"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : true,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "def.rell" : [ ],
+      "main.rell" : [ ]
+    }
+  }
+]

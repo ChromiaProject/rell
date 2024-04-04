@@ -597,6 +597,8 @@ ruleX_BaseExprHead:
 	(
 		ruleX_GenericTypeExpr
 		    |
+		ruleX_AtExpr
+            |
 		ruleX_NameExpr
 		    |
 		ruleX_DollarExpr
@@ -613,9 +615,9 @@ ruleX_BaseExprHead:
 		    |
 		ruleX_BytesExpr
 		    |
-		ruleX_BaseExprHead_9
-		    |
 		ruleX_BaseExprHead_10
+		    |
+		ruleX_BaseExprHead_11
 		    |
 		ruleX_NullLiteralExpr
 		    |
@@ -635,8 +637,8 @@ ruleX_BaseExprHead:
 	)
 ;
 
-ruleX_BaseExprHead_9: 'false';
-ruleX_BaseExprHead_10: 'true';
+ruleX_BaseExprHead_10: 'false';
+ruleX_BaseExprHead_11: 'true';
 
 // Rule X_GenericTypeExpr
 ruleX_GenericTypeExpr:
@@ -693,6 +695,154 @@ ruleX_CallArgValue:
 ruleX_CallArgValue_0: '*';
 ruleX_CallArgValue_1: ruleX_ExpressionRef;
 
+// Rule X_AtExpr
+ruleX_AtExpr:
+	ruleX_AtExprFrom
+	ruleX_BaseExprTailAt
+;
+
+// Rule X_AtExprFrom
+ruleX_AtExprFrom:
+	ruleX_tkLPAR
+	ruleX_AtExprFromItem
+	(
+		','
+		ruleX_AtExprFromItem
+	)*
+	','?
+	')'
+;
+
+// Rule X_AtExprFromItem
+ruleX_AtExprFromItem:
+	ruleX_Annotation
+	*
+	(
+		ruleX_Name
+		':'
+	)?
+	ruleX_ExpressionRef
+;
+
+// Rule X_BaseExprTailAt
+ruleX_BaseExprTailAt:
+	ruleX_AtExprAt
+	ruleX_AtExprWhere
+	ruleX_AtExprWhat
+	?
+	ruleX_AtExprModifiers
+	?
+;
+
+// Rule X_AtExprAt
+ruleX_AtExprAt:
+	(
+    		ruleX_AtExprAt_0
+    		    |
+    		ruleX_AtExprAt_1
+    		    |
+    		ruleX_AtExprAt_2
+    		    |
+    		ruleX_AtExprAt_3
+    )
+;
+
+ruleX_AtExprAt_0: ruleX_tkAT ruleX_tkQUESTION;
+ruleX_AtExprAt_1: ruleX_tkAT ruleX_tkMUL;
+ruleX_AtExprAt_2: ruleX_tkAT ruleX_tkPLUS;
+ruleX_AtExprAt_3: '@';
+
+
+// Rule X_tkAT
+ruleX_tkAT:
+	'@'
+;
+
+// Rule X_tkMUL
+ruleX_tkMUL:
+	'*'
+;
+
+// Rule X_tkPLUS
+ruleX_tkPLUS:
+	'+'
+;
+
+// Rule X_AtExprWhere
+ruleX_AtExprWhere:
+	'{'
+	(
+		ruleX_ExpressionRef
+		(
+			','
+			ruleX_ExpressionRef
+		)*
+	)?
+	'}'
+;
+
+// Rule X_AtExprWhat
+ruleX_AtExprWhat:
+	(
+		ruleX_AtExprWhatSimple
+		    |
+		ruleX_AtExprWhatComplex
+	)
+;
+
+// Rule X_AtExprWhatSimple
+ruleX_AtExprWhatSimple:
+	ruleX_tkDOT
+	ruleX_Name
+	(
+		'.'
+		ruleX_Name
+	)*
+;
+
+// Rule X_tkDOT
+ruleX_tkDOT:
+	'.'
+;
+
+// Rule X_AtExprWhatComplex
+ruleX_AtExprWhatComplex:
+	ruleX_tkLPAR
+	ruleX_AtExprWhatComplexItem
+	(
+		','
+		ruleX_AtExprWhatComplexItem
+	)*
+	')'
+;
+
+// Rule X_AtExprWhatComplexItem
+ruleX_AtExprWhatComplexItem:
+	ruleX_Annotation
+	*
+	ruleX_AtExprWhatName
+	?
+	ruleX_ExpressionRef
+;
+
+// Rule X_AtExprWhatName
+ruleX_AtExprWhatName:
+	ruleX_Name
+	'='
+;
+
+// Rule X_AtExprOffset
+ruleX_AtExprOffset:
+	'offset'
+	ruleX_ExpressionRef
+;
+
+// Rule X_AtExprLimit
+ruleX_AtExprLimit:
+	'limit'
+	ruleX_ExpressionRef
+;
+
 // Rule X_NameExpr
 ruleX_NameExpr:
 	ruleX_Name
@@ -709,11 +859,6 @@ ruleX_AttrExpr:
 	ruleX_Name
 ;
 
-// Rule X_tkDOT
-ruleX_tkDOT:
-	'.'
-;
-
 // Rule X_ParenthesesExpr
 ruleX_ParenthesesExpr:
 	ruleX_tkLPAR
@@ -726,41 +871,15 @@ ruleX_ParenthesesExpr:
 // Rule X_TupleExprField
 ruleX_TupleExprField:
 	(
-		ruleX_TupleExprFieldNameEqExpr
-		    |
-		ruleX_TupleExprFieldNameColonExpr
-		    |
-		ruleX_TupleExprFieldExpr
-	)
-;
-
-// Rule X_TupleExprFieldNameEqExpr
-ruleX_TupleExprFieldNameEqExpr:
-	ruleX_Name
-	ruleX_tkASSIGN
+		ruleX_Name
+		ruleX_tkASSIGN
+	)?
 	ruleX_ExpressionRef
 ;
 
 // Rule X_tkASSIGN
 ruleX_tkASSIGN:
 	'='
-;
-
-// Rule X_TupleExprFieldNameColonExpr
-ruleX_TupleExprFieldNameColonExpr:
-	ruleX_Name
-	ruleX_tkCOLON
-	ruleX_ExpressionRef
-;
-
-// Rule X_tkCOLON
-ruleX_tkCOLON:
-	':'
-;
-
-// Rule X_TupleExprFieldExpr
-ruleX_TupleExprFieldExpr:
-	ruleX_ExpressionRef
 ;
 
 // Rule X_TupleExprTail
@@ -912,120 +1031,6 @@ ruleX_UnaryPostfixOperator:
 ruleX_UnaryPostfixOperator_0: ruleX_IncrementOperator;
 ruleX_UnaryPostfixOperator_1: '??';
 
-// Rule X_BaseExprTailAt
-ruleX_BaseExprTailAt:
-	ruleX_AtExprAt
-	ruleX_AtExprWhere
-	ruleX_AtExprWhat
-	?
-	ruleX_AtExprModifiers
-	?
-;
-
-// Rule X_AtExprAt
-//TODO: WYT?
-//ruleX_AtExprAt:
-//	(
-//		ruleX_tkAT
-//		ruleX_tkQUESTION
-//		    |
-//		ruleX_tkAT
-//		ruleX_tkMUL
-//		    |
-//		ruleX_tkAT
-//		ruleX_tkPLUS
-//		    |
-//		'@'
-//	)
-//;
-ruleX_AtExprAt:
-	(
-		ruleX_AtExprAt_0
-		    |
-		ruleX_AtExprAt_1
-		    |
-		ruleX_AtExprAt_2
-		    |
-		ruleX_AtExprAt_3
-	)
-;
-ruleX_AtExprAt_0: ruleX_tkAT ruleX_tkQUESTION;
-ruleX_AtExprAt_1: ruleX_tkAT ruleX_tkMUL;
-ruleX_AtExprAt_2: ruleX_tkAT ruleX_tkPLUS;
-ruleX_AtExprAt_3: '@';
-
-
-// Rule X_tkAT
-ruleX_tkAT:
-	'@'
-;
-
-// Rule X_tkMUL
-ruleX_tkMUL:
-	'*'
-;
-
-// Rule X_tkPLUS
-ruleX_tkPLUS:
-	'+'
-;
-
-// Rule X_AtExprWhere
-ruleX_AtExprWhere:
-	'{'
-	(
-		ruleX_ExpressionRef
-		(
-			','
-			ruleX_ExpressionRef
-		)*
-	)?
-	'}'
-;
-
-// Rule X_AtExprWhat
-ruleX_AtExprWhat:
-	(
-		ruleX_AtExprWhatSimple
-		    |
-		ruleX_AtExprWhatComplex
-	)
-;
-
-// Rule X_AtExprWhatSimple
-ruleX_AtExprWhatSimple:
-	(
-		'.'
-		ruleX_Name
-	)+
-;
-
-// Rule X_AtExprWhatComplex
-ruleX_AtExprWhatComplex:
-	'('
-	ruleX_AtExprWhatComplexItem
-	(
-		','
-		ruleX_AtExprWhatComplexItem
-	)*
-	')'
-;
-
-// Rule X_AtExprWhatComplexItem
-ruleX_AtExprWhatComplexItem:
-	ruleX_Annotation
-	*
-	ruleX_AtExprWhatName
-	?
-	ruleX_ExpressionRef
-;
-
-// Rule X_AtExprWhatName
-ruleX_AtExprWhatName:
-	ruleX_Name
-	'='
-;
-
 // Rule X_AtExprModifiers
 ruleX_AtExprModifiers:
 	(
@@ -1037,18 +1042,6 @@ ruleX_AtExprModifiers:
 
 ruleX_AtExprModifiers_0: 'limit' ruleX_ExpressionRef ruleX_AtExprOffset ?;
 ruleX_AtExprModifiers_1: 'offset' ruleX_ExpressionRef ruleX_AtExprLimit?;
-
-// Rule X_AtExprOffset
-ruleX_AtExprOffset:
-	'offset'
-	ruleX_ExpressionRef
-;
-
-// Rule X_AtExprLimit
-ruleX_AtExprLimit:
-	'limit'
-	ruleX_ExpressionRef
-;
 
 // Rule X_IfExpr
 ruleX_IfExpr:
@@ -1626,38 +1619,38 @@ ruleX_UpdateTarget:
 
 // Rule X_UpdateTargetAt
 ruleX_UpdateTargetAt:
-	ruleX_AtExprFrom
+	ruleX_UpdateFrom
 	ruleX_AtExprAt
 	ruleX_AtExprWhere
 ;
 
-// Rule X_AtExprFrom
-ruleX_AtExprFrom:
+// Rule X_UpdateFrom
+ruleX_UpdateFrom:
 	(
-		ruleX_AtExprFromSingle
+		ruleX_UpdateFromSingle
 		    |
-		ruleX_AtExprFromMulti
+		ruleX_UpdateFromMulti
 	)
 ;
 
-// Rule X_AtExprFromSingle
-ruleX_AtExprFromSingle:
+// Rule X_UpdateFromSingle
+ruleX_UpdateFromSingle:
 	ruleX_QualifiedName
 ;
 
-// Rule X_AtExprFromMulti
-ruleX_AtExprFromMulti:
+// Rule X_UpdateFromMulti
+ruleX_UpdateFromMulti:
 	ruleX_tkLPAR
-	ruleX_AtExprFromItem
+	ruleX_UpdateFromItem
 	(
 		','
-		ruleX_AtExprFromItem
+		ruleX_UpdateFromItem
 	)*
 	')'
 ;
 
-// Rule X_AtExprFromItem
-ruleX_AtExprFromItem:
+// Rule X_UpdateFromItem
+ruleX_UpdateFromItem:
 	(
 		ruleX_Name
 		':'

@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -31,7 +33,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() = abs(x=123);"
+      "main.rell" : "query q() = abs(-123);"
     },
     "modules" : {
       "modules" : [
@@ -51,45 +53,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
-    },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:17)",
-        "type" : "ERROR",
-        "code" : "expr:call:named_args_not_allowed:[abs]:x",
-        "text" : "Named arguments not supported for function 'abs'"
-      }
-    ],
-    "parsing" : {
-      "main.rell" : [ ]
-    }
-  },
-  {
-    "files" : {
-      "main.rell" : "query q() = abs(123);"
-    },
-    "modules" : {
-      "modules" : [
-        ""
-      ],
-      "test_root_modules" : [ ],
-      "test_sub_modules" : true
-    },
-    "options" : {
-      "gtv" : false,
-      "deprecatedError" : false,
-      "ide" : false,
-      "atAttrShadowing" : "FULL",
-      "testLib" : false,
-      "hiddenLib" : true,
-      "allowDbModificationsInObjectExprs" : true,
-      "complexWhatEnabled" : true,
-      "mountConflictError" : true,
-      "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -98,7 +65,7 @@
   },
   {
     "files" : {
-      "main.rell" : "query q() = 'hello'.sub(start=3);"
+      "main.rell" : "query q() = abs(a=-123);"
     },
     "modules" : {
       "modules" : [
@@ -118,15 +85,49 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = abs(x=-123);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
-        "pos" : "main.rell(1:25)",
+        "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr:call:named_args_not_allowed:[text.sub]:start",
-        "text" : "Named arguments not supported for function 'text.sub'"
+        "code" : "expr_call_badargs:[abs]:[x:integer]",
+        "text" : "Function 'abs' undefined for arguments (x: integer)"
       }
     ],
     "parsing" : {
@@ -155,10 +156,122 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 'hello'.sub(start=3);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 'hello'.sub(foo=3);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:21)",
+        "type" : "ERROR",
+        "code" : "expr_call_badargs:[text.sub]:[foo:integer]",
+        "text" : "Function 'text.sub' undefined for arguments (foo: integer)"
+      }
+    ],
+    "parsing" : {
+      "main.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "main.rell" : "query q() = 'hello'.sub(end=3);"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [
+      {
+        "pos" : "main.rell(1:21)",
+        "type" : "ERROR",
+        "code" : "expr_call_badargs:[text.sub]:[end:integer]",
+        "text" : "Function 'text.sub' undefined for arguments (end: integer)"
+      }
+    ],
     "parsing" : {
       "main.rell" : [ ]
     }

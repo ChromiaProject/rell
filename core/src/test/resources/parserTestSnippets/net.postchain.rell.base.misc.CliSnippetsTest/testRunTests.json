@@ -7,6 +7,7 @@
       "calc.rell" : "module;\n\nfunction factorial(n: integer): decimal {\n    var res = 1.0;\n    for (i in range(1, n + 1)) res *= i;\n    return res;\n}\n\nfunction sum_digits_integer(n: integer): text {\n    var x = 1;\n    var res = 0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t /= 10;\n        }\n        ++x;\n    }\n    return res.to_hex();\n}\n\nfunction sum_digits_decimal(n: integer): text {\n    var x = 1.0;\n    var res = 0.0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t = (t / 10).floor();\n        }\n        ++x;\n    }\n    return integer(res).to_hex();\n}\n",
       "compilation_error.rell" : "module;\nfunction f(): integer = 'Hello!';\n",
       "legacy_test.rell" : "@mount('legacy_test')\nmodule;\n\noperation cube(x: decimal) {\n    log('x =', x);\n    log('x^2 =', x * x);\n    log('x^3 =', x * x * x);\n}\n",
+      "math.rell" : "module;\n\nfunction pow_slow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    for (i in range(exp)) res *= base;\n    return res;\n}\n\nfunction pow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    var k = base;\n    var e = exp;\n\n    while (true) {\n        if ((e % 2) != 0) res *= k;\n        e /= 2;\n        if (e == 0) break;\n        k *= k;\n    }\n\n    return res;\n}\n",
       "misc.rell" : "module;\n\nnamespace ns {\n    function fun() {\n        print('Inside function fun!');\n        log('Some logging');\n    }\n}\n\nquery get_blocks() = block @*{} ( @sort .timestamp );\n",
       "run_common.rell" : "module;\n\nstruct module_args {\n    message: text;\n}\n\nquery get_common_args() = chain_context.args;\n",
       "run_simple.rell" : "module;\n\nimport run_common;\nimport calc;\n\nstruct module_args {\n    x: integer;\n    y: text;\n}\n\nquery sum_digits_int(n: integer) = calc.sum_digits_integer(n);\nquery sum_digits_dec(n: integer) = calc.sum_digits_decimal(n);\n\nquery get_raw_config() = chain_context.raw_config;\nquery get_module_args() = chain_context.args;\n\nquery get_args_chksum() {\n    val args = chain_context.args;\n    return args.x * args.y.size();\n}\n\nfunction get_module_args_0() = chain_context.args;\n",
@@ -84,7 +85,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -94,6 +96,7 @@
       "calc.rell" : [ ],
       "compilation_error.rell" : [ ],
       "legacy_test.rell" : [ ],
+      "math.rell" : [ ],
       "misc.rell" : [ ],
       "run_common.rell" : [ ],
       "run_simple.rell" : [ ],
@@ -161,6 +164,7 @@
       "calc.rell" : "module;\n\nfunction factorial(n: integer): decimal {\n    var res = 1.0;\n    for (i in range(1, n + 1)) res *= i;\n    return res;\n}\n\nfunction sum_digits_integer(n: integer): text {\n    var x = 1;\n    var res = 0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t /= 10;\n        }\n        ++x;\n    }\n    return res.to_hex();\n}\n\nfunction sum_digits_decimal(n: integer): text {\n    var x = 1.0;\n    var res = 0.0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t = (t / 10).floor();\n        }\n        ++x;\n    }\n    return integer(res).to_hex();\n}\n",
       "compilation_error.rell" : "module;\nfunction f(): integer = 'Hello!';\n",
       "legacy_test.rell" : "@mount('legacy_test')\nmodule;\n\noperation cube(x: decimal) {\n    log('x =', x);\n    log('x^2 =', x * x);\n    log('x^3 =', x * x * x);\n}\n",
+      "math.rell" : "module;\n\nfunction pow_slow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    for (i in range(exp)) res *= base;\n    return res;\n}\n\nfunction pow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    var k = base;\n    var e = exp;\n\n    while (true) {\n        if ((e % 2) != 0) res *= k;\n        e /= 2;\n        if (e == 0) break;\n        k *= k;\n    }\n\n    return res;\n}\n",
       "misc.rell" : "module;\n\nnamespace ns {\n    function fun() {\n        print('Inside function fun!');\n        log('Some logging');\n    }\n}\n\nquery get_blocks() = block @*{} ( @sort .timestamp );\n",
       "run_common.rell" : "module;\n\nstruct module_args {\n    message: text;\n}\n\nquery get_common_args() = chain_context.args;\n",
       "run_simple.rell" : "module;\n\nimport run_common;\nimport calc;\n\nstruct module_args {\n    x: integer;\n    y: text;\n}\n\nquery sum_digits_int(n: integer) = calc.sum_digits_integer(n);\nquery sum_digits_dec(n: integer) = calc.sum_digits_decimal(n);\n\nquery get_raw_config() = chain_context.raw_config;\nquery get_module_args() = chain_context.args;\n\nquery get_args_chksum() {\n    val args = chain_context.args;\n    return args.x * args.y.size();\n}\n\nfunction get_module_args_0() = chain_context.args;\n",
@@ -238,7 +242,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -248,6 +253,7 @@
       "calc.rell" : [ ],
       "compilation_error.rell" : [ ],
       "legacy_test.rell" : [ ],
+      "math.rell" : [ ],
       "misc.rell" : [ ],
       "run_common.rell" : [ ],
       "run_simple.rell" : [ ],
@@ -315,6 +321,7 @@
       "calc.rell" : "module;\n\nfunction factorial(n: integer): decimal {\n    var res = 1.0;\n    for (i in range(1, n + 1)) res *= i;\n    return res;\n}\n\nfunction sum_digits_integer(n: integer): text {\n    var x = 1;\n    var res = 0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t /= 10;\n        }\n        ++x;\n    }\n    return res.to_hex();\n}\n\nfunction sum_digits_decimal(n: integer): text {\n    var x = 1.0;\n    var res = 0.0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t = (t / 10).floor();\n        }\n        ++x;\n    }\n    return integer(res).to_hex();\n}\n",
       "compilation_error.rell" : "module;\nfunction f(): integer = 'Hello!';\n",
       "legacy_test.rell" : "@mount('legacy_test')\nmodule;\n\noperation cube(x: decimal) {\n    log('x =', x);\n    log('x^2 =', x * x);\n    log('x^3 =', x * x * x);\n}\n",
+      "math.rell" : "module;\n\nfunction pow_slow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    for (i in range(exp)) res *= base;\n    return res;\n}\n\nfunction pow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    var k = base;\n    var e = exp;\n\n    while (true) {\n        if ((e % 2) != 0) res *= k;\n        e /= 2;\n        if (e == 0) break;\n        k *= k;\n    }\n\n    return res;\n}\n",
       "misc.rell" : "module;\n\nnamespace ns {\n    function fun() {\n        print('Inside function fun!');\n        log('Some logging');\n    }\n}\n\nquery get_blocks() = block @*{} ( @sort .timestamp );\n",
       "run_common.rell" : "module;\n\nstruct module_args {\n    message: text;\n}\n\nquery get_common_args() = chain_context.args;\n",
       "run_simple.rell" : "module;\n\nimport run_common;\nimport calc;\n\nstruct module_args {\n    x: integer;\n    y: text;\n}\n\nquery sum_digits_int(n: integer) = calc.sum_digits_integer(n);\nquery sum_digits_dec(n: integer) = calc.sum_digits_decimal(n);\n\nquery get_raw_config() = chain_context.raw_config;\nquery get_module_args() = chain_context.args;\n\nquery get_args_chksum() {\n    val args = chain_context.args;\n    return args.x * args.y.size();\n}\n\nfunction get_module_args_0() = chain_context.args;\n",
@@ -390,7 +397,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -400,6 +408,7 @@
       "calc.rell" : [ ],
       "compilation_error.rell" : [ ],
       "legacy_test.rell" : [ ],
+      "math.rell" : [ ],
       "misc.rell" : [ ],
       "run_common.rell" : [ ],
       "run_simple.rell" : [ ],
@@ -467,6 +476,7 @@
       "calc.rell" : "module;\n\nfunction factorial(n: integer): decimal {\n    var res = 1.0;\n    for (i in range(1, n + 1)) res *= i;\n    return res;\n}\n\nfunction sum_digits_integer(n: integer): text {\n    var x = 1;\n    var res = 0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t /= 10;\n        }\n        ++x;\n    }\n    return res.to_hex();\n}\n\nfunction sum_digits_decimal(n: integer): text {\n    var x = 1.0;\n    var res = 0.0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t = (t / 10).floor();\n        }\n        ++x;\n    }\n    return integer(res).to_hex();\n}\n",
       "compilation_error.rell" : "module;\nfunction f(): integer = 'Hello!';\n",
       "legacy_test.rell" : "@mount('legacy_test')\nmodule;\n\noperation cube(x: decimal) {\n    log('x =', x);\n    log('x^2 =', x * x);\n    log('x^3 =', x * x * x);\n}\n",
+      "math.rell" : "module;\n\nfunction pow_slow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    for (i in range(exp)) res *= base;\n    return res;\n}\n\nfunction pow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    var k = base;\n    var e = exp;\n\n    while (true) {\n        if ((e % 2) != 0) res *= k;\n        e /= 2;\n        if (e == 0) break;\n        k *= k;\n    }\n\n    return res;\n}\n",
       "misc.rell" : "module;\n\nnamespace ns {\n    function fun() {\n        print('Inside function fun!');\n        log('Some logging');\n    }\n}\n\nquery get_blocks() = block @*{} ( @sort .timestamp );\n",
       "run_common.rell" : "module;\n\nstruct module_args {\n    message: text;\n}\n\nquery get_common_args() = chain_context.args;\n",
       "run_simple.rell" : "module;\n\nimport run_common;\nimport calc;\n\nstruct module_args {\n    x: integer;\n    y: text;\n}\n\nquery sum_digits_int(n: integer) = calc.sum_digits_integer(n);\nquery sum_digits_dec(n: integer) = calc.sum_digits_decimal(n);\n\nquery get_raw_config() = chain_context.raw_config;\nquery get_module_args() = chain_context.args;\n\nquery get_args_chksum() {\n    val args = chain_context.args;\n    return args.x * args.y.size();\n}\n\nfunction get_module_args_0() = chain_context.args;\n",
@@ -542,7 +552,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -552,6 +563,7 @@
       "calc.rell" : [ ],
       "compilation_error.rell" : [ ],
       "legacy_test.rell" : [ ],
+      "math.rell" : [ ],
       "misc.rell" : [ ],
       "run_common.rell" : [ ],
       "run_simple.rell" : [ ],
@@ -619,6 +631,7 @@
       "calc.rell" : "module;\n\nfunction factorial(n: integer): decimal {\n    var res = 1.0;\n    for (i in range(1, n + 1)) res *= i;\n    return res;\n}\n\nfunction sum_digits_integer(n: integer): text {\n    var x = 1;\n    var res = 0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t /= 10;\n        }\n        ++x;\n    }\n    return res.to_hex();\n}\n\nfunction sum_digits_decimal(n: integer): text {\n    var x = 1.0;\n    var res = 0.0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t = (t / 10).floor();\n        }\n        ++x;\n    }\n    return integer(res).to_hex();\n}\n",
       "compilation_error.rell" : "module;\nfunction f(): integer = 'Hello!';\n",
       "legacy_test.rell" : "@mount('legacy_test')\nmodule;\n\noperation cube(x: decimal) {\n    log('x =', x);\n    log('x^2 =', x * x);\n    log('x^3 =', x * x * x);\n}\n",
+      "math.rell" : "module;\n\nfunction pow_slow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    for (i in range(exp)) res *= base;\n    return res;\n}\n\nfunction pow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    var k = base;\n    var e = exp;\n\n    while (true) {\n        if ((e % 2) != 0) res *= k;\n        e /= 2;\n        if (e == 0) break;\n        k *= k;\n    }\n\n    return res;\n}\n",
       "misc.rell" : "module;\n\nnamespace ns {\n    function fun() {\n        print('Inside function fun!');\n        log('Some logging');\n    }\n}\n\nquery get_blocks() = block @*{} ( @sort .timestamp );\n",
       "run_common.rell" : "module;\n\nstruct module_args {\n    message: text;\n}\n\nquery get_common_args() = chain_context.args;\n",
       "run_simple.rell" : "module;\n\nimport run_common;\nimport calc;\n\nstruct module_args {\n    x: integer;\n    y: text;\n}\n\nquery sum_digits_int(n: integer) = calc.sum_digits_integer(n);\nquery sum_digits_dec(n: integer) = calc.sum_digits_decimal(n);\n\nquery get_raw_config() = chain_context.raw_config;\nquery get_module_args() = chain_context.args;\n\nquery get_args_chksum() {\n    val args = chain_context.args;\n    return args.x * args.y.size();\n}\n\nfunction get_module_args_0() = chain_context.args;\n",
@@ -694,7 +707,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -704,6 +718,7 @@
       "calc.rell" : [ ],
       "compilation_error.rell" : [ ],
       "legacy_test.rell" : [ ],
+      "math.rell" : [ ],
       "misc.rell" : [ ],
       "run_common.rell" : [ ],
       "run_simple.rell" : [ ],
@@ -771,6 +786,7 @@
       "calc.rell" : "module;\n\nfunction factorial(n: integer): decimal {\n    var res = 1.0;\n    for (i in range(1, n + 1)) res *= i;\n    return res;\n}\n\nfunction sum_digits_integer(n: integer): text {\n    var x = 1;\n    var res = 0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t /= 10;\n        }\n        ++x;\n    }\n    return res.to_hex();\n}\n\nfunction sum_digits_decimal(n: integer): text {\n    var x = 1.0;\n    var res = 0.0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t = (t / 10).floor();\n        }\n        ++x;\n    }\n    return integer(res).to_hex();\n}\n",
       "compilation_error.rell" : "module;\nfunction f(): integer = 'Hello!';\n",
       "legacy_test.rell" : "@mount('legacy_test')\nmodule;\n\noperation cube(x: decimal) {\n    log('x =', x);\n    log('x^2 =', x * x);\n    log('x^3 =', x * x * x);\n}\n",
+      "math.rell" : "module;\n\nfunction pow_slow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    for (i in range(exp)) res *= base;\n    return res;\n}\n\nfunction pow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    var k = base;\n    var e = exp;\n\n    while (true) {\n        if ((e % 2) != 0) res *= k;\n        e /= 2;\n        if (e == 0) break;\n        k *= k;\n    }\n\n    return res;\n}\n",
       "misc.rell" : "module;\n\nnamespace ns {\n    function fun() {\n        print('Inside function fun!');\n        log('Some logging');\n    }\n}\n\nquery get_blocks() = block @*{} ( @sort .timestamp );\n",
       "run_common.rell" : "module;\n\nstruct module_args {\n    message: text;\n}\n\nquery get_common_args() = chain_context.args;\n",
       "run_simple.rell" : "module;\n\nimport run_common;\nimport calc;\n\nstruct module_args {\n    x: integer;\n    y: text;\n}\n\nquery sum_digits_int(n: integer) = calc.sum_digits_integer(n);\nquery sum_digits_dec(n: integer) = calc.sum_digits_decimal(n);\n\nquery get_raw_config() = chain_context.raw_config;\nquery get_module_args() = chain_context.args;\n\nquery get_args_chksum() {\n    val args = chain_context.args;\n    return args.x * args.y.size();\n}\n\nfunction get_module_args_0() = chain_context.args;\n",
@@ -846,7 +862,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -856,6 +873,7 @@
       "calc.rell" : [ ],
       "compilation_error.rell" : [ ],
       "legacy_test.rell" : [ ],
+      "math.rell" : [ ],
       "misc.rell" : [ ],
       "run_common.rell" : [ ],
       "run_simple.rell" : [ ],
@@ -923,6 +941,7 @@
       "calc.rell" : "module;\n\nfunction factorial(n: integer): decimal {\n    var res = 1.0;\n    for (i in range(1, n + 1)) res *= i;\n    return res;\n}\n\nfunction sum_digits_integer(n: integer): text {\n    var x = 1;\n    var res = 0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t /= 10;\n        }\n        ++x;\n    }\n    return res.to_hex();\n}\n\nfunction sum_digits_decimal(n: integer): text {\n    var x = 1.0;\n    var res = 0.0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t = (t / 10).floor();\n        }\n        ++x;\n    }\n    return integer(res).to_hex();\n}\n",
       "compilation_error.rell" : "module;\nfunction f(): integer = 'Hello!';\n",
       "legacy_test.rell" : "@mount('legacy_test')\nmodule;\n\noperation cube(x: decimal) {\n    log('x =', x);\n    log('x^2 =', x * x);\n    log('x^3 =', x * x * x);\n}\n",
+      "math.rell" : "module;\n\nfunction pow_slow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    for (i in range(exp)) res *= base;\n    return res;\n}\n\nfunction pow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    var k = base;\n    var e = exp;\n\n    while (true) {\n        if ((e % 2) != 0) res *= k;\n        e /= 2;\n        if (e == 0) break;\n        k *= k;\n    }\n\n    return res;\n}\n",
       "misc.rell" : "module;\n\nnamespace ns {\n    function fun() {\n        print('Inside function fun!');\n        log('Some logging');\n    }\n}\n\nquery get_blocks() = block @*{} ( @sort .timestamp );\n",
       "run_common.rell" : "module;\n\nstruct module_args {\n    message: text;\n}\n\nquery get_common_args() = chain_context.args;\n",
       "run_simple.rell" : "module;\n\nimport run_common;\nimport calc;\n\nstruct module_args {\n    x: integer;\n    y: text;\n}\n\nquery sum_digits_int(n: integer) = calc.sum_digits_integer(n);\nquery sum_digits_dec(n: integer) = calc.sum_digits_decimal(n);\n\nquery get_raw_config() = chain_context.raw_config;\nquery get_module_args() = chain_context.args;\n\nquery get_args_chksum() {\n    val args = chain_context.args;\n    return args.x * args.y.size();\n}\n\nfunction get_module_args_0() = chain_context.args;\n",
@@ -998,7 +1017,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -1008,6 +1028,7 @@
       "calc.rell" : [ ],
       "compilation_error.rell" : [ ],
       "legacy_test.rell" : [ ],
+      "math.rell" : [ ],
       "misc.rell" : [ ],
       "run_common.rell" : [ ],
       "run_simple.rell" : [ ],
@@ -1075,6 +1096,7 @@
       "calc.rell" : "module;\n\nfunction factorial(n: integer): decimal {\n    var res = 1.0;\n    for (i in range(1, n + 1)) res *= i;\n    return res;\n}\n\nfunction sum_digits_integer(n: integer): text {\n    var x = 1;\n    var res = 0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t /= 10;\n        }\n        ++x;\n    }\n    return res.to_hex();\n}\n\nfunction sum_digits_decimal(n: integer): text {\n    var x = 1.0;\n    var res = 0.0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t = (t / 10).floor();\n        }\n        ++x;\n    }\n    return integer(res).to_hex();\n}\n",
       "compilation_error.rell" : "module;\nfunction f(): integer = 'Hello!';\n",
       "legacy_test.rell" : "@mount('legacy_test')\nmodule;\n\noperation cube(x: decimal) {\n    log('x =', x);\n    log('x^2 =', x * x);\n    log('x^3 =', x * x * x);\n}\n",
+      "math.rell" : "module;\n\nfunction pow_slow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    for (i in range(exp)) res *= base;\n    return res;\n}\n\nfunction pow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    var k = base;\n    var e = exp;\n\n    while (true) {\n        if ((e % 2) != 0) res *= k;\n        e /= 2;\n        if (e == 0) break;\n        k *= k;\n    }\n\n    return res;\n}\n",
       "misc.rell" : "module;\n\nnamespace ns {\n    function fun() {\n        print('Inside function fun!');\n        log('Some logging');\n    }\n}\n\nquery get_blocks() = block @*{} ( @sort .timestamp );\n",
       "run_common.rell" : "module;\n\nstruct module_args {\n    message: text;\n}\n\nquery get_common_args() = chain_context.args;\n",
       "run_simple.rell" : "module;\n\nimport run_common;\nimport calc;\n\nstruct module_args {\n    x: integer;\n    y: text;\n}\n\nquery sum_digits_int(n: integer) = calc.sum_digits_integer(n);\nquery sum_digits_dec(n: integer) = calc.sum_digits_decimal(n);\n\nquery get_raw_config() = chain_context.raw_config;\nquery get_module_args() = chain_context.args;\n\nquery get_args_chksum() {\n    val args = chain_context.args;\n    return args.x * args.y.size();\n}\n\nfunction get_module_args_0() = chain_context.args;\n",
@@ -1150,7 +1172,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -1160,6 +1183,7 @@
       "calc.rell" : [ ],
       "compilation_error.rell" : [ ],
       "legacy_test.rell" : [ ],
+      "math.rell" : [ ],
       "misc.rell" : [ ],
       "run_common.rell" : [ ],
       "run_simple.rell" : [ ],
@@ -1227,6 +1251,7 @@
       "calc.rell" : "module;\n\nfunction factorial(n: integer): decimal {\n    var res = 1.0;\n    for (i in range(1, n + 1)) res *= i;\n    return res;\n}\n\nfunction sum_digits_integer(n: integer): text {\n    var x = 1;\n    var res = 0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t /= 10;\n        }\n        ++x;\n    }\n    return res.to_hex();\n}\n\nfunction sum_digits_decimal(n: integer): text {\n    var x = 1.0;\n    var res = 0.0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t = (t / 10).floor();\n        }\n        ++x;\n    }\n    return integer(res).to_hex();\n}\n",
       "compilation_error.rell" : "module;\nfunction f(): integer = 'Hello!';\n",
       "legacy_test.rell" : "@mount('legacy_test')\nmodule;\n\noperation cube(x: decimal) {\n    log('x =', x);\n    log('x^2 =', x * x);\n    log('x^3 =', x * x * x);\n}\n",
+      "math.rell" : "module;\n\nfunction pow_slow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    for (i in range(exp)) res *= base;\n    return res;\n}\n\nfunction pow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    var k = base;\n    var e = exp;\n\n    while (true) {\n        if ((e % 2) != 0) res *= k;\n        e /= 2;\n        if (e == 0) break;\n        k *= k;\n    }\n\n    return res;\n}\n",
       "misc.rell" : "module;\n\nnamespace ns {\n    function fun() {\n        print('Inside function fun!');\n        log('Some logging');\n    }\n}\n\nquery get_blocks() = block @*{} ( @sort .timestamp );\n",
       "run_common.rell" : "module;\n\nstruct module_args {\n    message: text;\n}\n\nquery get_common_args() = chain_context.args;\n",
       "run_simple.rell" : "module;\n\nimport run_common;\nimport calc;\n\nstruct module_args {\n    x: integer;\n    y: text;\n}\n\nquery sum_digits_int(n: integer) = calc.sum_digits_integer(n);\nquery sum_digits_dec(n: integer) = calc.sum_digits_decimal(n);\n\nquery get_raw_config() = chain_context.raw_config;\nquery get_module_args() = chain_context.args;\n\nquery get_args_chksum() {\n    val args = chain_context.args;\n    return args.x * args.y.size();\n}\n\nfunction get_module_args_0() = chain_context.args;\n",
@@ -1302,7 +1327,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -1312,6 +1338,7 @@
       "calc.rell" : [ ],
       "compilation_error.rell" : [ ],
       "legacy_test.rell" : [ ],
+      "math.rell" : [ ],
       "misc.rell" : [ ],
       "run_common.rell" : [ ],
       "run_simple.rell" : [ ],
@@ -1379,6 +1406,7 @@
       "calc.rell" : "module;\n\nfunction factorial(n: integer): decimal {\n    var res = 1.0;\n    for (i in range(1, n + 1)) res *= i;\n    return res;\n}\n\nfunction sum_digits_integer(n: integer): text {\n    var x = 1;\n    var res = 0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t /= 10;\n        }\n        ++x;\n    }\n    return res.to_hex();\n}\n\nfunction sum_digits_decimal(n: integer): text {\n    var x = 1.0;\n    var res = 0.0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t = (t / 10).floor();\n        }\n        ++x;\n    }\n    return integer(res).to_hex();\n}\n",
       "compilation_error.rell" : "module;\nfunction f(): integer = 'Hello!';\n",
       "legacy_test.rell" : "@mount('legacy_test')\nmodule;\n\noperation cube(x: decimal) {\n    log('x =', x);\n    log('x^2 =', x * x);\n    log('x^3 =', x * x * x);\n}\n",
+      "math.rell" : "module;\n\nfunction pow_slow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    for (i in range(exp)) res *= base;\n    return res;\n}\n\nfunction pow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    var k = base;\n    var e = exp;\n\n    while (true) {\n        if ((e % 2) != 0) res *= k;\n        e /= 2;\n        if (e == 0) break;\n        k *= k;\n    }\n\n    return res;\n}\n",
       "misc.rell" : "module;\n\nnamespace ns {\n    function fun() {\n        print('Inside function fun!');\n        log('Some logging');\n    }\n}\n\nquery get_blocks() = block @*{} ( @sort .timestamp );\n",
       "run_common.rell" : "module;\n\nstruct module_args {\n    message: text;\n}\n\nquery get_common_args() = chain_context.args;\n",
       "run_simple.rell" : "module;\n\nimport run_common;\nimport calc;\n\nstruct module_args {\n    x: integer;\n    y: text;\n}\n\nquery sum_digits_int(n: integer) = calc.sum_digits_integer(n);\nquery sum_digits_dec(n: integer) = calc.sum_digits_decimal(n);\n\nquery get_raw_config() = chain_context.raw_config;\nquery get_module_args() = chain_context.args;\n\nquery get_args_chksum() {\n    val args = chain_context.args;\n    return args.x * args.y.size();\n}\n\nfunction get_module_args_0() = chain_context.args;\n",
@@ -1454,7 +1482,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -1464,6 +1493,7 @@
       "calc.rell" : [ ],
       "compilation_error.rell" : [ ],
       "legacy_test.rell" : [ ],
+      "math.rell" : [ ],
       "misc.rell" : [ ],
       "run_common.rell" : [ ],
       "run_simple.rell" : [ ],
@@ -1531,6 +1561,7 @@
       "calc.rell" : "module;\n\nfunction factorial(n: integer): decimal {\n    var res = 1.0;\n    for (i in range(1, n + 1)) res *= i;\n    return res;\n}\n\nfunction sum_digits_integer(n: integer): text {\n    var x = 1;\n    var res = 0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t /= 10;\n        }\n        ++x;\n    }\n    return res.to_hex();\n}\n\nfunction sum_digits_decimal(n: integer): text {\n    var x = 1.0;\n    var res = 0.0;\n    for (i in range(n)) {\n        var t = x;\n        while (t > 0) {\n            res = (res * 7 + (t % 10)) % 281474976710655;\n            t = (t / 10).floor();\n        }\n        ++x;\n    }\n    return integer(res).to_hex();\n}\n",
       "compilation_error.rell" : "module;\nfunction f(): integer = 'Hello!';\n",
       "legacy_test.rell" : "@mount('legacy_test')\nmodule;\n\noperation cube(x: decimal) {\n    log('x =', x);\n    log('x^2 =', x * x);\n    log('x^3 =', x * x * x);\n}\n",
+      "math.rell" : "module;\n\nfunction pow_slow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    for (i in range(exp)) res *= base;\n    return res;\n}\n\nfunction pow(base: big_integer, exp: integer): big_integer {\n    require(base >= 0);\n    require(exp >= 0);\n    if (exp == 0) return 1;\n    if (exp == 1) return base;\n    if (base == 0 or base == 1) return base;\n\n    var res = 1L;\n    var k = base;\n    var e = exp;\n\n    while (true) {\n        if ((e % 2) != 0) res *= k;\n        e /= 2;\n        if (e == 0) break;\n        k *= k;\n    }\n\n    return res;\n}\n",
       "misc.rell" : "module;\n\nnamespace ns {\n    function fun() {\n        print('Inside function fun!');\n        log('Some logging');\n    }\n}\n\nquery get_blocks() = block @*{} ( @sort .timestamp );\n",
       "run_common.rell" : "module;\n\nstruct module_args {\n    message: text;\n}\n\nquery get_common_args() = chain_context.args;\n",
       "run_simple.rell" : "module;\n\nimport run_common;\nimport calc;\n\nstruct module_args {\n    x: integer;\n    y: text;\n}\n\nquery sum_digits_int(n: integer) = calc.sum_digits_integer(n);\nquery sum_digits_dec(n: integer) = calc.sum_digits_decimal(n);\n\nquery get_raw_config() = chain_context.raw_config;\nquery get_module_args() = chain_context.args;\n\nquery get_args_chksum() {\n    val args = chain_context.args;\n    return args.x * args.y.size();\n}\n\nfunction get_module_args_0() = chain_context.args;\n",
@@ -1606,7 +1637,8 @@
       "allowDbModificationsInObjectExprs" : true,
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
-      "appModuleInTestsError" : false
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false
     },
     "messages" : [ ],
     "parsing" : {
@@ -1616,6 +1648,7 @@
       "calc.rell" : [ ],
       "compilation_error.rell" : [ ],
       "legacy_test.rell" : [ ],
+      "math.rell" : [ ],
       "misc.rell" : [ ],
       "run_common.rell" : [ ],
       "run_simple.rell" : [ ],

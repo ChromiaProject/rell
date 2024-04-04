@@ -1,0 +1,446 @@
+[
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            function f() = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "function __main() = create data1('bob');",
+      "module.rell" : "\n            import lib.{data1:data, state1:state, f1:f};\n            import lib.{data2:data};\n            import lib.{state2:state};\n            import lib.{f2:f};\n            import a: lib.{data, state, f};\n            import b: lib.{data3:data, state3:state, f3:f};\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            function f() = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "function __main() = state1.x;",
+      "module.rell" : "\n            import lib.{data1:data, state1:state, f1:f};\n            import lib.{data2:data};\n            import lib.{state2:state};\n            import lib.{f2:f};\n            import a: lib.{data, state, f};\n            import b: lib.{data3:data, state3:state, f3:f};\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            function f() = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "function __main() = f1();",
+      "module.rell" : "\n            import lib.{data1:data, state1:state, f1:f};\n            import lib.{data2:data};\n            import lib.{state2:state};\n            import lib.{f2:f};\n            import a: lib.{data, state, f};\n            import b: lib.{data3:data, state3:state, f3:f};\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            function f() = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "function __main() = create data2('bob');",
+      "module.rell" : "\n            import lib.{data1:data, state1:state, f1:f};\n            import lib.{data2:data};\n            import lib.{state2:state};\n            import lib.{f2:f};\n            import a: lib.{data, state, f};\n            import b: lib.{data3:data, state3:state, f3:f};\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            function f() = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "function __main() = state2.x;",
+      "module.rell" : "\n            import lib.{data1:data, state1:state, f1:f};\n            import lib.{data2:data};\n            import lib.{state2:state};\n            import lib.{f2:f};\n            import a: lib.{data, state, f};\n            import b: lib.{data3:data, state3:state, f3:f};\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            function f() = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "function __main() = f2();",
+      "module.rell" : "\n            import lib.{data1:data, state1:state, f1:f};\n            import lib.{data2:data};\n            import lib.{state2:state};\n            import lib.{f2:f};\n            import a: lib.{data, state, f};\n            import b: lib.{data3:data, state3:state, f3:f};\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            function f() = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "function __main() = create a.data('bob');",
+      "module.rell" : "\n            import lib.{data1:data, state1:state, f1:f};\n            import lib.{data2:data};\n            import lib.{state2:state};\n            import lib.{f2:f};\n            import a: lib.{data, state, f};\n            import b: lib.{data3:data, state3:state, f3:f};\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            function f() = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "function __main() = a.state.x;",
+      "module.rell" : "\n            import lib.{data1:data, state1:state, f1:f};\n            import lib.{data2:data};\n            import lib.{state2:state};\n            import lib.{f2:f};\n            import a: lib.{data, state, f};\n            import b: lib.{data3:data, state3:state, f3:f};\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            function f() = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "function __main() = a.f();",
+      "module.rell" : "\n            import lib.{data1:data, state1:state, f1:f};\n            import lib.{data2:data};\n            import lib.{state2:state};\n            import lib.{f2:f};\n            import a: lib.{data, state, f};\n            import b: lib.{data3:data, state3:state, f3:f};\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            function f() = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "function __main() = create b.data3('bob');",
+      "module.rell" : "\n            import lib.{data1:data, state1:state, f1:f};\n            import lib.{data2:data};\n            import lib.{state2:state};\n            import lib.{f2:f};\n            import a: lib.{data, state, f};\n            import b: lib.{data3:data, state3:state, f3:f};\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            function f() = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "function __main() = b.state3.x;",
+      "module.rell" : "\n            import lib.{data1:data, state1:state, f1:f};\n            import lib.{data2:data};\n            import lib.{state2:state};\n            import lib.{f2:f};\n            import a: lib.{data, state, f};\n            import b: lib.{data3:data, state3:state, f3:f};\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "\n            module;\n            entity data { name; }\n            object state { x: integer = 1; }\n            function f() = 123;\n            namespace ns { struct p {} }\n        ",
+      "main.rell" : "function __main() = b.f3();",
+      "module.rell" : "\n            import lib.{data1:data, state1:state, f1:f};\n            import lib.{data2:data};\n            import lib.{state2:state};\n            import lib.{f2:f};\n            import a: lib.{data, state, f};\n            import b: lib.{data3:data, state3:state, f3:f};\n        "
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "module.rell" : [ ]
+    }
+  }
+]

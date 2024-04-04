@@ -21,14 +21,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:5)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:mutable:0::X:list<integer>",
+        "code" : "def:const:bad_type:mutable:[0::X]:[list<integer>]",
         "text" : "Global constant cannot have a mutable type: list<integer>"
       }
     ],
@@ -58,14 +60,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:5)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:mutable:0::X:set<integer>",
+        "code" : "def:const:bad_type:mutable:[0::X]:[set<integer>]",
         "text" : "Global constant cannot have a mutable type: set<integer>"
       }
     ],
@@ -95,14 +99,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:5)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:mutable:0::X:map<integer,text>",
+        "code" : "def:const:bad_type:mutable:[0::X]:[map<integer,text>]",
         "text" : "Global constant cannot have a mutable type: map<integer,text>"
       }
     ],
@@ -132,14 +138,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:5)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:mutable:0::X:list<integer>",
+        "code" : "def:const:bad_type:mutable:[0::X]:[list<integer>]",
         "text" : "Global constant cannot have a mutable type: list<integer>"
       }
     ],
@@ -169,14 +177,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:5)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:mutable:0::X:set<integer>",
+        "code" : "def:const:bad_type:mutable:[0::X]:[set<integer>]",
         "text" : "Global constant cannot have a mutable type: set<integer>"
       }
     ],
@@ -206,14 +216,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:5)",
         "type" : "ERROR",
-        "code" : "def:const:bad_type:mutable:0::X:map<integer,text>",
+        "code" : "def:const:bad_type:mutable:[0::X]:[map<integer,text>]",
         "text" : "Global constant cannot have a mutable type: map<integer,text>"
       }
     ],

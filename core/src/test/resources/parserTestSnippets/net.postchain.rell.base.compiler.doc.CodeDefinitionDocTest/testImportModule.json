@@ -1,0 +1,104 @@
+[
+  {
+    "files" : {
+      "lib.rell" : "module;",
+      "main.rell" : "import lib;",
+      "sub.rell" : "module; import root: ^;"
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;",
+      "main.rell" : "import bil: lib;",
+      "sub.rell" : "module; import root: ^;"
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "sub.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "lib.rell" : "module;",
+      "main.rell" : "import sub;",
+      "sub.rell" : "module; import root: ^;"
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "lib.rell" : [ ],
+      "main.rell" : [ ],
+      "sub.rell" : [ ]
+    }
+  }
+]

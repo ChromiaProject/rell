@@ -21,7 +21,9 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell"
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -50,73 +52,21 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell"
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:18)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "code" : "expr_call_badargs:[abs]:[byte_array]",
         "text" : "Function 'abs' undefined for arguments (byte_array)"
       },
       {
         "pos" : "main.rell(1:32)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[min]:",
-        "text" : "Function 'min' undefined for arguments ()"
-      }
-    ],
-    "parsing" : {
-      "main.rell" : [ ]
-    }
-  },
-  {
-    "files" : {
-      "main.rell" : "query q() = (a: abs(x''), b: min());"
-    },
-    "modules" : {
-      "modules" : [
-        ""
-      ],
-      "test_root_modules" : [ ],
-      "test_sub_modules" : true
-    },
-    "options" : {
-      "gtv" : false,
-      "deprecatedError" : false,
-      "ide" : false,
-      "atAttrShadowing" : "FULL",
-      "testLib" : false,
-      "hiddenLib" : true,
-      "allowDbModificationsInObjectExprs" : true,
-      "complexWhatEnabled" : true,
-      "mountConflictError" : true,
-      "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell"
-    },
-    "messages" : [
-      {
-        "pos" : "main.rell(1:15)",
-        "type" : "ERROR",
-        "code" : "tuple_name_colon_expr:a",
-        "text" : "Syntax error"
-      },
-      {
-        "pos" : "main.rell(1:17)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[abs]:byte_array",
-        "text" : "Function 'abs' undefined for arguments (byte_array)"
-      },
-      {
-        "pos" : "main.rell(1:28)",
-        "type" : "ERROR",
-        "code" : "tuple_name_colon_expr:b",
-        "text" : "Syntax error"
-      },
-      {
-        "pos" : "main.rell(1:30)",
-        "type" : "ERROR",
-        "code" : "expr_call_argtypes:[min]:",
+        "code" : "expr_call_badargs:[min]:[]",
         "text" : "Function 'min' undefined for arguments ()"
       }
     ],
@@ -146,13 +96,15 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
-      "symbolInfoFile" : "main.rell"
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:18)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[abs]:byte_array",
+        "code" : "expr_call_badargs:[abs]:[byte_array]",
         "text" : "Function 'abs' undefined for arguments (byte_array)"
       },
       {
@@ -164,7 +116,7 @@
       {
         "pos" : "main.rell(1:32)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[min]:",
+        "code" : "expr_call_badargs:[min]:[]",
         "text" : "Function 'min' undefined for arguments ()"
       }
     ],

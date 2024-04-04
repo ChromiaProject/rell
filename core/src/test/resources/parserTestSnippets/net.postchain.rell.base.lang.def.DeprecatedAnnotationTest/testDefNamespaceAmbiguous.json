@@ -23,20 +23,22 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:40)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:ns:[NAMESPACE:a:ns,NAMESPACE:b:ns]",
-        "text" : "Name 'ns' is ambiguous: namespace a:ns, namespace b:ns"
+        "code" : "namespace:ambig:ns:[NAMESPACE:[a:ns],NAMESPACE:[b:ns]]",
+        "text" : "Name 'ns' is ambiguous: namespace 'a:ns', namespace 'b:ns'"
       },
       {
         "pos" : "main.rell(1:40)",
         "type" : "ERROR",
-        "code" : "deprecated:NAMESPACE:a:ns",
+        "code" : "deprecated:NAMESPACE:[a:ns]",
         "text" : "Namespace 'a:ns' is deprecated"
       }
     ],
@@ -70,15 +72,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:40)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:ns:[NAMESPACE:b:ns,NAMESPACE:a:ns]",
-        "text" : "Name 'ns' is ambiguous: namespace b:ns, namespace a:ns"
+        "code" : "namespace:ambig:ns:[NAMESPACE:[b:ns],NAMESPACE:[a:ns]]",
+        "text" : "Name 'ns' is ambiguous: namespace 'b:ns', namespace 'a:ns'"
       },
       {
         "pos" : "main.rell(1:40)",
@@ -117,20 +121,22 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:40)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:ns:[NAMESPACE:a:ns,NAMESPACE:b:ns]",
-        "text" : "Name 'ns' is ambiguous: namespace a:ns, namespace b:ns"
+        "code" : "namespace:ambig:ns:[NAMESPACE:[a:ns],NAMESPACE:[b:ns]]",
+        "text" : "Name 'ns' is ambiguous: namespace 'a:ns', namespace 'b:ns'"
       },
       {
         "pos" : "main.rell(1:40)",
         "type" : "ERROR",
-        "code" : "deprecated:NAMESPACE:a:ns",
+        "code" : "deprecated:NAMESPACE:[a:ns]",
         "text" : "Namespace 'a:ns' is deprecated"
       },
       {
@@ -170,15 +176,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:40)",
         "type" : "ERROR",
-        "code" : "namespace:ambig:ns:[NAMESPACE:b:ns,NAMESPACE:a:ns]",
-        "text" : "Name 'ns' is ambiguous: namespace b:ns, namespace a:ns"
+        "code" : "namespace:ambig:ns:[NAMESPACE:[b:ns],NAMESPACE:[a:ns]]",
+        "text" : "Name 'ns' is ambiguous: namespace 'b:ns', namespace 'a:ns'"
       }
     ],
     "parsing" : {

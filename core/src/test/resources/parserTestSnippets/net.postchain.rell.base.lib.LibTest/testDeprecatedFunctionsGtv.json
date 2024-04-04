@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -51,15 +53,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:gtv.fromBytes:from_bytes",
-        "text" : "Function 'gtv.fromBytes' is deprecated, use 'from_bytes' instead"
+        "code" : "deprecated:ALIAS:[rell:gtv.fromBytes]:from_bytes",
+        "text" : "Alias 'rell:gtv.fromBytes' is deprecated, use 'from_bytes' instead"
       }
     ],
     "parsing" : {
@@ -88,15 +92,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:gtv.fromJSON:from_json",
-        "text" : "Function 'gtv.fromJSON' is deprecated, use 'from_json' instead"
+        "code" : "deprecated:ALIAS:[rell:gtv.fromJSON]:from_json",
+        "text" : "Alias 'rell:gtv.fromJSON' is deprecated, use 'from_json' instead"
       }
     ],
     "parsing" : {
@@ -125,15 +131,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:gtv.fromJSON:from_json",
-        "text" : "Function 'gtv.fromJSON' is deprecated, use 'from_json' instead"
+        "code" : "deprecated:ALIAS:[rell:gtv.fromJSON]:from_json",
+        "text" : "Alias 'rell:gtv.fromJSON' is deprecated, use 'from_json' instead"
       }
     ],
     "parsing" : {
@@ -162,15 +170,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:29)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:gtv.toBytes:to_bytes",
-        "text" : "Function 'gtv.toBytes' is deprecated, use 'to_bytes' instead"
+        "code" : "deprecated:ALIAS:[rell:gtv.toBytes]:to_bytes",
+        "text" : "Alias 'rell:gtv.toBytes' is deprecated, use 'to_bytes' instead"
       }
     ],
     "parsing" : {
@@ -199,15 +209,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:29)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:gtv.toJSON:to_json",
-        "text" : "Function 'gtv.toJSON' is deprecated, use 'to_json' instead"
+        "code" : "deprecated:ALIAS:[rell:gtv.toJSON]:to_json",
+        "text" : "Alias 'rell:gtv.toJSON' is deprecated, use 'to_json' instead"
       }
     ],
     "parsing" : {
@@ -236,15 +248,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:rec.fromBytes:from_bytes",
-        "text" : "Function 'rec.fromBytes' is deprecated, use 'from_bytes' instead"
+        "code" : "deprecated:ALIAS:[rell:rell.struct_ext.fromBytes]:from_bytes",
+        "text" : "Alias 'rell:rell.struct_ext.fromBytes' is deprecated, use 'from_bytes' instead"
       }
     ],
     "parsing" : {
@@ -273,15 +287,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:rec.fromGTXValue:from_gtv",
-        "text" : "Function 'rec.fromGTXValue' is deprecated, use 'from_gtv' instead"
+        "code" : "deprecated:FUNCTION:[rell:rell.struct_ext.fromGTXValue]:from_gtv",
+        "text" : "Function 'rell:rell.struct_ext.fromGTXValue' is deprecated, use 'from_gtv' instead"
       }
     ],
     "parsing" : {
@@ -310,15 +326,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:17)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:rec.fromPrettyGTXValue:from_gtv_pretty",
-        "text" : "Function 'rec.fromPrettyGTXValue' is deprecated, use 'from_gtv_pretty' instead"
+        "code" : "deprecated:FUNCTION:[rell:rell.struct_ext.fromPrettyGTXValue]:from_gtv_pretty",
+        "text" : "Function 'rell:rell.struct_ext.fromPrettyGTXValue' is deprecated, use 'from_gtv_pretty' instead"
       }
     ],
     "parsing" : {
@@ -347,15 +365,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:20)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:rec.toBytes:to_bytes",
-        "text" : "Function 'rec.toBytes' is deprecated, use 'to_bytes' instead"
+        "code" : "deprecated:ALIAS:[rell:rell.struct_ext.toBytes]:to_bytes",
+        "text" : "Alias 'rell:rell.struct_ext.toBytes' is deprecated, use 'to_bytes' instead"
       }
     ],
     "parsing" : {
@@ -384,15 +404,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:20)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:rec.toGTXValue:to_gtv",
-        "text" : "Function 'rec.toGTXValue' is deprecated, use 'to_gtv' instead"
+        "code" : "deprecated:FUNCTION:[rell:rell.struct_ext.toGTXValue]:to_gtv",
+        "text" : "Function 'rell:rell.struct_ext.toGTXValue' is deprecated, use 'to_gtv' instead"
       }
     ],
     "parsing" : {
@@ -421,15 +443,17 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(2:20)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:rec.toPrettyGTXValue:to_gtv_pretty",
-        "text" : "Function 'rec.toPrettyGTXValue' is deprecated, use 'to_gtv_pretty' instead"
+        "code" : "deprecated:FUNCTION:[rell:rell.struct_ext.toPrettyGTXValue]:to_gtv_pretty",
+        "text" : "Function 'rell:rell.struct_ext.toPrettyGTXValue' is deprecated, use 'to_gtv_pretty' instead"
       }
     ],
     "parsing" : {

@@ -1,0 +1,113 @@
+[
+  {
+    "files" : {
+      "def.rell" : "function f() { val r = data() @{} (.x, $.y, @omit .x); return r; }",
+      "main.rell" : "",
+      "rec.rell" : "struct rec { x: integer; y: integer; } function data() = list<rec>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "def.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "def.rell" : [ ],
+      "main.rell" : [ ],
+      "rec.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "def.rell" : "function f() { val r = data() @{} (.x, $.y, @omit .x); return r; }",
+      "main.rell" : "function __main() = f().x;",
+      "rec.rell" : "struct rec { x: integer; y: integer; } function data() = list<rec>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "def.rell" : [ ],
+      "main.rell" : [ ],
+      "rec.rell" : [ ]
+    }
+  },
+  {
+    "files" : {
+      "def.rell" : "function f() { val r = data() @{} (.x, $.y, @omit .x); return r; }",
+      "main.rell" : "function __main() = f().y;",
+      "rec.rell" : "struct rec { x: integer; y: integer; } function data() = list<rec>();"
+    },
+    "modules" : {
+      "modules" : [
+        ""
+      ],
+      "test_root_modules" : [ ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : false,
+      "deprecatedError" : false,
+      "ide" : false,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "symbolInfoFile" : "main.rell",
+      "ideDocSymbolsEnabled" : true,
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "def.rell" : [ ],
+      "main.rell" : [ ],
+      "rec.rell" : [ ]
+    }
+  }
+]

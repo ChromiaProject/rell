@@ -21,8 +21,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [ ],
     "parsing" : {
@@ -51,14 +53,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_lt]:integer,text",
+        "code" : "expr_call_badargs:[assert_lt]:[integer,text]",
         "text" : "Function 'assert_lt' undefined for arguments (integer, text)"
       }
     ],
@@ -88,14 +92,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_gt]:integer,text",
+        "code" : "expr_call_badargs:[assert_gt]:[integer,text]",
         "text" : "Function 'assert_gt' undefined for arguments (integer, text)"
       }
     ],
@@ -125,14 +131,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_le]:integer,text",
+        "code" : "expr_call_badargs:[assert_le]:[integer,text]",
         "text" : "Function 'assert_le' undefined for arguments (integer, text)"
       }
     ],
@@ -162,14 +170,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_ge]:integer,text",
+        "code" : "expr_call_badargs:[assert_ge]:[integer,text]",
         "text" : "Function 'assert_ge' undefined for arguments (integer, text)"
       }
     ],
@@ -199,14 +209,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_lt]:boolean,integer",
+        "code" : "expr_call_badargs:[assert_lt]:[boolean,integer]",
         "text" : "Function 'assert_lt' undefined for arguments (boolean, integer)"
       }
     ],
@@ -236,14 +248,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_gt]:boolean,integer",
+        "code" : "expr_call_badargs:[assert_gt]:[boolean,integer]",
         "text" : "Function 'assert_gt' undefined for arguments (boolean, integer)"
       }
     ],
@@ -273,14 +287,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_le]:boolean,integer",
+        "code" : "expr_call_badargs:[assert_le]:[boolean,integer]",
         "text" : "Function 'assert_le' undefined for arguments (boolean, integer)"
       }
     ],
@@ -310,14 +326,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_ge]:boolean,integer",
+        "code" : "expr_call_badargs:[assert_ge]:[boolean,integer]",
         "text" : "Function 'assert_ge' undefined for arguments (boolean, integer)"
       }
     ],
@@ -347,14 +365,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_lt]:gtv,gtv",
+        "code" : "expr_call_badargs:[assert_lt]:[gtv,gtv]",
         "text" : "Function 'assert_lt' undefined for arguments (gtv, gtv)"
       }
     ],
@@ -384,14 +404,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_gt]:gtv,gtv",
+        "code" : "expr_call_badargs:[assert_gt]:[gtv,gtv]",
         "text" : "Function 'assert_gt' undefined for arguments (gtv, gtv)"
       }
     ],
@@ -421,14 +443,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_le]:gtv,gtv",
+        "code" : "expr_call_badargs:[assert_le]:[gtv,gtv]",
         "text" : "Function 'assert_le' undefined for arguments (gtv, gtv)"
       }
     ],
@@ -458,14 +482,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_ge]:gtv,gtv",
+        "code" : "expr_call_badargs:[assert_ge]:[gtv,gtv]",
         "text" : "Function 'assert_ge' undefined for arguments (gtv, gtv)"
       }
     ],
@@ -495,14 +521,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_lt]:(integer,text),decimal",
+        "code" : "expr_call_badargs:[assert_lt]:[(integer,text),decimal]",
         "text" : "Function 'assert_lt' undefined for arguments ((integer,text), decimal)"
       }
     ],
@@ -532,14 +560,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_gt]:(integer,text),decimal",
+        "code" : "expr_call_badargs:[assert_gt]:[(integer,text),decimal]",
         "text" : "Function 'assert_gt' undefined for arguments ((integer,text), decimal)"
       }
     ],
@@ -569,14 +599,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_le]:(integer,text),decimal",
+        "code" : "expr_call_badargs:[assert_le]:[(integer,text),decimal]",
         "text" : "Function 'assert_le' undefined for arguments ((integer,text), decimal)"
       }
     ],
@@ -606,14 +638,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_ge]:(integer,text),decimal",
+        "code" : "expr_call_badargs:[assert_ge]:[(integer,text),decimal]",
         "text" : "Function 'assert_ge' undefined for arguments ((integer,text), decimal)"
       }
     ],
@@ -643,14 +677,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_lt]:(integer,decimal),(decimal,integer)",
+        "code" : "expr_call_badargs:[assert_lt]:[(integer,decimal),(decimal,integer)]",
         "text" : "Function 'assert_lt' undefined for arguments ((integer,decimal), (decimal,integer))"
       }
     ],
@@ -680,14 +716,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_gt]:(integer,decimal),(decimal,integer)",
+        "code" : "expr_call_badargs:[assert_gt]:[(integer,decimal),(decimal,integer)]",
         "text" : "Function 'assert_gt' undefined for arguments ((integer,decimal), (decimal,integer))"
       }
     ],
@@ -717,14 +755,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_le]:(integer,decimal),(decimal,integer)",
+        "code" : "expr_call_badargs:[assert_le]:[(integer,decimal),(decimal,integer)]",
         "text" : "Function 'assert_le' undefined for arguments ((integer,decimal), (decimal,integer))"
       }
     ],
@@ -754,14 +794,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:13)",
         "type" : "ERROR",
-        "code" : "expr_call_argtypes:[assert_ge]:(integer,decimal),(decimal,integer)",
+        "code" : "expr_call_badargs:[assert_ge]:[(integer,decimal),(decimal,integer)]",
         "text" : "Function 'assert_ge' undefined for arguments ((integer,decimal), (decimal,integer))"
       }
     ],

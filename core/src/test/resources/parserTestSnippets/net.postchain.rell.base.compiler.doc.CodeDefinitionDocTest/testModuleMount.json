@@ -1,0 +1,40 @@
+[
+  {
+    "files" : {
+      "main.rell" : "",
+      "a/module.rell" : "module;",
+      "a/b/module.rell" : "@mount('mod_mount') module;",
+      "a/b/c/module.rell" : "module;",
+      "a/b/c/d/module.rell" : "@mount('^.sub_mount') module;"
+    },
+    "modules" : {
+      "modules" : null,
+      "test_root_modules" : [
+        ""
+      ],
+      "test_sub_modules" : true
+    },
+    "options" : {
+      "gtv" : true,
+      "deprecatedError" : false,
+      "ide" : true,
+      "atAttrShadowing" : "FULL",
+      "testLib" : false,
+      "hiddenLib" : true,
+      "allowDbModificationsInObjectExprs" : true,
+      "complexWhatEnabled" : true,
+      "mountConflictError" : true,
+      "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
+      "ideDocSymbolsEnabled" : true
+    },
+    "messages" : [ ],
+    "parsing" : {
+      "main.rell" : [ ],
+      "a/module.rell" : [ ],
+      "a/b/module.rell" : [ ],
+      "a/b/c/module.rell" : [ ],
+      "a/b/c/d/module.rell" : [ ]
+    }
+  }
+]

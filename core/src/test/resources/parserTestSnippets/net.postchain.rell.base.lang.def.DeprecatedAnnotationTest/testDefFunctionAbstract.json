@@ -22,14 +22,16 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
         "pos" : "main.rell(1:35)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:lib:f",
+        "code" : "deprecated:FUNCTION:[lib:f]",
         "text" : "Function 'lib:f' is deprecated"
       }
     ],
@@ -61,8 +63,10 @@
       "complexWhatEnabled" : true,
       "mountConflictError" : true,
       "appModuleInTestsError" : false,
+      "useTestDependencyExtensions" : false,
       "symbolInfoFile" : "main.rell",
-      "ideDefIdConflictError" : true
+      "ideDefIdConflictError" : true,
+      "allowOlderCompatibilityVersion" : true
     },
     "messages" : [
       {
@@ -74,7 +78,7 @@
       {
         "pos" : "main.rell(1:31)",
         "type" : "ERROR",
-        "code" : "deprecated:FUNCTION:lib:f",
+        "code" : "deprecated:FUNCTION:[lib:f]",
         "text" : "Function 'lib:f' is deprecated"
       }
     ],
