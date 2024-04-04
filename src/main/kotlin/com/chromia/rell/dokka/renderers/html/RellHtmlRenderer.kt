@@ -1,6 +1,7 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 package com.chromia.rell.dokka.renderers.html
 
+import com.chromia.rell.dokka.dri.escapeAnonymousFunctionName
 import com.chromia.rell.dokka.model.isFunction
 import com.chromia.rell.dokka.model.isOperation
 import com.chromia.rell.dokka.model.isQuery
@@ -832,7 +833,7 @@ class RellHtmlRenderer(
     }
 
     override fun FlowContent.buildLink(address: String, content: FlowContent.() -> Unit) {
-        a(href = address, block = content)
+        a(href = address.escapeAnonymousFunctionName(), block = content)
     }
 
     override fun FlowContent.buildDRILink(

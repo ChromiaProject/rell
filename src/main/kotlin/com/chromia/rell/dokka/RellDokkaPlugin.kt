@@ -4,6 +4,7 @@ import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.doc.AliasDocTagProvider
 import com.chromia.rell.dokka.renderers.html.ChromiaAssetsInstaller
 import com.chromia.rell.dokka.renderers.html.RellHtmlRenderer
+import com.chromia.rell.dokka.renderers.html.RellSearchbarDataInstaller
 import com.chromia.rell.dokka.signature.RellSignatureProvider
 import com.chromia.rell.dokka.translators.documentables.RellDocumentableToPageTranslator
 import com.chromia.rell.dokka.translators.RellSourceToDocumentableTranslator
@@ -64,6 +65,11 @@ class RellDokkaPlugin : DokkaPlugin() {
         }
     }
 
+    val rellSearchbarDataInstaller by extending {
+        with (plugin<DokkaBase>()) {
+            htmlPreprocessors providing ::RellSearchbarDataInstaller override baseSearchbarDataInstaller
+        }
+    }
 
     val renderer by extending {
          with (plugin<DokkaBase>()) {

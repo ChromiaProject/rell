@@ -8,3 +8,5 @@ fun DRI.withAlias() = copy(extra = DRIExtraContainer().also { it[AliasDRIExtra] 
 fun DRI.isAlias() = DRIExtraContainer(extra)[AliasDRIExtra] != null
 
 object AliasDRIExtra : DRIExtraProperty<AliasDRIExtra>()
+
+fun String.escapeAnonymousFunctionName() = replace("function#", "function%23")
