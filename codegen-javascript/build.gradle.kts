@@ -11,7 +11,7 @@ dependencies {
 
 val copy by tasks.register<Copy>("copy-resources") {
     from("${rootProject.rootDir}/testResources")
-    into("${project.buildDir}/resources/test")
+    into("${layout.buildDirectory}/resources/test")
 }
 
 val test by tasks.getting {
