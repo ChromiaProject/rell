@@ -3,6 +3,7 @@ package net.postchain.rell.codegen.javascript
 import assertk.Assert
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.containsAll
 import assertk.assertions.hasSize
 import assertk.assertions.support.expected
 import assertk.assertions.support.show
@@ -38,7 +39,7 @@ internal class JavascriptCodeGeneratorTest {
         @BeforeAll
         @JvmStatic
         fun setup() {
-            val res = compilerContainer.execInContainer("sh", "-c", "npm install -g eslint")
+            val res = compilerContainer.execInContainer("sh", "-c", "npm install -g eslint@8.57.0")
             assertThat(res).executeSuccessFully()
         }
 
@@ -175,6 +176,11 @@ internal class JavascriptCodeGeneratorTest {
         val sections = generator.createSections(rellApp.app)
 
         assertThat(sections).hasSize(2)
-        assertThat(rellCliEnv.errorCache).contains("Skipping [mixed_tuple_queries:return_type_unnamed_and_named_tuple] Query has unsupported mixed tuple return type: (integer,foo:integer)")
+        assertThat(rellCliEnv.errorCache).containsAll(
+                "Skipping [mixed_tuple_queries:return_type_unnamed_and_named_tuple] Query return type contains unsupported mixed tuple type: (integer,foo:integer)",
+                "Skipping [mixed_tuple_queries:return_type_nullable_unnamed_and_named_tuple] Query return type contains unsupported mixed tuple type: (integer,foo:integer)",
+                "Skipping [mixed_tuple_queries:return_type_list_unnamed_and_named_tuple] Query return type contains unsupported mixed tuple type: (integer,foo:integer)",
+                "Skipping [mixed_tuple_queries:return_type_map_unnamed_and_named_tuple] Query return type contains unsupported mixed tuple type: (integer,foo:integer)"
+        )
     }
 }

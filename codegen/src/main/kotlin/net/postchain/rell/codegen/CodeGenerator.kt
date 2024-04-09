@@ -2,9 +2,13 @@ package net.postchain.rell.codegen
 
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliEnv
+import net.postchain.rell.base.lib.type.R_CollectionType
+import net.postchain.rell.base.lib.type.R_MapType
 import net.postchain.rell.base.model.R_App
+import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_QueryDefinition
 import net.postchain.rell.base.model.R_TupleType
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.document.Document
 import net.postchain.rell.codegen.document.DocumentFactory
@@ -36,7 +40,7 @@ class CodeGenerator(private val factory: DocumentFactory, private val config: Co
 
         val queries = if (config.includeQueries())
             rellQueries.values
-                    .filter { hasSupportedReturnType(it) }
+                    .filter { hasSupportedReturnType(it, it.type()) }
                     .map { factory.createQuery(it) }
         else
             listOf()
@@ -80,10 +84,12 @@ class CodeGenerator(private val factory: DocumentFactory, private val config: Co
         }
     }
 
-    private fun hasSupportedReturnType(query: R_QueryDefinition): Boolean {
-        val returnType = query.type()
+    private fun hasSupportedReturnType(query: R_QueryDefinition, returnType: R_Type): Boolean {
+        if (returnType is R_NullableType) return hasSupportedReturnType(query, returnType.valueType)
+        if (returnType is R_CollectionType) return hasSupportedReturnType(query, returnType.elementType)
+        if (returnType is R_MapType) return hasSupportedReturnType(query, returnType.valueType)
         return if (returnType is R_TupleType && isMixedTuple(returnType)) {
-            rellCliEnv.error("Skipping [${query.appLevelName}] Query has unsupported mixed tuple return type: $returnType")
+            rellCliEnv.error("Skipping [${query.appLevelName}] Query return type contains unsupported mixed tuple type: $returnType")
             false
         } else {
             true
