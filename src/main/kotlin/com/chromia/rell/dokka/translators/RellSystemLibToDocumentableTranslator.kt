@@ -3,10 +3,9 @@
 package com.chromia.rell.dokka.translators
 
 import com.chromia.rell.dokka.config.RellModule
-import com.chromia.rell.dokka.descriptors.RellDeclarationDescriptor
+import com.chromia.rell.dokka.doc.RellDocumentableSource
 import com.chromia.rell.dokka.systemlib.SystemLibVisitor
 import org.jetbrains.dokka.DokkaConfiguration
-import org.jetbrains.dokka.analysis.kotlin.descriptors.compiler.configuration.DescriptorDocumentableSource
 import org.jetbrains.dokka.model.DModule
 import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.DocumentableSource
@@ -34,5 +33,5 @@ object RellSystemLibToDocumentableTranslator : SourceToDocumentableTranslator {
         }
     }
 
-    val NULL_DESCRIPTOR: DocumentableSource = DescriptorDocumentableSource(RellDeclarationDescriptor())
+    val NULL_DESCRIPTOR: DocumentableSource = RellDocumentableSource()
 }

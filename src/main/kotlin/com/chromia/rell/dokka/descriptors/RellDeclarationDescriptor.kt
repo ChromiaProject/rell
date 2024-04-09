@@ -1,9 +1,5 @@
 package com.chromia.rell.dokka.descriptors
 
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptorVisitor
-import org.jetbrains.kotlin.descriptors.annotations.Annotations
-import org.jetbrains.kotlin.name.Name
 import com.chromia.rell.dokka.page.RellLanguageParser
 import com.chromia.rell.dokka.page.RellPageCreator
 
@@ -14,7 +10,7 @@ import com.chromia.rell.dokka.page.RellPageCreator
  * @see RellLanguageParser
  * @see RellPageCreator
  */
-class RellDeclarationDescriptor: DeclarationDescriptor {
+/*class RellDeclarationDescriptor: DeclarationDescriptor {
     override fun getName(): Name {
         TODO("Not yet implemented")
     }
@@ -37,4 +33,4 @@ class RellDeclarationDescriptor: DeclarationDescriptor {
 
     override val annotations: Annotations
         get() = TODO("Not yet implemented")
-}
+}*/

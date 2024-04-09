@@ -24,6 +24,8 @@ repositories {
     maven("https://maven.emrld.io")
 }
 
+val shadedConfig: Configuration by configurations.creating
+
 val dokkaVersion: String by project
 val rellVersion: String by project
 dependencies {
@@ -31,9 +33,11 @@ dependencies {
     implementation(platform("com.fasterxml.jackson:jackson-bom:2.15.3"))
     implementation("org.jetbrains.dokka:dokka-core:$dokkaVersion")
     implementation("org.jetbrains.dokka:dokka-base:$dokkaVersion")
-    implementation("org.jetbrains.dokka:analysis-kotlin-descriptors:$dokkaVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.8.0")
+    implementation("org.jetbrains.dokka:analysis-markdown:$dokkaVersion")
 
+    shadedConfig("org.jetbrains.dokka:analysis-kotlin-descriptors:$dokkaVersion")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.8.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     //runtimeOnly("org.freemarker:freemaker:2.3.31")
 
@@ -48,10 +52,27 @@ dependencies {
     testImplementation("com.willowtreeapps.assertk:assertk:0.28.0")
     testImplementation("org.jetbrains.dokka:dokka-test-api:$dokkaVersion")
     testImplementation("org.jetbrains.dokka:dokka-base-test-utils:$dokkaVersion")
+    testImplementation("org.jsoup:jsoup:1.17.2")
+    implementation(files(layout.buildDirectory.dir("shaded")))
 }
 
 kotlin {
     jvmToolchain(17)
+}
+
+val copyDependentClasses by tasks.registering(Copy::class) {
+    from(zipTree(shadedConfig.singleFile))
+    include(
+            "**/DocumentableSourceLanguageParser.class",
+            "**/DocumentableLanguage.class",
+            "**/DescriptorDocumentableSource.class",
+            "**/DeclarationDescriptor.class",
+    )
+    into(layout.buildDirectory.dir("shaded"))
+}
+
+tasks.compileKotlin {
+    dependsOn(copyDependentClasses)
 }
 
 tasks.dokkaHtml {

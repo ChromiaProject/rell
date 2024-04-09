@@ -2,10 +2,13 @@ package com.chromia.rell.dokka
 
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.doc.AliasDocTagProvider
+import com.chromia.rell.dokka.navigation.RellNavigationPageInstaller
 import com.chromia.rell.dokka.renderers.html.ChromiaAssetsInstaller
 import com.chromia.rell.dokka.renderers.html.RellHtmlRenderer
 import com.chromia.rell.dokka.renderers.html.RellSearchbarDataInstaller
 import com.chromia.rell.dokka.signature.RellSignatureProvider
+import com.chromia.rell.dokka.transformers.NullPageTransformer
+import com.chromia.rell.dokka.transformers.NullPreMergeDocumentableTransformer
 import com.chromia.rell.dokka.translators.documentables.RellDocumentableToPageTranslator
 import com.chromia.rell.dokka.translators.RellSourceToDocumentableTranslator
 import com.chromia.rell.dokka.translators.RellSystemLibToDocumentableTranslator
@@ -76,6 +79,26 @@ class RellDokkaPlugin : DokkaPlugin() {
              CoreExtensions.renderer providing ::RellHtmlRenderer override htmlRenderer
          }
      }
+
+    val rellNavigationPageInstaller by extending {
+        with (plugin<DokkaBase>()) {
+            htmlPreprocessors providing ::RellNavigationPageInstaller override navigationPageInstaller
+        }
+    }
+
+    // Suppressed extensions that depends on kotlinAnalysis
+    val a by extending {
+        with (plugin<DokkaBase>()) {
+            preMergeDocumentableTransformer providing { NullPreMergeDocumentableTransformer() } override modulesAndPackagesDocumentation
+        }
+    }
+
+    val b by extending {
+        with (plugin<DokkaBase>()) {
+            CoreExtensions.pageTransformer with NullPageTransformer() override defaultSamplesTransformer
+        }
+    }
+
 
     companion object {
         private fun config(context: DokkaContext) = configuration<RellDokkaPlugin, RellDokkaPluginConfiguration>(context)

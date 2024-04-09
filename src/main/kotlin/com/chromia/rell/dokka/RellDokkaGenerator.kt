@@ -8,6 +8,6 @@ import org.jetbrains.dokka.utilities.LoggingLevel
 class RellDokkaGenerator(private val configBuilder: RellDokkaPluginConfigurationBuilder) {
     fun generate() {
         val config = configBuilder.build()
-        DokkaGenerator(config, DokkaConsoleLogger(LoggingLevel.WARN)).generate()
+        DokkaGenerator(config, DokkaConsoleLogger(LoggingLevel.INFO)).generate()
     }
 }
