@@ -171,5 +171,8 @@ internal class KotlinCodeGeneratorTest {
 
         assertThat(sections).hasSize(2)
         assertThat(rellCliEnv.errorCache).contains("Skipping [mixed_tuple_queries:return_type_unnamed_and_named_tuple] Query has unsupported mixed tuple return type: (integer,foo:integer)")
+        assertThat(rellCliEnv.errorCache).contains("Skipping [mixed_tuple_queries:return_type_nullable_unnamed_and_named_tuple] Query has unsupported mixed tuple return type: (integer,foo:integer)")
+        assertThat(rellCliEnv.errorCache).contains("Skipping [mixed_tuple_queries:return_type_list_unnamed_and_named_tuple] Query has unsupported mixed tuple return type: (integer,foo:integer)")
+        assertThat(rellCliEnv.errorCache).contains("Skipping [mixed_tuple_queries:return_type_map_unnamed_and_named_tuple] Query has unsupported mixed tuple return type: (integer,foo:integer)")
     }
 }
