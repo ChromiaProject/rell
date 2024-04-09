@@ -38,7 +38,7 @@ internal class JavascriptCodeGeneratorTest {
         @BeforeAll
         @JvmStatic
         fun setup() {
-            val res = compilerContainer.execInContainer("sh", "-c", "npm install -g eslint")
+            val res = compilerContainer.execInContainer("sh", "-c", "npm install -g eslint@8.57.0")
             assertThat(res).executeSuccessFully()
         }
 
