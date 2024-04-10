@@ -80,20 +80,21 @@ class RellDokkaPlugin : DokkaPlugin() {
          }
      }
 
+    // Copied implementations with minor tweaks to remove kotlin dependency
     val rellNavigationPageInstaller by extending {
         with (plugin<DokkaBase>()) {
             htmlPreprocessors providing ::RellNavigationPageInstaller override navigationPageInstaller
         }
     }
 
-    // Suppressed extensions that depends on kotlinAnalysis
-    val a by extending {
+    val rellModuleAndPackageDocumentation by extending {
         with (plugin<DokkaBase>()) {
             preMergeDocumentableTransformer providing ::RellModuleAndPackageDocumentationTransformer override modulesAndPackagesDocumentation
         }
     }
 
-    val b by extending {
+    // Suppressed extensions that depends on kotlinAnalysis
+    val nullPageTransformer by extending {
         with (plugin<DokkaBase>()) {
             CoreExtensions.pageTransformer with NullPageTransformer() override defaultSamplesTransformer
         }
