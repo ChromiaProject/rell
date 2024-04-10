@@ -19,10 +19,14 @@ import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
 import org.jetbrains.dokka.base.transformers.documentables.isDeprecated
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.DClass
+import org.jetbrains.dokka.model.DModule
+import org.jetbrains.dokka.testApi.logger.TestLogger
+import org.jetbrains.dokka.utilities.DokkaConsoleLogger
+import org.jetbrains.dokka.utilities.LoggingLevel
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
 
-class SystemLibTestTest : BaseAbstractTest() {
+class SystemLibTestTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogger(LoggingLevel.WARN))) {
     private val configuration = dokkaConfiguration {
         pluginsConfigurations.add(RellDokkaPluginConfiguration.SYSTEM_CONFIG.toPluginConfig())
         sourceSets {
@@ -50,7 +54,7 @@ class SystemLibTestTest : BaseAbstractTest() {
     fun `Aliases are properly named`() {
         testFromData(configuration, cleanupOutput = false) {
             documentablesTransformationStage = { module ->
-                val rellPackage = module.packages.find { it.name == "root" }
+                val rellPackage = module.rootPackage
                 assertNotNull(rellPackage)
                 val requireAlias = rellPackage.functions.find { it.name == "requireNotEmpty" }
                 assertNotNull(requireAlias)
@@ -67,7 +71,7 @@ class SystemLibTestTest : BaseAbstractTest() {
     fun `Test aliases are found in root`() {
         testFromData(configuration, cleanupOutput = false) {
             documentablesTransformationStage = { module ->
-                val rellPackage = module.packages.find { it.name == "root" }
+                val rellPackage = module.rootPackage
                 assertNotNull(rellPackage)
                 val assertAlias = rellPackage.functions.find { it.name == "assert_equals" }
                 assertNotNull(assertAlias)
@@ -80,7 +84,7 @@ class SystemLibTestTest : BaseAbstractTest() {
     fun `Type aliases are found one each type`() {
         testFromData(configuration, cleanupOutput = false) {
             documentablesTransformationStage = { module ->
-                val rellPackage = module.packages.find { it.name == "root" }
+                val rellPackage = module.rootPackage
                 assertNotNull(rellPackage)
                 val integerType = rellPackage.classlikes.find { it.name == "integer" }
                 assertNotNull(integerType)
@@ -96,7 +100,7 @@ class SystemLibTestTest : BaseAbstractTest() {
     fun `Structs are created`() {
         testFromData(configuration, cleanupOutput = false) {
             documentablesTransformationStage = { module ->
-                val rellPackage = module.packages.find { it.name == "root" }
+                val rellPackage = module.rootPackage
                 assertNotNull(rellPackage)
                 val res = rellPackage.classlikes.find { it.name == "gtx_operation" }
                 assertNotNull(res)
@@ -108,7 +112,7 @@ class SystemLibTestTest : BaseAbstractTest() {
     fun `is_signer is deprecated`() {
         testFromData(configuration, cleanupOutput = false) {
             documentablesTransformationStage = { module ->
-                val rellPackage = module.packages.find { it.name == "root" }
+                val rellPackage = module.rootPackage
                 assertNotNull(rellPackage)
                 val res = rellPackage.functions.find { it.name == "is_signer" }
                 assertNotNull(res)
@@ -121,7 +125,7 @@ class SystemLibTestTest : BaseAbstractTest() {
     fun `aliased types can be found`() {
         testFromData(configuration, cleanupOutput = false) {
             documentablesTransformationStage = { module ->
-                val rellPackage = module.packages.find { it.name == "root" }
+                val rellPackage = module.rootPackage
                 assertNotNull(rellPackage)
                 val res = rellPackage.typealiases.find { it.name == "name" }
                 assertNotNull(res)
@@ -167,4 +171,6 @@ class SystemLibTestTest : BaseAbstractTest() {
             filterNot {
                 (it is L_NamespaceMember_Namespace) && it.namespace.getAllDefs().isNotEmpty()
             }
+
+    private val DModule.rootPackage get() = packages.find { it.packageName.isEmpty() }
 }

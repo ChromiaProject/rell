@@ -25,7 +25,7 @@ class SystemLibFunctionDocumentableTest {
             val d = f.visit(DRI("crypto"))
             assertThat(d.isConstructor).isFalse()
             assertThat(d.parameters.size).isEqualTo(2)
-            assertThat((d.type as GenericTypeConstructor).dri).isEqualTo(DRI("root", "byte_array"))
+            assertThat((d.type as GenericTypeConstructor).dri).isEqualTo(DRI("", "byte_array"))
         }
     }
 }

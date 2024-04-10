@@ -6,7 +6,7 @@ The Rell Standard Library contains the essential building blocks for writing you
 - Chain metadata
 - Test library functions
 
-# Package root
+# Package [root]
 
 Global namespace containing types and functions accessible without any namespace prefix.
 

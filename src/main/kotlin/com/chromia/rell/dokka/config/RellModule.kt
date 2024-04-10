@@ -21,7 +21,7 @@ enum class RellModule(
         val module: C_LibModule,
         private val pretendedAnalysisPlatform: Platform, // Is used to color the filter boubbles
         private vararg val dependent: RellModule) {
-    MAIN("root", "rell", Lib_Rell.MODULE, Platform.wasm),
+    MAIN("", "rell", Lib_Rell.MODULE, Platform.wasm),
     TEST("rell.test", "test", Lib_RellTest.MODULE, Platform.js, MAIN);
 
     val sourceSetId = DokkaSourceSetID("rell", sourceSetName)
