@@ -3,6 +3,9 @@ package com.chromia.rell.dokka.signature
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.config.RellModule
 import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
+import org.jetbrains.dokka.testApi.logger.TestLogger
+import org.jetbrains.dokka.utilities.DokkaConsoleLogger
+import org.jetbrains.dokka.utilities.LoggingLevel
 import org.junit.jupiter.api.Test
 import signatures.Parameter
 import signatures.Parameters
@@ -13,7 +16,7 @@ import utils.A
 import utils.TestOutputWriterPlugin
 import utils.match
 
-internal class SystemLibSignatureTest : BaseAbstractTest() {
+internal class SystemLibSignatureTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogger(LoggingLevel.WARN))) {
     val projectRoot = "-rell -system -library"
     private val configuration = dokkaConfiguration {
         this.pluginsConfigurations.add(RellDokkaPluginConfiguration.SYSTEM_CONFIG.toPluginConfig())
@@ -186,7 +189,7 @@ internal class SystemLibSignatureTest : BaseAbstractTest() {
         val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
         testFromData(configuration, cleanupOutput = false, pluginOverrides = listOf(writerPlugin)) {
             renderingStage = { _, _ ->
-                writerPlugin.writer.renderedContent("$projectRoot/[root]/try_call.html").lastSignature() // TODO: Why the [rell]-prefix
+                writerPlugin.writer.renderedContent("$projectRoot/[root]/try_call.html").lastSignature()
                         .match(
                                 "function <", A("T"), "> ", A("try_call"), "(",
                                 Parameters(
