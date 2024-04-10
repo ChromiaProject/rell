@@ -20,10 +20,13 @@ import org.jetbrains.dokka.base.transformers.documentables.isDeprecated
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DModule
+import org.jetbrains.dokka.testApi.logger.TestLogger
+import org.jetbrains.dokka.utilities.DokkaConsoleLogger
+import org.jetbrains.dokka.utilities.LoggingLevel
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
 
-class SystemLibTestTest : BaseAbstractTest() {
+class SystemLibTestTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogger(LoggingLevel.WARN))) {
     private val configuration = dokkaConfiguration {
         pluginsConfigurations.add(RellDokkaPluginConfiguration.SYSTEM_CONFIG.toPluginConfig())
         sourceSets {
