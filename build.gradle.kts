@@ -34,6 +34,7 @@ dependencies {
     implementation("org.jetbrains.dokka:dokka-core:$dokkaVersion")
     implementation("org.jetbrains.dokka:dokka-base:$dokkaVersion")
     implementation("org.jetbrains.dokka:analysis-markdown:$dokkaVersion")
+    implementation("org.jetbrains.dokka:analysis-kotlin-api:$dokkaVersion")
 
     shadedConfig("org.jetbrains.dokka:analysis-kotlin-descriptors:$dokkaVersion")
 

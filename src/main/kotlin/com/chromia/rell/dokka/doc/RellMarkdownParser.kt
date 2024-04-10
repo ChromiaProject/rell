@@ -6,7 +6,7 @@ import org.jetbrains.dokka.InternalDokkaApi
 import org.jetbrains.dokka.analysis.markdown.jb.MarkdownParser
 
 @OptIn(InternalDokkaApi::class)
-class RellMarkdownParser : MarkdownParser(
+class RellMarkdownParser(sourceLocation: String? = null) : MarkdownParser(
         {
             try {
                 R_QualifiedName.of(it).toDRI()
@@ -14,5 +14,5 @@ class RellMarkdownParser : MarkdownParser(
                 null
             }
         },
-        null
+        sourceLocation
 )
