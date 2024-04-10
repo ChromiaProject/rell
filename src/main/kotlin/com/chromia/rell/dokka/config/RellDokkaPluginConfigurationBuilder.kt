@@ -1,5 +1,6 @@
 package com.chromia.rell.dokka.config
 
+import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration.Companion.SYSTEM_TITLE
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.DokkaConfigurationImpl
 import org.jetbrains.dokka.PluginConfigurationImpl
@@ -21,7 +22,7 @@ class RellDokkaPluginConfigurationBuilder private constructor(
     constructor(title: String, modules: List<String>?, projectRoot: File): this(false, title, modules, projectRoot)
 
     companion object {
-        val SYSTEM = RellDokkaPluginConfigurationBuilder(true, "", null, null)
+        val SYSTEM = RellDokkaPluginConfigurationBuilder(true, SYSTEM_TITLE, null, null)
     }
 
     fun includes(includes: List<File>) = apply { this.includes = includes }

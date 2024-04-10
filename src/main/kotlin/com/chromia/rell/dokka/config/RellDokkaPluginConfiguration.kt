@@ -9,6 +9,7 @@ import org.jetbrains.dokka.PluginConfigurationImpl
 import org.jetbrains.dokka.plugability.ConfigurableBlock
 import java.io.File
 
+
 @Serializable
 data class RellDokkaPluginConfiguration(
         val name: String,
@@ -27,6 +28,7 @@ data class RellDokkaPluginConfiguration(
     }
 
     companion object {
-        val SYSTEM_CONFIG = RellDokkaPluginConfiguration("Rell System Library API Reference", listOf("rell", "rell.test"), system = true)
+        const val SYSTEM_TITLE = "Rell System Library API Reference"
+        val SYSTEM_CONFIG = RellDokkaPluginConfiguration(SYSTEM_TITLE, listOf("rell", "rell.test"), system = true)
     }
 }
