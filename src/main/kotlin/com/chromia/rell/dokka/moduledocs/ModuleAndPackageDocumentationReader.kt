@@ -1,9 +1,9 @@
-package com.chromia.rell.dokka.moduledocs
 
 /*
  * Copyright 2014-2024 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
  */
 
+package com.chromia.rell.dokka.moduledocs
 
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.InternalDokkaApi
@@ -15,7 +15,6 @@ import org.jetbrains.dokka.model.doc.*
 import org.jetbrains.dokka.model.doc.Deprecated
 import org.jetbrains.dokka.plugability.DokkaContext
 import org.jetbrains.dokka.utilities.associateWithNotNull
-import java.io.File
 
 /**
  * Copied from https://github.com/Kotlin/dokka/blob/1.9.10/subprojects/analysis-kotlin-symbols/src/main/kotlin/org/jetbrains/dokka/analysis/kotlin/symbols/kdoc/moduledocs/ModuleAndPackageDocumentationReader.kt
@@ -26,6 +25,7 @@ class RellModuleAndPackageDocumentationReader(
         private val context: DokkaContext
 ) : ModuleAndPackageDocumentationReader {
 
+    //private val kotlinAnalysis = context.plugin<SymbolsAnalysisPlugin>().querySingle { kotlinAnalysis }
 
     private val documentationFragments: SourceSetDependent<List<ModuleAndPackageDocumentationFragment>> =
             context.configuration.sourceSets.associateWith { sourceSet ->

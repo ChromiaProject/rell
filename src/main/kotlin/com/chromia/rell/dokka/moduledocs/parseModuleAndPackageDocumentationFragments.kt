@@ -1,8 +1,8 @@
-package com.chromia.rell.dokka.moduledocs
-
 /*
  * Copyright 2014-2024 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
  */
+
+package com.chromia.rell.dokka.moduledocs
 
 import org.jetbrains.dokka.DokkaException
 import java.io.File
@@ -43,14 +43,12 @@ private fun parseModuleAndPackageDocFragment(
     }
 
     if (classifierAndName.size != 2 && classifier == ModuleAndPackageDocumentation.Classifier.Module) {
-        throw DokkaException("[$source] Missing Module name")
+        throw IllegalModuleAndPackageDocumentation(source, "Missing Module name")
     }
 
     val name = classifierAndName.getOrNull(1)?.trim().orEmpty()
     if (classifier == ModuleAndPackageDocumentation.Classifier.Package && name.contains(Regex("\\s"))) {
-        throw DokkaException(
-                "[$source] Package name cannot contain whitespace in '$firstLine'"
-        )
+        throw IllegalModuleAndPackageDocumentation(source, "Package name cannot contain whitespace in '$firstLine'")
     }
 
     return ModuleAndPackageDocumentationFragment(

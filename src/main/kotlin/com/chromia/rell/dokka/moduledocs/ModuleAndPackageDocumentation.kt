@@ -1,3 +1,8 @@
+
+/*
+ * Copyright 2014-2023 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
+ */
+
 package com.chromia.rell.dokka.moduledocs
 
 import org.jetbrains.dokka.model.doc.DocumentationNode
@@ -12,20 +17,4 @@ internal data class ModuleAndPackageDocumentation(
         val documentation: DocumentationNode
 ) {
     enum class Classifier { Module, Package }
-}
-internal abstract class ModuleAndPackageDocumentationSource {
-    abstract val sourceDescription: String
-    abstract val documentation: String
-    override fun toString(): String = sourceDescription
-}
-
-internal data class ModuleAndPackageDocumentationFragment(
-        val name: String,
-        val classifier: ModuleAndPackageDocumentation.Classifier,
-        val documentation: String,
-        val source: ModuleAndPackageDocumentationSource
-)
-internal data class ModuleAndPackageDocumentationFile(private val file: File) : ModuleAndPackageDocumentationSource() {
-    override val sourceDescription: String = file.path
-    override val documentation: String by lazy(LazyThreadSafetyMode.PUBLICATION) { file.readText() }
 }

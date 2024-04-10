@@ -1,3 +1,8 @@
+
+/*
+ * Copyright 2014-2023 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
+ */
+
 package com.chromia.rell.dokka.moduledocs
 
 import com.chromia.rell.dokka.doc.RellMarkdownParser
@@ -18,10 +23,10 @@ internal fun ModuleAndPackageDocumentationParsingContext.parse(
     return markdownParserFor(fragment, fragment.source.sourceDescription).parse(fragment.documentation)
 }
 
+// Modified function
 internal fun ModuleAndPackageDocumentationParsingContext(
         logger: DokkaLogger,
         sourceSet: DokkaConfiguration.DokkaSourceSet? = null
 ) = ModuleAndPackageDocumentationParsingContext { fragment, sourceLocation ->
-
     RellMarkdownParser(sourceLocation)
 }
