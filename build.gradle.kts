@@ -24,7 +24,8 @@ repositories {
     maven("https://maven.emrld.io")
 }
 
-val shadedConfig: Configuration by configurations.creating
+val dependenciesToUnshade: Configuration by configurations.creating
+val unshadedClassesTarget = layout.buildDirectory.dir("unshaded")
 
 val dokkaVersion: String by project
 val rellVersion: String by project
@@ -36,11 +37,9 @@ dependencies {
     implementation("org.jetbrains.dokka:analysis-markdown:$dokkaVersion")
     implementation("org.jetbrains.dokka:analysis-kotlin-api:$dokkaVersion")
 
-    shadedConfig("org.jetbrains.dokka:analysis-kotlin-descriptors:$dokkaVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.8.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-    //runtimeOnly("org.freemarker:freemaker:2.3.31")
 
     implementation("net.postchain.rell:rell-api-base:$rellVersion")
     implementation("net.postchain.rell:rell-base:$rellVersion")
@@ -48,36 +47,38 @@ dependencies {
     implementation("com.github.ajalt.clikt:clikt:3.5.2")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-    //testImplementation(kotlin("test"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:1.9.10")
     testImplementation("com.willowtreeapps.assertk:assertk:0.28.0")
     testImplementation("org.jetbrains.dokka:dokka-test-api:$dokkaVersion")
     testImplementation("org.jetbrains.dokka:dokka-base-test-utils:$dokkaVersion")
     testImplementation("org.jsoup:jsoup:1.17.2")
-    implementation(files(layout.buildDirectory.dir("shaded")))
+
+    // Unshading dependencies
+    dependenciesToUnshade("org.jetbrains.dokka:analysis-kotlin-descriptors:$dokkaVersion")
+    implementation(files(unshadedClassesTarget))
 }
 
 kotlin {
     jvmToolchain(17)
 }
 
-val copyDependentClasses by tasks.registering(Copy::class) {
-    from(zipTree(shadedConfig.singleFile))
+val copyShadedDependencyClasses by tasks.registering(Copy::class) {
+    from(zipTree(dependenciesToUnshade.singleFile))
     include(
             "**/DocumentableSourceLanguageParser.class",
             "**/DocumentableLanguage.class",
             "**/DescriptorDocumentableSource.class",
             "**/DeclarationDescriptor.class",
     )
-    into(layout.buildDirectory.dir("shaded"))
+    into(unshadedClassesTarget)
 }
 
 tasks.compileKotlin {
-    dependsOn(copyDependentClasses)
+    dependsOn(copyShadedDependencyClasses)
 }
 
 tasks.dokkaHtml {
-    dependsOn(copyDependentClasses)
+    dependsOn(copyShadedDependencyClasses)
     moduleName.set("Rell Dokka Plugin")
     outputDirectory.set(layout.buildDirectory.dir("dokka"))
 }
