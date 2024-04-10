@@ -77,6 +77,7 @@ tasks.compileKotlin {
 }
 
 tasks.dokkaHtml {
+    dependsOn(copyDependentClasses)
     moduleName.set("Rell Dokka Plugin")
     outputDirectory.set(layout.buildDirectory.dir("dokka"))
 }
