@@ -227,7 +227,7 @@ class RellDokkaPluginTest : SingleFileRellDokkaPluginTest() {
     @Test
     @Disabled
     fun `rell plugin should find packages and classes`() {
-        testInline(
+        singleFileTestInline(
                 """
             |/src/main.rell
             |module;
@@ -237,7 +237,7 @@ class RellDokkaPluginTest : SingleFileRellDokkaPluginTest() {
             | */
             |operation my_operation(arg: text, i: integer) {}
             |function my_fun(arg: integer) = foo @{};
-            """.trimIndent(), configuration, cleanupOutput = false
+            """.trimIndent(),
         ) {
             documentablesTransformationStage = { module ->
                 val testedPackage = module.packages.find { it.name == "main" }

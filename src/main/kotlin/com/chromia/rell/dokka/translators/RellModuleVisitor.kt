@@ -1,7 +1,7 @@
 package com.chromia.rell.dokka.translators
 
 import com.chromia.rell.dokka.analysis.RellAnalysis
-import com.chromia.rell.dokka.descriptors.NULL_DESCRIPTOR
+import com.chromia.rell.dokka.doc.RellDocumentableSource
 import com.chromia.rell.dokka.doc.simpleDocumentationNode
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.from
@@ -110,7 +110,7 @@ internal class RellModuleVisitor(
                 generics = listOf(),
                 isExpectActual = false,
                 sourceSets = setOf(sourceSet),
-                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
+                sources = RellDocumentableSource.NULL.toSourceSetDependent(),
                 type = getTypeByReflection().toBound(),
                 expectPresentInSet = null,
                 documentation = simpleDocumentationNode("").toSourceSetDependent(),
@@ -141,7 +141,7 @@ internal class RellModuleVisitor(
                 visibility = KotlinVisibility.Public.toSourceSetDependent(),
                 modifier = KotlinModifier.Empty.toSourceSetDependent(),
                 supertypes = mapOf(),
-                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
+                sources = RellDocumentableSource.NULL.toSourceSetDependent(),
                 extra = PropertyContainer.withAll(IsEntity)
         )
     }
@@ -167,7 +167,7 @@ internal class RellModuleVisitor(
                 visibility = KotlinVisibility.Public.toSourceSetDependent(),
                 modifier = KotlinModifier.Empty.toSourceSetDependent(),
                 supertypes = mapOf(),
-                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
+                sources = RellDocumentableSource.NULL.toSourceSetDependent(),
                 extra = PropertyContainer.withAll(IsStruct)
         )
     }
@@ -193,7 +193,7 @@ internal class RellModuleVisitor(
                 visibility = KotlinVisibility.Public.toSourceSetDependent(),
                 modifier = KotlinModifier.Empty.toSourceSetDependent(),
                 supertypes = mapOf(),
-                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
+                sources = RellDocumentableSource.NULL.toSourceSetDependent(),
                 extra = PropertyContainer.withAll(IsObject)
         )
     }
@@ -209,7 +209,7 @@ internal class RellModuleVisitor(
                 generics = listOf(),
                 isExpectActual = false,
                 modifier = KotlinModifier.Empty.toSourceSetDependent(),
-                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
+                sources = RellDocumentableSource.NULL.toSourceSetDependent(),
                 expectPresentInSet = null,
                 getter = null,
                 setter = null,
@@ -247,7 +247,7 @@ internal class RellModuleVisitor(
                 isExpectActual = false,
                 visibility = KotlinVisibility.Public.toSourceSetDependent(),
                 supertypes = mapOf(),
-                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
+                sources = RellDocumentableSource.NULL.toSourceSetDependent(),
         )
     }
 
@@ -292,7 +292,7 @@ internal class RellModuleVisitor(
                 type = getTypeByReflection().toBound(),
                 sourceSets = setOf(sourceSet),
                 generics = listOf(),
-                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
+                sources = RellDocumentableSource.NULL.toSourceSetDependent(),
                 modifier = KotlinModifier.Empty.toSourceSetDependent(),
                 extra = PropertyContainer.withAll(listOfNotNull(*extraProperty))
         )
@@ -322,7 +322,7 @@ internal class RellModuleVisitor(
                 type = fnBase.getHeader().type.toBound(),
                 sourceSets = setOf(sourceSet),
                 generics = listOf(),
-                sources = NULL_DESCRIPTOR.toSourceSetDependent(),
+                sources = RellDocumentableSource.NULL.toSourceSetDependent(),
                 modifier = KotlinModifier.Empty.toSourceSetDependent(),
                 extra = PropertyContainer.withAll(
                         IsFunction,
