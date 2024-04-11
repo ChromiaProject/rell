@@ -76,11 +76,16 @@ class TypescriptQueryTest {
             "return_type_list_byte_array,Buffer[]",
             "return_type_set_integer,number[]",
             "return_type_list_struct,TestStruct[]",
+            "return_type_nullable_list_struct,TestStruct[] | null",
             "return_type_list_entity,number[]",
+            "return_type_nullable_list_entity,number[] | null",
             "return_type_list_gtv,any[]",
+            "return_type_list_list_list,any[][][]",
             "return_type_set_gtv,any[]",
             "return_type_map,{[x in string]: string}",
+            "return_type_nullable_map,{[x in string]: string} | null",
             "return_type_enum_map,{[x in TestEnum]: string}",
+            "return_type_nullable_enum_map,{[x in TestEnum]: string} | null",
             "return_type_any_map,{[x in TestStruct]: string}",
             "return_type_unnamed_tuple,[number]", // Unnamed tuples are arrays with unknown entries
     )
