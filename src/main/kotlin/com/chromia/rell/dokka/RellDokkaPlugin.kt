@@ -61,6 +61,7 @@ class RellDokkaPlugin : DokkaPlugin() {
         with (plugin<DokkaBase>()) {
             htmlPreprocessors providing ::ChromiaAssetsInstaller order {
                 before(customResourceInstaller)
+                before(scriptsInstaller)
                 after(rootCreator)
                 after(stylesInstaller)
                 after(assetsInstaller)
