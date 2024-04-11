@@ -51,7 +51,6 @@ import org.jetbrains.dokka.model.DClasslike
 import org.jetbrains.dokka.model.DEnum
 import org.jetbrains.dokka.model.DEnumEntry
 import org.jetbrains.dokka.model.DFunction
-import org.jetbrains.dokka.model.DInterface
 import org.jetbrains.dokka.model.DPackage
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
@@ -75,50 +74,53 @@ internal class RellModuleVisitor(
     fun visitRellModule(module: R_Module): List<DPackage> {
         val dri = DRI(packageName = module.name.str())
 
-        val (namespacedQueries, rootQueries) = module.queries.mapValues { it.value.visit() }.entries.partition { it.key.contains(".") }
-        val namespaceToQueries = namespacedQueries.groupBy( { it.key.substringBeforeLast(".") }, { it.value })
+        val (namespaceToQueries, rootQueries) = genericVisitor(module.queries) {visit()}
+        val (namespaceToOperations, rootOperations) = genericVisitor(module.operations) {visit()}
+        val (namespaceToFunctions, rootFunctions) = genericVisitor(module.functions) {visit()}
+        val (namespaceToEntities, rootEntities) = genericVisitor(module.entities) {visit()}
+        val (namespaceToStructs, rootStructs) = genericVisitor(module.structs) {visit()}
+        val (namespaceToObjects, rootObjects) = genericVisitor(module.objects) {visit()}
+        val (namespaceToEnums, rootEnums) = genericVisitor(module.enums) {visit()}
+        val (namespaceToGlobalConstants, rootGlobalConstants) = genericVisitor(module.constants) {visit()}
 
-        val (namespacedOperations, rootOperations) = module.operations.mapValues { it.value.visit() }.entries.partition { it.key.contains(".") }
-        val namespaceToOperations = namespacedOperations.groupBy( { it.key.substringBeforeLast(".") }, { it.value })
+        val namespaceSet = listOf(
+                namespaceToQueries,
+                namespaceToOperations,
+                namespaceToFunctions,
+                namespaceToEntities,
+                namespaceToStructs,
+                namespaceToObjects,
+                namespaceToEnums,
+                namespaceToGlobalConstants,
+        ).flatMap { it.keys }.toSet()
 
-        val namespaceSet = namespaceToQueries.keys + namespaceToOperations.keys
         val namespaces = namespaceSet.map {
             namespace(dri, it,
-                    functions = namespaceToQueries[it].orEmpty() + namespaceToOperations[it].orEmpty(),
-                    classLikes = listOf(),
-                    properties = listOf(),
-                    )
+                    functions = combineGenericList(namespaceToQueries[it], namespaceToOperations[it], namespaceToFunctions[it]),
+                    classLikes = combineGenericList(namespaceToEntities[it], namespaceToStructs[it], namespaceToObjects[it], namespaceToEnums[it]),
+                    properties = combineGenericList(namespaceToGlobalConstants[it])
+            )
         }
 
-        val globalConstants = module.constants.values.map { it.visit() }
-        val entities = module.entities.values.map { it.visit() }
-        val structs = module.structs.values.map { it.visit() }
-        val objects = module.objects.values.map { it.visit() }
-        val enums = module.enums.values.map { it.visit() }
-        val functions = module.functions.values.mapNotNull { it.visit() }
-        val operations = rootOperations.map { it.value }
-        val queries = rootQueries.map { it.value }
-
-        //val operations = module.operations.values.map { it.visit() }
-        //val queries = module.queries.values.map { it.visit() }
-
+        //TODO: Do we need to handle extension functions in namespaces?
         val extensionFunctions = rellAnalysis.getExtensionFunctions(module.name.str()).mapNotNull { it.visit() }
 
         logger.info("Module: ${module.name}")
-        logger.info("Found ${globalConstants.size} constants, ${entities.size} entities, ${structs.size} structs, ${objects.size} objects, ${enums.size} enums, " +
-                "${functions.size} functions, ${operations.size} operations and ${queries.size} queries")
+        logger.info("Found ${rootGlobalConstants.size + namespaceToGlobalConstants.size} constants, ${rootEntities.size + namespaceToEntities.size} entities, " +
+                "${rootStructs.size + namespaceToStructs.size} structs, ${rootObjects.size + namespaceToObjects.size} objects, " +
+                "${rootEnums.size + namespaceToEnums.size} enums, ${rootFunctions.size + namespaceToFunctions.size} functions, " +
+                "${rootOperations.size + namespaceToOperations.size} operations and ${rootQueries.size + namespaceToQueries.size} queries")
 
         return namespaces +
                 DPackage(
-                dri = dri,
-                properties = globalConstants,
-                classlikes = entities + structs + objects + enums,
-                functions = functions + queries + operations + extensionFunctions,
-                typealiases = listOf(),
-                documentation = module.docSymbol.toDocumentationNode().toSourceSetDependent(),
-                sourceSets = setOf(sourceSet),
-        )
-
+                        dri = dri,
+                        properties = rootGlobalConstants,
+                        classlikes = combineGenericList(rootEntities, rootStructs, rootObjects, rootEnums),
+                        functions = combineGenericList(rootFunctions, rootQueries, rootOperations, extensionFunctions),
+                        typealiases = listOf(),
+                        documentation = module.docSymbol.toDocumentationNode().toSourceSetDependent(),
+                        sourceSets = setOf(sourceSet),
+                )
     }
 
     private fun namespace(parent: DRI, name: String, functions: List<DFunction>, properties: List<DProperty>, classLikes: List<DClasslike>): DPackage {
@@ -132,6 +134,13 @@ internal class RellModuleVisitor(
                 sourceSets = setOf(sourceSet),
                 extra = PropertyContainer.withAll(IsNamespace(name))
         )
+    }
+
+    private fun <T, R> genericVisitor(items: Map<String, T>, visit: T.() -> R): Pair<Map<String, List<R>>, List<R>> {
+        val (namespaceItems, rootItems) = items.entries.partition { it.key.contains(".") }
+        val namespaceToItems = namespaceItems.groupBy({ it.key.substringBeforeLast(".") }, { it.value.visit() })
+        val rootResults = rootItems.map { it.value.visit() }
+        return namespaceToItems to rootResults
     }
 
     private fun R_GlobalConstantDefinition.visit(): DProperty {
@@ -378,7 +387,6 @@ internal class RellModuleVisitor(
     )
 
     private fun <T> T.toSourceSetDependent() = if (this != null) mapOf(sourceSet to this) else mapOf()
+
+    private fun<T> combineGenericList(vararg lists: List<T>?) = lists.flatMap { it?.filterNotNull() ?: listOf() }
 }
-
-
-
