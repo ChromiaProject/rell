@@ -72,7 +72,7 @@ internal class RellModuleVisitor(
         private val rellAnalysis: RellAnalysis
 ) {
 
-    fun visitRellModule(module: R_Module): DPackage {
+    fun visitRellModule(module: R_Module): List<DPackage> {
         val dri = DRI(packageName = module.name.str())
 
         val (namespacedQueries, rootQueries) = module.queries.mapValues { it.value.visit() }.entries.partition { it.key.contains(".") }
@@ -108,35 +108,29 @@ internal class RellModuleVisitor(
         logger.info("Found ${globalConstants.size} constants, ${entities.size} entities, ${structs.size} structs, ${objects.size} objects, ${enums.size} enums, " +
                 "${functions.size} functions, ${operations.size} operations and ${queries.size} queries")
 
-        return DPackage(
+        return namespaces +
+                DPackage(
                 dri = dri,
                 properties = globalConstants,
-                classlikes = entities + structs + objects + enums + namespaces,
+                classlikes = entities + structs + objects + enums,
                 functions = functions + queries + operations + extensionFunctions,
                 typealiases = listOf(),
                 documentation = module.docSymbol.toDocumentationNode().toSourceSetDependent(),
                 sourceSets = setOf(sourceSet),
         )
+
     }
 
-    private fun namespace(parent: DRI, name: String, functions: List<DFunction>, properties: List<DProperty>, classLikes: List<DClasslike>): DInterface {
-        return DInterface(
-                parent.withClass(name),
-                name,
+    private fun namespace(parent: DRI, name: String, functions: List<DFunction>, properties: List<DProperty>, classLikes: List<DClasslike>): DPackage {
+        return DPackage(
+                DRI("${parent.packageName}.$name"),
                 properties = properties,
                 classlikes = classLikes,
                 functions = functions,
+                typealiases = listOf(),
                 documentation = simpleDocumentationNode("").toSourceSetDependent(),
                 sourceSets = setOf(sourceSet),
-                companion = null,
-                expectPresentInSet = null,
-                generics = listOf(),
-                isExpectActual = false,
-                visibility = KotlinVisibility.Public.toSourceSetDependent(),
-                modifier = KotlinModifier.Empty.toSourceSetDependent(),
-                supertypes = mapOf(),
-                sources = RellDocumentableSource.NULL.toSourceSetDependent(),
-                extra = PropertyContainer.withAll(IsNamespace)
+                extra = PropertyContainer.withAll(IsNamespace(name))
         )
     }
 

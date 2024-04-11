@@ -3,8 +3,10 @@ package com.chromia.rell.dokka.page
 
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.model.isFunction
+import com.chromia.rell.dokka.model.isNamespace
 import com.chromia.rell.dokka.model.isOperation
 import com.chromia.rell.dokka.model.isQuery
+import com.chromia.rell.dokka.model.namespaceName
 import com.chromia.rell.dokka.renderers.html.RellTabbedContentType
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.InternalDokkaApi
@@ -107,7 +109,13 @@ class RellPageCreator(
     override fun contentForPackage(p: DPackage): ContentGroup {
         return contentBuilder.contentFor(p) {
             group(kind = ContentKind.Cover) {
-                cover( if (rellDokkaPluginConfiguration?.system == true) "Namespace definitions" else "Module-level declarations")
+                cover(
+                        when {
+                            rellDokkaPluginConfiguration?.system == true -> "Namespace definitions"
+                            p.isNamespace() -> "Namespace ${p.namespaceName()}"
+                            else -> "Module-level declarations"
+                        }
+                )
                 if (contentForDescription(p).isNotEmpty()) {
                     sourceSetDependentHint(
                             dri = p.dri,
