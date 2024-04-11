@@ -1,6 +1,5 @@
 package com.chromia.rell.dokka.model
 
-import com.chromia.rell.dokka.dri.GenericUnresolvedBoundExtra
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DClasslike
@@ -9,7 +8,6 @@ import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.IsVar
-import org.jetbrains.dokka.model.UnresolvedBound
 import org.jetbrains.dokka.model.properties.ExtraProperty
 
 object IsStatic : ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsStatic> {
@@ -65,6 +63,12 @@ object IsEntity: ExtraProperty<DClasslike>, ExtraProperty.Key<DClasslike, IsEnti
 }
 
 fun DClasslike.isEntity() = this is DClass && this.extra[IsEntity] != null
+
+object IsNamespace: ExtraProperty<DClasslike>, ExtraProperty.Key<DClasslike, IsNamespace> {
+    override val key: ExtraProperty.Key<DClasslike, *> get() = this
+}
+
+fun DClasslike.isNamespace() = this is DClass && this.extra[IsNamespace] != null
 
 object IsStruct: ExtraProperty<DClasslike>, ExtraProperty.Key<DClasslike, IsStruct> {
     override val key: ExtraProperty.Key<DClasslike, *> get() = this

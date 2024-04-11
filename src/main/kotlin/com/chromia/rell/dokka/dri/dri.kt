@@ -35,7 +35,7 @@ data class DRIWithSourceSet(val dri: DRI, val sourceSet: DokkaConfiguration.Dokk
 fun DRI.withSourceSet(sourceSet: DokkaConfiguration.DokkaSourceSet) = DRIWithSourceSet(this, sourceSet)
 
 fun DRI.Companion.from(d: R_Definition): DRI {
-    val packageName = d.cDefName.module.str()
+    val packageName = d.cDefName.run { listOf(module.str()) + qualifiedName.parts.dropLast(1) }.joinToString(".")
     val className = when (d) {
         is R_GlobalConstantDefinition -> d.simpleName
         is R_EntityDefinition -> d.simpleName

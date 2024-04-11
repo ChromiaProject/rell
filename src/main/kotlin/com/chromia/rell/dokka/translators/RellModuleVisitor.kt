@@ -10,6 +10,7 @@ import com.chromia.rell.dokka.model.ExtensionFunction
 import com.chromia.rell.dokka.model.ExtensionFunctionExtra
 import com.chromia.rell.dokka.model.IsAnonymous
 import com.chromia.rell.dokka.model.IsEntity
+import com.chromia.rell.dokka.model.IsNamespace
 import com.chromia.rell.dokka.model.IsExtendable
 import com.chromia.rell.dokka.model.IsFunction
 import com.chromia.rell.dokka.model.IsIndex
@@ -46,9 +47,11 @@ import org.jetbrains.dokka.links.PointingToCallableParameters
 import org.jetbrains.dokka.links.withClass
 import org.jetbrains.dokka.model.ComplexExpression
 import org.jetbrains.dokka.model.DClass
+import org.jetbrains.dokka.model.DClasslike
 import org.jetbrains.dokka.model.DEnum
 import org.jetbrains.dokka.model.DEnumEntry
 import org.jetbrains.dokka.model.DFunction
+import org.jetbrains.dokka.model.DInterface
 import org.jetbrains.dokka.model.DPackage
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
@@ -72,14 +75,32 @@ internal class RellModuleVisitor(
     fun visitRellModule(module: R_Module): DPackage {
         val dri = DRI(packageName = module.name.str())
 
+        val (namespacedQueries, rootQueries) = module.queries.mapValues { it.value.visit() }.entries.partition { it.key.contains(".") }
+        val namespaceToQueries = namespacedQueries.groupBy( { it.key.substringBeforeLast(".") }, { it.value })
+
+        val (namespacedOperations, rootOperations) = module.operations.mapValues { it.value.visit() }.entries.partition { it.key.contains(".") }
+        val namespaceToOperations = namespacedOperations.groupBy( { it.key.substringBeforeLast(".") }, { it.value })
+
+        val namespaceSet = namespaceToQueries.keys + namespaceToOperations.keys
+        val namespaces = namespaceSet.map {
+            namespace(dri, it,
+                    functions = namespaceToQueries[it].orEmpty() + namespaceToOperations[it].orEmpty(),
+                    classLikes = listOf(),
+                    properties = listOf(),
+                    )
+        }
+
         val globalConstants = module.constants.values.map { it.visit() }
         val entities = module.entities.values.map { it.visit() }
         val structs = module.structs.values.map { it.visit() }
         val objects = module.objects.values.map { it.visit() }
         val enums = module.enums.values.map { it.visit() }
         val functions = module.functions.values.mapNotNull { it.visit() }
-        val operations = module.operations.values.map { it.visit() }
-        val queries = module.queries.values.map { it.visit() }
+        val operations = rootOperations.map { it.value }
+        val queries = rootQueries.map { it.value }
+
+        //val operations = module.operations.values.map { it.visit() }
+        //val queries = module.queries.values.map { it.visit() }
 
         val extensionFunctions = rellAnalysis.getExtensionFunctions(module.name.str()).mapNotNull { it.visit() }
 
@@ -90,11 +111,32 @@ internal class RellModuleVisitor(
         return DPackage(
                 dri = dri,
                 properties = globalConstants,
-                classlikes = entities + structs + objects + enums,
-                functions = functions + operations + queries + extensionFunctions,
+                classlikes = entities + structs + objects + enums + namespaces,
+                functions = functions + queries + operations + extensionFunctions,
                 typealiases = listOf(),
                 documentation = module.docSymbol.toDocumentationNode().toSourceSetDependent(),
                 sourceSets = setOf(sourceSet),
+        )
+    }
+
+    private fun namespace(parent: DRI, name: String, functions: List<DFunction>, properties: List<DProperty>, classLikes: List<DClasslike>): DInterface {
+        return DInterface(
+                parent.withClass(name),
+                name,
+                properties = properties,
+                classlikes = classLikes,
+                functions = functions,
+                documentation = simpleDocumentationNode("").toSourceSetDependent(),
+                sourceSets = setOf(sourceSet),
+                companion = null,
+                expectPresentInSet = null,
+                generics = listOf(),
+                isExpectActual = false,
+                visibility = KotlinVisibility.Public.toSourceSetDependent(),
+                modifier = KotlinModifier.Empty.toSourceSetDependent(),
+                supertypes = mapOf(),
+                sources = RellDocumentableSource.NULL.toSourceSetDependent(),
+                extra = PropertyContainer.withAll(IsNamespace)
         )
     }
 
