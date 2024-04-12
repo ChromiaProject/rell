@@ -155,7 +155,6 @@ class RellSignatureProvider internal constructor(
                     if (c.isType()) keyword("type ")
                 }
 
-                is DInterface -> keyword("namespace ")
                 is DObject -> keyword("object ")
                 is DEnum -> keyword("enum ")
                 else -> TODO("Type $c not treated")
