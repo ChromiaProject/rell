@@ -75,17 +75,17 @@ internal class RellModuleVisitor(
     fun visitRellModule(module: R_Module): List<DPackage> {
         val dri = DRI(packageName = module.name.str())
 
-        val (namespaceToQueries, rootQueries) = genericVisitor(module.queries) {visit()}
-        val (namespaceToOperations, rootOperations) = genericVisitor(module.operations) {visit()}
-        val (namespaceToFunctions, rootFunctions) = genericVisitor(module.functions) {visit()}
-        val (namespaceToEntities, rootEntities) = genericVisitor(module.entities) {visit()}
-        val (namespaceToStructs, rootStructs) = genericVisitor(module.structs) {visit()}
-        val (namespaceToObjects, rootObjects) = genericVisitor(module.objects) {visit()}
-        val (namespaceToEnums, rootEnums) = genericVisitor(module.enums) {visit()}
-        val (namespaceToGlobalConstants, rootGlobalConstants) = genericVisitor(module.constants) {visit()}
+        val (namespaceToQueries, rootQueries) = genericVisitor(module.queries) { visit() }
+        val (namespaceToOperations, rootOperations) = genericVisitor(module.operations) { visit() }
+        val (namespaceToFunctions, rootFunctions) = genericVisitor(module.functions) { visit() }
+        val (namespaceToEntities, rootEntities) = genericVisitor(module.entities) { visit() }
+        val (namespaceToStructs, rootStructs) = genericVisitor(module.structs) { visit() }
+        val (namespaceToObjects, rootObjects) = genericVisitor(module.objects) { visit() }
+        val (namespaceToEnums, rootEnums) = genericVisitor(module.enums) { visit() }
+        val (namespaceToGlobalConstants, rootGlobalConstants) = genericVisitor(module.constants) { visit() }
 
-        val extensionFunctions = rellAnalysis.getExtensionFunctions(module.name.str()).associateBy{ it.defName.qualifiedName }
-        val (namespaceToExtensionFunctions, rootExtensionFunctions) = genericVisitor(extensionFunctions) {visit()}
+        val extensionFunctions = rellAnalysis.getExtensionFunctions(module.name.str()).associateBy { it.defName.qualifiedName }
+        val (namespaceToExtensionFunctions, rootExtensionFunctions) = genericVisitor(extensionFunctions) { visit() }
 
         val namespaceSet = listOf(
                 namespaceToQueries,
@@ -391,5 +391,5 @@ internal class RellModuleVisitor(
 
     private fun <T> T.toSourceSetDependent() = if (this != null) mapOf(sourceSet to this) else mapOf()
 
-    private fun<T> combineGenericList(vararg lists: List<T>?) = lists.flatMap { it?.filterNotNull() ?: listOf() }
+    private fun <T> combineGenericList(vararg lists: List<T>?) = lists.flatMap { it?.filterNotNull() ?: listOf() }
 }
