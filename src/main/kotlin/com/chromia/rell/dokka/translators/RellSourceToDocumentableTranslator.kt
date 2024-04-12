@@ -19,7 +19,7 @@ class RellSourceToDocumentableTranslator(context: DokkaContext) : SourceToDocume
     override fun invoke(sourceSet: DokkaConfiguration.DokkaSourceSet, context: DokkaContext): DModule {
         val rellAnalysis = RellAnalysis(sourceSet.sourceRoots.first(), rellConfig?.modules)
         return RellModuleVisitor(sourceSet, context.logger, rellAnalysis).run {
-            rellAnalysis.modules().map { visitRellModule(it) }
+            rellAnalysis.modules().flatMap { visitRellModule(it) }
         }.let {
             DModule(
                     rellConfig?.name ?: "root",

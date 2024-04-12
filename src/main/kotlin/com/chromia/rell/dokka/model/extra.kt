@@ -1,15 +1,14 @@
 package com.chromia.rell.dokka.model
 
-import com.chromia.rell.dokka.dri.GenericUnresolvedBoundExtra
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.DClass
 import org.jetbrains.dokka.model.DClasslike
 import org.jetbrains.dokka.model.DFunction
+import org.jetbrains.dokka.model.DPackage
 import org.jetbrains.dokka.model.DParameter
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.IsVar
-import org.jetbrains.dokka.model.UnresolvedBound
 import org.jetbrains.dokka.model.properties.ExtraProperty
 
 object IsStatic : ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsStatic> {
@@ -65,6 +64,14 @@ object IsEntity: ExtraProperty<DClasslike>, ExtraProperty.Key<DClasslike, IsEnti
 }
 
 fun DClasslike.isEntity() = this is DClass && this.extra[IsEntity] != null
+
+class IsNamespace(val name: String): ExtraProperty<DPackage> {
+    override val key: ExtraProperty.Key<DPackage, *> get() = Companion
+    companion object: ExtraProperty.Key<DPackage, IsNamespace>
+}
+
+fun DPackage.isNamespace() = this.extra[IsNamespace] != null
+fun DPackage.namespaceName() = this.extra[IsNamespace]!!.name
 
 object IsStruct: ExtraProperty<DClasslike>, ExtraProperty.Key<DClasslike, IsStruct> {
     override val key: ExtraProperty.Key<DClasslike, *> get() = this
