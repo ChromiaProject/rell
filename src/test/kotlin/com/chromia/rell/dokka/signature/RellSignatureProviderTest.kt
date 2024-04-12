@@ -362,4 +362,20 @@ internal class RellSignatureProviderTest : SingleFileRellDokkaPluginTest() {
             }
         }
     }
+
+    @Test
+    fun `Mount names are shown`() {
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
+        singleFileTestInline("""
+            @mount("my_mount")
+            query test() = "";
+        """.trimIndent(), listOf(writerPlugin)) {
+            renderingStage = { _, _ ->
+                writerPlugin.writer.renderedContent("test-dapp/main/test.html").firstSignature()
+                        .match(
+                                "@mount(\"my_mount\") query", A("test"), "(): ", A("text"),
+                                ignoreSpanWithTokenStyle = true)
+            }
+        }
+    }
 }
