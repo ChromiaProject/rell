@@ -171,6 +171,9 @@ h1 {
 }
 
 /* Navigation icons */
+.nav-icon.enum-class-kt::before {
+    content: url("../images/nav-icons/enum.svg");
+}
 .nav-icon.class-kt::before {
     content: url("../images/nav-icons/class.svg");
 }
