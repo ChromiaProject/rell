@@ -20,6 +20,7 @@ import com.chromia.rell.dokka.model.IsObject
 import com.chromia.rell.dokka.model.IsOperation
 import com.chromia.rell.dokka.model.IsQuery
 import com.chromia.rell.dokka.model.IsStruct
+import com.chromia.rell.dokka.model.MountNameExtra
 import com.chromia.rell.dokka.model.toExpression
 import com.chromia.rell.dokka.reflection.getParamsByReflection
 import com.chromia.rell.dokka.reflection.getTypeByReflection
@@ -34,6 +35,7 @@ import net.postchain.rell.base.model.R_FunctionParam
 import net.postchain.rell.base.model.R_GlobalConstantDefinition
 import net.postchain.rell.base.model.R_KeyIndexKind
 import net.postchain.rell.base.model.R_Module
+import net.postchain.rell.base.model.R_MountedRoutineDefinition
 import net.postchain.rell.base.model.R_ObjectDefinition
 import net.postchain.rell.base.model.R_OperationDefinition
 import net.postchain.rell.base.model.R_QueryDefinition
@@ -322,6 +324,9 @@ internal class RellModuleVisitor(
 
     private fun R_OperationDefinition.visit() = visit(IsOperation)
     private fun R_QueryDefinition.visit() = visit(IsQuery)
+
+    private fun R_MountedRoutineDefinition.visit(vararg extraProperty: ExtraProperty<DFunction>?) =
+            (this as R_RoutineDefinition).visit(*extraProperty, takeIf { it.mountName.str() != it.simpleName }?.let { MountNameExtra(it.mountName) })
 
     private fun R_RoutineDefinition.visit(vararg extraProperty: ExtraProperty<DFunction>?): DFunction {
         val dri = DRI.from(this)

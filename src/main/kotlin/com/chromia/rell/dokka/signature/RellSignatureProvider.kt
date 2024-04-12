@@ -7,6 +7,7 @@ import com.chromia.rell.dokka.dri.DriOfUnit
 import com.chromia.rell.dokka.dri.FunctionUnresolvedBoundExtra
 import com.chromia.rell.dokka.dri.isAlias
 import com.chromia.rell.dokka.model.extensionTarget
+import com.chromia.rell.dokka.model.getMountName
 import com.chromia.rell.dokka.model.isAnonymous
 import com.chromia.rell.dokka.model.isEntity
 import com.chromia.rell.dokka.model.isExtendable
@@ -265,6 +266,12 @@ class RellSignatureProvider internal constructor(
                 if (d.dri.isAlias()) punctuation("(alias) ")
                 if (d.isPure()) keyword("pure ")
                 if (d.isStatic()) keyword("static ")
+                d.getMountName()?.let {
+                    keyword("@mount")
+                    punctuation("(\"")
+                    text(it.str())
+                    punctuation("\")\n")
+                }
                 if (d.isExtendable()) keyword("@extendable ")
                 d.extensionTarget()?.let {
                     keyword("@extend")
