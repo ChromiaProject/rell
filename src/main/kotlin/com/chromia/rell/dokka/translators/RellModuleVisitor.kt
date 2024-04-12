@@ -6,6 +6,7 @@ import com.chromia.rell.dokka.doc.simpleDocumentationNode
 import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.from
 import com.chromia.rell.dokka.dri.toBound
+import com.chromia.rell.dokka.dri.toPackageName
 import com.chromia.rell.dokka.model.ExtensionFunction
 import com.chromia.rell.dokka.model.ExtensionFunctionExtra
 import com.chromia.rell.dokka.model.IsAnonymous
@@ -83,10 +84,14 @@ internal class RellModuleVisitor(
         val (namespaceToEnums, rootEnums) = genericVisitor(module.enums) {visit()}
         val (namespaceToGlobalConstants, rootGlobalConstants) = genericVisitor(module.constants) {visit()}
 
+        val extensionFunctions = rellAnalysis.getExtensionFunctions(module.name.str()).associateBy{ it.defName.qualifiedName }
+        val (namespaceToExtensionFunctions, rootExtensionFunctions) = genericVisitor(extensionFunctions) {visit()}
+
         val namespaceSet = listOf(
                 namespaceToQueries,
                 namespaceToOperations,
                 namespaceToFunctions,
+                namespaceToExtensionFunctions,
                 namespaceToEntities,
                 namespaceToStructs,
                 namespaceToObjects,
@@ -96,19 +101,17 @@ internal class RellModuleVisitor(
 
         val namespaces = namespaceSet.map {
             namespace(dri, it,
-                    functions = combineGenericList(namespaceToQueries[it], namespaceToOperations[it], namespaceToFunctions[it]),
+                    functions = combineGenericList(namespaceToFunctions[it], namespaceToOperations[it], namespaceToQueries[it], namespaceToExtensionFunctions[it]),
                     classLikes = combineGenericList(namespaceToEntities[it], namespaceToStructs[it], namespaceToObjects[it], namespaceToEnums[it]),
                     properties = combineGenericList(namespaceToGlobalConstants[it])
             )
         }
 
-        //TODO: Do we need to handle extension functions in namespaces?
-        val extensionFunctions = rellAnalysis.getExtensionFunctions(module.name.str()).mapNotNull { it.visit() }
-
         logger.info("Module: ${module.name}")
         logger.info("Found ${rootGlobalConstants.size + namespaceToGlobalConstants.size} constants, ${rootEntities.size + namespaceToEntities.size} entities, " +
                 "${rootStructs.size + namespaceToStructs.size} structs, ${rootObjects.size + namespaceToObjects.size} objects, " +
                 "${rootEnums.size + namespaceToEnums.size} enums, ${rootFunctions.size + namespaceToFunctions.size} functions, " +
+                "${rootExtensionFunctions.size + namespaceToExtensionFunctions.size} functions, " +
                 "${rootOperations.size + namespaceToOperations.size} operations and ${rootQueries.size + namespaceToQueries.size} queries")
 
         return namespaces +
@@ -116,7 +119,7 @@ internal class RellModuleVisitor(
                         dri = dri,
                         properties = rootGlobalConstants,
                         classlikes = combineGenericList(rootEntities, rootStructs, rootObjects, rootEnums),
-                        functions = combineGenericList(rootFunctions, rootQueries, rootOperations, extensionFunctions),
+                        functions = combineGenericList(rootFunctions, rootOperations, rootQueries, rootExtensionFunctions),
                         typealiases = listOf(),
                         documentation = module.docSymbol.toDocumentationNode().toSourceSetDependent(),
                         sourceSets = setOf(sourceSet),
@@ -345,7 +348,7 @@ internal class RellModuleVisitor(
 
     private fun ExtensionFunction.visit(): DFunction? {
         val dri = DRI(
-                packageName = defName.module,
+                packageName = defName.toPackageName(),
                 callable = Callable.from(
                         defName.simpleName,
                         fnBase.getHeader().params
