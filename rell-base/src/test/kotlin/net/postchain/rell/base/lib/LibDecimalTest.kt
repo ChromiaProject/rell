@@ -6,7 +6,9 @@ package net.postchain.rell.base.lib
 
 import net.postchain.rell.base.lib.type.Lib_DecimalMath
 import net.postchain.rell.base.testutils.BaseRellTest
+import net.postchain.rell.base.testutils.RellCodeTester
 import org.junit.Test
+import java.math.BigDecimal
 
 class LibDecimalTest: BaseRellTest(false) {
     @Test fun testConstants() {
@@ -80,9 +82,9 @@ class LibDecimalTest: BaseRellTest(false) {
         chk("decimal('0').to_text(false)", "text[0]")
         chk("decimal('0').to_text(true)", "text[0]")
         chk("decimal('123.456').to_text(false)", "text[123.456]")
-        chk("decimal('123.456').to_text(true)", "text[123.456]")
+        chk("decimal('123.456').to_text(true)", "text[1.23456E+2]")
         chk("decimal('-123.456').to_text(false)", "text[-123.456]")
-        chk("decimal('-123.456').to_text(true)", "text[-123.456]")
+        chk("decimal('-123.456').to_text(true)", "text[-1.23456E+2]")
 
         chk("decimal('12.34e20').to_text(false)", "text[1234000000000000000000]")
         chk("decimal('12.34e20').to_text(true)", "text[1.234E+21]")
@@ -93,7 +95,7 @@ class LibDecimalTest: BaseRellTest(false) {
 
         val p = Lib_DecimalMath.DECIMAL_INT_DIGITS - 3
         chk("decimal('123.45678910111213141516e$p').to_text(false)", "text[12345678910111213141516${"0".repeat(p-20)}]")
-        chk("decimal('123.45678910111213141516e$p').to_text(true)", "text[1.2345678910111213141516E+${p+2}]")
+        chk("decimal('123.45678910111213141516e$p').to_text(true)", "text[1.23456789101112131415E+${p+2}]")
 
         chk("decimal('12.34e-18').to_text(false)", "text[0.00000000000000001234]")
         chk("decimal('12.34e-18').to_text(true)", "text[1.234E-17]")
@@ -105,19 +107,81 @@ class LibDecimalTest: BaseRellTest(false) {
         chk("decimal('1.${f}').to_text(false)", "text[1.${t}${t}]")
         chk("decimal('1.${f}').to_text(true)", "text[1.${t}${t}]")
         chk("decimal('1.${f}e5').to_text(false)", "text[101234.56789${t}01235]")
-        chk("decimal('1.${f}e5').to_text(true)", "text[101234.56789${t}01235]")
+        chk("decimal('1.${f}e5').to_text(true)", "text[1.0123456789${t}E+5]")
         chk("decimal('1.${f}e10').to_text(false)", "text[1${t}.${t}${t}]")
-        chk("decimal('1.${f}e10').to_text(true)", "text[1${t}.${t}${t}]")
-        chk("decimal('1.${f}e10').to_text(false)", "text[1${t}.${t}${t}]")
-        chk("decimal('1.${f}e10').to_text(true)", "text[1${t}.${t}${t}]")
+        chk("decimal('1.${f}e10').to_text(true)", "text[1.${t}${t}E+10]")
         chk("decimal('1.${f}e40').to_text(false)", "text[1${f}0000000000]")
-        chk("decimal('1.${f}e40').to_text(true)", "text[1.${f}E+40]")
+        chk("decimal('1.${f}e40').to_text(true)", "text[1.${t}${t}E+40]")
         chk("decimal('1.${f}e60').to_text(false)", "text[1${f}000000000000000000000000000000]")
-        chk("decimal('1.${f}e60').to_text(true)", "text[1.${f}E+60]")
+        chk("decimal('1.${f}e60').to_text(true)", "text[1.${t}${t}E+60]")
         chk("decimal('1.${f}${f}e60').to_text(false)", "text[1${f}${f}]")
-        chk("decimal('1.${f}${f}e60').to_text(true)", "text[1${f}${f}]")
+        chk("decimal('1.${f}${f}e60').to_text(true)", "text[1.${t}${t}E+60]")
         chk("decimal('1.${f}${f}e70').to_text(false)", "text[1${f}${f}0000000000]")
-        chk("decimal('1.${f}${f}e70').to_text(true)", "text[1.${f}${f}E+70]")
+        chk("decimal('1.${f}${f}e70').to_text(true)", "text[1.${t}${t}E+70]")
+    }
+
+    @Test fun testToTextScientific2() {
+        // value = 0
+        chkToTextSci("0", "0")
+        chkToTextSci("0e+5", "0")
+        chkToTextSci("0e-5", "0")
+
+        // scale = 0
+        chkToTextSci("1", "1.0")
+        chkToTextSci("9", "9.0")
+        chkToTextSci("123", "1.23E+2")
+        chkToTextSci("123456", "1.23456E+5")
+        chkToTextSci("12345678901234567890123", "1.23456789012345678901E+22")
+        chkToTextSci("12345678901234567890101", "1.23456789012345678901E+22")
+        chkToTextSci("12345678901234567890149", "1.23456789012345678901E+22")
+        chkToTextSci("12345678901234567890151", "1.23456789012345678902E+22")
+        chkToTextSci("12345678901234567890199", "1.23456789012345678902E+22")
+        chkToTextSci("92345678901234567890123", "9.23456789012345678901E+22")
+
+        // scale < 0
+        chkToTextSci("10", "1.0E+1")
+        chkToTextSci("100", "1.0E+2")
+        chkToTextSci("1000", "1.0E+3")
+        chkToTextSci("1${"0".repeat(100)}", "1.0E+100")
+        chkToTextSci("1${"0".repeat(1000)}", "1.0E+1000")
+        chkToTextSci("1${"0".repeat(10000)}", "1.0E+10000")
+        chkToTextSci("1${"0".repeat(100000)}", "1.0E+100000")
+        chkToTextSci("123456000", "1.23456E+8")
+        chkToTextSci("123456000000", "1.23456E+11")
+        chkToTextSci("123456${"0".repeat(1000)}", "1.23456E+1005")
+        chkToTextSci("123456${"0".repeat(100000)}", "1.23456E+100005")
+        chkToTextSci("12345678901234567890123${"0".repeat(1000)}", "1.23456789012345678901E+1022")
+        chkToTextSci("12345678901234567890149${"0".repeat(1000)}", "1.23456789012345678901E+1022")
+        chkToTextSci("12345678901234567890151${"0".repeat(1000)}", "1.23456789012345678902E+1022")
+        chkToTextSci("12345678901234567890199${"0".repeat(1000)}", "1.23456789012345678902E+1022")
+        chkToTextSci("92345678901234567890149${"0".repeat(1000)}", "9.23456789012345678901E+1022")
+
+        // scale > 0, precision >= scale
+        chkToTextSci("123.456", "1.23456E+2")
+        chkToTextSci("0.123456", "1.23456E-1")
+        chkToTextSci("1.23456", "1.23456")
+        chkToTextSci("1.23456890123456789012", "1.23456890123456789012")
+        chkToTextSci("1234567890.1234567890123", "1.23456789012345678901E+9")
+        chkToTextSci("1234567890.1234567890149", "1.23456789012345678901E+9")
+        chkToTextSci("1234567890.1234567890151", "1.23456789012345678902E+9")
+        chkToTextSci("1234567890.1234567890199", "1.23456789012345678902E+9")
+        chkToTextSci("12345678901234567890.123", "1.23456789012345678901E+19")
+        chkToTextSci("12345678901234567890.149", "1.23456789012345678901E+19")
+        chkToTextSci("12345678901234567890.151", "1.23456789012345678902E+19")
+        chkToTextSci("123456789012345678901234567890.123", "1.23456789012345678901E+29")
+
+        // scale > 0, precision < scale
+        chkToTextSci("0.01", "1.0E-2")
+        chkToTextSci("0.0000000001", "1.0E-10")
+        chkToTextSci("0.0123456", "1.23456E-2")
+        chkToTextSci("0.01234567890123456789", "1.234567890123456789E-2")
+    }
+
+    private fun chkToTextSci(v: String, exp: String) {
+        chk("decimal('$v').to_text(true)", "text[$exp]")
+        if (exp != "0") {
+            chk("decimal('-$v').to_text(true)", "text[-$exp]")
+        }
     }
 
     @Test fun testCreateUpdate() {
@@ -143,5 +207,74 @@ class LibDecimalTest: BaseRellTest(false) {
         chk("(user @ { 'Bob' }).value", "dec[${expMin.replace('1', '2')}]")
 
         chkOp("{ update user @ { 'Alice' } ( value += decimal.MIN_VALUE ); }", "rt_err:sqlerr:0") // Overflow
+    }
+
+    @Test fun testEqualsIp() {
+        chkEquals { expr, a, b ->
+            chkEx("{ val v = (a = $a, b = $b); return $expr; }", "boolean[true]")
+        }
+    }
+
+    @Test fun testEqualsDb1() {
+        tstCtx.useSql = true
+        def("entity data { mutable a: decimal; mutable b: decimal; }")
+        chkEquals { expr, a, b ->
+            val t = RellCodeTester(tstCtx)
+            t.def("entity data { a: decimal; b: decimal; }")
+            t.chkOp("create data(a = $a, b = $b);")
+            chkEqualsDb0(t, expr)
+        }
+    }
+
+    @Test fun testEqualsDb2() {
+        tstCtx.useSql = true
+        def("entity data { mutable a: decimal; mutable b: decimal; }")
+        chkEquals { expr, a, b ->
+            val t = RellCodeTester(tstCtx)
+            t.def("entity data { a: decimal; b: decimal; }")
+            val type = Lib_DecimalMath.DECIMAL_SQL_TYPE_STR
+            t.insert("c0.data", "a,b", "1,'$a'::$type,'$b'::$type")
+            chkEqualsDb0(t, expr)
+        }
+    }
+
+    @Test fun testEqualsDb3() {
+        tstCtx.useSql = true
+        def("entity data { mutable a: decimal; mutable b: decimal; }")
+        chkEquals { expr, a, b ->
+            val t = RellCodeTester(tstCtx)
+            t.def("entity data { a: decimal; b: decimal; }")
+            t.init()
+            t.tstCtx.sqlMgr().transaction { sqlExec ->
+                sqlExec.execute("INSERT INTO \"c0.data\"(rowid,a,b) VALUES (?,?,?);") { stmt ->
+                    stmt.setInt(1, 1)
+                    stmt.setBigDecimal(2, BigDecimal(a))
+                    stmt.setBigDecimal(3, BigDecimal(b))
+                }
+            }
+            chkEqualsDb0(t, expr)
+        }
+    }
+
+    private fun chkEquals(block: (String, String, String) -> Unit) {
+        chkEquals0(block, "#0 * 1e-3 == #1 * 1e3", "123456", "0.123456")
+        chkEquals0(block, "#0 == #1", "123456e-3", "0.123456e3")
+        chkEquals0(block, "#0 == #1", "123e5", "12300e3")
+        chkEquals0(block, "#0 * 1e5 == #1 * 1e3", "123", "12300")
+        chkEquals0(block, "#0 * 100000 == #1 * 1000", "123", "12300")
+        chkEquals0(block, "#0 * 1e5 == #1 * 1e3", "123.4", "12340")
+        chkEquals0(block, "#0 == #1", "123.4e5", "12340e3")
+        chkEquals0(block, "#0 == #1", "123.450e6", "123450e3")
+        chkEquals0(block, "#0 == #1", "123.456e6", "123456e3")
+    }
+
+    private fun chkEquals0(block: (String, String, String) -> Unit, expr: String, a: String, b: String) {
+        val fullExpr = expr.replace("#0", "v.a").replace("#1", "v.b")
+        block(fullExpr, a, b)
+    }
+
+    private fun chkEqualsDb0(t: RellCodeTester, expr: String) {
+        t.chkEx("{ val v = data @{} (.a, .b); return $expr; }", "boolean[true]")
+        t.chk("(v:data) @{} ( $expr )", "boolean[true]")
     }
 }

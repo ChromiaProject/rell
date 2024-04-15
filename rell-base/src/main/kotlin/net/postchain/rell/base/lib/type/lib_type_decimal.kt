@@ -23,6 +23,7 @@ import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.sql.SqlConstants
 import org.jooq.DataType
 import org.jooq.impl.SQLDataType
+import java.lang.StringBuilder
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.MathContext
@@ -210,8 +211,18 @@ object Lib_Type_Decimal {
             }
 
             function("to_text", "text", pure = true, since = SINCE0) {
-                comment("Converts this decimal to a string representation, optionally using scientific notation (eg: 1E+100).")
-                param("scientific", "boolean", comment = "Flag indicating whether to use scientific notation.")
+                comment("""
+                    Converts this decimal to a string representation, optionally using scientific notation
+                    (e.g.: 1.2345E+100).
+                """)
+                param("scientific", "boolean") {
+                    comment("""
+                        Flag indicating whether to use scientific notation.
+                        When `true`, the result has a form 1.23456789E+123, with one digit before the point and
+                        at most 20 digits after the point (the exponent part is optional). The returned text is
+                        not always an exact representation of the decimal value due to rounding.
+                    """)
+                }
                 body { a, b ->
                     val v = a.asDecimal()
                     val sci = b.asBoolean()
@@ -241,11 +252,6 @@ object Lib_DecimalMath {
     val DECIMAL_MIN_VALUE: BigDecimal = BigDecimal.ONE.divide(BigDecimal.TEN.pow(DECIMAL_FRAC_DIGITS))
     val DECIMAL_MAX_VALUE: BigDecimal = BigDecimal.TEN.pow(DECIMAL_PRECISION).subtract(BigDecimal.ONE)
         .divide(BigDecimal.TEN.pow(DECIMAL_FRAC_DIGITS))
-    private val UPPER_LIMIT = BigDecimal.TEN.pow(DECIMAL_INT_DIGITS)
-    private val LOWER_LIMIT = -UPPER_LIMIT
-
-    private val POSITIVE_MIN = BigDecimal.ONE.divide(BigDecimal.TEN.pow(DECIMAL_FRAC_DIGITS + 1))
-    private val NEGATIVE_MIN = POSITIVE_MIN.negate()
 
     fun parse(s: String): BigDecimal {
         var t = if (s.startsWith(".")) {
@@ -257,42 +263,39 @@ object Lib_DecimalMath {
         } else {
             s
         }
-
         t = removeTrailingZeros(t)
         return BigDecimal(t)
     }
 
     fun scale(v: BigDecimal): BigDecimal? {
-        var t = v
-
-        if (t >= NEGATIVE_MIN && t <= POSITIVE_MIN) {
+        if (v.signum() == 0) {
             return BigDecimal.ZERO
-        } else if (t <= LOWER_LIMIT || t >= UPPER_LIMIT) {
+        }
+
+        val scale = v.scale()
+        val intDigits = v.precision() - scale
+        if (intDigits > DECIMAL_INT_DIGITS) {
             return null
+        } else if (intDigits < -DECIMAL_FRAC_DIGITS) {
+            return BigDecimal.ZERO
         }
 
-        val scale = t.scale()
-        if (scale > DECIMAL_FRAC_DIGITS) {
-            t = v.setScale(DECIMAL_FRAC_DIGITS, RoundingMode.HALF_UP)
-            if (t <= LOWER_LIMIT || t >= UPPER_LIMIT) {
-                return null
-            }
+        return if (scale <= DECIMAL_FRAC_DIGITS) {
+            v.setScale(DECIMAL_FRAC_DIGITS)
+        } else {
+            // The number of integer digits may grow (by one) because of rounding - need to check again.
+            val v2 = v.setScale(DECIMAL_FRAC_DIGITS, RoundingMode.HALF_UP)
+            val intDigits2 = v2.precision() - v2.scale()
+            if (intDigits2 > DECIMAL_INT_DIGITS) null else v2
         }
-
-        t = stripTrailingZeros(t)
-        return t
     }
 
-    private fun stripTrailingZeros(v: BigDecimal): BigDecimal {
+    fun stripTrailingZeros(v: BigDecimal, all: Boolean = true): BigDecimal {
         val scale = v.scale()
-        if (scale <= 0) {
-            return v
-        }
-
         var s = scale
 
         var q = v.unscaledValue()
-        while (s > 0) {
+        while ((all || s > 0) && q.signum() != 0) {
             val arr = q.divideAndRemainder(BigInteger.TEN)
             val div = arr[0]
             val mod = arr[1]
@@ -333,11 +336,6 @@ object Lib_DecimalMath {
         TODO() // Need to handle rounding and precision carefully.
     }
 
-    private fun mathContext(a: BigDecimal, b: BigDecimal): MathContext {
-        val p = a.precision() + b.precision() + 2
-        return MathContext(p, RoundingMode.HALF_UP)
-    }
-
     fun toString(v: BigDecimal): String {
         val s = v.toPlainString()
         val r = removeTrailingZeros(s)
@@ -345,10 +343,50 @@ object Lib_DecimalMath {
     }
 
     fun toSciString(v: BigDecimal): String {
-        return v.toString()
+        if (v.signum() == 0) {
+            return "0"
+        }
+
+        var t = v.round(MathContext(DECIMAL_FRAC_DIGITS + 1, RoundingMode.HALF_UP))
+        t = stripTrailingZeros(t)
+
+        val unscaledStr = t.unscaledValue().abs().toString()
+        val precision = unscaledStr.length
+        val scale = t.scale()
+
+        val e = when {
+            scale == 0 -> precision - 1
+            scale < 0 -> precision - 1 - scale
+            else -> precision - 1 - scale
+        }
+
+        val buf = StringBuilder()
+
+        if (v.signum() < 0) {
+            buf.append('-')
+        }
+
+        buf.append(unscaledStr[0])
+        buf.append('.')
+
+        if (precision >= 2) {
+            buf.append(unscaledStr.substring(1))
+        } else {
+            buf.append('0')
+        }
+
+        if (e != 0) {
+            buf.append('E')
+            if (e > 0) {
+                buf.append('+')
+            }
+            buf.append(e)
+        }
+
+        return buf.toString()
     }
 
-    fun removeTrailingZeros(s: String): String {
+    private fun removeTrailingZeros(s: String): String {
         // Verify that the string is a valid number and find the fractional part.
         val (fracStart, fracEnd) = parseString(s)
 
@@ -441,7 +479,8 @@ private object DecFns {
         val v = a.asDecimal()
         val bi = v.toBigInteger()
         if (bi < BIG_INT_MIN || bi > BIG_INT_MAX) {
-            val s = v.round(MathContext(20, RoundingMode.DOWN))
+            var s = v.round(MathContext(20, RoundingMode.DOWN))
+            s = Lib_DecimalMath.stripTrailingZeros(s)
             throw Rt_Exception.common("decimal.to_integer:overflow:$s", "Value out of range: $s")
         }
         val r = bi.toLong()
@@ -523,16 +562,14 @@ class Rt_DecimalValue private constructor(val value: BigDecimal): Rt_Value() {
         val ZERO = Rt_DecimalValue(BigDecimal.ZERO)
 
         fun get(v: BigDecimal): Rt_Value {
-            val t = v.unscaledValue()
-            if (t.signum() == 0) {
-                return ZERO
-            }
-
             val res = getTry(v)
             return res ?: throw errOverflow("decimal:overflow", "Decimal value out of range")
         }
 
         fun getTry(v: BigDecimal): Rt_Value? {
+            if (v.signum() == 0) {
+                return ZERO
+            }
             val t = Lib_DecimalMath.scale(v)
             return if (t == null) null else Rt_DecimalValue(t)
         }

@@ -421,3 +421,9 @@ The new version control will make all nodes handle a Rell app the same way.
 Details:
 1. The minimum supported language version is 0.10.10.
 2. Version control works only for production features. Test features (e.g. rell.test.* library API) is not affected.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+21. Library: New decimal.to_text(true) format
+
+Format of decimal.to_text(true) changed to return a normalized scientific representation of a number, which has one
+digit before the point. For example, for 123456.0 the result is "1.23456E+5", for 0.123456 it's "1.23456E-1".

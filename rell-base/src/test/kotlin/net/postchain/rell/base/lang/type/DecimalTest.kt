@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.type
@@ -115,6 +115,12 @@ class DecimalTest: BaseRellTest(false) {
         chkLit("123.456E-23", "dec[0]")
         chkLit("123.456E-100000", "dec[0]")
 
+        val rep0 = fracBase("0")
+        chkLit("0.${rep0}001", "dec[0]")
+        chkLit("0.${rep0}004", "dec[0]")
+        chkLit("0.${rep0}005", "dec[0.${rep0}01]")
+        chkLit("0.${rep0}009", "dec[0.${rep0}01]")
+
         chkLit("12345678901234567890E-20", "dec[0.1234567890123456789]")
         chkLit("12345678901234567890E-30", "dec[0.0000000000123456789]")
         chkLit("12345678901234567890E-35", "dec[0.00000000000000012346]")
@@ -159,6 +165,7 @@ class DecimalTest: BaseRellTest(false) {
         chkLitRange("123456789.987654321E+131064")
     }
 
+    @Suppress("RemoveCurlyBracesFromTemplate", "RemoveSingleExpressionStringTemplate")
     @Test fun testLiteralExpLongBase() {
         val x = "0.${"0".repeat(500)}123456"
         chkLit("${x}", "dec[0]")
@@ -453,6 +460,10 @@ class DecimalTest: BaseRellTest(false) {
         }
     }
 
+    private fun insertDecimal(id: Int, v: String) {
+        tst.insert("c0.data", "v", "$id,'$v' :: ${Lib_DecimalMath.DECIMAL_SQL_TYPE_STR}")
+    }
+
     @Test fun testBugEquals() {
         tstCtx.useSql = true
         chkBugEquals("42", "42.0", "42")
@@ -475,10 +486,6 @@ class DecimalTest: BaseRellTest(false) {
         t.chk("data @ {}.v", "dec[$e2]")
     }
 
-    private fun insertDecimal(id: Int, v: String) {
-        tst.insert("c0.data", "v", "$id,'$v' :: ${Lib_DecimalMath.DECIMAL_SQL_TYPE_STR}")
-    }
-
     class DecAddCase(val op: String, val a: String, val b: String, val expected: String?)
 
     class DecVals {
@@ -493,7 +500,7 @@ class DecimalTest: BaseRellTest(false) {
     }
 
     companion object {
-        val LIMIT = BigInteger.TEN.pow(Lib_DecimalMath.DECIMAL_INT_DIGITS)
+        val LIMIT: BigInteger = BigInteger.TEN.pow(Lib_DecimalMath.DECIMAL_INT_DIGITS)
 
         fun limitMinus(minus: Long) = "" + (LIMIT - BigInteger.valueOf(minus))
         fun limitDiv(div: Long) = "" + (LIMIT / BigInteger.valueOf(div))

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model.expr
@@ -249,7 +249,7 @@ sealed class R_BinaryOp_Arith_BigInteger(code: String): R_BinaryOp(code) {
 sealed class R_BinaryOp_Arith_Decimal(code: String): R_BinaryOp(code) {
     abstract fun evaluate(left: BigDecimal, right: BigDecimal): BigDecimal
 
-    override final fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
+    final override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
         val leftVal = left.asDecimal()
         val rightVal = right.asDecimal()
         val resVal = evaluate(leftVal, rightVal)

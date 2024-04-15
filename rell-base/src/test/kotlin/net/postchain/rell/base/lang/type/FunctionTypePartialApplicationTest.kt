@@ -455,7 +455,7 @@ class FunctionTypePartialApplicationTest: BaseRellTest(false) {
         chkSysMemFnOver("decimal", "round", "(123.456)", "()->decimal", "", "", "dec[123]")
         chkSysMemFnOver("decimal", "round", "(123.456)", "(integer)->decimal", "*", "1", "dec[123.5]")
         chkSysMemFnOver("decimal", "to_text", "(123.456)", "()->text", "", "", "text[123.456]")
-        chkSysMemFnOver("decimal", "to_text", "(123.456)", "(boolean)->text", "*", "true", "text[123.456]")
+        chkSysMemFnOver("decimal", "to_text", "(123.456)", "(boolean)->text", "*", "true", "text[1.23456E+2]")
 
         chkSysMemFnOver("text", "sub", "'hello'", "(integer)->text", "*", "2", "text[llo]")
         chkSysMemFnOver("text", "sub", "'hello'", "(integer,integer)->text", "*,*", "2,4", "text[ll]")

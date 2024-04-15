@@ -1,12 +1,14 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils.doc
 
+import net.postchain.rell.base.lib.type.Lib_DecimalMath
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.math.absoluteValue
+import kotlin.math.max
 import kotlin.math.min
 
 sealed class DocValue {
@@ -28,7 +30,10 @@ sealed class DocValue {
         }
 
         fun decimal(value: BigDecimal): DocValue? {
-            val digs = value.precision() + value.scale().absoluteValue
+            val value2 = Lib_DecimalMath.stripTrailingZeros(value, false)
+            val precision = value2.precision()
+            val scale = value2.scale()
+            val digs = if (scale > 0) max(precision, scale) else (precision - scale)
             return if (digs > 100) null else DocValue_Decimal(value)
         }
 
@@ -72,7 +77,7 @@ private class DocValue_BigInteger(private val value: BigInteger): DocValue() {
 
 private class DocValue_Decimal(private val value: BigDecimal): DocValue() {
     override fun genCode(b: DocCode.Builder) {
-        val s = value.toPlainString()
+        val s = Lib_DecimalMath.toString(value)
         b.raw(s)
         if ('.' !in s) b.raw(".0")
     }

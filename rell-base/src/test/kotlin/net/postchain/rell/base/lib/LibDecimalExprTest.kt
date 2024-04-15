@@ -117,6 +117,11 @@ abstract class LibDecimalExprTest: BaseExprTest() {
         chkConstructor("0.${rep0}194", "dec[0.${rep0}19]")
         chkConstructor("0.${rep0}195", "dec[0.${rep0}2]")
 
+        chkConstructor("0.${rep0}001", "dec[0]")
+        chkConstructor("0.${rep0}004", "dec[0]")
+        chkConstructor("0.${rep0}005", "dec[0.${rep0}01]")
+        chkConstructor("0.${rep0}009", "dec[0.${rep0}01]")
+
         val fracExp = Lib_DecimalMath.DECIMAL_FRAC_DIGITS - 2
         chkConstructor("0.100e-$fracExp", "dec[0.${rep0}1]")
         chkConstructor("0.101e-$fracExp", "dec[0.${rep0}1]")
@@ -127,6 +132,7 @@ abstract class LibDecimalExprTest: BaseExprTest() {
         chkConstructor("0.195e-$fracExp", "dec[0.${rep0}2]")
     }
 
+    @Suppress("RemoveSingleExpressionStringTemplate")
     @Test fun testConstructorTextOverflow() {
         val limitMinusOne = DecimalTest.limitMinus(1)
         val overLimit = "" + (DecimalTest.LIMIT * BigInteger.valueOf(3))
@@ -414,5 +420,27 @@ abstract class LibDecimalExprTest: BaseExprTest() {
         chkExpr("decimal(#0).to_text()", "text[0.00000000000000001234]", vText("12.34e-18"))
         chkExpr("decimal(#0).to_text()", "text[-0.00000000000000001234]", vText("-12.34e-18"))
         chkExpr("'' + decimal(#0)", "text[123.456]", vText("123.456"))
+    }
+
+    @Test fun testEquals() {
+        chkExpr("#0 * #1 == #2 * #3", "boolean[true]", vDec("123456"), vDec("1e-3"), vDec("0.123456"), vDec("1e3"))
+        chkExpr("#0 * 1e-3 == #1 * 1e3", "boolean[true]", vDec("123456"), vDec("0.123456"))
+        chkExpr("decimal(#0) * 1e-3 == decimal(#1) * 1e3", "boolean[true]", vText("123456"), vText("0.123456"))
+        chkExpr("#0 == #1", "boolean[true]", vDec("123456e-3"), vDec("0.123456e3"))
+        chkExpr("decimal(#0) == decimal(#1)", "boolean[true]", vText("123456e-3"), vText("0.123456e3"))
+        chkExpr("#0 == #1", "boolean[true]", vDec("123e5"), vDec("12300e3"))
+        chkExpr("decimal(#0) == decimal(#1)", "boolean[true]", vText("123e5"), vText("12300e3"))
+        chkExpr("#0 * #1 == #2 * #3", "boolean[true]", vDec("123"), vDec("1e5"), vDec("12300"), vDec("1e3"))
+        chkExpr("#0 * 1e5 == #1 * 1e3", "boolean[true]", vDec("123"), vDec("12300"))
+        chkExpr("#0 * 100000 == #1 * 1000", "boolean[true]", vDec("123"), vDec("12300"))
+        chkExpr("#0 * #1 == #2 * #3", "boolean[true]", vDec("123.4"), vDec("1e5"), vDec("12340"), vDec("1e3"))
+        chkExpr("#0 * 1e5 == #1 * 1e3", "boolean[true]", vDec("123.4"), vDec("12340"))
+        chkExpr("decimal(#0) * 1e5 == decimal(#1) * 1e3", "boolean[true]", vText("123.4"), vText("12340"))
+        chkExpr("#0 == #1", "boolean[true]", vDec("123.4e5"), vDec("12340e3"))
+        chkExpr("decimal(#0) == decimal(#1)", "boolean[true]", vText("123.4e5"), vText("12340e3"))
+        chkExpr("#0 == #1", "boolean[true]", vDec("123.450e6"), vDec("123450e3"))
+        chkExpr("decimal(#0) == decimal(#1)", "boolean[true]", vText("123.450e6"), vText("123450e3"))
+        chkExpr("#0 == #1", "boolean[true]", vDec("123.456e6"), vDec("123456e3"))
+        chkExpr("decimal(#0) == decimal(#1)", "boolean[true]", vText("123.456e6"), vText("123456e3"))
     }
 }
