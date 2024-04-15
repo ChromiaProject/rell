@@ -21,7 +21,7 @@ object RellVersions {
                 "0.11.0",
                 "0.12.0",
                 "0.13.0", "0.13.1", "0.13.2", "0.13.3", "0.13.4", "0.13.5", "0.13.6", "0.13.7", "0.13.8", "0.13.9",
-                "0.13.10",
+                "0.13.10", "0.13.11",
                 "0.14.0",
             )
             .map { R_LangVersion.of(it) }
@@ -33,7 +33,7 @@ object RellVersions {
 
     private val MIN_COMPATIBILITY_VERSION = R_LangVersion.of("0.10.10")
 
-    val MIN_COMPILER_VERSION: R_LangVersion by lazy { R_LangVersion.of(SINCE_NOW) }
+    val MIN_COMPILER_VERSION: R_LangVersion by lazy { R_LangVersion.of("0.13.11") }
 
     /**
      * To be used in the library to specify a yet unknown next version.

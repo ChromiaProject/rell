@@ -6,7 +6,6 @@ package net.postchain.rell.gtx
 
 import net.postchain.common.exception.UserMistake
 import net.postchain.rell.base.testutils.RellTestUtils
-import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.gtx.testutils.BaseGtxTest
 import org.apache.commons.lang3.StringUtils
 import org.junit.Test
@@ -95,6 +94,7 @@ class GtxConfigTest: BaseGtxTest() {
         chkVersion("0.13.8", "OK")
         chkVersion("0.13.9", "OK")
         chkVersion("0.13.10", "OK")
+        chkVersion("0.13.11", "OK")
 
         chkVersion("0.14.0", "OK")
     }
@@ -130,7 +130,7 @@ class GtxConfigTest: BaseGtxTest() {
         chkVersion("0.10.12", err)
         chkVersion("0.11.1", err)
         chkVersion("0.12.1", err)
-        chkVersion("0.13.11", err)
+        chkVersion("0.13.12", err)
         chkVersion("0.14.1", err)
         chkVersion("0.15.0", err)
         chkVersion("1.0.0", err)
@@ -158,11 +158,11 @@ class GtxConfigTest: BaseGtxTest() {
 
     @Test fun testCompilerVersion() {
         chkConfig("'sources':SOURCES,'version':'0.13.10'", "OK")
-        chkConfig("'sources':SOURCES,'version':'${RellVersions.SINCE_NOW}'",
+        chkConfig("'sources':SOURCES,'version':'0.13.11'",
             "ERR:compilerVersion not specified in configuration")
         //TODO test version > MIN_COMPILER_VERSION
 
-        chkConfig("'sources':SOURCES,'version':'0.12.0','compilerVersion':'${RellVersions.SINCE_NOW}'", "OK")
+        chkConfig("'sources':SOURCES,'version':'0.12.0','compilerVersion':'0.13.11'", "OK")
         chkConfig("'sources':SOURCES,'version':'0.12.0','compilerVersion':'0.14.0'", "OK")
         chkConfig("'sources':SOURCES,'version':'0.12.0','compilerVersion':'0.13.10'",
             "ERR:Bad compilerVersion: 0.13.10")
@@ -170,8 +170,8 @@ class GtxConfigTest: BaseGtxTest() {
             "ERR:Unknown compilerVersion: 0.12.99")
         chkConfig("'sources':SOURCES,'version':'0.12.0','compilerVersion':'999.0.0'", "OK")
 
-        chkConfig("'sources':SOURCES,'version':'${RellVersions.SINCE_NOW}','compilerVersion':'${RellVersions.SINCE_NOW}'", "OK")
-        chkConfig("'sources':SOURCES,'version':'0.13.10','compilerVersion':'${RellVersions.SINCE_NOW}'", "OK")
+        chkConfig("'sources':SOURCES,'version':'0.13.11','compilerVersion':'0.13.11'", "OK")
+        chkConfig("'sources':SOURCES,'version':'0.13.10','compilerVersion':'0.13.11'", "OK")
         //TODO uncomment when 0.13.11+ is available
         //chkConfig("'sources':SOURCES,'version':'0.13.11+1','compilerVersion':'0.13.11'", "OK")
     }
@@ -179,8 +179,8 @@ class GtxConfigTest: BaseGtxTest() {
     @Test fun testVersionControl() {
         val src = "'sources':{'module.rell':'query q() = rell.meta.current_module().kind_text;'}"
         chkConfig("$src,'version':'0.13.0'", "OK:'module'")
-        chkConfig("$src,'version':'0.13.10','compilerVersion':'${RellVersions.SINCE_NOW}'", "OK:'module'")
-        chkConfig("$src,'version':'0.13.0','compilerVersion':'${RellVersions.SINCE_NOW}'",
+        chkConfig("$src,'version':'0.13.10','compilerVersion':'0.13.11'", "OK:'module'")
+        chkConfig("$src,'version':'0.13.0','compilerVersion':'0.13.11'",
             "OK:ct_err:module.rell:version:lib:TYPE:[rell:rell.meta]:0.13.5:0.13.0")
     }
 

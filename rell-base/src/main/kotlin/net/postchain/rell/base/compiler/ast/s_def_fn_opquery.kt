@@ -235,6 +235,6 @@ class S_QueryDefinition(
     }
 
     companion object {
-        private val MIXED_TUPLES_SWITCH = C_FeatureSwitch(RellVersions.SINCE_NOW)
+        private val MIXED_TUPLES_SWITCH = C_FeatureSwitch("0.13.11")
     }
 }

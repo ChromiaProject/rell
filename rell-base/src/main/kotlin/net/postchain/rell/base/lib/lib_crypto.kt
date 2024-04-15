@@ -18,7 +18,6 @@ import net.postchain.rell.base.model.Rt_TupleValue
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.PostchainGtvUtils
-import net.postchain.rell.base.utils.RellVersions.SINCE_NOW
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.etherjar.PrivateKey
 import net.postchain.rell.base.utils.etherjar.Signer
@@ -60,7 +59,7 @@ object Lib_Crypto {
                 }
             }
 
-            function("get_signature", result = "byte_array", pure = true, since = SINCE_NOW) {
+            function("get_signature", result = "byte_array", pure = true, since = "0.13.11") {
                 comment("""
                     Calculates a ECDSA (secp256k1) signature. The returned value can be verified with the
                     `verify_signature()` function.
