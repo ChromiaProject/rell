@@ -327,7 +327,7 @@ one can write:
     (
         u: user,
         c: contract @* { c.user == u }
-    ) @* ( u, c )
+    ) @* {} ( u, c )
 
 The first expression is translated into SQL like:
 
@@ -348,7 +348,7 @@ With the new join syntax, one can use @outer annotation to make an outer join:
     (
         u: user,
         @outer c: contract @* { c.user == u }
-    ) @* ( u, c )
+    ) @* {} ( u, c )
 
 This expression is translated into SQL like:
 
@@ -421,6 +421,8 @@ The new version control will make all nodes handle a Rell app the same way.
 Details:
 1. The minimum supported language version is 0.10.10.
 2. Version control works only for production features. Test features (e.g. rell.test.* library API) is not affected.
+3. New blockchain configuration option "gtx.rell.compilerVersion" is set by the compiler and checked at runtime to
+   enable the version control (so it's disabled if the app was compiled by an older Rell version).
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 21. Library: New decimal.to_text(true) format
@@ -449,3 +451,20 @@ Size of "data_hash" and "privkey" must be 32, the size of the returned value is 
 
 There will be a warning if a query return type contains a mixed tuple - a tuple which has both named and unnamed fields.
 Queries define a public API of a Rell app, and returning mixed tuples is considered a bad practice.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+25. Library: Transactional try_call()
+
+Function try_call() rolls back database changes made by the target function if the call fails.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+26. Strict Gtv conversion mode for operations
+
+New blockchain configuration option "gtx.rell.strictGtvConversion" (boolean, default false) enables the strict mode.
+In this mode, operation arguments must use canonical Gtv representation, so same value can be encoded only in one way.
+
+For instance, following gtv -> Rell conversions are not allowed in strict mode:
+
+- biginteger -> integer
+- integer, biginteger -> decimal
+- string -> byte_array
