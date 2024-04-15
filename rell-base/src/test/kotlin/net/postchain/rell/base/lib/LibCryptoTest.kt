@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib
@@ -12,15 +12,69 @@ import net.postchain.crypto.Secp256K1CryptoSystem
 import net.postchain.crypto.secp256k1_derivePubKey
 import net.postchain.gtv.Gtv
 import net.postchain.rell.base.testutils.BaseRellTest
-import net.postchain.rell.base.utils.CommonUtils
-import net.postchain.rell.base.utils.PostchainGtvUtils
-import net.postchain.rell.base.utils.checkEquals
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.*
 import org.junit.Test
 import java.math.BigInteger
 import java.security.MessageDigest
 
 class LibCryptoTest: BaseRellTest(false) {
+    @Test fun testGetSignature() {
+        chkGetSignature("0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF")
+        chkGetSignature("1234DEAD5678BEEF1234DEAD5678BEEF1234DEAD5678BEEF1234DEAD5678BEEF")
+        chkGetSignature("0000000000000000000000000000000000000000000000000000000000000000")
+        chkGetSignature("0101010101010101010101010101010101010101010101010101010101010101")
+        chkGetSignature("5555555555555555555555555555555555555555555555555555555555555555")
+        chkGetSignature("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        chkGetSignature("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
+    }
+
+    private fun chkGetSignature(dataHash: String) {
+        val privKey = ByteArray(32) { it.toByte() }.toHex()
+        val pubKey = privKeyToPubKey(privKey)
+        val vs = "crypto.verify_signature"
+
+        val dataHash2 = replaceByte(dataHash, 0) { it + 1 }
+        val dataHash3 = replaceByte(dataHash, -1) { it + 1 }
+
+        chk("crypto.get_signature(x'$dataHash', x'$privKey').size()", "int[64]")
+        chk("$vs(x'$dataHash', x'$pubKey', crypto.get_signature(x'$dataHash', x'$privKey'))", "boolean[true]")
+        chk("$vs(x'$dataHash2', x'$pubKey', crypto.get_signature(x'$dataHash2', x'$privKey'))", "boolean[true]")
+        chk("$vs(x'$dataHash3', x'$pubKey', crypto.get_signature(x'$dataHash3', x'$privKey'))", "boolean[true]")
+
+        chk("$vs(x'$dataHash2', x'$pubKey', crypto.get_signature(x'$dataHash', x'$privKey'))", "boolean[false]")
+        chk("$vs(x'$dataHash3', x'$pubKey', crypto.get_signature(x'$dataHash', x'$privKey'))", "boolean[false]")
+        chk("$vs(x'$dataHash', x'$pubKey', crypto.get_signature(x'$dataHash2', x'$privKey'))", "boolean[false]")
+        chk("$vs(x'$dataHash', x'$pubKey', crypto.get_signature(x'$dataHash3', x'$privKey'))", "boolean[false]")
+
+        val privKey2 = replaceByte(privKey, -1) { it + 1 }
+        val pubKey2 = privKeyToPubKey(privKey2)
+        chk("$vs(x'$dataHash', x'$pubKey2', crypto.get_signature(x'$dataHash', x'$privKey'))", "boolean[false]")
+        chk("$vs(x'$dataHash', x'$pubKey', crypto.get_signature(x'$dataHash', x'$privKey2'))", "boolean[false]")
+        chk("$vs(x'$dataHash', x'$pubKey2', crypto.get_signature(x'$dataHash', x'$privKey2'))", "boolean[true]")
+    }
+
+    @Test fun testGetSignatureBadArgs() {
+        val privKey = ByteArray(32) { it.toByte() }.toHex()
+        chk("crypto.get_signature(x'${"12".repeat(0)}', x'$privKey')", "rt_err:fn:get_signature:datahash_size:0")
+        chk("crypto.get_signature(x'${"12".repeat(1)}', x'$privKey')", "rt_err:fn:get_signature:datahash_size:1")
+        chk("crypto.get_signature(x'${"12".repeat(16)}', x'$privKey')", "rt_err:fn:get_signature:datahash_size:16")
+        chk("crypto.get_signature(x'${"12".repeat(31)}', x'$privKey')", "rt_err:fn:get_signature:datahash_size:31")
+        chk("crypto.get_signature(x'${"12".repeat(33)}', x'$privKey')", "rt_err:fn:get_signature:datahash_size:33")
+        chk("crypto.get_signature(x'${"12".repeat(48)}', x'$privKey')", "rt_err:fn:get_signature:datahash_size:48")
+        chk("crypto.get_signature(x'${"12".repeat(64)}', x'$privKey')", "rt_err:fn:get_signature:datahash_size:64")
+        chk("crypto.get_signature(x'${"12".repeat(1024)}', x'$privKey')", "rt_err:fn:get_signature:datahash_size:1024")
+
+        val dataHash = "00".repeat(32)
+        chk("crypto.get_signature(x'$dataHash', x'${"13".repeat(0)}')", "rt_err:fn:get_signature:privkey_size:0")
+        chk("crypto.get_signature(x'$dataHash', x'${"13".repeat(1)}')", "rt_err:fn:get_signature:privkey_size:1")
+        chk("crypto.get_signature(x'$dataHash', x'${"13".repeat(16)}')", "rt_err:fn:get_signature:privkey_size:16")
+        chk("crypto.get_signature(x'$dataHash', x'${"13".repeat(31)}')", "rt_err:fn:get_signature:privkey_size:31")
+        chk("crypto.get_signature(x'$dataHash', x'${"13".repeat(33)}')", "rt_err:fn:get_signature:privkey_size:33")
+        chk("crypto.get_signature(x'$dataHash', x'${"13".repeat(48)}')", "rt_err:fn:get_signature:privkey_size:48")
+        chk("crypto.get_signature(x'$dataHash', x'${"13".repeat(64)}')", "rt_err:fn:get_signature:privkey_size:64")
+        chk("crypto.get_signature(x'$dataHash', x'${"13".repeat(1024)}')", "rt_err:fn:get_signature:privkey_size:1024")
+    }
+
     @Test fun testVerifySignature() {
         val privKeyBytes = ByteArray(32) { it.toByte() }
         val pubKey = CommonUtils.bytesToHex(secp256k1_derivePubKey(privKeyBytes))
@@ -450,6 +504,15 @@ class LibCryptoTest: BaseRellTest(false) {
         val s = w.asString()
         check(s.matches(Regex("$prefix[0-9A-Fa-f]+"))) { s }
         return s.substring(prefix.length)
+    }
+
+    private fun privKeyToPubKey(privKey: String) = secp256k1_derivePubKey(privKey.hexStringToByteArray()).toHex()
+
+    private fun replaceByte(hex: String, i: Int, f: (Byte) -> Int): String {
+        val bytes = hex.hexStringToByteArray()
+        val j = if (i >= 0) i else (bytes.size + i)
+        bytes[j] = f(bytes[j]).toByte()
+        return bytes.toHex()
     }
 
     private class PyKeyTestCase(

@@ -433,3 +433,11 @@ digit before the point. For example, for 123456.0 the result is "1.23456E+5", fo
 
 The maximum length reduced from 60 to 58 characters. The table name length limit in Postgres is 63, Rell adds a chain
 ID prefix like "c123.".
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+23. Library: Function crypto.get_signature()
+
+    crypto.get_signature(data_hash: byte_array, privkey: byte_array): byte_array
+
+Calculates a signature, which can be verified with the crypto.verify_signature() function.
+Size of "data_hash" and "privkey" must be 32, the size of the returned value is 64.

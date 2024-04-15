@@ -5,6 +5,8 @@
 package net.postchain.rell.base.lib
 
 import net.postchain.crypto.CURVE_PARAMS
+import net.postchain.crypto.KeyPair
+import net.postchain.crypto.PrivKey
 import net.postchain.crypto.Signature
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
@@ -17,6 +19,7 @@ import net.postchain.rell.base.model.Rt_TupleValue
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.PostchainGtvUtils
+import net.postchain.rell.base.utils.RellVersions.SINCE_NOW
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.etherjar.PrivateKey
 import net.postchain.rell.base.utils.etherjar.Signer
@@ -58,11 +61,39 @@ object Lib_Crypto {
                 }
             }
 
+            function("get_signature", result = "byte_array", pure = true, since = SINCE_NOW) {
+                comment("""
+                    Calculates a ECDSA (secp256k1) signature. The returned value can be verified with the
+                    `verify_signature()` function.
+                    @returns 64-byte signature
+                    @see `verify_signature()`
+                """)
+                param(name = "data_hash", type = "byte_array") {
+                    comment("The hash of the data to be signed. Must 32 bytes.")
+                }
+                param(name = "privkey", type = "byte_array", comment = "The 32-byte private key used for signing.")
+                body { a, b ->
+                    val dataHash = a.asByteArray()
+                    val privKey = b.asByteArray()
+                    checkByteArraySize(dataHash, 32, fnSimpleName, "datahash_size", "data hash")
+                    checkPrivKeySize(privKey, fnSimpleName)
+
+                    val privKeyObj = PrivKey(privKey)
+                    val pubKeyObj = PostchainGtvUtils.cryptoSystem.derivePubKey(privKeyObj)
+                    val sigMaker = PostchainGtvUtils.cryptoSystem.buildSigMaker(KeyPair(pubKeyObj, privKeyObj))
+                    val signature = sigMaker.signDigest(dataHash)
+                    checkEquals(signature.data.size, 64)
+
+                    Rt_ByteArrayValue.get(signature.data)
+                }
+            }
+
             function("verify_signature", result = "boolean", pure = true, since = "0.10.6") {
                 comment("""
                     Verifies a signature against a message and public key.
                     @returns true if the signature is valid, indicating that the message was indeed signed
                     by the owner of the private key corresponding to the provided public key.
+                    @see `get_signature()`
                 """)
                 param(name = "data_hash", type = "byte_array") {
                     comment("The byte array representing the message that was signed.")
@@ -256,9 +287,13 @@ object Lib_Crypto {
     }
 
     private fun checkPrivKeySize(privKey: ByteArray, fn: String) {
-        val expPrivKeySize = 32
-        Rt_Utils.check(privKey.size == expPrivKeySize) {
-            "fn:$fn:privkey_size:${privKey.size}" toCodeMsg "Wrong size of private key: ${privKey.size} instead of $expPrivKeySize"
+        checkByteArraySize(privKey, 32, fn, "privkey_size", "private key")
+    }
+
+    @Suppress("SameParameterValue")
+    private fun checkByteArraySize(array: ByteArray, expSize: Int, fn: String, errCode: String, errMsg: String) {
+        Rt_Utils.check(array.size == expSize) {
+            "fn:$fn:$errCode:${array.size}" toCodeMsg "Wrong size of $errMsg: ${array.size} instead of $expSize"
         }
     }
 
