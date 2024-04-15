@@ -15,20 +15,18 @@ import net.postchain.rell.base.compiler.base.modifier.C_ModifierFields
 import net.postchain.rell.base.compiler.base.modifier.C_ModifierTargetType
 import net.postchain.rell.base.compiler.base.modifier.C_ModifierValues
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
+import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.compiler.base.utils.C_ReservedMountNames
 import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.MutableTypedKeyMap
-import net.postchain.rell.base.utils.TypedKeyMap
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDeclaration_Operation
 import net.postchain.rell.base.utils.doc.DocDeclaration_Query
 import net.postchain.rell.base.utils.doc.DocModifiers
 import net.postchain.rell.base.utils.ide.IdeOutlineNodeType
 import net.postchain.rell.base.utils.ide.IdeOutlineTreeBuilder
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import net.postchain.rell.base.utils.toImmMap
-import net.postchain.rell.base.utils.toImmSet
 
 class S_OperationDefinition(
     pos: S_Pos,
@@ -145,12 +143,12 @@ class S_OperationDefinition(
 }
 
 class S_QueryDefinition(
-        pos: S_Pos,
-        modifiers: S_Modifiers,
-        val name: S_Name,
-        val params: List<S_FormalParameter>,
-        val retType: S_Type?,
-        val body: S_FunctionBody
+    pos: S_Pos,
+    modifiers: S_Modifiers,
+    val name: S_Name,
+    val params: List<S_FormalParameter>,
+    val retType: S_Type?,
+    val body: S_FunctionBody,
 ): S_BasicDefinition(pos, modifiers) {
     override fun compileBasic(ctx: C_MountContext) {
         ctx.checkNotExternal(name.pos, C_DeclarationType.QUERY)
@@ -204,8 +202,9 @@ class S_QueryDefinition(
 
         val rBody = header.queryBody.compile()
 
-        if (ctx.globalCtx.compilerOptions.gtv) {
-            ctx.executor.onPass(C_CompilerPass.VALIDATION) {
+        ctx.executor.onPass(C_CompilerPass.VALIDATION) {
+            checkMixedTuples(ctx.msgCtx, rBody.retType)
+            if (ctx.globalCtx.compilerOptions.gtv) {
                 checkGtvResult(ctx.msgCtx, rBody.retType)
             }
         }
@@ -224,7 +223,18 @@ class S_QueryDefinition(
                 "Return type of query '$name'")
     }
 
+    private fun checkMixedTuples(msgCtx: C_MessageContext, rType: R_Type) {
+        if (MIXED_TUPLES_SWITCH.isActive(msgCtx.globalCtx) && rType.completeFlags().mixedTuple) {
+            msgCtx.warning(name.pos, "query:result_mixed_tuple:$name:${rType.strCode()}",
+                "Query return type contains a mixed tuple (with named and unnamed fields): ${rType.str()}")
+        }
+    }
+
     override fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder) {
         b.node(this, name, IdeOutlineNodeType.QUERY)
+    }
+
+    companion object {
+        private val MIXED_TUPLES_SWITCH = C_FeatureSwitch(RellVersions.SINCE_NOW)
     }
 }

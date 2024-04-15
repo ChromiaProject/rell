@@ -268,7 +268,7 @@ class R_MapType(
     override fun isDirectVirtualable() = keyType == R_TextType
 
     override fun strCode() = name
-    override fun componentTypes() = listOf(keyType, valueType)
+    override fun explicitComponentTypes() = listOf(keyType, valueType)
 
     override fun getLibType0() = C_LibType.make(Lib_Rell.MAP_TYPE, keyType, valueType)
 

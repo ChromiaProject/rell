@@ -20,9 +20,9 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.LazyPosString
 
 class C_QueryFunctionHeader(
-        explicitType: R_Type?,
-        val params: C_FormalParameters,
-        val queryBody: C_QueryFunctionBody?
+    explicitType: R_Type?,
+    val params: C_FormalParameters,
+    val queryBody: C_QueryFunctionBody?,
 ): C_FunctionHeader(explicitType, queryBody) {
     override val declarationType = C_DeclarationType.QUERY
 

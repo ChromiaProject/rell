@@ -437,7 +437,15 @@ ID prefix like "c123.".
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 23. Library: Function crypto.get_signature()
 
+New function:
+
     crypto.get_signature(data_hash: byte_array, privkey: byte_array): byte_array
 
 Calculates a signature, which can be verified with the crypto.verify_signature() function.
 Size of "data_hash" and "privkey" must be 32, the size of the returned value is 64.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+24. Language: Warning when returning a mixed tuple from a query
+
+There will be a warning if a query return type contains a mixed tuple - a tuple which has both named and unnamed fields.
+Queries define a public API of a Rell app, and returning mixed tuples is considered a bad practice.

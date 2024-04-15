@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.base.model
 
 import net.postchain.gtv.*
@@ -27,10 +31,11 @@ class R_TupleType(fields: List<R_TupleField>): R_Type(calcName(fields)) {
     override fun equals0(other: R_Type): Boolean = other is R_TupleType && fields == other.fields
     override fun hashCode0() = fields.hashCode()
 
+    override fun isDirectPure() = true
     override fun isReference() = true
     override fun isError() = isError
     override fun isDirectMutable() = false
-    override fun isDirectPure() = true
+    override fun isDirectMixedTuple() = fields.any { it.name != null } && fields.any { it.name == null }
 
     override fun strCode() = name
 
@@ -44,7 +49,7 @@ class R_TupleType(fields: List<R_TupleField>): R_Type(calcName(fields)) {
         )
     }
 
-    override fun componentTypes() = fields.map { it.type }.toList()
+    override fun explicitComponentTypes() = fields.map { it.type }.toList()
 
     override fun isAssignableFrom(type: R_Type): Boolean {
         if (type !is R_TupleType) return false

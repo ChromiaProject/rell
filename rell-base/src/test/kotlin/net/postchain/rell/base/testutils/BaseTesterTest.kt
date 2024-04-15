@@ -18,6 +18,7 @@ abstract class BaseTesterTest(useSql: Boolean): BaseContextTest(useSql) {
     fun chk(expr: String, expected: String) = tst.chk(expr, expected)
     fun chkEx(code: String, expected: String) = tst.chkEx(code, expected)
     fun chkExOut(code: String, expected: String, vararg expectedOut: String) = tst.chkExOut(code, expected, *expectedOut)
+
     fun chkCompile(code: String, expected: String) = tst.chkCompile(code, expected)
 
     fun chkOut(vararg expected: String) = tst.chkOut(*expected)

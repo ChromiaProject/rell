@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.base.model
 
 import net.postchain.gtv.Gtv
@@ -6,11 +10,13 @@ import net.postchain.rell.base.compiler.base.lib.C_LibType
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.type.Lib_Type_VirtualTuple
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.utils.immListOf
 
 class R_VirtualTupleType(val innerType: R_TupleType): R_VirtualType(innerType) {
     override fun equals0(other: R_Type): Boolean = other is R_VirtualTupleType && innerType == other.innerType
     override fun hashCode0() = innerType.hashCode()
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_VirtualTuple(this)
+    override fun explicitComponentTypes() = immListOf(innerType)
 
     override fun getLibType0() = C_LibType.make(
         Lib_Rell.VIRTUAL_TYPE,

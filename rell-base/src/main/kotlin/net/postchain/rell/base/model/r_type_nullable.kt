@@ -29,7 +29,7 @@ class R_NullableType(val valueType: R_Type): R_Type(calcName(valueType)) {
 
     override fun equals0(other: R_Type) = other is R_NullableType && valueType == other.valueType
     override fun hashCode0() = valueType.hashCode()
-    override fun componentTypes() = listOf(valueType)
+    override fun explicitComponentTypes() = listOf(valueType)
 
     override fun isReference() = valueType.isReference()
     override fun isError() = valueType.isError()

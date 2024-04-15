@@ -59,6 +59,8 @@ abstract class BaseRellTest(useSql: Boolean = true, gtv: Boolean = false): BaseT
         chkOut(*expected)
     }
 
+    fun chkCompile(code: String, expected: String = "OK", warn: String?) = tst.chkCompile(code, expected, warn)
+
     fun chkWarn(vararg  expected: String) = tst.chkWarn(*expected)
     fun chkStack(vararg expected: String) = tst.chkStack(*expected)
 

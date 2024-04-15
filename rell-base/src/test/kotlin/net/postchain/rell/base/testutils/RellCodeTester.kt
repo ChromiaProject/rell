@@ -96,6 +96,11 @@ class RellCodeTester(
         }
     }
 
+    fun chkCompile(code: String, expected: String, warn: String?) {
+        chkCompile(code, expected)
+        chkWarn(*listOfNotNull(warn).toTypedArray())
+    }
+
     override fun chkEx(code: String, expected: String) {
         val queryCode = "query q() $code"
         chkFull(queryCode, "q", listOf(), expected)

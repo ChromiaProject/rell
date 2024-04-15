@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.base.model
 
 import net.postchain.gtv.Gtv
@@ -47,7 +51,7 @@ sealed class Rt_VirtualValue(val gtv: Gtv): Rt_Value() {
 }
 
 sealed class GtvRtConversion_Virtual: GtvRtConversion() {
-    final override fun directCompatibility() = R_GtvCompatibility(true, false)
+    final override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = false)
     final override fun rtToGtv(rt: Rt_Value, pretty: Boolean) =
             throw Rt_GtvError.exception("virtual:to_gtv", "Cannot convert virtual to Gtv")
 

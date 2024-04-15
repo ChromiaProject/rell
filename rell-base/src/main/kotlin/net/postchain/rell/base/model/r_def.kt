@@ -203,10 +203,11 @@ class R_Struct(
         private val ERROR_BODY = R_StructBody(attrMap = mapOf(), attrList = listOf(), attrMutable = false)
 
         private val ERROR_TYPE_FLAGS = R_TypeFlags(
-                mutable = false,
-                gtv = R_GtvCompatibility(true, true),
-                virtualable = true,
-                pure = true
+            pure = true,
+            mutable = false,
+            gtv = R_GtvCompatibility(fromGtv = true, toGtv = true),
+            virtualable = true,
+            mixedTuple = false,
         )
 
         private val ERROR_STRUCT_FLAGS = R_StructFlags(typeFlags = ERROR_TYPE_FLAGS, cyclic = false, infinite = false)

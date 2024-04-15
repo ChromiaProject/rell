@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.lib
@@ -56,7 +56,7 @@ private class R_LazyType(private val valueType: R_Type): R_Type("lazy<${valueTyp
     override fun equals0(other: R_Type) = other is R_LazyType && valueType == other.valueType
     override fun hashCode0() = valueType.hashCode()
 
-    override fun componentTypes() = listOf(valueType)
+    override fun explicitComponentTypes() = listOf(valueType)
     override fun strCode() = name
     override fun createGtvConversion() = GtvRtConversion_None
 

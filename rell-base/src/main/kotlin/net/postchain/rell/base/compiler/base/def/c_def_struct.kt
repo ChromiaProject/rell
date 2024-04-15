@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.def
@@ -126,16 +126,17 @@ object C_StructGraphUtils {
             val gtv = R_GtvCompatibility(struct !in nonGtvFromStructs, struct !in nonGtvToStructs)
 
             val typeFlags = R_TypeFlags(
-                    mutable = struct in mutableStructs,
-                    gtv = gtv,
-                    virtualable = struct !in nonVirtualStructs,
-                    pure = struct !in nonPureStructs
+                pure = struct !in nonPureStructs,
+                mutable = struct in mutableStructs,
+                gtv = gtv,
+                virtualable = struct !in nonVirtualStructs,
+                mixedTuple = false,
             )
 
             val flags = R_StructFlags(
-                    typeFlags = typeFlags,
-                    cyclic = struct in cyclicStructs,
-                    infinite = struct in infiniteStructs
+                typeFlags = typeFlags,
+                cyclic = struct in cyclicStructs,
+                infinite = struct in infiniteStructs,
             )
 
             struct.setFlags(flags)

@@ -5,18 +5,22 @@
 package net.postchain.rell.base.model
 
 import net.postchain.gtv.Gtv
-import net.postchain.rell.base.compiler.base.core.*
+import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
+import net.postchain.rell.base.compiler.base.core.C_DefinitionName
+import net.postchain.rell.base.compiler.base.core.C_TypeAdapter
+import net.postchain.rell.base.compiler.base.core.C_TypeAdapter_Direct
 import net.postchain.rell.base.compiler.base.lib.C_LibType
 import net.postchain.rell.base.compiler.base.lib.C_LibTypeDef
 import net.postchain.rell.base.compiler.base.lib.C_LibUtils
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.runtime.*
-import net.postchain.rell.base.runtime.utils.*
-import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.runtime.utils.Rt_Utils
+import net.postchain.rell.base.runtime.utils.toGtv
+import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.LazyString
 import net.postchain.rell.base.utils.doc.DocCode
+import net.postchain.rell.base.utils.immListOf
 import org.jooq.DataType
-import org.jooq.SQLDialect
-import org.jooq.impl.DefaultDataType
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.util.*
@@ -24,32 +28,36 @@ import java.util.*
 class R_GtvCompatibility(val fromGtv: Boolean, val toGtv: Boolean)
 
 class R_TypeFlags(
-        val mutable: Boolean,
-        val gtv: R_GtvCompatibility,
-        val virtualable: Boolean,
-        val pure: Boolean
+    val pure: Boolean,
+    val mutable: Boolean,
+    val gtv: R_GtvCompatibility,
+    val virtualable: Boolean,
+    val mixedTuple: Boolean,
 ) {
     companion object {
         fun combine(flags: Collection<R_TypeFlags>): R_TypeFlags {
+            var pure = true
             var mutable = false
             var fromGtv = true
             var toGtv = true
             var virtualable = true
-            var pure = true
+            var mixedTuple = false
 
             for (f in flags) {
+                pure = pure && f.pure
                 mutable = mutable || f.mutable
                 fromGtv = fromGtv && f.gtv.fromGtv
                 toGtv = toGtv && f.gtv.toGtv
                 virtualable = virtualable && f.virtualable
-                pure = pure && f.pure
+                mixedTuple = mixedTuple || f.mixedTuple
             }
 
             return R_TypeFlags(
-                    mutable = mutable,
-                    gtv = R_GtvCompatibility(fromGtv, toGtv),
-                    virtualable = virtualable,
-                    pure = pure
+                pure = pure,
+                mutable = mutable,
+                gtv = R_GtvCompatibility(fromGtv, toGtv),
+                virtualable = virtualable,
+                mixedTuple = mixedTuple,
             )
         }
     }
@@ -163,17 +171,18 @@ abstract class R_Type(
     open fun isError(): Boolean = false
     fun isNotError() = !isError()
 
+    protected open fun isDirectPure(): Boolean = true
     protected open fun isDirectMutable(): Boolean = false
     protected open fun isDirectVirtualable(): Boolean = true
-    protected open fun isDirectPure(): Boolean = true
+    protected open fun isDirectMixedTuple(): Boolean = false
 
     fun directFlags(): R_TypeFlags {
-        val gtvConv = gtvConversion
         return R_TypeFlags(
-                mutable = isDirectMutable(),
-                gtv = gtvConv.directCompatibility(),
-                virtualable = isDirectVirtualable(),
-                pure = isDirectPure()
+            pure = isDirectPure(),
+            mutable = isDirectMutable(),
+            gtv = gtvConversion.directCompatibility(),
+            virtualable = isDirectVirtualable(),
+            mixedTuple = isDirectMixedTuple(),
         )
     }
 
@@ -201,7 +210,8 @@ abstract class R_Type(
         return str()
     }
 
-    open fun componentTypes(): List<R_Type> = listOf()
+    open fun explicitComponentTypes(): List<R_Type> = immListOf()
+    open fun componentTypes(): List<R_Type> = explicitComponentTypes()
 
     open fun isAssignableFrom(type: R_Type): Boolean = type == this
     protected open fun calcCommonType(other: R_Type): R_Type? = null

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.def
@@ -188,5 +188,60 @@ class QueryTest: BaseRellTest() {
         chkFull("query q(x: integer?): decimal? { return x; }", null as Long?, "null")
         chkFull("query q(x: integer?): decimal? = null;", 123, "null")
         chkFull("query q(x: integer?): decimal? { return null; }", 123, "null")
+    }
+
+    @Test fun testReturnMixedTuple() {
+        def("struct rec { x: (a: integer, text) = (a = 1, 'b'); }")
+
+        chkCompile("query q() = (1, 'a');", "OK", warn = null)
+        chkCompile("query q() = (x=1, y='a');", "OK", warn = null)
+        chkCompile("query q(): rec? = null;", "OK", warn = null)
+        chkCompile("query q() = rec();", "OK", warn = null)
+        chkCompile("query q() = rec((a = 1, 'b'));", "OK", warn = null)
+
+        chkMixedTupleType("list<(x: integer, text)>", "list<(x:integer,text)>")
+        chkMixedTupleType("map<decimal, (x: integer, text)>", "map<decimal,(x:integer,text)>")
+        chkMixedTupleType("map<decimal, list<(x: integer, text)>>", "map<decimal,list<(x:integer,text)>>")
+        chkMixedTupleType("(decimal, (x: integer, text))", "(decimal,(x:integer,text))")
+
+        chkMixedTupleExpr("(x=1, 'a')", "(x:integer,text)")
+        chkMixedTupleExpr("(1, y='a')", "(integer,y:text)")
+        chkMixedTupleExpr("list<(x: integer, text)>()", "list<(x:integer,text)>")
+        chkMixedTupleExpr("map<decimal, (x: integer, text)>()", "map<decimal,(x:integer,text)>")
+        chkMixedTupleExpr("map<decimal, list<(x: integer, text)>>()", "map<decimal,list<(x:integer,text)>>")
+        chkMixedTupleExpr("(1.0, (x=1, 'a'))", "(decimal,(x:integer,text))")
+        chkMixedTupleExpr("[(1.0, (x=1, 'a'))]", "list<(decimal,(x:integer,text))>")
+        chkMixedTupleExpr("[1.0: (x=1, 'a')]", "map<decimal,(x:integer,text)>")
+        chkMixedTupleExpr("[1.0: [(x=1, 'a')]]", "map<decimal,list<(x:integer,text)>>")
+        chkMixedTupleExpr("(1.0, [(x=1, 'a')])", "(decimal,list<(x:integer,text)>)")
+        chkMixedTupleExpr("(1.0, [true: (x=1, 'a')])", "(decimal,map<boolean,(x:integer,text)>)")
+        chkMixedTupleExpr("(1.0, [true: [(x=1, 'a')]])", "(decimal,map<boolean,list<(x:integer,text)>>)")
+    }
+
+    private fun chkMixedTupleType(type: String, errType: String) {
+        chkCompile("query q(): $type? = null;", warn = "query:result_mixed_tuple:q:$errType?")
+        chkCompile("query q(): $type? { return null; }", warn = "query:result_mixed_tuple:q:$errType?")
+        chkCompile("query q(): list<$type>? = null;", warn = "query:result_mixed_tuple:q:list<$errType>?")
+        chkCompile("query q(): map<integer,$type>? = null;", warn = "query:result_mixed_tuple:q:map<integer,$errType>?")
+        chkCompile("query q(): (integer,$type)? = null;", warn = "query:result_mixed_tuple:q:(integer,$errType)?")
+    }
+
+    private fun chkMixedTupleExpr(expr: String, errType: String) {
+        val err = "query:result_mixed_tuple:q"
+        chkCompile("query q() = $expr;", warn = "$err:$errType")
+        chkCompile("query q() { return $expr; }", warn = "$err:$errType")
+        chkCompile("query q(x: boolean) = if (x) $expr else null;", warn = "$err:$errType?")
+        chkCompile("query q(x: boolean) = if (x) null else $expr;", warn = "$err:$errType?")
+        chkCompile("query q(x: boolean) { return if (x) $expr else null; }", warn = "$err:$errType?")
+        chkCompile("query q(x: boolean) { return if (x) null else $expr; }", warn = "$err:$errType?")
+        chkCompile("query q(x: boolean) { if (x) return $expr; return null; }", warn = "$err:$errType?")
+        chkCompile("query q(x: boolean) { if (x) return null; return $expr; }", warn = "$err:$errType?")
+    }
+
+    @Test fun testReturnMixedTupleVersionControl() {
+        chkCompile("query q(): (a:integer,text)? = null;", warn = "query:result_mixed_tuple:q:(a:integer,text)?")
+
+        tst.compatibilityVer("0.13.10")
+        chkCompile("query q(): (a:integer,text)? = null;", warn = null)
     }
 }

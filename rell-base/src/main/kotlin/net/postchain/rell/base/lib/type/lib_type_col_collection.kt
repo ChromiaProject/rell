@@ -176,7 +176,7 @@ sealed class R_CollectionType(
     final override fun isReference() = true
     final override fun isError() = isError
     final override fun isDirectMutable() = true
-    final override fun componentTypes() = listOf(elementType)
+    final override fun explicitComponentTypes() = listOf(elementType)
     final override fun strCode() = name
 
     protected abstract fun getLibTypeDef(): C_LibTypeDef
