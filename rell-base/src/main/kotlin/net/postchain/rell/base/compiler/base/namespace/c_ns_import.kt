@@ -83,7 +83,8 @@ private class C_NsImp_InternalImportsProcessor(
     preModules: Map<C_ModuleKey, C_NsAsm_Namespace>,
 ) {
     private val importResolver = C_NsImp_ImportResolver(modules, preModules)
-    private val states = mutableMapOf<C_NsAsm_Namespace, C_NsImp_NamespaceState>()
+    private val nsStates = mutableMapOf<C_NsAsm_Namespace, C_NsImp_NamespaceState>()
+    private val nsDefs = mutableMapOf<C_NsAsm_Def_Namespace, C_NsImp_Def_Namespace>()
 
     fun process(asmList: List<C_NsAsm_Namespace>): List<C_NsImp_Namespace> {
         for (ns in asmList) {
@@ -91,7 +92,7 @@ private class C_NsImp_InternalImportsProcessor(
         }
 
         val impList = asmList
-                .map { states.getValue(it).getNamespace() }
+                .map { nsStates.getValue(it).getNamespace() }
                 .toImmList()
 
         return impList
@@ -150,11 +151,7 @@ private class C_NsImp_InternalImportsProcessor(
                 processDirectExactImport(builder, name, def)
             }
             is C_NsAsm_Def_Namespace -> {
-                val ns = def.ns()
-                val nsState = processNamespace(ns)
-                val nsGetter = nsState.getNamespaceGetter()
-                val ideInfo = def.ideSymbolInfo()
-                val nsDef = C_NsImp_Def_Namespace(nsGetter, def.defName, ideInfo, def.deprecated, def.importModule)
+                val nsDef = processNamespaceDef(def)
                 builder.addDirectDef(name, nsDef)
             }
         }
@@ -202,12 +199,18 @@ private class C_NsImp_InternalImportsProcessor(
     }
 
     private fun processImportNamespaceDef(builder: C_NsImp_NamespaceBuilder, name: R_Name, def: C_NsAsm_Def_Namespace) {
+        val nsDef = processNamespaceDef(def)
+        builder.addImportDef(name, nsDef)
+    }
+
+    private fun processNamespaceDef(def: C_NsAsm_Def_Namespace): C_NsImp_Def_Namespace {
         val ns = def.ns()
         val nsState = processNamespace(ns)
         val nsGetter = nsState.getNamespaceGetter()
-        val ideInfo = def.ideSymbolInfo()
-        val nsDef = C_NsImp_Def_Namespace(nsGetter, def.defName, ideInfo, def.deprecated, def.importModule)
-        builder.addImportDef(name, nsDef)
+        return nsDefs.computeIfAbsent(def) {
+            val ideInfo = def.ideSymbolInfo()
+            C_NsImp_Def_Namespace(nsGetter, def.defName, ideInfo, def.deprecated, def.importModule)
+        }
     }
 
     private fun processDirectWildcardImport(wildcard: C_NsAsm_WildcardImport) {
@@ -216,7 +219,7 @@ private class C_NsImp_InternalImportsProcessor(
         res.valueOrReport(msgCtx)
     }
 
-    private fun getState(ns: C_NsAsm_Namespace) = states.computeIfAbsent(ns) { C_NsImp_NamespaceState() }
+    private fun getState(ns: C_NsAsm_Namespace) = nsStates.computeIfAbsent(ns) { C_NsImp_NamespaceState() }
 
     private class C_NsImp_NamespaceState {
         var processed = false

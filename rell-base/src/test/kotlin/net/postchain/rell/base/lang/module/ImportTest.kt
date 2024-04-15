@@ -676,9 +676,11 @@ class ImportTest: BaseRellTest(false) {
         file("d.rell", "module; import lib.{data};")
     }
 
-    /*@Test*/ fun testBugNameIsAmbiguous2() {
+    @Test fun testBugNameIsAmbiguous2() {
         file("lib.rell", "module; namespace msg { function f() = 123; } namespace topic { function g() = 456; }")
-        chkFull("import lib.{topic.*, msg}; import lib.*; query q() = msg.f();", "...")
+        chkFull("import lib.{msg}; import lib.*; query q() = msg.f();", "int[123]")
+        chkFull("import lib.{topic.*, msg}; import lib.*; query q() = msg.f();", "int[123]")
+        chkFull("import lib.{msg.f}; import lib.{msg.*}; query q() = f();", "int[123]")
     }
 
     private fun chkImport(imp: String, code: String, exp: String) {

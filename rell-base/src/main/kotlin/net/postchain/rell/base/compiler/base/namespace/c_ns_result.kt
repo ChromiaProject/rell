@@ -34,6 +34,7 @@ object C_NsRes_ResultMaker {
 
 private class C_NsRes_InternalMaker {
     private val nsMap = mutableMapOf<C_NsImp_Namespace, C_Namespace>()
+    private val nsItemMap = mutableMapOf<C_NsImp_Def_Namespace, C_NamespaceItem>()
 
     fun makeModule(ns: C_NsImp_Namespace): C_Namespace {
         val res = makeNamespace(ns)
@@ -79,11 +80,14 @@ private class C_NsRes_InternalMaker {
             is C_NsImp_Def_Simple -> def.item
             is C_NsImp_Def_Namespace -> {
                 val impNs = def.ns()
-                val decType = C_DeclarationType.NAMESPACE
-                val restrictions = C_MemberRestrictions.makeUser(def.defName, decType, def.deprecated)
-                val base = C_NamespaceMemberBase(def.defName, def.ideInfo, restrictions)
                 val ns = makeNamespace(impNs)
-                C_NamespaceItem(C_NamespaceMember_Namespace(base, ns, def.importModule))
+                nsItemMap.computeIfAbsent(def) {
+                    val decType = C_DeclarationType.NAMESPACE
+                    val restrictions = C_MemberRestrictions.makeUser(def.defName, decType, def.deprecated)
+                    val base = C_NamespaceMemberBase(def.defName, def.ideInfo, restrictions)
+                    val member = C_NamespaceMember_Namespace(base, ns, def.importModule)
+                    C_NamespaceItem(member)
+                }
             }
         }
     }
