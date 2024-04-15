@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.testutils
@@ -21,7 +21,7 @@ import net.postchain.rell.base.sql.SqlManager
 import net.postchain.rell.base.utils.CommonUtils
 
 object RellTestUtils {
-    const val RELL_VER = "0.14.0"
+    const val RELL_VER = "0.13.11"
 
     const val MAIN_FILE = "main.rell"
     val MAIN_FILE_PATH = C_SourcePath.parse(MAIN_FILE)
