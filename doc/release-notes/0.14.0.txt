@@ -427,3 +427,9 @@ Details:
 
 Format of decimal.to_text(true) changed to return a normalized scientific representation of a number, which has one
 digit before the point. For example, for 123456.0 the result is "1.23456E+5", for 0.123456 it's "1.23456E-1".
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+22. Language: Maximum entity and object mount name length changed to 58
+
+The maximum length reduced from 60 to 58 characters. The table name length limit in Postgres is 63, Rell adds a chain
+ID prefix like "c123.".
