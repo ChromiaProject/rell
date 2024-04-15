@@ -87,18 +87,18 @@ class MountTest: BaseRellTest() {
     }
 
     @Test fun testNameTooLongEntityObject() {
-        val name60 = "a".repeat(60)
-        val name61 = "b".repeat(61)
+        val name58 = "a".repeat(58)
+        val name59 = "b".repeat(59)
 
-        chkCompile("entity $name60 {}", "OK")
-        chkCompile("entity $name61 {}", "ct_err:mount:too_long:entity:60:61:$name61")
-        chkCompile("object $name60 {}", "OK")
-        chkCompile("object $name61 {}", "ct_err:mount:too_long:entity:60:61:$name61")
+        chkCompile("entity $name58 {}", "OK")
+        chkCompile("entity $name59 {}", "ct_err:mount:too_long:entity:58:59:$name59")
+        chkCompile("object $name58 {}", "OK")
+        chkCompile("object $name59 {}", "ct_err:mount:too_long:entity:58:59:$name59")
 
-        chkCompile("@mount('data') entity $name61 {}", "OK")
-        chkCompile("@mount('$name61') entity data {}", "ct_err:mount:too_long:entity:60:61:$name61")
-        chkCompile("@mount('data') object $name61 {}", "OK")
-        chkCompile("@mount('$name61') object data {}", "ct_err:mount:too_long:entity:60:61:$name61")
+        chkCompile("@mount('data') entity $name59 {}", "OK")
+        chkCompile("@mount('$name59') entity data {}", "ct_err:mount:too_long:entity:58:59:$name59")
+        chkCompile("@mount('data') object $name59 {}", "OK")
+        chkCompile("@mount('$name59') object data {}", "ct_err:mount:too_long:entity:58:59:$name59")
     }
 
     @Test fun testNameTooLongAttr() {
@@ -115,11 +115,11 @@ class MountTest: BaseRellTest() {
     }
 
     @Test fun testNameTooLongVersionControl() {
-        val name61 = "b".repeat(61)
-        chkVerCt("entity $name61 {}", "0.12.0", "OK", "ct_err:mount:too_long:entity:60:61:$name61")
-        chkVerCt("object $name61 {}", "0.12.0", "OK", "ct_err:mount:too_long:entity:60:61:$name61")
-        chkVerCt("@mount('$name61') entity data {}", "0.12.0", "OK", "ct_err:mount:too_long:entity:60:61:$name61")
-        chkVerCt("@mount('$name61') object data {}", "0.12.0", "OK", "ct_err:mount:too_long:entity:60:61:$name61")
+        val name59 = "b".repeat(59)
+        chkVerCt("entity $name59 {}", "0.12.0", "OK", "ct_err:mount:too_long:entity:58:59:$name59")
+        chkVerCt("object $name59 {}", "0.12.0", "OK", "ct_err:mount:too_long:entity:58:59:$name59")
+        chkVerCt("@mount('$name59') entity data {}", "0.12.0", "OK", "ct_err:mount:too_long:entity:58:59:$name59")
+        chkVerCt("@mount('$name59') object data {}", "0.12.0", "OK", "ct_err:mount:too_long:entity:58:59:$name59")
 
         val name64 = "b".repeat(64)
         chkVerCt("entity data { $name64: integer; }", "0.12.0", "OK", "ct_err:mount:too_long:attr:63:64:$name64")
