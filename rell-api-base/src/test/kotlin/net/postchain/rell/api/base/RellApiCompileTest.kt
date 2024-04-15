@@ -249,6 +249,13 @@ class RellApiCompileTest: BaseRellApiTest() {
             "version":"$rellVer"
         }""")
 
+        chkCompileGtv(defaultConfig, generalSourceDir, null, """{
+                "compilerVersion":"$rellVer",
+                "modules":[],
+                "sources":{"a.rell":"module;","b1/b2.rell":"module;","b1/module.rell":"module;","c.rell":"module;","e1/module.rell":"module;"},
+                "version":"$rellVer"
+        }""")
+
         chkCompileGtv(defaultConfig, generalSourceDir, "d", "CME:module:main_test:d")
 
         val config = defaultConfig.toBuilder().version("0.13.0").build()
@@ -335,7 +342,7 @@ class RellApiCompileTest: BaseRellApiTest() {
     private fun chkCompileGtv(
         config: RellApiCompile.Config,
         sourceDir: C_SourceDir,
-        mainModule: String,
+        mainModule: String?,
         expected: String,
     ) {
         val actual = compileGtv(config, sourceDir, mainModule)
@@ -345,7 +352,7 @@ class RellApiCompileTest: BaseRellApiTest() {
     private fun compileGtv(
         config: RellApiCompile.Config,
         sourceDir: C_SourceDir,
-        mainModule: String,
+        mainModule: String?,
     ): String {
         return try {
             compileGtv0(config, sourceDir, mainModule)
@@ -357,17 +364,17 @@ class RellApiCompileTest: BaseRellApiTest() {
     private fun compileGtv0(
         config: RellApiCompile.Config,
         sourceDir: C_SourceDir,
-        mainModule: String,
+        mainModule: String?,
     ): String {
         val options = RellApiBaseInternal.makeCompilerOptions(config)
-        val rModuleName = R_ModuleName.of(mainModule)
-        val apiRes = compileApp0(config, options, sourceDir, listOf(rModuleName))
+        val rModules = mainModule?.let { listOf(R_ModuleName.of(it)) }
+        val apiRes = compileApp0(config, options, sourceDir, rModules)
 
         val cRes = apiRes.cRes
         val ctErr = handleCompilationError(cRes)
         if (ctErr != null) return ctErr
 
-        val gtv = RellApiBaseInternal.compileGtv0(config, sourceDir, immListOf(rModuleName), cRes.files)
+        val gtv = RellApiBaseInternal.compileGtv0(config, sourceDir, rModules ?: listOf(), cRes.files)
         return PostchainGtvUtils.gtvToJson(gtv)
     }
 }

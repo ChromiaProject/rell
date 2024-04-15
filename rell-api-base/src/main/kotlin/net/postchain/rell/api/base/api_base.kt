@@ -63,11 +63,11 @@ object RellApiCompile {
     fun compileGtv(
         config: Config,
         sourceDir: File,
-        mainModule: String,
+        mainModule: String?,
     ): Gtv {
         val cSourceDir = C_SourceDir.diskDir(sourceDir)
-        val rMainModule = R_ModuleName.of(mainModule)
-        return RellApiBaseInternal.compileGtv(config, cSourceDir, immListOf(rMainModule))
+        val rMainModule = mainModule?.let { listOf(R_ModuleName.of(it)) }
+        return RellApiBaseInternal.compileGtv(config, cSourceDir, rMainModule)
     }
 
     class Config(
