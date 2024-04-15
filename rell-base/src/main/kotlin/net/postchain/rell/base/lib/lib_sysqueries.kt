@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib
@@ -7,8 +7,11 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.compiler.base.core.C_CompilerExecutor
 import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.lib.type.*
-import net.postchain.rell.base.model.*
-import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.model.R_QueryDefinition
+import net.postchain.rell.base.model.R_SysFunctionEx_N
+import net.postchain.rell.base.runtime.Rt_CallContext
+import net.postchain.rell.base.runtime.Rt_RellVersionProperty
+import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf

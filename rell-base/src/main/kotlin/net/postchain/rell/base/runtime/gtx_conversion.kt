@@ -5,12 +5,14 @@
 package net.postchain.rell.base.runtime
 
 import net.postchain.common.exception.UserMistake
-import net.postchain.gtv.*
+import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvType
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
-import net.postchain.rell.base.lib.type.*
+import net.postchain.rell.base.lib.type.Rt_JsonValue
+import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.sql.SqlExecutor

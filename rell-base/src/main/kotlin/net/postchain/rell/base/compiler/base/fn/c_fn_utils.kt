@@ -13,7 +13,10 @@ import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.lib.type.R_UnitType
-import net.postchain.rell.base.model.*
+import net.postchain.rell.base.model.R_CtErrorType
+import net.postchain.rell.base.model.R_DefinitionName
+import net.postchain.rell.base.model.R_GlobalConstantId
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.LazyPosString
 
 object C_FunctionUtils {

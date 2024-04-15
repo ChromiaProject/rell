@@ -8,8 +8,6 @@ import net.postchain.base.BaseBlockEContext
 import net.postchain.base.BaseEContext
 import net.postchain.base.BaseTxEContext
 import net.postchain.base.TxEventSink
-import net.postchain.base.data.PostgreSQLDatabaseAccess
-import net.postchain.base.data.SQLDatabaseAccess
 import net.postchain.common.BlockchainRid
 import net.postchain.common.exception.UserMistake
 import net.postchain.common.hexStringToByteArray
@@ -21,13 +19,10 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.GtvString
 import net.postchain.gtv.GtvType
-import net.postchain.gtv.mapper.toList
-import net.postchain.gtv.parse.GtvParser
 import net.postchain.gtx.GTXModule
 import net.postchain.gtx.GTXSchemaManager
 import net.postchain.gtx.data.ExtOpData
 import net.postchain.rell.base.model.R_App
-import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.sql.SqlExecutor
 import net.postchain.rell.base.testutils.*
 import net.postchain.rell.base.utils.CommonUtils

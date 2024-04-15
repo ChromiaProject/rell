@@ -13,8 +13,8 @@ import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty_RtVal
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.ide.BaseIdeSymbolTest
 import net.postchain.rell.base.lib.Lib_Rell
-import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.lib.type.Rt_UnitValue
+import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.testutils.LibModuleTester
 import net.postchain.rell.base.utils.doc.DocCodeTokenVisitor
 import net.postchain.rell.base.utils.doc.DocSymbol

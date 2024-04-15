@@ -10,7 +10,6 @@ import net.postchain.common.types.WrappedByteArray
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvNull
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
-import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.lib.test.Rt_TestBlockClock
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.repl.ReplOutputChannel

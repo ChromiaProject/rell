@@ -23,7 +23,6 @@ import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.sql.SqlConstants
 import org.jooq.DataType
 import org.jooq.impl.SQLDataType
-import java.lang.StringBuilder
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.MathContext

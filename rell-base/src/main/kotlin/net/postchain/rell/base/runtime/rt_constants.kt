@@ -12,7 +12,10 @@ import net.postchain.rell.base.compiler.base.utils.C_Constants
 import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.type.Rt_UnitValue
-import net.postchain.rell.base.model.*
+import net.postchain.rell.base.model.R_DefinitionName
+import net.postchain.rell.base.model.R_GlobalConstantId
+import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.R_StructDefinition
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.NoConnSqlExecutor
 import net.postchain.rell.base.utils.*

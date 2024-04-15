@@ -9,7 +9,7 @@ import net.postchain.rell.base.lib.type.Rt_BooleanValue
 import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.model.Rt_NullValue
-import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.Rt_Value
 
 abstract class BaseRellTest(useSql: Boolean = true, gtv: Boolean = false): BaseTesterTest(useSql) {
     final override val tst: RellCodeTester by lazy {

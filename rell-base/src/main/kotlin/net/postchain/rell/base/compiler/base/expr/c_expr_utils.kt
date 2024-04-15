@@ -5,7 +5,6 @@
 package net.postchain.rell.base.compiler.base.expr
 
 import net.postchain.rell.base.compiler.ast.C_BinOp_Eq
-import net.postchain.rell.base.compiler.ast.C_BinOp_EqNe
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.compiler.base.core.C_MessageContext
@@ -14,7 +13,10 @@ import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.vexpr.*
 import net.postchain.rell.base.lib.type.R_BooleanType
-import net.postchain.rell.base.model.*
+import net.postchain.rell.base.model.R_CtErrorType
+import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.model.R_SysFunction
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_ExprStatement
 import net.postchain.rell.base.runtime.Rt_CommonError

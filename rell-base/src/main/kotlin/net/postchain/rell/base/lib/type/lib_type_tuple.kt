@@ -6,7 +6,6 @@ package net.postchain.rell.base.lib.type
 
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.expr.*
-import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.model.R_TupleField
 import net.postchain.rell.base.model.R_TupleType
 import net.postchain.rell.base.model.R_Type

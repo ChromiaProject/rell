@@ -12,7 +12,9 @@ import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.model.R_LibSimpleType
 import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.GtvRtConversion_None
+import net.postchain.rell.base.runtime.Rt_LibValueType
+import net.postchain.rell.base.runtime.Rt_Value
 import org.junit.Test
 
 class CLibFunctionLazyParamTest: BaseCLibTest() {

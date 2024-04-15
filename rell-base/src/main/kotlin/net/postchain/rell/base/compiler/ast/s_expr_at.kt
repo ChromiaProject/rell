@@ -7,7 +7,10 @@ package net.postchain.rell.base.compiler.ast
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.lib.C_LibUtils
-import net.postchain.rell.base.compiler.base.modifier.*
+import net.postchain.rell.base.compiler.base.modifier.C_AtSummarizationKind
+import net.postchain.rell.base.compiler.base.modifier.C_ModifierFields
+import net.postchain.rell.base.compiler.base.modifier.C_ModifierTargetType
+import net.postchain.rell.base.compiler.base.modifier.C_ModifierValues
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.V_AtWhatFieldFlags
 import net.postchain.rell.base.compiler.vexpr.V_ConstantValueEvalContext

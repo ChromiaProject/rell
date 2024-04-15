@@ -7,10 +7,11 @@ package net.postchain.rell.base.lib.test
 import net.postchain.rell.base.lib.type.R_GtvType
 import net.postchain.rell.base.lib.type.R_ListType
 import net.postchain.rell.base.lib.type.R_TextType
+import net.postchain.rell.base.lib.type.Rt_ListValue
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.*
-import net.postchain.rell.base.lib.type.Rt_ListValue
+import net.postchain.rell.base.model.R_TupleType
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.Rt_Value
 
 private val EVENT_LIST_TYPE: R_Type = R_ListType(Lib_Test_Events.EVENT_TYPE)

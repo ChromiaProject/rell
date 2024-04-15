@@ -6,9 +6,11 @@ package net.postchain.rell.base.compiler.base.core
 
 import net.postchain.rell.base.compiler.ast.S_Name
 import net.postchain.rell.base.compiler.ast.S_Pos
-import net.postchain.rell.base.compiler.base.utils.*
+import net.postchain.rell.base.compiler.base.utils.C_LateGetter
+import net.postchain.rell.base.compiler.base.utils.C_MessageManager
+import net.postchain.rell.base.compiler.base.utils.C_RNamePath
+import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.R_IdeName
-import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.utils.*

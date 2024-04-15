@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.lib
 
-import net.postchain.rell.base.compiler.base.core.C_DefinitionName
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.compiler.base.namespace.*
 import net.postchain.rell.base.compiler.base.utils.C_RFullNamePath

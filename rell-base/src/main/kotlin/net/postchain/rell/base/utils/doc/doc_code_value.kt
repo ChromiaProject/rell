@@ -7,7 +7,6 @@ package net.postchain.rell.base.utils.doc
 import net.postchain.rell.base.lib.type.Lib_DecimalMath
 import java.math.BigDecimal
 import java.math.BigInteger
-import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
 

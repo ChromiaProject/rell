@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model.expr
@@ -8,8 +8,6 @@ import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.lib.test.Rt_TestOpValue
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.Rt_CallContext
-import net.postchain.rell.base.model.Rt_FunctionValue
-import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.LazyString

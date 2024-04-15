@@ -7,12 +7,12 @@ package net.postchain.rell.base.lib.test
 import net.postchain.common.hexStringToByteArray
 import net.postchain.crypto.secp256k1_derivePubKey
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
+import net.postchain.rell.base.lib.type.Rt_ByteArrayValue
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_StructType
 import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.lib.type.Rt_ByteArrayValue
-import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.model.Rt_StructValue
+import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.BytesKeyPair

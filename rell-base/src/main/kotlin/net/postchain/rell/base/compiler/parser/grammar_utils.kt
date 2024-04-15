@@ -13,7 +13,6 @@ import com.github.h0tk3y.betterParse.parser.Parser
 import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.compiler.base.utils.C_Parser
 import net.postchain.rell.base.model.expr.R_AtCardinality
-import net.postchain.rell.base.utils.immListOf
 
 sealed class G_BaseExprTail {
     abstract fun toExpr(base: S_Expr): S_Expr

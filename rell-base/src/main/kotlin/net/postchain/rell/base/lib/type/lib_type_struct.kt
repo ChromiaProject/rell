@@ -7,7 +7,6 @@ package net.postchain.rell.base.lib.type
 import net.postchain.gtv.Gtv
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.expr.*
-import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
@@ -18,7 +17,9 @@ import net.postchain.rell.base.model.expr.R_DestinationExpr
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.expr.R_MemberCalculator
 import net.postchain.rell.base.model.expr.R_StructMemberExpr
-import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.GtvToRtContext
+import net.postchain.rell.base.runtime.Rt_CallFrame
+import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.PostchainGtvUtils
 import net.postchain.rell.base.utils.doc.DocCode

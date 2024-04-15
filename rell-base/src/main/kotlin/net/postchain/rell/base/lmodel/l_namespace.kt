@@ -10,7 +10,9 @@ import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
-import net.postchain.rell.base.utils.doc.*
+import net.postchain.rell.base.utils.doc.DocComment
+import net.postchain.rell.base.utils.doc.DocDefinition
+import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap

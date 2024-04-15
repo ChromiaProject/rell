@@ -14,10 +14,10 @@ import net.postchain.rell.base.compiler.base.lib.C_SpecialLibMemberFunctionBody
 import net.postchain.rell.base.compiler.base.lib.V_SpecialMemberFunctionCall
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.V_Expr
-import net.postchain.rell.base.lmodel.dsl.BaseLTest
-import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.lib.type.Rt_TextValue
+import net.postchain.rell.base.lmodel.dsl.BaseLTest
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.testutils.VirtualTestUtils
 import net.postchain.rell.base.utils.LazyPosString

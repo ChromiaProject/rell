@@ -15,9 +15,9 @@ import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.compiler.parser.S_Grammar
+import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.model.R_ModuleName
-import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestContext

@@ -14,7 +14,6 @@ import net.postchain.rell.base.model.R_VirtualListType
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_ListComparator
 import net.postchain.rell.base.utils.immListOf
-import java.util.Comparator
 
 object Lib_Type_List {
     private const val SINCE0 = "0.6.0"

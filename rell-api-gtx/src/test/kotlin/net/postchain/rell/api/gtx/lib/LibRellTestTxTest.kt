@@ -5,7 +5,6 @@
 package net.postchain.rell.api.gtx.lib
 
 import net.postchain.common.exception.TransactionIncorrect
-import net.postchain.common.exception.UserMistake
 import net.postchain.rell.api.gtx.testutils.PostchainRellTestProjExt
 import net.postchain.rell.base.lib.LibGtvTest
 import net.postchain.rell.base.testutils.BaseRellTest

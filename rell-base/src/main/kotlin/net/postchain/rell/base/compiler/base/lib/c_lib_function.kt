@@ -4,7 +4,10 @@
 
 package net.postchain.rell.base.compiler.base.lib
 
-import net.postchain.rell.base.compiler.ast.*
+import net.postchain.rell.base.compiler.ast.S_CallArgument
+import net.postchain.rell.base.compiler.ast.S_CallArgumentValue_Expr
+import net.postchain.rell.base.compiler.ast.S_CallArgumentValue_Wildcard
+import net.postchain.rell.base.compiler.ast.S_Expr
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.compiler.base.core.C_TypeHint
@@ -17,9 +20,14 @@ import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.*
 import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.lib.type.R_UnitType
-import net.postchain.rell.base.model.*
+import net.postchain.rell.base.model.R_FunctionType
+import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.R_MemberCalculator
-import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.LazyPosString
+import net.postchain.rell.base.utils.immMapOf
+import net.postchain.rell.base.utils.mapOrSame
+import net.postchain.rell.base.utils.toImmList
 
 object C_LibFunctionUtils {
     val RESTRICTIONS_NAMED_ARGS = C_FeatureRestrictions.make(

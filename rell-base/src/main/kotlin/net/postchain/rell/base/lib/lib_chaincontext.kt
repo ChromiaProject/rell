@@ -16,7 +16,9 @@ import net.postchain.rell.base.lib.type.Rt_GtvValue
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_SysFunctionEx_N
-import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.Rt_CallContext
+import net.postchain.rell.base.runtime.Rt_Exception
+import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.checkEquals
 
 object Lib_ChainContext {

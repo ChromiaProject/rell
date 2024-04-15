@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.core
@@ -14,7 +14,10 @@ import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.type.R_MapType
 import net.postchain.rell.base.lmodel.L_TypeUtils
-import net.postchain.rell.base.model.*
+import net.postchain.rell.base.model.R_CtErrorType
+import net.postchain.rell.base.model.R_LangVersion
+import net.postchain.rell.base.model.R_TupleType
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.stmt.*
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_TypeParamsResolver

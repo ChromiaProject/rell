@@ -9,11 +9,7 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
 import net.postchain.rell.base.runtime.Rt_SqlContext
 import net.postchain.rell.base.utils.toImmMap
-import org.jooq.Constraint
-import org.jooq.CreateTableColumnStep
-import org.jooq.DSLContext
-import org.jooq.DataType
-import org.jooq.SQLDialect
+import org.jooq.*
 import org.jooq.impl.DSL
 import org.jooq.impl.DSL.constraint
 import org.jooq.impl.SQLDataType

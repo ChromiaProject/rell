@@ -9,7 +9,7 @@ import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.doc.DocCode
 import org.junit.Test

@@ -7,11 +7,11 @@ package net.postchain.rell.base.ide
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty_RtValue
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.Lib_Rell
-import net.postchain.rell.base.lmodel.dsl.BaseLTest
-import net.postchain.rell.base.lmodel.dsl.Ld_ModuleDsl
 import net.postchain.rell.base.lib.type.R_IntegerType
 import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.lib.type.Rt_UnitValue
+import net.postchain.rell.base.lmodel.dsl.BaseLTest
+import net.postchain.rell.base.lmodel.dsl.Ld_ModuleDsl
 import net.postchain.rell.base.testutils.LibModuleTester
 import org.junit.Test
 

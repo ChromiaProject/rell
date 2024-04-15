@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.vexpr
@@ -7,8 +7,8 @@ package net.postchain.rell.base.compiler.vexpr
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.expr.C_CreateAttributes
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
-import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.lib.type.R_ListType
+import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.model.R_StructType
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.expr.R_RegularCreateExpr

@@ -9,10 +9,10 @@ import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.R_FrameBlock
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_VarPtr
+import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.model.stmt.R_IterableAdapter
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.checkEquals

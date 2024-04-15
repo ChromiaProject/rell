@@ -8,12 +8,13 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvArray
 import net.postchain.rell.base.compiler.base.lib.C_LibType
 import net.postchain.rell.base.compiler.base.lib.C_LibTypeDef
-import net.postchain.rell.base.model.R_GtvCompatibility
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionMetaBodyDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
+import net.postchain.rell.base.model.R_GtvCompatibility
 import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.GtvRtConversion
+import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.lib.type.Lib_Type_Any as AnyFns
 

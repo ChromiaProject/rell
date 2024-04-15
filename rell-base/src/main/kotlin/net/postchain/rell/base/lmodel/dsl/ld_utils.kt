@@ -6,7 +6,6 @@ package net.postchain.rell.base.lmodel.dsl
 
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
-import net.postchain.rell.base.lmodel.L_MemberHeader
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName

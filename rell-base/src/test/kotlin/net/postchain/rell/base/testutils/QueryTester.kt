@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.testutils
@@ -8,7 +8,7 @@ import net.postchain.rell.base.lib.type.Rt_BooleanValue
 import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.model.Rt_NullValue
-import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.Rt_Value
 
 class QueryTester(private val tst: RellCodeTester, private val code: String) {
     fun chk(arg: Any?, expected: String): QueryTester {

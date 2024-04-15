@@ -5,13 +5,13 @@
 package net.postchain.rell.base.lib
 
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
+import net.postchain.rell.base.lib.type.Rt_BigIntegerValue
+import net.postchain.rell.base.lib.type.Rt_DecimalValue
+import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceBodyDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.expr.Db_SysFunction
-import net.postchain.rell.base.lib.type.Rt_BigIntegerValue
-import net.postchain.rell.base.lib.type.Rt_DecimalValue
 import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.lib.type.Rt_IntValue
 
 object Lib_Math {
     val Abs_Integer = C_SysFunctionBody.simple(Db_SysFunction.simple("abs", "ABS"), pure = true) { a ->

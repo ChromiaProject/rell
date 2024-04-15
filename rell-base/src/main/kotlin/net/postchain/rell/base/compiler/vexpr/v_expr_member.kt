@@ -16,9 +16,9 @@ import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_CallFrame
-import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf

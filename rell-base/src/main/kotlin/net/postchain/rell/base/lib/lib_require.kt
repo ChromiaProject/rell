@@ -5,13 +5,13 @@
 package net.postchain.rell.base.lib
 
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
+import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.L_ParamImplication
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_RequireError
-import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.runtime.Rt_Value
 
 object Lib_Require {

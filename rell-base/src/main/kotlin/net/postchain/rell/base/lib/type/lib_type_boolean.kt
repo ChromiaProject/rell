@@ -8,10 +8,10 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvInteger
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
+import net.postchain.rell.base.model.R_GtvCompatibility
 import net.postchain.rell.base.model.R_PrimitiveType
 import net.postchain.rell.base.model.R_TypeSqlAdapter
 import net.postchain.rell.base.model.R_TypeSqlAdapter_Primitive
-import net.postchain.rell.base.model.R_GtvCompatibility
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.utils.immSetOf

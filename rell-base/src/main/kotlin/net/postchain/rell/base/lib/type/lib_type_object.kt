@@ -8,7 +8,6 @@ import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.compiler.base.core.C_QualifiedName
 import net.postchain.rell.base.compiler.base.expr.*
-import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.lib.V_SpecialMemberFunctionCall
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_Errors
@@ -23,7 +22,6 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.model.Rt_ObjectValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf

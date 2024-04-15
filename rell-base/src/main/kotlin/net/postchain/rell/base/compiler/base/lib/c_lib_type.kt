@@ -10,7 +10,6 @@ import net.postchain.rell.base.compiler.ast.S_PosValue
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.C_GlobalFunction
 import net.postchain.rell.base.compiler.base.expr.*
-import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lmodel.*

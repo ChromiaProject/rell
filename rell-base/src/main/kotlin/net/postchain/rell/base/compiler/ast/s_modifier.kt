@@ -8,7 +8,6 @@ import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.compiler.base.core.C_MountContext
 import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.compiler.base.core.C_NamespaceContext
-import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.modifier.*
 import net.postchain.rell.base.compiler.parser.S_Keywords
 import net.postchain.rell.base.utils.doc.DocModifier

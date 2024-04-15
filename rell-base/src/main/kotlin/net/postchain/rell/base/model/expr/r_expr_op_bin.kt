@@ -6,8 +6,12 @@ package net.postchain.rell.base.model.expr
 
 import com.google.common.math.LongMath
 import net.postchain.rell.base.lib.type.*
-import net.postchain.rell.base.model.*
-import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.model.R_EntityType
+import net.postchain.rell.base.model.R_EnumType
+import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.runtime.Rt_CallFrame
+import net.postchain.rell.base.runtime.Rt_Exception
+import net.postchain.rell.base.runtime.Rt_Value
 import java.math.BigDecimal
 import java.math.BigInteger
 
