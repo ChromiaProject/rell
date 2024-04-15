@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.api.base
@@ -60,16 +60,18 @@ class RellConfigGen(
             }
         }
 
-        val sourcesDict = getDictByKey(rellDict, RellGtxConfigConstants.RELL_SOURCES_KEY)
+        val sourcesDict = getDictByKey(rellDict, RellGtxConfigConstants.SOURCES_KEY)
         for ((name, source) in files) {
             sourcesDict.putString(name, source)
         }
 
-        if (rellDict.get(RellGtxConfigConstants.RELL_VERSION_KEY) == null) {
-            rellDict.putString(RellGtxConfigConstants.RELL_VERSION_KEY, sourceVersion.str())
+        if (rellDict.get(RellGtxConfigConstants.LANG_VERSION_KEY) == null) {
+            rellDict.putString(RellGtxConfigConstants.LANG_VERSION_KEY, sourceVersion.str())
         }
 
-        rellDict.remove(RellGtxConfigConstants.RELL_FILES_KEY)
+        rellDict.putString(RellGtxConfigConstants.COMPILER_VERSION_KEY, RellVersions.VERSION.str())
+
+        rellDict.remove(RellGtxConfigConstants.FILES_KEY)
     }
 
     private fun getModuleSources(): RellModuleSources {

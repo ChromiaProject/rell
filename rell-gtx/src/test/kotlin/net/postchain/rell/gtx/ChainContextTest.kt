@@ -5,6 +5,7 @@
 package net.postchain.rell.gtx
 
 import net.postchain.rell.base.testutils.RellTestUtils
+import net.postchain.rell.base.testutils.unwrap
 import net.postchain.rell.gtx.testutils.BaseGtxTest
 import org.junit.Test
 
@@ -12,12 +13,24 @@ class ChainContextTest: BaseGtxTest() {
     @Test fun testRawConfig() {
         val ver = RellTestUtils.RELL_VER
 
-        chk("chain_context.raw_config",
-                "{'gtx':{'rell':{'moduleArgs':{},'modules':[''],'sources':{'main.rell':'query q() = chain_context.raw_config;'},'strictGtvConversion':0,'version':'$ver'}}}")
+        chk("chain_context.raw_config", """{'gtx':{'rell':{
+            'compilerVersion':'$ver',
+            'moduleArgs':{},
+            'modules':[''],
+            'sources':{'main.rell':'query q() = chain_context.raw_config;'},
+            'strictGtvConversion':0,
+            'version':'$ver'
+        }}}""".unwrap())
 
         tst.moduleArgs("" to "'bar'")
-        chk("chain_context.raw_config",
-                "{'gtx':{'rell':{'moduleArgs':{'':'bar'},'modules':[''],'sources':{'main.rell':'query q() = chain_context.raw_config;'},'strictGtvConversion':0,'version':'$ver'}}}")
+        chk("chain_context.raw_config", """{'gtx':{'rell':{
+            'compilerVersion':'$ver',
+            'moduleArgs':{'':'bar'},
+            'modules':[''],
+            'sources':{'main.rell':'query q() = chain_context.raw_config;'},
+            'strictGtvConversion':0,
+            'version':'$ver'
+        }}}""".unwrap())
     }
 
     @Test fun testModuleArgs() {

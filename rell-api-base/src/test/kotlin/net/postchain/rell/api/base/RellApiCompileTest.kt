@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.api.base
@@ -11,6 +11,7 @@ import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.testutils.RellTestUtils
+import net.postchain.rell.base.testutils.unwrap
 import net.postchain.rell.base.utils.PostchainGtvUtils
 import net.postchain.rell.base.utils.immListOf
 import org.junit.Test
@@ -236,13 +237,24 @@ class RellApiCompileTest: BaseRellApiTest() {
 
     @Test fun testCompileGtv() {
         val rellVer = RellTestUtils.RELL_VER
+
         chkCompileGtv(defaultConfig, generalSourceDir, "a",
-            """{"modules":["a"],"sources":{"a.rell":"module;"},"version":"$rellVer"}"""
+            """{"compilerVersion":"$rellVer","modules":["a"],"sources":{"a.rell":"module;"},"version":"$rellVer"}"""
         )
-        chkCompileGtv(defaultConfig, generalSourceDir, "b1.b2",
-            """{"modules":["b1.b2"],"sources":{"b1/b2.rell":"module;","b1/module.rell":"module;"},"version":"$rellVer"}"""
-        )
+
+        chkCompileGtv(defaultConfig, generalSourceDir, "b1.b2", """{
+            "compilerVersion":"$rellVer",
+            "modules":["b1.b2"],
+            "sources":{"b1/b2.rell":"module;","b1/module.rell":"module;"},
+            "version":"$rellVer"
+        }""")
+
         chkCompileGtv(defaultConfig, generalSourceDir, "d", "CME:module:main_test:d")
+
+        val config = defaultConfig.toBuilder().version("0.13.0").build()
+        chkCompileGtv(config, generalSourceDir, "a",
+            """{"compilerVersion":"$rellVer","modules":["a"],"sources":{"a.rell":"module;"},"version":"0.13.0"}"""
+        )
     }
 
     @Test fun testCompileGtvModuleArgs() {
@@ -255,24 +267,29 @@ class RellApiCompileTest: BaseRellApiTest() {
         val fooEntry = """"foo.rell":"module; struct module_args { x: integer; }""""
         val barEntry = """"bar.rell":"module;""""
         val refEntry = """"ref.rell":"module; import foo;""""
+        val compVerEntry = """"compilerVersion":"${RellTestUtils.RELL_VER}""""
         val verEntry = """"version":"${RellTestUtils.RELL_VER}""""
 
         var config = defaultConfig
         chkCompileGtv(config, sourceDir, "foo", "CME:module_args_missing:foo")
         chkCompileGtv(config, sourceDir, "ref", "CME:module_args_missing:foo")
-        chkCompileGtv(config, sourceDir, "bar", """{"modules":["bar"],"sources":{$barEntry},$verEntry}""")
+        chkCompileGtv(config, sourceDir, "bar", """{$compVerEntry,"modules":["bar"],"sources":{$barEntry},$verEntry}""")
 
         config = configBuilder().moduleArgsMissingError(false).build()
-        chkCompileGtv(config, sourceDir, "foo", """{"modules":["foo"],"sources":{$fooEntry},$verEntry}""")
-        chkCompileGtv(config, sourceDir, "ref", """{"modules":["ref"],"sources":{$fooEntry,$refEntry},$verEntry}""")
-        chkCompileGtv(config, sourceDir, "bar", """{"modules":["bar"],"sources":{$barEntry},$verEntry}""")
+        chkCompileGtv(config, sourceDir, "foo", """{$compVerEntry,"modules":["foo"],"sources":{$fooEntry},$verEntry}""")
+        chkCompileGtv(config, sourceDir, "bar", """{$compVerEntry,"modules":["bar"],"sources":{$barEntry},$verEntry}""")
+        chkCompileGtv(config, sourceDir, "ref",
+            """{$compVerEntry,"modules":["ref"],"sources":{$fooEntry,$refEntry},$verEntry}""")
 
         val fooArgs = mapOf("x" to GtvFactory.gtv(123))
         val argsEntry = """"moduleArgs":{"foo":{"x":123}}"""
         config = configBuilder().moduleArgs("foo" to fooArgs).build()
-        chkCompileGtv(config, sourceDir, "foo", """{$argsEntry,"modules":["foo"],"sources":{$fooEntry},$verEntry}""")
-        chkCompileGtv(config, sourceDir, "ref", """{$argsEntry,"modules":["ref"],"sources":{$fooEntry,$refEntry},$verEntry}""")
-        chkCompileGtv(config, sourceDir, "bar", """{$argsEntry,"modules":["bar"],"sources":{$barEntry},$verEntry}""")
+        chkCompileGtv(config, sourceDir, "foo",
+            """{$compVerEntry,$argsEntry,"modules":["foo"],"sources":{$fooEntry},$verEntry}""")
+        chkCompileGtv(config, sourceDir, "bar",
+            """{$compVerEntry,$argsEntry,"modules":["bar"],"sources":{$barEntry},$verEntry}""")
+        chkCompileGtv(config, sourceDir, "ref",
+            """{$compVerEntry,$argsEntry,"modules":["ref"],"sources":{$fooEntry,$refEntry},$verEntry}""")
 
         val wrongArgs = mapOf("x" to GtvFactory.gtv("Hello"))
         val wrongArgsEntry = """"moduleArgs":{"foo":{"x":"Hello"}}"""
@@ -281,7 +298,8 @@ class RellApiCompileTest: BaseRellApiTest() {
             "CME:module_args_bad:foo:gtv_err:type:[integer]:INTEGER:STRING:attr:[foo:module_args]:x")
         chkCompileGtv(config, sourceDir, "ref",
             "CME:module_args_bad:foo:gtv_err:type:[integer]:INTEGER:STRING:attr:[foo:module_args]:x")
-        chkCompileGtv(config, sourceDir, "bar", """{$wrongArgsEntry,"modules":["bar"],"sources":{$barEntry},$verEntry}""")
+        chkCompileGtv(config, sourceDir, "bar",
+            """{$compVerEntry,$wrongArgsEntry,"modules":["bar"],"sources":{$barEntry},$verEntry}""")
     }
 
     @Test fun testCompileGtvModuleArgsDefaultValue() {
@@ -292,16 +310,19 @@ class RellApiCompileTest: BaseRellApiTest() {
 
         val fooEntry = file(sourceDir, "foo.rell")
         val barEntry = file(sourceDir, "bar.rell")
+        val compVerEntry = """"compilerVersion":"${RellTestUtils.RELL_VER}""""
         val verEntry = """"version":"${RellTestUtils.RELL_VER}""""
 
         var config = defaultConfig
         chkCompileGtv(config, sourceDir, "foo", "CME:module_args_missing:foo")
-        chkCompileGtv(config, sourceDir, "bar", """{"modules":["bar"],"sources":{$barEntry},$verEntry}""")
+        chkCompileGtv(config, sourceDir, "bar", """{$compVerEntry,"modules":["bar"],"sources":{$barEntry},$verEntry}""")
 
         config = configBuilder().moduleArgs("foo" to mapOf("x" to GtvFactory.gtv(321))).build()
         val argsEntry = """"moduleArgs":{"foo":{"x":321}}"""
-        chkCompileGtv(config, sourceDir, "foo", """{$argsEntry,"modules":["foo"],"sources":{$fooEntry},$verEntry}""")
-        chkCompileGtv(config, sourceDir, "bar", """{$argsEntry,"modules":["bar"],"sources":{$barEntry},$verEntry}""")
+        chkCompileGtv(config, sourceDir, "foo",
+            """{$compVerEntry,$argsEntry,"modules":["foo"],"sources":{$fooEntry},$verEntry}""")
+        chkCompileGtv(config, sourceDir, "bar",
+            """{$compVerEntry,$argsEntry,"modules":["bar"],"sources":{$barEntry},$verEntry}""")
     }
 
     private fun file(sourceDir: C_SourceDir, path: String): String {
@@ -318,7 +339,7 @@ class RellApiCompileTest: BaseRellApiTest() {
         expected: String,
     ) {
         val actual = compileGtv(config, sourceDir, mainModule)
-        assertEquals(expected, actual)
+        assertEquals(expected.unwrap(), actual)
     }
 
     private fun compileGtv(

@@ -122,26 +122,35 @@ abstract class RellBaseTester(
 
     private val expectedData = mutableListOf<String>()
 
-    fun compilerOptions() = C_CompilerOptions(
-        compatibility = compatibilityVer,
-        gtv = gtv,
-        deprecatedError = deprecatedError,
-        blockCheck = true,
-        atAttrShadowing = atAttrShadowing,
-        testLib = testLib,
-        hiddenLib = hiddenLib,
-        allowDbModificationsInObjectExprs = allowDbModificationsInObjectExprs,
-        symbolInfoFile = RellTestUtils.MAIN_FILE_PATH,
-        complexWhatEnabled = complexWhatEnabled,
-        mountConflictError = true,
-        appModuleInTestsError = false,
-        useTestDependencyExtensions = false,
-        allowLibNamedArgsAnyVersion = allowLibNamedArgsAnyVersion,
-        allowOlderCompatibilityVersion = allowOlderCompatibilityVersion,
-        ide = false,
-        ideDocSymbolsEnabled = false,
-        ideDefIdConflictError = ideDefIdConflictError,
-    )
+    fun compilerOptions(): C_CompilerOptions {
+        val opts = C_CompilerOptions(
+            compatibility = compatibilityVer,
+            gtv = gtv,
+            deprecatedError = deprecatedError,
+            blockCheck = true,
+            atAttrShadowing = atAttrShadowing,
+            testLib = testLib,
+            hiddenLib = hiddenLib,
+            allowDbModificationsInObjectExprs = allowDbModificationsInObjectExprs,
+            symbolInfoFile = RellTestUtils.MAIN_FILE_PATH,
+            complexWhatEnabled = complexWhatEnabled,
+            mountConflictError = true,
+            appModuleInTestsError = false,
+            useTestDependencyExtensions = false,
+            allowLibNamedArgsAnyVersion = allowLibNamedArgsAnyVersion,
+            allowOlderCompatibilityVersion = allowOlderCompatibilityVersion,
+            ide = false,
+            ideDocSymbolsEnabled = false,
+            ideDefIdConflictError = ideDefIdConflictError,
+        )
+
+        // Check serialization and deserialization of options (to not forget to serialize a new field).
+        val pojo = opts.toPojoMap()
+        val copy = C_CompilerOptions.fromPojoMap(pojo)
+        check(copy == opts)
+
+        return opts
+    }
 
     fun def(defs: List<String>) {
         checkNotInited()

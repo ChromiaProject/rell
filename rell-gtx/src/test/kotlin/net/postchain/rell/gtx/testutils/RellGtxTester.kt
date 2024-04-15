@@ -255,13 +255,14 @@ class RellGtxTester(
             GtvType.STRING -> {
                 val s = tpl.asString()
                 when (s) {
-                    "{STRICT_GTV_CONVERSION}" ->  GtvFactory.gtv(this.strictGtvConversion)
+                    "{COMPILER_VERSION}" -> GtvFactory.gtv(RellTestUtils.RELL_VER)
+                    "{VERSION}" -> GtvFactory.gtv(compatibilityVer?.str() ?: RellTestUtils.RELL_VER)
                     "{MODULES}" -> {
                         if (parts.modules == null) null else GtvFactory.gtv(parts.modules.map { GtvFactory.gtv(it) })
                     }
-                    "{VERSION}" -> GtvFactory.gtv(compatibilityVer?.str() ?: RellTestUtils.RELL_VER)
                     "{SOURCES}" -> GtvFactory.gtv(parts.sourceCodes.mapValues { (_, v) -> GtvString(v) })
                     "{MODULE_ARGS}" -> GtvTestUtils.moduleArgsToGtv(parts.moduleArgs)
+                    "{STRICT_GTV_CONVERSION}" ->  GtvFactory.gtv(this.strictGtvConversion)
                     else -> tpl
                 }
             }
@@ -272,8 +273,9 @@ class RellGtxTester(
     private fun getDefaultConfigTemplate(): String {
         return """
             {'gtx':{'rell':{
-                'modules':'{MODULES}',
+                'compilerVersion':'{COMPILER_VERSION}',
                 'version':'{VERSION}',
+                'modules':'{MODULES}',
                 'sources':'{SOURCES}',
                 'moduleArgs':'{MODULE_ARGS}',
                 'strictGtvConversion':'{STRICT_GTV_CONVERSION}'

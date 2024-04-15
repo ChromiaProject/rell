@@ -50,7 +50,11 @@ private fun convertArgs(ctx: GtvToRtContext, params: List<R_FunctionParam>, args
     }
 }
 
-private class ErrorHandler(val printer: Rt_Printer, private val wrapCtErrors: Boolean, private val wrapRtErrors: Boolean) {
+private class ErrorHandler(
+    val printer: Rt_Printer,
+    private val wrapCtErrors: Boolean,
+    private val wrapRtErrors: Boolean,
+) {
     private var ignore = false
 
     fun ignoreError() {
@@ -367,6 +371,7 @@ class RellPostchainModuleEnvironment(
     val logPrinter: Rt_Printer = Rt_LogPrinter(),
     val combinedPrinter: Rt_Printer? = null,
     val copyOutputToPrinter: Boolean = false,
+    val logCompilerMessages: Boolean = true,
     val wrapCtErrors: Boolean = true,
     val wrapRtErrors: Boolean = true,
     val forceTypeCheck: Boolean = false,
@@ -404,19 +409,18 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
         val moduleName = rellNode["moduleName"]?.asString() ?: ""
 
         val combinedPrinter = env.combinedPrinter ?: env.logPrinter
-        val copyOutput = env.copyOutputToPrinter
         val errorHandler = ErrorHandler(combinedPrinter, env.wrapCtErrors, env.wrapRtErrors)
 
         return errorHandler.handleError({ "Module initialization failed" }) {
-            val modApp = getApp(rellNode, errorHandler, copyOutput)
+            val modApp = getApp(rellNode, errorHandler)
             val bcRid = Bytes32(blockchainRID.data)
             val chainCtx = Rt_ChainContext(config, bcRid)
             val chainDeps = getGtxChainDependencies(config)
             val moduleArgsSource = PostchainBaseUtils.createModuleArgsSource(modApp.app, config, modApp.compilerOptions)
             val strictGtvConversion = (rellNode["strictGtvConversion"]?.asBoolean() ?: false)
 
-            val modLogPrinter = getModulePrinter(env.logPrinter, Rt_TimestampPrinter(combinedPrinter), copyOutput)
-            val modOutPrinter = getModulePrinter(env.outPrinter, combinedPrinter, copyOutput)
+            val modLogPrinter = getModulePrinter(env.logPrinter, Rt_TimestampPrinter(combinedPrinter))
+            val modOutPrinter = getModulePrinter(env.outPrinter, combinedPrinter)
 
             val typeCheck = env.forceTypeCheck || (rellNode["typeCheck"]?.asBoolean() ?: false)
             val dbInitLogLevel = rellNode["dbInitLogLevel"]?.asInteger()?.toInt() ?: env.dbInitLogLevel
@@ -446,67 +450,46 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
     private fun getApp(
         rellNode: Map<String, Gtv>,
         errorHandler: ErrorHandler,
-        copyOutput: Boolean,
     ): RellGtxModuleApp {
         if (env.precompiledApp != null) {
             return env.precompiledApp
         }
 
-        val sourceCfg = SourceCodeConfig(rellNode)
-        val sourceDir = sourceCfg.dir
-        val modules = getModuleNames(rellNode)
-        val compilerOptions = getCompilerOptions(sourceCfg.version)
-        val app = compileApp(sourceDir, modules, compilerOptions, errorHandler, copyOutput)
-        return RellGtxModuleApp(app, compilerOptions)
-    }
+        val rellCfg = RellGtvConfig(env, rellNode)
 
-    private fun getCompilerOptions(langVersion: R_LangVersion): C_CompilerOptions {
-        val opts = C_CompilerOptions.forLangVersion(langVersion)
-        return C_CompilerOptions.builder(opts).hiddenLib(env.hiddenLib).build()
-    }
+        val cResult = rellCfg.compile()
+        val app = processCompilationResult(cResult, errorHandler)
 
-    private fun getModulePrinter(basePrinter: Rt_Printer, combinedPrinter: Rt_Printer, copy: Boolean): Rt_Printer {
-        return if (copy) Rt_MultiPrinter(basePrinter, combinedPrinter) else basePrinter
-    }
-
-    private fun compileApp(
-        sourceDir: C_SourceDir,
-        modules: List<R_ModuleName>,
-        compilerOptions: C_CompilerOptions,
-        errorHandler: ErrorHandler,
-        copyOutput: Boolean,
-    ): R_App {
-        val cResult = C_Compiler.compile(sourceDir, modules, compilerOptions)
-        val app = processCompilationResult(cResult, errorHandler, copyOutput)
-
-        for (moduleName in modules) {
+        for (moduleName in rellCfg.modules) {
             val module = app.moduleMap[moduleName]
             if (module != null && module.test) {
                 throw UserMistake("Test module specified as a main module: '$moduleName'")
             }
         }
 
-        return app
+        return RellGtxModuleApp(app, rellCfg.compilerOptions)
+    }
+
+    private fun getModulePrinter(basePrinter: Rt_Printer, combinedPrinter: Rt_Printer): Rt_Printer {
+        return if (env.copyOutputToPrinter) Rt_MultiPrinter(basePrinter, combinedPrinter) else basePrinter
     }
 
     private fun processCompilationResult(
         cResult: C_CompilationResult,
         errorHandler: ErrorHandler,
-        copyOutput: Boolean,
     ): R_App {
         for (message in cResult.messages) {
             val str = message.toString()
 
-            val type = message.type
-            if (type == C_MessageType.WARNING) {
-                logger.warn(str)
-            } else if (type == C_MessageType.ERROR) {
-                logger.error(str)
-            } else {
-                logger.info(str)
+            if (env.logCompilerMessages) {
+                when (message.type) {
+                    C_MessageType.WARNING -> logger.warn(str)
+                    C_MessageType.ERROR -> logger.error(str)
+                    else -> logger.info(str)
+                }
             }
 
-            if (copyOutput) {
+            if (env.copyOutputToPrinter) {
                 errorHandler.printer.print(str)
             }
         }
@@ -518,7 +501,7 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
             return rApp
         }
 
-        if (copyOutput) {
+        if (env.copyOutputToPrinter) {
             errorHandler.printer.print("Compilation failed")
         }
 
@@ -535,17 +518,6 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
         }
 
         throw err
-    }
-
-    private fun getModuleNames(rellNode: Map<String, Gtv>): List<R_ModuleName> {
-        val modulesNode = rellNode["modules"]
-
-        val names = (modulesNode?.asArray() ?: arrayOf()).map {
-            val s = it.asString()
-            R_ModuleName.ofOpt(s) ?: throw UserMistake("Invalid module name: '$s'")
-        }
-
-        return names.ifEmpty { env.fallbackModules }
     }
 
     private fun getGtxChainDependencies(data: Gtv): Map<String, ByteArray> {
@@ -566,12 +538,54 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
         return deps.toMap()
     }
 
-    companion object : KLogging()
+    private class RellGtvConfig(
+        private val env: RellPostchainModuleEnvironment,
+        rellNode: Map<String, Gtv>,
+    ) {
+        val modules = getModuleNames(rellNode)
+
+        private val sourceCfg = SourceCodeConfig(rellNode)
+
+        val sourceDir = sourceCfg.dir
+        val compilerOptions = getCompilerOptions(sourceCfg.version)
+
+        fun compile(): C_CompilationResult {
+            return C_Compiler.compile(sourceDir, modules, compilerOptions)
+        }
+
+        private fun getModuleNames(rellNode: Map<String, Gtv>): List<R_ModuleName> {
+            val modulesNode = rellNode["modules"]
+
+            val names = (modulesNode?.asArray() ?: arrayOf()).map {
+                val s = it.asString()
+                R_ModuleName.ofOpt(s) ?: throw UserMistake("Invalid module name: '$s'")
+            }
+
+            return names.ifEmpty { env.fallbackModules }
+        }
+
+        private fun getCompilerOptions(langVersion: R_LangVersion?): C_CompilerOptions {
+            val opts = if (langVersion == null) C_CompilerOptions.DEFAULT else {
+                C_CompilerOptions.forLangVersion(langVersion)
+            }
+            return C_CompilerOptions.builder(opts).hiddenLib(env.hiddenLib).build()
+        }
+    }
+
+    companion object: KLogging() {
+        fun compileApp(config: Gtv, env: RellPostchainModuleEnvironment): Pair<C_CompilationResult, C_SourceDir> {
+            val gtxNode = config.asDict().getValue("gtx").asDict()
+            val rellNode = gtxNode.getValue("rell").asDict()
+            val rellCfg = RellGtvConfig(env, rellNode)
+            val cRes = rellCfg.compile()
+            return cRes to rellCfg.sourceDir
+        }
+    }
 }
 
 private class SourceCodeConfig(rellNode: Map<String, Gtv>) {
     val dir: C_SourceDir
-    val version: R_LangVersion
+    val version: R_LangVersion?
 
     init {
         val ver = getSourceVersion(rellNode)
@@ -588,7 +602,7 @@ private class SourceCodeConfig(rellNode: Map<String, Gtv>) {
 
         val source = allSources.first()
         if (source.legacy && ver != null) {
-            val verKey = RellGtxConfigConstants.RELL_VERSION_KEY
+            val verKey = RellGtxConfigConstants.LANG_VERSION_KEY
             throw UserMistake("Keys '${source.key}' and '$verKey' cannot be specified together")
         }
 
@@ -603,24 +617,61 @@ private class SourceCodeConfig(rellNode: Map<String, Gtv>) {
                 .mapValues { (k, v) -> C_TextSourceFile(k, v) }
                 .toImmMap()
 
-        RellVersions.checkCompatibilityVersion(source.version) { UserMistake(it) }
 
         dir = C_SourceDir.mapDir(fileMap)
-        version = source.version
+        version = getCompatibilityVersion(rellNode, source.version)
+    }
+
+    private fun getCompatibilityVersion(rellNode: Map<String, Gtv>, sourceVersion: R_LangVersion): R_LangVersion? {
+        RellVersions.checkCompatibilityVersion(sourceVersion) { UserMistake(it) }
+
+        val compilerVersion = getCompilerVersion(rellNode)
+
+        if (compilerVersion == null) {
+            if (sourceVersion >= RellVersions.MIN_COMPILER_VERSION) {
+                throw UserMistake("${RellGtxConfigConstants.COMPILER_VERSION_KEY} not specified in configuration")
+            }
+            return null
+        }
+
+        if (compilerVersion < RellVersions.MIN_COMPILER_VERSION) {
+            throw UserMistake("Bad ${RellGtxConfigConstants.COMPILER_VERSION_KEY}: $compilerVersion")
+        }
+        if (sourceVersion > compilerVersion) {
+            val langVerKey = RellGtxConfigConstants.LANG_VERSION_KEY
+            val compVerKey = RellGtxConfigConstants.COMPILER_VERSION_KEY
+            throw UserMistake("$langVerKey ($sourceVersion) is newer than $compVerKey ($compilerVersion)")
+        }
+
+        return sourceVersion
     }
 
     private fun getSourceVersion(rellNode: Map<String, Gtv>): R_LangVersion? {
-        val verStr = rellNode[RellGtxConfigConstants.RELL_VERSION_KEY]?.asString()
+        val key = RellGtxConfigConstants.LANG_VERSION_KEY
+        val ver = getVersionValue(rellNode, key)
+        if (ver != null && ver !in RellVersions.SUPPORTED_VERSIONS) {
+            throw UserMistake("Unknown $key: $ver")
+        }
+        return ver
+    }
+
+    private fun getCompilerVersion(rellNode: Map<String, Gtv>): R_LangVersion? {
+        val key = RellGtxConfigConstants.COMPILER_VERSION_KEY
+        val ver = getVersionValue(rellNode, key)
+        if (ver != null && ver < RellVersions.MAX_SUPPORTED_VERSION && ver !in RellVersions.SUPPORTED_VERSIONS) {
+            throw UserMistake("Unknown $key: $ver")
+        }
+        return ver
+    }
+
+    private fun getVersionValue(rellNode: Map<String, Gtv>, key: String): R_LangVersion? {
+        val verStr = rellNode[key]?.asString()
         verStr ?: return null
 
         val ver = try {
             R_LangVersion.of(verStr)
         } catch (e: IllegalArgumentException) {
-            throw UserMistake("Invalid language version: $verStr")
-        }
-
-        if (ver !in RellVersions.SUPPORTED_VERSIONS) {
-            throw UserMistake("Unknown language version: $ver")
+            throw UserMistake("Invalid $key: $verStr")
         }
 
         return ver
@@ -629,10 +680,10 @@ private class SourceCodeConfig(rellNode: Map<String, Gtv>) {
     private fun getSourceCodes(rellNode: Map<String, Gtv>, ver: R_LangVersion?, files: Boolean): List<SourceCode> {
         val res = mutableListOf<SourceCode>()
 
-        val key = if (files) RellGtxConfigConstants.RELL_FILES_KEY else RellGtxConfigConstants.RELL_SOURCES_KEY
+        val key = if (files) RellGtxConfigConstants.FILES_KEY else RellGtxConfigConstants.SOURCES_KEY
 
         if (key in rellNode) {
-            val verKey = RellGtxConfigConstants.RELL_VERSION_KEY
+            val verKey = RellGtxConfigConstants.LANG_VERSION_KEY
             ver ?: throw UserMistake("Configuration key '$key' is specified, but '$verKey' is missing")
             res.add(SourceCode(key, ver, files, false))
         }
@@ -654,7 +705,7 @@ private class SourceCodeConfig(rellNode: Map<String, Gtv>) {
         return when (s) {
             "0.10" -> R_LangVersion.of("0.10.4")
             else -> {
-                val verKey = RellGtxConfigConstants.RELL_VERSION_KEY
+                val verKey = RellGtxConfigConstants.LANG_VERSION_KEY
                 throw UserMistake("Invalid source code key: $key; use '$keyPrefix' and '$verKey' instead")
             }
         }

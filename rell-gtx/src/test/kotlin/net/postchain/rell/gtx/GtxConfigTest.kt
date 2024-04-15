@@ -5,6 +5,8 @@
 package net.postchain.rell.gtx
 
 import net.postchain.common.exception.UserMistake
+import net.postchain.rell.base.testutils.RellTestUtils
+import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.gtx.testutils.BaseGtxTest
 import org.apache.commons.lang3.StringUtils
 import org.junit.Test
@@ -36,6 +38,11 @@ class GtxConfigTest: BaseGtxTest() {
         chkLegacy("v0.11", msg.format("v0.11"))
         chkLegacy("v0.12", msg.format("v0.12"))
         chkLegacy("v1.0", msg.format("v1.0"))
+    }
+
+    private fun chkLegacy(version: String, expected: String) {
+        chkConfig("sources", "'sources_$version':SOURCES", expected)
+        chkConfig("files", "'files_$version':FILES", expected)
     }
 
     @Test fun testLegacyMultipleSources() {
@@ -114,7 +121,7 @@ class GtxConfigTest: BaseGtxTest() {
     }
 
     @Test fun testSourcesVersionUnknown() {
-        val err = "ERR:Unknown language version: %s"
+        val err = "ERR:Unknown version: %s"
         chkVersion("0.5.0", err)
         chkVersion("0.5.1", err)
         chkVersion("0.5.999", err)
@@ -130,7 +137,7 @@ class GtxConfigTest: BaseGtxTest() {
     }
 
     @Test fun testSourcesWithBadVersion() {
-        val msg = "ERR:Invalid language version"
+        val msg = "ERR:Invalid version"
         chkVersion("0", "$msg: 0")
         chkVersion("1", "$msg: 1")
         chkVersion("hello", "$msg: hello")
@@ -143,29 +150,52 @@ class GtxConfigTest: BaseGtxTest() {
         chkVersion("v0.10.0", "$msg: v0.10.0")
     }
 
-    private fun chkLegacy(version: String, expected: String) {
-        chkConfig("sources", "'sources_$version':SOURCES", expected)
-        chkConfig("files", "'files_$version':FILES", expected)
-    }
-
     private fun chkVersion(version: String, expected: String) {
         val expected2 = expected.format(version)
-        chkConfig("sources", "'sources':SOURCES,'version':'$version'", expected2)
-        chkConfig("files", "'files':FILES,'version':'$version'", expected2)
+        chkConfig("sources", "'sources':SOURCES,'version':'$version','compilerVersion':'${RellTestUtils.RELL_VER}'", expected2)
+        chkConfig("files", "'files':FILES,'version':'$version','compilerVersion':'${RellTestUtils.RELL_VER}'", expected2)
     }
 
-    private fun chkConfig(sources: String, expected: String) {
-        chkConfig("?", sources, expected)
+    @Test fun testCompilerVersion() {
+        chkConfig("'sources':SOURCES,'version':'0.13.10'", "OK")
+        chkConfig("'sources':SOURCES,'version':'${RellVersions.SINCE_NOW}'",
+            "ERR:compilerVersion not specified in configuration")
+        //TODO test version > MIN_COMPILER_VERSION
+
+        chkConfig("'sources':SOURCES,'version':'0.12.0','compilerVersion':'${RellVersions.SINCE_NOW}'", "OK")
+        chkConfig("'sources':SOURCES,'version':'0.12.0','compilerVersion':'0.14.0'", "OK")
+        chkConfig("'sources':SOURCES,'version':'0.12.0','compilerVersion':'0.13.10'",
+            "ERR:Bad compilerVersion: 0.13.10")
+        chkConfig("'sources':SOURCES,'version':'0.12.0','compilerVersion':'0.12.99'",
+            "ERR:Unknown compilerVersion: 0.12.99")
+        chkConfig("'sources':SOURCES,'version':'0.12.0','compilerVersion':'999.0.0'", "OK")
+
+        chkConfig("'sources':SOURCES,'version':'${RellVersions.SINCE_NOW}','compilerVersion':'${RellVersions.SINCE_NOW}'", "OK")
+        chkConfig("'sources':SOURCES,'version':'0.13.10','compilerVersion':'${RellVersions.SINCE_NOW}'", "OK")
+        //TODO uncomment when 0.13.11+ is available
+        //chkConfig("'sources':SOURCES,'version':'0.13.11+1','compilerVersion':'0.13.11'", "OK")
     }
 
-    private fun chkConfig(key: String, sources: String, expected: String) {
-        val actual = runConfig(sources)
+    @Test fun testVersionControl() {
+        val src = "'sources':{'module.rell':'query q() = rell.meta.current_module().kind_text;'}"
+        chkConfig("$src,'version':'0.13.0'", "OK:'module'")
+        chkConfig("$src,'version':'0.13.10','compilerVersion':'${RellVersions.SINCE_NOW}'", "OK:'module'")
+        chkConfig("$src,'version':'0.13.0','compilerVersion':'${RellVersions.SINCE_NOW}'",
+            "OK:ct_err:module.rell:version:lib:TYPE:[rell:rell.meta]:0.13.5:0.13.0")
+    }
+
+    private fun chkConfig(body: String, expected: String) {
+        chkConfig("?", body, expected)
+    }
+
+    private fun chkConfig(key: String, body: String, expected: String) {
+        val actual = runConfig(body)
         val expected2 = expected.replace("<KEY>", key)
         assertEquals(expected2, actual)
     }
 
-    private fun runConfig(sources: String): String {
-        val s = sources
+    private fun runConfig(body: String): String {
+        val s = body
                 .replace("SOURCES", "{'a.rell':'query q() = 42;'}")
                 .replace("FILES", "{'a.rell':'classpath:/net/postchain/rell/base/42.rell'}")
         tst.configTemplate = "{'gtx':{'rell':{'modules':'{MODULES}','moduleArgs':'{MODULE_ARGS}',$s}}}"

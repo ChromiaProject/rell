@@ -242,8 +242,9 @@ object RellApiBaseInternal {
 
         val map = mutableMapOf(
             "modules" to GtvFactory.gtv(modules.map { GtvFactory.gtv(it.str()) }),
-            RellGtxConfigConstants.RELL_SOURCES_KEY to GtvFactory.gtv(sources.mapValues { (_, v) -> GtvFactory.gtv(v) }),
-            RellGtxConfigConstants.RELL_VERSION_KEY to GtvFactory.gtv(config.version.str()),
+            RellGtxConfigConstants.SOURCES_KEY to GtvFactory.gtv(sources.mapValues { (_, v) -> GtvFactory.gtv(v) }),
+            RellGtxConfigConstants.LANG_VERSION_KEY to GtvFactory.gtv(config.version.str()),
+            RellGtxConfigConstants.COMPILER_VERSION_KEY to GtvFactory.gtv(RellVersions.VERSION.str()),
         )
 
         val moduleArgs = config.moduleArgs

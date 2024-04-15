@@ -108,7 +108,7 @@ private class ReposCompiler {
 
     private fun parseVerDirName(verDir: File): Pair<String, R_LangVersion?> {
         val verName = verDir.name
-        check(verName.matches(Regex("\\d{4}-\\d{2}-\\d{2}__[0-9a-f]{7}(__[0-9]+[.][0-9]+[.][0-9]+)?"))) { verDir }
+        check(verName.matches(Regex("\\d{4}-\\d{2}-\\d{2}__[0-9a-f]{7,8}(__[0-9]+[.][0-9]+[.][0-9]+)?"))) { verDir }
         val parts = verName.split("__")
         check(parts.size == 2 || parts.size == 3) { parts }
         val gitVer = parts[0] + "__" + parts[1]

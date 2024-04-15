@@ -27,9 +27,13 @@ object RellVersions {
             .map { R_LangVersion.of(it) }
             .toImmSet()
 
+    val MAX_SUPPORTED_VERSION: R_LangVersion = SUPPORTED_VERSIONS.max()
+
     const val MODULE_SYSTEM_VERSION_STR = "0.10.0"
 
     private val MIN_COMPATIBILITY_VERSION = R_LangVersion.of("0.10.10")
+
+    val MIN_COMPILER_VERSION: R_LangVersion by lazy { R_LangVersion.of(SINCE_NOW) }
 
     /**
      * To be used in the library to specify a yet unknown next version.
@@ -41,6 +45,7 @@ object RellVersions {
     init {
         check(VERSION in SUPPORTED_VERSIONS)
         check(MIN_COMPATIBILITY_VERSION in SUPPORTED_VERSIONS)
+        check(MIN_COMPILER_VERSION in SUPPORTED_VERSIONS)
         check(R_LangVersion.of(MODULE_SYSTEM_VERSION_STR) in SUPPORTED_VERSIONS)
         check(R_LangVersion.of(SINCE_NOW) == VERSION)
     }

@@ -359,7 +359,7 @@ sealed class C_BinOp_EqNe(private val eq: Boolean, private val rOp: R_BinaryOp):
 
     private fun calcCommonType(ctx: C_BinOpContext, left: R_Type, right: R_Type): R_Type? {
         val res = if (left.isAssignableFrom(right)) left else null
-        if (res != null && left is R_NullableType && right !is R_NullableType) {
+        if (res != null && left is R_NullableType && right !is R_NullableType && right != R_NullType) {
             RESTRICTIONS_NULLABLE_OP.access(ctx.msgCtx, ctx.opPos)
         }
         return res

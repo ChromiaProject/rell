@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.tools
@@ -283,7 +283,7 @@ class RunConfigGenTest {
 
         chkFile(files, "node-config.properties", "x=123")
 
-        chkFile(files, "blockchains/33/brid.txt", "31AC73525B6B871294127C5B49DD9B05B8DE95590B3262BF07D396C0805AEC4E")
+        chkFile(files, "blockchains/33/brid.txt", "801933FA1A9662E94E204529F846B73EFC6767C4E7B8F21771080576F3DEF84B")
 
         chkFile(files, "blockchains/33/0.xml", """
             <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -292,6 +292,9 @@ class RunConfigGenTest {
                     <dict>
                         <entry key="rell">
                             <dict>
+                                <entry key="compilerVersion">
+                                    <string>${RellTestUtils.RELL_VER}</string>
+                                </entry>
                                 <entry key="modules">
                                     <array>
                                         <string>app</string>
@@ -322,18 +325,19 @@ class RunConfigGenTest {
         """)
 
         chkFileBin(files, "blockchains/33/0.gtv",
-                """{
-                    "gtx":{
-                        "rell":{
-                            "modules":["app"],
-                            "sources":{
-                                "app.rell":"module; import sub;\nfunction main(){}","sub.rell":"module; function sub(){}"
-                            },
-                            "version":"${RellTestUtils.RELL_VER}"
-                        }
-                    },
-                    "signers":[]
-                }""".unwrap()
+            """{
+                "gtx":{
+                    "rell":{
+                        "compilerVersion":"${RellTestUtils.RELL_VER}",
+                        "modules":["app"],
+                        "sources":{
+                            "app.rell":"module; import sub;\nfunction main(){}","sub.rell":"module; function sub(){}"
+                        },
+                        "version":"${RellTestUtils.RELL_VER}"
+                    }
+                },
+                "signers":[]
+            }""".unwrap()
         )
 
         assertEquals(setOf(), files.keys)

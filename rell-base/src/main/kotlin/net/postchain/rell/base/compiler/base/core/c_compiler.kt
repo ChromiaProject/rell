@@ -170,7 +170,7 @@ enum class C_AtAttrShadowing {
 }
 
 // Instantiated in Eclipse IDE, change parameters carefully.
-class C_CompilerOptions(
+data class C_CompilerOptions(
     val compatibility: R_LangVersion?,
     val gtv: Boolean,
     val deprecatedError: Boolean,
@@ -236,6 +236,8 @@ class C_CompilerOptions(
             map[key] = value
         }
     }
+
+    override fun toString(): String = javaClass.simpleName
 
     companion object {
         @JvmField val DEFAULT = C_CompilerOptions(

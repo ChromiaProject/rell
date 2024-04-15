@@ -766,9 +766,22 @@ class NullableTest: BaseRellTest(false) {
     }
 
     @Test fun testVersionControlEqualityCheck() {
-        chkVerCt("function f(x: integer, y: integer?) = x == y;", "0.13.10", "VER:feature:binop_nullable_eq_value")
-        chkVerCt("function f(x: integer, y: integer?) = y == x;", "0.13.10", "VER:feature:binop_nullable_eq_value")
-        chkVerCt("function f(x: integer, y: integer?) = x != y;", "0.13.10", "VER:feature:binop_nullable_eq_value")
-        chkVerCt("function f(x: integer, y: integer?) = y != x;", "0.13.10", "VER:feature:binop_nullable_eq_value")
+        val err = "VER:feature:binop_nullable_eq_value"
+        chkVerCt("function f(x: integer, y: integer?) = x == y;", "0.13.10", err)
+        chkVerCt("function f(x: integer, y: integer?) = y == x;", "0.13.10", err)
+        chkVerCt("function f(x: integer, y: integer?) = x != y;", "0.13.10", err)
+        chkVerCt("function f(x: integer, y: integer?) = y != x;", "0.13.10", err)
+
+        chkVerCt("function f(x: list<text>, y: list<text>?) = x === y;", "0.13.10", err)
+        chkVerCt("function f(x: list<text>, y: list<text>?) = y === x;", "0.13.10", err)
+        chkVerCt("function f(x: list<text>, y: list<text>?) = x !== y;", "0.13.10", err)
+        chkVerCt("function f(x: list<text>, y: list<text>?) = y !== x;", "0.13.10", err)
+
+        tst.compatibilityVer("0.10.11")
+        chkCompile("function f(x: integer?) = x == null;", "OK")
+        chkCompile("function f(x: integer?) = x != null;", "OK")
+        chkCompile("function f(x: integer?) = when (x) { null -> 123; else -> 456 };", "OK")
+        chkCompile("function f(x: list<text>?) = x === null;", "OK")
+        chkCompile("function f(x: list<text>?) = x !== null;", "OK")
     }
 }
