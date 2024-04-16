@@ -13,7 +13,7 @@ dependencies {
     implementation(libs.bundles.rell)
     implementation(libs.bundles.jackson)
     implementation(libs.bundles.logging)
-    rellTestCasesConfiguration(group = "net.postchain.rell", name = "rell-api-gtx", version = "0.14.0-SNAPSHOT", classifier = "rell-test-cases", ext = "zip")
+    rellTestCasesConfiguration(group = "net.postchain.rell", name = "rell-api-gtx", version = libs.versions.rell.get(), classifier = "rell-test-cases", ext = "zip")
 
     testImplementation(libs.bundles.testing)
     testImplementation(libs.bundles.testcontainers)
@@ -22,7 +22,7 @@ dependencies {
 val testCasesDir = layout.buildDirectory.dir("rell-test-cases")
 
 val copyTestCases by tasks.registering(Copy::class) {
-    from(zipTree(rellTestCasesConfiguration.singleFile))
+    from({ zipTree(rellTestCasesConfiguration.singleFile) })
     into(testCasesDir.map { it.dir("test-cases") })
 }
 
