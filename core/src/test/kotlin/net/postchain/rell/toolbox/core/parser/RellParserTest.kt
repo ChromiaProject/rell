@@ -3,8 +3,8 @@ package net.postchain.rell.toolbox.core.parser
 import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.hasSameSizeAs
-import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import assertk.assertions.isGreaterThan
 import assertk.assertions.isGreaterThanOrEqualTo
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_Parser
@@ -22,6 +22,7 @@ class RellParserTest {
     @Test
     fun `ANTLR parser correctly parses Rell files`() {
         val testCases = TestCaseSnippets.getTestCases()
+        assertThat(testCases.size).isGreaterThan(0)
         testCases.forEach(::validateTestCase)
     }
 

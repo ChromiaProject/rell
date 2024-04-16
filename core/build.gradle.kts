@@ -1,8 +1,11 @@
+
 plugins {
     id("java")
     id("net.postchain.rell.toolbox.kotlin-common-conventions")
     antlr
 }
+
+val rellTestCasesConfiguration by configurations.creating
 
 dependencies {
     antlr(libs.antlr)
@@ -10,9 +13,17 @@ dependencies {
     implementation(libs.bundles.rell)
     implementation(libs.bundles.jackson)
     implementation(libs.bundles.logging)
+    rellTestCasesConfiguration(group = "net.postchain.rell", name = "rell-api-gtx", version = libs.versions.rell.get(), classifier = "rell-test-cases", ext = "zip")
 
     testImplementation(libs.bundles.testing)
     testImplementation(libs.bundles.testcontainers)
+}
+
+val testCasesDir = layout.buildDirectory.dir("rell-test-cases")
+
+val copyTestCases by tasks.registering(Copy::class) {
+    from({ zipTree(rellTestCasesConfiguration.singleFile) })
+    into(testCasesDir.map { it.dir("test-cases") })
 }
 
 tasks.compileKotlin {
@@ -24,6 +35,7 @@ tasks.dokkaHtml {
 }
 
 tasks.compileTestKotlin {
+    dependsOn(copyTestCases)
     dependsOn(tasks.generateTestGrammarSource)
 }
 
@@ -48,4 +60,8 @@ sourceSets.getByName("main") {
     java.srcDir(tasks.generateGrammarSource)
     java.srcDir("src/main/java")
     kotlin.srcDir("src/main/kotlin")
+}
+
+sourceSets.getByName("test") {
+    resources.srcDir(testCasesDir)
 }

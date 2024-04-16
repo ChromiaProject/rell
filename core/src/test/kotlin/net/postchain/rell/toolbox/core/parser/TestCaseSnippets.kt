@@ -7,11 +7,11 @@ import java.io.File
 class RellTestCaseSnippet(val file: File, val snippet: IdeCodeSnippet)
 
 object TestCaseSnippets {
-    private val testDataPath = "parserTestSnippets"
+    private val testDataPath = "test-cases"
 
     fun getTestCases(): List<RellTestCaseSnippet> {
         val mapper = jacksonObjectMapper()
-        return getTestCaseFiles().flatMap {file ->
+        return getTestCaseFiles().flatMap { file ->
             mapper.readTree(file).map { jsonNode ->
                 RellTestCaseSnippet(file, IdeCodeSnippet.deserialize(jsonNode.toString()))
             }
@@ -19,7 +19,7 @@ object TestCaseSnippets {
     }
 
     private fun getTestCaseFiles(): List<File> {
-        val testCasesFolder = File(RellParserTest::class.java.classLoader.getResource(testDataPath).file)
+        val testCasesFolder = File(RellParserTest::class.java.classLoader.getResource(testDataPath)!!.file)
         return testCasesFolder.walk().filter { it.isFile && it.extension == "json" }.toList()
     }
 }
