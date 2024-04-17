@@ -103,12 +103,14 @@ class RellWorkspaceManager(
     }
 
     private fun findSrcParentDirectory(uri: URI): File? {
+        if (!uri.path.endsWith(".rell")) return null
+
         val path = Paths.get(uri)
         var depth = 0
         var currentPath = path
         while (currentPath.parent != null && depth < 5) { // todo make this variable configurable
             depth++
-            val srcDirectory = currentPath.resolve("src")
+            val srcDirectory = currentPath.resolveSibling("src")
             if (Files.exists(srcDirectory) && Files.isDirectory(srcDirectory)) {
                 return srcDirectory.toFile()
             }

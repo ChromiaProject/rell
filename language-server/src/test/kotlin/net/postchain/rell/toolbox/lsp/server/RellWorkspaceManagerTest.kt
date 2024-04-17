@@ -11,6 +11,8 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
+import java.io.File
+import java.net.URI
 import net.postchain.rell.toolbox.lsp.server.utils.WorkspaceManagerTestBase
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
@@ -18,12 +20,10 @@ import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import org.eclipse.lsp4j.WorkspaceFolder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.net.URI
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createDirectory
 
-class RellWorkspaceManagerTest: WorkspaceManagerTestBase() {
+class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
 
     @Test
     fun `Initialization correctly index relevant files`() {
@@ -62,12 +62,12 @@ class RellWorkspaceManagerTest: WorkspaceManagerTestBase() {
     }
 
     @Test
-    fun `Initialization correctly index for single file`() {
+    fun `Initialization correctly index rell files within source directory`() {
         File(sourceDir, "main.rell").apply {
             writeText(
                 """
                 module;
-                import import_file2.*;
+                import import_file.*;
                 function main() {
                     return "main";
                 }
@@ -96,13 +96,13 @@ class RellWorkspaceManagerTest: WorkspaceManagerTestBase() {
     }
 
     @Test
-    fun `Initialization correctly index for single file src out of depth search`() {
-        val childDirs =File(sourceDir, "one/two/three/four/five").toPath().createDirectories().toFile()
+    fun `Indexer for single file should only have opened file when src out of depth search`() {
+        val childDirs = File(sourceDir, "one/two/three/four/five").toPath().createDirectories().toFile()
         val mainFile = File(childDirs, "main.rell").apply {
             writeText(
                 """
                 module;
-                import import_file2.*;
+                import import_file.*;
                 function main() {
                     return "main";
                 }
@@ -127,6 +127,64 @@ class RellWorkspaceManagerTest: WorkspaceManagerTestBase() {
         assertThat(indexers).hasSize(1)
         assertThat(indexers.keys.first()).isEqualTo(mainFile.toURI())
         assertThat(indexers[mainFile.toURI()]!!.fileUriResourceMap).hasSize(1)
+    }
+
+    @Test
+    fun `Indexer for single file finds src dir as the root of project`() {
+        val childDirs = File(sourceDir, "one/two/three").toPath().createDirectories().toFile()
+        val mainFile = File(sourceDir, "main.rell").apply {
+            writeText(
+                """
+                module;
+                function main() {
+                    return "main";
+                }
+            """.trimIndent()
+            )
+        }
+        val childFile = File(childDirs, "import_file.rell").apply {
+            writeText(
+                """
+                module;
+                function foo() {
+                    return "foo";
+                }
+            """.trimIndent()
+            )
+        }
+
+        initializeWorkspace(childFile)
+
+        val indexers = workspaceManager.indexers
+        val sourceDirUri = sourceDir.toURI()
+
+        assertThat(indexers).hasSize(1)
+        assertThat(indexers.keys.first()).isEqualTo(sourceDirUri)
+        assertThat(indexers[sourceDirUri]!!.fileUriResourceMap).hasSize(2)
+        assertThat(indexers[sourceDirUri]!!.fileUriResourceMap.keys).containsOnly(mainFile.toURI(), childFile.toURI())
+    }
+
+    @Test
+    fun `Indexer should not look for parent src if opened uri is not a rell file`() {
+        val childDirs = File(sourceDir, "one/two/three").toPath().createDirectories().toFile()
+        File(sourceDir, "main.rell").apply {
+            writeText(
+                """
+                module;
+                import import_file.*;
+                function main() {
+                    return "main";
+                }
+            """.trimIndent()
+            )
+        }
+
+        initializeWorkspace(childDirs)
+        val indexers = workspaceManager.indexers
+
+        assertThat(indexers).hasSize(1)
+        assertThat(indexers.keys.first()).isEqualTo(childDirs.toURI())
+        assertThat(indexers[childDirs.toURI()]!!.fileUriResourceMap).hasSize(0)
     }
 
     @Test
@@ -180,7 +238,7 @@ class RellWorkspaceManagerTest: WorkspaceManagerTestBase() {
 
     @Test
     fun `Correct indexer returned for new file`() {
-        var sourceDirUri = sourceDir.toURI()
+        val sourceDirUri = sourceDir.toURI()
         File(sourceDir, "rell_file.rell").apply {
             writeText(
                 """
