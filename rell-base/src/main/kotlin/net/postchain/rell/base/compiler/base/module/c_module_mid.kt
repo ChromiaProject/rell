@@ -117,12 +117,9 @@ class C_MidModuleMember_Enum(
 
 class C_ImportDefinition(
     val pos: S_Pos,
-    val alias: C_Name?,
-    val implicitAlias: C_Name?,
 )
 
 class C_MidModuleMember_Import(
-    private val modifiers: S_Modifiers,
     private val importDef: C_ImportDefinition,
     private val target: C_ImportTarget,
     private val moduleName: R_ModuleName,

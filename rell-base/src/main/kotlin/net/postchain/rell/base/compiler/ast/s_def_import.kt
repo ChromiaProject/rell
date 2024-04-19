@@ -11,13 +11,12 @@ import net.postchain.rell.base.compiler.base.modifier.C_ModifierTargetType
 import net.postchain.rell.base.compiler.base.modifier.C_ModifierValues
 import net.postchain.rell.base.compiler.base.module.*
 import net.postchain.rell.base.compiler.base.namespace.C_UserNsProtoBuilder
-import net.postchain.rell.base.compiler.base.utils.C_CommonError
-import net.postchain.rell.base.compiler.base.utils.C_DefaultMessageManager
-import net.postchain.rell.base.compiler.base.utils.C_MessageManager
+import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
+import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.*
@@ -134,6 +133,16 @@ class S_ImportModulePath(
     private class ModuleNameDetails(val moduleName: R_ModuleName, val pathModuleNames: List<R_ModuleName>)
 }
 
+class C_ImportAlias(val explicit: C_Name?, val implicit: C_Name?, val anonymous: C_Name?) {
+    init {
+        check((explicit ?: implicit ?: anonymous) != null)
+        if (anonymous != null) {
+            check(explicit == null)
+            check(implicit == null)
+        }
+    }
+}
+
 sealed class C_ImportTarget {
     open fun moduleIdeDefId(): IdeSymbolId? = null
 
@@ -153,16 +162,22 @@ sealed class S_ImportTarget {
     abstract fun compile(
         ctx: S_DefinitionContext,
         moduleName: R_ModuleName,
-        explicitAlias: C_Name?,
-        implicitAlias: C_Name?,
+        importAlias: C_ImportAlias?,
         docModifiers: DocModifiers,
     ): C_ImportTarget
 
     protected fun aliasNamespaceIdeDef(
         ctx: S_DefinitionContext,
-        explicitAlias: C_Name?,
+        importAlias: C_ImportAlias?,
         docDecMaker: (C_Name) -> DocDeclaration,
     ): C_IdeSymbolDef {
+        val anonymous = importAlias?.anonymous
+        if (anonymous != null) {
+            val msg = "Only a simple module import can be anonymous"
+            ctx.msgCtx.error(anonymous.pos, "import:anonymous_not_allowed", msg)
+        }
+
+        val explicitAlias = importAlias?.explicit
         var aliasIdeId: IdeSymbolGlobalId? = null
         var doc: DocSymbol? = null
 
@@ -187,12 +202,12 @@ object S_DefaultImportTarget: S_ImportTarget() {
     override fun compile(
         ctx: S_DefinitionContext,
         moduleName: R_ModuleName,
-        explicitAlias: C_Name?,
-        implicitAlias: C_Name?,
+        importAlias: C_ImportAlias?,
         docModifiers: DocModifiers,
     ): C_ImportTarget {
+        val explicitAlias = importAlias?.explicit
         val explicitAliasIdeDefId = aliasIdeDefId(ctx, explicitAlias)
-        val implicitAliasIdeDefId = if (explicitAlias != null) null else aliasIdeDefId(ctx, implicitAlias)
+        val implicitAliasIdeDefId = if (explicitAlias != null) null else aliasIdeDefId(ctx, importAlias?.implicit)
 
         val aliasFullName = if (explicitAlias == null) null else {
             R_FullName(ctx.moduleName, ctx.namespacePath.qualifiedName(explicitAlias.rName))
@@ -201,6 +216,7 @@ object S_DefaultImportTarget: S_ImportTarget() {
 
         return C_DefaultImportTarget(
             ctx.docFactory,
+            importAlias,
             explicitAliasIdeDefId,
             implicitAliasIdeDefId,
             aliasFullName,
@@ -218,6 +234,7 @@ object S_DefaultImportTarget: S_ImportTarget() {
 
     private class C_DefaultImportTarget(
         val docFactory: DocSymbolFactory,
+        val importAlias: C_ImportAlias?,
         val explicitAliasIdeDefId: IdeSymbolId?,
         val implicitAliasIdeDefId: IdeSymbolId?,
         val aliasFullName: R_FullName?,
@@ -235,17 +252,25 @@ object S_DefaultImportTarget: S_ImportTarget() {
         }
 
         override fun addToNamespace(ctx: C_MountContext, def: C_ImportDefinition, module: C_ModuleDescriptor) {
-            val alias = def.alias ?: def.implicitAlias
-            if (alias == null) {
+            if (importAlias == null) {
                 ctx.msgCtx.error(def.pos, "import:no_alias", "Cannot infer an alias, specify import alias explicitly")
                 return
             }
 
-            val ideKind = if (def.alias != null) IdeSymbolKind.EXPR_IMPORT_ALIAS else IdeSymbolKind.DEF_IMPORT_MODULE
+            val alias = importAlias.explicit ?: importAlias.implicit
+            if (alias != null) {
+                val ideInfo = ideSymbolInfo(ctx, module, alias)
+                ctx.nsBuilder.addModuleImport(alias, module, ideInfo)
+            }
+        }
+
+        private fun ideSymbolInfo(ctx: C_MountContext, module: C_ModuleDescriptor, alias: C_Name): C_IdeSymbolInfo {
+            val ideKind = if (importAlias?.explicit != null) IdeSymbolKind.EXPR_IMPORT_ALIAS else {
+                IdeSymbolKind.DEF_IMPORT_MODULE
+            }
             val cDefBase = ctx.defBase(alias, C_DefinitionType.IMPORT, ideKind, null, module.extChain)
             cDefBase.setDocDeclaration(docDeclaration)
-
-            ctx.nsBuilder.addModuleImport(alias, module, cDefBase.ideRefInfo)
+            return cDefBase.ideRefInfo
         }
     }
 }
@@ -343,14 +368,13 @@ class S_ExactImportTarget(private val items: List<S_ExactImportTargetItem>): S_I
     override fun compile(
         ctx: S_DefinitionContext,
         moduleName: R_ModuleName,
-        explicitAlias: C_Name?,
-        implicitAlias: C_Name?,
+        importAlias: C_ImportAlias?,
         docModifiers: DocModifiers,
     ): C_ImportTarget {
-        val aliasIdeDef = aliasNamespaceIdeDef(ctx, explicitAlias) { expAlias ->
+        val aliasIdeDef = aliasNamespaceIdeDef(ctx, importAlias) { expAlias ->
             DocDeclaration_ImportExactModule(docModifiers, moduleName, expAlias.rName)
         }
-        return C_ExactImportTarget(docModifiers, explicitAlias, aliasIdeDef)
+        return C_ExactImportTarget(docModifiers, importAlias?.explicit, aliasIdeDef)
     }
 
     private inner class C_ExactImportTarget(
@@ -361,10 +385,9 @@ class S_ExactImportTarget(private val items: List<S_ExactImportTargetItem>): S_I
         override fun aliasIdeInfo() = aliasIdeDef.defInfo
 
         override fun addToNamespace(ctx: C_MountContext, def: C_ImportDefinition, module: C_ModuleDescriptor) {
-            checkEquals(def.alias, explicitAlias)
-            val nsBuilder = getNsBuilder(ctx, def.alias, aliasIdeDef.refInfo)
+            val nsBuilder = getNsBuilder(ctx, explicitAlias, aliasIdeDef.refInfo)
             for (item in items) {
-                item.addToNamespace(ctx, docModifiers, def.alias, ctx.modCtx.moduleName, nsBuilder, module.key)
+                item.addToNamespace(ctx, docModifiers, explicitAlias, ctx.modCtx.moduleName, nsBuilder, module.key)
             }
         }
     }
@@ -374,14 +397,13 @@ object S_WildcardImportTarget: S_ImportTarget() {
     override fun compile(
         ctx: S_DefinitionContext,
         moduleName: R_ModuleName,
-        explicitAlias: C_Name?,
-        implicitAlias: C_Name?,
+        importAlias: C_ImportAlias?,
         docModifiers: DocModifiers,
     ): C_ImportTarget {
-        val aliasIdeDef = aliasNamespaceIdeDef(ctx, explicitAlias) { expAlias ->
+        val aliasIdeDef = aliasNamespaceIdeDef(ctx, importAlias) { expAlias ->
             DocDeclaration_ImportWildcard(docModifiers, moduleName, expAlias.rName)
         }
-        return C_WildcardImportTarget(explicitAlias, aliasIdeDef)
+        return C_WildcardImportTarget(importAlias?.explicit, aliasIdeDef)
     }
 
     private class C_WildcardImportTarget(
@@ -391,8 +413,7 @@ object S_WildcardImportTarget: S_ImportTarget() {
         override fun aliasIdeInfo() = aliasIdeDef.defInfo
 
         override fun addToNamespace(ctx: C_MountContext, def: C_ImportDefinition, module: C_ModuleDescriptor) {
-            checkEquals(def.alias, explicitAlias)
-            val nsBuilder = getNsBuilder(ctx, def.alias, aliasIdeDef.refInfo)
+            val nsBuilder = getNsBuilder(ctx, explicitAlias, aliasIdeDef.refInfo)
             nsBuilder.addWildcardImport(module.key, listOf())
         }
     }
@@ -417,7 +438,9 @@ class S_ImportDefinition(
         val moduleName = cModulePath.moduleName
 
         val cAliasHand = alias?.compile(ctx.symCtx, def = true)
-        val cTarget = target.compile(ctx, moduleName, cAliasHand?.name, cModulePath.implicitAlias, docModifiers)
+
+        val importAlias = compileImportAlias(ctx, cAliasHand, cModulePath)
+        val cTarget = target.compile(ctx, moduleName, importAlias, docModifiers)
 
         val moduleInfos = try {
             ctx.appCtx.importLoader.loadModuleEx(moduleName)
@@ -430,12 +453,29 @@ class S_ImportDefinition(
         cModulePath.resolveIdeInfo(cTarget, moduleInfos)
 
         if (cAliasHand != null) {
-            val aliasIdeInfo = cTarget.aliasIdeInfo()
+            val aliasIdeInfo = if (importAlias?.anonymous == null) cTarget.aliasIdeInfo() else C_IdeSymbolInfo.UNKNOWN
             cAliasHand.setIdeInfo(aliasIdeInfo)
         }
 
-        val importDef = C_ImportDefinition(kwPos, cAliasHand?.name, cModulePath.implicitAlias)
-        return C_MidModuleMember_Import(modifiers, importDef, cTarget, moduleName, modExternal.value())
+        val importDef = C_ImportDefinition(kwPos)
+        return C_MidModuleMember_Import(importDef, cTarget, moduleName, modExternal.value())
+    }
+
+    private fun compileImportAlias(
+        ctx: S_DefinitionContext,
+        cAliasHand: C_NameHandle?,
+        cModulePath: C_ImportModulePathHandle,
+    ): C_ImportAlias? {
+        return when {
+            cAliasHand?.str == "_" -> {
+                ANONYMOUS_IMPORT_RESTRICTIONS.access(ctx.msgCtx, cAliasHand.pos)
+                C_ImportAlias(null, null, cAliasHand.name)
+            }
+            cAliasHand != null || cModulePath.implicitAlias != null -> {
+                C_ImportAlias(cAliasHand?.name, cModulePath.implicitAlias, null)
+            }
+            else -> null
+        }
     }
 
     override fun ideGetImportedModules(moduleName: R_ModuleName, res: MutableSet<R_ModuleName>) {
@@ -452,5 +492,12 @@ class S_ImportDefinition(
         if (alias != null) {
             b.node(this, alias, IdeOutlineNodeType.IMPORT)
         }
+    }
+
+    companion object {
+        private val ANONYMOUS_IMPORT_RESTRICTIONS = C_FeatureRestrictions.make(
+            RellVersions.SINCE_NOW,
+            "anonymous_import" toCodeMsg "Anonymous imports",
+        )
     }
 }

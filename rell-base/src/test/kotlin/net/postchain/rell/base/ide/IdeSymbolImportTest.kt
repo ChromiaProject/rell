@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.ide
@@ -772,6 +772,11 @@ class IdeSymbolImportTest: BaseIdeSymbolTest() {
             val MAGIC = 123;
             namespace ns { struct p {} }
         """)
+    }
+
+    @Test fun testImportAnonymous() {
+        file("lib.rell", "module;")
+        chkSyms("import _: lib;", "_=UNKNOWN|-|-", "lib=DEF_IMPORT_MODULE|-|lib.rell", "?head=MODULE|lib")
     }
 
     @Test fun testNamespace() {

@@ -10,16 +10,14 @@ import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_Message
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
+import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
 import net.postchain.rell.base.runtime.Rt_Printer
 import net.postchain.rell.base.sql.SqlExecutor
-import net.postchain.rell.base.utils.RellVersions
-import net.postchain.rell.base.utils.immMapOf
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
+import net.postchain.rell.base.utils.*
 import kotlin.test.assertEquals
 
 abstract class RellBaseTester(
@@ -75,6 +73,8 @@ abstract class RellBaseTester(
 
     private var mainModules: List<String>? = null
     private var testModules: List<String>? = null
+
+    var mainFile: String = RellTestUtils.MAIN_FILE
 
     fun init() {
         tstCtx.init()
@@ -132,7 +132,7 @@ abstract class RellBaseTester(
             testLib = testLib,
             hiddenLib = hiddenLib,
             allowDbModificationsInObjectExprs = allowDbModificationsInObjectExprs,
-            symbolInfoFile = RellTestUtils.MAIN_FILE_PATH,
+            symbolInfoFile = C_SourcePath.parse(mainFile),
             complexWhatEnabled = complexWhatEnabled,
             mountConflictError = true,
             appModuleInTestsError = false,
@@ -173,14 +173,14 @@ abstract class RellBaseTester(
     fun file(path: String, text: String) {
         checkNotInited()
         check(path !in files)
-        check(path != RellTestUtils.MAIN_FILE)
+        check(path != mainFile)
         files[path] = text
     }
 
     fun files() = files.toImmMap()
 
     protected fun files(code: String): Map<String, String> {
-        return files() + mapOf(RellTestUtils.MAIN_FILE to code)
+        return files().unionNoConflicts(mapOf(mainFile to code))
     }
 
     fun mainModule(vararg modules: String) {

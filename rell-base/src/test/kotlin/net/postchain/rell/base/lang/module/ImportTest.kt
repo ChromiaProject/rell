@@ -5,6 +5,7 @@
 package net.postchain.rell.base.lang.module
 
 import net.postchain.rell.base.testutils.BaseRellTest
+import net.postchain.rell.base.utils.RellVersions
 import org.junit.Test
 
 class ImportTest: BaseRellTest(false) {
@@ -681,6 +682,53 @@ class ImportTest: BaseRellTest(false) {
         chkFull("import lib.{msg}; import lib.*; query q() = msg.f();", "int[123]")
         chkFull("import lib.{topic.*, msg}; import lib.*; query q() = msg.f();", "int[123]")
         chkFull("import lib.{msg.f}; import lib.{msg.*}; query q() = f();", "int[123]")
+    }
+
+    @Test fun testAnonymousImport() {
+        tst.strictToString = false
+        file("lib.rell", "module; @extendable function f(): list<text>;")
+        file("ext.rell", "module; import lib; val X = 123; @extend(lib.f) function g() = ['g']; namespace ns {}")
+
+        chkFull("import lib; query q() = lib.f();", "[]")
+        chkFull("import lib; import ext; query q() = lib.f();", "[g]")
+        chkFull("import lib; import _: ext; query q() = lib.f();", "[g]")
+        chkFull("import lib; import _: ext; query q() = _.X;", "ct_err:unknown_name:_")
+        chkFull("import lib; import _: ext; query q() = ext.X;", "ct_err:unknown_name:ext")
+        chkFull("import lib; import z: ext; query q() = z.X;", "123")
+
+        chkCompile("import _: ext.*;", "ct_err:import:anonymous_not_allowed")
+        chkCompile("import _: ext.{X};", "ct_err:import:anonymous_not_allowed")
+        chkCompile("import _: ext.{ns.*};", "ct_err:import:anonymous_not_allowed")
+        chkCompile("import _: ext.{_:X};", "ct_err:import:anonymous_not_allowed")
+    }
+
+    @Test fun testAnonymousImportRelative() {
+        tst.strictToString = false
+        tst.mainFile = "a/main/module.rell"
+        mainModule("a.main")
+        file("lib.rell", "module; @extendable function f(): list<text>;")
+        file("a/b/c.rell", "module; import lib; @extend(lib.f) function g() = ['g'];")
+
+        chkFull("import lib; query q() = lib.f();", "[]")
+        chkFull("import lib; import _: a.b.c; query q() = lib.f();", "[g]")
+        chkFull("import lib; import _: ^.b.c; query q() = lib.f();", "[g]")
+        chkFull("import lib; import _: ^^.a.b.c; query q() = lib.f();", "[g]")
+    }
+
+    @Test fun testAnonymousImportMulti() {
+        tst.strictToString = false
+        file("lib.rell", "module; @extendable function f(): list<text>;")
+        file("a.rell", "module; import lib; @extend(lib.f) function() = ['a'];")
+        file("b.rell", "module; import lib; @extend(lib.f) function() = ['b'];")
+        file("c.rell", "module; import lib; @extend(lib.f) function() = ['c'];")
+
+        chkFull("import lib; query q() = lib.f();", "[]")
+        chkFull("import lib; import _: a; import _: b; import _: c; query q() = lib.f();", "[a, b, c]")
+    }
+
+    @Test fun testAnonymousImportVersionControl() {
+        file("lib.rell", "module; @extendable function f(): list<text>;")
+        chkVerCt("import _: lib;", RellVersions.SINCE_NOW, "VER:feature:anonymous_import")
     }
 
     private fun chkImport(imp: String, code: String, exp: String) {

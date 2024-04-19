@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.module
@@ -293,7 +293,7 @@ class ModuleTest: BaseRellTest(false) {
         t.file("module.rell", "function f(): text = '';")
         t.file("a/module.rell", "function f(): text = 'a';")
         t.file("a/b/module.rell", "function f(): text = 'a.b';")
-        t.file("a/b/c/module.rell", "$code")
+        t.file("a/b/c/module.rell", code)
         t.file("a/b/c/d.rell", "module; function f(): text = 'a.b.c.d';")
         t.file("x/module.rell", "function f(): text = 'x';")
         t.file("a/y/module.rell", "function f(): text = 'a.y';")

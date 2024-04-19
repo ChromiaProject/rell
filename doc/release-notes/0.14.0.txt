@@ -468,3 +468,15 @@ For instance, following gtv -> Rell conversions are not allowed in strict mode:
 - biginteger -> integer
 - integer, biginteger -> decimal
 - string -> byte_array
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+27. Language: Anonymous import
+
+Use special alias "_" for anonymous imports:
+
+    import _: foo;
+    import _: bar;
+
+Anonymous imports make a module active, enabling its operations, queries, function extensions and overrides - same way
+as normal imports. But there is no way to access the module from code (as it has no alias), and no names are added to
+the namespace.
