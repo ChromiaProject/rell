@@ -27,19 +27,19 @@ fun main(args: Array<String>) {
 }
 
 private class VerDir(
-        val repo: String,
-        val dir: File,
-        val infoFile: File,
-        val gitVer: String,
-        val rellVer: R_LangVersion?,
+    val repo: String,
+    val dir: File,
+    val infoFile: File,
+    val gitVer: String,
+    val rellVer: R_LangVersion?,
 )
 
 private class RunInfo(
-        val srcPath: String,
-        val srcDir: File,
-        val module: String,
-        val test: Boolean,
-        val rellVer: R_LangVersion?,
+    val srcPath: String,
+    val srcDir: File,
+    val module: String,
+    val test: Boolean,
+    val rellVer: R_LangVersion?,
 )
 
 private class ReposCompiler {
@@ -87,8 +87,9 @@ private class ReposCompiler {
             println("Errors: ${errMsgs.keys.size}")
             for (key in errMsgs.keys.sorted()) {
                 println("${key.pos} ${key.message}")
+                println("    ${key.line.trim()}")
                 for (msg in errMsgs.getValue(key).sortedBy { it.srcPath }) {
-                    println("    ${msg.srcPath}")
+                    println("    ${msg.srcPath}/${key.pos}")
                 }
             }
             println("---------------------------------------------------------------------------")
@@ -165,10 +166,17 @@ private class ReposCompiler {
         val srcPath = "$repoName/$verName/${runInfo.srcPath}"
         for (msg in res.errors) {
             println("    $msg")
-            val msgRec = MessageRec(srcPath, msg.pos, msg.text)
+            val line = getSourceLine(runInfo.srcDir, msg.pos)
+            val msgRec = MessageRec(srcPath, msg.pos, msg.text, line)
             errMsgs.computeIfAbsent(msgRec.key) { mutableSetOf() }.add(msgRec)
         }
     }
+}
+
+private fun getSourceLine(srcDir: File, pos: S_Pos): String {
+    val file = File(srcDir, pos.path().str())
+    val lines = file.readLines()
+    return lines[pos.line() - 1]
 }
 
 private fun parseRunInfo(verDir: VerDir, line: String): RunInfo {
@@ -194,14 +202,15 @@ private fun parseRunInfo(verDir: VerDir, line: String): RunInfo {
     return RunInfo(srcPath, srcDir, module, test, rellVer)
 }
 
-private data class MessageKey(val pos: S_Pos, val message: String): Comparable<MessageKey> {
+private data class MessageKey(val pos: S_Pos, val message: String, val line: String): Comparable<MessageKey> {
     override fun compareTo(other: MessageKey): Int {
         var d = pos.compareTo(other.pos)
         if (d == 0) d = message.compareTo(other.message)
+        if (d == 0) d = line.compareTo(other.line)
         return d
     }
 }
 
-private data class MessageRec(val srcPath: String, val pos: S_Pos, val message: String) {
-    val key = MessageKey(pos, message)
+private data class MessageRec(val srcPath: String, val pos: S_Pos, val message: String, val line: String) {
+    val key = MessageKey(pos, message, line)
 }

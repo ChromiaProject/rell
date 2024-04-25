@@ -7,16 +7,15 @@ package net.postchain.rell.base.compiler.ast
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.utils.C_FeatureRestrictions
+import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.parser.RellTokenMatch
 import net.postchain.rell.base.model.R_FilePos
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_Name
-import net.postchain.rell.base.utils.ThreadLocalContext
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeFilePath
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
 import java.util.*
 import java.util.function.Supplier
 
@@ -94,8 +93,8 @@ class S_Name(val pos: S_Pos, private val rName: R_Name): S_Node() {
 
     fun compile(ctx: C_SymbolContext, def: Boolean = false): C_NameHandle {
         if (def) {
-            val restrictions = NAME_RESTRICTIONS[rName]
-            restrictions?.access(ctx.msgMgr, pos, "name", ctx.compilerOptions)
+            val resName = RESERVED_NAMES[rName]
+            resName?.access(ctx, pos, rName)
         }
         return ctx.addName(this, rName)
     }
@@ -112,7 +111,7 @@ class S_Name(val pos: S_Pos, private val rName: R_Name): S_Node() {
     override fun toString() = str
 
     companion object {
-        private val NAME_RESTRICTIONS: Map<R_Name, C_FeatureRestrictions> =
+        private val OLD_KEYWORDS: Map<R_Name, C_ReservedName> =
             mapOf(
                 "list" to "0.11.0",
                 "set" to "0.11.0",
@@ -121,9 +120,56 @@ class S_Name(val pos: S_Pos, private val rName: R_Name): S_Node() {
             .mapKeys { R_Name.of(it.key) }
             .mapValues {
                 val name = it.key.str
-                C_FeatureRestrictions.make(it.value, name, "Name '$name' is")
+                val restrictions = C_FeatureRestrictions.make(it.value, name, "Name '$name' is")
+                C_ReservedName(restrictions, null)
             }
             .toImmMap()
+
+        private const val NEW_KWS_SINCE = RellVersions.SINCE_NOW
+
+        private val NEW_KEYWORDS: Map<R_Name, C_ReservedName> =
+            mapOf(
+                "alias" to NEW_KWS_SINCE,
+                "as" to NEW_KWS_SINCE,
+                "catch" to NEW_KWS_SINCE,
+                "const" to NEW_KWS_SINCE,
+                "finally" to NEW_KWS_SINCE,
+                "final" to NEW_KWS_SINCE,
+                "fun" to NEW_KWS_SINCE,
+                "internal" to NEW_KWS_SINCE,
+                "is" to NEW_KWS_SINCE,
+                "native" to NEW_KWS_SINCE,
+                "private" to NEW_KWS_SINCE,
+                "protected" to NEW_KWS_SINCE,
+                "savepoint" to NEW_KWS_SINCE,
+                "sealed" to NEW_KWS_SINCE,
+                "static" to NEW_KWS_SINCE,
+                "super" to NEW_KWS_SINCE,
+                "this" to NEW_KWS_SINCE,
+                "throw" to NEW_KWS_SINCE,
+                "trait" to NEW_KWS_SINCE,
+                "transact" to NEW_KWS_SINCE,
+                "try" to NEW_KWS_SINCE,
+                "typealias" to NEW_KWS_SINCE,
+                "yield" to NEW_KWS_SINCE,
+            )
+            .mapKeys { R_Name.of(it.key) }
+            .mapValues { C_ReservedName(null, RellVersions.parse(it.value)) }
+            .toImmMap()
+
+        private val RESERVED_NAMES: Map<R_Name, C_ReservedName> = OLD_KEYWORDS.unionNoConflicts(NEW_KEYWORDS)
+
+        private class C_ReservedName(val oldRestrictions: C_FeatureRestrictions?, val newVersion: R_LangVersion?) {
+            fun access(ctx: C_SymbolContext, pos: S_Pos, rName: R_Name) {
+                oldRestrictions?.access(ctx.msgMgr, pos, "name", ctx.compilerOptions)
+
+                val version = ctx.compilerOptions.compatibility
+                if (newVersion != null && version != null && version >= newVersion) {
+                    val msg = "Name '$rName' is reserved"
+                    ctx.msgMgr.error(pos, "name:reserved:$rName:$newVersion", msg)
+                }
+            }
+        }
     }
 }
 

@@ -67,7 +67,7 @@ private class App {
         for (subDir in dir.listFiles().orEmpty().sorted()) {
             val name = subDir.name
             check(subDir.isDirectory) { subDir }
-            check(name.matches(Regex("[0-9A-F]+"))) { subDir }
+            check(name.matches(Regex("[0-9A-F]+(-[0-9]+)?"))) { subDir }
             processBlockchain(subDir)
         }
     }

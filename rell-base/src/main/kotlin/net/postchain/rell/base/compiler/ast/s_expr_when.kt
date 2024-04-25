@@ -323,15 +323,14 @@ class S_WhenExpr(pos: S_Pos, val expr: S_Expr?, val cases: List<S_WhenExprCase>)
 
         private fun checkCaseType(ctx: C_ExprContext, pos: S_Pos, keyType: R_Type, caseType: R_Type): Boolean {
             val opCtx = C_BinOpContext(ctx, pos)
-            val eq = C_BinOp_EqNe.checkTypes(opCtx, keyType, caseType)
-            if (eq) return true
 
-            if (keyType is R_NullableType) {
-                val eq2 = C_BinOp_EqNe.checkTypes(opCtx, keyType.valueType, caseType)
-                return eq2
+            if (keyType is R_NullableType && caseType !is R_NullableType && caseType != R_NullType) {
+                val eq = C_BinOp_EqNe.checkTypes(opCtx, keyType.valueType, caseType)
+                return eq
             }
 
-            return false
+            val eq = C_BinOp_EqNe.checkTypes(opCtx, keyType, caseType)
+            return eq
         }
 
         private fun allTypeValues(type: R_Type): Set<Rt_Value> {

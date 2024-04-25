@@ -72,8 +72,8 @@ class C_ImportModulePathHandle(
 class S_RelativeImportModulePath(val pos: S_Pos, val ups: Int)
 
 class S_ImportModulePath(
-        private val relative: S_RelativeImportModulePath?,
-        private val moduleName: S_QualifiedName?
+    private val relative: S_RelativeImportModulePath?,
+    private val moduleName: S_QualifiedName?,
 ) {
     fun ideImplicitAlias() = moduleName?.last
 
@@ -83,7 +83,7 @@ class S_ImportModulePath(
         importPos: S_Pos,
         currentModule: R_ModuleName,
     ): C_ImportModulePathHandle? {
-        val nameHand = moduleName?.compile(symCtx)
+        val nameHand = moduleName?.compile(symCtx, def = true)
 
         val cModuleName = nameHand?.cName
         val modNameDetails = compileModuleName(msgMgr, importPos, currentModule, cModuleName)

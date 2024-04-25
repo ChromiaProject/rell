@@ -56,4 +56,11 @@ object RellVersions {
             throw exception("Unsupported language version: $version (minimum supported version: $minVer)")
         }
     }
+
+    /** Parses a version and checks that it's a known (supported) version. */
+    fun parse(version: String): R_LangVersion {
+        val rVersion = R_LangVersion.of(version)
+        check(rVersion in SUPPORTED_VERSIONS) { "Unknown version: $rVersion" }
+        return rVersion
+    }
 }

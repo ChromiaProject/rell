@@ -60,7 +60,7 @@ class S_AnonAttrHeader(private val typeName: S_QualifiedName, private val nullab
     }
 
     override fun compile(ctx: C_DefinitionContext): C_AttrHeaderHandle {
-        val typeNameHand = typeName.compile(ctx)
+        val typeNameHand = typeName.compile(ctx.symCtx, def = true)
         return C_AnonAttrHeaderHandle(ctx.nsCtx, typeNameHand, nullable)
     }
 
@@ -607,14 +607,14 @@ class S_StructDefinition(
 }
 
 class S_EnumDefinition(
-        pos: S_Pos,
-        modifiers: S_Modifiers,
-        val name: S_Name,
-        val attrs: List<S_Name>
+    pos: S_Pos,
+    modifiers: S_Modifiers,
+    val name: S_Name,
+    val attrs: List<S_Name>,
 ): S_Definition(pos, modifiers) {
     // TODO Better design: compile external module in two steps, all definitions must be processed same way.
     override fun compile(ctx: S_DefinitionContext): C_MidModuleMember {
-        val nameHand = name.compile(ctx.symCtx)
+        val nameHand = name.compile(ctx.symCtx, def = true)
         val cName = nameHand.name
 
         val modifierCtx = C_ModifierContext(ctx.msgCtx, ctx.symCtx)
@@ -679,17 +679,17 @@ class S_EnumDefinition(
 }
 
 class S_NamespaceDefinition(
-        pos: S_Pos,
-        modifiers: S_Modifiers,
-        private val qualifiedName: S_QualifiedName?,
-        private val definitions: List<S_Definition>
+    pos: S_Pos,
+    modifiers: S_Modifiers,
+    private val qualifiedName: S_QualifiedName?,
+    private val definitions: List<S_Definition>,
 ): S_Definition(pos, modifiers) {
     override fun compile(ctx: S_DefinitionContext): C_MidModuleMember {
         val nameParts = mutableListOf<C_MidModuleMember_Namespace.NamePart>()
         var nsPath = ctx.namespacePath
 
         for (name in qualifiedName?.parts ?: immListOf()) {
-            val nameHand = name.compile(ctx.symCtx)
+            val nameHand = name.compile(ctx.symCtx, def = true)
 
             val fullName = nsPath.qualifiedName(nameHand.rName)
             val docSymLate = C_LateInit(C_CompilerPass.NAMESPACES, Nullable.of<DocSymbol>())

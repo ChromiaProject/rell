@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.testutils
@@ -19,6 +19,7 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.SqlManager
 import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.RellVersions
 
 object RellTestUtils {
     const val RELL_VER = "0.14.0"
@@ -210,6 +211,12 @@ object RellTestUtils {
         TestSnippetsRecorder.record(sourceDir, modSel, options, res)
         return res
     }
+
+    fun getPrevVersion(ver: R_LangVersion): R_LangVersion {
+        return RellVersions.SUPPORTED_VERSIONS.asSequence().filter { it < ver }.max()
+    }
+
+    fun getPrevVersion(ver: String): String = getPrevVersion(R_LangVersion.of(ver)).str()
 
     fun strToRidHex(s: String) = (s + "00".repeat(32)).substring(0, 64)
     fun strToRidBytes(s: String) = CommonUtils.hexToBytes(strToRidHex(s))

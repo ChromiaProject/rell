@@ -125,10 +125,8 @@ class C_AnonAttrHeaderHandle(
             else -> baseType
         }
 
-        val lastNameHand = typeNameHand.last
-
         if (type != null) {
-            type = S_AttrHeader.checkUnitType(ctx.msgCtx, typeNameHand.pos, type, lastNameHand.name)
+            type = S_AttrHeader.checkUnitType(ctx.msgCtx, typeNameHand.pos, type, typeNameHand.last.name)
         }
 
         return type ?: R_CtErrorType

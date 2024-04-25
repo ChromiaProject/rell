@@ -44,7 +44,7 @@ abstract class RellBaseTester(
     var allowOlderCompatibilityVersion = true
     var complexWhatEnabled = true
     var ideDefIdConflictError = true
-    var compatibilityVer = C_CompilerOptions.DEFAULT.compatibility
+    var compatibilityVer: R_LangVersion? = RellVersions.VERSION
     var blockchainRid = RellTestUtils.strToRidHex("DEADBEEF")
 
     var defs: List<String> = entityDefs
@@ -336,7 +336,7 @@ abstract class RellBaseTester(
         tester: (String, String) -> Unit,
     ) {
         val sinceVer = R_LangVersion.of(version)
-        val prevVer = RellVersions.SUPPORTED_VERSIONS.asSequence().filter { it < sinceVer }.max()
+        val prevVer = RellTestUtils.getPrevVersion(sinceVer)
 
         compatibilityVer = null
         tester(code, expNew)

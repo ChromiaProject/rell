@@ -780,8 +780,9 @@ class NullableTest: BaseRellTest(false) {
         tst.compatibilityVer("0.10.11")
         chkCompile("function f(x: integer?) = x == null;", "OK")
         chkCompile("function f(x: integer?) = x != null;", "OK")
-        chkCompile("function f(x: integer?) = when (x) { null -> 123; else -> 456 };", "OK")
         chkCompile("function f(x: list<text>?) = x === null;", "OK")
         chkCompile("function f(x: list<text>?) = x !== null;", "OK")
+        chkCompile("function f(x: integer?) = when (x) { null -> 123; else -> 456 };", "OK")
+        chkCompile("function f(x: integer?) = when (x) { 123 -> 456; else -> 789 };", "OK")
     }
 }

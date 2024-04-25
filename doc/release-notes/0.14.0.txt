@@ -480,3 +480,34 @@ Use special alias "_" for anonymous imports:
 Anonymous imports make a module active, enabling its operations, queries, function extensions and overrides - same way
 as normal imports. But there is no way to access the module from code (as it has no alias), and no names are added to
 the namespace.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+28. Language: Reserved names
+
+Following names are reserved, as they may become keywords in the future:
+
+    alias
+    as
+    catch
+    const
+    final
+    finally
+    fun
+    internal
+    is
+    native
+    private
+    protected
+    savepoint
+    sealed
+    static
+    super
+    this
+    throw
+    trait
+    transact
+    try
+    typealias
+    yield
+
+Using a reserved name in Rell code is not allowed.
