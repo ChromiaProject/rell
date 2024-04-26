@@ -1,21 +1,28 @@
 /*
- * Copyright (C) 2021 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model.expr
 
+import net.postchain.rell.base.compiler.base.core.C_Types
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.Rt_CallFrame
+import net.postchain.rell.base.utils.partitionMap
 
 class Db_WhenCase(val conds: List<Db_Expr>, val expr: Db_Expr)
 
-class Db_WhenExpr(type: R_Type, val keyExpr: Db_Expr?, val cases: List<Db_WhenCase>, val elseExpr: Db_Expr): Db_Expr(type) {
+class Db_WhenExpr(
+    type: R_Type,
+    private val keyExpr: Db_Expr?,
+    private val cases: List<Db_WhenCase>,
+    private val elseExpr: Db_Expr,
+): Db_Expr(type) {
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
-        val redKeyExpr = keyExpr?.toRedExpr(frame)
-
         val internalCases = mutableListOf<Pair<RedDb_Expr, Db_Expr>>()
-        val matchedCase = if (redKeyExpr != null) {
-            makeRedCasesKeyed(frame, redKeyExpr, internalCases)
+
+        val matchedCase = if (keyExpr != null) {
+            val redKeyExpr = keyExpr.toRedExpr(frame)
+            makeRedCasesKeyed(frame, keyExpr.type, redKeyExpr, internalCases)
         } else {
             makeRedCasesGeneral(frame, internalCases)
         }
@@ -39,12 +46,13 @@ class Db_WhenExpr(type: R_Type, val keyExpr: Db_Expr?, val cases: List<Db_WhenCa
     }
 
     private fun makeRedCasesKeyed(
-            frame: Rt_CallFrame,
-            redKeyExpr: RedDb_Expr,
-            resCases: MutableList<Pair<RedDb_Expr, Db_Expr>>
+        frame: Rt_CallFrame,
+        keyType: R_Type,
+        redKeyExpr: RedDb_Expr,
+        resCases: MutableList<Pair<RedDb_Expr, Db_Expr>>,
     ): Db_WhenCase? {
         for (case in cases) {
-            val matched = makeRedCaseKeyed(frame, redKeyExpr, case, resCases)
+            val matched = makeRedCaseKeyed(frame, keyType, redKeyExpr, case, resCases)
             if (matched) {
                 return case
             }
@@ -53,26 +61,48 @@ class Db_WhenExpr(type: R_Type, val keyExpr: Db_Expr?, val cases: List<Db_WhenCa
     }
 
     private fun makeRedCaseKeyed(
-            frame: Rt_CallFrame,
-            redKeyExpr: RedDb_Expr,
-            case: Db_WhenCase,
-            resCases: MutableList<Pair<RedDb_Expr, Db_Expr>>
+        frame: Rt_CallFrame,
+        keyType: R_Type,
+        redKeyExpr: RedDb_Expr,
+        case: Db_WhenCase,
+        resCases: MutableList<Pair<RedDb_Expr, Db_Expr>>,
     ): Boolean {
         val redConds = Db_InExpr.toRedExprs(frame, redKeyExpr, case.conds)
 
         if (redConds == null) {
             return true
+        } else if (redConds.isEmpty()) {
+            return false
         }
 
-        if (!redConds.isEmpty()) {
-            val redCond = RedDb_Utils.makeRedDbInExpr(redKeyExpr, redConds, false)
-            resCases.add(Pair(redCond, case.expr))
+        val (nullableConds, normalConds) = redConds
+            .partitionMap {
+                val nullable = C_Types.isNullOrNullable(keyType) || C_Types.isNullOrNullable(it.second)
+                it.first to nullable
+            }
+
+        val redExprs = mutableListOf<RedDb_Expr>()
+
+        if (normalConds.isNotEmpty()) {
+            val redNormalExpr = RedDb_Utils.makeRedDbInExpr(redKeyExpr, normalConds, false)
+            redExprs.add(redNormalExpr)
         }
+
+        for (redCond in nullableConds) {
+            val redExpr = RedDb_Utils.makeRedDbEqExpr(redKeyExpr, redCond, equal = true, nullable = true)
+            redExprs.add(redExpr)
+        }
+
+        val redExpr = RedDb_Utils.makeRedDbBinaryExprChain(Db_BinaryOp_Or, redExprs)
+        resCases.add(Pair(redExpr, case.expr))
 
         return false
     }
 
-    private fun makeRedCasesGeneral(frame: Rt_CallFrame, resCases: MutableList<Pair<RedDb_Expr, Db_Expr>>): Db_WhenCase? {
+    private fun makeRedCasesGeneral(
+        frame: Rt_CallFrame,
+        resCases: MutableList<Pair<RedDb_Expr, Db_Expr>>,
+    ): Db_WhenCase? {
         for (case in cases) {
             val redConds = mutableListOf<RedDb_Expr>()
             for (cond in case.conds) {
@@ -87,7 +117,7 @@ class Db_WhenExpr(type: R_Type, val keyExpr: Db_Expr?, val cases: List<Db_WhenCa
                 }
             }
 
-            if (!redConds.isEmpty()) {
+            if (redConds.isNotEmpty()) {
                 val redCond = RedDb_Utils.makeRedDbBinaryExprChain(Db_BinaryOp_Or, redConds)
                 resCases.add(Pair(redCond, case.expr))
             }

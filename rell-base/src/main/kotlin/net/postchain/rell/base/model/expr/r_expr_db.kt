@@ -50,20 +50,75 @@ sealed class Db_BinaryOp_Basic(code: String, private val sql: String): Db_Binary
     }
 }
 
-object Db_BinaryOp_Eq: Db_BinaryOp_Basic("==", "=") {
-    override fun evaluate(left: Rt_Value, right: Rt_Value) = Rt_BooleanValue.get(left == right)
-}
+class Db_BinaryOp_EqNe private constructor(
+    code: String,
+    private val sql: String,
+    private val equal: Boolean,
+    private val nullable: Boolean,
+): Db_BinaryOp(code) {
+    override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
+        val eq = left == right
+        val res = if (equal) eq else !eq
+        return Rt_BooleanValue.get(res)
+    }
 
-object Db_BinaryOp_Ne: Db_BinaryOp_Basic("!=", "<>") {
-    override fun evaluate(left: Rt_Value, right: Rt_Value) = Rt_BooleanValue.get(left != right)
-}
+    override fun toSql(ctx: SqlGenContext, bld: SqlBuilder, left: RedDb_Expr, right: RedDb_Expr) {
+        if (!nullable) {
+            toSql0(ctx, bld, left, right)
+            return
+        }
 
-object Db_BinaryOp_Distinct: Db_BinaryOp_Basic("distinct", "IS DISTINCT FROM") {
-    override fun evaluate(left: Rt_Value, right: Rt_Value) = Rt_BooleanValue.get(left != right)
-}
+        val leftValue = left.constantValue()
+        if (leftValue != null) {
+            toSqlPart(ctx, bld, right, leftValue)
+            return
+        }
 
-object Db_BinaryOp_NotDistinct: Db_BinaryOp_Basic("!=", "IS NOT DISTINCT FROM") {
-    override fun evaluate(left: Rt_Value, right: Rt_Value) = Rt_BooleanValue.get(left == right)
+        val rightValue = right.constantValue()
+        if (rightValue != null) {
+            toSqlPart(ctx, bld, left, rightValue)
+            return
+        }
+
+        toSql0(ctx, bld, left, right)
+    }
+
+    private fun toSqlPart(ctx: SqlGenContext, bld: SqlBuilder, left: RedDb_Expr, rightValue: Rt_Value) {
+        left.toSql(ctx, bld, true)
+        bld.append(" ")
+
+        if (rightValue == Rt_NullValue) {
+            val sql0 = if (equal) "IS NULL" else "IS NOT NULL"
+            bld.append(sql0)
+        } else {
+            bld.append(sql)
+            bld.append(" ")
+            bld.append(rightValue)
+        }
+    }
+
+    private fun toSql0(ctx: SqlGenContext, bld: SqlBuilder, left: RedDb_Expr, right: RedDb_Expr) {
+        left.toSql(ctx, bld, true)
+        bld.append(" ")
+        bld.append(sql)
+        bld.append(" ")
+        right.toSql(ctx, bld, true)
+    }
+
+    companion object {
+        private val EQ: Db_BinaryOp = Db_BinaryOp_EqNe("==", "=", true, nullable = false)
+        private val NE: Db_BinaryOp = Db_BinaryOp_EqNe("!=", "<>", false, nullable = false)
+        private val EQ_NULLABLE: Db_BinaryOp = Db_BinaryOp_EqNe("==?", "IS NOT DISTINCT FROM", true, nullable = true)
+        private val NE_NULLABLE: Db_BinaryOp = Db_BinaryOp_EqNe("!=?", "IS DISTINCT FROM", false, nullable = true)
+
+        private val PAIR = EQ to NE
+        private val PAIR_NULLABLE = EQ_NULLABLE to NE_NULLABLE
+
+        fun get(equal: Boolean, nullable: Boolean): Db_BinaryOp {
+            val pair = if (nullable) PAIR_NULLABLE else PAIR
+            return if (equal) pair.first else pair.second
+        }
+    }
 }
 
 object Db_BinaryOp_Lt: Db_BinaryOp_Basic("<", "<")
@@ -99,7 +154,11 @@ object Db_BinaryOp_Concat: Db_BinaryOp_Basic("+", "||")
 object Db_BinaryOp_In: Db_BinaryOp_Basic("in", "IN")
 object Db_BinaryOp_NotIn: Db_BinaryOp_Basic("not_in", "NOT IN")
 
-sealed class Db_BinaryOp_AndOr(code: String, sql: String, private val shortCircuitValue: Boolean): Db_BinaryOp_Basic(code, sql) {
+sealed class Db_BinaryOp_AndOr(
+    code: String,
+    sql: String,
+    private val shortCircuitValue: Boolean,
+): Db_BinaryOp_Basic(code, sql) {
     final override fun toRedExpr(frame: Rt_CallFrame, type: R_Type, redLeft: RedDb_Expr, right: Db_Expr): RedDb_Expr {
         val leftValue = redLeft.constantValue()
         if (leftValue != null) {
@@ -127,8 +186,6 @@ object Db_UnaryOp_Minus_Integer: Db_UnaryOp("-", "-")
 object Db_UnaryOp_Minus_BigInteger: Db_UnaryOp("-", "-")
 object Db_UnaryOp_Minus_Decimal: Db_UnaryOp("-", "-")
 object Db_UnaryOp_Not: Db_UnaryOp("not", "NOT")
-object Db_UnaryOp_IsNull: Db_UnaryOp("is_null", "IS NULL", true)
-object Db_UnaryOp_IsNotNull: Db_UnaryOp("is_not_null", "IS NOT NULL", true)
 
 abstract class Db_Expr(val type: R_Type) {
     abstract fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr
@@ -291,8 +348,9 @@ class Db_CollectionInterpretedExpr(val expr: R_Expr): Db_Expr(expr.type) {
 class Db_InExpr(val keyExpr: Db_Expr, val exprs: List<Db_Expr>, val not: Boolean): Db_Expr(R_BooleanType) {
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
         val redKeyExpr = keyExpr.toRedExpr(frame)
-        val redExprs = toRedExprs(frame, redKeyExpr, exprs)
-        return if (redExprs != null) {
+        val redExprTypes = toRedExprs(frame, redKeyExpr, exprs)
+        return if (redExprTypes != null) {
+            val redExprs = redExprTypes.map { it.first }
             RedDb_Utils.makeRedDbInExpr(redKeyExpr, redExprs, not)
         } else {
             RedDb_ConstantExpr(Rt_BooleanValue.get(!not))
@@ -300,10 +358,14 @@ class Db_InExpr(val keyExpr: Db_Expr, val exprs: List<Db_Expr>, val not: Boolean
     }
 
     companion object {
-        fun toRedExprs(frame: Rt_CallFrame, redKeyExpr: RedDb_Expr, exprs: List<Db_Expr>): List<RedDb_Expr>? {
+        fun toRedExprs(
+            frame: Rt_CallFrame,
+            redKeyExpr: RedDb_Expr,
+            exprs: List<Db_Expr>,
+        ): List<Pair<RedDb_Expr, R_Type>>? {
             val keyValue = redKeyExpr.constantValue()
 
-            val redExprs = mutableListOf<RedDb_Expr>()
+            val redExprs = mutableListOf<Pair<RedDb_Expr, R_Type>>()
             for (expr in exprs) {
                 val redExpr = expr.toRedExpr(frame)
                 val exprValue = if (keyValue == null) null else redExpr.constantValue()
@@ -312,7 +374,7 @@ class Db_InExpr(val keyExpr: Db_Expr, val exprs: List<Db_Expr>, val not: Boolean
                         return null
                     }
                 } else {
-                    redExprs.add(redExpr)
+                    redExprs.add(redExpr to expr.type)
                 }
             }
 
@@ -419,12 +481,16 @@ object RedDb_Utils {
         return CommonUtils.foldSimple(exprs) { left, right -> RedDb_BinaryExpr(op, left, right) }
     }
 
+    fun makeRedDbEqExpr(left: RedDb_Expr, right: RedDb_Expr, equal: Boolean, nullable: Boolean): RedDb_Expr {
+        val op = Db_BinaryOp_EqNe.get(equal, nullable = nullable)
+        return RedDb_BinaryExpr(op, left, right)
+    }
+
     fun makeRedDbInExpr(left: RedDb_Expr, right: List<RedDb_Expr>, not: Boolean): RedDb_Expr {
         return if (right.isEmpty()) {
             RedDb_ConstantExpr(Rt_BooleanValue.get(not))
         } else if (right.size == 1) {
-            val op = if (not) Db_BinaryOp_Ne else Db_BinaryOp_Eq
-            RedDb_BinaryExpr(op, left, right[0])
+            makeRedDbEqExpr(left, right[0], equal = !not, nullable = false)
         } else {
             RedDb_InExpr(left, right, not)
         }
@@ -434,13 +500,13 @@ object RedDb_Utils {
         return if (type != R_DecimalType || redExpr is RedDb_DecimalRoundExpr) {
             redExpr
         } else {
-            RedDb_DecimalRoundExpr(redExpr)
+            val value = redExpr.constantValue()
+            if (value != null) redExpr else RedDb_DecimalRoundExpr(redExpr)
         }
     }
 
     private class RedDb_DecimalRoundExpr(private val expr: RedDb_Expr): RedDb_Expr() {
         override fun needsEnclosing() = false
-        override fun constantValue(): Rt_Value? = expr.constantValue()
 
         override fun toSql0(ctx: SqlGenContext, bld: SqlBuilder) {
             bld.append("ROUND(")

@@ -6,9 +6,9 @@ package net.postchain.rell.base.compiler.vexpr
 
 import net.postchain.rell.base.compiler.ast.C_BinOpContext
 import net.postchain.rell.base.compiler.ast.C_BinOp_EqNe
+import net.postchain.rell.base.compiler.base.core.C_Types
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
-import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
@@ -38,8 +38,14 @@ class V_InCollectionExpr(
         val opCtx = C_BinOpContext(exprCtx, right.pos)
         if (!C_BinOp_EqNe.checkTypesDb(opCtx, elemType, elemType)
             || !elemType.sqlAdapter.isSqlCompatible(exprCtx.globalCtx.compilerOptions)
+            || C_Types.isNullOrNullable(elemType)
+            || C_Types.isNullOrNullable(left.type)
         ) {
-            C_Errors.errExprNoDb(msgCtx, pos, elemType)
+            if (left.type.isNotError() && right.type.isNotError()) {
+                val op = if (not) "not in" else "in"
+                msgCtx.error(pos, "expr_nosql:in:[${left.type.strCode()}]:[${right.type.strCode()}]",
+                    "Operator ${left.type.str()} $op ${right.type.str()} cannot be converted to SQL")
+            }
             return C_ExprUtils.errorDbExpr(R_BooleanType)
         }
 

@@ -9,6 +9,7 @@ import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.compiler.base.core.C_MessageContext
 import net.postchain.rell.base.compiler.base.core.C_QualifiedName
+import net.postchain.rell.base.compiler.base.core.C_Types
 import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.vexpr.*
@@ -51,7 +52,9 @@ object C_ExprUtils {
     }
 
     fun makeDbBinaryExprEq(left: Db_Expr, right: Db_Expr): Db_Expr {
-        return makeDbBinaryExpr(R_BooleanType, R_BinaryOp_Eq, Db_BinaryOp_Eq, left, right)
+        val nullable = C_Types.isNullOrNullable(left.type) || C_Types.isNullOrNullable(right.type)
+        val dbOp = Db_BinaryOp_EqNe.get(true, nullable = nullable)
+        return makeDbBinaryExpr(R_BooleanType, R_BinaryOp_Eq, dbOp, left, right)
     }
 
     fun makeDbBinaryExprChain(type: R_Type, rOp: R_BinaryOp, dbOp: Db_BinaryOp, exprs: List<Db_Expr>): Db_Expr {

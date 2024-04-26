@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.core
@@ -237,4 +237,6 @@ object C_Types {
     fun removeNullable(type: R_Type): R_Type {
         return if (type is R_NullableType) type.valueType else type
     }
+
+    fun isNullOrNullable(type: R_Type): Boolean = type == R_NullType || type is R_NullableType
 }

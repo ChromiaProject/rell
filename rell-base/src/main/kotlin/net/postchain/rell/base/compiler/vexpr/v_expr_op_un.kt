@@ -12,6 +12,7 @@ import net.postchain.rell.base.compiler.base.expr.C_ExprVarFacts
 import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_Value
 
@@ -58,8 +59,9 @@ class V_UnaryOp_IsNull(private val not: Boolean): V_UnaryOp(R_BooleanType) {
     }
 
     override fun compileDb(pos: S_Pos, expr: Db_Expr): Db_Expr {
-        val dbOp = if (not) Db_UnaryOp_IsNotNull else Db_UnaryOp_IsNull
-        return Db_UnaryExpr(resType, dbOp, expr)
+        val dbOp = Db_BinaryOp_EqNe.get(!not, true)
+        val right = Db_InterpretedExpr(R_ConstantValueExpr(Rt_NullValue))
+        return Db_BinaryExpr(resType, dbOp, expr, right)
     }
 }
 

@@ -765,6 +765,70 @@ class NullableTest: BaseRellTest(false) {
         chkOut("null")
     }
 
+    @Test fun testEqualityCheck() {
+        chkCompile("function f(a: integer?) = a == 123;", "OK")
+        chkCompile("function f(a: integer?) = a != 123;", "OK")
+        chkCompile("function f(a: integer?) = a == null;", "OK")
+        chkCompile("function f(a: integer?) = a != null;", "OK")
+        chkCompile("function f(a: integer) = a == null;", "ct_err:binop_operand_type:==:[integer]:[null]")
+        chkCompile("function f(a: integer) = a != null;", "ct_err:binop_operand_type:!=:[integer]:[null]")
+    }
+
+    @Test fun testEqualityCheckDb() {
+        tstCtx.useSql = true
+        def("entity data { value: integer; }")
+        def("function f(x: integer?) = x;")
+        insert("c0.data", "value", "1,123")
+
+        chk("data @? { .value == f(123) }", "data[1]")
+        chk("data @? { f(123) == .value }", "data[1]")
+        chk("data @? { .value != f(123) }", "null")
+        chk("data @? { f(123) != .value }", "null")
+
+        chk("data @? { .value == f(456) }", "null")
+        chk("data @? { f(456) == .value }", "null")
+        chk("data @? { .value != f(456) }", "data[1]")
+        chk("data @? { f(456) != .value }", "data[1]")
+
+        chk("data @? { .value == f(null) }", "null")
+        chk("data @? { f(null) == .value }", "null")
+        chk("data @? { .value != f(null) }", "data[1]")
+        chk("data @? { f(null) != .value }", "data[1]")
+    }
+
+    @Test fun testEqualityCheckDbWhen() {
+        tstCtx.useSql = true
+        def("entity data { value: integer; }")
+        def("function f(x: integer?) = x;")
+        insert("c0.data", "value", "1,123")
+
+        chk("data @? { when (.value) { f(123) -> 1; else -> 0; } > 0 }", "data[1]")
+        chk("data @? { when (f(123)) { .value -> 1; else -> 0; } > 0 }", "data[1]")
+        chk("data @? { when (.value) { f(123) -> 1; else -> 0; } <= 0 }", "null")
+        chk("data @? { when (f(123)) { .value -> 1; else -> 0; } <= 0 }", "null")
+
+        chk("data @? { when (.value) { f(456) -> 1; else -> 0; } > 0 }", "null")
+        chk("data @? { when (f(456)) { .value -> 1; else -> 0; } > 0 }", "null")
+        chk("data @? { when (.value) { f(456) -> 1; else -> 0; } <= 0 }", "data[1]")
+        chk("data @? { when (f(456)) { .value -> 1; else -> 0; } <= 0 }", "data[1]")
+
+        chk("data @? { when (.value) { f(null) -> 1; else -> 0; } > 0 }", "null")
+        chk("data @? { when (f(null)) { .value -> 1; else -> 0; } > 0 }", "null")
+        chk("data @? { when (.value) { f(null) -> 1; else -> 0; } <= 0 }", "data[1]")
+        chk("data @? { when (f(null)) { .value -> 1; else -> 0; } <= 0 }", "data[1]")
+
+        chk("data @? { when (.value) { f(123), f(456) -> 1; else -> 0; } > 0 }", "data[1]")
+        chk("data @? { when (.value) { f(123), f(456) -> 1; else -> 0; } <= 0 }", "null")
+        chk("data @? { when (.value) { f(456), f(789) -> 1; else -> 0; } > 0 }", "null")
+        chk("data @? { when (.value) { f(456), f(789) -> 1; else -> 0; } <= 0 }", "data[1]")
+        chk("data @? { when (.value) { f(123), f(null) -> 1; else -> 0; } > 0 }", "data[1]")
+        chk("data @? { when (.value) { f(123), f(null) -> 1; else -> 0; } <= 0 }", "null")
+        chk("data @? { when (.value) { f(456), f(null) -> 1; else -> 0; } > 0 }", "null")
+        chk("data @? { when (.value) { f(456), f(null) -> 1; else -> 0; } <= 0 }", "data[1]")
+        chk("data @? { when (.value) { f(null), f(null) -> 1; else -> 0; } > 0 }", "null")
+        chk("data @? { when (.value) { f(null), f(null) -> 1; else -> 0; } <= 0 }", "data[1]")
+    }
+
     @Test fun testVersionControlEqualityCheck() {
         val err = "VER:feature:binop_nullable_eq_value"
         chkVerCt("function f(x: integer, y: integer?) = x == y;", "0.13.10", err)

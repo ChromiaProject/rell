@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.expr
@@ -270,6 +270,35 @@ class WhenTest: BaseRellTest(false) {
         chkWhenAt("when(.x) { A -> 'A'; C -> 'C'; }", "E.A" to "ct_err:when_no_else")
         chkWhenAt("when(.x) { A -> 'A'; B -> 'B'; }", "E.A" to "ct_err:when_no_else")
         chkWhenAt("when(.x) { A -> 'A'; E.A -> 'B'; else -> '?'; }", "E.A" to "ct_err:when_expr_dupvalue:E[A]")
+    }
+
+    @Test fun testAtExprNullable() {
+        tstCtx.useSql = true
+        def("entity data { value: integer; }")
+        def("function f(x: integer?) = x;")
+        insert("c0.data", "value", "1,123")
+
+        var from = "(d1: data, @outer d2: data @* { d2 >= d1 })"
+        chk("$from @ {} ( when(d2?.value) { 123 -> 100; else -> 200 } )", "int[100]")
+        chk("$from @ {} ( when(d2?.value) { 123, 456 -> 100; else -> 200 } )", "int[100]")
+
+        chk("$from @ {} ( when(d2?.value) { f(123) -> 100; else -> 200 } )", "int[100]")
+        chk("$from @ {} ( when(d2?.value) { f(456) -> 100; else -> 200 } )", "int[200]")
+        chk("$from @ {} ( when(d2?.value) { f(null) -> 100; else -> 200 } )", "int[200]")
+        chk("$from @ {} ( when(d2?.value) { f(123), f(456) -> 100; else -> 200 } )", "int[100]")
+        chk("$from @ {} ( when(d2?.value) { f(123), f(null) -> 100; else -> 200 } )", "int[100]")
+        chk("$from @ {} ( when(d2?.value) { f(null), f(123) -> 100; else -> 200 } )", "int[100]")
+        chk("$from @ {} ( when(d2?.value) { f(456), f(null) -> 100; else -> 200 } )", "int[200]")
+        chk("$from @ {} ( when(d2?.value) { f(null), f(456) -> 100; else -> 200 } )", "int[200]")
+
+        from = "(d1: data, @outer d2: data @* { d2 > d1 })"
+        chk("$from @ {} ( when(d2?.value) { f(123) -> 100; else -> 200 } )", "int[200]")
+        chk("$from @ {} ( when(d2?.value) { f(null) -> 100; else -> 200 } )", "int[100]")
+        chk("$from @ {} ( when(d2?.value) { f(123), f(456) -> 100; else -> 200 } )", "int[200]")
+        chk("$from @ {} ( when(d2?.value) { f(123), f(null) -> 100; else -> 200 } )", "int[100]")
+        chk("$from @ {} ( when(d2?.value) { f(null), f(123) -> 100; else -> 200 } )", "int[100]")
+        chk("$from @ {} ( when(d2?.value) { f(456), f(null) -> 100; else -> 200 } )", "int[100]")
+        chk("$from @ {} ( when(d2?.value) { f(null), f(456) -> 100; else -> 200 } )", "int[100]")
     }
 
     private fun chkWhen(type: String, code: String, vararg cases: Pair<String, String>) {

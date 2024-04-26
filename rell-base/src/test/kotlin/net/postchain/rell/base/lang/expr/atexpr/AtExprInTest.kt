@@ -122,8 +122,8 @@ class AtExprInTest: BaseRellTest() {
         chk("nums @* { .n in data @*{} ( .v ) } (.n)", "[3, 5, 7, 11, 17]")
         chk("nums @* { .n in data @*{} ( @group .v ) } (.n)", "[3, 5, 7, 11, 17]")
 
-        chk("nums @* { .n in data @*{} ( @min .v ) } (.n)", "[3]")
-        chk("nums @* { .n in data @*{} ( @max .v ) } (.n)", "[17]")
+        chk("nums @* { .n in data @*{} ( @min .v ) } (.n)", "ct_err:expr_nosql:in:[integer]:[list<integer?>]")
+        chk("nums @* { .n in data @*{} ( @max .v ) } (.n)", "ct_err:expr_nosql:in:[integer]:[list<integer?>]")
         chk("nums @* { .n in data @*{} ( @sum .v ) } (.n)", "[56]")
         chk("nums @* { .n in data @*{} ( @sum 1 ) } (.n)", "[6]")
 
@@ -439,6 +439,20 @@ class AtExprInTest: BaseRellTest() {
         chk("user @* { .city.name in get_values(16384), .job in get_values(16383) } (.name)", "[Bob, Alice]")
         chk("user @* { .city.name in get_values(16384), .job in get_values(16384) } (.name)",
                 "rt_err:sql:too_many_params:32768")
+    }
+
+    @Test fun testNullable() {
+        def("entity data { value: integer; }")
+        insert("c0.data", "value", "1,123")
+
+        chk("data @? { .value in list<integer?>() }", "ct_err:expr_nosql:in:[integer]:[list<integer?>]")
+        chk("data @? { .value not in list<integer?>() }", "ct_err:expr_nosql:in:[integer]:[list<integer?>]")
+
+        val from = "(d1: data, @outer d2: data)"
+        chk("$from @? { d2?.value in list<integer>() }", "ct_err:binop_operand_type:in:[integer?]:[list<integer>]")
+        chk("$from @? { d2?.value not in list<integer>() }", "ct_err:binop_operand_type:in:[integer?]:[list<integer>]")
+        chk("$from @? { d2?.value in list<integer?>() }", "ct_err:expr_nosql:in:[integer?]:[list<integer?>]")
+        chk("$from @? { d2?.value not in list<integer?>() }", "ct_err:expr_nosql:in:[integer?]:[list<integer?>]")
     }
 
     private fun chkSql(selects: Int, expr: String, expected: String) {

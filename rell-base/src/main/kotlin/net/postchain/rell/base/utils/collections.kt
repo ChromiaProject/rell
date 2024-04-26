@@ -143,6 +143,17 @@ fun <T> List<T>.countLastWhile(predicate: (T) -> Boolean): Int {
     return if (i >= 0) (this.size - 1 - i) else this.size
 }
 
+fun <T, R: Any> Iterable<T>.partitionMap(f: (T) -> Pair<R, Boolean>): Pair<List<R>, List<R>> {
+    val first = mutableListOf<R>()
+    val second = mutableListOf<R>()
+    for (element in this) {
+        val (value, pred) = f(element)
+        val dst = if (pred) first else second
+        dst.add(value)
+    }
+    return Pair(first.toImmList(), second.toImmList())
+}
+
 fun <T: Any> MutableList<T?>.computeIfAbsent(index: Int, f: () -> T): T {
     var n = this.size
     while (n <= index) {

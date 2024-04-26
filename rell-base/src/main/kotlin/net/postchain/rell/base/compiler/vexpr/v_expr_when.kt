@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2021 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.vexpr
 
 import net.postchain.rell.base.compiler.ast.S_Pos
+import net.postchain.rell.base.compiler.base.core.C_Types
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.expr.C_ExprVarFacts
@@ -16,14 +17,14 @@ import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 
 class V_WhenChooserDetails(
-        val keyExpr: V_Expr?,
-        val keyPostFacts: C_VarFacts,
-        constantCases: Map<Rt_Value, Int>,
-        variableCases: List<IndexedValue<V_Expr>>,
-        val elseCase: IndexedValue<S_Pos>?,
-        val full: Boolean,
-        caseFacts: List<C_VarFacts>,
-        val elseFacts: C_VarFacts
+    val keyExpr: V_Expr?,
+    val keyPostFacts: C_VarFacts,
+    constantCases: Map<Rt_Value, Int>,
+    variableCases: List<IndexedValue<V_Expr>>,
+    val elseCase: IndexedValue<S_Pos>?,
+    val full: Boolean,
+    caseFacts: List<C_VarFacts>,
+    val elseFacts: C_VarFacts,
 ) {
     val constantCases = constantCases.toImmMap()
     val variableCases = variableCases.toImmList()
@@ -50,12 +51,12 @@ class V_WhenChooserDetails(
 }
 
 class V_WhenExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        private val chooserDetails: V_WhenChooserDetails,
-        private val valueExprs: List<V_Expr>,
-        private val resType: R_Type,
-        private val resVarFacts: C_ExprVarFacts
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    private val chooserDetails: V_WhenChooserDetails,
+    private val valueExprs: List<V_Expr>,
+    private val resType: R_Type,
+    private val resVarFacts: C_ExprVarFacts,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0(): V_ExprInfo {
         val subExprs = listOfNotNull(chooserDetails.keyExpr) + chooserDetails.variableCases.map { it.value } + valueExprs
@@ -79,8 +80,8 @@ class V_WhenExpr(
 
         val caseExprs = caseCondMap.keys.sorted().map { idx ->
             val conds = caseCondMap.getValue(idx)
-            val value = valueExprs[idx]
-            Db_WhenCase(conds, value.toDbExpr())
+            val vExpr = valueExprs[idx]
+            Db_WhenCase(conds, vExpr.toDbExpr())
         }
 
         val elseIdx = chooserDetails.elseCase

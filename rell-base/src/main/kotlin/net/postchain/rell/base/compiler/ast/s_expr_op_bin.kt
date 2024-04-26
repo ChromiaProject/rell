@@ -366,10 +366,7 @@ sealed class C_BinOp_EqNe(private val eq: Boolean, private val rOp: R_BinaryOp):
     }
 
     fun createVOp(type: R_Type): V_BinaryOp {
-        val dbOp: Db_BinaryOp = when (type) {
-            is R_NullableType -> if (eq) Db_BinaryOp_NotDistinct else Db_BinaryOp_Distinct
-            else -> if (eq) Db_BinaryOp_Eq else Db_BinaryOp_Ne
-        }
+        val dbOp = Db_BinaryOp_EqNe.get(eq, type is R_NullableType)
         val actDbOp = if (dbOpSupported(type)) dbOp else null
         return V_BinaryOp.of(R_BooleanType, rOp, actDbOp)
     }
