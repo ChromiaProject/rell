@@ -1,0 +1,7 @@
+module;
+
+operation op_name(
+    gtx_op_arg: gtx_operation,
+    gtx_tx_body: gtx_transaction_body,
+    gtx_tx: gtx_transaction
+) {}
