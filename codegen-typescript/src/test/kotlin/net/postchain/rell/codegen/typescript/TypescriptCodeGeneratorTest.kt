@@ -197,8 +197,10 @@ internal class TypescriptCodeGeneratorTest {
 
     @Test
     fun builtinStructs() {
-        val (_, documents) = generateAndCompile("/builtin", "structs")
+        val (sections, documents) = generateAndCompile("/builtin", "structs")
         val a = documents["/root.ts"]!!.format()
+        assertThat(sections).hasSize(4)
+        assertThat(documents).hasSize(2)
         assertThat(a).contains("export type GtxOperation =")
         assertThat(a).contains("export type GtxTransactionBody =")
         assertThat(a).contains("export type GtxTransaction =")
