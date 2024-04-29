@@ -194,4 +194,13 @@ internal class TypescriptCodeGeneratorTest {
                 "Skipping [mixed_tuple_queries:return_type_map_unnamed_and_named_tuple] Query return type contains unsupported mixed tuple type: (integer,foo:integer)"
         )
     }
+
+    @Test
+    fun builtinStructs() {
+        val (_, documents) = generateAndCompile("/builtin", "structs")
+        val a = documents["/root.ts"]!!.format()
+        assertThat(a).contains("export type GtxOperation =")
+        assertThat(a).contains("export type GtxTransactionBody =")
+        assertThat(a).contains("export type GtxTransaction =")
+    }
 }
