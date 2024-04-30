@@ -10,7 +10,7 @@ import org.junit.Test
 
 class LibMapTest: BaseRellTest(false) {
     @Test fun testLiteral() {
-        chk("[:]", "ct_err:expr_map_notype")
+        chk("[:]", "ct_err:expr_map_no_type")
         chk("['Bob':123]", "map<text,integer>[text[Bob]=int[123]]")
         chk("['Bob':123,'Alice':456,'Trudy':789]", "map<text,integer>[text[Bob]=int[123],text[Alice]=int[456],text[Trudy]=int[789]]")
         chk("[123:456]", "map<integer,integer>[int[123]=int[456]]")

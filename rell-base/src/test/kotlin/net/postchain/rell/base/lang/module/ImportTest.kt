@@ -16,6 +16,7 @@ class ImportTest: BaseRellTest(false) {
         chkImport("import a.{f,g};", "f()+g()", "int[579]")
         chkImport("import a.{f};", "g()", "ct_err:unknown_name:g")
         chkImport("import a.{g};", "f()", "ct_err:unknown_name:f")
+        chkCompile("import a.{};", "ct_err:syntax")
     }
 
     @Test fun testExactAlias() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.ide
@@ -49,11 +49,11 @@ class IdeSymbolExprAtTest: BaseIdeSymbolTest() {
 
     @Test fun testAtItemDbImplicitUpdate() {
         initAtItemDb()
-        chkAtItemDbImplicit1("update user @* { user.name != '' } ()")
+        chkAtItemDbImplicit1("update user @* { user.name != '' } ( '' )")
         chkAtItemDbImplicit1("update user @* {} ( user.name )")
-        chkAtItemDbImplicit2("update (user, company) @* { user.name != '', company.name != '' } ()")
+        chkAtItemDbImplicit2("update (user, company) @* { user.name != '', company.name != '' } ( '' )")
         chkAtItemDbImplicit2("update (user, company) @* {} ( user.name + company.name )")
-        chkAtItemDbImplicit3("update ns.data @* { data.name != '' } ()")
+        chkAtItemDbImplicit3("update ns.data @* { data.name != '' } ( '' )")
         chkAtItemDbImplicit3("update ns.data @* {} ( data.name )")
     }
 
@@ -93,11 +93,11 @@ class IdeSymbolExprAtTest: BaseIdeSymbolTest() {
 
     @Test fun testAtItemDbExplicitUpdate() {
         initAtItemDb()
-        chkAtItemDbExplicit1("update (u: user) @* { u.name != '' } ()")
+        chkAtItemDbExplicit1("update (u: user) @* { u.name != '' } ( '' )")
         chkAtItemDbExplicit1("update (u: user) @* {} ( u.name )")
-        chkAtItemDbExplicit2("update (u: user, c: company) @* { u.name != '', c.name != '' } ()")
+        chkAtItemDbExplicit2("update (u: user, c: company) @* { u.name != '', c.name != '' } ( '' )")
         chkAtItemDbExplicit2("update (u: user, c: company) @* {} ( u.name + c.name )")
-        chkAtItemDbExplicit3("update (u: ns.data) @* { u.name != '' } ()")
+        chkAtItemDbExplicit3("update (u: ns.data) @* { u.name != '' } ( '' )")
         chkAtItemDbExplicit3("update (u: ns.data) @* {} ( u.name )")
     }
 
@@ -145,11 +145,11 @@ class IdeSymbolExprAtTest: BaseIdeSymbolTest() {
 
     @Test fun testAtItemDbDollarUpdate() {
         initAtItemDb()
-        chkAtItemDbDollar1("update user @* { $.name != '' } ()")
+        chkAtItemDbDollar1("update user @* { $.name != '' } ( '' )")
         chkAtItemDbDollar1("update user @* {} ( $.name )")
-        chkAtItemDbDollar2("update (user, company) @* { $.name != '' } ()")
+        chkAtItemDbDollar2("update (user, company) @* { $.name != '' } ( '' )")
         chkAtItemDbDollar2("update (user, company) @* {} ( $.name )")
-        chkAtItemDbDollar3("update ns.data @* { $.name != '' } ()")
+        chkAtItemDbDollar3("update ns.data @* { $.name != '' } ( '' )")
         chkAtItemDbDollar3("update ns.data @* {} ( $.name )")
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils.grammar
@@ -129,13 +129,13 @@ private object XtextNontermGen {
                 return XtextProd(null, expr)
             } else if (sub is GramExpr_Token) {
                 val expr = convertExpr(sub, null)
-                if (transform == null) {
+                return if (transform == null) {
                     val tokenType = createTokenType(sub.name)
-                    return XtextProd(tokenType, expr)
+                    XtextProd(tokenType, expr)
                 } else {
                     val token = if (sub.name in specialTokens) sub.name else null
                     createAction(type, XtextAction_Token(token), transform)
-                    return XtextProd(type, expr)
+                    XtextProd(type, expr)
                 }
             }
         }

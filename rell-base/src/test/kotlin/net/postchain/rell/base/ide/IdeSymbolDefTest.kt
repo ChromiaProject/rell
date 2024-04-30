@@ -179,7 +179,7 @@ class IdeSymbolDefTest: BaseIdeSymbolTest() {
     }
 
     @Test fun testEntity() {
-        file("lib.rell", "entity user {}")
+        file("lib.rell", "entity user { mutable name; }")
 
         chkSymsFile("lib.rell", "user=DEF_ENTITY|entity[user]|-", "?head=ENTITY|:user|user")
 
@@ -188,9 +188,9 @@ class IdeSymbolDefTest: BaseIdeSymbolTest() {
         chkSymsType("user?", *entityRef)
         chkSymsType("struct<user>", *entityRef)
         chkSymsExpr("user @* {}", *entityRef)
-        chkSymsStmt("create user();", *entityRef)
+        chkSymsStmt("create user('Bob');", *entityRef)
         chkSymsStmt("delete user @* {};", *entityRef)
-        chkSymsStmt("update user @* {} ();", *entityRef)
+        chkSymsStmt("update user @* {} ( name = 'Bob' );", *entityRef)
     }
 
     @Test fun testEntityBlockTransaction() {

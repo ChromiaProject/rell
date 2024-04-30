@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.expr
@@ -10,8 +10,8 @@ import org.junit.Test
 
 class UpdateDeleteTest: BaseRellTest() {
     override fun entityDefs() = listOf(
-            "entity city { name: text; }",
-            "entity person { name: text; mutable city; mutable street: text; mutable house: integer; mutable score: integer; }"
+        "entity city { name: text; }",
+        "entity person { name: text; mutable city; mutable street: text; mutable house: integer; mutable score: integer; }",
     )
 
     @Test fun testUpdatePersonSetScore() {
@@ -199,6 +199,8 @@ class UpdateDeleteTest: BaseRellTest() {
 
         chkOp("update person @ {} ( score = 123, score = 456 );", "ct_err:attr_dup_name:score")
         chkOp("update person @ {} ( score = 123, score = 123 );", "ct_err:attr_dup_name:score")
+
+        chkOp("update person @ {} ();", "ct_err:syntax")
     }
 
     @Test fun testCompoundAssignmentInt() {

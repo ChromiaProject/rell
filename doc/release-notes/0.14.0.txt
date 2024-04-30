@@ -511,3 +511,36 @@ Following names are reserved, as they may become keywords in the future:
     yield
 
 Using a reserved name in Rell code is not allowed.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+29. Language: Trailing commas
+
+A trailing comma is allowed in any comma-separated list of expressions or other language constructs.
+This is useful when having one item per line. Examples:
+
+    val my_list = [
+        123,
+        456,
+        789,
+    ];
+
+    val my_map = [
+        123: 'A',
+        456: 'B',
+    ];
+
+    enum colors {
+        RED,
+        GREEN,
+        BLUE,
+    }
+
+    function f(
+        x: integer,
+        y: text,
+    ) {...}
+
+    query q() = f(
+        123,
+        'A',
+    );

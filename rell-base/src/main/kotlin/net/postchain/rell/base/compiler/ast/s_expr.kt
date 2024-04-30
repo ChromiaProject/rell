@@ -328,16 +328,14 @@ class S_ParenthesesExpr(startPos: S_Pos, val expr: S_Expr): S_Expr(startPos) {
     override fun compileNestedAt(ctx: C_ExprContext, parentAtCtx: C_AtContext) = expr.compileNestedAt(ctx, parentAtCtx)
 }
 
-class S_TupleExprField(val name: S_Name?, val expr: S_Expr)
-
-class S_TupleExpr(startPos: S_Pos, val fields: List<S_TupleExprField>): S_Expr(startPos) {
+class S_TupleExpr(startPos: S_Pos, private val fields: List<S_NameOptValue<S_Expr>>): S_Expr(startPos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         // ID needs to be allocaed in advance, before processing sub-expressions (for correct numbering).
         val tupleIdeId = ctx.defCtx.tupleIdeId()
 
         val cFields = fields.map {
             val nameHand = it.name?.compile(ctx, def = true)
-            C_TupleField(nameHand, it.expr)
+            C_TupleField(nameHand, it.value)
         }
 
         checkNameConflicts(ctx, cFields)
@@ -558,7 +556,7 @@ class S_MapLiteralExpr(startPos: S_Pos, val entries: List<Pair<S_Expr, S_Expr>>)
     ): R_MapKeyValueTypes {
         if (vEntries.isEmpty()) {
             return C_Errors.checkNotNull(hintTypes, startPos) {
-                "expr_map_notype" toCodeMsg
+                "expr_map_no_type" toCodeMsg
                 "Cannot determine type of the map; use map<K,V>() syntax to specify the type"
             }
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils.grammar
@@ -9,14 +9,15 @@ import com.github.h0tk3y.betterParse.combinators.OrCombinator
 import com.github.h0tk3y.betterParse.parser.Parser
 import net.postchain.rell.base.compiler.parser.RellToken
 import net.postchain.rell.base.compiler.parser.S_Grammar
+import net.postchain.rell.base.utils.toImmMap
 import org.apache.commons.lang3.time.FastDateFormat
 import java.util.*
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
 object GrammarUtils {
-    fun getParsers(): Map<String, Any> {
-        val parsers = mutableMapOf<String, Any>()
+    fun getParsers(): Map<String, Parser<*>> {
+        val parsers = mutableMapOf<String, Parser<*>>()
 
         for (p in S_Grammar::class.memberProperties) {
             p.isAccessible = true
@@ -34,22 +35,27 @@ object GrammarUtils {
             }
         }
 
-        return parsers
+        for ((i, p) in S_Grammar.commaSeparatedParsers.withIndex()) {
+            val name = "commaSeparated_$i"
+            parsers[name] = p
+        }
+
+        return parsers.toImmMap()
     }
 
     fun andParsers(p: Any): List<Any> {
-        if (p is AndCombinator<*>) {
-            return p.consumers.flatMap { andParsers(it) }
+        return if (p is AndCombinator<*>) {
+            p.consumers.flatMap { andParsers(it) }
         } else {
-            return listOf(p)
+            listOf(p)
         }
     }
 
     fun orParsers(p: Any): List<Any> {
-        if (p is OrCombinator<*>) {
-            return p.parsers.flatMap { orParsers(it) }
+        return if (p is OrCombinator<*>) {
+            p.parsers.flatMap { orParsers(it) }
         } else {
-            return listOf(p)
+            listOf(p)
         }
     }
 

@@ -221,4 +221,10 @@ class EnumTest: BaseRellTest() {
         chk("bar.values", "bar[values]")
         chk("bar.values()", "list<bar>[bar[b],bar[values]]")
     }
+
+    @Test fun testEmptyComma() {
+        chkCompile("enum foo {}", "OK")
+        chkCompile("enum foo {A,}", "OK")
+        chkCompile("enum foo {,}", "ct_err:syntax")
+    }
 }

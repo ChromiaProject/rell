@@ -375,7 +375,7 @@ class IdeSymbolExprTest: BaseIdeSymbolTest() {
         chkSymsExpr("data @* {} (data.x)", *attrRef)
 
         chkSymsStmt("create data(x = 0);", *attrRef)
-        chkSymsStmt("update data @* {.x == 0} ();", *attrRef)
+        chkSymsStmt("update data @* {.x == 0} ( 123 );", *attrRef)
         chkSymsStmt("update data @* {} ( .x = 0 );", *attrRef)
         chkSymsStmt("update data @* {} ( x = 0 );", *attrRef)
         chkSymsStmt("delete data @* {.x == 0};", *attrRef)

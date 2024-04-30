@@ -81,7 +81,7 @@ class CLibFunctionTest: BaseCLibTest() {
         chk("f_set([])", "ct_err:expr_list_no_type")
         chk("f_collection([])", "text[list<integer>[]]")
         chk("f_collection(set())", "text[set<integer>[]]")
-        chk("f_collection([:])", "ct_err:expr_map_notype")
+        chk("f_collection([:])", "ct_err:expr_map_no_type")
         chk("f_iterable([])", "text[list<(integer,text)>[]]")
         chk("f_iterable(set())", "text[set<(integer,text)>[]]")
         chk("f_iterable([:])", "text[map<integer,text>[]]")

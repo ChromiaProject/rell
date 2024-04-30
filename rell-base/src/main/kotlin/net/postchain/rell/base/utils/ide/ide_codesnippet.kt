@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils.ide
@@ -15,10 +15,10 @@ import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 
 class IdeSnippetMessage(
-        @JvmField val pos: String,
-        @JvmField val type: C_MessageType,
-        @JvmField val code: String,
-        @JvmField val text: String
+    @JvmField val pos: String,
+    @JvmField val type: C_MessageType,
+    @JvmField val code: String,
+    @JvmField val text: String,
 ) {
     fun serialize(): Any {
         return mapOf(
@@ -31,7 +31,7 @@ class IdeSnippetMessage(
 
     companion object {
         fun deserialize(obj: Any): IdeSnippetMessage {
-            val raw = obj as Map<Any, Any>
+            @Suppress("UNCHECKED_CAST") val raw = obj as Map<Any, Any>
             val map = raw.map { (k, v) -> k as String to v as String }.toMap()
             return IdeSnippetMessage(
                     map.getValue("pos"),
@@ -44,11 +44,11 @@ class IdeSnippetMessage(
 }
 
 class IdeCodeSnippet(
-        files: Map<String, String>,
-        @JvmField val modules: C_CompilerModuleSelection,
-        @JvmField val options: C_CompilerOptions,
-        messages: List<IdeSnippetMessage>,
-        parsing: Map<String, List<IdeSnippetMessage>>
+    files: Map<String, String>,
+    @JvmField val modules: C_CompilerModuleSelection,
+    @JvmField val options: C_CompilerOptions,
+    messages: List<IdeSnippetMessage>,
+    parsing: Map<String, List<IdeSnippetMessage>>,
 ) {
     @JvmField val files = files.toImmMap()
     @JvmField val messages = messages.toImmList()
@@ -77,7 +77,7 @@ class IdeCodeSnippet(
 
         val mapper = ObjectMapper()
         val res = mapper.writeValueAsString(obj)
-        deserialize(res) // Verification
+        deserializeOne(res) // Verification
         return res
     }
 
@@ -85,16 +85,27 @@ class IdeCodeSnippet(
 
     override fun hashCode() = serialized.hashCode()
 
+    @Suppress("UNCHECKED_CAST")
     companion object {
         @JvmStatic fun serialize(snippets: Collection<IdeCodeSnippet>): String {
             val json = snippets.joinToString(separator = ",", prefix = "[", postfix = "]") { it.serialized }
             return prettyFormatJson(json)
         }
 
-        @JvmStatic fun deserialize(s: String): IdeCodeSnippet {
+        @JvmStatic fun deserialize(s: String): List<IdeCodeSnippet> {
             val mapper = ObjectMapper()
             val any = mapper.readValue(s, Any::class.java)
+            val list = any as List<Any>
+            return list.map { deserialize0(it) }
+        }
 
+        private fun deserializeOne(s: String): IdeCodeSnippet {
+            val mapper = ObjectMapper()
+            val any = mapper.readValue(s, Any::class.java)
+            return deserialize0(any)
+        }
+
+        private fun deserialize0(any: Any): IdeCodeSnippet {
             val obj = any as Map<String, Any>
 
             val filesRaw = obj.getValue("files") as Map<Any, Any>

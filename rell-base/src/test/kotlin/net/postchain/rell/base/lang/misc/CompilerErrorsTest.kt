@@ -233,7 +233,7 @@ class CompilerErrorsTest: BaseRellTest(false) {
         chkStmt("update data @* { $badExpr1, $badExpr2 } ( i = 1 );", "ct_err:[$badError1][$badError2][$anm:data.i]")
 
         chkStmt("update ext_data @* { $badExpr1 } ( i = $badExpr2 );", "ct_err:[$suc:ext_data][$badError1][$badError2]")
-        chkStmt("update ext_data @* { $badExpr1, $badExpr2 } ();", "ct_err:[$suc:ext_data][$badError1][$badError2]")
+        chkStmt("update ext_data @* { $badExpr1, $badExpr2 } (i=0);", "ct_err:[$suc:ext_data][$badError1][$badError2]")
         chkStmt("update ext_data @* {} ( i = $badExpr1, j = $badExpr2 );",
             "ct_err:[$suc:ext_data][$badError1][$badError2]")
     }

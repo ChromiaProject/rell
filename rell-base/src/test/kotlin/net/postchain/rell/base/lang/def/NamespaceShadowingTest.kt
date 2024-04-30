@@ -87,18 +87,18 @@ class NamespaceShadowingTest: BaseRellTest() {
 
     @Test fun testEntityUpdate() {
         chkCompile(expected = "OK", code = """
-            entity user {}
+            entity user { mutable x: integer; }
             namespace ns {
                 val user = 123;
-                function f() { update user @* {} (); }
+                function f() { update user @* {} ( x = 0 ); }
             }
         """)
 
         chkCompile(expected = "ct_err:wrong_name:entity:struct:user", code = """
-            entity user {}
+            entity user { mutable x: integer; }
             namespace ns {
                 struct user {}
-                function f() { update user @* {} (); }
+                function f() { update user @* {} ( x = 0 ); }
             }
         """)
     }

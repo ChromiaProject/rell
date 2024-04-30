@@ -1,11 +1,12 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils.grammar
 
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.ParserReference
+import com.github.h0tk3y.betterParse.parser.Parser
 import net.postchain.rell.base.compiler.parser.RellToken
 import net.postchain.rell.base.compiler.parser.S_Grammar
 import net.postchain.rell.base.utils.RellVersions
@@ -55,9 +56,9 @@ fun main() {
     println("};");
 }
 
-private fun parserToJavascript(nameMap: Map<Any, String>, parser: Any, top: Boolean): String {
+private fun parserToJavascript(nameMap: Map<Parser<*>, String>, parser: Any, top: Boolean): String {
     if (!top && parser in nameMap) {
-        val name = nameMap.getValue(parser)
+        val name = nameMap.getValue(parser as Parser<*>)
         return """"$name""""
     }
 
