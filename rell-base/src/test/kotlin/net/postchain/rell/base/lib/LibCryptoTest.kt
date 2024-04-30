@@ -78,24 +78,93 @@ class LibCryptoTest: BaseRellTest(false) {
         chk("crypto.get_signature(x'$dataHash', x'${"13".repeat(1024)}')", "rt_err:fn:get_signature:privkey_size:1024")
     }
 
+    // lib_crypto_get_signature_testcases.py
+    @Test fun testGetSignatureTV() {
+        chkGetSignatureTV(
+            "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+            "60d099bb6531806868610213e6a445dd8ec347de822ff85e7f6df47bc22eb03d",
+            "238a92743da838cda68864bdbd1a7cc90d8cc294700c58b3d1a98a2fa8e77d8e084503bdbdd3373672d1a73602b2adb0e76d632776947df402dc25dba646edb3",
+        )
+        chkGetSignatureTV(
+            "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a",
+            "1525a311aa4d2b6fc963eeabcd85858b3ffced7215d7204801466350db1a84ff",
+            "986063092b8ba9d31dd8a1ed1fe2eb7c86485634b45baabaf026b00c7c5fdc526b9086d390adba6a71e92a34f7ca4c202fde2e5f08394051439d9f755a3b8b0b",
+        )
+        chkGetSignatureTV(
+            "dbc1b4c900ffe48d575b5da5c638040125f65db0fe3e24494b76ea986457d986",
+            "f831004b4c85e8f000ed875fcd218ca6a3eee6cd45ac1b5e7844e24d07f2b2cc",
+            "297aac1f9ba647427a190fec990444209032456c392f930d61ed82f0902eeaa63f1c9ce98917d9f99bae35c48521ad31e0ccfb123b15554944451f016fdca26f",
+        )
+        chkGetSignatureTV(
+            "084fed08b978af4d7d196a7446a86b58009e636b611db16211b65a9aadff29c5",
+            "be347badfaaa241050f02001ba5ad4c61934ad52699ac75a2e116c0133c16cc5",
+            "71ed133cbe932c7f6a55adb211802538502253018c3264df71ff5e87703c3b1019229276c4dc1dd26192d0bf4368e1842abc25edfc38a53c7783d69cdfdd1a70",
+        )
+        chkGetSignatureTV(
+            "e52d9c508c502347344d8c07ad91cbd6068afc75ff6292f062a09ca381c89e71",
+            "3a76fcd748804da18db45276136429c4649d4171c275c4709a262a1afd4938cc",
+            "7b950875a74c1170e58cdfb7f6748ed08adec8564e5b3db7ac0834e6e37d7db629e542033c0e03cfea0f483cde6fb10e2be5e04d1815063cbaac843a8bfe5518",
+        )
+        chkGetSignatureTV(
+            "e77b9a9ae9e30b0dbdb6f510a264ef9de781501d7b6b92ae89eb059c5ab743db",
+            "e3886e11bcd2a7b26fad686fc925a0a1c68e71c3ebc8d43bc2bb95e82e0710c0",
+            "3c7fd7b3b747a3e79986bd13094276ebbd919e11047c1b57a158ee1e25debdd95e18eec8130bfa82595467aa66ab65f0820560bdd91885a7a942265d08c54119",
+        )
+        chkGetSignatureTV(
+            "67586e98fad27da0b9968bc039a1ef34c939b9b8e523a8bef89d478608c5ecf6",
+            "a4ee66eefb11397c956cfb40c465100e55c7fa0caaa1d6686420d4df2fc4ffab",
+            "43aa30ab11d628935e838e94fe2e32cd9bfafadb0ca5ce58c2bd83ff27b0cdb63ddf7ba24316d01f0deea7c4c9d705d766caa8243baed0e4e24006437a91ee20",
+        )
+        chkGetSignatureTV(
+            "ca358758f6d27e6cf45272937977a748fd88391db679ceda7dc7bf1f005ee879",
+            "b1272b3b494de5d6f87847133ce72646e175080b22520fcad398c98ab45fd1b9",
+            "8b57e0e883cfbdf91337d9e369e0b221b12738880514109cdfe11e257fc9c2f176947e6c5cbdde7555601c212e8e45433548d573f4ea372d3bc30454d27a1187",
+        )
+    }
+
+    private fun chkGetSignatureTV(privkey: String, dataHash: String, expected: String) {
+        chk("crypto.get_signature(x'$dataHash', x'$privkey')", "byte_array[$expected]")
+    }
+
     @Test fun testVerifySignature() {
         val privKeyBytes = ByteArray(32) { it.toByte() }
         val pubKey = CommonUtils.bytesToHex(secp256k1_derivePubKey(privKeyBytes))
         val keyPair = KeyPair(pubKey.hexStringToByteArray(), privKeyBytes)
 
-        val sign1 = calcSignature("DEADBEEF", keyPair)
-        val sign2 = calcSignature("DEADBEFF", keyPair)
+        val hash1 = "DEADBEEF".repeat(8)
+        val hash2 = "DEADBEFF".repeat(8)
+        val sign1 = calcSignature(hash1, keyPair)
+        val sign2 = calcSignature(hash2, keyPair)
 
-        chk("verify_signature(x'DEADBEEF', x'$pubKey', x'$sign1')", "boolean[true]")
-        chk("verify_signature(x'DEADBEEF', x'$pubKey', x'$sign2')", "boolean[false]")
-        chk("verify_signature(x'DEADBEFF', x'$pubKey', x'$sign1')", "boolean[false]")
-        chk("verify_signature(x'DEADBEFF', x'$pubKey', x'$sign2')", "boolean[true]")
+        chk("verify_signature(x'$hash1', x'$pubKey', x'$sign1')", "boolean[true]")
+        chk("verify_signature(x'$hash1', x'$pubKey', x'$sign2')", "boolean[false]")
+        chk("verify_signature(x'$hash2', x'$pubKey', x'$sign1')", "boolean[false]")
+        chk("verify_signature(x'$hash2', x'$pubKey', x'$sign2')", "boolean[true]")
 
-        chk("verify_signature(x'DEADBEFF', x'$pubKey', x'${sign2.dropLast(2)}')", "boolean[false]")
-        chk("verify_signature(x'DEADBEFF', x'$pubKey', x'${sign2.dropLast(4)}')", "boolean[false]")
-        chk("verify_signature(x'DEADBEFF', x'$pubKey', x'${sign2.dropLast(6)}')", "boolean[false]")
-        chk("verify_signature(x'DEADBEFF', x'$pubKey', x'123456')", "boolean[false]")
-        chk("verify_signature(x'DEADBEFF', x'$pubKey', x'')", "boolean[false]")
+        chk("verify_signature(x'$hash2', x'$pubKey', x'${sign2.dropLast(2)}')", "boolean[false]")
+        chk("verify_signature(x'$hash2', x'$pubKey', x'${sign2.dropLast(4)}')", "boolean[false]")
+        chk("verify_signature(x'$hash2', x'$pubKey', x'${sign2.dropLast(6)}')", "boolean[false]")
+        chk("verify_signature(x'$hash2', x'$pubKey', x'123456')", "boolean[false]")
+        chk("verify_signature(x'$hash2', x'$pubKey', x'')", "boolean[false]")
+    }
+
+    @Test fun testVerifySignatureBadArgs() {
+        val fn = "crypto.verify_signature"
+        val privKey = ByteArray(32) { it.toByte() }.toHex()
+        val sign = "1234"
+        chk("$fn(x'${"12".repeat(0)}', x'$privKey', x'$sign')", "rt_err:fn:verify_signature:datahash_size:0")
+        chk("$fn(x'${"12".repeat(1)}', x'$privKey', x'$sign')", "rt_err:fn:verify_signature:datahash_size:1")
+        chk("$fn(x'${"12".repeat(16)}', x'$privKey', x'$sign')", "rt_err:fn:verify_signature:datahash_size:16")
+        chk("$fn(x'${"12".repeat(31)}', x'$privKey', x'$sign')", "rt_err:fn:verify_signature:datahash_size:31")
+        chk("$fn(x'${"12".repeat(33)}', x'$privKey', x'$sign')", "rt_err:fn:verify_signature:datahash_size:33")
+        chk("$fn(x'${"12".repeat(48)}', x'$privKey', x'$sign')", "rt_err:fn:verify_signature:datahash_size:48")
+        chk("$fn(x'${"12".repeat(64)}', x'$privKey', x'$sign')", "rt_err:fn:verify_signature:datahash_size:64")
+        chk("$fn(x'${"12".repeat(1024)}', x'$privKey', x'$sign')", "rt_err:fn:verify_signature:datahash_size:1024")
+    }
+
+    @Test fun testVerifySignatureErr() {
+        val dataHash = "01234567".repeat(8)
+        chk("verify_signature(x'$dataHash', x'4567', x'89AB')", "rt_err:verify_signature")
     }
 
     @Test fun testKeccak256() {
@@ -151,6 +220,28 @@ class LibCryptoTest: BaseRellTest(false) {
         }
     }
 
+    @Test fun testEthSignBadArgs() {
+        val privKey = ByteArray(32) { it.toByte() }.toHex()
+        chk("crypto.eth_sign(x'${"12".repeat(0)}', x'$privKey')", "rt_err:fn:eth_sign:datahash_size:0")
+        chk("crypto.eth_sign(x'${"12".repeat(1)}', x'$privKey')", "rt_err:fn:eth_sign:datahash_size:1")
+        chk("crypto.eth_sign(x'${"12".repeat(16)}', x'$privKey')", "rt_err:fn:eth_sign:datahash_size:16")
+        chk("crypto.eth_sign(x'${"12".repeat(31)}', x'$privKey')", "rt_err:fn:eth_sign:datahash_size:31")
+        chk("crypto.eth_sign(x'${"12".repeat(33)}', x'$privKey')", "rt_err:fn:eth_sign:datahash_size:33")
+        chk("crypto.eth_sign(x'${"12".repeat(48)}', x'$privKey')", "rt_err:fn:eth_sign:datahash_size:48")
+        chk("crypto.eth_sign(x'${"12".repeat(64)}', x'$privKey')", "rt_err:fn:eth_sign:datahash_size:64")
+        chk("crypto.eth_sign(x'${"12".repeat(1024)}', x'$privKey')", "rt_err:fn:eth_sign:datahash_size:1024")
+
+        val dataHash = "00".repeat(32)
+        chk("crypto.eth_sign(x'$dataHash', x'${"13".repeat(0)}')", "rt_err:fn:eth_sign:privkey_size:0")
+        chk("crypto.eth_sign(x'$dataHash', x'${"13".repeat(1)}')", "rt_err:fn:eth_sign:privkey_size:1")
+        chk("crypto.eth_sign(x'$dataHash', x'${"13".repeat(16)}')", "rt_err:fn:eth_sign:privkey_size:16")
+        chk("crypto.eth_sign(x'$dataHash', x'${"13".repeat(31)}')", "rt_err:fn:eth_sign:privkey_size:31")
+        chk("crypto.eth_sign(x'$dataHash', x'${"13".repeat(33)}')", "rt_err:fn:eth_sign:privkey_size:33")
+        chk("crypto.eth_sign(x'$dataHash', x'${"13".repeat(48)}')", "rt_err:fn:eth_sign:privkey_size:48")
+        chk("crypto.eth_sign(x'$dataHash', x'${"13".repeat(64)}')", "rt_err:fn:eth_sign:privkey_size:64")
+        chk("crypto.eth_sign(x'$dataHash', x'${"13".repeat(1024)}')", "rt_err:fn:eth_sign:privkey_size:1024")
+    }
+
     @Test fun testEthSignViaEthEcrecover() {
         tst.testLib = true
         def("""
@@ -160,7 +251,7 @@ class LibCryptoTest: BaseRellTest(false) {
                 val pubkey = crypto.privkey_to_pubkey(privkey);
                 assert_equals(pubkey.size(), 65);
 
-                val msg = 'Hello'.to_bytes();
+                val msg = 'Hello'.to_bytes().sha256();
                 val (r, s, rec_id) = crypto.eth_sign(msg, privkey);
                 assert_equals(r.size(), 32);
                 assert_equals(s.size(), 32);
@@ -386,10 +477,6 @@ class LibCryptoTest: BaseRellTest(false) {
         chk("crypto.xy_to_pubkey(${x}L, ${y}L)", "byte_array[04$pubKey]")
         chk("crypto.xy_to_pubkey(${x}L, ${y}L, false)", "byte_array[04$pubKey]")
         chk("crypto.xy_to_pubkey(${x}L, ${y}L, true)", "byte_array[$compPubKey]")
-    }
-
-    @Test fun testVerifySignatureErr() {
-        chk("verify_signature(x'0123', x'4567', x'89AB')", "rt_err:verify_signature")
     }
 
     private fun calcSignature(messageHex: String, keyPair: KeyPair): String {

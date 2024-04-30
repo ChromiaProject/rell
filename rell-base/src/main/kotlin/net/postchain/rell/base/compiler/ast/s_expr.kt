@@ -552,7 +552,10 @@ class S_MapLiteralExpr(startPos: S_Pos, val entries: List<Pair<S_Expr, S_Expr>>)
         return R_MapKeyValueTypes(rKeyType, rValueType)
     }
 
-    private fun compileKeyValueTypes(vEntries: List<Pair<V_Expr, V_Expr>>, hintTypes: R_MapKeyValueTypes?): R_MapKeyValueTypes {
+    private fun compileKeyValueTypes(
+        vEntries: List<Pair<V_Expr, V_Expr>>,
+        hintTypes: R_MapKeyValueTypes?,
+    ): R_MapKeyValueTypes {
         if (vEntries.isEmpty()) {
             return C_Errors.checkNotNull(hintTypes, startPos) {
                 "expr_map_notype" toCodeMsg
@@ -560,24 +563,30 @@ class S_MapLiteralExpr(startPos: S_Pos, val entries: List<Pair<S_Expr, S_Expr>>)
             }
         }
 
-        var rTypes = R_MapKeyValueTypes(vEntries[0].first.type, vEntries[0].second.type)
+        var rKeyType = vEntries[0].first.type
+        var rValueType = vEntries[0].second.type
 
-        for ((i, kv) in vEntries.withIndex()) {
-            val (vKey, vValue) = kv
-            val rKeyType = C_Types.commonType(rTypes.key, vKey.type, entries[i].first.startPos) {
-                "expr_map_keytype" toCodeMsg "Wrong map entry key type"
-            }
-            val rValueType = C_Types.commonType(rTypes.value, vValue.type, entries[i].second.startPos) {
-                "expr_map_valuetype" toCodeMsg "Wrong map entry value type"
-            }
-            rTypes = R_MapKeyValueTypes(rKeyType, rValueType)
+        for ((vKey, vValue) in vEntries) {
+            rKeyType = getCommonType("key", rKeyType, vKey)
+            rValueType = getCommonType("value", rValueType, vValue)
         }
 
+        var rTypes = R_MapKeyValueTypes(rKeyType, rValueType)
         if (hintTypes != null) {
             rTypes = C_Types.commonTypesOpt(rTypes, hintTypes) ?: rTypes
         }
 
         return rTypes
+    }
+
+    private fun getCommonType(kind: String, prevType: R_Type, vExpr: V_Expr): R_Type {
+        val res = C_Types.commonTypeOpt(prevType, vExpr.type)
+        if (res == null) {
+            val code = "expr:map_lit_type:$kind:[${prevType.strCode()}]:[${vExpr.type.strCode()}]"
+            val msg = "Map $kind type mismatch: was ${prevType.str()}, now ${vExpr.type.str()}"
+            throw C_Error.stop(vExpr.pos, code, msg)
+        }
+        return res
     }
 }
 

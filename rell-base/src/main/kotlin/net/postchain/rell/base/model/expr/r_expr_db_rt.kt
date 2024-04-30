@@ -12,6 +12,7 @@ import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.SqlExecutor
 import net.postchain.rell.base.utils.chainToIterable
+import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 import java.sql.PreparedStatement
@@ -218,6 +219,8 @@ class ParameterizedSql(val sql: String, params: List<Rt_Value>) {
     }
 
     companion object {
+        val TRUE = ParameterizedSql("TRUE", immListOf())
+
         fun generate(generator: (SqlBuilder) -> Unit): ParameterizedSql {
             val b = SqlBuilder()
             generator(b)

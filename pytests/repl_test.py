@@ -1,4 +1,4 @@
-#  Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+#  Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
 
 import re
 import pytest
@@ -250,7 +250,7 @@ def test__output_format__og():
         app.input('m\n')
         app.check_output(['[[123, "Hello"], [456, "Bye"], [789, "Ciao"]]', '>>> '])
         app.input('m2\n')
-        app.check_output(['{Bye=456, Ciao=789, Hello=123}', '>>> '])
+        app.check_output(['["Bye": 456, "Ciao": 789, "Hello": 123]', '>>> '])
         check_quit(app)
     finally:
         app.stop()

@@ -463,6 +463,23 @@ class AtExprJoinTest: BaseRellTest() {
             "[(Bob,home[200]), (Alice,home[201]), (Alice,home[202]), (Trudy,home[200])]")
     }
 
+    @Test fun testOuterJoinNoWhere() {
+        initData()
+
+        val all = "[(Bob,Bank), (Bob,Shop), (Alice,Bank), (Alice,Shop), (Trudy,Bank), (Trudy,Shop)]"
+
+        chk("(p: person, @outer c: company) @* {} ( _=p.name, _=c?.name )", all)
+        chkSql("""
+           SELECT A00."name", A01."name" FROM "c0.person" A00
+           LEFT OUTER JOIN "c0.company" A01 ON TRUE
+           ORDER BY A00."rowid", A01."rowid"
+        """.unwrap(" "))
+
+        chk("(p: person, @outer c: company @* {true}) @* {} ( _=p.name, _=c?.name )", all)
+        chk("(p: person, @outer c: company @* {false}) @* {} ( _=p.name, _=c?.name )",
+            "[(Bob,null), (Alice,null), (Trudy,null)]")
+    }
+
     @Test fun testVersionControlJoin() {
         initData()
         chkVerCtExpr("(p: person, h: home @* {}) @* {}", "0.13.10", "VER:feature:at_expr_join")

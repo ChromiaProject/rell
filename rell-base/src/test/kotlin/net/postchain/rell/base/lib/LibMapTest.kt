@@ -14,8 +14,8 @@ class LibMapTest: BaseRellTest(false) {
         chk("['Bob':123]", "map<text,integer>[text[Bob]=int[123]]")
         chk("['Bob':123,'Alice':456,'Trudy':789]", "map<text,integer>[text[Bob]=int[123],text[Alice]=int[456],text[Trudy]=int[789]]")
         chk("[123:456]", "map<integer,integer>[int[123]=int[456]]")
-        chk("['Bob':123,'Alice':'Hello']", "ct_err:expr_map_valuetype:[integer]:[text]")
-        chk("[123:456,'Bob':789]", "ct_err:expr_map_keytype:[integer]:[text]")
+        chk("['Bob':123,'Alice':'Hello']", "ct_err:expr:map_lit_type:value:[integer]:[text]")
+        chk("[123:456,'Bob':789]", "ct_err:expr:map_lit_type:key:[integer]:[text]")
         chk("['Bob':123,'Bob':456]", "rt_err:expr_map_dupkey:text[Bob]")
         chk("['Bob':123,'Bob':123]", "rt_err:expr_map_dupkey:text[Bob]")
     }

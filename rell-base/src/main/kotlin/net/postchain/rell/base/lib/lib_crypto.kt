@@ -98,14 +98,18 @@ object Lib_Crypto {
                 }
                 param(name = "pubkey", type = "pubkey", comment = "The public key to verify the signature against.")
                 param(name = "signature", type = "byte_array", comment = "The 64-byte signature to verify.")
+
                 body { a, b, c ->
                     val dataHash = a.asByteArray()
+                    checkByteArraySize(dataHash, 32, fnSimpleName, "datahash_size", "data hash")
+
                     val res = try {
                         val signature = Signature(b.asByteArray(), c.asByteArray())
                         PostchainGtvUtils.cryptoSystem.verifyDigest(dataHash, signature)
                     } catch (e: Exception) {
                         throw Rt_Exception.common("verify_signature", e.message ?: "Signature verification crashed")
                     }
+
                     Rt_BooleanValue.get(res)
                 }
             }
@@ -155,14 +159,15 @@ object Lib_Crypto {
                 }
                 param(name = "privkey", type = "byte_array", comment = "The 32-byte private key used for signing.")
                 body { a, b ->
-                    val hash = a.asByteArray()
+                    val dataHash = a.asByteArray()
                     val privKey = b.asByteArray()
-                    checkPrivKeySize(privKey, "eth_sign")
+                    checkByteArraySize(dataHash, 32, fnSimpleName, "datahash_size", "data hash")
+                    checkPrivKeySize(privKey, fnSimpleName)
 
                     val signer = Signer(null)
                     val privKeyObj = PrivateKey.create(privKey)
                     val sign =
-                        signer.create(hash, privKeyObj, net.postchain.rell.base.utils.etherjar.Signature::class.java)
+                        signer.create(dataHash, privKeyObj, net.postchain.rell.base.utils.etherjar.Signature::class.java)
 
                     val r = bigIntToRS(sign.r)
                     val s = bigIntToRS(sign.s)

@@ -225,9 +225,9 @@ class NullableTest: BaseRellTest(false) {
         chk("_type_of([123:'Hello',null:null,456:'World'])", "map<integer?,text?>")
         chk("_type_of([null:null,123:'Hello',456:'World'])", "map<integer?,text?>")
 
-        chk("_type_of([123:'Hello',null:null,'World':456])", "ct_err:expr_map_keytype:[integer?]:[text]")
-        chk("_type_of([123:null,456:789,null:'World'])", "ct_err:expr_map_valuetype:[integer?]:[text]")
-        chk("_type_of([null:'Hello','Hi':'World',123:'Bye'])", "ct_err:expr_map_keytype:[text?]:[integer]")
+        chk("_type_of([123:'Hello',null:null,'World':456])", "ct_err:expr:map_lit_type:key:[integer?]:[text]")
+        chk("_type_of([123:null,456:789,null:'World'])", "ct_err:expr:map_lit_type:value:[integer?]:[text]")
+        chk("_type_of([null:'Hello','Hi':'World',123:'Bye'])", "ct_err:expr:map_lit_type:key:[text?]:[integer]")
     }
 
     @Test fun testListLiteralOfTuples() {

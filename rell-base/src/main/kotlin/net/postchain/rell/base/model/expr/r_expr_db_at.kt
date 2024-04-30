@@ -16,6 +16,7 @@ import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_SqlContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 
 class Db_AtFromItem(
@@ -195,7 +196,7 @@ class Db_AtWhatValue_Complex(
 
     override fun combiner(frame: Rt_CallFrame): Rt_AtWhatCombiner {
         val subCombiners = subWhatValues.map { it.combiner(frame) }.toImmList()
-        val dbValueCount = subCombiners.sumBy { it.dbValueCount }
+        val dbValueCount = subCombiners.sumOf { it.dbValueCount }
         return Rt_AtWhatCombiner_Complex(frame, subCombiners, dbValueCount)
     }
 
@@ -357,16 +358,18 @@ class RedDb_AtExprBase(
             joinWhere: ParameterizedSql?,
             b: SqlBuilder,
         ): ParameterizedSql {
+            val actualJoinWhere = if (joinWhere != null || !sqlEntity.isOuter) joinWhere else ParameterizedSql.TRUE
+
             if (!b.isEmpty()) {
                 val sep = when {
-                    joinWhere == null && !sqlEntity.isOuter -> ", "
+                    actualJoinWhere == null -> ", "
                     sqlEntity.isOuter -> " LEFT OUTER JOIN "
                     else -> " JOIN "
                 }
                 b.append(sep)
             }
 
-            val enclose = joinWhere != null && sqlEntity.joins.isNotEmpty()
+            val enclose = actualJoinWhere != null && sqlEntity.joins.isNotEmpty()
             if (enclose) {
                 b.append("(")
             }
@@ -392,9 +395,9 @@ class RedDb_AtExprBase(
                 b.append(")")
             }
 
-            if (joinWhere != null) {
+            if (actualJoinWhere != null) {
                 b.append(" ON ")
-                b.append(joinWhere)
+                b.append(actualJoinWhere)
             }
 
             return b.build()
