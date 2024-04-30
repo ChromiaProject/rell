@@ -181,8 +181,10 @@ internal class KotlinCodeGeneratorTest {
 
     @Test
     fun builtinStructs() {
-        val (_, documents) = generateAndCompile("/builtin", "structs")
+        val (sections, documents) = generateAndCompile("/builtin", "structs")
         val a = documents["/root.kt"]!!.format()
+        assertThat(sections).hasSize(4)
+        assertThat(documents).hasSize(2)
         assertThat(a).contains("class GtxOperation(")
         assertThat(a).contains("class GtxTransactionBody(")
         assertThat(a).contains("class GtxTransaction(")
