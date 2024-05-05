@@ -496,7 +496,7 @@ class S_ImportDefinition(
 
     companion object {
         private val ANONYMOUS_IMPORT_RESTRICTIONS = C_FeatureRestrictions.make(
-            RellVersions.SINCE_NOW,
+            "0.13.12",
             "anonymous_import" toCodeMsg "Anonymous imports",
         )
     }
