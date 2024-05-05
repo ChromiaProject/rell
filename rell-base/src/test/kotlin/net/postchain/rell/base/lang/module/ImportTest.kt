@@ -729,7 +729,7 @@ class ImportTest: BaseRellTest(false) {
 
     @Test fun testAnonymousImportVersionControl() {
         file("lib.rell", "module; @extendable function f(): list<text>;")
-        chkVerCt("import _: lib;", RellVersions.SINCE_NOW, "VER:feature:anonymous_import")
+        chkVerCt("import _: lib;", "0.13.12", "VER:feature:anonymous_import")
     }
 
     private fun chkImport(imp: String, code: String, exp: String) {

@@ -64,7 +64,7 @@ class VersionControlTest: BaseRellTest(false) {
     }
 
     private fun chkNameReserved(name: String) {
-        val sinceVer = RellVersions.SINCE_NOW
+        val sinceVer = "0.13.12"
         val prevVer = RellTestUtils.getPrevVersion(sinceVer)
 
         tst.compatibilityVer(RellVersions.VERSION_STR)

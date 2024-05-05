@@ -125,7 +125,7 @@ class S_Name(val pos: S_Pos, private val rName: R_Name): S_Node() {
             }
             .toImmMap()
 
-        private const val NEW_KWS_SINCE = RellVersions.SINCE_NOW
+        private const val NEW_KWS_SINCE = "0.13.12"
 
         private val NEW_KEYWORDS: Map<R_Name, C_ReservedName> =
             mapOf(
