@@ -1,0 +1,18 @@
+module;
+
+operation trailingCommeSingleLine(arg1: integer, arg2: text,) {
+    val val1 = 1;
+    val val2 = "val2";
+}
+
+operation tralingCommaMultiLine(arg1:
+integer, arg2:
+text  ,
+
+
+
+
+) {
+val val1 = 1;
+val val2 = "val2";
+}

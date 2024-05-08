@@ -1,0 +1,75 @@
+function trailingComma() {
+    min(5, 4,);
+    min(
+        5,
+        4,
+    );
+
+    val user4b = user4 @* { .first_name == "", .age == 2, } ( @sort .salary, .first_name, );
+    val user4b = user4 @* {
+        .first_name == "",
+        .age == 2,
+    } (
+        @sort .salary,
+        .first_name,
+    );
+
+    val user4b = user4 @* { .first_name == "", } ( @sort(arg, arg2,) .salary, );
+    val user4b = user4 @* { .first_name == "", } (
+        @sort(
+            arg,
+            arg2,
+        ) .salary,
+    );
+
+    a_chain.with_method_calls.call0("arg0",).call1("arg1", "arg2",).call2("arg1, arg2",);
+    a_chain.with_method_calls.call0(
+            "arg0",
+        ).call1(
+            "arg1",
+            "arg2",
+        ).call2("arg1", "arg2",);
+
+    components_structure.put(
+        c
+            .component_def(
+                componentStructure,
+                c.component_req(
+                    is_required = true,
+                    is_mutable = true,
+                ),
+            ),
+    );
+    components_structure.put(c.component_def(componentStructure, c.component_req(is_required = true, is_mutable = true,),),);
+
+    create user1 ( first_name = "name", salary = 1, );
+    create user1 (
+        first_name = "name",
+        salary = 1,
+    );
+
+    update user1 @? { .first_name == "Chromia", .salary == 0, } ( salary = 100, );
+    update user1 @? {
+        .first_name == "Chromia",
+        .salary == 0,
+    } (
+        salary = 100,
+    );
+
+    delete user4 @? { .first_name == "Chromia", .last_name == "last", .salary == 1, .age == 100, };
+    delete user4 @? {
+        .first_name == "Chromia",
+        .last_name == "last",
+        .salary == 1,
+        .age == 100,
+    };
+
+    struct<product_order>(order = order, product = $, quantity = customer_order.products @ { $.id == .id, }.quantity,);
+    struct<product_order>(
+        order = order,
+        product = $,
+        quantity = customer_order.products @ {
+            $.id == .id,
+        }.quantity,
+    );
+}

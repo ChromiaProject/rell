@@ -9,6 +9,10 @@ import assertk.assertions.isNotEmpty
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import net.postchain.rell.toolbox.core.RellVersionInfo
 import org.eclipse.lsp4j.DefinitionParams
 import org.eclipse.lsp4j.DidChangeTextDocumentParams
@@ -36,10 +40,6 @@ import org.testcontainers.shaded.org.awaitility.Awaitility.await
 import util.TestClient
 import util.TestClientServerLauncher
 import util.TestServerModule
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 
 class RellLanguageServerTest {
     private lateinit var clientServerLauncher: TestClientServerLauncher
@@ -91,7 +91,6 @@ class RellLanguageServerTest {
     @Test
     fun `semanticTokensFull returns the tokens within the file`(@TempDir tempDir: Path) {
         val file = createSimpleRellFileInDirectory(tempDir)
-
         val semanticTokenParams = createSemanticTokensParams(file)
         val response = server.semanticTokensFull(semanticTokenParams)
         await().until { testClient.diagnostics.isNotEmpty() }
@@ -411,6 +410,7 @@ class RellLanguageServerTest {
                 """
                 module;
                 function foo {}
+                function bar() {}
             """.trimIndent()
             )
         }

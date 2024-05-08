@@ -10,6 +10,7 @@ import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_Parser
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
+import net.postchain.rell.base.utils.ide.IdeCodeSnippet
 import net.postchain.rell.base.utils.ide.IdeDirApi
 import net.postchain.rell.toolbox.core.compiler.RellcAPI.validateSimple
 import org.antlr.v4.runtime.CharStreams
@@ -46,7 +47,7 @@ class RellParserTest {
         val syntaxErrorCollector = SyntaxErrorCollector()
         parser.parse(code, listOf(), listOf(syntaxErrorCollector))
 
-        val expectedError = SyntaxError("extraneous input '#' expecting '('",1, 14, "<unknown>")
+        val expectedError = SyntaxError("extraneous input '#' expecting '('", 1, 14, "<unknown>")
         assertThat(syntaxErrorCollector.errors).containsExactly(expectedError)
     }
 
@@ -55,8 +56,8 @@ class RellParserTest {
         val testCases = TestCaseSnippets.getTestCases()
         val parser = AntlrRellParser()
 
-        testCases.forEach { testCase ->
-            for (file in testCase.snippet.files) {
+        testCases.forEach { testCaseSnippet ->
+            for (file in testCaseSnippet.files) {
                 try {
                     compareAntlrAndCompilerParsedAst(file.value, file.key, parser)
                 } catch (error: C_CommonError) {
@@ -88,10 +89,10 @@ class RellParserTest {
         }
     }
 
-    private fun validateTestCase(testCase: RellTestCaseSnippet) {
-        testCase.snippet.files.forEach { file ->
+    private fun validateTestCase(testCaseSnippet: IdeCodeSnippet) {
+        testCaseSnippet.files.forEach { file ->
             val actualNumberOfErrors = tryParsing(file.value)
-            val expectedErrors = testCase.snippet.parsing[file.key] ?: listOf()
+            val expectedErrors = testCaseSnippet.parsing[file.key] ?: listOf()
 
             val parsedWithoutErrors = actualNumberOfErrors == 0
             val shouldNotHaveErrors = expectedErrors.isEmpty()

@@ -1,0 +1,35 @@
+module;
+
+function trailingCommeSingleLine(arg1: integer, arg2: text,) {
+val val1 = 1;
+val val2 = "val2";
+}
+
+function tralingCommaMultiLine(arg1:
+integer, arg2:
+text  ,
+
+
+
+
+) {
+val val1 = 1;
+val val2 = "val2";
+}
+
+function tralingComma() {
+    val acc_data = trailing( accounts.serialize_rules( [less_than(block_height(100 , )  ,  )  ,  ]  , )  , );
+    val acc_data = trailing (
+        accounts.serialize_rules(
+            [less_than(block_height(
+                        100
+                        ,
+                        )
+                    ,
+                    )
+            ,
+            ]
+        , )
+    , );
+
+}

@@ -1,0 +1,22 @@
+
+
+entity bar {
+    key mutable my_key : text = "hej" , my_key2 : integer = 2 , ;
+}
+
+entity foo {
+    key mutable my_key : text = "hej"
+        , my_key2 : integer = 2
+, ;
+}
+
+entity foobar( a ,  b ,   ) {
+    name;
+}
+
+entity foobar2(
+    a  ,
+    b  ,
+) {
+    name;
+}

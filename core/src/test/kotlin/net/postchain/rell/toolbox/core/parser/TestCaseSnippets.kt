@@ -1,21 +1,21 @@
 package net.postchain.rell.toolbox.core.parser
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import net.postchain.rell.base.utils.ide.IdeCodeSnippet
 import java.io.File
+import net.postchain.rell.base.utils.ide.IdeCodeSnippet
 
-class RellTestCaseSnippet(val file: File, val snippet: IdeCodeSnippet)
 
 object TestCaseSnippets {
     private val testDataPath = "test-cases"
 
-    fun getTestCases(): List<RellTestCaseSnippet> {
+    fun getTestCases(): List<IdeCodeSnippet> {
         val mapper = jacksonObjectMapper()
-        return getTestCaseFiles().flatMap { file ->
-            mapper.readTree(file).map { jsonNode ->
-                RellTestCaseSnippet(file, IdeCodeSnippet.deserialize(jsonNode.toString()))
-            }
+
+        val cases = getTestCaseFiles()
+        val caseNodes = cases.flatMap { file ->
+            mapper.readTree(file)
         }
+        return IdeCodeSnippet.deserialize(caseNodes.toString())
     }
 
     private fun getTestCaseFiles(): List<File> {
