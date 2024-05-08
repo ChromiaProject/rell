@@ -133,15 +133,31 @@ ruleX_Name:
 
 // Rule X_AnnotationArgs
 ruleX_AnnotationArgs:
-	'('
-	(
-		ruleX_AnnotationArg
-		(
-			','
-			ruleX_AnnotationArg
-		)*
-	)?
+	ruleX_CommaSeparated_7
+;
+
+// Rule X_CommaSeparated_7
+ruleX_CommaSeparated_7:
+	ruleX_tkLPAR
+	ruleX_CommaSeparated_6
+	?
 	')'
+;
+
+// Rule X_tkLPAR
+ruleX_tkLPAR:
+	'('
+;
+
+// Rule X_CommaSeparated_6
+ruleX_CommaSeparated_6:
+	ruleX_AnnotationArg
+	(
+		','
+		ruleX_AnnotationArg
+	)*
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_AnnotationArg
@@ -227,6 +243,11 @@ ruleX_QualifiedName:
 	)*
 ;
 
+// Rule X_tkCOMMA
+ruleX_tkCOMMA:
+	','
+;
+
 // Rule X_tkMODULE
 ruleX_tkMODULE:
 	'module'
@@ -289,13 +310,25 @@ ruleX_EntityKeyword_1: 'class';
 
 // Rule X_EntityAnnotations
 ruleX_EntityAnnotations:
-	'('
+	ruleX_CommaSeparated_10
+;
+
+// Rule X_CommaSeparated_10
+ruleX_CommaSeparated_10:
+	ruleX_tkLPAR
+	ruleX_CommaSeparated_9
+	')'
+;
+
+// Rule X_CommaSeparated_9
+ruleX_CommaSeparated_9:
 	ruleX_Name
 	(
 		','
 		ruleX_Name
 	)*
-	')'
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_EntityBody
@@ -386,11 +419,6 @@ ruleX_ComplexNullableType:
 	'?'
 ;
 
-// Rule X_tkLPAR
-ruleX_tkLPAR:
-	'('
-;
-
 // Rule X_TypeRef
 ruleX_TypeRef:
 	ruleX_Type
@@ -398,17 +426,28 @@ ruleX_TypeRef:
 
 // Rule X_FunctionType
 ruleX_FunctionType:
-	ruleX_tkLPAR
-	(
-		ruleX_TypeRef
-		(
-			','
-			ruleX_TypeRef
-		)*
-	)?
-	')'
+	ruleX_CommaSeparated_5
 	'->'
 	ruleX_TypeRef
+;
+
+// Rule X_CommaSeparated_5
+ruleX_CommaSeparated_5:
+	ruleX_tkLPAR
+	ruleX_CommaSeparated_4
+	?
+	')'
+;
+
+// Rule X_CommaSeparated_4
+ruleX_CommaSeparated_4:
+	ruleX_TypeRef
+	(
+		','
+		ruleX_TypeRef
+	)*
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_BasicType
@@ -436,13 +475,30 @@ ruleX_PrimaryType:
 // Rule X_GenericType
 ruleX_GenericType:
 	ruleX_QualifiedName
+	ruleX_CommaSeparated_3
+;
+
+// Rule X_CommaSeparated_3
+ruleX_CommaSeparated_3:
+	ruleX_tkLT
+	ruleX_CommaSeparated_2
+	'>'
+;
+
+// Rule X_tkLT
+ruleX_tkLT:
 	'<'
+;
+
+// Rule X_CommaSeparated_2
+ruleX_CommaSeparated_2:
 	ruleX_TypeRef
 	(
 		','
 		ruleX_TypeRef
 	)*
-	'>'
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_NameType
@@ -452,11 +508,25 @@ ruleX_NameType:
 
 // Rule X_TupleType
 ruleX_TupleType:
+	ruleX_CommaSeparated_1
+;
+
+// Rule X_CommaSeparated_1
+ruleX_CommaSeparated_1:
 	ruleX_tkLPAR
-	ruleX_TupleTypeField
-	ruleX_TupleTypeTail
-	?
+	ruleX_CommaSeparated_0
 	')'
+;
+
+// Rule X_CommaSeparated_0
+ruleX_CommaSeparated_0:
+	ruleX_TupleTypeField
+	(
+		','
+		ruleX_TupleTypeField
+	)*
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_TupleTypeField
@@ -466,18 +536,6 @@ ruleX_TupleTypeField:
 		':'
 	)?
 	ruleX_TypeRef
-;
-
-// Rule X_TupleTypeTail
-ruleX_TupleTypeTail:
-	','
-	(
-		ruleX_TupleTypeField
-		(
-			','
-			ruleX_TupleTypeField
-		)*
-	)?
 ;
 
 // Rule X_VirtualType
@@ -621,7 +679,7 @@ ruleX_BaseExprHead:
 		    |
 		ruleX_NullLiteralExpr
 		    |
-		ruleX_ParenthesesExpr
+		ruleX_TupleExpr
 		    |
 		ruleX_CreateExpr
 		    |
@@ -663,15 +721,26 @@ ruleX_BaseExprTailCall:
 
 // Rule X_CallArgs
 ruleX_CallArgs:
-	'('
-	(
-		ruleX_CallArg
-		(
-			','
-			ruleX_CallArg
-		)*
-	)?
+	ruleX_CommaSeparated_28
+;
+
+// Rule X_CommaSeparated_28
+ruleX_CommaSeparated_28:
+	ruleX_tkLPAR
+	ruleX_CommaSeparated_27
+	?
 	')'
+;
+
+// Rule X_CommaSeparated_27
+ruleX_CommaSeparated_27:
+	ruleX_CallArg
+	(
+		','
+		ruleX_CallArg
+	)*
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_CallArg
@@ -703,14 +772,25 @@ ruleX_AtExpr:
 
 // Rule X_AtExprFrom
 ruleX_AtExprFrom:
+	ruleX_CommaSeparated_16
+;
+
+// Rule X_CommaSeparated_16
+ruleX_CommaSeparated_16:
 	ruleX_tkLPAR
+	ruleX_CommaSeparated_15
+	')'
+;
+
+// Rule X_CommaSeparated_15
+ruleX_CommaSeparated_15:
 	ruleX_AtExprFromItem
 	(
 		','
 		ruleX_AtExprFromItem
 	)*
-	','?
-	')'
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_AtExprFromItem
@@ -770,15 +850,26 @@ ruleX_tkPLUS:
 
 // Rule X_AtExprWhere
 ruleX_AtExprWhere:
-	'{'
-	(
-		ruleX_ExpressionRef
-		(
-			','
-			ruleX_ExpressionRef
-		)*
-	)?
+	ruleX_CommaSeparated_20
+;
+
+// Rule X_CommaSeparated_20
+ruleX_CommaSeparated_20:
+	ruleX_tkLCURL
+	ruleX_CommaSeparated_19
+	?
 	'}'
+;
+
+// Rule X_CommaSeparated_19
+ruleX_CommaSeparated_19:
+	ruleX_ExpressionRef
+	(
+		','
+		ruleX_ExpressionRef
+	)*
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_AtExprWhat
@@ -807,13 +898,25 @@ ruleX_tkDOT:
 
 // Rule X_AtExprWhatComplex
 ruleX_AtExprWhatComplex:
+	ruleX_CommaSeparated_18
+;
+
+// Rule X_CommaSeparated_18
+ruleX_CommaSeparated_18:
 	ruleX_tkLPAR
+	ruleX_CommaSeparated_17
+	')'
+;
+
+// Rule X_CommaSeparated_17
+ruleX_CommaSeparated_17:
 	ruleX_AtExprWhatComplexItem
 	(
 		','
 		ruleX_AtExprWhatComplexItem
 	)*
-	')'
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_AtExprWhatComplexItem
@@ -859,13 +962,27 @@ ruleX_AttrExpr:
 	ruleX_Name
 ;
 
-// Rule X_ParenthesesExpr
-ruleX_ParenthesesExpr:
+// Rule X_TupleExpr
+ruleX_TupleExpr:
+	ruleX_CommaSeparated_14
+;
+
+// Rule X_CommaSeparated_14
+ruleX_CommaSeparated_14:
 	ruleX_tkLPAR
-	ruleX_TupleExprField
-	ruleX_TupleExprTail
-	?
+	ruleX_CommaSeparated_13
 	')'
+;
+
+// Rule X_CommaSeparated_13
+ruleX_CommaSeparated_13:
+	ruleX_TupleExprField
+	(
+		','
+		ruleX_TupleExprField
+	)*
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_TupleExprField
@@ -882,36 +999,40 @@ ruleX_tkASSIGN:
 	'='
 ;
 
-// Rule X_TupleExprTail
-ruleX_TupleExprTail:
-	','
-	(
-		ruleX_TupleExprField
-		(
-			','
-			ruleX_TupleExprField
-		)*
-	)?
-;
-
 // Rule X_CreateExpr
 ruleX_CreateExpr:
 	ruleX_tkCREATE
 	ruleX_QualifiedName
-	'('
-	(
-		ruleX_CreateExprArg
-		(
-			','
-			ruleX_CreateExprArg
-		)*
-	)?
-	')'
+	ruleX_CreateExprArgs
 ;
 
 // Rule X_tkCREATE
 ruleX_tkCREATE:
 	'create'
+;
+
+// Rule X_CreateExprArgs
+ruleX_CreateExprArgs:
+	ruleX_CommaSeparated_26
+;
+
+// Rule X_CommaSeparated_26
+ruleX_CommaSeparated_26:
+	ruleX_tkLPAR
+	ruleX_CommaSeparated_25
+	?
+	')'
+;
+
+// Rule X_CommaSeparated_25
+ruleX_CommaSeparated_25:
+	ruleX_CreateExprArg
+	(
+		','
+		ruleX_CreateExprArg
+	)*
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_CreateExprArg
@@ -926,20 +1047,31 @@ ruleX_CreateExprArg:
 
 // Rule X_ListLiteralExpr
 ruleX_ListLiteralExpr:
+	ruleX_CommaSeparated_22
+;
+
+// Rule X_CommaSeparated_22
+ruleX_CommaSeparated_22:
 	ruleX_tkLBRACK
-	(
-		ruleX_ExpressionRef
-		(
-			','
-			ruleX_ExpressionRef
-		)*
-	)?
+	ruleX_CommaSeparated_21
+	?
 	']'
 ;
 
 // Rule X_tkLBRACK
 ruleX_tkLBRACK:
 	'['
+;
+
+// Rule X_CommaSeparated_21
+ruleX_CommaSeparated_21:
+	ruleX_ExpressionRef
+	(
+		','
+		ruleX_ExpressionRef
+	)*
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_EmptyMapLiteralExpr
@@ -951,13 +1083,25 @@ ruleX_EmptyMapLiteralExpr:
 
 // Rule X_NonEmptyMapLiteralExpr
 ruleX_NonEmptyMapLiteralExpr:
+	ruleX_CommaSeparated_24
+;
+
+// Rule X_CommaSeparated_24
+ruleX_CommaSeparated_24:
 	ruleX_tkLBRACK
+	ruleX_CommaSeparated_23
+	']'
+;
+
+// Rule X_CommaSeparated_23
+ruleX_CommaSeparated_23:
 	ruleX_MapLiteralExprEntry
 	(
 		','
 		ruleX_MapLiteralExprEntry
 	)*
-	']'
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_MapLiteralExprEntry
@@ -1111,6 +1255,7 @@ ruleX_WhenConditionExpr:
 		','
 		ruleX_ExpressionRef
 	)*
+	','?
 ;
 
 // Rule X_WhenConditionElse
@@ -1197,12 +1342,19 @@ ruleX_tkIN:
 // Rule X_RelKeyIndexClause
 ruleX_RelKeyIndexClause:
 	ruleX_KeyIndexKind
+	ruleX_CommaSeparated_8
+	';'
+;
+
+// Rule X_CommaSeparated_8
+ruleX_CommaSeparated_8:
 	ruleX_BaseAttributeDefinition
 	(
 		','
 		ruleX_BaseAttributeDefinition
 	)*
-	';'
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_KeyIndexKind
@@ -1263,17 +1415,7 @@ ruleX_StructKeyword_1: 'record';
 ruleX_EnumDef:
 	ruleX_tkENUM
 	ruleX_Name
-	'{'
-	(
-		ruleX_Name
-		(
-			','
-			ruleX_Name
-		)*
-	)?
-	ruleX_tkCOMMA
-	?
-	'}'
+	ruleX_CommaSeparated_12
 ;
 
 // Rule X_tkENUM
@@ -1281,9 +1423,23 @@ ruleX_tkENUM:
 	'enum'
 ;
 
-// Rule X_tkCOMMA
-ruleX_tkCOMMA:
-	','
+// Rule X_CommaSeparated_12
+ruleX_CommaSeparated_12:
+	ruleX_tkLCURL
+	ruleX_CommaSeparated_11
+	?
+	'}'
+;
+
+// Rule X_CommaSeparated_11
+ruleX_CommaSeparated_11:
+	ruleX_Name
+	(
+		','
+		ruleX_Name
+	)*
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_FunctionDef
@@ -1291,15 +1447,7 @@ ruleX_FunctionDef:
 	ruleX_tkFUNCTION
 	ruleX_QualifiedName
 	?
-	'('
-	(
-		ruleX_FormalParameter
-		(
-			','
-			ruleX_FormalParameter
-		)*
-	)?
-	')'
+	ruleX_FormalParameters
 	(
 		':'
 		ruleX_Type
@@ -1310,6 +1458,30 @@ ruleX_FunctionDef:
 // Rule X_tkFUNCTION
 ruleX_tkFUNCTION:
 	'function'
+;
+
+// Rule X_FormalParameters
+ruleX_FormalParameters:
+	ruleX_CommaSeparated_36
+;
+
+// Rule X_CommaSeparated_36
+ruleX_CommaSeparated_36:
+	ruleX_tkLPAR
+	ruleX_CommaSeparated_35
+	?
+	')'
+;
+
+// Rule X_CommaSeparated_35
+ruleX_CommaSeparated_35:
+	ruleX_FormalParameter
+	(
+		','
+		ruleX_FormalParameter
+	)*
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_FormalParameter
@@ -1445,13 +1617,25 @@ ruleX_SimpleVarDeclarator:
 
 // Rule X_TupleVarDeclarator
 ruleX_TupleVarDeclarator:
+	ruleX_CommaSeparated_30
+;
+
+// Rule X_CommaSeparated_30
+ruleX_CommaSeparated_30:
 	ruleX_tkLPAR
+	ruleX_CommaSeparated_29
+	')'
+;
+
+// Rule X_CommaSeparated_29
+ruleX_CommaSeparated_29:
 	ruleX_VarDeclarator
 	(
 		','
 		ruleX_VarDeclarator
 	)*
-	')'
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_AssignStmt
@@ -1591,15 +1775,7 @@ ruleX_tkCONTINUE:
 ruleX_UpdateStmt:
 	ruleX_tkUPDATE
 	ruleX_UpdateTarget
-	'('
-	(
-		ruleX_UpdateWhatExpr
-		(
-			','
-			ruleX_UpdateWhatExpr
-		)*
-	)?
-	')'
+	ruleX_UpdateWhat
 	';'
 ;
 
@@ -1640,13 +1816,25 @@ ruleX_UpdateFromSingle:
 
 // Rule X_UpdateFromMulti
 ruleX_UpdateFromMulti:
+	ruleX_CommaSeparated_32
+;
+
+// Rule X_CommaSeparated_32
+ruleX_CommaSeparated_32:
 	ruleX_tkLPAR
+	ruleX_CommaSeparated_31
+	')'
+;
+
+// Rule X_CommaSeparated_31
+ruleX_CommaSeparated_31:
 	ruleX_UpdateFromItem
 	(
 		','
 		ruleX_UpdateFromItem
 	)*
-	')'
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_UpdateFromItem
@@ -1683,6 +1871,29 @@ ruleX_BaseExprTailNoCallNoAt:
 		    |
 		ruleX_BaseExprTailUnaryPostfixOp
 	)
+;
+
+// Rule X_UpdateWhat
+ruleX_UpdateWhat:
+	ruleX_CommaSeparated_34
+;
+
+// Rule X_CommaSeparated_34
+ruleX_CommaSeparated_34:
+	ruleX_tkLPAR
+	ruleX_CommaSeparated_33
+	')'
+;
+
+// Rule X_CommaSeparated_33
+ruleX_CommaSeparated_33:
+	ruleX_UpdateWhatExpr
+	(
+		','
+		ruleX_UpdateWhatExpr
+	)*
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_UpdateWhatExpr
@@ -1830,15 +2041,25 @@ ruleX_ImportTarget:
 
 // Rule X_ImportTargetExact
 ruleX_ImportTargetExact:
-	'{'
-	(
-		ruleX_ImportTargetExactItem
-		(
-			','
-			ruleX_ImportTargetExactItem
-		)*
-	)?
+	ruleX_CommaSeparated_38
+;
+
+// Rule X_CommaSeparated_38
+ruleX_CommaSeparated_38:
+	ruleX_tkLCURL
+	ruleX_CommaSeparated_37
 	'}'
+;
+
+// Rule X_CommaSeparated_37
+ruleX_CommaSeparated_37:
+	ruleX_ImportTargetExactItem
+	(
+		','
+		ruleX_ImportTargetExactItem
+	)*
+	ruleX_tkCOMMA
+	?
 ;
 
 // Rule X_ImportTargetExactItem
@@ -1863,15 +2084,7 @@ ruleX_ImportTargetWildcard:
 ruleX_OpDef:
 	ruleX_tkOPERATION
 	ruleX_Name
-	'('
-	(
-		ruleX_FormalParameter
-		(
-			','
-			ruleX_FormalParameter
-		)*
-	)?
-	')'
+	ruleX_FormalParameters
 	ruleX_BlockStmt
 ;
 
@@ -1884,15 +2097,7 @@ ruleX_tkOPERATION:
 ruleX_QueryDef:
 	ruleX_tkQUERY
 	ruleX_Name
-	'('
-	(
-		ruleX_FormalParameter
-		(
-			','
-			ruleX_FormalParameter
-		)*
-	)?
-	')'
+	ruleX_FormalParameters
 	(
 		':'
 		ruleX_Type

@@ -109,15 +109,13 @@ class DefinitionComparator : Comparator<S_Definition> {
     }
 
     private fun compareIterables(first: Iterable<*>, second: Iterable<*>, seen: MutableSet<Any>): Boolean {
-        val firstIterator = first.iterator()
-        val secondIterator = second.iterator()
-        while (firstIterator.hasNext()) {
-            if (!secondIterator.hasNext()) {
-                return false
-            }
-            val next1 = firstIterator.next()
-            val next2 = secondIterator.next()
-            if (!deepCompare(next1, next2, seen)) {
+        val firstList = first.toList()
+        val secondList = second.toList()
+        if (firstList.size != secondList.size) {
+            return false
+        }
+        firstList.forEachIndexed { index, element ->
+            if (!deepCompare(element, secondList[index], seen)) {
                 return false
             }
         }

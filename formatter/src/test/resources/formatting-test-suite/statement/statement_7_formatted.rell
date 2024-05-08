@@ -1,0 +1,53 @@
+function trailingStmt() {
+
+    val (a, b, c,) = (1, 2, 3,);
+    val (
+        d,
+        e,
+        f,
+    ) = (
+        1,
+        2,
+        3,
+    );
+
+    val ((d, e,), f, g,) = ((1, 2,), 2, 3,);
+    val (
+        (
+        d,
+        e,
+    ),
+        f,
+        g,
+    ) = (
+        (
+            1,
+            2,
+        ),
+        2,
+        3,
+    );
+
+    val b = ["a": 2, "b": 1,];
+    val b = [
+        "a": 2,
+        "b": 1,
+    ];
+
+    var a = [1, 2, 3, 4,];
+    var a = [
+        1,
+        2,
+        3,
+        4,
+    ];
+
+    val a = map<text, text,>("a", "b",);
+    val a = map<
+        text,
+        text,
+    >(
+        "a",
+        "b",
+    );
+}

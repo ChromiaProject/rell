@@ -2,9 +2,9 @@ package net.postchain.rell.toolbox.formatter
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import org.junit.jupiter.api.Test
 import java.io.File
 import java.net.URI
+import org.junit.jupiter.api.Test
 
 class RellFormatterTest {
 
