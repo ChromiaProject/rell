@@ -10,6 +10,7 @@ import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.core.indexer.calculateChecksum
 import net.postchain.rell.toolbox.core.indexer.createLocationInfo
 import java.util.concurrent.ConcurrentHashMap
+import java.util.stream.Collectors.toMap
 
 class RellIndexSerializer {
 
@@ -61,21 +62,22 @@ class RellIndexSerializer {
     }
 
     private fun fromSerializableResources(serializedResources: List<SerializableResource>) =
-        serializedResources.associate {
-            val symbolInfos = fromSerializableSymbolInfos(it.symbolInfos)
+        serializedResources.associate { res ->
+            val symbolInfos = fromSerializableSymbolInfos(res.symbolInfos)
             val resource = Resource(
-                it.parseTree,
-                it.moduleInfo,
-                it.fileUri,
-                it.workspaceUri,
-                it.ast,
-                it.syntaxErrors,
-                it.semanticErrors,
+                res.parseTree,
+                res.moduleInfo,
+                res.fileUri,
+                res.workspaceUri,
+                res.ast,
+                res.syntaxErrors,
+                res.semanticErrors,
                 symbolInfos,
+                symbolInfos.entries.stream().filter { it.value.defId != null }.collect(toMap({ it.value.defId!! }, { it.key }, { s1,_ -> s1 })),
                 createLocationInfo(symbolInfos),
-                it.checksum
+                res.checksum
             )
-            it.fileUri to resource
+            resource.fileUri to resource
         }
 
     private fun fromSerializableSymbolInfos(symbolInfos: Map<S_Pos, SerializableSymbolInfo>): Map<S_Pos, IdeSymbolInfo> {
