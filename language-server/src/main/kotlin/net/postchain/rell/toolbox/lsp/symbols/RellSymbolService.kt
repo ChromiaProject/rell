@@ -95,10 +95,7 @@ class RellSymbolService {
 
         targetFileUri = URI(workspaceUri.toString() + targetFileUri.toString())
 
-        // TODO: optimization opportunity. lookup instead of iterating
         val pos = indexer.getResource(targetFileUri)!!.userSymbols[symId] as? AntlrPos
-        // TODO: This is hiding a NullPointerException BUG. Fix it!!
-        // Go to definition fails as it.value.defId members have different structure then symId, causing ClassCastException
             ?: return mutableListOf()
         val symbolLength = pos.node.text.length
 
