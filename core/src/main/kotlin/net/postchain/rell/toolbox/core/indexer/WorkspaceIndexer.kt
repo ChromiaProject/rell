@@ -16,7 +16,7 @@ class WorkspaceIndexer(val workspaceUri: URI) {
     private val resourceFactory = RellResourceFactory(workspaceUri, AntlrRellParser())
     private val rellCompilerUtils = RellCompilerUtils()
     var fileUriResourceMap = ConcurrentHashMap<URI, Resource>()
-    var fileMap: ConcurrentHashMap<C_SourcePath, C_SourceFile> = ConcurrentHashMap()
+    private var fileMap: ConcurrentHashMap<C_SourcePath, C_SourceFile> = ConcurrentHashMap()
 
     fun initialFileIndexBuild(cachedIndexer: WorkspaceIndexer? = null) {
         val rellUris = addRellFilesUri()

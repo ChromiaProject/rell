@@ -61,21 +61,22 @@ class RellIndexSerializer {
     }
 
     private fun fromSerializableResources(serializedResources: List<SerializableResource>) =
-        serializedResources.associate {
-            val symbolInfos = fromSerializableSymbolInfos(it.symbolInfos)
+        serializedResources.associate { res ->
+            val symbolInfos = fromSerializableSymbolInfos(res.symbolInfos)
             val resource = Resource(
-                it.parseTree,
-                it.moduleInfo,
-                it.fileUri,
-                it.workspaceUri,
-                it.ast,
-                it.syntaxErrors,
-                it.semanticErrors,
+                res.parseTree,
+                res.moduleInfo,
+                res.fileUri,
+                res.workspaceUri,
+                res.ast,
+                res.syntaxErrors,
+                res.semanticErrors,
                 symbolInfos,
+                symbolInfos.asSequence().filter { it.value.defId != null }.associate { it.value.defId!! to it.key },
                 createLocationInfo(symbolInfos),
-                it.checksum
+                res.checksum
             )
-            it.fileUri to resource
+            resource.fileUri to resource
         }
 
     private fun fromSerializableSymbolInfos(symbolInfos: Map<S_Pos, SerializableSymbolInfo>): Map<S_Pos, IdeSymbolInfo> {

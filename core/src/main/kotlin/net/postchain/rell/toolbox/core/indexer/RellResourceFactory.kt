@@ -61,6 +61,7 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
             antlrParseTree.second,
             compilationResult?.messages ?: listOf(),
             symbolInfo,
+            symbolInfo.asSequence().filter { it.value.defId != null }.associate { it.value.defId!! to it.key },
             locationInfo
         )
     }
