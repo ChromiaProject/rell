@@ -10,7 +10,6 @@ import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.core.indexer.calculateChecksum
 import net.postchain.rell.toolbox.core.indexer.createLocationInfo
 import java.util.concurrent.ConcurrentHashMap
-import java.util.stream.Collectors.toMap
 
 class RellIndexSerializer {
 
@@ -73,7 +72,7 @@ class RellIndexSerializer {
                 res.syntaxErrors,
                 res.semanticErrors,
                 symbolInfos,
-                symbolInfos.entries.stream().filter { it.value.defId != null }.collect(toMap({ it.value.defId!! }, { it.key }, { s1,_ -> s1 })),
+                symbolInfos.asSequence().filter { it.value.defId != null }.associate { it.value.defId!! to it.key },
                 createLocationInfo(symbolInfos),
                 res.checksum
             )

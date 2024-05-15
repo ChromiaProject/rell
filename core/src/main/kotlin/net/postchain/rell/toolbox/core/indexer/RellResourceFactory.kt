@@ -18,7 +18,6 @@ import net.postchain.rell.toolbox.core.parser.SyntaxErrorCollector
 import java.io.File
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
-import java.util.stream.Collectors.toMap
 
 
 class RellResourceFactory(private val workspaceUri: URI, private val parser: AntlrRellParser) {
@@ -62,7 +61,7 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
             antlrParseTree.second,
             compilationResult?.messages ?: listOf(),
             symbolInfo,
-            symbolInfo.entries.stream().filter { it.value.defId != null }.collect(toMap({ it.value.defId!! }, { it.key }, { s1,_ -> s1 })),
+            symbolInfo.asSequence().filter { it.value.defId != null }.associate { it.value.defId!! to it.key },
             locationInfo
         )
     }
