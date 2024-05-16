@@ -70,9 +70,14 @@ class C_ModuleLoader(
         fcMgr.execute()
     }
 
-    fun loadModule(name: R_ModuleName): Boolean {
+    fun loadModule(name: R_ModuleName, includeSubModules: Boolean = false) {
         check(!loadingTestDependencies)
-        return loadModule0(name, true)
+        if (includeSubModules) {
+            discoverModulesTree(name, false)
+            fcMgr.execute()
+        } else {
+            loadModule0(name, true)
+        }
     }
 
     private fun loadModule0(name: R_ModuleName, select: Boolean): Boolean {

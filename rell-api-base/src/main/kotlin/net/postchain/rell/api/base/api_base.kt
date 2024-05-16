@@ -79,6 +79,8 @@ object RellApiCompile {
         val moduleArgs: Map<R_ModuleName, Gtv>,
         /** Submodules of all test modules are compiled in addition to the explicitly specified test modules, when `true`. */
         val includeTestSubModules: Boolean,
+        /** Automatically includes all submodules in the compilation scope **/
+        val includeAppSubModules: Boolean,
         /** Missing module arguments for a module (which defines `module_args`) causes compilation error, when `true`. */
         val moduleArgsMissingError: Boolean,
         /** Mount name conflicts cause compilation error, when `true`. */
@@ -98,6 +100,7 @@ object RellApiCompile {
                 version = RellVersions.VERSION,
                 moduleArgs = immMapOf(),
                 includeTestSubModules = true,
+                includeAppSubModules = false,
                 moduleArgsMissingError = true,
                 mountConflictError = true,
                 appModuleInTestsError = true,
@@ -111,6 +114,7 @@ object RellApiCompile {
             private var version = proto.version
             private var moduleArgs = proto.moduleArgs
             private var includeTestSubModules = proto.includeTestSubModules
+            private var includeAppSubModules = proto.includeAppSubModules
             private var moduleArgsMissingError = proto.moduleArgsMissingError
             private var mountConflictError = proto.mountConflictError
             private var appModuleInTestsError = proto.appModuleInTestsError
@@ -139,6 +143,8 @@ object RellApiCompile {
 
             /** @see [Config.includeTestSubModules] */
             fun includeTestSubModules(v: Boolean) = apply { includeTestSubModules = v }
+            /** @see [Config.includeAppSubModules] */
+            fun includeAppSubModules(v: Boolean) = apply { includeAppSubModules = v }
 
             /** @see [Config.moduleArgsMissingError] */
             fun moduleArgsMissingError(v: Boolean) = apply { moduleArgsMissingError = v }
@@ -160,6 +166,7 @@ object RellApiCompile {
                     version = version,
                     moduleArgs = moduleArgs,
                     includeTestSubModules = includeTestSubModules,
+                    includeAppSubModules = includeAppSubModules,
                     moduleArgsMissingError = moduleArgsMissingError,
                     mountConflictError = mountConflictError,
                     appModuleInTestsError = appModuleInTestsError,
@@ -269,7 +276,7 @@ object RellApiBaseInternal {
         appModules: List<R_ModuleName>?,
         testModules: List<R_ModuleName>,
     ): C_CompilerModuleSelection {
-        return C_CompilerModuleSelection(appModules, testModules, testSubModules = config.includeTestSubModules)
+        return C_CompilerModuleSelection(appModules, testModules, testSubModules = config.includeTestSubModules, appSubModules = config.includeAppSubModules)
     }
 
     private fun validateAllModuleArgs(

@@ -334,9 +334,9 @@ data class C_CompilerOptions(
         @Suppress("UNUSED") fun appModuleInTestsError(v: Boolean) = apply { appModuleInTestsError = v }
         @Suppress("UNUSED") fun useTestDependencyExtensions(v: Boolean) = apply { useTestDependencyExtensions = v }
         @Suppress("UNUSED") fun allowLibNamedArgsAnyVersion(v: Boolean) = apply { allowLibNamedArgsAnyVersion = v }
-        @Suppress("UNISED") fun allowOlderCompatibilityVersion(v: Boolean) = apply { allowOlderCompatibilityVersion = v }
+        @Suppress("UNUSED") fun allowOlderCompatibilityVersion(v: Boolean) = apply { allowOlderCompatibilityVersion = v }
         @Suppress("UNUSED") fun ide(v: Boolean) = apply { ide = v }
-        @Suppress("UNISED") fun ideDocSymbolsEnabled(v: Boolean) = apply { ideDocSymbolsEnabled = v }
+        @Suppress("UNUSED") fun ideDocSymbolsEnabled(v: Boolean) = apply { ideDocSymbolsEnabled = v }
         @Suppress("UNUSED") fun ideDefIdConflictError(v: Boolean) = apply { ideDefIdConflictError = v }
 
         fun build() = C_CompilerOptions(
@@ -366,6 +366,7 @@ class C_CompilerModuleSelection(
     appModules: List<R_ModuleName>?,
     testModules: List<R_ModuleName> = listOf(),
     val testSubModules: Boolean = true,
+    val appSubModules: Boolean = false,
 ) {
     val appModules = appModules?.toImmList()
     val testModules = testModules.toImmList()
@@ -466,7 +467,7 @@ object C_Compiler {
             msgCtx: C_MessageContext,
             sourceDir: C_SourceDir,
             modSel: C_CompilerModuleSelection,
-            symCtxProvider: C_SymbolContextProvider
+            symCtxProvider: C_SymbolContextProvider,
     ): List<C_MidModule> {
         val modLdr = C_ModuleLoader(msgCtx, symCtxProvider, sourceDir, immMapOf())
 
@@ -474,7 +475,7 @@ object C_Compiler {
             modLdr.loadAllModules()
         } else {
             for (moduleName in modSel.appModules) {
-                modLdr.loadModule(moduleName)
+                modLdr.loadModule(moduleName, modSel.appSubModules)
             }
         }
 

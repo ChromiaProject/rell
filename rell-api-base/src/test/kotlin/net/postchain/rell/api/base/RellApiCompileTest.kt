@@ -199,6 +199,19 @@ class RellApiCompileTest: BaseRellApiTest() {
         chkCompileAppMods(config, sourceDir, null, listOf(), "CME:module_args_missing:foo")
     }
 
+
+    @Test fun testCompileAppIncludeAppSubModules() {
+        val sourceDir = C_SourceDir.mapDirOf(
+            "foo/module.rell" to "module;",
+            "foo/bar.rell" to "module; import nonexisting;",
+        )
+
+        var config = configBuilder().includeAppSubModules(true).build()
+        chkCompileAppMods(config, sourceDir, listOf("foo"), listOf(), "CTE:foo/bar.rell:import:not_found:nonexisting")
+        config = defaultConfig
+        chkCompileAppMods(config, sourceDir, listOf("foo"), listOf(), "foo")
+    }
+
     private fun chkCompileAppMods(
         config: RellApiCompile.Config,
         sourceDir: C_SourceDir,
@@ -330,6 +343,30 @@ class RellApiCompileTest: BaseRellApiTest() {
             """{$compVerEntry,$argsEntry,"modules":["foo"],"sources":{$fooEntry},$verEntry}""")
         chkCompileGtv(config, sourceDir, "bar",
             """{$compVerEntry,$argsEntry,"modules":["bar"],"sources":{$barEntry},$verEntry}""")
+    }
+
+    @Test fun testCompileGtvIncludeAppSubModules() {
+        var sourceDir = C_SourceDir.mapDirOf(
+            "foo/module.rell" to "module;",
+            "foo/bar.rell" to "module; import nonexisting;",
+        )
+
+        var config = configBuilder().includeAppSubModules(true).build()
+        chkCompileGtv(config, sourceDir, "foo", "CTE:foo/bar.rell:import:not_found:nonexisting")
+
+        sourceDir = C_SourceDir.mapDirOf(
+            "foo/module.rell" to "module;",
+            "foo/bar.rell" to "module;",
+        )
+        val fooEntry = file(sourceDir, "foo/module.rell")
+        val barEntry = file(sourceDir, "foo/bar.rell")
+        val compVerEntry = """"compilerVersion":"${RellTestUtils.RELL_VER}""""
+        val verEntry = """"version":"${RellTestUtils.RELL_VER}""""
+
+        chkCompileGtv(config, sourceDir, "foo", """{$compVerEntry,"modules":["foo"],"sources":{$barEntry,$fooEntry},$verEntry}""")
+
+        config = defaultConfig
+        chkCompileGtv(config, sourceDir, "foo", """{$compVerEntry,"modules":["foo"],"sources":{$fooEntry},$verEntry}""")
     }
 
     private fun file(sourceDir: C_SourceDir, path: String): String {
