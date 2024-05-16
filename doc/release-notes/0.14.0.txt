@@ -544,3 +544,17 @@ This is useful when having one item per line. Examples:
         123,
         'A',
     );
+30. Runtime: System query "rell.get_mount_names"
+
+New system query added:
+
+    query rell.get_mount_names(kinds: list<text>, modules: list<text>): map<text, list<text>>
+
+Parameter details:
+
+    kinds - can be any combination of "query", "operation", "entity", "object" (empty = all)
+    modules - is a list of modules you want to get the definitions from (empty = all)
+
+Throws an error for faulty kinds and invalid module names. If a module is not found it is ignored.
+
+Return structure is a dictionary map<text, list<text>> where the key is either of "queries", "operations", "entities" or "objects".

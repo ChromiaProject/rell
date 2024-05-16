@@ -327,6 +327,7 @@ object C_Utils {
         simpleName: String,
         type: R_Type,
         fn: R_SysFunction,
+        params: List<R_FunctionParam> = emptyList()
     ): R_QueryDefinition {
         val moduleName = RELL_MODULE_NAME
         val moduleKey = R_ModuleKey(moduleName, null)
@@ -348,7 +349,7 @@ object C_Utils {
         val query = R_QueryDefinition(defBase, mountName)
 
         executor.onPass(C_CompilerPass.EXPRESSIONS) {
-            val body = R_SysQueryBody(type, listOf(), fn)
+            val body = R_SysQueryBody(type, params, fn)
             query.setBody(body)
         }
 
