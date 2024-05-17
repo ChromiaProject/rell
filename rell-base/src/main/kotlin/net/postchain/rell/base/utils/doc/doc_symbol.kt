@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils.doc
@@ -96,8 +96,17 @@ private class DocSymbolName_Local(
     override fun strCode() = simpleName
 }
 
+data class DocSourcePos(
+    val path: String,
+    val line: Int,
+) {
+    fun str() = "$path:$line"
+    override fun toString() = str()
+}
+
 interface DocDefinition {
     val docSymbol: DocSymbol
+    val docSourcePos: DocSourcePos?
 
     fun getDocMember(name: String): DocDefinition? = null
 }
@@ -121,7 +130,7 @@ private object DocSymbolFactory_None: DocSymbolFactory() {
         kind: DocSymbolKind,
         symbolName: DocSymbolName,
         declaration: DocDeclaration,
-        mountName: String?
+        mountName: String?,
     ): DocSymbol {
         return DocSymbol.NONE
     }
@@ -132,7 +141,7 @@ private object DocSymbolFactory_Normal: DocSymbolFactory() {
         kind: DocSymbolKind,
         symbolName: DocSymbolName,
         declaration: DocDeclaration,
-        mountName: String?
+        mountName: String?,
     ): DocSymbol {
         return DocSymbol(
             kind = kind,
@@ -145,12 +154,17 @@ private object DocSymbolFactory_Normal: DocSymbolFactory() {
 }
 
 object DocUtils {
-    fun getDocSymbolByPath(def: DocDefinition, path: List<String>): DocSymbol? {
+    fun getDocDefinitionByPath(def: DocDefinition, path: List<String>): DocDefinition? {
         var curDef = def
         for (name in path) {
             val nextDef = curDef.getDocMember(name)
             curDef = nextDef ?: return null
         }
-        return curDef.docSymbol
+        return curDef
+    }
+
+    fun getDocSymbolByPath(def: DocDefinition, path: List<String>): DocSymbol? {
+        val resDef = getDocDefinitionByPath(def, path)
+        return resDef?.docSymbol
     }
 }

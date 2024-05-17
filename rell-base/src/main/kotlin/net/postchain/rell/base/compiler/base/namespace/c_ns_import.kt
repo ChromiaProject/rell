@@ -166,8 +166,7 @@ private class C_NsImp_InternalImportsProcessor(
         return when (resDef) {
             null -> {}
             is C_NsAsm_Def_Simple -> {
-                val aliasIdeInfo = impDef.names.aliasRefIdeInfo(resDef.item.ideInfo.kind)
-                val item = if (aliasIdeInfo == null) resDef.item else C_NamespaceItem(resDef.item.member, aliasIdeInfo)
+                val item = impDef.names.aliasItem(resDef.item)
                 builder.addDirectDef(name, item)
             }
             is C_NsAsm_Def_Namespace -> {

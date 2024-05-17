@@ -12,6 +12,7 @@ import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.doc.DocDefinition
+import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
@@ -26,6 +27,8 @@ abstract class L_AbstractMember(
 ): DocDefinition {
     val qualifiedName: R_QualifiedName = fullName.qualifiedName
     val simpleName: R_Name = qualifiedName.last
+
+    final override val docSourcePos = null
 }
 
 sealed class L_NamespaceMember(

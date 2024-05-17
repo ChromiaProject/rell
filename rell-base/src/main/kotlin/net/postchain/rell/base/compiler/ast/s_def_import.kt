@@ -240,6 +240,8 @@ object S_DefaultImportTarget: S_ImportTarget() {
         val aliasFullName: R_FullName?,
         val docDeclaration: DocDeclaration,
     ): C_ImportTarget() {
+        private val actualAlias = importAlias?.explicit ?: importAlias?.implicit
+
         override fun moduleIdeDefId() = implicitAliasIdeDefId
 
         override fun aliasIdeInfo(): C_IdeSymbolInfo {
@@ -257,10 +259,9 @@ object S_DefaultImportTarget: S_ImportTarget() {
                 return
             }
 
-            val alias = importAlias.explicit ?: importAlias.implicit
-            if (alias != null) {
-                val ideInfo = ideSymbolInfo(ctx, module, alias)
-                ctx.nsBuilder.addModuleImport(alias, module, ideInfo)
+            if (actualAlias != null) {
+                val ideInfo = ideSymbolInfo(ctx, module, actualAlias)
+                ctx.nsBuilder.addModuleImport(actualAlias, module, ideInfo)
             }
         }
 
@@ -313,9 +314,9 @@ class S_ExactImportTargetItem(
             }
             nsBuilder2.addWildcardImport(targetModule, nameHand.parts)
         } else {
-            val aliasDocSymbol = if (aliasHand == null) null else {
+            val aliasPair = if (aliasHand == null) null else {
                 val qualifiedName = nsBuilder.namespacePath().qualifiedName(aliasHand.rName)
-                makeDocSymbol(
+                aliasHand to makeDocSymbol(
                     ctx.globalCtx.docFactory,
                     docModifiers,
                     importAlias,
@@ -327,7 +328,7 @@ class S_ExactImportTargetItem(
             }
 
             val realAlias = aliasHand ?: nameHand.last
-            nsBuilder.addExactImport(realAlias.name, targetModule, nameHand, aliasHand, aliasDocSymbol)
+            nsBuilder.addExactImport(realAlias.name, targetModule, nameHand, aliasPair)
         }
     }
 

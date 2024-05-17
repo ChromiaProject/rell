@@ -34,7 +34,7 @@ class C_FormalParameter(
     docSymbolGetter: C_LateGetter<Nullable<DocSymbol>>,
     private val docDeclarationGetter: C_LateGetter<DocDeclaration>,
 ) {
-    val rParam = R_FunctionParam(name.rName, type, docSymbolGetter)
+    val rParam = R_FunctionParam(name.rName, type, docSymbolGetter, name.pos.toDocPos())
 
     val docDeclaration: DocDeclaration get() = docDeclarationGetter.get()
 
@@ -49,13 +49,14 @@ class C_FormalParameter(
         val mirIdeInfo = ideInfo.update(kind = mirIdeKind, defId = null)
 
         return R_Attribute(
-                index,
-                name.rName,
-                type,
-                mutable = mutable,
-                keyIndexKind = keyIndexKind,
-                ideInfo = mirIdeInfo,
-                exprGetter = defaultValue?.rGetter
+            index,
+            name.rName,
+            type,
+            mutable = mutable,
+            keyIndexKind = keyIndexKind,
+            ideInfo = mirIdeInfo,
+            docSourcePos = name.pos.toDocPos(),
+            exprGetter = defaultValue?.rGetter,
         )
     }
 }

@@ -22,6 +22,7 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.mtype.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDefinition
+import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 
 enum class L_ParamArity(val mArity: M_ParamArity) {
@@ -53,6 +54,8 @@ class L_FunctionParam(
     val type = mParam.type
     val arity = mParam.arity
     val nullable = mParam.nullable
+
+    override val docSourcePos = null
 
     override fun toString() = strCode()
 

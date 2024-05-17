@@ -51,10 +51,9 @@ private class Ld_TypeDefMember_Constructor(
             pure = lConstructor.pure,
         )
 
-        return DocSymbol(
+        return Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.CONSTRUCTOR,
             symbolName = DocSymbolName.global(typeName.moduleName.str(), typeName.qualifiedName.str()),
-            mountName = null,
             declaration = docDeclaration,
             comment = comment,
         )
@@ -72,10 +71,9 @@ private class Ld_TypeDefMember_SpecialConstructor(
     }
 
     private fun makeDoc(typeName: R_FullName, lMemberHeader: L_MemberHeader): DocSymbol {
-        return DocSymbol(
+        return Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.CONSTRUCTOR,
             symbolName = DocSymbolName.global(typeName.moduleName.str(), typeName.qualifiedName.str()),
-            mountName = null,
             declaration = DocDeclaration_TypeSpecialConstructor(),
             comment = lMemberHeader.docComment,
         )
@@ -165,10 +163,9 @@ private class Ld_TypeDefMember_Function(
             targetDocSymbol.declaration,
         )
 
-        return DocSymbol(
+        return Ld_DocSymbols.docSymbol(
             DocSymbolKind.ALIAS,
             DocSymbolName.global(aliasFullName.moduleName.str(), aliasFullName.qualifiedName.str()),
-            null,
             declaration = docDec,
             comment = memberHeader.docComment,
         )
@@ -292,10 +289,9 @@ class Ld_TypeDef(
         lParent: L_TypeDefParent?,
     ): DocSymbol {
         val docTypeParams = L_TypeUtils.docTypeParams(mTypeParams)
-        return DocSymbol(
+        return Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.TYPE,
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
-            mountName = null,
             declaration = DocDeclaration_Type(fullName.last, docTypeParams, lParent, flags),
             comment = lMemberHeader.docComment,
         )

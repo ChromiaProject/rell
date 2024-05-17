@@ -241,8 +241,9 @@ private class C_ModuleBasis(
         val compiledFiles = extModule.compileFiles(modCtx)
 
         appCtx.executor.onPass(C_CompilerPass.MODULES) {
-            val docSymbol = module.header.docSymbol ?: DocSymbol.NONE
-            val compiled = C_ModuleCompiler.compile(modCtx, compiledFiles, docSymbol, modCtx.nsGetter)
+            val docPos = module.header.docPos
+            val docSymbol = module.header.docSymbol
+            val compiled = C_ModuleCompiler.compile(modCtx, compiledFiles, docPos, docSymbol, modCtx.nsGetter)
             internalsLate.set(C_ModuleInternals(compiled.contents, compiled.importsDescriptor))
             appCtx.addModule(module.descriptor, compiled)
         }

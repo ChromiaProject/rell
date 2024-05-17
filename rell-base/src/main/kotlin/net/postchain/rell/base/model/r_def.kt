@@ -24,6 +24,7 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDefinition
+import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 
 sealed class R_KeyIndex(attribs: List<R_Name>) {
@@ -122,7 +123,10 @@ class R_EntityDefinition(
     }
 }
 
-class R_ObjectDefinition(base: R_DefinitionBase, val rEntity: R_EntityDefinition): R_Definition(base) {
+class R_ObjectDefinition(
+    base: R_DefinitionBase,
+    val rEntity: R_EntityDefinition,
+): R_Definition(base) {
     val type = R_ObjectType(this)
 
     fun insert(frame: Rt_CallFrame) {
@@ -245,7 +249,10 @@ class R_MirrorStructs(
     }
 }
 
-class R_StructDefinition(base: R_DefinitionBase, val struct: R_Struct): R_Definition(base) {
+class R_StructDefinition(
+    base: R_DefinitionBase,
+    val struct: R_Struct,
+): R_Definition(base) {
     val type = struct.type
 
     val hasDefaultConstructor: Boolean by lazy {
@@ -264,6 +271,7 @@ class R_EnumAttr(
     val rName: R_Name,
     val value: Int,
     val ideInfo: C_IdeSymbolInfo,
+    override val docSourcePos: DocSourcePos?,
 ): DocDefinition {
     val name = rName.str
 
@@ -327,10 +335,10 @@ class R_GlobalConstantBody(val type: R_Type, val expr: R_Expr, val value: Rt_Val
 }
 
 class R_GlobalConstantDefinition(
-        base: R_DefinitionBase,
-        val constId: R_GlobalConstantId,
-        private val filePos: R_FilePos,
-        private val bodyGetter: C_LateGetter<R_GlobalConstantBody>
+    base: R_DefinitionBase,
+    val constId: R_GlobalConstantId,
+    private val filePos: R_FilePos,
+    private val bodyGetter: C_LateGetter<R_GlobalConstantBody>,
 ): R_Definition(base) {
     fun evaluate(exeCtx: Rt_ExecutionContext): Rt_Value {
         val body = bodyGetter.get()

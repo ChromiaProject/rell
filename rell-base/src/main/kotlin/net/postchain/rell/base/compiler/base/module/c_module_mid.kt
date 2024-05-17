@@ -149,7 +149,7 @@ class C_MidModuleMember_Namespace(
 
         for ((i, namePart) in qualifiedName.withIndex()) {
             val actualDocModifiers = if (i < qualifiedName.size - 1) DocModifiers.NONE else docModifiers
-            val docSymbol = makeDocSymbol(ctx, namePart.qualifiedName, actualDocModifiers)
+            val docSymbol = makeDocSymbol(ctx, namePart, actualDocModifiers)
             namePart.docSymbolLate.set(Nullable.of(docSymbol), allowEarly = true)
         }
 
@@ -165,9 +165,10 @@ class C_MidModuleMember_Namespace(
 
     private fun makeDocSymbol(
         ctx: C_MidMemberContext,
-        qName: R_QualifiedName,
+        namePart: NamePart,
         docModifiers: DocModifiers,
     ): DocSymbol {
+        val qName = namePart.qualifiedName
         return ctx.modCtx.globalCtx.docFactory.makeDocSymbol(
             kind = DocSymbolKind.NAMESPACE,
             symbolName = DocSymbolName.global(ctx.modCtx.moduleName.str(), qName.str()),

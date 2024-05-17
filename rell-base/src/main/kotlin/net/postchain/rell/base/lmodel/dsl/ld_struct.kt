@@ -70,10 +70,9 @@ class Ld_StructAttribute(
 
     private fun finishDoc(fullName: R_FullName, lMemberHeader: L_MemberHeader, mType: M_Type): DocSymbol {
         val docType = L_TypeUtils.docType(mType)
-        return DocSymbol(
+        return Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.STRUCT_ATTR,
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
-            mountName = null,
             declaration = DocDeclaration_StructAttribute(fullName.last, docType, mutable),
             comment = lMemberHeader.docComment,
         )

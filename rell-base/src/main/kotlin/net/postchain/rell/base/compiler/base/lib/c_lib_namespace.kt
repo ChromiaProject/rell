@@ -6,7 +6,7 @@ package net.postchain.rell.base.compiler.base.lib
 
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceItem
-import net.postchain.rell.base.compiler.base.namespace.C_NsMemberFactory
+import net.postchain.rell.base.compiler.base.namespace.C_LibNsMemberFactory
 import net.postchain.rell.base.compiler.base.namespace.C_SysNsProto
 import net.postchain.rell.base.compiler.base.namespace.C_SysNsProtoBuilder
 import net.postchain.rell.base.compiler.base.utils.C_RFullNamePath
@@ -28,7 +28,7 @@ class C_LibNamespace private constructor(
             b.addMember(name, member)
         }
 
-        val memberFactory = C_NsMemberFactory(namePath)
+        val memberFactory = C_LibNsMemberFactory(namePath)
         for ((name, libNs) in namespaces) {
             libNs.toSysNsProto(b, memberFactory, name)
         }
@@ -119,7 +119,7 @@ class C_LibNamespace private constructor(
                 .mapValues { it.value.build() }
                 .toImmMap()
 
-            val memberFactory = C_NsMemberFactory(basePath)
+            val memberFactory = C_LibNsMemberFactory(basePath)
             val fnMembers = functions.asMap().mapValues { (name, cases) ->
                 createFunctionMember(name, cases.toList(), memberFactory)
             }
@@ -133,7 +133,7 @@ class C_LibNamespace private constructor(
         private fun createFunctionMember(
             simpleName: R_Name,
             cases: List<C_LibFuncCase<V_GlobalFunctionCall>>,
-            memberFactory: C_NsMemberFactory,
+            memberFactory: C_LibNsMemberFactory,
         ): C_NamespaceItem {
             val fullName = basePath.fullName(simpleName)
             val naming = C_MemberNaming.makeFullName(fullName)
@@ -206,7 +206,7 @@ private class C_LibNestedNamespace(
     val ideInfo: C_IdeSymbolInfo,
     val restrictions: C_MemberRestrictions,
 ) {
-    fun toSysNsProto(b: C_SysNsProtoBuilder, memberFactory: C_NsMemberFactory, name: R_Name) {
+    fun toSysNsProto(b: C_SysNsProtoBuilder, memberFactory: C_LibNsMemberFactory, name: R_Name) {
         val ns = namespace.toSysNsProto().toNamespace()
         val member = memberFactory.namespace(name, ns, ideInfo, restrictions)
         b.addMember(name, member)

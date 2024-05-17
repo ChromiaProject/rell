@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.module
@@ -290,6 +290,7 @@ class C_ModuleLoader(
                 midFiles,
                 isDirectory = source.isDirectory(),
                 isTestDependency = loadingTestDependencies,
+                docPos = source.docPos(),
                 docFactory = readerCtx.msgCtx.globalCtx.docFactory,
                 docSymbolLate = docSymbolLate,
             )
@@ -305,6 +306,7 @@ private class C_LoaderModule(
     private val files: List<C_MidModuleFile>,
     private val isDirectory: Boolean,
     private val isTestDependency: Boolean,
+    private val docPos: DocSourcePos,
     private val docFactory: DocSymbolFactory,
     private val docSymbolLate: C_LateInit<Nullable<DocSymbol>>,
 ) {
@@ -321,6 +323,7 @@ private class C_LoaderModule(
             abstract = header?.abstract != null,
             external = header?.external ?: false,
             test = header?.test ?: false,
+            docPos,
             docSymbol,
         )
 

@@ -90,6 +90,7 @@ private class C_EntityAttributeClause(
             mutable = mutable,
             keyIndexKind = keyIndexKind,
             ideInfo = mainHeader.ideInfo,
+            docSourcePos = mainDef.name.pos.toDocPos(),
             exprGetter = exprGetter?.transform { it.rDefaultValue },
         )
 

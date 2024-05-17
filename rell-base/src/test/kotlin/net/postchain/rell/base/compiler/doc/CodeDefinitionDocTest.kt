@@ -1,23 +1,13 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.doc
 
-import net.postchain.rell.base.compiler.base.core.C_CompilationResult
-import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
-import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
-import net.postchain.rell.base.model.R_ModuleName
-import net.postchain.rell.base.testutils.BaseRellTest
-import net.postchain.rell.base.testutils.RellTestUtils
-import net.postchain.rell.base.utils.checkEquals
-import net.postchain.rell.base.utils.doc.DocSymbol
-import net.postchain.rell.base.utils.doc.DocUtils
-import net.postchain.rell.base.utils.immListOf
 import org.junit.Test
 
-class CodeDefinitionDocTest: BaseRellTest(useSql = false) {
+class CodeDefinitionDocTest: BaseCodeDocTest() {
     @Test fun testModule() {
         file("lib.rell", "module;")
         file("mod_abs.rell", "abstract module;")
@@ -480,23 +470,7 @@ class CodeDefinitionDocTest: BaseRellTest(useSql = false) {
     }
 
     private fun chkDoc(code: String, name: String, expectedHeader: String, expectedCode: String) {
-        val sourceDir = tst.createSourceDir(code)
-        val modSel = C_CompilerModuleSelection(null, immListOf(R_ModuleName.EMPTY))
-        val options = C_CompilerOptions.builder().ide(true).ideDocSymbolsEnabled(true).hiddenLib(true).build()
-        val cRes = RellTestUtils.compileApp(sourceDir, modSel, options)
-        checkEquals(cRes.errors, listOf())
-
-        val doc = getDocSymbol(cRes, name)
-        checkNotNull(doc) { "Symbol not found: '$name'" }
-
-        BaseLTest.chkDoc(doc, expectedHeader, expectedCode)
-    }
-
-    private fun getDocSymbol(cRes: C_CompilationResult, name: String): DocSymbol? {
-        val moduleName = R_ModuleName.of(name.substringBefore(":"))
-        val path = if (":" !in name) listOf() else name.substringAfter(":").split(".")
-        val rApp = checkNotNull(cRes.app)
-        val rModule = rApp.moduleMap.getValue(moduleName)
-        return DocUtils.getDocSymbolByPath(rModule, path)
+        val def = getDocDef(code, name)
+        BaseLTest.chkDoc(def.docSymbol, expectedHeader, expectedCode)
     }
 }

@@ -21,6 +21,7 @@ import net.postchain.rell.base.lib.type.V_ObjectExpr
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.doc.DocDefinition
+import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
@@ -92,7 +93,10 @@ sealed class C_NamespaceMember(base: C_NamespaceMemberBase) {
         }
     }
 
-    open fun getDocMember(name: String): DocDefinition? = null
+    protected open fun rDefinition(): R_Definition? = null
+
+    fun getDocSourcePos(): DocSourcePos? = rDefinition()?.docSourcePos
+    open fun getDocMember(name: String): DocDefinition? = rDefinition()?.getDocMember(name)
 
     abstract fun toExpr(ctx: C_ExprContext, qName: C_QualifiedName, ideInfoPtr: C_UniqueDefaultIdeInfoPtr): C_Expr
 }
@@ -211,7 +215,7 @@ private sealed class C_NamespaceMember_Entity(
         return typeDef.compileExpr(ctx.msgCtx, qName.pos)
     }
 
-    final override fun getDocMember(name: String) = entity.getDocMember(name)
+    final override fun rDefinition() = entity
 }
 
 private class C_NamespaceMember_SysEntity(
@@ -252,7 +256,7 @@ private class C_NamespaceMember_Object(
         b.objects.add(obj.moduleLevelName, obj)
     }
 
-    override fun getDocMember(name: String) = obj.getDocMember(name)
+    override fun rDefinition() = obj
 }
 
 private sealed class C_NamespaceMember_Struct(
@@ -291,7 +295,7 @@ private class C_NamespaceMember_UserStruct(
         b.structs.add(struct.structDef.moduleLevelName, struct)
     }
 
-    override fun getDocMember(name: String) = struct.structDef.getDocMember(name)
+    override fun rDefinition() = struct.structDef
 }
 
 private class C_NamespaceMember_Enum(
@@ -316,7 +320,7 @@ private class C_NamespaceMember_Enum(
         b.enums.add(e.moduleLevelName, e)
     }
 
-    override fun getDocMember(name: String) = e.getDocMember(name)
+    override fun rDefinition() = e
 }
 
 class C_FunctionExpr(
@@ -384,7 +388,7 @@ private class C_NamespaceMember_UserFunction(
         b.functions.add(rFn.moduleLevelName, rFn)
     }
 
-    override fun getDocMember(name: String) = userFn.rFunction.getDocMember(name)
+    override fun rDefinition() = userFn.rFunction
 }
 
 private class C_NamespaceMember_Operation(
@@ -406,7 +410,7 @@ private class C_NamespaceMember_Operation(
         b.operations.add(op.moduleLevelName, op)
     }
 
-    override fun getDocMember(name: String) = cOp.rOp.getDocMember(name)
+    override fun rDefinition() = cOp.rOp
 }
 
 private class C_NamespaceMember_Query(
@@ -426,7 +430,7 @@ private class C_NamespaceMember_Query(
         b.queries.add(q.moduleLevelName, q)
     }
 
-    override fun getDocMember(name: String) = cQuery.rQuery.getDocMember(name)
+    override fun rDefinition() = cQuery.rQuery
 }
 
 private class C_NamespaceMember_GlobalConstant(
@@ -445,6 +449,8 @@ private class C_NamespaceMember_GlobalConstant(
         val rDef = cDef.rDef
         b.constants.add(rDef.moduleLevelName, rDef)
     }
+
+    override fun rDefinition() = cDef.rDef
 }
 
 class C_SysNsProto(entries: List<C_NsEntry>, entities: List<C_NsEntry>) {
@@ -460,7 +466,7 @@ class C_SysNsProto(entries: List<C_NsEntry>, entities: List<C_NsEntry>) {
     }
 }
 
-class C_NsMemberFactory(private val basePath: C_RFullNamePath) {
+class C_LibNsMemberFactory(private val basePath: C_RFullNamePath) {
     fun namespace(
         name: R_Name,
         ns: C_Namespace,
@@ -586,10 +592,9 @@ class C_UserNsProtoBuilder(private val assembler: C_NsAsm_ComponentAssembler) {
         alias: C_Name,
         module: C_ModuleKey,
         qNameHand: C_QualifiedNameHandle,
-        aliasHand: C_NameHandle?,
-        aliasDocSymbol: DocSymbol?,
+        aliasPair: Pair<C_NameHandle, DocSymbol>?,
     ) {
-        assembler.addExactImport(alias, module, qNameHand, aliasHand, aliasDocSymbol)
+        assembler.addExactImport(alias, module, qNameHand, aliasPair)
     }
 
     fun addWildcardImport(module: C_ModuleKey, path: List<C_NameHandle>) {

@@ -104,7 +104,7 @@ private class C_LibNamespaceConverter {
         val ideInfo = C_IdeSymbolInfo.direct(ideInfo0.kind, ideInfo0.defId, ideInfo0.link, lMember.docSymbol)
         val restrictions = C_MemberRestrictions.makeLib(lMember, C_DeclarationType.ALIAS, lMember.deprecated)
 
-        val item = C_NamespaceItem(cMember, ideInfo, restrictions)
+        val item = C_NamespaceItem(cMember, ideInfo, restrictions = restrictions)
         b.addMember(lMember.simpleName, item)
     }
 
@@ -160,7 +160,7 @@ private class C_LibNamespaceConverter {
         }
     }
 
-    private fun convertMemberType(mf: C_NsMemberFactory, lMember: L_NamespaceMember_Type): C_NamespaceMember? {
+    private fun convertMemberType(mf: C_LibNsMemberFactory, lMember: L_NamespaceMember_Type): C_NamespaceMember? {
         val libTypeDef = typeDefMap.computeIfAbsent(lMember.typeDef) {
             convertTypeDef(it)
         }
@@ -184,7 +184,7 @@ private class C_LibNamespaceConverter {
         return null
     }
 
-    private fun convertMemberConstant(mf: C_NsMemberFactory, lMember: L_NamespaceMember_Constant): C_NamespaceMember {
+    private fun convertMemberConstant(mf: C_LibNsMemberFactory, lMember: L_NamespaceMember_Constant): C_NamespaceMember {
         val value = lMember.constant.value
         val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_CONSTANT, doc = lMember.docSymbol)
         val restrictions = C_MemberRestrictions.makeLib(lMember, C_DeclarationType.CONSTANT, null)
@@ -192,7 +192,7 @@ private class C_LibNamespaceConverter {
         return mf.property(lMember.simpleName, prop, ideInfo, restrictions)
     }
 
-    private fun convertMemberProperty(mf: C_NsMemberFactory, lMember: L_NamespaceMember_Property): C_NamespaceMember {
+    private fun convertMemberProperty(mf: C_LibNsMemberFactory, lMember: L_NamespaceMember_Property): C_NamespaceMember {
         val rType = L_TypeUtils.getRTypeNotNull(lMember.property.type)
         val ideKind = if (lMember.property.pure) IdeSymbolKind.MEM_SYS_PROPERTY_PURE else IdeSymbolKind.MEM_SYS_PROPERTY
         val ideInfo = C_IdeSymbolInfo.direct(ideKind, doc = lMember.docSymbol)
@@ -219,10 +219,10 @@ private class C_LibNamespaceConverter {
         return convertFunctionCase(member.function, naming, docSymbol, restrictions)
     }
 
-    private fun memberFactory(fullName: R_FullName): C_NsMemberFactory {
+    private fun memberFactory(fullName: R_FullName): C_LibNsMemberFactory {
         val parts = fullName.qualifiedName.parts
         val basePath = C_RFullNamePath.of(fullName.moduleName, parts.subList(0, parts.size - 1))
-        return C_NsMemberFactory(basePath)
+        return C_LibNsMemberFactory(basePath)
     }
 
     companion object {

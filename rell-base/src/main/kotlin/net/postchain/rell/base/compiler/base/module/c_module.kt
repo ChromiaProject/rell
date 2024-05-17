@@ -14,6 +14,7 @@ import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 import java.util.*
 
@@ -22,13 +23,14 @@ class C_ModuleHeader(
     val abstract: Boolean,
     val external: Boolean,
     val test: Boolean,
-    val docSymbol: DocSymbol?,
+    val docPos: DocSourcePos,
+    val docSymbol: DocSymbol,
 )
 
 class C_CompiledRellFile(
-        val path: C_SourcePath,
-        val mntTables: C_MountTables,
-        val importsDescriptor: C_FileImportsDescriptor
+    val path: C_SourcePath,
+    val mntTables: C_MountTables,
+    val importsDescriptor: C_FileImportsDescriptor,
 ) {
     override fun toString() = path.str()
 
@@ -53,9 +55,9 @@ class C_ModuleImportsDescriptor(val key: C_ContainerKey, val name: R_ModuleName,
 }
 
 class C_FileImportsDescriptor(
-        imports: List<C_ImportDescriptor>,
-        abstracts: List<C_AbstractFunctionDescriptor>,
-        overrides: List<C_OverrideFunctionDescriptor>
+    imports: List<C_ImportDescriptor>,
+    abstracts: List<C_AbstractFunctionDescriptor>,
+    overrides: List<C_OverrideFunctionDescriptor>,
 ) {
     val imports = imports.toImmList()
     val abstracts = abstracts.toImmList()
@@ -148,6 +150,7 @@ object C_ModuleCompiler {
     fun compile(
         modCtx: C_ModuleContext,
         files: List<C_CompiledRellFile>,
+        docPos: DocSourcePos,
         docSymbol: DocSymbol,
         nsGetter: Getter<C_Namespace>,
     ): C_CompiledModule {
@@ -181,6 +184,7 @@ object C_ModuleCompiler {
             imports = importedModules,
             moduleArgs = moduleArgs?.structDef,
             docSymbol = docSymbol,
+            docSourcePos = docPos,
             nsGetter = nsGetter,
         )
 

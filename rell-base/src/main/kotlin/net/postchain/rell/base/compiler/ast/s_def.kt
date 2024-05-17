@@ -658,13 +658,16 @@ class S_EnumDefinition(
             attrNameHand.setIdeInfo(attrIdeDef.defInfo)
 
             if (set.add(attrName.str)) {
-                rAttrs.add(R_EnumAttr(attrName.rName, rAttrs.size, attrIdeDef.refInfo))
+                val docPos = attrName.pos.toDocPos()
+                val rAttr = R_EnumAttr(attrName.rName, rAttrs.size, attrIdeDef.refInfo, docPos)
+                rAttrs.add(rAttr)
             } else {
                 ctx.msgCtx.error(attr.pos, "enum_dup:$attr", "Duplicate enum value: '$attrName'")
             }
         }
 
-        val defBase = cDefBase.rBase(R_CallFrame.NONE_INIT_FRAME_GETTER, docGetter)
+        val docPos = cName.pos.toDocPos()
+        val defBase = cDefBase.rBase(R_CallFrame.NONE_INIT_FRAME_GETTER, docPos, docGetter)
         val rEnum = R_EnumDefinition(defBase, rAttrs.toList())
         val memBase = cDefBase.nsMemBase(deprecated = modDeprecated.value(), ideRefInfo = ideDef.refInfo)
         return C_MidModuleMember_Enum(cName, rEnum, memBase)

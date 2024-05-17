@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils.ide
@@ -32,11 +32,11 @@ abstract class IdeFilePath {
 }
 
 class IdeModuleInfo(
-        @JvmField val name: R_ModuleName,
-        @JvmField val directory: Boolean,
-        @JvmField val app: Boolean,
-        @JvmField val test: Boolean,
-        @JvmField val imports: Set<R_ModuleName>
+    @JvmField val name: R_ModuleName,
+    @JvmField val directory: Boolean,
+    @JvmField val app: Boolean,
+    @JvmField val test: Boolean,
+    @JvmField val imports: Set<R_ModuleName>,
 )
 
 class IdeCompilationResult(

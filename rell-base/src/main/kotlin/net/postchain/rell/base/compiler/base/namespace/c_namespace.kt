@@ -15,6 +15,7 @@ import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDefinition
+import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 
 class C_Deprecated(
@@ -120,10 +121,9 @@ class C_NamespaceItem(
     private val restrictions: C_MemberRestrictions = member.restrictions,
 ): DocDefinition {
     override val docSymbol: DocSymbol get() = ideInfo.getIdeInfo().doc ?: DocSymbol.NONE
+    override val docSourcePos: DocSourcePos? get() = member.getDocSourcePos()
 
-    override fun getDocMember(name: String): DocDefinition? {
-        return member.getDocMember(name)
-    }
+    override fun getDocMember(name: String) = member.getDocMember(name)
 
     fun access(msgCtx: C_MessageContext, lazyName: LazyPosString) {
         restrictions.access(msgCtx, lazyName.pos)

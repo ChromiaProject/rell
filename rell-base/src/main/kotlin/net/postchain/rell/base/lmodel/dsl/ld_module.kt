@@ -79,10 +79,9 @@ class Ld_ModuleDslImpl private constructor(
 
         val lNs = nsF.getResult().ns
 
-        val doc = DocSymbol(
+        val doc = Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.MODULE,
             symbolName = DocSymbolName.module(moduleName.str()),
-            mountName = null,
             declaration = DocDeclaration_Module(DocModifiers.NONE),
             comment = null,
         )

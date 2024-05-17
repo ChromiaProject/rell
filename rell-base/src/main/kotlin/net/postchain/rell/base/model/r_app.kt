@@ -15,6 +15,7 @@ import net.postchain.rell.base.model.expr.R_FunctionExtensionsTable
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDefinition
+import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 
 class R_DefinitionName(
@@ -42,14 +43,18 @@ class R_DefinitionBase(
     val defName: R_DefinitionName,
     val cDefName: C_DefinitionName,
     val initFrameGetter: C_LateGetter<R_CallFrame>,
+    val docPos: DocSourcePos?,
     val docGetter: C_LateGetter<DocSymbol>,
 )
 
-abstract class R_Definition(base: R_DefinitionBase): DocDefinition {
+abstract class R_Definition(
+    base: R_DefinitionBase,
+): DocDefinition {
     val defId = base.defId
     val defName = base.defName
     val cDefName = base.cDefName
     val initFrameGetter = base.initFrameGetter
+
     private val docGetter = base.docGetter
 
     val simpleName = defName.simpleName
@@ -57,6 +62,7 @@ abstract class R_Definition(base: R_DefinitionBase): DocDefinition {
     val appLevelName = defName.appLevelName
 
     final override val docSymbol: DocSymbol get() = docGetter.get()
+    final override val docSourcePos = base.docPos
 
     abstract fun toMetaGtv(): Gtv
 
@@ -150,6 +156,7 @@ class R_Attribute(
     val restrictions: C_MemberRestrictions = C_MemberRestrictions.NULL,
     val canSetInCreate: Boolean = true,
     val sqlMapping: String = rName.str,
+    override val docSourcePos: DocSourcePos? = null,
     private val exprGetter: C_LateGetter<R_DefaultValue>?,
 ): DocDefinition {
     val ideName = R_IdeName(rName, ideInfo)
@@ -178,6 +185,7 @@ class R_Attribute(
             mutable = mutable,
             keyIndexKind = keyIndexKind,
             ideInfo = ideInfo,
+            docSourcePos = docSourcePos,
             restrictions = restrictions,
             canSetInCreate = true,
             sqlMapping = sqlMapping,
@@ -220,6 +228,7 @@ class R_Module(
     val imports: Set<R_ModuleName>,
     val moduleArgs: R_StructDefinition?,
     override val docSymbol: DocSymbol,
+    override val docSourcePos: DocSourcePos?,
     private val nsGetter: Getter<C_Namespace>,
 ): DocDefinition {
     val key = R_ModuleKey(name, externalChain)
@@ -233,8 +242,8 @@ class R_Module(
                 "name" to name.str().toGtv()
         )
 
-        if (abstract) map["abstract"] = abstract.toGtv()
-        if (external) map["external"] = external.toGtv()
+        if (abstract) map["abstract"] = true.toGtv()
+        if (external) map["external"] = true.toGtv()
         if (externalChain != null) map["externalChain"] = externalChain.toGtv()
 
         addGtvDefs(map, "entities", entities)
@@ -251,7 +260,7 @@ class R_Module(
 
     private fun addGtvDefs(map: MutableMap<String, Gtv>, key: String, defs: Map<String, R_Definition>) {
         if (defs.isNotEmpty()) {
-            map[key] = defs.keys.sorted().map { it to defs.getValue(it).toMetaGtv() }.toMap().toGtv()
+            map[key] = defs.keys.sorted().associateWith { defs.getValue(it).toMetaGtv() }.toGtv()
         }
     }
 
@@ -305,7 +314,7 @@ class R_App(
     val moduleArgs = moduleArgs.toImmMap()
     val externalChains = externalChains.toImmList()
 
-    val moduleMap = this.modules.map { it.name to it }.toMap().toImmMap()
+    val moduleMap = this.modules.associateBy { it.name }.toImmMap()
 
     init {
         for ((i, c) in this.constants.withIndex()) {
@@ -320,11 +329,11 @@ class R_App(
 
     fun toMetaGtv(): Gtv {
         return mapOf(
-                "modules" to modules.map {
-                    val name = it.name.str()
-                    val fullName = if (it.externalChain == null) name else "$name[${it.externalChain}]"
-                    fullName to it.toMetaGtv()
-                }.toMap().toGtv()
+            "modules" to modules.associate {
+                val name = it.name.str()
+                val fullName = if (it.externalChain == null) name else "$name[${it.externalChain}]"
+                fullName to it.toMetaGtv()
+            }.toGtv()
         ).toGtv()
     }
 }

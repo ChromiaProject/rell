@@ -38,7 +38,7 @@ object Ld_DocSymbols {
         val docParams = header.params.map { it.docSymbol.declaration }.toImmList()
         val dec = DocDeclaration_Function(docModifiers, fullName.last, docHeader, docParams)
 
-        return DocSymbol(
+        return docSymbol(
             kind = DocSymbolKind.FUNCTION,
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
             mountName = null,
@@ -48,7 +48,7 @@ object Ld_DocSymbols {
     }
 
     fun specialFunction(fullName: R_FullName, memberHeader: L_MemberHeader, isStatic: Boolean): DocSymbol {
-        return DocSymbol(
+        return docSymbol(
             kind = DocSymbolKind.FUNCTION,
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
             mountName = null,
@@ -62,7 +62,7 @@ object Ld_DocSymbols {
         val docValue = C_DocUtils.docValue(rValue)
         val dec = DocDeclaration_Constant(DocModifiers.NONE, fullName.last, docType, docValue)
 
-        return DocSymbol(
+        return docSymbol(
             kind = DocSymbolKind.CONSTANT,
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
             mountName = null,
@@ -73,12 +73,28 @@ object Ld_DocSymbols {
 
     fun property(fullName: R_FullName, memberHeader: L_MemberHeader, mType: M_Type, pure: Boolean): DocSymbol {
         val docType = L_TypeUtils.docType(mType)
-        return DocSymbol(
+        return docSymbol(
             kind = DocSymbolKind.PROPERTY,
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
             mountName = null,
             declaration = DocDeclaration_Property(fullName.last, docType, pure),
             comment = memberHeader.docComment,
+        )
+    }
+
+    fun docSymbol(
+        kind: DocSymbolKind,
+        symbolName: DocSymbolName,
+        declaration: DocDeclaration,
+        comment: DocComment?,
+        mountName: String? = null,
+    ): DocSymbol {
+        return DocSymbol(
+            kind = kind,
+            symbolName = symbolName,
+            mountName = mountName,
+            declaration = declaration,
+            comment = comment,
         )
     }
 }

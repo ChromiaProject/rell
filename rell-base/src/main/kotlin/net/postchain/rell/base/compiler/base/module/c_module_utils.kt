@@ -16,6 +16,7 @@ import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocModifiers
+import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.*
 
@@ -501,6 +502,7 @@ sealed class C_ModuleSource(protected val appCtx: S_AppContext, val moduleName: 
 
     abstract fun isDirectory(): Boolean
     abstract fun idePath(): IdeFilePath
+    abstract fun docPos(): DocSourcePos
 
     protected abstract fun compileHeader0(): C_SourceModuleHeader?
     protected abstract fun compile0(modCtx: S_ModuleContext): List<C_MidModuleFile>
@@ -510,12 +512,13 @@ sealed class C_ModuleSource(protected val appCtx: S_AppContext, val moduleName: 
 }
 
 class C_FileModuleSource(
-        appCtx: S_AppContext,
-        moduleName: R_ModuleName,
-        val file: C_ParsedRellFile,
+    appCtx: S_AppContext,
+    moduleName: R_ModuleName,
+    val file: C_ParsedRellFile,
 ): C_ModuleSource(appCtx, moduleName) {
     override fun isDirectory() = false
     override fun idePath() = file.idePath
+    override fun docPos() = file.docPos
 
     override fun compileHeader0(): C_SourceModuleHeader? {
         val symCtx = appCtx.symCtxProvider.getSymbolContext(file.path)
@@ -530,11 +533,11 @@ class C_FileModuleSource(
 }
 
 class C_DirModuleSource(
-        appCtx: S_AppContext,
-        moduleName: R_ModuleName,
-        val path: C_SourcePath,
-        files: List<C_ParsedRellFile>,
-        private val mainFile: C_ParsedRellFile?,
+    appCtx: S_AppContext,
+    moduleName: R_ModuleName,
+    val path: C_SourcePath,
+    files: List<C_ParsedRellFile>,
+    private val mainFile: C_ParsedRellFile?,
 ): C_ModuleSource(appCtx, moduleName) {
     private val files = files.sortedBy { it.path }.toImmList()
 
@@ -542,10 +545,11 @@ class C_DirModuleSource(
         check(this.files.isNotEmpty())
     }
 
-    private val idePath = mainFile?.idePath ?: this.files.first().idePath
+    private val defaultFile = mainFile ?: this.files.first()
 
     override fun isDirectory() = true
-    override fun idePath() = idePath
+    override fun idePath() = defaultFile.idePath
+    override fun docPos() = defaultFile.docPos
 
     override fun compileHeader0(): C_SourceModuleHeader? {
         mainFile ?: return null
@@ -564,6 +568,8 @@ class C_ParsedRellFile(
     val idePath: IdeFilePath,
     private val ast: S_RellFile?,
 ) {
+    val docPos: DocSourcePos = DocSourcePos(path.str(), 1)
+
     fun compileHeader(modifierCtx: C_ModifierContext): C_SourceModuleHeader? {
         return ast?.compileHeader(modifierCtx)
     }

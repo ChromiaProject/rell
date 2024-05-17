@@ -335,7 +335,7 @@ sealed class C_EntityAttrRef(
                 keyIndexKind = R_KeyIndexKind.KEY,
             )
 
-            return DocSymbol(DocSymbolKind.ENTITY_ATTR, docName, null, docDec, null)
+            return DocSymbol(DocSymbolKind.ENTITY_ATTR, docName, null, docDec, comment = null)
         }
     }
 }

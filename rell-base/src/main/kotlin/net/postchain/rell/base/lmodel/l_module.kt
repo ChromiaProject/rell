@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lmodel
@@ -15,6 +15,8 @@ class L_Module(
     val allImports: List<L_Module>,
     override val docSymbol: DocSymbol,
 ): DocDefinition {
+    override val docSourcePos = null
+
     fun getTypeDef(qualifiedName: String): L_TypeDef {
         val qName = R_QualifiedName.of(qualifiedName)
         return getTypeDef(qName)

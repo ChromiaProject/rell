@@ -10,7 +10,7 @@ import net.postchain.rell.base.compiler.base.def.C_MountTablesBuilder
 import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.compiler.base.module.*
 import net.postchain.rell.base.compiler.base.namespace.C_Namespace
-import net.postchain.rell.base.compiler.base.namespace.C_NsMemberFactory
+import net.postchain.rell.base.compiler.base.namespace.C_LibNsMemberFactory
 import net.postchain.rell.base.compiler.base.namespace.C_SysNsProto
 import net.postchain.rell.base.compiler.base.namespace.C_SysNsProtoBuilder
 import net.postchain.rell.base.compiler.base.utils.*
@@ -141,7 +141,7 @@ class C_SystemDefs private constructor(
         ): C_SystemDefsScope {
             val libScope = C_SystemLibrary.getScope(test, globalCtx.compilerOptions.hiddenLib, extraMod)
 
-            val memberFactory = C_NsMemberFactory(C_RFullNamePath.of(R_ModuleName.EMPTY))
+            val memberFactory = C_LibNsMemberFactory(C_RFullNamePath.of(R_ModuleName.EMPTY))
             val nsBuilder = C_SysNsProtoBuilder()
             nsBuilder.addAll(libScope.nsProto)
 

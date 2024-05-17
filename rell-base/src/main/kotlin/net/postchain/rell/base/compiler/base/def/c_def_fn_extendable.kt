@@ -33,9 +33,9 @@ class C_ExtendableFunctionDescriptor(
 }
 
 class C_FunctionExtensions(
-        val uid: R_ExtendableFunctionUid,
-        val base: R_FunctionExtension?,
-        extensions: List<R_FunctionExtension>
+    val uid: R_ExtendableFunctionUid,
+    val base: R_FunctionExtension?,
+    extensions: List<R_FunctionExtension>,
 ) {
     val extensions = extensions.toImmList()
 
@@ -150,9 +150,9 @@ class C_ExtendableFunctionCompiler(oldState: C_FunctionExtensionsTable?) {
     }
 
     private class C_ExtFnEntry(
-            val id: R_ExtendableFunctionUid,
-            val base: R_FunctionExtension?,
-            exts: List<R_FunctionExtension>
+        val id: R_ExtendableFunctionUid,
+        val base: R_FunctionExtension?,
+        exts: List<R_FunctionExtension>,
     ) {
         val exts = exts.toMutableList()
 

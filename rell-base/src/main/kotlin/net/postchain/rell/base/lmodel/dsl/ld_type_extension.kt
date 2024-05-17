@@ -46,10 +46,9 @@ class Ld_NamespaceMember_TypeExtension(
 
         val docTypeParams = L_TypeUtils.docTypeParams(lTypeDef.mGenericType.params)
         val docSelfType = L_TypeUtils.docType(mSelfType)
-        val docSymbol = DocSymbol(
+        val docSymbol = Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.TYPE_EXTENSION,
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
-            mountName = null,
             declaration = DocDeclaration_TypeExtension(fullName.last, docTypeParams, docSelfType),
             comment = memberHeader.docComment,
         )

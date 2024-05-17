@@ -132,10 +132,10 @@ class C_ParameterDefaultValue(
 
 object C_Utils {
     fun effectiveMemberType(formalType: R_Type, safe: Boolean): R_Type {
-        if (!safe || formalType is R_NullableType || formalType == R_NullType) {
-            return formalType
+        return if (!safe || formalType is R_NullableType || formalType == R_NullType) {
+            formalType
         } else {
-            return R_NullableType(formalType)
+            R_NullableType(formalType)
         }
     }
 
@@ -272,7 +272,7 @@ object C_Utils {
             )
 
             val docGetter = cDefBase.docGetter(C_LateGetter.const(DocDeclaration_Entity(DocModifiers.NONE, simpleName)))
-            cDefBase.rBase(R_CallFrame.NONE_INIT_FRAME_GETTER, docGetter)
+            cDefBase.rBase(R_CallFrame.NONE_INIT_FRAME_GETTER, null, docGetter)
         }
 
         val attrMaker = C_SysAttribute.Maker(rDefBase.defName, docFactory)
@@ -344,7 +344,7 @@ object C_Utils {
         )
 
         val docGetter = cDefBase.docGetter(C_LateGetter.const(DocDeclaration.NONE))
-        val defBase = cDefBase.rBase(R_CallFrame.NONE_INIT_FRAME_GETTER, docGetter)
+        val defBase = cDefBase.rBase(R_CallFrame.NONE_INIT_FRAME_GETTER, null, docGetter)
 
         val query = R_QueryDefinition(defBase, mountName)
 
@@ -808,7 +808,7 @@ class C_UidGen<T>(private val factory: (Long, String) -> T) {
 sealed class C_Symbol(val code: String) {
     abstract fun msgNormal(): String
 
-    fun msgCapital(): String = msgNormal().capitalize()
+    fun msgCapital(): String = msgNormal().capitalizeEx()
 
     final override fun toString() = msgNormal()
 }

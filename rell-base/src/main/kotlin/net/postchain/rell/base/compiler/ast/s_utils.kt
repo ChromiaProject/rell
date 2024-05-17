@@ -15,6 +15,7 @@ import net.postchain.rell.base.model.R_FilePos
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.ide.IdeFilePath
 import java.util.*
 import java.util.function.Supplier
@@ -29,6 +30,7 @@ abstract class S_Pos: Comparable<S_Pos> {
     fun strLine() = "${path()}:${line()}"
 
     fun toFilePos() = R_FilePos(path().str(), line())
+    fun toDocPos() = DocSourcePos(path().str(), line())
 
     final override fun compareTo(other: S_Pos): Int {
         var d = path().compareTo(other.path())

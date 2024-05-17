@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model
@@ -19,6 +19,7 @@ import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.Nullable
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.doc.DocDefinition
+import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
@@ -27,6 +28,7 @@ class R_FunctionParam(
     val name: R_Name,
     val type: R_Type,
     private val docGetter: C_LateGetter<Nullable<DocSymbol>>,
+    override val docSourcePos: DocSourcePos? = null,
 ): DocDefinition {
     override val docSymbol: DocSymbol get() = docGetter.get().value ?: DocSymbol.NONE
 

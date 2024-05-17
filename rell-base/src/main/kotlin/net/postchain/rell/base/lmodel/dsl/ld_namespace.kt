@@ -593,10 +593,9 @@ class Ld_Namespace(
     }
 
     private fun makeDoc(fullName: R_FullName, memberHeader: L_MemberHeader): DocSymbol {
-        return DocSymbol(
+        return Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.NAMESPACE,
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
-            mountName = null,
             declaration = DocDeclaration_Namespace(DocModifiers.NONE, fullName.last),
             comment = memberHeader.docComment,
         )
@@ -668,10 +667,9 @@ private class Ld_NamespaceMember_Alias(
                 targetMember.docSymbol.declaration,
             )
 
-            return DocSymbol(
+            return Ld_DocSymbols.docSymbol(
                 kind = DocSymbolKind.ALIAS,
                 symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
-                mountName = null,
                 declaration = docDec,
                 comment = memberHeader.docComment,
             )
@@ -744,10 +742,9 @@ private class Ld_NamespaceMember_Struct(
     }
 
     private fun finishDoc(fullName: R_FullName, lMemberHeader: L_MemberHeader): DocSymbol {
-        return DocSymbol(
+        return Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.STRUCT,
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
-            mountName = null,
             declaration = DocDeclaration_Struct(DocModifiers.NONE, fullName.last),
             comment = lMemberHeader.docComment,
         )
@@ -802,10 +799,9 @@ private class Ld_NamespaceMember_SpecialProperty(
     }
 
     private fun finishDoc(fullName: R_FullName, lMemberHeader: L_MemberHeader): DocSymbol {
-        return DocSymbol(
+        return Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.PROPERTY,
             symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
-            mountName = null,
             declaration = DocDeclaration_SpecialProperty(fullName.last),
             comment = lMemberHeader.docComment,
         )

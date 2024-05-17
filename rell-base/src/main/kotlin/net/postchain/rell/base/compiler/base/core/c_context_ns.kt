@@ -101,19 +101,6 @@ class C_DefinitionPath(private val module: C_DefinitionModuleName, path: List<St
         val qName = C_StringQualifiedName.of(path + name.str)
         return C_DefinitionName(module, qName)
     }
-
-    fun subName(name: R_QualifiedName): C_DefinitionName {
-        val qName = C_StringQualifiedName.of(path + name.parts.map { it.str })
-        return C_DefinitionName(module, qName)
-    }
-
-    fun subPath(name: String): C_DefinitionPath {
-        return C_DefinitionPath(module, path + name)
-    }
-
-    companion object {
-        val ROOT = C_DefinitionPath(C_LibUtils.DEFAULT_MODULE_STR, immListOf())
-    }
 }
 
 class C_CommonDefinitionBase(
@@ -133,9 +120,10 @@ class C_CommonDefinitionBase(
 
     fun rBase(
         initFrameGetter: C_LateGetter<R_CallFrame>,
+        docPos: DocSourcePos?,
         docGetter: C_LateGetter<DocSymbol>,
     ): R_DefinitionBase {
-        return R_DefinitionBase(defId, defName, cDefName, initFrameGetter, docGetter)
+        return R_DefinitionBase(defId, defName, cDefName, initFrameGetter, docPos, docGetter)
     }
 
     fun nsMemBase(
@@ -193,10 +181,11 @@ class C_CommonDefinitionBase(
     }
 
     fun userBase(pos: S_Pos): C_UserDefinitionBase {
+        val docPos = pos.toDocPos()
         val docDecLate = C_LateInit(C_CompilerPass.DOCS, DocDeclaration.NONE)
         val docSymGetter = docGetter(docDecLate.getter)
         val ideDef = ideDef(pos, docSymGetter)
-        return C_UserDefinitionBase(this, ideDef, docSymGetter, docDecLate)
+        return C_UserDefinitionBase(this, ideDef, docPos, docSymGetter, docDecLate)
     }
 
     fun defCtx(mntCtx: C_MountContext): C_DefinitionContext {
@@ -226,6 +215,7 @@ class C_CommonDefinitionBase(
 class C_UserDefinitionBase(
     private val comBase: C_CommonDefinitionBase,
     ideDef: C_IdeSymbolDef,
+    private val docPos: DocSourcePos,
     private val docSymbolGetter: C_LateGetter<DocSymbol>,
     private val docDeclarationLate: C_LateInit<DocDeclaration>,
 ) {
@@ -239,7 +229,7 @@ class C_UserDefinitionBase(
 
     fun defCtx(mntCtx: C_MountContext) = comBase.defCtx(mntCtx)
 
-    fun rBase(initFrameGetter: C_LateGetter<R_CallFrame>) = comBase.rBase(initFrameGetter, docSymbolGetter)
+    fun rBase(initFrameGetter: C_LateGetter<R_CallFrame>) = comBase.rBase(initFrameGetter, docPos, docSymbolGetter)
 
     fun nsMemBase(deprecatedValue: C_ModifierValue<C_Deprecated>): C_NamespaceMemberBase {
         val deprecated = deprecatedValue.value()

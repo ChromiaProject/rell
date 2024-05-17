@@ -233,10 +233,9 @@ class Ld_FunctionParam(
 
         val docParam = L_TypeUtils.docFunctionParam(mParam)
 
-        val doc = DocSymbol(
+        val doc = Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.PARAMETER,
             symbolName = DocSymbolName.local(name.str),
-            mountName = null,
             declaration = DocDeclaration_Parameter(docParam, lazy, implies, null),
             comment = comment,
         )
