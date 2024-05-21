@@ -30,7 +30,8 @@ object Lib_SysQueries {
             C_Utils.createSysQuery(executor, "get_build", R_TextType, SysQueryFns.GetBuild),
             C_Utils.createSysQuery(executor, "get_build_details", SysQueryFns.GetBuildDetails.TYPE, SysQueryFns.GetBuildDetails),
             C_Utils.createSysQuery(executor, "get_app_structure", R_GtvType, SysQueryFns.GetAppStructure),
-            C_Utils.createSysQuery(executor, "get_mount_names", R_GtvType, SysQueryFns.GetMountNames, SysQueryFns.GetMountNames.PARAMS)
+            C_Utils.createSysQuery(executor, "get_mount_names", R_GtvType, SysQueryFns.GetMountNames, SysQueryFns.GetMountNames.PARAMS),
+            C_Utils.createSysQuery(executor, "get_module_args", R_GtvType, SysQueryFns.GetModuleArgs, SysQueryFns.GetModuleArgs.PARAMS),
         )
     }
 }
@@ -128,7 +129,45 @@ private object SysQueryFns {
         }
 
         private fun Collection<R_MountName>.toGtvArrayNode() = GtvBuilder.GtvArrayNode(map { GtvBuilder.GtvNode.decode(gtv(it.str())) }, GtvBuilder.GtvArrayMerge.APPEND)
-
-        private fun <T> Collection<T>.containsOrEmpty(v: T) = isEmpty() || v in this
     }
+
+    object GetModuleArgs: R_SysFunctionEx_N() {
+
+        val PARAMS = immListOf(
+            R_FunctionParam(R_Name.of("modules"), R_ListType(R_TextType), C_LateGetter.const(Nullable.of(null)))
+        )
+
+        override fun call(ctx: Rt_CallContext, args: List<Rt_Value>): Rt_Value {
+            val (modules, invalidModules) = validateArgs(args)
+            if (invalidModules.isNotEmpty()) {
+                throw Rt_Exception.common(
+                    "rell.get_module_args:bad_module:${invalidModules.joinToString(",")}",
+                    "Invalid module name(s): $invalidModules."
+                )
+            }
+
+            val moduleArgsMap = ctx.appCtx.app.moduleArgs
+                .filterKeys { modules.containsOrEmpty(it) }
+                .mapNotNull { (moduleName, structDef) ->
+                    ctx.appCtx.getModuleArgs(moduleName)?.let { moduleArgs ->
+                        val gtv = structDef.type.rtToGtv(moduleArgs, pretty = true)
+                        moduleName.str() to gtv
+                    }
+                }.toMap()
+
+            return Rt_GtvValue.get(gtv(moduleArgsMap))
+        }
+
+        private fun validateArgs(args: List<Rt_Value>): Pair<Set<R_ModuleName>, Set<String>> {
+            checkEquals(args.size, 1)
+            val modules = args[0].asList().map { it.asString() to R_ModuleName.ofOpt(it.asString()) }
+
+            val validModules = modules.mapNotNull { it.second }.toSet()
+            val invalidModules = modules.filter { it.second == null }.map { it.first }.toSet()
+
+            return validModules to invalidModules
+        }
+    }
+
+    private fun <T> Collection<T>.containsOrEmpty(v: T) = isEmpty() || v in this
 }

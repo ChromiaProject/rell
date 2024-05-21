@@ -63,4 +63,66 @@ class LibQueriesTest: BaseRellTest(false) {
 
     private fun List<String>.toRtValue() =
         Rt_ListValue(R_ListType(R_TextType), map { Rt_TextValue.get(it) }.toMutableList())
+
+    @Test fun testGetModuleArgs() {
+        file("lib_a.rell", """module;
+            struct module_args {
+                x: integer = 123;
+                y: text = 'hi';
+            }
+        """)
+        file("lib_b.rell", """module;
+            struct module_args {
+                a: integer = 456;
+                b: text = 'hello';
+            }
+        """)
+        def("import lib_a;import lib_b;")
+
+        chkModuleArgs(listOf("lib_a"), """{"lib_a":{"x":123,"y":"hi"}}""")
+        chkModuleArgs(listOf("lib_b"), """{"lib_b":{"a":456,"b":"hello"}}""")
+        chkModuleArgs(listOf("lib_a", "lib_b"), """{"lib_a":{"x":123,"y":"hi"},"lib_b":{"a":456,"b":"hello"}}""")
+        chkModuleArgs(listOf(), """{"lib_a":{"x":123,"y":"hi"},"lib_b":{"a":456,"b":"hello"}}""")
+    }
+
+    @Test fun testGetModuleArgsWrongInput() {
+        file("lib_a.rell", """module;
+            struct module_args {
+                x: integer = 123;
+                y: text = 'hi';
+            }
+        """)
+        def("import lib_a;")
+
+        chkModuleArgs(listOf("unknown_module_is_ignored"), "{}")
+        chkModuleArgs(listOf("a/b"), "rt_err:rell.get_module_args:bad_module:a/b")
+    }
+
+    @Test fun testGetModuleArgsEmptyArgs() {
+        file("lib_a.rell", "module; object state {}")
+        def("import lib_a;")
+
+        chkModuleArgs(listOf("lib_a"), "{}")
+        chkModuleArgs(listOf(), "{}")
+    }
+
+    @Test fun testGetModuleArgsNonDefault() {
+        file("lib_a.rell", """module;
+            struct module_args {
+                x: integer;
+                y: text;
+            }
+        """)
+        tst.moduleArgs("lib_a" to "{'x':123, y:'hi'}")
+        def("import lib_a;")
+
+        chkModuleArgs(listOf("lib_a"), """{"lib_a":{"x":123,"y":"hi"}}""")
+        chkModuleArgs(listOf("lib_b"), "{}")
+        chkModuleArgs(listOf(), """{"lib_a":{"x":123,"y":"hi"}}""")
+    }
+
+    private fun chkModuleArgs(modules: List<String>, expected: String) {
+        tst.strictToString = false
+        chkFull("", "rell.get_module_args", listOf(modules.toRtValue()), expected)
+    }
 }
