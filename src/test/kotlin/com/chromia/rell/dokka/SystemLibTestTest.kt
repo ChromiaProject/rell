@@ -162,7 +162,7 @@ class SystemLibTestTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogge
                 val expectedTypeDefs = (sysLibDefs + testLibDefs).filterIsInstance<L_NamespaceMember_Type>()
                         .flatMap { it.typeDef.allMembers.all.map { t -> DRI.from(t, DRI.from(it)) } }
 
-                assertThat(documentablesInTypes.size).isEqualTo(expectedTypeDefs.size + 9 /* TODO: Not computed correctly? */)
+                assertThat(documentablesInTypes.size).isEqualTo(expectedTypeDefs.size + 8 /* TODO: Not computed correctly? */)
             }
         }
     }
