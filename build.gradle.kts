@@ -1,8 +1,8 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
-    kotlin("jvm") version "1.9.10"
-    id("org.jetbrains.dokka") version "1.9.10" // Used to create a javadoc jar
+    kotlin("jvm") version "1.9.22"
+    id("org.jetbrains.dokka") version "1.9.20" // Used to create a javadoc jar
     kotlin("plugin.serialization") version "1.9.22"
     `maven-publish`
     signing
@@ -29,9 +29,10 @@ val unshadedClassesTarget = layout.buildDirectory.dir("unshaded")
 
 val dokkaVersion: String by project
 val rellVersion: String by project
+val jacksonVersion = "2.15.3"
 dependencies {
     implementation(platform("net.postchain.rell:rell:$rellVersion"))
-    implementation(platform("com.fasterxml.jackson:jackson-bom:2.15.3"))
+    implementation(platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion"))
     implementation("org.jetbrains.dokka:dokka-core:$dokkaVersion")
     implementation("org.jetbrains.dokka:dokka-base:$dokkaVersion")
     implementation("org.jetbrains.dokka:analysis-markdown:$dokkaVersion")
@@ -56,6 +57,13 @@ dependencies {
     // Unshading dependencies
     dependenciesToUnshade("org.jetbrains.dokka:analysis-kotlin-descriptors:$dokkaVersion")
     implementation(files(unshadedClassesTarget))
+}
+
+configurations.all {
+    resolutionStrategy {
+        force("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+        force("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
+    }
 }
 
 kotlin {
