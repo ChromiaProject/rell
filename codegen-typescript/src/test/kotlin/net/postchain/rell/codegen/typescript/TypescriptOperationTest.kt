@@ -45,7 +45,7 @@ internal class TypescriptOperationTest {
         val formatted = k.format()
         assertThat(formatted).all {
             contains("export function $typescriptQualifiedOpName(): Operation")
-            contains("{ name: \"$rellQualifiedOpName\", args: [] }")
+            contains("{ name: \"$rellQualifiedOpName\" }")
         }
     }
 
@@ -88,8 +88,11 @@ internal class TypescriptOperationTest {
         val formatted = k.format()
         assertThat(formatted).all {
             contains("export function ${opName.snakeToLowerCamelCase()}Operation($params): Operation {")
-            contains("{ name: \"$opName\"")
-            endsWith("$gtvParam] }\n}")
+            if (gtvParam.isEmpty()) {
+                contains("{ name: \"$opName\" }")
+            } else {
+                contains("{ name: \"$opName\", args: [$gtvParam] }")
+            }
         }
     }
 }

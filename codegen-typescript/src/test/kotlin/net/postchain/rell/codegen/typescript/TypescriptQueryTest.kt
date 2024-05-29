@@ -4,6 +4,7 @@ import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
 import net.postchain.rell.codegen.SingleFileRellApp
+import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -100,7 +101,7 @@ class TypescriptQueryTest {
 
     @ParameterizedTest(name = "query {0} should contain params {1} with type-conversion {2}")
     @CsvSource(
-            "input_parameter_nargs,'',undefined",
+            "input_parameter_nargs,'',''",
             "input_parameter_text,t: string,'{ t: t }'",
             "input_parameter_nullable,t: string | null,'{ t: t }'",
             "input_parameter_integer,i: number,'{ i: i }'",
@@ -127,8 +128,12 @@ class TypescriptQueryTest {
         val k = TypescriptQuery(query)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("($funParams)")
-            contains("{ name: \"$queryName\", args: $queryParam }")
+            contains("export function ${queryName.snakeToLowerCamelCase()}QueryObject($funParams): QueryObject")
+            if (queryParam.isEmpty()) {
+                contains("{ name: \"$queryName\" }")
+            } else {
+                contains("{ name: \"$queryName\", args: $queryParam }")
+            }
         }
     }
 
