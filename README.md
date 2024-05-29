@@ -86,11 +86,33 @@ fun GTXTransactionBuilder.inputParameterEnumOperation(e: TestEnum) =
     addOperation("input_parameter_enum", gtv(e.ordinal.toLong()))
 ```
 
-# Release
+# Architecture
 
-Performing a release consists of the following sequence on the dev branch
+The architecture of this repo consists of three layers; one interface/logic layer, one implementation layer and one cli-layer.
 
-```shell
-git tag X.Y.Z
-git push --tags 
-```
+## Interface/Logic Layer (codegen)
+
+This module consists of all the business logic of the inner workings of the code generator. 
+Ideally, any features should be implemented here using abstract patterns such as interfaces and factories. 
+
+The data model consists of
+`DocumentFactory` - represents and abstract factory class for generating a "file"
+`Document` - Represents one file in the file system
+`DocumentSection` - An isolated portion of a `Document`
+
+All in all, the `DocumentFactory` will compile a rell application and produce a `DocumentSection` for each rell component.
+The sections are then collected into `Document`s which can be saved to disk.
+
+## Implementation Layer (codegen-X)
+
+Each code generation target gets implemented here. This could be a language or a flavor to be generated. 
+Each implementation module implements the abstract factory `DocumentFactory` and its `DocumentSection`s. This can also implement a special configuration class with their own properties if needed.
+
+### Testing
+
+The folder `testResources` contains a number of rell files with a set of rell definitions that must be covered by the tests in each implementation layer.
+
+## CLI-layer (rellgen)
+
+The final module consists of a simple cli which defines a simple cli. This is used for manual testing of the repo. 
+Here one can make sure that the implementations works and see how they will look like from a clients perspective (in terms of configuration etc).
