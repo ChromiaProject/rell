@@ -31,7 +31,7 @@ abstract class TypescriptFunction(
         val returnTypeString = "${returnStructure(returnType)}\n"
         val functionString = """
         |export ${asyncAnnotation()}function ${className.className.snakeToLowerCamelCase()}$querySuffix(${formatInputParameters()}): ${formatReturnType()} {
-        |${"\t"}${formatBody()}
+        |${"\t"}${formatReturnObject()}
         |}
    """.trimMargin()
         return StringBuilder()
@@ -47,7 +47,16 @@ abstract class TypescriptFunction(
         return params.joinToString(",\n\t") { "${it.name.str.snakeToLowerCamelCase()}: ${rTypeToString(it.type, true)}" }
     }
 
+    private fun formatReturnObject(): String = buildString {
+        append("return { name: \"$mountName\"")
+        if (params.isNotEmpty()) {
+            append(", args: ${formatReturnObjectArgs()}")
+        }
+        append(" };")
+    }
+
+    abstract fun formatReturnObjectArgs(): String
     abstract fun returnStructure(returnType: R_Type?): String
     abstract fun formatReturnType(): String
-    abstract fun formatBody(): String
+
 }

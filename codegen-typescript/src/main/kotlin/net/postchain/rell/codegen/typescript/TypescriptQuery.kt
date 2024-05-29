@@ -22,11 +22,8 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
     override val moduleName: String
         get() = className.module
 
-    override fun formatBody() = "return { name: \"$mountName\", args: ${formatQueryParameters()} };"
-
-    private fun formatQueryParameters(): String {
-        if (params.isEmpty()) return "undefined"
-        return "{ " + params.joinToString(", ") { "${it.name.str}: ${parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type)}" } + " }"
+    override fun formatReturnObjectArgs(): String {
+        return params.joinToString(", ", "{ ", " }") { "${it.name.str}: ${parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type)}" }
     }
 
     override fun formatReturnType(): String = "QueryObject<${if (returnStructure.isNotBlank()) buildReturnType() else rTypeToString(returnType!!)}>"
