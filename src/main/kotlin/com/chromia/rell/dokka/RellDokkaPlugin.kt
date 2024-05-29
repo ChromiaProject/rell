@@ -9,9 +9,9 @@ import com.chromia.rell.dokka.renderers.html.RellHtmlRenderer
 import com.chromia.rell.dokka.renderers.html.RellSearchbarDataInstaller
 import com.chromia.rell.dokka.signature.RellSignatureProvider
 import com.chromia.rell.dokka.transformers.NullPageTransformer
-import com.chromia.rell.dokka.translators.documentables.RellDocumentableToPageTranslator
 import com.chromia.rell.dokka.translators.RellSourceToDocumentableTranslator
 import com.chromia.rell.dokka.translators.RellSystemLibToDocumentableTranslator
+import com.chromia.rell.dokka.translators.documentables.RellDocumentableToPageTranslator
 import org.jetbrains.dokka.CoreExtensions
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.plugability.DokkaContext
@@ -100,7 +100,6 @@ class RellDokkaPlugin : DokkaPlugin() {
             CoreExtensions.pageTransformer with NullPageTransformer() override defaultSamplesTransformer
         }
     }
-
 
     companion object {
         private fun config(context: DokkaContext) = configuration<RellDokkaPlugin, RellDokkaPluginConfiguration>(context)

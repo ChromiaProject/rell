@@ -6,8 +6,7 @@ import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isTrue
-import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
-import com.chromia.rell.dokka.config.RellModule
+import com.chromia.rell.dokka.config.RellDokkaPluginConfigurationBuilder
 import com.chromia.rell.dokka.dri.from
 import com.chromia.rell.dokka.dri.isAlias
 import net.postchain.rell.base.lib.Lib_Rell
@@ -27,14 +26,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
 
 class SystemLibTestTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogger(LoggingLevel.WARN))) {
-    private val configuration = dokkaConfiguration {
-        pluginsConfigurations.add(RellDokkaPluginConfiguration.SYSTEM_CONFIG.toPluginConfig())
-        sourceSets {
-            RellModule.entries.forEach {
-                add(lazy { it.sourceSet(listOf()) })
-            }
-        }
-    }
+    private val configuration = RellDokkaPluginConfigurationBuilder.SYSTEM.build()
 
     @Test
     fun `Rell plugin can generate system lib`() {

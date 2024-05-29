@@ -4,8 +4,10 @@ import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration.Companion.SYST
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.DokkaConfigurationImpl
 import org.jetbrains.dokka.PluginConfigurationImpl
+import org.jetbrains.dokka.SourceLinkDefinitionImpl
 import org.jetbrains.dokka.base.DokkaBase
 import java.io.File
+import java.net.URL
 
 class RellDokkaPluginConfigurationBuilder private constructor(
         private val system: Boolean,
@@ -18,6 +20,7 @@ class RellDokkaPluginConfigurationBuilder private constructor(
     private var customAssets: List<String>? = null
     private var footerMessage: String = ""
     private var includes: List<File> = listOf()
+    private val sourceLinks: MutableSet<SourceLinkDefinitionImpl> = mutableSetOf()
 
     constructor(title: String, modules: List<String>?, projectRoot: File): this(false, title, modules, projectRoot)
 
@@ -43,6 +46,10 @@ class RellDokkaPluginConfigurationBuilder private constructor(
         this.footerMessage = footerMessage
     }
 
+    fun addSourceLink(localDirectory: String, remoteUrl: URL, remoteLineSuffix: String?) = apply {
+        this.sourceLinks.add(SourceLinkDefinitionImpl(localDirectory, remoteUrl, remoteLineSuffix))
+    }
+
     private fun configureRellDokkaPlugin(): RellDokkaPluginConfiguration {
         if (system) {
             return RellDokkaPluginConfiguration.SYSTEM_CONFIG
@@ -65,7 +72,7 @@ class RellDokkaPluginConfigurationBuilder private constructor(
             moduleName = title,
             outputDir = targetFolder,
             suppressInheritedMembers = true,
-            sourceSets = if (system) RellModule.entries.map { it.sourceSet(includes) } else rellSourceSets(projectRoot!!, includes),
+            sourceSets = if (system) RellModule.entries.map { it.sourceSet(includes) } else rellSourceSets(projectRoot!!, includes, sourceLinks),
             pluginsConfiguration = listOf(configureRellDokkaPlugin().toPluginConfig(), configureDokkaBasePlugin()),
     )
 }

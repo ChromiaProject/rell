@@ -22,8 +22,6 @@ import org.jetbrains.dokka.model.DEnum
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.KotlinModifier
 import org.jetbrains.dokka.model.KotlinVisibility
-import org.jetbrains.dokka.model.UnresolvedBound
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -33,7 +31,7 @@ class RellDokkaPluginTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `rell module can be found`() {
-        singleFileTestInline("") {
+        singleFileTestInline("val bogus = false;") {
             documentablesTransformationStage = { m ->
                 assertThat(m.name).isEqualTo(TEST_DAPP_NAME)
                 assertThat(m.dri.toString()).isEqualTo(DRI("").toString())
@@ -225,18 +223,14 @@ class RellDokkaPluginTest : SingleFileRellDokkaPluginTest() {
     }
 
     @Test
-    @Disabled
     fun `rell plugin should find packages and classes`() {
-        singleFileTestInline(
-                """
-            |/src/main.rell
-            |module;
-            |entity foo { name; }
-            |/**
-            | * My comment
-            | */
-            |operation my_operation(arg: text, i: integer) {}
-            |function my_fun(arg: integer) = foo @{};
+        singleFileTestInline("""
+            entity foo { name; }
+            /**
+             * My comment
+             */
+            operation my_operation(arg: text, i: integer) {}
+            function my_fun(arg: integer) = foo @{};
             """.trimIndent(),
         ) {
             documentablesTransformationStage = { module ->
