@@ -53,6 +53,7 @@ dependencies {
     testImplementation("org.jetbrains.dokka:dokka-test-api:$dokkaVersion")
     testImplementation("org.jetbrains.dokka:dokka-base-test-utils:$dokkaVersion")
     testImplementation("org.jsoup:jsoup:1.17.2")
+    testImplementation("org.slf4j:slf4j-simple:1.7.36")
 
     // Unshading dependencies
     dependenciesToUnshade("org.jetbrains.dokka:analysis-kotlin-descriptors:$dokkaVersion")

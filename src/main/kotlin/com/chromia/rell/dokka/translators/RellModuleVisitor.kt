@@ -11,11 +11,11 @@ import com.chromia.rell.dokka.model.ExtensionFunction
 import com.chromia.rell.dokka.model.ExtensionFunctionExtra
 import com.chromia.rell.dokka.model.IsAnonymous
 import com.chromia.rell.dokka.model.IsEntity
-import com.chromia.rell.dokka.model.IsNamespace
 import com.chromia.rell.dokka.model.IsExtendable
 import com.chromia.rell.dokka.model.IsFunction
 import com.chromia.rell.dokka.model.IsIndex
 import com.chromia.rell.dokka.model.IsKey
+import com.chromia.rell.dokka.model.IsNamespace
 import com.chromia.rell.dokka.model.IsObject
 import com.chromia.rell.dokka.model.IsOperation
 import com.chromia.rell.dokka.model.IsQuery
@@ -23,9 +23,9 @@ import com.chromia.rell.dokka.model.IsStruct
 import com.chromia.rell.dokka.model.MountNameExtra
 import com.chromia.rell.dokka.model.toExpression
 import com.chromia.rell.dokka.reflection.getParamsByReflection
+import com.chromia.rell.dokka.reflection.getSubExprByReflection
 import com.chromia.rell.dokka.reflection.getTypeByReflection
 import com.chromia.rell.dokka.reflection.getValueByReflection
-import com.chromia.rell.dokka.reflection.getSubExprByReflection
 import net.postchain.rell.base.model.R_Attribute
 import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.model.R_EnumAttr
@@ -160,7 +160,7 @@ internal class RellModuleVisitor(
                 generics = listOf(),
                 isExpectActual = false,
                 sourceSets = setOf(sourceSet),
-                sources = RellDocumentableSource.NULL.toSourceSetDependent(),
+                sources = RellDocumentableSource.create(this, sourceSet).toSourceSetDependent(),
                 type = getTypeByReflection().toBound(),
                 expectPresentInSet = null,
                 documentation = simpleDocumentationNode("").toSourceSetDependent(),
@@ -191,7 +191,7 @@ internal class RellModuleVisitor(
                 visibility = KotlinVisibility.Public.toSourceSetDependent(),
                 modifier = KotlinModifier.Empty.toSourceSetDependent(),
                 supertypes = mapOf(),
-                sources = RellDocumentableSource.NULL.toSourceSetDependent(),
+                sources = RellDocumentableSource.create(this, sourceSet).toSourceSetDependent(),
                 extra = PropertyContainer.withAll(IsEntity)
         )
     }
@@ -217,7 +217,7 @@ internal class RellModuleVisitor(
                 visibility = KotlinVisibility.Public.toSourceSetDependent(),
                 modifier = KotlinModifier.Empty.toSourceSetDependent(),
                 supertypes = mapOf(),
-                sources = RellDocumentableSource.NULL.toSourceSetDependent(),
+                sources = RellDocumentableSource.create(this, sourceSet).toSourceSetDependent(),
                 extra = PropertyContainer.withAll(IsStruct)
         )
     }
@@ -243,7 +243,7 @@ internal class RellModuleVisitor(
                 visibility = KotlinVisibility.Public.toSourceSetDependent(),
                 modifier = KotlinModifier.Empty.toSourceSetDependent(),
                 supertypes = mapOf(),
-                sources = RellDocumentableSource.NULL.toSourceSetDependent(),
+                sources = RellDocumentableSource.create(this, sourceSet).toSourceSetDependent(),
                 extra = PropertyContainer.withAll(IsObject)
         )
     }
@@ -259,7 +259,7 @@ internal class RellModuleVisitor(
                 generics = listOf(),
                 isExpectActual = false,
                 modifier = KotlinModifier.Empty.toSourceSetDependent(),
-                sources = RellDocumentableSource.NULL.toSourceSetDependent(),
+                sources = RellDocumentableSource.create(this, sourceSet).toSourceSetDependent(),
                 expectPresentInSet = null,
                 getter = null,
                 setter = null,
@@ -297,7 +297,7 @@ internal class RellModuleVisitor(
                 isExpectActual = false,
                 visibility = KotlinVisibility.Public.toSourceSetDependent(),
                 supertypes = mapOf(),
-                sources = RellDocumentableSource.NULL.toSourceSetDependent(),
+                sources = RellDocumentableSource.create(this, sourceSet).toSourceSetDependent(),
         )
     }
 
@@ -345,7 +345,7 @@ internal class RellModuleVisitor(
                 type = getTypeByReflection().toBound(),
                 sourceSets = setOf(sourceSet),
                 generics = listOf(),
-                sources = RellDocumentableSource.NULL.toSourceSetDependent(),
+                sources = RellDocumentableSource.create(this, sourceSet).toSourceSetDependent(),
                 modifier = KotlinModifier.Empty.toSourceSetDependent(),
                 extra = PropertyContainer.withAll(listOfNotNull(*extraProperty))
         )

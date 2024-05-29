@@ -1,7 +1,6 @@
 package com.chromia.rell.dokka.signature
 
-import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
-import com.chromia.rell.dokka.config.RellModule
+import com.chromia.rell.dokka.config.RellDokkaPluginConfigurationBuilder
 import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
 import org.jetbrains.dokka.testApi.logger.TestLogger
 import org.jetbrains.dokka.utilities.DokkaConsoleLogger
@@ -17,15 +16,8 @@ import utils.TestOutputWriterPlugin
 import utils.match
 
 internal class SystemLibSignatureTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogger(LoggingLevel.WARN))) {
-    val projectRoot = "-rell -system -library"
-    private val configuration = dokkaConfiguration {
-        this.pluginsConfigurations.add(RellDokkaPluginConfiguration.SYSTEM_CONFIG.toPluginConfig())
-        sourceSets {
-            RellModule.entries.forEach {
-                add(lazy { it.sourceSet(listOf()) })
-            }
-        }
-    }
+    private val projectRoot = "-rell -system -library"
+    private val configuration = RellDokkaPluginConfigurationBuilder.SYSTEM.build()
 
     @Test
     fun `function has reference to types`() {

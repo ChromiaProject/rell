@@ -33,5 +33,5 @@ object RellSystemLibToDocumentableTranslator : SourceToDocumentableTranslator {
         }
     }
 
-    val NULL_DESCRIPTOR: DocumentableSource = RellDocumentableSource()
+    val NULL_DESCRIPTOR: DocumentableSource = RellDocumentableSource.NULL
 }

@@ -11,7 +11,7 @@ import utils.TestOutputWriter
 import utils.TestOutputWriterPlugin
 
 internal fun TestOutputWriter.pagesJson(): List<SearchRecord> = jacksonObjectMapper().readValue(contents.getValue("scripts/pages.json"))
-internal class RellSearchBarDataInstalerTest : SingleFileRellDokkaPluginTest() {
+internal class RellSearchBarDataInstallerTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `anonymous functions - hashtags are escaped`() {

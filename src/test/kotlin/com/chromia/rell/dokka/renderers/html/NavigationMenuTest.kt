@@ -28,7 +28,7 @@ internal class NavigationMenuTest : SingleFileRellDokkaPluginTest() {
                 assertThat(content.size).isEqualTo(4)
 
                 content.last()!!.assertNavigationLink(
-                        id = "root-nav-submenu-0-1",
+                        id = "test-dapp-nav-submenu-0-1",
                         text = "function#0()",
                         address = "test-dapp/main/function%230.html",
                 )
