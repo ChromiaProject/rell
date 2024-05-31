@@ -26,7 +26,7 @@ object PostchainGtvUtils {
     private val GSON = make_gtv_gson()
 
     private val PRETTY_GSON = GsonBuilder()
-        .registerTypeAdapter(Gtv::class.java, GtvAdapter())
+        .registerTypeAdapter(Gtv::class.java, GtvAdapter(strict = false))
         .serializeNulls()
         .setPrettyPrinting()
         .create()!!

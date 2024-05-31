@@ -14,6 +14,7 @@ class ReplValueFormatTest: BaseRellTest(false) {
         repl.chk("l", "[(123,Hello), (456,Bye)]")
         repl.chk("m", "{123=Hello, 456=Bye}")
         repl.chk("m2", "{Hello=123, Bye=456}")
+        repl.chk("19223372036854775807L", "19223372036854775807")
     }
 
     @Test fun testOneItemPerLine() {
@@ -22,6 +23,7 @@ class ReplValueFormatTest: BaseRellTest(false) {
         repl.chk("l", "(123,Hello)\n(456,Bye)")
         repl.chk("m", "123=Hello\n456=Bye")
         repl.chk("m2", "Hello=123\nBye=456")
+        repl.chk("19223372036854775807L", "19223372036854775807")
     }
 
     @Test fun testGtvString() {
@@ -35,6 +37,7 @@ class ReplValueFormatTest: BaseRellTest(false) {
         repl.chk("l", "[[123, \"Hello\"], [456, \"Bye\"]]")
         repl.chk("m", "[[123, \"Hello\"], [456, \"Bye\"]]")
         repl.chk("m2", """["Bye": 456, "Hello": 123]""")
+        repl.chk("19223372036854775807L", "19223372036854775807L")
     }
 
     @Test fun testGtvJson() {
@@ -73,6 +76,8 @@ class ReplValueFormatTest: BaseRellTest(false) {
               "Hello": 123
             }
         """.trimIndent())
+
+        repl.chk("19223372036854775807L", "19223372036854775807")
     }
 
     @Test fun testGtvXml() {
@@ -115,6 +120,8 @@ class ReplValueFormatTest: BaseRellTest(false) {
                 </entry>
             </dict>
         """.trimIndent())
+
+        repl.chk("19223372036854775807L", "<bigint>19223372036854775807</bigint>")
     }
 
     private fun initRepl(format: String) {
