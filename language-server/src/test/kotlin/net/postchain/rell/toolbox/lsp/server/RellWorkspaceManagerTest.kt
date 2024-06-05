@@ -3,6 +3,7 @@ package net.postchain.rell.toolbox.lsp.server
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsAll
+import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.containsOnly
 import assertk.assertions.doesNotContain
 import assertk.assertions.hasSize
@@ -11,15 +12,16 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
-import java.io.File
-import java.net.URI
 import net.postchain.rell.toolbox.lsp.server.utils.WorkspaceManagerTestBase
+import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import org.eclipse.lsp4j.WorkspaceFolder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.net.URI
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createDirectory
 
@@ -603,6 +605,44 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         initializeWorkspace(workspaceFile)
         workspaceManager.didOpen(mainFile.toURI(), 1, mainFile.readText())
         val references = workspaceManager.getReferenceLocations(mainFile.toURI(), Position(2, 16))
-        assertThat(references).hasSize(4)
+        assertThat(references).containsExactlyInAnyOrder(
+            Location(mainFile.toURI().toString(), Range(Position(2, 9), Position(2, 24))),
+            Location(mainFile.toURI().toString(), Range(Position(12, 17), Position(12, 32))),
+            Location(
+                File(workspaceFile, "src/submodule/another_importing.rell").toURI().toString(),
+                Range(Position(2, 17), Position(2, 32))
+            ),
+            Location(
+                File(workspaceFile, "src/importing.rell").toURI().toString(),
+                Range(Position(3, 17), Position(3, 32))
+            ),
+        )
+    }
+
+    @Test
+    fun `Find all references for entities`() {
+        val rellFileContent = """
+            module;
+            entity my_entity {
+              a_property: text;
+              another_entity;
+            }
+            
+            entity another_entity {
+              another_property: text;
+            }
+            
+            function q() = my_entity @* { .another_entity.another_property == "test" };
+            """.trimIndent()
+        val rellFile = File(sourceDir, "rell_file.rell").apply {
+            writeText(rellFileContent)
+        }
+        initializeWorkspace()
+        workspaceManager.didOpen(rellFile.toURI(), 1, rellFileContent)
+        val references = workspaceManager.getReferenceLocations(rellFile.toURI(), Position(6, 7))
+        assertThat(references).containsExactlyInAnyOrder(
+            Location(rellFile.toURI().toString(), Range(Position(3, 2), Position(3, 16))),
+            Location(rellFile.toURI().toString(), Range(Position(6, 7), Position(6, 21))),
+        )
     }
 }
