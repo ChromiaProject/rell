@@ -15,7 +15,7 @@ List of tools:
 ## Building
 
 ```shell
-./gradlew bulld
+./gradlew build
 ```
 
 ## Testing
