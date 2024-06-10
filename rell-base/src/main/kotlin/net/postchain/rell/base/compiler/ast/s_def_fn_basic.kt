@@ -45,7 +45,7 @@ class S_FunctionDefinition(
     override fun compileBasic(ctx: C_MountContext) {
         ctx.checkNotExternal(fnPos, C_DeclarationType.FUNCTION)
 
-        val cQualifiedNameHand = qualifiedName?.compile(ctx.symCtx, def = true)
+        val cQualifiedNameHand = qualifiedName?.compile(ctx.symCtx.nameCtx, def = true)
 
         val simpleName = cQualifiedNameHand?.last?.name
         val mods = C_ModifierValues(C_ModifierTargetType.FUNCTION, simpleName)
@@ -109,6 +109,8 @@ private class C_FunctionCompilerBase(
         val comBase = mntCtx.defBaseCommon(C_DefinitionType.FUNCTION, ideKind, cName, null, null)
         return comBase.userBase(sFn.fnPos)
     }
+
+    fun fullName(simpleName: R_Name): R_FullName = mntCtx.nsCtx.getFullName(simpleName)
 }
 
 private abstract class C_FunctionCompiler(

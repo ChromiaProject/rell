@@ -5,13 +5,16 @@
 package net.postchain.rell.base.compiler.base.lib
 
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
-import net.postchain.rell.base.compiler.base.namespace.C_NamespaceItem
 import net.postchain.rell.base.compiler.base.namespace.C_LibNsMemberFactory
+import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMember
 import net.postchain.rell.base.compiler.base.namespace.C_SysNsProto
 import net.postchain.rell.base.compiler.base.namespace.C_SysNsProtoBuilder
 import net.postchain.rell.base.compiler.base.utils.C_RFullNamePath
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
+import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.utils.ide.IdeCompletion
+import net.postchain.rell.base.utils.immMapOf
 import net.postchain.rell.base.utils.mutableMultimapOf
 import net.postchain.rell.base.utils.toImmMap
 import net.postchain.rell.base.utils.toImmSet
@@ -19,7 +22,7 @@ import net.postchain.rell.base.utils.toImmSet
 class C_LibNamespace private constructor(
     private val namePath: C_RFullNamePath,
     private val namespaces: Map<R_Name, C_LibNestedNamespace>,
-    private val members: Map<R_Name, C_NamespaceItem>,
+    private val members: Map<R_Name, C_NamespaceMember>,
 ) {
     fun toSysNsProto(): C_SysNsProto {
         val b = C_SysNsProtoBuilder()
@@ -37,8 +40,13 @@ class C_LibNamespace private constructor(
     }
 
     abstract class Maker(val basePath: C_RFullNamePath) {
-        abstract fun addMember(name: R_Name, member: C_NamespaceItem)
-        abstract fun addFunction(name: R_Name, fnCase: C_LibFuncCase<V_GlobalFunctionCall>)
+        abstract fun addMember(name: R_Name, member: C_NamespaceMember)
+
+        abstract fun addFunction(
+            name: R_Name,
+            fnCase: C_LibFuncCase<V_GlobalFunctionCall>,
+            ideCompletion: IdeCompletion,
+        )
 
         abstract fun addNamespace(
             name: R_Name,
@@ -56,22 +64,26 @@ class C_LibNamespace private constructor(
 
         private var done = false
 
-        private val members = mutableMapOf<R_Name, C_NamespaceItem>()
-        private val functions = mutableMultimapOf<R_Name, C_LibFuncCase<V_GlobalFunctionCall>>()
+        private val members = mutableMapOf<R_Name, C_NamespaceMember>()
+        private val functions = mutableMultimapOf<R_Name, FuncCase>()
         private val namespaces = mutableMapOf<R_Name, NestedBuilder>()
 
-        override fun addMember(name: R_Name, member: C_NamespaceItem) {
+        override fun addMember(name: R_Name, member: C_NamespaceMember) {
             check(active)
             check(!done)
             checkNameConflict(name, members, namespaces, functions.asMap())
             members[name] = member
         }
 
-        override fun addFunction(name: R_Name, fnCase: C_LibFuncCase<V_GlobalFunctionCall>) {
+        override fun addFunction(
+            name: R_Name,
+            fnCase: C_LibFuncCase<V_GlobalFunctionCall>,
+            ideCompletion: IdeCompletion,
+        ) {
             check(active)
             check(!done)
             checkNameConflict(name, members, namespaces)
-            functions.put(name, fnCase)
+            functions.put(name, FuncCase(fnCase, ideCompletion))
         }
 
         override fun addNamespace(
@@ -124,23 +136,23 @@ class C_LibNamespace private constructor(
                 createFunctionMember(name, cases.toList(), memberFactory)
             }
 
-            val simpleMembers = members.mapValues { it.value }
-
-            val resMembers = fnMembers + simpleMembers
+            val resMembers = fnMembers + members
             return C_LibNamespace(basePath, resNamespaces.toImmMap(), resMembers.toImmMap())
         }
 
         private fun createFunctionMember(
             simpleName: R_Name,
-            cases: List<C_LibFuncCase<V_GlobalFunctionCall>>,
+            cases: List<FuncCase>,
             memberFactory: C_LibNsMemberFactory,
-        ): C_NamespaceItem {
+        ): C_NamespaceMember {
             val fullName = basePath.fullName(simpleName)
             val naming = C_MemberNaming.makeFullName(fullName)
-            val fn = C_LibFunctionUtils.makeGlobalFunction(naming, cases)
-            val ideInfo = cases.first().ideInfo
-            val member = memberFactory.function(fullName.last, fn, ideInfo, C_MemberRestrictions.NULL)
-            return C_NamespaceItem(member)
+            val libCases = cases.map { it.libCase }
+            val fn = C_LibFunctionUtils.makeGlobalFunction(naming, libCases)
+
+            val ideInfo = libCases.first().ideInfo
+            val ideComps = cases.map { it.ideCompletion }
+            return memberFactory.function(fullName.last, fn, ideInfo, C_MemberRestrictions.NULL, ideComps)
         }
 
         private class NestedBuilder(
@@ -155,9 +167,19 @@ class C_LibNamespace private constructor(
         }
     }
 
+    private class FuncCase(
+        val libCase: C_LibFuncCase<V_GlobalFunctionCall>,
+        val ideCompletion: IdeCompletion,
+    )
+
     companion object {
+        // It's in general not right to use an empty (hard-coded) path, but fine for an empty namespace.
+        private val EMPTY = C_LibNamespace(C_RFullNamePath.of(R_ModuleName.EMPTY), immMapOf(), immMapOf())
+
         fun merge(namespaces: List<C_LibNamespace>): C_LibNamespace {
-            check(namespaces.isNotEmpty())
+            if (namespaces.isEmpty()) {
+                return EMPTY
+            }
 
             val single = namespaces.singleOrNull()
             if (single != null) {

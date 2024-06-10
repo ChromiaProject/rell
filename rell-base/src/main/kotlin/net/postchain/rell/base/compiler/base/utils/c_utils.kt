@@ -260,18 +260,19 @@ object C_Utils {
 
         val rDefBase: R_DefinitionBase = let {
             val mountName = sqlMapping.mountName
-            val qualifiedName = C_StringQualifiedName.of(simpleName.str)
+            val rQualifiedName = R_QualifiedName.of(simpleName)
 
             val cDefBase = createDefBase(
                 C_DefinitionType.ENTITY,
                 IdeSymbolKind.DEF_ENTITY,
                 moduleKey,
-                qualifiedName,
+                C_StringQualifiedName.of(rQualifiedName),
                 mountName,
                 docFactory,
             )
 
-            val docGetter = cDefBase.docGetter(C_LateGetter.const(DocDeclaration_Entity(DocModifiers.NONE, simpleName)))
+            val docDeclaration = DocDeclaration_Entity(DocModifiers.NONE, rQualifiedName.last)
+            val docGetter = cDefBase.docGetter(C_LateGetter.const(docDeclaration))
             cDefBase.rBase(R_CallFrame.NONE_INIT_FRAME_GETTER, null, docGetter)
         }
 
@@ -474,7 +475,7 @@ object C_Parser {
             val error = e.toCError()
             C_ErrorParserResult(error, e.eof)
         } catch (e: ParseException) {
-            val pos = S_BasicPos(filePath, state.lastRow, state.lastCol)
+            val pos = S_BasicPos(filePath, state.lastOffset, state.lastRow, state.lastCol)
             val error = C_Error.other(pos, "syntax", "Syntax error")
             C_ErrorParserResult(error, state.lastEof)
         }

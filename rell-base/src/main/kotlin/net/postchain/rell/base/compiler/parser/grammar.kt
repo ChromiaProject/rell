@@ -8,7 +8,6 @@ import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.parser.Parser
-import com.github.h0tk3y.betterParse.utils.Tuple2
 import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.model.R_KeyIndexKind
@@ -740,9 +739,10 @@ object S_Grammar: Grammar<S_RellFile>() {
         AnnotatedDef { S_FunctionDefinition(kw.pos, it, name, params, type, body) }
     }
 
-    private val namespaceDef by NAMESPACE * optional(qualifiedName) * -LCURL * zeroOrMore(parser(this::annotatedDef)) * -RCURL map {
-        (kw, name, defs) ->
-        AnnotatedDef { S_NamespaceDefinition(kw.pos, it, name, defs) }
+    private val namespaceDef by NAMESPACE * optional(qualifiedName) * LCURL * zeroOrMore(parser(this::annotatedDef)) * RCURL map {
+        (kw, name, lcurl, defs, rcurl) ->
+        val bodyPosRange = S_PosRange(lcurl.pos, rcurl.pos)
+        AnnotatedDef { S_NamespaceDefinition(kw.pos, it, bodyPosRange, name, defs) }
     }
 
     private val absoluteImportModule by qualifiedName map { S_ImportModulePath(null, it) }

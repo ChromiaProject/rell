@@ -7,7 +7,10 @@ package net.postchain.rell.base.lmodel.dsl
 import net.postchain.rell.base.compiler.base.utils.C_RFullNamePath
 import net.postchain.rell.base.lmodel.L_Module
 import net.postchain.rell.base.model.R_ModuleName
-import net.postchain.rell.base.utils.doc.*
+import net.postchain.rell.base.utils.doc.DocDeclaration_Module
+import net.postchain.rell.base.utils.doc.DocModifiers
+import net.postchain.rell.base.utils.doc.DocSymbolKind
+import net.postchain.rell.base.utils.doc.DocSymbolName
 import net.postchain.rell.base.utils.futures.FcManager
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap

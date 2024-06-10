@@ -61,12 +61,16 @@ class CodeDefinitionDocPosTest: BaseCodeDocTest() {
         file("lib.rell", "module;\nval X = 123;")
 
         chkPos0("", "lib:X", "lib.rell:2")
-        chkPos0("import lib.{X};", ":X", "lib.rell:2")
-        chkPos0("import lib.{Y:X};", ":Y", "lib.rell:2")
 
-        // Not supported now, but may be in the future.
         chkPos0("import lib;", ":lib", "n/a")
         chkPos0("import bil: lib;", ":bil", "n/a")
+        chkPos0("import ns: lib.*;", ":ns", "n/a")
+
+        chkPos0("import lib.{X};", ":X", "lib.rell:2")
+        chkPos0("import lib.{Y:X};", ":Y", "main.rell:1")
+
+        chkPos0("import ns:lib.{X};", ":ns", "n/a") //TODO support
+        chkPos0("import ns:lib.{Y:X};", ":ns", "n/a") //TODO support
     }
 
     @Test fun testNamespace() {

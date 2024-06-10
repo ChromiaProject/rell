@@ -58,19 +58,19 @@ class C_ExtReplCommand(
         val componentNsAssembler = replNsAssembler.addComponent()
 
         val modCtx = C_ReplModuleContext(
-                appCtx,
-                modProvider,
-                currentModuleName ?: R_ModuleName.EMPTY,
-                replNsAssembler.futureNs(),
-                componentNsAssembler.futureNs()
+            appCtx,
+            modProvider,
+            currentModuleName ?: R_ModuleName.EMPTY,
+            replNsAssembler.futureNs(),
+            componentNsAssembler.futureNs(),
         )
 
-        val symCtx = C_NopSymbolContext(appCtx.msgCtx, appCtx.globalCtx.compilerOptions)
+        val symCtx = appCtx.symCtxProvider.getNopSymbolContext()
         val fileCtx = C_FileContext(modCtx, symCtx)
 
         appCtx.executor.onPass(C_CompilerPass.MODULES) {
-            val mntTables = fileCtx.mntBuilder.build()
-            appCtx.addExtraMountTables(mntTables)
+            val fileFinish = fileCtx.finish()
+            appCtx.addExtraMountTables(fileFinish.mountTables)
         }
 
         return S_RellFile.createMountContext(fileCtx, R_MountName.EMPTY, componentNsAssembler)
@@ -121,26 +121,34 @@ class C_ExtReplCommand(
 
 object C_ReplCompiler {
     fun compile(
-            sourceDir: C_SourceDir,
-            currentModuleName: R_ModuleName?,
-            code: String,
-            globalCtx: C_GlobalContext,
-            oldDefsState: C_ReplDefsState,
-            oldCodeState: ReplCodeState
+        sourceDir: C_SourceDir,
+        currentModuleName: R_ModuleName?,
+        code: String,
+        globalCtx: C_GlobalContext,
+        oldDefsState: C_ReplDefsState,
+        oldCodeState: ReplCodeState,
     ): C_ReplResult {
         val msgCtx = C_MessageContext.create(globalCtx)
+        val symCtxProvider = C_SymbolContextManager(msgCtx, globalCtx.compilerOptions).provider
         val controller = C_CompilerController(msgCtx)
 
         val res = C_LateInit.context(controller.executor) {
             val extCommand = msgCtx.consumeError {
                 val ast = C_Parser.parseRepl(code)
-                ast.compile(msgCtx, sourceDir, currentModuleName, oldDefsState.appState)
+                ast.compile(
+                    msgCtx,
+                    symCtxProvider,
+                    controller.executor,
+                    sourceDir,
+                    currentModuleName,
+                    oldDefsState.appState,
+                )
             }
 
             if (extCommand == null) {
                 C_ReplResult(null, msgCtx.messages())
             } else {
-                compileExt(msgCtx, controller, extCommand, oldDefsState, oldCodeState)
+                compileExt(msgCtx, symCtxProvider, controller, extCommand, oldDefsState, oldCodeState)
             }
         }
 
@@ -149,6 +157,7 @@ object C_ReplCompiler {
 
     private fun compileExt(
         msgCtx: C_MessageContext,
+        symCtxProvider: C_SymbolContextProvider,
         controller: C_CompilerController,
         extCommand: C_ExtReplCommand,
         oldDefsState: C_ReplDefsState,
@@ -158,6 +167,7 @@ object C_ReplCompiler {
 
         val appCtx = C_AppContext(
             msgCtx,
+            symCtxProvider,
             executor,
             true,
             oldDefsState.appState,
@@ -171,15 +181,14 @@ object C_ReplCompiler {
 
         controller.run()
 
-        val app = appCtx.getApp()
+        val appFinish = appCtx.finish()
         val messages = CommonUtils.sortedByCopy(msgCtx.messages()) { C_ComparablePos(it.pos) }
         val errors = messages.filter { it.type == C_MessageType.ERROR }
 
-        val success = if (app == null || codeGetter == null || errors.isNotEmpty()) null else {
+        val success = if (appFinish == null || codeGetter == null || errors.isNotEmpty()) null else {
             val cCode = codeGetter.get()
-            val newAppState = appCtx.getNewReplState()
-            val newState = C_ReplDefsState(newAppState)
-            C_ReplSuccess(app, newState, cCode)
+            val newState = C_ReplDefsState(appFinish.replState)
+            C_ReplSuccess(appFinish.rApp, newState, cCode)
         }
 
         return C_ReplResult(success, messages)

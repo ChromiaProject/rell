@@ -4,13 +4,14 @@
 
 package net.postchain.rell.base.compiler.base.core
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.def.C_MountTables
 import net.postchain.rell.base.compiler.base.def.C_MountTablesBuilder
 import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.compiler.base.module.*
-import net.postchain.rell.base.compiler.base.namespace.C_Namespace
 import net.postchain.rell.base.compiler.base.namespace.C_LibNsMemberFactory
+import net.postchain.rell.base.compiler.base.namespace.C_Namespace
 import net.postchain.rell.base.compiler.base.namespace.C_SysNsProto
 import net.postchain.rell.base.compiler.base.namespace.C_SysNsProtoBuilder
 import net.postchain.rell.base.compiler.base.utils.*
@@ -18,6 +19,7 @@ import net.postchain.rell.base.lib.C_SystemLibrary
 import net.postchain.rell.base.lib.Lib_SysQueries
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
@@ -139,16 +141,25 @@ class C_SystemDefs private constructor(
             extraMod: C_LibModule?,
             test: Boolean,
         ): C_SystemDefsScope {
-            val libScope = C_SystemLibrary.getScope(test, globalCtx.compilerOptions.hiddenLib, extraMod)
+            val opts = globalCtx.compilerOptions
+            val libConfig = C_SystemLibrary.Config(
+                defaultLib = opts.defaultLib,
+                testLib = test,
+                hiddenLib = opts.hiddenLib,
+                extraMod,
+            )
+            val libScope = C_SystemLibrary.getScope(libConfig)
 
             val memberFactory = C_LibNsMemberFactory(C_RFullNamePath.of(R_ModuleName.EMPTY))
             val nsBuilder = C_SysNsProtoBuilder()
             nsBuilder.addAll(libScope.nsProto)
 
-            for (entity in sysEntities) {
-                val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_ENTITY, doc = entity.docSymbol)
-                val member = memberFactory.sysEntity(entity.rName, entity, ideInfo)
-                nsBuilder.addMember(entity.rName, member)
+            if (opts.defaultLib) {
+                for (entity in sysEntities) {
+                    val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_ENTITY, doc = entity.docSymbol)
+                    val member = memberFactory.sysEntity(entity.rName, entity, ideInfo)
+                    nsBuilder.addMember(entity.rName, member)
+                }
             }
 
             val nsProto = nsBuilder.build()
@@ -176,6 +187,7 @@ data class C_CompilerOptions(
     val deprecatedError: Boolean,
     val blockCheck: Boolean,
     val atAttrShadowing: C_AtAttrShadowing,
+    val defaultLib: Boolean,
     val testLib: Boolean,
     val hiddenLib: Boolean,
     val allowDbModificationsInObjectExprs: Boolean,
@@ -189,6 +201,7 @@ data class C_CompilerOptions(
     val ide: Boolean,
     val ideDocSymbolsEnabled: Boolean,
     val ideDefIdConflictError: Boolean,
+    val ideCompletions: C_IdeCompletionsOptions?,
 ) {
     init {
         if (!allowOlderCompatibilityVersion) {
@@ -199,7 +212,7 @@ data class C_CompilerOptions(
     fun toBuilder() = Builder(this)
 
     fun toPojoMap(): Map<String, Any> {
-        val map = mutableMapOf(
+        val map = mutableMapOf<String, Any>(
             "gtv" to gtv,
             "deprecatedError" to deprecatedError,
             "ide" to ide,
@@ -213,12 +226,15 @@ data class C_CompilerOptions(
             "useTestDependencyExtensions" to useTestDependencyExtensions,
         )
 
+        putNotDefault(map, "defaultLib") { it.defaultLib }
+        putNotDefault(map, "allowLibNamedArgsAnyVersion") { it.allowLibNamedArgsAnyVersion }
+        putNotDefault(map, "allowOlderCompatibilityVersion") { it.allowOlderCompatibilityVersion }
+
         putNotNull(map, "symbolInfoFile", symbolInfoFile?.str())
         putNotNull(map, "compatibility", compatibility?.str())
         putNotDefault(map, "ideDocSymbolsEnabled") { it.ideDocSymbolsEnabled }
         putNotDefault(map, "ideDefIdConflictError") { it.ideDefIdConflictError }
-        putNotDefault(map, "allowLibNamedArgsAnyVersion") { it.allowLibNamedArgsAnyVersion }
-        putNotDefault(map, "allowOlderCompatibilityVersion") { it.allowOlderCompatibilityVersion }
+        putNotNull(map, "ideCompletions", ideCompletions?.toPojo())
 
         return map.toImmMap()
     }
@@ -246,6 +262,7 @@ data class C_CompilerOptions(
             deprecatedError = false,
             blockCheck = false,
             atAttrShadowing = C_AtAttrShadowing.DEFAULT,
+            defaultLib = true,
             testLib = false,
             hiddenLib = false,
             allowDbModificationsInObjectExprs = true,
@@ -259,12 +276,14 @@ data class C_CompilerOptions(
             ide = false,
             ideDocSymbolsEnabled = false,
             ideDefIdConflictError = false,
+            ideCompletions = null,
         )
 
         @JvmStatic fun builder() = Builder()
 
         @JvmStatic fun builder(options: C_CompilerOptions) = Builder(options)
 
+        @Suppress("UNCHECKED_CAST")
         @JvmStatic fun fromPojoMap(map: Map<String, Any>): C_CompilerOptions {
             return C_CompilerOptions(
                 compatibility = (map["compatibility"] as String?)?.let { R_LangVersion.of(it) },
@@ -272,24 +291,27 @@ data class C_CompilerOptions(
                 gtv = map.getValue("gtv") as Boolean,
                 deprecatedError = map.getValue("deprecatedError") as Boolean,
                 atAttrShadowing = (map["atAttrShadowing"] as String?)
-                        ?.let { C_AtAttrShadowing.valueOf(it) } ?: DEFAULT.atAttrShadowing,
+                    ?.let { C_AtAttrShadowing.valueOf(it) } ?: DEFAULT.atAttrShadowing,
                 ide = getBoolOpt(map, "ide", DEFAULT.ide),
+                defaultLib = getBoolOpt(map, "defaultLib", DEFAULT.defaultLib),
                 testLib = getBoolOpt(map, "testLib", DEFAULT.testLib),
                 hiddenLib = getBoolOpt(map, "hiddenLib", DEFAULT.hiddenLib),
                 allowDbModificationsInObjectExprs =
-                        getBoolOpt(map, "allowDbModificationsInObjectExprs", DEFAULT.allowDbModificationsInObjectExprs),
+                    getBoolOpt(map, "allowDbModificationsInObjectExprs", DEFAULT.allowDbModificationsInObjectExprs),
                 symbolInfoFile = (map["symbolInfoFile"] as String?)?.let { C_SourcePath.parse(it) },
                 complexWhatEnabled = getBoolOpt(map, "complexWhatEnabled", DEFAULT.complexWhatEnabled),
                 mountConflictError = getBoolOpt(map, "mountConflictError", DEFAULT.mountConflictError),
                 appModuleInTestsError = getBoolOpt(map, "appModuleInTestsError", DEFAULT.appModuleInTestsError),
                 useTestDependencyExtensions =
-                        getBoolOpt(map, "useTestDependencyExtensions", DEFAULT.useTestDependencyExtensions),
+                    getBoolOpt(map, "useTestDependencyExtensions", DEFAULT.useTestDependencyExtensions),
                 allowLibNamedArgsAnyVersion =
-                        getBoolOpt(map, "allowLibNamedArgsAnyVersion", DEFAULT.allowLibNamedArgsAnyVersion),
+                    getBoolOpt(map, "allowLibNamedArgsAnyVersion", DEFAULT.allowLibNamedArgsAnyVersion),
                 allowOlderCompatibilityVersion =
-                        getBoolOpt(map, "allowOlderCompatibilityVersion", DEFAULT.allowOlderCompatibilityVersion),
+                    getBoolOpt(map, "allowOlderCompatibilityVersion", DEFAULT.allowOlderCompatibilityVersion),
                 ideDocSymbolsEnabled = getBoolOpt(map, "ideDocSymbolsEnabled", DEFAULT.ideDocSymbolsEnabled),
                 ideDefIdConflictError = getBoolOpt(map, "ideDefIdConflictError", DEFAULT.ideDefIdConflictError),
+                ideCompletions = (map["ideCompletions"] as Map<String, Any>?)
+                    ?.let { C_IdeCompletionsOptions.fromPojo(it) } ?: DEFAULT.ideCompletions,
             )
         }
 
@@ -306,6 +328,7 @@ data class C_CompilerOptions(
         private var deprecatedError = proto.deprecatedError
         private var blockCheck = proto.blockCheck
         private var atAttrShadowing = proto.atAttrShadowing
+        private var defaultLib = proto.defaultLib
         private var testLib = proto.testLib
         private var hiddenLib = proto.hiddenLib
         private var allowDbModificationsInObjectExprs = proto.allowDbModificationsInObjectExprs
@@ -319,12 +342,14 @@ data class C_CompilerOptions(
         private var ide = proto.ide
         private var ideDocSymbolsEnabled = proto.ideDocSymbolsEnabled
         private var ideDefIdConflictError = proto.ideDefIdConflictError
+        private var ideCompletions = proto.ideCompletions
 
         @Suppress("UNUSED") fun compatibility(v: R_LangVersion) = apply { compatibility = v }
         @Suppress("UNUSED") fun gtv(v: Boolean) = apply { gtv = v }
         @Suppress("UNUSED") fun deprecatedError(v: Boolean) = apply { deprecatedError = v }
         @Suppress("UNUSED") fun blockCheck(v: Boolean) = apply { blockCheck = v }
         @Suppress("UNUSED") fun atAttrShadowing(v: C_AtAttrShadowing) = apply { atAttrShadowing = v }
+        @Suppress("UNUSED") fun defaultLib(v: Boolean) = apply { defaultLib = v }
         @Suppress("UNUSED") fun testLib(v: Boolean) = apply { testLib = v }
         @Suppress("UNUSED") fun hiddenLib(v: Boolean) = apply { hiddenLib = v }
         @Suppress("UNUSED") fun allowDbModificationsInObjectExprs(v: Boolean) = apply { allowDbModificationsInObjectExprs = v }
@@ -338,6 +363,8 @@ data class C_CompilerOptions(
         @Suppress("UNUSED") fun ide(v: Boolean) = apply { ide = v }
         @Suppress("UNUSED") fun ideDocSymbolsEnabled(v: Boolean) = apply { ideDocSymbolsEnabled = v }
         @Suppress("UNUSED") fun ideDefIdConflictError(v: Boolean) = apply { ideDefIdConflictError = v }
+        @Suppress("UNUSED") fun ideCompletions(v: C_IdeCompletionsOptions) = apply { ideCompletions = v }
+
 
         fun build() = C_CompilerOptions(
             compatibility = compatibility,
@@ -345,6 +372,7 @@ data class C_CompilerOptions(
             deprecatedError = deprecatedError,
             blockCheck = blockCheck,
             atAttrShadowing = atAttrShadowing,
+            defaultLib = defaultLib,
             testLib = testLib,
             hiddenLib = hiddenLib,
             allowDbModificationsInObjectExprs = allowDbModificationsInObjectExprs,
@@ -358,6 +386,7 @@ data class C_CompilerOptions(
             ide = ide,
             ideDocSymbolsEnabled = ideDocSymbolsEnabled,
             ideDefIdConflictError = ideDefIdConflictError,
+            ideCompletions = ideCompletions,
         )
     }
 }
@@ -418,17 +447,26 @@ object C_Compiler {
         val symCtxProvider = symCtxManager.provider
 
         val midModules = msgCtx.consumeError {
-            val midModules = loadMidModules(msgCtx, sourceDir, moduleSelection, symCtxProvider)
+            val midModules = loadMidModules(msgCtx, controller.executor, sourceDir, moduleSelection, symCtxProvider)
             checkMainModules(msgCtx, moduleSelection, midModules)
             midModules
         } ?: immListOf()
 
         val extModules = msgCtx.consumeError {
-            compileMidModules(msgCtx, midModules)
+            compileMidModules(msgCtx, symCtxProvider, midModules)
         } ?: immListOf()
 
         val moduleHeaders = midModules.associate { it.moduleName to it.compiledHeader }.toImmMap()
-        val appCtx = C_AppContext(msgCtx, controller.executor, false, C_ReplAppState.EMPTY, moduleHeaders, extraLibMod)
+
+        val appCtx = C_AppContext(
+            msgCtx,
+            symCtxProvider,
+            controller.executor,
+            false,
+            C_ReplAppState.EMPTY,
+            moduleHeaders,
+            extraLibMod,
+        )
 
         msgCtx.consumeError {
             val extCompiler = C_ExtModuleCompiler(appCtx, extModules, immMapOf())
@@ -438,24 +476,25 @@ object C_Compiler {
         val files = extModules.flatMap { it.midModule.filePaths() }.toImmList()
 
         controller.run()
-        val ideSymbolInfos = symCtxManager.finish()
 
-        val app = appCtx.getApp()
+        val symFinish = symCtxManager.finish()
+        val appFinish = appCtx.finish()
 
         val messages = CommonUtils.sortedByCopy(msgCtx.messages()) { C_ComparablePos(it.pos) }
         val errors = messages.filter { it.type == C_MessageType.ERROR }
 
-        val rApp = if (errors.isEmpty()) app else null
-        return C_CompilationResult(rApp, messages, files, ideSymbolInfos)
+        val rApp = if (errors.isEmpty()) appFinish?.rApp else null
+        return C_CompilationResult(rApp, messages, files, symFinish.symbolInfos, symFinish.completions)
     }
 
     private fun compileMidModules(
         msgCtx: C_MessageContext,
+        symCtxProvider: C_SymbolContextProvider,
         midModules: List<C_MidModule>,
     ): List<C_ExtModule> {
         val selModules = midModules.filter { it.isSelected }
 
-        val midCompiler = C_MidModuleCompiler(msgCtx, midModules)
+        val midCompiler = C_MidModuleCompiler(msgCtx, symCtxProvider, midModules)
         for (selModule in selModules) {
             midCompiler.compileModule(selModule.moduleName, null)
         }
@@ -464,12 +503,13 @@ object C_Compiler {
     }
 
     private fun loadMidModules(
-            msgCtx: C_MessageContext,
-            sourceDir: C_SourceDir,
-            modSel: C_CompilerModuleSelection,
-            symCtxProvider: C_SymbolContextProvider,
+        msgCtx: C_MessageContext,
+        executor: C_CompilerExecutor,
+        sourceDir: C_SourceDir,
+        modSel: C_CompilerModuleSelection,
+        symCtxProvider: C_SymbolContextProvider,
     ): List<C_MidModule> {
-        val modLdr = C_ModuleLoader(msgCtx, symCtxProvider, sourceDir, immMapOf())
+        val modLdr = C_ModuleLoader(msgCtx, symCtxProvider, executor, sourceDir, immMapOf())
 
         if (modSel.appModules == null) {
             modLdr.loadAllModules()
@@ -569,9 +609,11 @@ class C_CompilationResult(
     messages: List<C_Message>,
     files: List<C_SourcePath>,
     ideSymbolInfos: Map<S_Pos, IdeSymbolInfo>,
+    ideCompletions: Multimap<String, IdeCompletion>,
 ): C_AbstractResult(messages) {
     val files = files.toImmList()
     val ideSymbolInfos = ideSymbolInfos.toImmMap()
+    val ideCompletions = ideCompletions.toImmMultimap()
 }
 
 abstract class C_CompilerExecutor {
@@ -595,7 +637,7 @@ abstract class C_CompilerExecutor {
 class C_CompilerController(private val msgCtx: C_MessageContext) {
     val executor: C_CompilerExecutor = ExecutorImpl()
 
-    private val passes = C_CompilerPass.values().map { it to queueOf<C_PassTask>() }.toMap()
+    private val passes = C_CompilerPass.values().associateWith { queueOf<C_PassTask>() }.toImmMap()
     private var currentPass = C_CompilerPass.values()[0]
 
     private var runCalled = false

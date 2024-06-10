@@ -321,7 +321,7 @@ class S_AtExprWhat_Complex(val startPos: S_Pos, val fields: List<S_AtExprWhatCom
             if (field.flags.omit) defIdeInfo = defIdeInfo.update(defId = null)
             field.explicitNameHand.setIdeInfo(defIdeInfo)
         } else if (ideDefId != null) {
-            ctx.symCtx.setDefId(field.effectiveName.pos, ideDefId)
+            ctx.nameCtx.setDefId(field.effectiveName.pos, ideDefId)
         }
 
         val hasActualName = !field.flags.omit && (field.explicitNameHand != null || manyFields)

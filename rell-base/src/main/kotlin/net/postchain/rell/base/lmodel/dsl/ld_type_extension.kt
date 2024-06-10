@@ -9,7 +9,6 @@ import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.mtype.M_Types
 import net.postchain.rell.base.utils.doc.DocDeclaration_TypeExtension
-import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
 import net.postchain.rell.base.utils.futures.FcFuture
@@ -48,7 +47,7 @@ class Ld_NamespaceMember_TypeExtension(
         val docSelfType = L_TypeUtils.docType(mSelfType)
         val docSymbol = Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.TYPE_EXTENSION,
-            symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
+            symbolName = DocSymbolName.global(fullName),
             declaration = DocDeclaration_TypeExtension(fullName.last, docTypeParams, docSelfType),
             comment = memberHeader.docComment,
         )

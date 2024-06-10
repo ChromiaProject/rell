@@ -1,6 +1,13 @@
+/*
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.base.lib
 
-import net.postchain.rell.base.lib.type.*
+import net.postchain.rell.base.lib.type.R_ListType
+import net.postchain.rell.base.lib.type.R_TextType
+import net.postchain.rell.base.lib.type.Rt_ListValue
+import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 

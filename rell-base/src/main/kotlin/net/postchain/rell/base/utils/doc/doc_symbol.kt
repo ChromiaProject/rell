@@ -4,6 +4,9 @@
 
 package net.postchain.rell.base.utils.doc
 
+import net.postchain.rell.base.model.R_FullName
+import net.postchain.rell.base.model.R_ModuleName
+
 enum class DocSymbolKind(val msg: String) {
     NONE("symbol"),
     MODULE("module"),
@@ -45,7 +48,7 @@ class DocSymbol(
     companion object {
         val NONE = DocSymbol(
             kind = DocSymbolKind.NONE,
-            symbolName = DocSymbolName.module(""),
+            symbolName = DocSymbolName.module(R_ModuleName.EMPTY),
             mountName = null,
             declaration = DocDeclaration.NONE,
             comment = null,
@@ -62,8 +65,16 @@ sealed class DocSymbolName {
             return DocSymbolName_Module(moduleName)
         }
 
+        fun module(moduleName: R_ModuleName): DocSymbolName {
+            return module(moduleName.str())
+        }
+
         fun global(moduleName: String, qualifiedName: String): DocSymbolName {
             return DocSymbolName_Global(moduleName, qualifiedName)
+        }
+
+        fun global(fullName: R_FullName): DocSymbolName {
+            return global(fullName.moduleName.str(), fullName.qualifiedName.str())
         }
 
         fun local(simpleName: String): DocSymbolName {

@@ -219,7 +219,7 @@ class S_DollarExpr(pos: S_Pos): S_Expr(pos) {
         ph ?: throw C_Errors.errAtPlaceholderNotDefined(startPos)
 
         val ideInfo = ph.ideSymbolInfo()
-        ctx.symCtx.addSymbol(startPos, ideInfo)
+        ctx.nameCtx.addSymbol(startPos, ideInfo)
 
         val vExpr = ph.compile(ctx, startPos)
         return C_ValueExpr(vExpr)

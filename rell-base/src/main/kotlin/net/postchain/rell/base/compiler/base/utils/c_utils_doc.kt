@@ -13,6 +13,8 @@ import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.doc.*
 
+typealias DocSymbolTransformer = (DocSymbol) -> DocSymbol
+
 object C_DocUtils {
     fun getDocFactory(opts: C_CompilerOptions): DocSymbolFactory {
         return if (opts.ideDocSymbolsEnabled) DocSymbolFactory.NORMAL else DocSymbolFactory.NONE

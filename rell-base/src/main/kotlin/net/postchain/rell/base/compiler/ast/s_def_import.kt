@@ -16,7 +16,6 @@ import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
-import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.*
@@ -83,7 +82,7 @@ class S_ImportModulePath(
         importPos: S_Pos,
         currentModule: R_ModuleName,
     ): C_ImportModulePathHandle? {
-        val nameHand = moduleName?.compile(symCtx, def = true)
+        val nameHand = moduleName?.compile(symCtx.nameCtx, def = true)
 
         val cModuleName = nameHand?.cName
         val modNameDetails = compileModuleName(msgMgr, importPos, currentModule, cModuleName)
@@ -182,14 +181,14 @@ sealed class S_ImportTarget {
         var doc: DocSymbol? = null
 
         if (explicitAlias != null) {
-            val fullName = ctx.namespacePath.qualifiedName(explicitAlias.rName)
-            val id = IdeSymbolId(IdeSymbolCategory.NAMESPACE, fullName.str())
+            val fullName = ctx.namespacePath.fullName(explicitAlias.rName)
+            val id = IdeSymbolId(IdeSymbolCategory.NAMESPACE, fullName.qualifiedName.str())
             aliasIdeId = IdeSymbolGlobalId(ctx.fileCtx.idePath, id)
 
             val docDec = docDecMaker(explicitAlias)
             doc = ctx.docFactory.makeDocSymbol(
                 DocSymbolKind.IMPORT,
-                DocSymbolName.global(ctx.moduleName.str(), fullName.str()),
+                DocSymbolName.global(fullName),
                 docDec,
             )
         }
@@ -209,13 +208,16 @@ object S_DefaultImportTarget: S_ImportTarget() {
         val explicitAliasIdeDefId = aliasIdeDefId(ctx, explicitAlias)
         val implicitAliasIdeDefId = if (explicitAlias != null) null else aliasIdeDefId(ctx, importAlias?.implicit)
 
-        val aliasFullName = if (explicitAlias == null) null else {
-            R_FullName(ctx.moduleName, ctx.namespacePath.qualifiedName(explicitAlias.rName))
+        val aliasFullName = if (explicitAlias == null) null else ctx.namespacePath.fullName(explicitAlias.rName)
+
+        val actualAlias = importAlias?.explicit ?: importAlias?.implicit
+        val docDeclaration = if (actualAlias == null) DocDeclaration.NONE else {
+            DocDeclaration_ImportModule(docModifiers, moduleName, explicitAlias?.rName)
         }
-        val docDeclaration = DocDeclaration_ImportModule(docModifiers, moduleName, explicitAlias?.rName)
 
         return C_DefaultImportTarget(
             ctx.docFactory,
+            actualAlias,
             importAlias,
             explicitAliasIdeDefId,
             implicitAliasIdeDefId,
@@ -234,20 +236,19 @@ object S_DefaultImportTarget: S_ImportTarget() {
 
     private class C_DefaultImportTarget(
         val docFactory: DocSymbolFactory,
+        val actualAlias: C_Name?,
         val importAlias: C_ImportAlias?,
         val explicitAliasIdeDefId: IdeSymbolId?,
         val implicitAliasIdeDefId: IdeSymbolId?,
         val aliasFullName: R_FullName?,
         val docDeclaration: DocDeclaration,
     ): C_ImportTarget() {
-        private val actualAlias = importAlias?.explicit ?: importAlias?.implicit
-
         override fun moduleIdeDefId() = implicitAliasIdeDefId
 
         override fun aliasIdeInfo(): C_IdeSymbolInfo {
             val docSymbol = if (aliasFullName == null) DocSymbol.NONE else docFactory.makeDocSymbol(
                 kind = C_DefinitionType.IMPORT.docKind,
-                symbolName = DocSymbolName.global(aliasFullName.moduleName.str(), aliasFullName.qualifiedName.str()),
+                symbolName = DocSymbolName.global(aliasFullName),
                 declaration = docDeclaration,
             )
             return C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_IMPORT_ALIAS, defId = explicitAliasIdeDefId, doc = docSymbol)
@@ -295,15 +296,20 @@ class S_ExactImportTargetItem(
         if (wildcard) {
             val nsBuilder2 = if (aliasHand == null) nsBuilder else {
                 val qualifiedName = nsBuilder.namespacePath().qualifiedName(aliasHand.rName)
+                val fullName = R_FullName(currentModuleName, qualifiedName)
 
-                val doc = makeDocSymbol(
-                    ctx.globalCtx.docFactory,
+                val docDeclaration = DocDeclaration_ImportExactAlias_Wildcard(
                     docModifiers,
-                    importAlias,
-                    currentModuleName,
                     targetModule.name,
                     nameHand.rName,
-                    qualifiedName,
+                    importAlias?.rName,
+                    fullName.last,
+                )
+
+                val doc = ctx.globalCtx.docFactory.makeDocSymbol(
+                    DocSymbolKind.IMPORT,
+                    DocSymbolName.global(fullName),
+                    docDeclaration,
                 )
 
                 val ideId = makeAliasIdeId(qualifiedName, aliasHand.name, IdeSymbolCategory.NAMESPACE)
@@ -312,49 +318,36 @@ class S_ExactImportTargetItem(
 
                 nsBuilder.addNamespace(aliasHand.name, false, ideDef.refInfo, deprecated = null)
             }
+
             nsBuilder2.addWildcardImport(targetModule, nameHand.parts)
         } else {
             val aliasPair = if (aliasHand == null) null else {
                 val qualifiedName = nsBuilder.namespacePath().qualifiedName(aliasHand.rName)
-                aliasHand to makeDocSymbol(
-                    ctx.globalCtx.docFactory,
-                    docModifiers,
-                    importAlias,
-                    currentModuleName,
-                    targetModule.name,
-                    nameHand.rName,
-                    qualifiedName,
-                )
+                val fullName = R_FullName(currentModuleName, qualifiedName)
+
+                val docTrans: DocSymbolTransformer = { doc ->
+                    val docDeclaration = DocDeclaration_ImportExactAlias_Single(
+                        docModifiers,
+                        targetModule.name,
+                        nameHand.rName,
+                        importAlias?.rName,
+                        fullName.last,
+                        doc.declaration,
+                    )
+
+                    ctx.globalCtx.docFactory.makeDocSymbol(
+                        DocSymbolKind.IMPORT,
+                        DocSymbolName.global(fullName),
+                        docDeclaration,
+                    )
+                }
+
+                aliasHand to docTrans
             }
 
             val realAlias = aliasHand ?: nameHand.last
             nsBuilder.addExactImport(realAlias.name, targetModule, nameHand, aliasPair)
         }
-    }
-
-    private fun makeDocSymbol(
-        docFactory: DocSymbolFactory,
-        docModifiers: DocModifiers,
-        importAlias: C_Name?,
-        currentModuleName: R_ModuleName,
-        targetModuleName: R_ModuleName,
-        targetQualifiedName: R_QualifiedName,
-        qualifiedName: R_QualifiedName,
-    ): DocSymbol {
-        val docDec = DocDeclaration_ImportExactAlias(
-            docModifiers,
-            targetModuleName,
-            targetQualifiedName,
-            importAlias?.rName,
-            qualifiedName.last,
-            wildcard = wildcard,
-        )
-
-        return docFactory.makeDocSymbol(
-            DocSymbolKind.IMPORT,
-            DocSymbolName.global(currentModuleName.str(), qualifiedName.str()),
-            docDec,
-        )
     }
 
     companion object {
@@ -481,7 +474,8 @@ class S_ImportDefinition(
 
     override fun ideGetImportedModules(moduleName: R_ModuleName, res: MutableSet<R_ModuleName>) {
         val msgMgr = C_DefaultMessageManager()
-        val symCtx = C_NopSymbolContext(msgMgr, C_CompilerOptions.DEFAULT)
+        val symCtxMgr = C_SymbolContextManager(msgMgr, C_CompilerOptions.DEFAULT)
+        val symCtx = symCtxMgr.provider.getNopSymbolContext()
         val cModulePath = modulePath.compile(msgMgr, symCtx, kwPos, moduleName)
         if (cModulePath != null) {
             res.add(cModulePath.moduleName)

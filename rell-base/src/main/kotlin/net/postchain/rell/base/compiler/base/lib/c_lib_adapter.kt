@@ -4,8 +4,10 @@
 
 package net.postchain.rell.base.compiler.base.lib
 
+import net.postchain.rell.base.compiler.base.core.C_DefinitionName
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.compiler.base.namespace.*
+import net.postchain.rell.base.compiler.base.utils.C_IdeCompletionsUtils
 import net.postchain.rell.base.compiler.base.utils.C_RFullNamePath
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.lmodel.*
@@ -74,13 +76,14 @@ private class C_LibNamespaceConverter {
             is L_NamespaceMember_Function -> {
                 val restrictions = C_MemberRestrictions.makeLib(lMember, C_DeclarationType.FUNCTION, lMember.deprecated)
                 val fnCase = convertFunctionCase(lMember, lMember.docSymbol, restrictions)
-                b.addFunction(lMember.simpleName, fnCase)
+                val defName = b.basePath.toDefPath().subName(lMember.simpleName)
+                val ideCompletion = C_IdeCompletionsUtils.makeIdeCompletion(defName, lMember.docSymbol)
+                b.addFunction(lMember.simpleName, fnCase, ideCompletion)
             }
             else -> {
                 val cMember = convertMemberCached(lMember)
                 if (cMember != null) {
-                    val item = C_NamespaceItem(cMember)
-                    b.addMember(lMember.simpleName, item)
+                    b.addMember(lMember.simpleName, cMember)
                 }
             }
         }
@@ -91,7 +94,9 @@ private class C_LibNamespaceConverter {
         if (lTargetMember is L_NamespaceMember_Function) {
             val restrictions = C_MemberRestrictions.makeLib(lMember, C_DeclarationType.ALIAS, lMember.deprecated)
             val fnCase = convertFunctionCase(lTargetMember, lMember.docSymbol, restrictions)
-            b.addFunction(lMember.simpleName, fnCase)
+            val defName = b.basePath.toDefPath().subName(lMember.simpleName)
+            val ideCompletion = C_IdeCompletionsUtils.makeIdeCompletion(defName, lMember.docSymbol, lTargetMember.docSymbol)
+            b.addFunction(lMember.simpleName, fnCase, ideCompletion)
             return
         }
 
@@ -104,8 +109,9 @@ private class C_LibNamespaceConverter {
         val ideInfo = C_IdeSymbolInfo.direct(ideInfo0.kind, ideInfo0.defId, ideInfo0.link, lMember.docSymbol)
         val restrictions = C_MemberRestrictions.makeLib(lMember, C_DeclarationType.ALIAS, lMember.deprecated)
 
-        val item = C_NamespaceItem(cMember, ideInfo, restrictions = restrictions)
-        b.addMember(lMember.simpleName, item)
+        val defName = C_DefinitionName(lMember.fullName)
+        val aliasBase = C_NamespaceMemberBase(defName, ideInfo, restrictions)
+        b.addMember(lMember.simpleName, C_NamespaceMember_Alias(aliasBase, cMember, null))
     }
 
     private fun convertMemberNamespace(b: C_LibNamespace.Maker, lMember: L_NamespaceMember_Namespace) {
@@ -152,7 +158,7 @@ private class C_LibNamespaceConverter {
                 val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_FUNCTION_SYSTEM, doc = lMember.docSymbol)
                 val restrictions = C_MemberRestrictions.makeLib(lMember, C_DeclarationType.FUNCTION, null)
                 val cFn = C_SpecialLibGlobalFunction(lMember.fn, ideInfo, restrictions)
-                memberFactory.function(lMember.simpleName, cFn, ideInfo, C_MemberRestrictions.NULL)
+                memberFactory.function(lMember.simpleName, cFn, ideInfo, C_MemberRestrictions.NULL, null)
             }
             is L_NamespaceMember_Namespace,
             is L_NamespaceMember_Function,

@@ -5,7 +5,6 @@
 package net.postchain.rell.base.lang.module
 
 import net.postchain.rell.base.testutils.BaseRellTest
-import net.postchain.rell.base.utils.RellVersions
 import org.junit.Test
 
 class ImportTest: BaseRellTest(false) {

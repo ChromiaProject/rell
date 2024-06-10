@@ -5,6 +5,7 @@
 package net.postchain.rell.base.compiler.base.lib
 
 import net.postchain.rell.base.compiler.ast.S_Pos
+import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.core.C_DefinitionName
 import net.postchain.rell.base.compiler.base.core.C_MessageContext
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
@@ -19,6 +20,7 @@ import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.utils.capitalizeEx
 
 abstract class C_MemberRestrictions {
+    abstract fun isRestricted(compilerOptions: C_CompilerOptions): Boolean
     abstract fun access(msgCtx: C_MessageContext, pos: S_Pos)
 
     companion object {
@@ -68,6 +70,8 @@ abstract class C_MemberRestrictions {
 }
 
 private object C_MemberRestrictions_Null: C_MemberRestrictions() {
+    override fun isRestricted(compilerOptions: C_CompilerOptions) = false
+
     override fun access(msgCtx: C_MessageContext, pos: S_Pos) {
         // Do nothing.
     }
@@ -79,6 +83,19 @@ private class C_MemberRestrictions_Normal(
     private val deprecated: C_Deprecated?,
     private val since: R_LangVersion?,
 ): C_MemberRestrictions() {
+    override fun isRestricted(compilerOptions: C_CompilerOptions): Boolean {
+        if (deprecated != null && (deprecated.error || compilerOptions.deprecatedError)) {
+            return true
+        }
+
+        val version = compilerOptions.compatibility
+        if (since != null && version != null && version < since) {
+            return true
+        }
+
+        return false
+    }
+
     override fun access(msgCtx: C_MessageContext, pos: S_Pos) {
         if (deprecated != null) {
             deprecatedMessage(msgCtx, pos, memberName, deprecated)

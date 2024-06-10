@@ -18,18 +18,21 @@ import net.postchain.rell.base.compiler.base.module.C_ModuleKey
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lib.type.V_ObjectExpr
+import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
+import net.postchain.rell.base.utils.doc.DocSymbolKind
+import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 
-class C_NsEntry(val name: R_Name, val item: C_NamespaceItem) {
+class C_NsEntry(val name: R_Name, val member: C_NamespaceMember) {
     fun addToNamespace(nsBuilder: C_NamespaceBuilder) {
-        nsBuilder.add(name, item)
+        nsBuilder.add(name, member)
     }
 
     companion object {
@@ -70,11 +73,29 @@ sealed class C_NamespaceMember(base: C_NamespaceMemberBase) {
     val ideInfo = base.ideInfo
     val restrictions = base.restrictions
 
+    val docDefinition: DocDefinition by lazy {
+        getDocDefinition0()
+    }
+
+    /** Multiple values in case of an overloaded function. */
+    val ideCompletions: List<IdeCompletion> by lazy {
+        getIdeCompletions0().toImmList()
+    }
+
     abstract fun declarationType(): C_DeclarationType
 
-    protected abstract fun hasTag(tag: C_NamespaceMemberTag): Boolean
+    abstract fun hasTag(tag: C_NamespaceMemberTag): Boolean
+
+    fun hasTag(tags: List<C_NamespaceMemberTag>): Boolean {
+        return when {
+            tags.isEmpty() -> true
+            else -> tags.any { hasTag(it) }
+        }
+    }
 
     fun isCallable() = hasTag(C_NamespaceMemberTag.CALLABLE)
+
+    open fun getTargetMember(): C_NamespaceMember = this
 
     open fun getNamespaceOpt(): C_Namespace? = null
     open fun getTypeOpt(): C_TypeDef? = null
@@ -86,19 +107,66 @@ sealed class C_NamespaceMember(base: C_NamespaceMemberBase) {
     open fun addToDefs(b: C_ModuleDefsBuilder) {
     }
 
-    fun hasTag(tags: List<C_NamespaceMemberTag>): Boolean {
-        return when {
-            tags.isEmpty() -> true
-            else -> tags.any { hasTag(it) }
+    protected open fun getDocDefinition0(): DocDefinition = DefaultDocDefinition()
+
+    protected open fun getIdeCompletions0(): List<IdeCompletion> {
+        val ideComp = makeIdeCompletion(docDefinition.docSymbol)
+        return immListOf(ideComp)
+    }
+
+    abstract fun toExpr(ctx: C_ExprContext, qName: C_QualifiedName, ideInfoPtr: C_UniqueDefaultIdeInfoPtr): C_Expr
+
+    protected fun makeIdeCompletion(doc: DocSymbol): IdeCompletion {
+        return C_IdeCompletionsUtils.makeIdeCompletion(defName, doc)
+    }
+
+    private inner class DefaultDocDefinition: DocDefinition {
+        override val docSymbol get() = ideInfo.getIdeInfo().doc ?: DocSymbol.NONE
+        override val docSourcePos get() = null
+    }
+}
+
+class C_NamespaceMember_Alias(
+    base: C_NamespaceMemberBase,
+    target: C_NamespaceMember,
+    docSourcePos: DocSourcePos?,
+): C_NamespaceMember(base) {
+    private val docSourcePos0 = docSourcePos
+
+    private val finalTarget = target.getTargetMember()
+
+    override fun declarationType() = finalTarget.declarationType()
+    override fun hasTag(tag: C_NamespaceMemberTag) = finalTarget.hasTag(tag)
+
+    override fun getTargetMember() = finalTarget
+
+    override fun getNamespaceOpt() = finalTarget.getNamespaceOpt()
+    override fun getTypeOpt() = finalTarget.getTypeOpt()
+    override fun getEntityOpt() = finalTarget.getEntityOpt()
+    override fun getFunctionOpt() = finalTarget.getFunctionOpt()
+    override fun getObjectOpt() = finalTarget.getObjectOpt()
+    override fun getOperationOpt() = finalTarget.getOperationOpt()
+
+    override fun toExpr(ctx: C_ExprContext, qName: C_QualifiedName, ideInfoPtr: C_UniqueDefaultIdeInfoPtr): C_Expr {
+        return finalTarget.toExpr(ctx, qName, ideInfoPtr)
+    }
+
+    override fun getDocDefinition0(): DocDefinition = DocDefinitionImpl()
+
+    override fun getIdeCompletions0(): List<IdeCompletion> {
+        val doc = docDefinition.docSymbol
+        val targetComps = finalTarget.ideCompletions
+        val location = C_IdeCompletionsUtils.getIdeCompletionLocation(defName)
+        return targetComps.map {
+            IdeCompletion(it.kind, doc.symbolName, it.params, it.result, location)
         }
     }
 
-    protected open fun rDefinition(): R_Definition? = null
-
-    fun getDocSourcePos(): DocSourcePos? = rDefinition()?.docSourcePos
-    open fun getDocMember(name: String): DocDefinition? = rDefinition()?.getDocMember(name)
-
-    abstract fun toExpr(ctx: C_ExprContext, qName: C_QualifiedName, ideInfoPtr: C_UniqueDefaultIdeInfoPtr): C_Expr
+    private inner class DocDefinitionImpl: DocDefinition {
+        override val docSymbol get() = ideInfo.getIdeInfo().doc ?: DocSymbol.NONE
+        override val docSourcePos get() = docSourcePos0
+        override fun getDocMember(name: String) = finalTarget.docDefinition.getDocMember(name)
+    }
 }
 
 private class C_NamespaceMember_Property(
@@ -136,9 +204,16 @@ class C_NamespaceMember_Namespace(
         return C_NamespaceExpr(qName, ns, defName, importModule)
     }
 
-    override fun getDocMember(name: String): DocDefinition? {
-        val elem = ns.getElement(R_Name.of(name), null)
-        return elem?.item
+    override fun getDocDefinition0(): DocDefinition = DocDefinitionImpl()
+
+    private inner class DocDefinitionImpl: DocDefinition {
+        override val docSymbol get() = ideInfo.getIdeInfo().doc ?: DocSymbol.NONE
+        override val docSourcePos get() = null
+
+        override fun getDocMember(name: String): DocDefinition? {
+            val elem = ns.getElement(R_Name.of(name), null)
+            return elem?.member?.docDefinition
+        }
     }
 
     private class C_NamespaceExpr(
@@ -187,6 +262,12 @@ private class C_NamespaceMember_Type(
 
     override fun getTypeOpt() = typeDef
 
+    override fun getIdeCompletions0(): List<IdeCompletion> {
+        val constructors = typeDef.constructors.constructors + typeDef.constructors.specialConstructors
+        val constructorComps = constructors.map { makeIdeCompletion(it.docSymbol) }
+        return super.getIdeCompletions0() + constructorComps
+    }
+
     override fun toExpr(ctx: C_ExprContext, qName: C_QualifiedName, ideInfoPtr: C_UniqueDefaultIdeInfoPtr): C_Expr {
         return typeDef.compileExprLibType(ctx.msgCtx, qName.pos, ideInfoPtr.move())
     }
@@ -214,8 +295,6 @@ private sealed class C_NamespaceMember_Entity(
     ): C_Expr {
         return typeDef.compileExpr(ctx.msgCtx, qName.pos)
     }
-
-    final override fun rDefinition() = entity
 }
 
 private class C_NamespaceMember_SysEntity(
@@ -233,6 +312,16 @@ private class C_NamespaceMember_UserEntity(
             b.entities.add(entity.moduleLevelName, entity)
         }
     }
+
+    // A workaround needed for external entities "block" and "transaction" - to override the definition's DocSymbol
+    // (the name in the DocSymbol must be the alias name, not the actual entity name).
+    override fun getDocDefinition0(): DocDefinition = DocDefinitionImpl()
+
+    private inner class DocDefinitionImpl: DocDefinition {
+        override val docSymbol get() = ideInfo.getIdeInfo().doc ?: DocSymbol.NONE
+        override val docSourcePos get() = entity.docSourcePos
+        override fun getDocMember(name: String) = entity.getDocMember(name)
+    }
 }
 
 private class C_NamespaceMember_Object(
@@ -247,21 +336,21 @@ private class C_NamespaceMember_Object(
 
     override fun getObjectOpt() = obj
 
+    override fun addToDefs(b: C_ModuleDefsBuilder) {
+        b.objects.add(obj.moduleLevelName, obj)
+    }
+
     override fun toExpr(ctx: C_ExprContext, qName: C_QualifiedName, ideInfoPtr: C_UniqueDefaultIdeInfoPtr): C_Expr {
         val vExpr: V_Expr = V_ObjectExpr(ctx, qName, obj)
         return C_ValueExpr(vExpr)
     }
 
-    override fun addToDefs(b: C_ModuleDefsBuilder) {
-        b.objects.add(obj.moduleLevelName, obj)
-    }
-
-    override fun rDefinition() = obj
+    override fun getDocDefinition0() = obj
 }
 
 private sealed class C_NamespaceMember_Struct(
     base: C_NamespaceMemberBase,
-    rStruct: R_Struct,
+    private val rStruct: R_Struct,
 ): C_NamespaceMember(base) {
     private val typeDef: C_TypeDef = C_TypeDef.makeRType(rStruct.type)
 
@@ -272,6 +361,24 @@ private sealed class C_NamespaceMember_Struct(
     }
 
     final override fun getTypeOpt() = typeDef
+
+    override fun getIdeCompletions0(): List<IdeCompletion> {
+        val doc = docDefinition.docSymbol
+        val location = C_IdeCompletionsUtils.getIdeCompletionLocation(defName)
+
+        val (mandatory, optional) = rStruct.attributesList.partition { !it.hasExpr }
+        val attrs = mandatory + optional
+        val params = attrs.joinToString(", ", "(", ")") {
+            val docType = L_TypeUtils.docType(it.type.mType)
+            val typeCode = docType.toCode()
+            val typeStr = C_IdeCompletionsUtils.docCodeToStr(typeCode)
+            val valueStr = if (it.hasExpr) " = ..." else ""
+            "${it.name}: $typeStr$valueStr"
+        }
+
+        val ideComp = IdeCompletion(DocSymbolKind.CONSTRUCTOR, doc.symbolName, params, null, location)
+        return super.getIdeCompletions0() + listOf(ideComp)
+    }
 
     final override fun toExpr(
         ctx: C_ExprContext,
@@ -295,7 +402,7 @@ private class C_NamespaceMember_UserStruct(
         b.structs.add(struct.structDef.moduleLevelName, struct)
     }
 
-    override fun rDefinition() = struct.structDef
+    override fun getDocDefinition0() = struct.structDef
 }
 
 private class C_NamespaceMember_Enum(
@@ -312,15 +419,15 @@ private class C_NamespaceMember_Enum(
 
     override fun getTypeOpt() = typeDef
 
-    override fun toExpr(ctx: C_ExprContext, qName: C_QualifiedName, ideInfoPtr: C_UniqueDefaultIdeInfoPtr): C_Expr {
-        return typeDef.compileExpr(ctx.msgCtx, qName.pos)
-    }
-
     override fun addToDefs(b: C_ModuleDefsBuilder) {
         b.enums.add(e.moduleLevelName, e)
     }
 
-    override fun rDefinition() = e
+    override fun toExpr(ctx: C_ExprContext, qName: C_QualifiedName, ideInfoPtr: C_UniqueDefaultIdeInfoPtr): C_Expr {
+        return typeDef.compileExpr(ctx.msgCtx, qName.pos)
+    }
+
+    override fun getDocDefinition0() = e
 }
 
 class C_FunctionExpr(
@@ -377,7 +484,12 @@ private sealed class C_NamespaceMember_Function(
 private class C_NamespaceMember_SysFunction(
     base: C_NamespaceMemberBase,
     fn: C_GlobalFunction,
-): C_NamespaceMember_Function(base, fn)
+    ideCompletions: List<IdeCompletion>?,
+): C_NamespaceMember_Function(base, fn) {
+    private val ideCompletions0 = ideCompletions
+
+    override fun getIdeCompletions0() = ideCompletions0 ?: super.getIdeCompletions0()
+}
 
 private class C_NamespaceMember_UserFunction(
     base: C_NamespaceMemberBase,
@@ -388,7 +500,7 @@ private class C_NamespaceMember_UserFunction(
         b.functions.add(rFn.moduleLevelName, rFn)
     }
 
-    override fun rDefinition() = userFn.rFunction
+    override fun getDocDefinition0() = userFn.rFunction
 }
 
 private class C_NamespaceMember_Operation(
@@ -400,17 +512,17 @@ private class C_NamespaceMember_Operation(
 
     override fun getOperationOpt() = cOp.rOp
 
-    override fun toExpr(ctx: C_ExprContext, qName: C_QualifiedName, ideInfoPtr: C_UniqueDefaultIdeInfoPtr): C_Expr {
-        val lazyName = LazyPosString.of(qName.last.pos) { defName.appLevelName }
-        return C_FunctionExpr(lazyName, cOp, C_UniqueDefaultIdeInfoPtr())
-    }
-
     override fun addToDefs(b: C_ModuleDefsBuilder) {
         val op = cOp.rOp
         b.operations.add(op.moduleLevelName, op)
     }
 
-    override fun rDefinition() = cOp.rOp
+    override fun toExpr(ctx: C_ExprContext, qName: C_QualifiedName, ideInfoPtr: C_UniqueDefaultIdeInfoPtr): C_Expr {
+        val lazyName = LazyPosString.of(qName.last.pos) { defName.appLevelName }
+        return C_FunctionExpr(lazyName, cOp, C_UniqueDefaultIdeInfoPtr())
+    }
+
+    override fun getDocDefinition0() = cOp.rOp
 }
 
 private class C_NamespaceMember_Query(
@@ -430,7 +542,7 @@ private class C_NamespaceMember_Query(
         b.queries.add(q.moduleLevelName, q)
     }
 
-    override fun rDefinition() = cQuery.rQuery
+    override fun getDocDefinition0() = cQuery.rQuery
 }
 
 private class C_NamespaceMember_GlobalConstant(
@@ -450,7 +562,7 @@ private class C_NamespaceMember_GlobalConstant(
         b.constants.add(rDef.moduleLevelName, rDef)
     }
 
-    override fun rDefinition() = cDef.rDef
+    override fun getDocDefinition0() = cDef.rDef
 }
 
 class C_SysNsProto(entries: List<C_NsEntry>, entities: List<C_NsEntry>) {
@@ -503,9 +615,10 @@ class C_LibNsMemberFactory(private val basePath: C_RFullNamePath) {
         fn: C_GlobalFunction,
         ideInfo: C_IdeSymbolInfo,
         restrictions: C_MemberRestrictions,
+        ideCompletions: List<IdeCompletion>?,
     ): C_NamespaceMember {
         val base = makeBase(name, ideInfo, restrictions)
-        return C_NamespaceMember_SysFunction(base, fn)
+        return C_NamespaceMember_SysFunction(base, fn, ideCompletions)
     }
 
     fun property(
@@ -546,14 +659,10 @@ class C_SysNsProtoBuilder {
     }
 
     fun addMember(name: R_Name, member: C_NamespaceMember) {
-        addMember(name, C_NamespaceItem(member))
-    }
-
-    fun addMember(name: R_Name, item: C_NamespaceItem) {
         check(!completed)
-        val entry = C_NsEntry(name, item)
+        val entry = C_NsEntry(name, member)
         entries.add(entry)
-        if (item.member.getEntityOpt() != null) {
+        if (member.getEntityOpt() != null) {
             entities.add(entry)
         }
     }
@@ -592,7 +701,7 @@ class C_UserNsProtoBuilder(private val assembler: C_NsAsm_ComponentAssembler) {
         alias: C_Name,
         module: C_ModuleKey,
         qNameHand: C_QualifiedNameHandle,
-        aliasPair: Pair<C_NameHandle, DocSymbol>?,
+        aliasPair: Pair<C_NameHandle, DocSymbolTransformer>?,
     ) {
         assembler.addExactImport(alias, module, qNameHand, aliasPair)
     }

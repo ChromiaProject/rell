@@ -76,7 +76,7 @@ class S_UpdateTarget_Simple(
 
     private fun compileFromEntity(ctx: C_ExprContext, atExprId: R_AtExprId, from: S_UpdateFromItem): C_AtEntity? {
         val explicitAliasHand = from.alias?.compile(ctx, def = true)
-        val entityNameHand = from.entityName.compile(ctx.symCtx)
+        val entityNameHand = from.entityName.compile(ctx.nameCtx)
 
         val entity = ctx.nsCtx.getEntity(entityNameHand)
         if (entity == null) {

@@ -69,33 +69,28 @@ object Lib_Rell {
     val OP_CONTEXT_GET_ALL_OPERATIONS_RETURN_TYPE: R_Type = R_ListType(GTX_OPERATION_STRUCT_TYPE)
 }
 
-private data class C_SysLibConfig(
-    val testLib: Boolean,
-    val hiddenLib: Boolean,
-    val extraMod: C_LibModule?,
-)
-
 class C_SysLibScope(
     val nsProto: C_SysNsProto,
     val modules: List<C_LibModule>,
 )
 
 object C_SystemLibrary {
-    private val CACHE = mutableMapOf<C_SysLibConfig, C_SysLibScope>()
+    private val CACHE = mutableMapOf<Config, C_SysLibScope>()
 
-    fun getScope(testLib: Boolean, hiddenLib: Boolean, extraMod: C_LibModule?): C_SysLibScope {
-        val cfg = C_SysLibConfig(testLib = testLib, hiddenLib = hiddenLib, extraMod = extraMod)
+    fun getScope(config: Config): C_SysLibScope {
         return synchronized(this) {
-            CACHE.computeIfAbsent(cfg) {
-                createScope(cfg)
+            CACHE.computeIfAbsent(config) {
+                createScope(it)
             }
         }
     }
 
-    private fun createScope(cfg: C_SysLibConfig): C_SysLibScope {
+    private fun createScope(cfg: Config): C_SysLibScope {
         val modules = mutableListOf<C_LibModule>()
 
-        modules.add(Lib_Rell.MODULE)
+        if (cfg.defaultLib) {
+            modules.add(Lib_Rell.MODULE)
+        }
 
         if (cfg.hiddenLib) {
             modules.add(Lib_RellHidden.MODULE)
@@ -115,4 +110,11 @@ object C_SystemLibrary {
         val nsProto = combinedNamespace.toSysNsProto()
         return C_SysLibScope(nsProto, modules.toImmList())
     }
+
+    data class Config(
+        val defaultLib: Boolean,
+        val testLib: Boolean,
+        val hiddenLib: Boolean,
+        val extraMod: C_LibModule?,
+    )
 }

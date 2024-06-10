@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.ast
@@ -82,9 +82,9 @@ class S_RellFile(val header: S_ModuleHeader?, val definitions: List<S_Definition
 
     companion object {
         fun createMountContext(
-                fileCtx: C_FileContext,
-                mountName: R_MountName,
-                nsAssembler: C_NsAsm_ComponentAssembler
+            fileCtx: C_FileContext,
+            mountName: R_MountName,
+            nsAssembler: C_NsAsm_ComponentAssembler,
         ): C_MountContext {
             val modCtx = fileCtx.modCtx
             val nsBuilder = C_UserNsProtoBuilder(nsAssembler)

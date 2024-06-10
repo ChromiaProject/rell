@@ -36,6 +36,7 @@ abstract class RellBaseTester(
     var gtv = gtv
     var deprecatedError = false
     var atAttrShadowing = C_CompilerOptions.DEFAULT.atAttrShadowing
+    var defaultLib = true
     var testLib = false
     var hiddenLib = true
     var extraMod: C_LibModule? = null
@@ -129,6 +130,7 @@ abstract class RellBaseTester(
             deprecatedError = deprecatedError,
             blockCheck = true,
             atAttrShadowing = atAttrShadowing,
+            defaultLib = defaultLib,
             testLib = testLib,
             hiddenLib = hiddenLib,
             allowDbModificationsInObjectExprs = allowDbModificationsInObjectExprs,
@@ -142,6 +144,7 @@ abstract class RellBaseTester(
             ide = false,
             ideDocSymbolsEnabled = false,
             ideDefIdConflictError = ideDefIdConflictError,
+            ideCompletions = null,
         )
 
         // Check serialization and deserialization of options (to not forget to serialize a new field).

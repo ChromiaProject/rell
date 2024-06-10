@@ -20,12 +20,13 @@ class S_ReplCommand(steps: List<S_ReplStep>, expr: S_Expr?) {
 
     fun compile(
         msgCtx: C_MessageContext,
+        symCtxProvider: C_SymbolContextProvider,
+        executor: C_CompilerExecutor,
         sourceDir: C_SourceDir,
         currentModuleName: R_ModuleName?,
         appState: C_ReplAppState,
     ): C_ExtReplCommand {
-        val symCtxManager = C_SymbolContextManager(msgCtx, C_CompilerOptions.DEFAULT)
-        val modLdr = C_ModuleLoader(msgCtx, symCtxManager.provider, sourceDir, appState.moduleHeaders)
+        val modLdr = C_ModuleLoader(msgCtx, symCtxProvider, executor, sourceDir, appState.moduleHeaders)
 
         if (currentModuleName != null) {
             modLdr.loadModule(currentModuleName)
@@ -42,7 +43,7 @@ class S_ReplCommand(steps: List<S_ReplStep>, expr: S_Expr?) {
 
         val midModules = modLdr.finish()
 
-        val midCompiler = C_MidModuleCompiler(msgCtx, midModules)
+        val midCompiler = C_MidModuleCompiler(msgCtx, symCtxProvider, midModules)
         if (currentModuleName != null) {
             midCompiler.compileModule(currentModuleName, null)
         }

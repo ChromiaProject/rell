@@ -40,7 +40,7 @@ object Ld_DocSymbols {
 
         return docSymbol(
             kind = DocSymbolKind.FUNCTION,
-            symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
+            symbolName = DocSymbolName.global(fullName),
             mountName = null,
             declaration = dec,
             comment = comment,
@@ -50,7 +50,7 @@ object Ld_DocSymbols {
     fun specialFunction(fullName: R_FullName, memberHeader: L_MemberHeader, isStatic: Boolean): DocSymbol {
         return docSymbol(
             kind = DocSymbolKind.FUNCTION,
-            symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
+            symbolName = DocSymbolName.global(fullName),
             mountName = null,
             declaration = DocDeclaration_SpecialFunction(fullName.last, isStatic = isStatic),
             comment = memberHeader.docComment,
@@ -64,7 +64,7 @@ object Ld_DocSymbols {
 
         return docSymbol(
             kind = DocSymbolKind.CONSTANT,
-            symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
+            symbolName = DocSymbolName.global(fullName),
             mountName = null,
             declaration = dec,
             comment = memberHeader.docComment,
@@ -75,7 +75,7 @@ object Ld_DocSymbols {
         val docType = L_TypeUtils.docType(mType)
         return docSymbol(
             kind = DocSymbolKind.PROPERTY,
-            symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
+            symbolName = DocSymbolName.global(fullName),
             mountName = null,
             declaration = DocDeclaration_Property(fullName.last, docType, pure),
             comment = memberHeader.docComment,

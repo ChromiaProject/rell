@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils.doc
 
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
+import net.postchain.rell.base.compiler.base.utils.C_IdeCompletionsUtils
 import net.postchain.rell.base.lmodel.L_ParamImplication
 import net.postchain.rell.base.lmodel.L_TypeDefFlags
 import net.postchain.rell.base.lmodel.L_TypeDefParent
@@ -16,11 +17,15 @@ import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 
 abstract class DocDeclaration {
-    val code: DocCode by lazy { genCode() }
+    val code: DocCode by lazy { getCode0() }
+    val completion: Completion? by lazy { getCompletion0() }
 
-    protected abstract fun genCode(): DocCode
+    protected open fun getCompletion0(): Completion? = null
+    protected abstract fun getCode0(): DocCode
 
     final override fun toString() = code.strCode()
+
+    class Completion(val params: String, val result: String?)
 
     companion object {
         val NONE: DocDeclaration = DocDeclaration_None
@@ -28,7 +33,7 @@ abstract class DocDeclaration {
 }
 
 private object DocDeclaration_None: DocDeclaration() {
-    override fun genCode() = DocCode.EMPTY
+    override fun getCode0() = DocCode.EMPTY
 }
 
 abstract class DocDeclaration_Annotated(
@@ -36,7 +41,7 @@ abstract class DocDeclaration_Annotated(
 ): DocDeclaration() {
     protected abstract fun genCode0(b: DocCode.Builder)
 
-    final override fun genCode(): DocCode {
+    final override fun getCode0(): DocCode {
         val b = DocCode.builder()
         modifiers.appendTo(b)
         genCode0(b)
@@ -57,6 +62,8 @@ class DocDeclaration_ImportModule(
     private val moduleName: R_ModuleName,
     private val alias: R_Name?,
 ): DocDeclaration_Annotated(modifiers) {
+    override fun getCompletion0() = Completion("", moduleName.str())
+
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("import")
         b.raw(" ")
@@ -71,12 +78,14 @@ class DocDeclaration_ImportModule(
 class DocDeclaration_ImportWildcard(
     modifiers: DocModifiers,
     private val moduleName: R_ModuleName,
-    private val alias: R_Name,
+    private val aliasName: R_Name,
 ): DocDeclaration_Annotated(modifiers) {
+    override fun getCompletion0() = Completion("", "${moduleName.str()}.*")
+
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("import")
         b.raw(" ")
-        b.raw(alias.str)
+        b.raw(aliasName.str)
         b.sep(": ")
         DocDecUtils.appendModuleName(b, moduleName)
         b.raw(".*")
@@ -86,12 +95,17 @@ class DocDeclaration_ImportWildcard(
 class DocDeclaration_ImportExactModule(
     modifiers: DocModifiers,
     private val moduleName: R_ModuleName,
-    private val alias: R_Name,
+    private val aliasName: R_Name,
 ): DocDeclaration_Annotated(modifiers) {
+    override fun getCompletion0(): Completion {
+        val result = "${moduleName.str()}.{...}"
+        return Completion("", result)
+    }
+
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("import")
         b.raw(" ")
-        b.raw(alias.str)
+        b.raw(aliasName.str)
         b.sep(": ")
         DocDecUtils.appendModuleName(b, moduleName)
         b.raw(".")
@@ -99,15 +113,16 @@ class DocDeclaration_ImportExactModule(
     }
 }
 
-class DocDeclaration_ImportExactAlias(
+sealed class DocDeclaration_ImportExactAlias(
     modifiers: DocModifiers,
-    private val moduleName: R_ModuleName,
-    private val qualifiedName: R_QualifiedName,
+    protected val moduleName: R_ModuleName,
+    protected val qualifiedName: R_QualifiedName,
     private val namespaceAlias: R_Name?,
-    private val exactAlias: R_Name,
-    private val wildcard: Boolean,
+    protected val exactAliasName: R_Name,
 ): DocDeclaration_Annotated(modifiers) {
-    override fun genCode0(b: DocCode.Builder) {
+    protected abstract val wildcard: Boolean
+
+    final override fun genCode0(b: DocCode.Builder) {
         b.keyword("import")
         b.raw(" ")
 
@@ -119,7 +134,7 @@ class DocDeclaration_ImportExactAlias(
         DocDecUtils.appendModuleName(b, moduleName)
         b.raw(".")
         b.raw("{")
-        b.raw(exactAlias.str)
+        b.raw(exactAliasName.str)
         b.sep(": ")
         b.link(qualifiedName.str())
 
@@ -131,10 +146,45 @@ class DocDeclaration_ImportExactAlias(
     }
 }
 
+class DocDeclaration_ImportExactAlias_Single(
+    modifiers: DocModifiers,
+    moduleName: R_ModuleName,
+    qualifiedName: R_QualifiedName,
+    namespaceAlias: R_Name?,
+    exactAliasName: R_Name,
+    private val targetDeclaration: DocDeclaration,
+): DocDeclaration_ImportExactAlias(modifiers, moduleName, qualifiedName, namespaceAlias, exactAliasName) {
+    override val wildcard = false
+
+    override fun getCompletion0(): Completion {
+        val targetComp = targetDeclaration.completion
+        val params = targetComp?.params ?: ""
+        val result = targetComp?.result ?: "${moduleName.str()}:${qualifiedName.str()}"
+        return Completion(params, result)
+    }
+}
+
+class DocDeclaration_ImportExactAlias_Wildcard(
+    modifiers: DocModifiers,
+    moduleName: R_ModuleName,
+    qualifiedName: R_QualifiedName,
+    namespaceAlias: R_Name?,
+    exactAliasName: R_Name,
+): DocDeclaration_ImportExactAlias(modifiers, moduleName, qualifiedName, namespaceAlias, exactAliasName) {
+    override val wildcard = true
+
+    override fun getCompletion0(): Completion {
+        val result = "${moduleName.str()}:${qualifiedName.str()}.*"
+        return Completion("", result)
+    }
+}
+
 class DocDeclaration_Namespace(
     modifiers: DocModifiers,
     private val simpleName: R_Name,
 ): DocDeclaration_Annotated(modifiers) {
+    override fun getCompletion0() = DocDecUtils.completion()
+
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("namespace")
         b.raw(" ")
@@ -148,6 +198,8 @@ class DocDeclaration_Constant(
     private val type: DocType,
     private val value: DocValue?,
 ) : DocDeclaration_Annotated(modifiers) {
+    override fun getCompletion0() = DocDecUtils.completion(type)
+
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("val")
         b.raw(" ")
@@ -167,7 +219,9 @@ class DocDeclaration_Property(
     private val type: DocType,
     private val pure: Boolean,
 ): DocDeclaration() {
-    override fun genCode(): DocCode {
+    override fun getCompletion0() = DocDecUtils.completion(type)
+
+    override fun getCode0(): DocCode {
         val b = DocCode.builder()
 
         if (pure) {
@@ -186,7 +240,9 @@ class DocDeclaration_Property(
 class DocDeclaration_SpecialProperty(
     private val simpleName: R_Name,
 ): DocDeclaration() {
-    override fun genCode(): DocCode {
+    override fun getCompletion0() = DocDecUtils.completion()
+
+    override fun getCode0(): DocCode {
         val b = DocCode.builder()
         b.raw(simpleName.str)
         return b.build()
@@ -197,6 +253,8 @@ class DocDeclaration_Enum(
     modifiers: DocModifiers,
     private val simpleName: R_Name,
 ): DocDeclaration_Annotated(modifiers) {
+    override fun getCompletion0() = DocDecUtils.completion()
+
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("enum")
         b.raw(" ")
@@ -206,16 +264,18 @@ class DocDeclaration_Enum(
 
 class DocDeclaration_EnumValue(
     private val simpleName: R_Name,
+    private val type: DocType,
 ): DocDeclaration() {
-    override fun genCode(): DocCode {
-        return DocCode.raw(simpleName.str)
-    }
+    override fun getCompletion0() = DocDecUtils.completion(type)
+    override fun getCode0() = DocCode.raw(simpleName.str)
 }
 
 class DocDeclaration_Entity(
     modifiers: DocModifiers,
     private val simpleName: R_Name,
 ): DocDeclaration_Annotated(modifiers) {
+    override fun getCompletion0() = DocDecUtils.completion()
+
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("entity")
         b.sep(" ")
@@ -232,7 +292,7 @@ class DocDeclaration_EntityAttribute(
     private val keys: Collection<R_Key> = immListOf(),
     private val indices: Collection<R_Index> = immListOf(),
 ): DocDeclaration() {
-    override fun genCode(): DocCode {
+    override fun getCode0(): DocCode {
         val b = DocCode.builder()
 
         if (isMutable) {
@@ -281,6 +341,8 @@ class DocDeclaration_Object(
     modifiers: DocModifiers,
     private val simpleName: R_Name,
 ): DocDeclaration_Annotated(modifiers) {
+    override fun getCompletion0() = DocDecUtils.completion()
+
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("object")
         b.raw(" ")
@@ -292,6 +354,8 @@ class DocDeclaration_Struct(
     modifiers: DocModifiers,
     private val simpleName: R_Name,
 ): DocDeclaration_Annotated(modifiers) {
+    override fun getCompletion0() = DocDecUtils.completion()
+
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("struct")
         b.raw(" ")
@@ -304,7 +368,7 @@ class DocDeclaration_StructAttribute(
     private val type: DocType,
     private val isMutable: Boolean,
 ): DocDeclaration() {
-    override fun genCode(): DocCode {
+    override fun getCode0(): DocCode {
         val b = DocCode.builder()
 
         if (isMutable) {
@@ -326,7 +390,7 @@ class DocDeclaration_Parameter(
     private val implies: L_ParamImplication?,
     private val expr: DocExpr?,
 ): DocDeclaration() {
-    override fun genCode(): DocCode {
+    override fun getCode0(): DocCode {
         val b = DocCode.builder()
 
         if (implies != null) {
@@ -371,8 +435,10 @@ class DocDeclaration_Function(
     private val hasBody: Boolean? = null,
 ): DocDeclaration_Annotated(docModifiers) {
     init {
-        checkEquals(params.size, header.params.size) { simpleName.str }
+        checkEquals(params.size, header.params.size) { simpleName }
     }
+
+    override fun getCompletion0() = DocDecUtils.completion(header.resultType, params)
 
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("function")
@@ -405,7 +471,9 @@ class DocDeclaration_SpecialFunction(
     private val simpleName: R_Name,
     private val isStatic: Boolean,
 ): DocDeclaration() {
-    override fun genCode(): DocCode {
+    override fun getCompletion0() = Completion("(...)", null)
+
+    override fun getCode0(): DocCode {
         val b = DocCode.builder()
         if (isStatic) b.keyword("static").raw(" ")
         b.keyword("function")
@@ -421,6 +489,8 @@ class DocDeclaration_Operation(
     private val simpleName: R_Name,
     private val params: List<DocDeclaration>,
 ): DocDeclaration_Annotated(modifiers) {
+    override fun getCompletion0() = DocDecUtils.completion(null, params)
+
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("operation")
         b.raw(" ")
@@ -435,6 +505,8 @@ class DocDeclaration_Query(
     private val resultType: DocType,
     private val params: List<DocDeclaration>,
 ): DocDeclaration_Annotated(modifiers) {
+    override fun getCompletion0() = DocDecUtils.completion(resultType, params)
+
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("query")
         b.raw(" ")
@@ -451,7 +523,9 @@ class DocDeclaration_Type(
     private val lParent: L_TypeDefParent?,
     private val flags: L_TypeDefFlags,
 ): DocDeclaration() {
-    override fun genCode(): DocCode {
+    override fun getCompletion0() = DocDecUtils.completion()
+
+    override fun getCode0(): DocCode {
         val b = DocCode.builder()
 
         if (flags.abstract) b.keyword("abstract").raw(" ")
@@ -487,12 +561,15 @@ class DocDeclaration_Type(
 }
 
 class DocDeclaration_TypeConstructor(
+    val simpleName: R_Name,
     val typeParams: List<DocTypeParam>,
     val params: List<DocDeclaration>,
     val deprecated: C_Deprecated?,
     val pure: Boolean,
 ): DocDeclaration() {
-    override fun genCode(): DocCode {
+    override fun getCompletion0() = DocDecUtils.completion(null, params)
+
+    override fun getCode0(): DocCode {
         val b = DocCode.builder()
 
         DocDecUtils.appendDeprecated(b, deprecated)
@@ -511,7 +588,7 @@ class DocDeclaration_TypeConstructor(
 }
 
 class DocDeclaration_TypeSpecialConstructor: DocDeclaration() {
-    override fun genCode(): DocCode {
+    override fun getCode0(): DocCode {
         val b = DocCode.builder()
         b.keyword("constructor")
         b.raw("(...)")
@@ -524,7 +601,7 @@ class DocDeclaration_TypeExtension(
     private val typeParams: List<DocTypeParam>,
     private val selfType: DocType,
 ): DocDeclaration() {
-    override fun genCode(): DocCode {
+    override fun getCode0(): DocCode {
         val b = DocCode.builder()
 
         b.keyword("extension")
@@ -543,15 +620,23 @@ class DocDeclaration_TypeExtension(
 class DocDeclaration_Alias(
     modifiers: DocModifiers,
     private val simpleName: R_Name,
-    private val targetName: R_QualifiedName,
+    private val targetFullName: R_FullName,
     private val targetDeclaration: DocDeclaration,
+    private val targetQualifiedName: R_QualifiedName = targetFullName.qualifiedName,
 ): DocDeclaration_Annotated(modifiers) {
+    override fun getCompletion0(): Completion {
+        val targetComp = targetDeclaration.completion
+        val params = targetComp?.params ?: ""
+        val result = targetComp?.result ?: targetFullName.str()
+        return Completion(params, result)
+    }
+
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("alias")
         b.raw(" ")
         b.raw(simpleName.str)
         b.sep(" = ")
-        b.link(targetName.str())
+        b.link(targetQualifiedName.str())
 
         if (targetDeclaration != NONE) {
             b.newline()
@@ -565,7 +650,7 @@ class DocDeclaration_TupleAttribute(
     private val simpleName: R_Name,
     private val type: DocType,
 ): DocDeclaration() {
-    override fun genCode(): DocCode {
+    override fun getCode0(): DocCode {
         val b = DocCode.builder()
         b.raw(simpleName.str)
         b.sep(": ")
@@ -578,7 +663,7 @@ class DocDeclaration_AtVariable(
     private val simpleName: String,
     private val type: DocType,
 ): DocDeclaration() {
-    override fun genCode(): DocCode {
+    override fun getCode0(): DocCode {
         val b = DocCode.builder()
         b.raw(simpleName)
         b.sep(": ")
@@ -592,7 +677,7 @@ class DocDeclaration_Variable(
     private val type: DocType,
     private val isMutable: Boolean,
 ): DocDeclaration() {
-    override fun genCode(): DocCode {
+    override fun getCode0(): DocCode {
         val b = DocCode.builder()
         b.keyword(if (isMutable) "var" else "val")
         b.raw(" ")
@@ -754,5 +839,18 @@ private object DocDecUtils {
         }
 
         b.raw(")")
+    }
+
+    fun completion(type: DocType? = null, params: List<DocDeclaration>? = null): DocDeclaration.Completion {
+        val paramsStr = if (params == null) "" else {
+            params.joinToString(", ", "(", ")") { C_IdeCompletionsUtils.docCodeToStr(it.code) }
+        }
+
+        val typeStr = if (type == null) null else {
+            val typeCode = type.toCode()
+            C_IdeCompletionsUtils.docCodeToStr(typeCode)
+        }
+
+        return DocDeclaration.Completion(paramsStr, typeStr)
     }
 }

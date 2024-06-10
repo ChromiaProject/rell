@@ -275,7 +275,7 @@ class R_EnumAttr(
 ): DocDefinition {
     val name = rName.str
 
-    override val docSymbol: DocSymbol = ideInfo.getIdeInfo().doc ?: DocSymbol.NONE
+    override val docSymbol: DocSymbol get() = ideInfo.getIdeInfo().doc ?: DocSymbol.NONE
 
     fun toMetaGtv() = mapOf(
         "name" to name.toGtv(),

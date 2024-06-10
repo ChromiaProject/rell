@@ -38,6 +38,7 @@ private object C_InternalAppUtils {
 
 class C_AppContext(
     val msgCtx: C_MessageContext,
+    val symCtxProvider: C_SymbolContextProvider,
     val executor: C_CompilerExecutor,
     val repl: Boolean,
     private val oldReplState: C_ReplAppState,
@@ -70,9 +71,10 @@ class C_AppContext(
     private val allConstants = C_ListBuilder(oldReplState.constants)
     private val newConstants = C_ListBuilder<C_GlobalConstantDefinition>()
 
-    private val appLate = C_LateInit(C_CompilerPass.APPLICATION, Optional.empty<R_App>())
     private val nsAsmAppLate = C_LateInit(C_CompilerPass.NAMESPACES, C_NsAsm_App.EMPTY)
-    private val newReplStateLate = C_LateInit(C_CompilerPass.APPLICATION, C_ReplAppState.EMPTY)
+    private val finishLate = C_LateInit(C_CompilerPass.APPLICATION, Optional.empty<Finish>())
+
+    private var finished = false
 
     init {
         extraMountTables.add(oldReplState.mntTables)
@@ -99,8 +101,9 @@ class C_AppContext(
         }
 
         executor.onPass(C_CompilerPass.APPLICATION) {
-            val app = createApp()
-            createNewReplState(app)
+            val rApp = createApp()
+            val replState = createNewReplState(rApp)
+            finishLate.set(Optional.of(Finish(rApp, replState)))
         }
     }
 
@@ -121,13 +124,12 @@ class C_AppContext(
         return cDef
     }
 
-    fun getApp(): R_App? {
+    fun finish(): Finish? {
+        check(!finished)
+        finished = true
         executor.checkPass(C_CompilerPass.FINISH)
-        val opt = appLate.get()
-        return opt.orElse(null)
+        return finishLate.get().orElse(null)
     }
-
-    fun getNewReplState() = newReplStateLate.get()
 
     fun createModuleNsAssembler(
         moduleKey: C_ModuleKey,
@@ -198,7 +200,7 @@ class C_AppContext(
 
         val rFnExtTable = functionExtTableLazy.toR()
 
-        val rApp = R_App(
+        return R_App(
             valid = valid,
             uid = appUid,
             modules = rModules,
@@ -211,12 +213,9 @@ class C_AppContext(
             externalChains = externalChains.values.map { it.ref },
             sqlDefs = sqlDefs,
         )
-        appLate.set(Optional.of(rApp))
-
-        return rApp
     }
 
-    private fun createNewReplState(app: R_App) {
+    private fun createNewReplState(app: R_App): C_ReplAppState {
         val mntTables = createAppMounts()
 
         val asmApp = nsAsmAppLate.get()
@@ -240,7 +239,7 @@ class C_AppContext(
         val resModules = oldReplState.modules.toMutableMap()
         resModules.putAllAbsent(newPrecompiledModules)
 
-        val newReplState = C_ReplAppState(
+        return C_ReplAppState(
             asmApp.newReplState,
             resModuleHeaders,
             resModules,
@@ -251,8 +250,6 @@ class C_AppContext(
             app.moduleArgs,
             functionExtTableLazy,
         )
-
-        newReplStateLate.set(newReplState)
     }
 
     private fun createAppMounts(): C_MountTables {
@@ -292,7 +289,7 @@ class C_AppContext(
         val entityToPos = entities.filter { it.defPos != null }.map { Pair(it.entity, it.defPos!!) }.toMap()
 
         val cycles = C_GraphUtils.findCycles(graph)
-        if (!cycles.isEmpty()) {
+        if (cycles.isNotEmpty()) {
             val cycle = cycles[0]
             val shortStr = cycle.joinToString(",") { it.appLevelName }
             val str = cycle.joinToString { it.appLevelName }
@@ -314,6 +311,11 @@ class C_AppContext(
         }
         return res.toImmMap()
     }
+
+    class Finish(
+        val rApp: R_App,
+        val replState: C_ReplAppState,
+    )
 
     private class C_AppModule(
         val descriptor: C_ModuleDescriptor,

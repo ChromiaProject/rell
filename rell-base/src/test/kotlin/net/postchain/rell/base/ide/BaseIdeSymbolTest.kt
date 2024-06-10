@@ -268,7 +268,7 @@ abstract class BaseIdeSymbolTest: BaseRellTest(false) {
 
             for (t in ts) {
                 if (t.type.pattern == RellTokenizer.IDENTIFIER || t.type.pattern == "$") {
-                    val pos: S_Pos = S_BasicPos(parserPath, t.row, t.column)
+                    val pos: S_Pos = S_BasicPos(parserPath, t.position, t.row, t.column)
                     syms[pos] = t.text
                 }
             }

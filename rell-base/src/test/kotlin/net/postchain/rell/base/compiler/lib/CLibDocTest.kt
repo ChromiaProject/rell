@@ -11,7 +11,6 @@ import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.testutils.RellTestUtils
-import net.postchain.rell.base.utils.doc.DocCode
 import org.junit.Test
 import java.math.BigInteger
 import kotlin.test.assertEquals
@@ -52,8 +51,7 @@ class CLibDocTest: BaseCLibTest() {
         val actual = RellTestUtils.processApp(rellCode) { tApp ->
             val struct = tApp.rApp.moduleMap.getValue(R_ModuleName.EMPTY).structs.getValue("__s")
             val attr = struct.struct.attributes.getValue(R_Name.of("x"))
-            val mType = attr.type.mType
-            val docCode = DocCode.builder().also { L_TypeUtils.docType(mType).genCode(it) }.build()
+            val docCode = L_TypeUtils.docType(attr.type.mType).toCode()
             docCode.strCode()
         }
 

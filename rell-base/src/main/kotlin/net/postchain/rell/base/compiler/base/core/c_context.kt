@@ -6,10 +6,7 @@ package net.postchain.rell.base.compiler.base.core
 
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_RellFile
-import net.postchain.rell.base.compiler.base.def.C_AbstractFunctionDescriptor
-import net.postchain.rell.base.compiler.base.def.C_MountTablesBuilder
-import net.postchain.rell.base.compiler.base.def.C_OverrideFunctionDescriptor
-import net.postchain.rell.base.compiler.base.def.C_Struct
+import net.postchain.rell.base.compiler.base.def.*
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.fn.C_FormalParameters
 import net.postchain.rell.base.compiler.base.lib.C_LibTypeManager
@@ -218,6 +215,8 @@ class C_FileContext(
     private val abstracts = C_ListBuilder<C_AbstractFunctionDescriptor>()
     private val overrides = C_ListBuilder<C_OverrideFunctionDescriptor>()
 
+    private var finished = false
+
     fun createMountContext(): C_MountContext {
         val mountName = modCtx.mountName
         val nsAssembler = modCtx.createFileNsAssembler()
@@ -239,20 +238,26 @@ class C_FileContext(
         overrides.add(d)
     }
 
-    private var createContentsCalled = false
+    fun finish(): Finish {
+        check(!finished)
+        finished = true
+        executor.checkPass(null, C_CompilerPass.MODULES)
 
-    fun createContents(): C_FileImportsDescriptor {
-        executor.checkPass(C_CompilerPass.DEFINITIONS)
-        check(!createContentsCalled)
-        createContentsCalled = true
-        return C_FileImportsDescriptor(imports.commit(), abstracts.commit(), overrides.commit())
+        val mntTables = mntBuilder.build()
+        val importsDescriptor = C_FileImportsDescriptor(imports.commit(), abstracts.commit(), overrides.commit())
+        return Finish(mntTables, importsDescriptor)
     }
+
+    class Finish(
+        val mountTables: C_MountTables,
+        val importsDescriptor: C_FileImportsDescriptor,
+    )
 }
 
 class C_ExternalChain(
-        val name: String,
-        val ref: R_ExternalChainRef,
-        val sysDefs: C_SystemDefs
+    val name: String,
+    val ref: R_ExternalChainRef,
+    val sysDefs: C_SystemDefs,
 )
 
 class C_MountContext(

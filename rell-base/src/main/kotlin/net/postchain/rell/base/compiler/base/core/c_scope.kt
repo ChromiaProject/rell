@@ -1,14 +1,19 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.core
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.base.namespace.C_Namespace
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceEntry
+import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMember
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMemberTag
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.Getter
+import net.postchain.rell.base.utils.ide.IdeCompletion
+import net.postchain.rell.base.utils.mutableMultimapOf
+import net.postchain.rell.base.utils.toImmMultimap
 
 class C_ScopeBuilder {
     private val scope: C_Scope
@@ -27,8 +32,8 @@ class C_ScopeBuilder {
 }
 
 class C_Scope(
-        private val parent: C_Scope?,
-        private val nsGetter: Getter<C_Namespace>
+    private val parent: C_Scope?,
+    private val nsGetter: Getter<C_Namespace>,
 ) {
     private val rootNs: C_Namespace by lazy {
         nsGetter()
@@ -52,5 +57,37 @@ class C_Scope(
         }
 
         return res
+    }
+
+    fun ideCompletions(compilerOptions: C_CompilerOptions): Multimap<String, IdeCompletion> {
+        val res = mutableMultimapOf<String, IdeCompletion>()
+        val set = mutableSetOf<Pair<R_Name, C_NamespaceEntry>>()
+        var scope: C_Scope? = this
+
+        while (scope != null) {
+            for ((name, entry) in scope.rootNs.getEntries()) {
+                // A parent scope may contain same entries as a child scope, e.g. child is a file, parent is a module.
+                if (set.add(name to entry)) {
+                    val members = entry.directMembers.ifEmpty { entry.importMembers }
+                    ideCompletionsProcessMembers(name, members, res, compilerOptions)
+                }
+            }
+            scope = scope.parent
+        }
+
+        return res.toImmMultimap()
+    }
+
+    private fun ideCompletionsProcessMembers(
+        name: R_Name,
+        members: List<C_NamespaceMember>,
+        res: Multimap<String, IdeCompletion>,
+        compilerOptions: C_CompilerOptions,
+    ) {
+        for (member in members) {
+            if (!member.restrictions.isRestricted(compilerOptions)) {
+                res.putAll(name.str, member.ideCompletions)
+            }
+        }
     }
 }

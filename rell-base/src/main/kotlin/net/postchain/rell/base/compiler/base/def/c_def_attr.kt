@@ -114,7 +114,7 @@ class C_AnonAttrHeaderHandle(
     private fun compileType(ideDefId: IdeSymbolId?): R_Type {
         val typeDef = ctx.getType(typeNameHand)
         if (ideDefId != null) {
-            ctx.symCtx.setDefId(typeNameHand.last.pos, ideDefId)
+            ctx.symCtx.nameCtx.setDefId(typeNameHand.last.pos, ideDefId)
         }
 
         val baseType = typeDef?.compileType(ctx.appCtx, typeNameHand.pos, immListOf())

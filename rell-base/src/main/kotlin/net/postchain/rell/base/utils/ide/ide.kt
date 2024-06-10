@@ -4,19 +4,20 @@
 
 package net.postchain.rell.base.utils.ide
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.core.C_Compiler
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.module.C_ModuleUtils
-import net.postchain.rell.base.compiler.base.utils.C_Message
-import net.postchain.rell.base.compiler.base.utils.C_SourceDir
-import net.postchain.rell.base.compiler.base.utils.C_SourceFile
-import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.runtime.Rt_RellVersion
 import net.postchain.rell.base.runtime.Rt_RellVersionProperty
 import net.postchain.rell.base.utils.RellVersions
+import net.postchain.rell.base.utils.doc.DocSymbolKind
+import net.postchain.rell.base.utils.doc.DocSymbolName
+import net.postchain.rell.base.utils.immMultimapOf
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 import org.apache.commons.configuration2.PropertiesConfiguration
@@ -40,12 +41,20 @@ class IdeModuleInfo(
 )
 
 class IdeCompilationResult(
-        messages: List<C_Message>,
-        symbolInfos: Map<S_Pos, IdeSymbolInfo>
+    messages: List<C_Message>,
+    symbolInfos: Map<S_Pos, IdeSymbolInfo>,
 ) {
     @JvmField val messages = messages.toImmList()
     @JvmField val symbolInfos = symbolInfos.toImmMap()
 }
+
+class IdeCompletion(
+    val kind: DocSymbolKind,
+    val symbolName: DocSymbolName,
+    val params: String,
+    val result: String?,
+    val location: String?,
+)
 
 @Suppress("UNUSED")
 object IdeApi {
@@ -86,10 +95,34 @@ object IdeApi {
         return res
     }
 
+    /**
+     * Compiles the file (module) and returns code completions at a specific location (text offset).
+     * If compilation fails, returns an empty map.
+     */
+    @JvmStatic fun getCompletions(
+        sourceDir: C_SourceDir,
+        filePath: C_SourcePath,
+        pos: Int,
+        options: C_CompilerOptions,
+    ): Multimap<String, IdeCompletion> {
+        val sourceFile = sourceDir.file(filePath)
+        sourceFile ?: return immMultimapOf()
+
+        val actualOptions = C_IdeCompletionsUtils.getCompilerOptions(sourceDir, filePath, pos, options)
+        actualOptions ?: return immMultimapOf()
+
+        val ast = sourceFile.readAst()
+        val (moduleName, _) = C_ModuleUtils.getModuleInfo(filePath, ast)
+        moduleName ?: return immMultimapOf()
+
+        val cRes = C_Compiler.compile(sourceDir, listOf(moduleName), actualOptions)
+        return cRes.ideCompletions
+    }
+
     @JvmStatic fun compile(
-            sourceDir: C_SourceDir,
-            modules: List<R_ModuleName>,
-            options: C_CompilerOptions
+        sourceDir: C_SourceDir,
+        modules: List<R_ModuleName>,
+        options: C_CompilerOptions,
     ): IdeCompilationResult {
         val res = C_Compiler.compile(sourceDir, modules, options)
         return IdeCompilationResult(res.messages, res.ideSymbolInfos)

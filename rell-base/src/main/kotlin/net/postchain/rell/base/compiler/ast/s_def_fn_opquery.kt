@@ -20,13 +20,16 @@ import net.postchain.rell.base.compiler.base.utils.C_ReservedMountNames
 import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.MutableTypedKeyMap
+import net.postchain.rell.base.utils.TypedKeyMap
 import net.postchain.rell.base.utils.doc.DocDeclaration_Operation
 import net.postchain.rell.base.utils.doc.DocDeclaration_Query
 import net.postchain.rell.base.utils.doc.DocModifiers
 import net.postchain.rell.base.utils.ide.IdeOutlineNodeType
 import net.postchain.rell.base.utils.ide.IdeOutlineTreeBuilder
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
+import net.postchain.rell.base.utils.toImmMap
+import net.postchain.rell.base.utils.toImmSet
 
 class S_OperationDefinition(
     pos: S_Pos,

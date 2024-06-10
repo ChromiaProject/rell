@@ -72,7 +72,7 @@ class Ld_StructAttribute(
         val docType = L_TypeUtils.docType(mType)
         return Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.STRUCT_ATTR,
-            symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
+            symbolName = DocSymbolName.global(fullName),
             declaration = DocDeclaration_StructAttribute(fullName.last, docType, mutable),
             comment = lMemberHeader.docComment,
         )

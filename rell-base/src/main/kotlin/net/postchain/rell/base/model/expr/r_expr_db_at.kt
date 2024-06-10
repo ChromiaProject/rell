@@ -16,7 +16,6 @@ import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_SqlContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.checkEquals
-import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 
 class Db_AtFromItem(

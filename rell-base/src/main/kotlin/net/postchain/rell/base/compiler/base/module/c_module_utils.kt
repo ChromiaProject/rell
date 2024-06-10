@@ -362,6 +362,7 @@ class S_AppContext(
     val msgCtx: C_MessageContext,
     val symCtxProvider: C_SymbolContextProvider,
     val importLoader: C_ImportModuleLoader,
+    val executor: C_CompilerExecutor,
 ) {
     fun <T> withModuleContext(moduleName: R_ModuleName, code: (S_ModuleContext) -> T): T {
         val modCtx = S_PrivateModuleContext(this, moduleName)
@@ -371,20 +372,26 @@ class S_AppContext(
     }
 }
 
-sealed class S_ModuleContext(val appCtx: S_AppContext, val moduleName: R_ModuleName) {
+sealed class S_ModuleContext(
+    val appCtx: S_AppContext,
+    val moduleName: R_ModuleName,
+) {
     val msgCtx = appCtx.msgCtx
 
     abstract fun createFileContext(path: C_SourcePath, idePath: IdeFilePath): S_FileContext
 }
 
-private class S_PrivateModuleContext(appCtx: S_AppContext, moduleName: R_ModuleName): S_ModuleContext(appCtx, moduleName) {
+private class S_PrivateModuleContext(
+    appCtx: S_AppContext,
+    moduleName: R_ModuleName,
+): S_ModuleContext(appCtx, moduleName) {
     private val files = mutableSetOf<C_SourcePath>()
     private val namespaces = mutableMultimapOf<R_QualifiedName, NamespaceNameInfoRec>()
     private var finished = false
 
     override fun createFileContext(path: C_SourcePath, idePath: IdeFilePath): S_FileContext {
         check(files.add(path)) { "$moduleName $path" }
-        val symCtx = appCtx.symCtxProvider.getSymbolContext(path)
+        val symCtx = appCtx.symCtxProvider.getFileSymbolContext(path)
         return S_PrivateFileContext(this, symCtx, path, idePath, namespaces)
     }
 
@@ -458,7 +465,10 @@ private class NamespaceNameInfoRec(
     val docSymbolGetter: C_LateGetter<Nullable<DocSymbol>>,
 )
 
-class S_DefinitionContext private constructor(val fileCtx: S_FileContext, val namespacePath: C_RNamePath) {
+class S_DefinitionContext private constructor(
+    val fileCtx: S_FileContext,
+    val namespacePath: C_RFullNamePath,
+) {
     val modCtx = fileCtx.modCtx
     val appCtx = modCtx.appCtx
     val msgCtx = modCtx.msgCtx
@@ -475,7 +485,8 @@ class S_DefinitionContext private constructor(val fileCtx: S_FileContext, val na
 
     companion object {
         fun root(fileCtx: S_FileContext): S_DefinitionContext {
-            return S_DefinitionContext(fileCtx, C_RNamePath.EMPTY)
+            val path = C_RFullNamePath.of(fileCtx.modCtx.moduleName)
+            return S_DefinitionContext(fileCtx, path)
         }
     }
 }
@@ -521,7 +532,7 @@ class C_FileModuleSource(
     override fun docPos() = file.docPos
 
     override fun compileHeader0(): C_SourceModuleHeader? {
-        val symCtx = appCtx.symCtxProvider.getSymbolContext(file.path)
+        val symCtx = appCtx.symCtxProvider.getFileSymbolContext(file.path)
         val modifierCtx = C_ModifierContext(appCtx.msgCtx, symCtx)
         return file.compileHeader(modifierCtx)
     }
@@ -553,7 +564,7 @@ class C_DirModuleSource(
 
     override fun compileHeader0(): C_SourceModuleHeader? {
         mainFile ?: return null
-        val symCtx = appCtx.symCtxProvider.getSymbolContext(mainFile.path)
+        val symCtx = appCtx.symCtxProvider.getFileSymbolContext(mainFile.path)
         val modifierCtx = C_ModifierContext(appCtx.msgCtx, symCtx)
         return mainFile.compileHeader(modifierCtx)
     }
@@ -583,7 +594,7 @@ class C_ParsedRellFile(
         }
 
         if (ast == null) {
-            val symCtx = C_NopSymbolContext(modCtx.msgCtx, modCtx.msgCtx.globalCtx.compilerOptions)
+            val symCtx = modCtx.appCtx.symCtxProvider.getNopSymbolContext()
             return C_MidModuleFile(path, immListOf(), null, symCtx)
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.def
@@ -32,11 +32,11 @@ import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmMap
 
 class C_GlobalConstantDefinition(
-        val rDef: R_GlobalConstantDefinition,
-        private val typePos: S_Pos,
-        private val varUid: C_VarUid,
-        private val headerGetter: C_LateGetter<C_GlobalConstantFunctionHeader>,
-        private val exprGetter: C_LateGetter<V_Expr>
+    val rDef: R_GlobalConstantDefinition,
+    private val typePos: S_Pos,
+    private val varUid: C_VarUid,
+    private val headerGetter: C_LateGetter<C_GlobalConstantFunctionHeader>,
+    private val exprGetter: C_LateGetter<V_Expr>,
 ) {
     fun compileRead(exprCtx: C_ExprContext, name: C_Name): V_Expr {
         val header = headerGetter.get()

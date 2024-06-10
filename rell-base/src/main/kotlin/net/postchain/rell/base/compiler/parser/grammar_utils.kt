@@ -93,7 +93,7 @@ class RellToken(val name: String, val token: Token): Parser<RellTokenMatch> {
 
         val t = r.value
         val file = C_Parser.currentFile()
-        val pos = S_BasicPos(file, t.row, t.column)
+        val pos = S_BasicPos(file, t.position, t.row, t.column)
 
         return Parsed(RellTokenMatch(pos, t.text), r.remainder)
     }

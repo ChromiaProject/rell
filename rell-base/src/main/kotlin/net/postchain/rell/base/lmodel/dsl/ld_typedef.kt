@@ -45,6 +45,7 @@ private class Ld_TypeDefMember_Constructor(
 
     private fun makeDoc(typeName: R_FullName, lConstructor: L_Constructor, comment: DocComment?): DocSymbol {
         val docDeclaration = DocDeclaration_TypeConstructor(
+            typeName.last,
             L_TypeUtils.docTypeParams(lConstructor.header.typeParams),
             lConstructor.header.params.map { it.docSymbol.declaration }.toImmList(),
             deprecated = lConstructor.deprecated,
@@ -53,7 +54,7 @@ private class Ld_TypeDefMember_Constructor(
 
         return Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.CONSTRUCTOR,
-            symbolName = DocSymbolName.global(typeName.moduleName.str(), typeName.qualifiedName.str()),
+            symbolName = DocSymbolName.global(typeName),
             declaration = docDeclaration,
             comment = comment,
         )
@@ -73,7 +74,7 @@ private class Ld_TypeDefMember_SpecialConstructor(
     private fun makeDoc(typeName: R_FullName, lMemberHeader: L_MemberHeader): DocSymbol {
         return Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.CONSTRUCTOR,
-            symbolName = DocSymbolName.global(typeName.moduleName.str(), typeName.qualifiedName.str()),
+            symbolName = DocSymbolName.global(typeName),
             declaration = DocDeclaration_TypeSpecialConstructor(),
             comment = lMemberHeader.docComment,
         )
@@ -135,7 +136,7 @@ private class Ld_TypeDefMember_Function(
         for (alias in function.aliases) {
             val aliasFullName = fullName.replaceLast(alias.simpleName)
             val lMemberHeader = alias.memberHeader.finish(ctx.modCfg, aliasFullName)
-            val aliasDocSymbol = makeDocSymbol(fullName, aliasFullName, lMemberHeader, alias, docSymbol)
+            val aliasDocSymbol = makeAliasDocSymbol(fullName, aliasFullName, lMemberHeader, alias, docSymbol)
             val aliasMember = L_TypeDefMember_Alias(
                 aliasFullName,
                 lMemberHeader,
@@ -149,7 +150,7 @@ private class Ld_TypeDefMember_Function(
         return res.toImmList()
     }
 
-    private fun makeDocSymbol(
+    private fun makeAliasDocSymbol(
         fullName: R_FullName,
         aliasFullName: R_FullName,
         memberHeader: L_MemberHeader,
@@ -158,14 +159,15 @@ private class Ld_TypeDefMember_Function(
     ): DocSymbol {
         val docDec = DocDeclaration_Alias(
             C_DocUtils.docModifiers(alias.deprecated),
-            alias.simpleName,
-            R_QualifiedName.of(fullName.qualifiedName.last),
+            aliasFullName.last,
+            fullName,
             targetDocSymbol.declaration,
+            R_QualifiedName.of(fullName.last),
         )
 
         return Ld_DocSymbols.docSymbol(
             DocSymbolKind.ALIAS,
-            DocSymbolName.global(aliasFullName.moduleName.str(), aliasFullName.qualifiedName.str()),
+            DocSymbolName.global(aliasFullName),
             declaration = docDec,
             comment = memberHeader.docComment,
         )
@@ -291,7 +293,7 @@ class Ld_TypeDef(
         val docTypeParams = L_TypeUtils.docTypeParams(mTypeParams)
         return Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.TYPE,
-            symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
+            symbolName = DocSymbolName.global(fullName),
             declaration = DocDeclaration_Type(fullName.last, docTypeParams, lParent, flags),
             comment = lMemberHeader.docComment,
         )

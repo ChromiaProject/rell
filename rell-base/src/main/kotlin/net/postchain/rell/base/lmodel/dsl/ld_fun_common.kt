@@ -15,7 +15,10 @@ import net.postchain.rell.base.mtype.M_ParamArity
 import net.postchain.rell.base.mtype.M_Type_Nullable
 import net.postchain.rell.base.mtype.M_Types
 import net.postchain.rell.base.utils.associateNotNullValues
-import net.postchain.rell.base.utils.doc.*
+import net.postchain.rell.base.utils.doc.DocComment
+import net.postchain.rell.base.utils.doc.DocDeclaration_Parameter
+import net.postchain.rell.base.utils.doc.DocSymbolKind
+import net.postchain.rell.base.utils.doc.DocSymbolName
 import net.postchain.rell.base.utils.toImmList
 
 abstract class Ld_CommonFunctionDslImpl(

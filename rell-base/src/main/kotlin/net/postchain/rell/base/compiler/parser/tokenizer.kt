@@ -22,11 +22,13 @@ import java.math.BigInteger
 import java.util.*
 
 class RellTokenizerState {
+    var lastOffset = 0
     var lastRow = 1
     var lastCol = 1
     var lastEof = false
 
-    fun update(row: Int, col: Int, eof: Boolean) {
+    fun update(offset: Int, row: Int, col: Int, eof: Boolean) {
+        lastOffset = offset
         lastRow = row
         lastCol = col
         lastEof = eof
@@ -414,12 +416,12 @@ class RellTokenizer(tokensEx: List<RellToken>) : Tokenizer {
             t = scanToken(charSeq)
             if (t == null) {
                 eof = true
-                outState.update(charSeq.row(), charSeq.col(), true)
+                outState.update(charSeq.pos(), charSeq.row(), charSeq.col(), true)
                 return null
             }
 
             token = t
-            outState.update(t.row, t.column, false)
+            outState.update(t.position, t.row, t.column, false)
 
             return t
         }
@@ -572,7 +574,7 @@ private class CharSeq(private val str: String) {
 
     fun cur() = cur
     fun afterCur() = if (pos >= len - 1) null else str[pos + 1]
-    fun startPos() = S_BasicPos(C_Parser.currentFile(), startRow, startCol)
+    fun startPos() = S_BasicPos(C_Parser.currentFile(), startPos, startRow, startCol)
     fun pos() = pos
     fun row() = row
     fun col() = col
@@ -583,7 +585,7 @@ private class CharSeq(private val str: String) {
         startCol = col
     }
 
-    fun textPos() = S_BasicPos(C_Parser.currentFile(), row, col)
+    fun textPos() = S_BasicPos(C_Parser.currentFile(), pos, row, col)
     fun text(startSkip: Int, endSkip: Int) = str.substring(startPos + startSkip, pos - endSkip)
 
     fun tokenMatch(token: RellToken, text: String) = TokenMatch(token.token, text, startPos, startRow, startCol)

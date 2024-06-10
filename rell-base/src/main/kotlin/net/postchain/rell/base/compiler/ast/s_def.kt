@@ -60,7 +60,7 @@ class S_AnonAttrHeader(private val typeName: S_QualifiedName, private val nullab
     }
 
     override fun compile(ctx: C_DefinitionContext): C_AttrHeaderHandle {
-        val typeNameHand = typeName.compile(ctx.symCtx, def = true)
+        val typeNameHand = typeName.compile(ctx.symCtx.nameCtx, def = true)
         return C_AnonAttrHeaderHandle(ctx.nsCtx, typeNameHand, nullable)
     }
 
@@ -639,12 +639,43 @@ class S_EnumDefinition(
 
         nameHand.setIdeInfo(ideDef.defInfo)
 
-        val set = mutableSetOf<String>()
-        val rAttrs = mutableListOf<R_EnumAttr>()
+        val attrsCompiler = AttrsCompiler(ctx)
+        val rAttrs = attrsCompiler.compileAttrs(cDefBase, attrs)
 
+        val docPos = cName.pos.toDocPos()
+        val defBase = cDefBase.rBase(R_CallFrame.NONE_INIT_FRAME_GETTER, docPos, docGetter)
+        val rEnum = R_EnumDefinition(defBase, rAttrs)
+        attrsCompiler.finish(rEnum)
+
+        val memBase = cDefBase.nsMemBase(deprecated = modDeprecated.value(), ideRefInfo = ideDef.refInfo)
+        return C_MidModuleMember_Enum(cName, rEnum, memBase)
+    }
+
+    override fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder) {
+        val sub = b.node(this, name, IdeOutlineNodeType.ENUM)
         for (attr in attrs) {
+            sub.node(attr, attr, IdeOutlineNodeType.ENUM_ATTRIBUTE)
+        }
+    }
+
+    private class AttrsCompiler(private val ctx: S_DefinitionContext) {
+        private val set = mutableSetOf<String>()
+        private val rAttrs = mutableListOf<R_EnumAttr>()
+        private val attrDocDecInits = mutableListOf<Pair<R_Name, C_LateInit<DocDeclaration>>>()
+
+        fun compileAttrs(cDefBase: C_CommonDefinitionBase, attrs: List<S_Name>): List<R_EnumAttr> {
+            for (attr in attrs) {
+                compileAttr(cDefBase, attr)
+            }
+            return rAttrs.toImmList()
+        }
+
+        private fun compileAttr(cDefBase: C_CommonDefinitionBase, attr: S_Name) {
             val attrNameHand = attr.compile(ctx.symCtx)
             val attrName = attrNameHand.name
+
+            val attrDocDecInit = C_LateInit(C_CompilerPass.NAMESPACES, DocDeclaration.NONE)
+            attrDocDecInits.add(attrName.rName to attrDocDecInit)
 
             val attrIdeDef = cDefBase.memberIdeDef(
                 attrNameHand.pos,
@@ -652,7 +683,7 @@ class S_EnumDefinition(
                 IdeSymbolKind.MEM_ENUM_VALUE,
                 DocSymbolKind.ENUM_VALUE,
                 attrNameHand.rName,
-                DocDeclaration_EnumValue(attrName.rName),
+                attrDocDecInit.getter,
             )
 
             attrNameHand.setIdeInfo(attrIdeDef.defInfo)
@@ -666,17 +697,16 @@ class S_EnumDefinition(
             }
         }
 
-        val docPos = cName.pos.toDocPos()
-        val defBase = cDefBase.rBase(R_CallFrame.NONE_INIT_FRAME_GETTER, docPos, docGetter)
-        val rEnum = R_EnumDefinition(defBase, rAttrs.toList())
-        val memBase = cDefBase.nsMemBase(deprecated = modDeprecated.value(), ideRefInfo = ideDef.refInfo)
-        return C_MidModuleMember_Enum(cName, rEnum, memBase)
-    }
+        fun finish(rEnum: R_EnumDefinition): List<R_EnumAttr> {
+            val docType = L_TypeUtils.docType(rEnum.type.mType)
 
-    override fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder) {
-        val sub = b.node(this, name, IdeOutlineNodeType.ENUM)
-        for (attr in attrs) {
-            sub.node(attr, attr, IdeOutlineNodeType.ENUM_ATTRIBUTE)
+            ctx.appCtx.executor.onPass(C_CompilerPass.NAMESPACES) {
+                for ((rAttrName, docDecInit) in attrDocDecInits) {
+                    docDecInit.set(DocDeclaration_EnumValue(rAttrName, docType))
+                }
+            }
+
+            return rAttrs.toImmList()
         }
     }
 }
@@ -684,6 +714,7 @@ class S_EnumDefinition(
 class S_NamespaceDefinition(
     pos: S_Pos,
     modifiers: S_Modifiers,
+    private val bodyPosRange: S_PosRange,
     private val qualifiedName: S_QualifiedName?,
     private val definitions: List<S_Definition>,
 ): S_Definition(pos, modifiers) {
@@ -718,7 +749,7 @@ class S_NamespaceDefinition(
         val subCtx = ctx.namespace(rPath)
         val midMembers = definitions.mapNotNull { it.compile(subCtx) }
 
-        return C_MidModuleMember_Namespace(modifiers, midQualifiedName, midMembers)
+        return C_MidModuleMember_Namespace(modifiers, midQualifiedName, bodyPosRange, midMembers)
     }
 
     override fun ideGetImportedModules(moduleName: R_ModuleName, res: MutableSet<R_ModuleName>) {

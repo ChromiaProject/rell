@@ -4,10 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.module
 
-import net.postchain.rell.base.compiler.ast.C_ImportTarget
-import net.postchain.rell.base.compiler.ast.S_BasicDefinition
-import net.postchain.rell.base.compiler.ast.S_Modifiers
-import net.postchain.rell.base.compiler.ast.S_Pos
+import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.modifier.C_ModifierContext
 import net.postchain.rell.base.compiler.base.modifier.C_ModifierFields
@@ -16,10 +13,7 @@ import net.postchain.rell.base.compiler.base.modifier.C_ModifierValues
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMemberBase
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
-import net.postchain.rell.base.model.R_EnumDefinition
-import net.postchain.rell.base.model.R_ModuleName
-import net.postchain.rell.base.model.R_MountName
-import net.postchain.rell.base.model.R_QualifiedName
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
 
@@ -135,6 +129,7 @@ class C_MidModuleMember_Import(
 class C_MidModuleMember_Namespace(
     private val modifiers: S_Modifiers,
     private val qualifiedName: List<NamePart>,
+    private val posRange: S_PosRange,
     members: List<C_MidModuleMember>,
 ): C_MidModuleMember() {
     private val members = members.toImmList()
@@ -160,7 +155,15 @@ class C_MidModuleMember_Namespace(
         val subMembers = members.map { it.compile(subCtx) }
 
         val ideQualifiedName = if (qualifiedName.isEmpty()) null else C_IdeQualifiedName(qualifiedName.map { it.ideName })
-        return C_ExtModuleMember_Namespace(ideQualifiedName, subMembers, mount, extChainName, modDeprecated?.value())
+
+        return C_ExtModuleMember_Namespace(
+            ideQualifiedName,
+            posRange,
+            subMembers,
+            mount,
+            extChainName,
+            modDeprecated?.value(),
+        )
     }
 
     private fun makeDocSymbol(
@@ -169,10 +172,11 @@ class C_MidModuleMember_Namespace(
         docModifiers: DocModifiers,
     ): DocSymbol {
         val qName = namePart.qualifiedName
+        val rFullName = R_FullName(ctx.modCtx.moduleName, qName)
         return ctx.modCtx.globalCtx.docFactory.makeDocSymbol(
             kind = DocSymbolKind.NAMESPACE,
-            symbolName = DocSymbolName.global(ctx.modCtx.moduleName.str(), qName.str()),
-            declaration = DocDeclaration_Namespace(docModifiers, qName.last),
+            symbolName = DocSymbolName.global(rFullName),
+            declaration = DocDeclaration_Namespace(docModifiers, rFullName.last),
         )
     }
 
@@ -185,6 +189,7 @@ class C_MidModuleMember_Namespace(
 
 class C_MidModuleCompiler(
     private val msgCtx: C_MessageContext,
+    private val symCtxProvider: C_SymbolContextProvider,
     midModules: List<C_MidModule>,
 ) {
     private val midModulesMap = midModules.associateBy { it.moduleName }.toImmMap()
@@ -206,7 +211,7 @@ class C_MidModuleCompiler(
         check(!done)
 
         val moduleCtx = C_MidModuleContext(msgCtx, modImporter, moduleName, null)
-        val symCtx = C_NopSymbolContext(msgCtx, msgCtx.globalCtx.compilerOptions)
+        val symCtx = symCtxProvider.getNopSymbolContext()
         val modifierCtx = C_ModifierContext(msgCtx, symCtx)
         val memberCtx = C_MidMemberContext(moduleCtx, modifierCtx, null)
         val res = members.map { it.compile(memberCtx) }.toImmList()

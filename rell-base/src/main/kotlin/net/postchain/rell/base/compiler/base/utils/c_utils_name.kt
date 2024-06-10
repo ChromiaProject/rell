@@ -95,7 +95,9 @@ class C_RNamePath private constructor(parts: List<R_Name>) {
 
     fun append(name: R_Name) = C_RNamePath(parts + name)
     fun append(names: List<R_Name>) = of(parts + names)
+
     fun qualifiedName(name: R_Name): R_QualifiedName = R_QualifiedName(parts + name)
+    fun fullName(moduleName: R_ModuleName, name: R_Name): R_FullName = R_FullName(moduleName, qualifiedName(name))
 
     override fun equals(other: Any?) = other is C_RNamePath && parts == other.parts
     override fun hashCode() = parts.hashCode()
@@ -115,7 +117,10 @@ class C_RFullNamePath private constructor(
     val parts = parts.toImmList()
 
     fun append(name: R_Name) = C_RFullNamePath(moduleName, parts + name)
-    fun fullName(name: R_Name): R_FullName = R_FullName(moduleName, R_QualifiedName(parts + name))
+    fun append(names: List<R_Name>) = C_RFullNamePath(moduleName, parts + names)
+
+    fun qualifiedName(name: R_Name): R_QualifiedName = R_QualifiedName(parts + name)
+    fun fullName(name: R_Name): R_FullName = R_FullName(moduleName, qualifiedName(name))
 
     fun toDefPath(): C_DefinitionPath = C_DefinitionPath(moduleName.str(), parts.map { it.str })
 

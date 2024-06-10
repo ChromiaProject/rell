@@ -595,7 +595,7 @@ class Ld_Namespace(
     private fun makeDoc(fullName: R_FullName, memberHeader: L_MemberHeader): DocSymbol {
         return Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.NAMESPACE,
-            symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
+            symbolName = DocSymbolName.global(fullName),
             declaration = DocDeclaration_Namespace(DocModifiers.NONE, fullName.last),
             comment = memberHeader.docComment,
         )
@@ -663,13 +663,13 @@ private class Ld_NamespaceMember_Alias(
             val docDec = DocDeclaration_Alias(
                 C_DocUtils.docModifiers(deprecated),
                 fullName.last,
-                targetMember.qualifiedName,
+                targetMember.fullName,
                 targetMember.docSymbol.declaration,
             )
 
             return Ld_DocSymbols.docSymbol(
                 kind = DocSymbolKind.ALIAS,
-                symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
+                symbolName = DocSymbolName.global(fullName),
                 declaration = docDec,
                 comment = memberHeader.docComment,
             )
@@ -744,7 +744,7 @@ private class Ld_NamespaceMember_Struct(
     private fun finishDoc(fullName: R_FullName, lMemberHeader: L_MemberHeader): DocSymbol {
         return Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.STRUCT,
-            symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
+            symbolName = DocSymbolName.global(fullName),
             declaration = DocDeclaration_Struct(DocModifiers.NONE, fullName.last),
             comment = lMemberHeader.docComment,
         )
@@ -801,7 +801,7 @@ private class Ld_NamespaceMember_SpecialProperty(
     private fun finishDoc(fullName: R_FullName, lMemberHeader: L_MemberHeader): DocSymbol {
         return Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.PROPERTY,
-            symbolName = DocSymbolName.global(fullName.moduleName.str(), fullName.qualifiedName.str()),
+            symbolName = DocSymbolName.global(fullName),
             declaration = DocDeclaration_SpecialProperty(fullName.last),
             comment = lMemberHeader.docComment,
         )

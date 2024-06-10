@@ -7,7 +7,6 @@ package net.postchain.rell.base.compiler.ast
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.utils.C_FeatureRestrictions
-import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.parser.RellTokenMatch
@@ -23,6 +22,7 @@ import java.util.function.Supplier
 abstract class S_Pos: Comparable<S_Pos> {
     abstract fun path(): C_SourcePath
     abstract fun idePath(): IdeFilePath
+    abstract fun offset(): Int
     abstract fun line(): Int
     abstract fun column(): Int
 
@@ -34,8 +34,7 @@ abstract class S_Pos: Comparable<S_Pos> {
 
     final override fun compareTo(other: S_Pos): Int {
         var d = path().compareTo(other.path())
-        if (d == 0) d = line().compareTo(other.line())
-        if (d == 0) d = column().compareTo(other.column())
+        if (d == 0) d = offset().compareTo(other.offset())
         return d
     }
 
@@ -44,21 +43,36 @@ abstract class S_Pos: Comparable<S_Pos> {
 
 class S_BasicPos(
     private val file: C_ParserFilePath,
+    private val offset: Int,
     private val row: Int,
     private val col: Int,
 ): S_Pos() {
     override fun path() = file.sourcePath
     override fun idePath() = file.idePath
+    override fun offset() = offset
     override fun line() = row
     override fun column() = col
 
     override fun equals(other: Any?): Boolean {
-        return other is S_BasicPos && row == other.row && col == other.col && file == other.file
+        return other is S_BasicPos
+                && offset == other.offset
+                && row == other.row
+                && col == other.col
+                && file == other.file
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(row, col, file)
+        return Objects.hash(offset, row, col, file)
     }
+}
+
+data class S_PosRange(val start: S_Pos, val end: S_Pos) {
+    init {
+        checkEquals(end.path(), start.path())
+        check(end >= start) { "$start $end" }
+    }
+
+    override fun toString() = "${start.path()}(${start.line()}:${start.column()}-${end.line()}:${end.column()})"
 }
 
 abstract class S_Node {
@@ -93,7 +107,7 @@ data class S_NameOptValue<T>(val name: S_Name?, val value: T)
 class S_Name(val pos: S_Pos, private val rName: R_Name): S_Node() {
     private val str = rName.str
 
-    fun compile(ctx: C_SymbolContext, def: Boolean = false): C_NameHandle {
+    fun compile(ctx: C_NameContext, def: Boolean = false): C_NameHandle {
         if (def) {
             val resName = RESERVED_NAMES[rName]
             resName?.access(ctx, pos, rName)
@@ -101,6 +115,7 @@ class S_Name(val pos: S_Pos, private val rName: R_Name): S_Node() {
         return ctx.addName(this, rName)
     }
 
+    fun compile(ctx: C_SymbolContext, def: Boolean = false) = compile(ctx.nameCtx, def = def)
     fun compile(ctx: C_MountContext, def: Boolean = false) = compile(ctx.symCtx, def = def)
     fun compile(ctx: C_ExprContext, def: Boolean = false) = compile(ctx.symCtx, def = def)
 
@@ -162,7 +177,7 @@ class S_Name(val pos: S_Pos, private val rName: R_Name): S_Node() {
         private val RESERVED_NAMES: Map<R_Name, C_ReservedName> = OLD_KEYWORDS.unionNoConflicts(NEW_KEYWORDS)
 
         private class C_ReservedName(val oldRestrictions: C_FeatureRestrictions?, val newVersion: R_LangVersion?) {
-            fun access(ctx: C_SymbolContext, pos: S_Pos, rName: R_Name) {
+            fun access(ctx: C_NameContext, pos: S_Pos, rName: R_Name) {
                 oldRestrictions?.access(ctx.msgMgr, pos, "name", ctx.compilerOptions)
 
                 val version = ctx.compilerOptions.compatibility
@@ -192,11 +207,12 @@ class S_QualifiedName(parts: List<S_Name>): S_Node() {
     fun str() = parts.joinToString(".")
     override fun toString() = str()
 
-    fun compile(ctx: C_SymbolContext, def: Boolean = false): C_QualifiedNameHandle {
+    fun compile(ctx: C_NameContext, def: Boolean = false): C_QualifiedNameHandle {
         val cParts = parts.map { it.compile(ctx, def = def) }
         return C_QualifiedNameHandle(cParts)
     }
 
-    fun compile(ctx: C_ExprContext) = compile(ctx.symCtx)
+    fun compile(ctx: C_SymbolContext) = compile(ctx.nameCtx)
+    fun compile(ctx: C_ExprContext) = compile(ctx.nameCtx)
     fun compile(ctx: C_DefinitionContext) = compile(ctx.symCtx)
 }

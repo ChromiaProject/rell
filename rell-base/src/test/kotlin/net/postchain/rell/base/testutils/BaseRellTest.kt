@@ -11,12 +11,26 @@ import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_Value
 
-abstract class BaseRellTest(useSql: Boolean = true, gtv: Boolean = false): BaseTesterTest(useSql) {
-    final override val tst: RellCodeTester by lazy {
-        RellCodeTester(tstCtx, entityDefs(), objInserts(), gtv = gtv)
+abstract class BaseRellTest(
+    useSql: Boolean = true,
+    private val gtv: Boolean = false,
+): BaseTesterTest(useSql) {
+    private var tst0: RellCodeTester? = null
+
+    final override val tst: RellCodeTester get() {
+        var res = tst0
+        if (res == null) {
+            res = RellCodeTester(tstCtx, entityDefs(), objInserts(), gtv = gtv)
+            tst0 = res
+        }
+        return res
     }
 
     val repl by lazy { tst.createRepl() }
+
+    protected fun resetTst() {
+        tst0 = null
+    }
 
     open fun entityDefs(): List<String> = listOf()
     open fun objInserts(): List<String> = listOf()

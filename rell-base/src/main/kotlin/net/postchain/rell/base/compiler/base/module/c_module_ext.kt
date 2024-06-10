@@ -6,6 +6,7 @@ package net.postchain.rell.base.compiler.base.module
 
 import net.postchain.rell.base.compiler.ast.C_ImportTarget
 import net.postchain.rell.base.compiler.ast.S_BasicDefinition
+import net.postchain.rell.base.compiler.ast.S_PosRange
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.modifier.C_MountAnnotationValue
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
@@ -16,7 +17,6 @@ import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.R_EnumDefinition
 import net.postchain.rell.base.model.R_ModuleName
-import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.toImmList
 
 data class C_ExtChainName(val name: String) {
@@ -43,16 +43,16 @@ class C_ExtModuleFile(
     fun compile(modCtx: C_ModuleContext): C_CompiledRellFile {
         modCtx.executor.checkPass(C_CompilerPass.DEFINITIONS)
 
-        val actualSymCtx = if (modCtx.extChain != null) symCtx.nopContext() else symCtx
+        val actualSymCtx = if (modCtx.extChain == null) symCtx else modCtx.appCtx.symCtxProvider.getNopSymbolContext()
         val fileCtx = C_FileContext(modCtx, actualSymCtx)
         val mntCtx = fileCtx.createMountContext()
 
+        actualSymCtx.ideCompletCtx.trackScope(mntCtx.nsCtx, null)
+
         compileMembers(mntCtx)
 
-        val mntTables = fileCtx.mntBuilder.build()
-        val fileContents = fileCtx.createContents()
-
-        return C_CompiledRellFile(path, mntTables, fileContents)
+        val fileFinish = fileCtx.finish()
+        return C_CompiledRellFile(path, fileFinish.mountTables, fileFinish.importsDescriptor)
     }
 
     private fun compileMembers(mntCtx: C_MountContext) {
@@ -121,6 +121,7 @@ class C_ExtModuleMember_Import(
 
 class C_ExtModuleMember_Namespace(
     private val qualifiedName: C_IdeQualifiedName?,
+    private val posRange: S_PosRange,
     members: List<C_ExtModuleMember>,
     private val mount: C_MountAnnotationValue?,
     private val extChainName: C_ExtChainName?,
@@ -130,6 +131,8 @@ class C_ExtModuleMember_Namespace(
 
     override fun compile0(mntCtx: C_MountContext) {
         val subMntCtx = createSubMountContext(mntCtx)
+        mntCtx.symCtx.ideCompletCtx.trackScope(subMntCtx.nsCtx, posRange)
+
         for (member in members) {
             member.compile(subMntCtx)
         }
@@ -231,11 +234,11 @@ private class C_ModuleBasis(
         checkParentModule(appCtx.msgCtx, modProvider)
 
         val modCtx = C_RegularModuleContext(
-                appCtx,
-                modProvider,
-                module,
-                selected = extModule.midModule.isSelected,
-                isTestDependency = extModule.midModule.isTestDependency,
+            appCtx,
+            modProvider,
+            module,
+            selected = extModule.midModule.isSelected,
+            isTestDependency = extModule.midModule.isTestDependency,
         )
 
         val compiledFiles = extModule.compileFiles(modCtx)

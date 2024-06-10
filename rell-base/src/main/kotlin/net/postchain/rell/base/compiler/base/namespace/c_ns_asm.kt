@@ -10,18 +10,13 @@ import net.postchain.rell.base.compiler.ast.S_ExactImportTargetItem
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.module.*
-import net.postchain.rell.base.compiler.base.utils.C_Errors
-import net.postchain.rell.base.compiler.base.utils.C_LateGetter
-import net.postchain.rell.base.compiler.base.utils.C_LateInit
-import net.postchain.rell.base.compiler.base.utils.C_RNamePath
+import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.R_AppUid
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.*
-import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.IdeGlobalSymbolLink
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolGlobalId
-import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import java.util.*
 
 interface C_NsAsm_BasicAssembler {
@@ -30,7 +25,7 @@ interface C_NsAsm_BasicAssembler {
 
 interface C_NsAsm_ComponentAssembler: C_NsAsm_BasicAssembler {
     fun namespacePath(): C_RNamePath
-    fun addDef(name: C_Name, def: C_NamespaceMember)
+    fun addDef(name: C_Name, member: C_NamespaceMember)
 
     fun addNamespace(
         name: C_Name,
@@ -45,7 +40,7 @@ interface C_NsAsm_ComponentAssembler: C_NsAsm_BasicAssembler {
         alias: C_Name,
         module: C_ModuleKey,
         qNameHand: C_QualifiedNameHandle,
-        aliasPair: Pair<C_NameHandle, DocSymbol>?,
+        aliasPair: Pair<C_NameHandle, DocSymbolTransformer>?,
     )
 
     fun addWildcardImport(module: C_ModuleKey, pathHands: List<C_NameHandle>)
@@ -144,27 +139,33 @@ class C_NsAsm_ExactImportNames(
         qNameHand.setIdeInfo(fullIdeInfos)
 
         if (alias != null) {
+            val defId = alias.ideId.symId
             val lastIdeInfo0 = fullIdeInfos.lastOrNull() ?: C_IdeSymbolInfo.UNKNOWN
-            val lastIdeInfo = aliasDefIdeInfo(lastIdeInfo0.kind)
+            val lastIdeInfo = lastIdeInfo0
+                .update(defId = defId, link = null)
+                .transformDocSymbol(alias.docSymbolTransformer)
             alias.nameHand.setIdeInfo(lastIdeInfo)
         }
     }
 
-    fun aliasItem(targetItem: C_NamespaceItem): C_NamespaceItem {
-        alias ?: return targetItem
+    fun aliasMember(targetMember: C_NamespaceMember): C_NamespaceMember {
+        alias ?: return targetMember
         val link = IdeGlobalSymbolLink(alias.ideId)
-        val aliasIdeInfo = C_IdeSymbolInfo.direct(targetItem.ideInfo.kind, link = link, doc = alias.docSymbol)
-        return C_NamespaceItem(targetItem.member, aliasIdeInfo)
-    }
+        val aliasIdeInfo = targetMember.ideInfo
+            .update(defId = null, link = link)
+            .transformDocSymbol(alias.docSymbolTransformer)
 
-    private fun aliasDefIdeInfo(kind: IdeSymbolKind): C_IdeSymbolInfo {
-        return C_IdeSymbolInfo.direct(kind, defId = alias?.ideId?.symId, link = null, doc = alias?.docSymbol)
+        val aliasBase = C_NamespaceMemberBase(alias.defName, aliasIdeInfo, targetMember.restrictions)
+        val docPos = alias.nameHand.pos.toDocPos()
+
+        return C_NamespaceMember_Alias(aliasBase, targetMember, docPos)
     }
 
     class Alias(
+        val defName: C_DefinitionName,
         val ideId: IdeSymbolGlobalId,
         val nameHand: C_NameHandle,
-        val docSymbol: DocSymbol,
+        val docSymbolTransformer: DocSymbolTransformer,
     )
 }
 
@@ -182,7 +183,7 @@ class C_NsAsm_Namespace(
 
 sealed class C_NsAsm_Def
 
-class C_NsAsm_Def_Simple(val item: C_NamespaceItem): C_NsAsm_Def()
+class C_NsAsm_Def_Simple(val member: C_NamespaceMember): C_NsAsm_Def()
 
 class C_NsAsm_Def_ExactImport(
     val imp: C_NsAsm_ExactImport,
@@ -265,12 +266,12 @@ private sealed class C_NsAsm_InternalBasicAssembler(
 }
 
 private class C_NsAsm_MutableEntry(
-        val name: C_Name,
-        val type: C_DeclarationType,
-        val def: C_NsAsm_MutableDef,
-        val identity: C_NsAsm_Identity,
-        val container: C_ContainerKey,
-        val stamp: R_AppUid
+    val name: C_Name,
+    val type: C_DeclarationType,
+    val def: C_NsAsm_MutableDef,
+    val identity: C_NsAsm_Identity,
+    val container: C_ContainerKey,
+    val stamp: R_AppUid,
 ) {
     fun assemble(): C_NsAsm_RawEntry {
         val def2 = def.assemble()
@@ -315,9 +316,9 @@ private class C_NsAsm_InternalComponentAssembler(
 
     override fun namespacePath(): C_RNamePath = nsKey.path
 
-    override fun addDef(name: C_Name, def: C_NamespaceMember) {
-        val type = def.declarationType()
-        val def2 = C_NsAsm_RawDef_Simple(C_NamespaceItem(def))
+    override fun addDef(name: C_Name, member: C_NamespaceMember) {
+        val type = member.declarationType()
+        val def2 = C_NsAsm_RawDef_Simple(member)
         addEntry(name, type, C_NsAsm_MutableDef_Simple(def2), C_NsAsm_Identity_Def(def2))
     }
 
@@ -355,13 +356,14 @@ private class C_NsAsm_InternalComponentAssembler(
         alias: C_Name,
         module: C_ModuleKey,
         qNameHand: C_QualifiedNameHandle,
-        aliasPair: Pair<C_NameHandle, DocSymbol>?,
+        aliasPair: Pair<C_NameHandle, DocSymbolTransformer>?,
     ) {
         val namesAlias = if (aliasPair == null) null else {
             val aliasHand = aliasPair.first
-            val fullName = nsKey.path.qualifiedName(aliasHand.rName)
-            val ideId = S_ExactImportTargetItem.makeAliasIdeId(fullName, aliasHand.name, IdeSymbolCategory.IMPORT)
-            C_NsAsm_ExactImportNames.Alias(ideId, aliasHand, aliasPair.second)
+            val defName = nsKey.toDefPath().subName(aliasHand.rName)
+            val qualifiedName = nsKey.path.qualifiedName(aliasHand.rName)
+            val ideId = S_ExactImportTargetItem.makeAliasIdeId(qualifiedName, aliasHand.name, IdeSymbolCategory.IMPORT)
+            C_NsAsm_ExactImportNames.Alias(defName, ideId, aliasHand, aliasPair.second)
         }
 
         val names = C_NsAsm_ExactImportNames(executor, qNameHand, namesAlias)
@@ -502,7 +504,7 @@ class C_NsAsm_RawNamespace(
         val defs = mutableMapOf<R_Name, C_NsAsm_Def>()
 
         for (entry in sysEntries) {
-            defs[entry.name] = C_NsAsm_Def_Simple(entry.item)
+            defs[entry.name] = C_NsAsm_Def_Simple(entry.member)
         }
 
         for (entry in entries) {
@@ -568,13 +570,13 @@ sealed class C_NsAsm_RawDef {
     abstract fun assemble(): C_NsAsm_Def
 }
 
-private class C_NsAsm_RawDef_Simple(private val item: C_NamespaceItem): C_NsAsm_RawDef() {
+private class C_NsAsm_RawDef_Simple(private val member: C_NamespaceMember): C_NsAsm_RawDef() {
     override fun filterByStamp(targetStamp: R_AppUid) = this
 
-    override fun addToDefs(b: C_ModuleDefsBuilder) = item.member.addToDefs(b)
+    override fun addToDefs(b: C_ModuleDefsBuilder) = member.addToDefs(b)
 
     override fun assemble(): C_NsAsm_Def {
-        return C_NsAsm_Def_Simple(item)
+        return C_NsAsm_Def_Simple(member)
     }
 }
 
@@ -802,7 +804,7 @@ private class C_NsAsm_ConflictsProcessor(
 
         for (entry in sysNsProto.entries) {
             if (entry.name !in mutSysDefs) {
-                mutSysDefs[entry.name] = entry.item.member.declarationType()
+                mutSysDefs[entry.name] = entry.member.declarationType()
             }
         }
 
@@ -929,7 +931,7 @@ private class C_NsAsm_InternalNamespaceLinker(
 
 private object C_NsAsm_Utils {
     fun mergeNamespaces(ns: C_NsAsm_RawNamespace, stamp: R_AppUid): C_NsAsm_RawNamespace {
-        return transformNamespaces(ns, true, stamp) { oldNs, newNs ->
+        return transformNamespaces(ns, true, stamp) { oldNs, _ ->
             mergeNamespaces0(oldNs, stamp)
         }
     }

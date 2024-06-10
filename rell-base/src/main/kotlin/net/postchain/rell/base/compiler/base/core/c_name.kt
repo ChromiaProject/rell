@@ -83,6 +83,7 @@ sealed class C_IdeSymbolInfo {
 
     abstract fun getIdeInfo(): IdeSymbolInfo
 
+    abstract fun transformDocSymbol(f: (DocSymbol) -> DocSymbol): C_IdeSymbolInfo
     protected abstract fun update0(kind: IdeSymbolKind, defId: IdeSymbolId?, link: IdeSymbolLink?): C_IdeSymbolInfo
 
     fun update(
@@ -135,6 +136,12 @@ private class C_IdeSymbolInfo_Direct(private val ideInfo: IdeSymbolInfo): C_IdeS
 
     override fun getIdeInfo(): IdeSymbolInfo = ideInfo
 
+    override fun transformDocSymbol(f: (DocSymbol) -> DocSymbol): C_IdeSymbolInfo {
+        val resDoc = f(ideInfo.doc ?: DocSymbol.NONE)
+        val resIdeInfo = ideInfo.update(doc = resDoc)
+        return C_IdeSymbolInfo_Direct(resIdeInfo)
+    }
+
     override fun update0(kind: IdeSymbolKind, defId: IdeSymbolId?, link: IdeSymbolLink?): C_IdeSymbolInfo {
         val ideInfo2 = ideInfo.update(kind = kind, defId = defId, link = link)
         return if (ideInfo2 === ideInfo) this else C_IdeSymbolInfo_Direct(ideInfo2)
@@ -153,6 +160,14 @@ private class C_IdeSymbolInfo_Late(
     }
 
     override fun getIdeInfo(): IdeSymbolInfo = ideInfoLazy
+
+    override fun transformDocSymbol(f: (DocSymbol) -> DocSymbol): C_IdeSymbolInfo {
+        val resDocGetter = docGetter.transform { nDoc ->
+            val resDoc = f(nDoc.value ?: DocSymbol.NONE)
+            Nullable.of(resDoc)
+        }
+        return C_IdeSymbolInfo_Late(kind, defId, link, resDocGetter)
+    }
 
     override fun update0(kind: IdeSymbolKind, defId: IdeSymbolId?, link: IdeSymbolLink?): C_IdeSymbolInfo {
         return C_IdeSymbolInfo_Late(kind = kind, defId = defId, link = link, docGetter = docGetter)
@@ -315,22 +330,19 @@ class C_QualifiedNameHandle(parts: List<C_NameHandle>) {
     override fun toString() = str()
 }
 
-sealed class C_SymbolContext(val msgMgr: C_MessageManager, val compilerOptions: C_CompilerOptions) {
-    abstract fun nopContext(): C_SymbolContext
+sealed class C_NameContext(val msgMgr: C_MessageManager, val compilerOptions: C_CompilerOptions) {
     abstract fun addName(sName: S_Name, rName: R_Name): C_NameHandle
     abstract fun addSymbol(pos: S_Pos, ideInfo: C_IdeSymbolInfo)
     abstract fun setDefId(pos: S_Pos, defId: IdeSymbolId)
     abstract fun setLink(pos: S_Pos, link: IdeSymbolLink)
 }
 
-class C_NopSymbolContext(
+private class C_NameContext_Nop(
     msgMgr: C_MessageManager,
     compilerOptions: C_CompilerOptions,
-): C_SymbolContext(msgMgr, compilerOptions) {
-    override fun nopContext() = this
-
+): C_NameContext(msgMgr, compilerOptions) {
     override fun addName(sName: S_Name, rName: R_Name): C_NameHandle {
-        return C_NopNameHandle(sName.pos, rName)
+        return C_NameHandle_Nop(sName.pos, rName)
     }
 
     override fun addSymbol(pos: S_Pos, ideInfo: C_IdeSymbolInfo) {
@@ -345,7 +357,7 @@ class C_NopSymbolContext(
         // Do nothing.
     }
 
-    private class C_NopNameHandle(pos: S_Pos, rName: R_Name): C_NameHandle(pos, rName) {
+    private class C_NameHandle_Nop(pos: S_Pos, rName: R_Name): C_NameHandle(pos, rName) {
         override fun setIdeInfo(ideInfo: C_IdeSymbolInfo) {
             // Do nothing.
         }
@@ -356,19 +368,15 @@ class C_NopSymbolContext(
     }
 }
 
-private class C_DefaultSymbolContext(
+private class C_NameContext_Active(
     msgMgr: C_MessageManager,
     compilerOptions: C_CompilerOptions,
-): C_SymbolContext(msgMgr, compilerOptions) {
+): C_NameContext(msgMgr, compilerOptions) {
     private val checkDefIdConflicts = compilerOptions.ideDefIdConflictError
 
-    private val nameMap = mutableMapOf<S_Pos, C_NameHandleImpl>()
+    private val nameMap = mutableMapOf<S_Pos, C_NameHandle_Active>()
     private val symbolMap = mutableMapOf<S_Pos, C_IdeSymbolInfo>()
     private val extraMap = mutableMapOf<S_Pos, ExtraInfo>()
-
-    override fun nopContext(): C_SymbolContext {
-        return C_NopSymbolContext(msgMgr, compilerOptions)
-    }
 
     override fun addName(sName: S_Name, rName: R_Name): C_NameHandle {
         val pos = sName.pos
@@ -380,7 +388,7 @@ private class C_DefaultSymbolContext(
             return oldHand
         }
 
-        val hand = C_NameHandleImpl(pos, rName)
+        val hand = C_NameHandle_Active(pos, rName)
         nameMap[pos] = hand
         return hand
     }
@@ -461,7 +469,7 @@ private class C_DefaultSymbolContext(
         var link: IdeSymbolLink? = null
     }
 
-    private class C_NameHandleImpl(pos: S_Pos, rName: R_Name): C_NameHandle(pos, rName) {
+    private class C_NameHandle_Active(pos: S_Pos, rName: R_Name): C_NameHandle(pos, rName) {
         private val initStack = Exception("Stack")
 
         private var mIdeInfo: C_IdeSymbolInfo? = null
@@ -525,29 +533,17 @@ private class C_DefaultSymbolContext(
     }
 }
 
-interface C_SymbolContextProvider {
-    fun getSymbolContext(path: C_SourcePath): C_SymbolContext
-}
-
-class C_SymbolContextManager(
+class C_NameContextManager(
     private val msgMgr: C_MessageManager,
     private val opts: C_CompilerOptions,
 ) {
-    private val mainFile = opts.symbolInfoFile
+    val nopNameCtx: C_NameContext = C_NameContext_Nop(msgMgr, opts)
 
-    val provider: C_SymbolContextProvider = C_SymbolContextProviderImpl()
-
-    private val mainSymCtx = C_DefaultSymbolContext(msgMgr, opts)
+    private val activeNameCtx0 = C_NameContext_Active(msgMgr, opts)
+    val activeNameCtx: C_NameContext = activeNameCtx0
 
     fun finish(): Map<S_Pos, IdeSymbolInfo> {
-        val res = mainSymCtx.finish()
-        return res
-    }
-
-    private inner class C_SymbolContextProviderImpl: C_SymbolContextProvider {
-        override fun getSymbolContext(path: C_SourcePath): C_SymbolContext {
-            return if (path == mainFile) mainSymCtx else C_NopSymbolContext(msgMgr, opts)
-        }
+        return activeNameCtx0.finish()
     }
 }
 

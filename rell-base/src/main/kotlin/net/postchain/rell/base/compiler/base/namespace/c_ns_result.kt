@@ -34,7 +34,7 @@ object C_NsRes_ResultMaker {
 
 private class C_NsRes_InternalMaker {
     private val nsMap = mutableMapOf<C_NsImp_Namespace, C_Namespace>()
-    private val nsItemMap = mutableMapOf<C_NsImp_Def_Namespace, C_NamespaceItem>()
+    private val nsMemberMap = mutableMapOf<C_NsImp_Def_Namespace, C_NamespaceMember>()
 
     fun makeModule(ns: C_NsImp_Namespace): C_Namespace {
         val res = makeNamespace(ns)
@@ -70,23 +70,22 @@ private class C_NsRes_InternalMaker {
     }
 
     private fun makeDef(directDef: C_NsImp_Def?, importDefs: Collection<C_NsImp_Def>): C_NamespaceEntry {
-        val directItem = if (directDef == null) null else makeItem0(directDef)
-        val importItems = importDefs.map { makeItem0(it) }
-        return C_NamespaceEntry(immListOfNotNull(directItem), importItems)
+        val directMember = if (directDef == null) null else makeMember0(directDef)
+        val importMembers = importDefs.map { makeMember0(it) }
+        return C_NamespaceEntry(immListOfNotNull(directMember), importMembers)
     }
 
-    private fun makeItem0(def: C_NsImp_Def): C_NamespaceItem {
+    private fun makeMember0(def: C_NsImp_Def): C_NamespaceMember {
         return when (def) {
-            is C_NsImp_Def_Simple -> def.item
+            is C_NsImp_Def_Simple -> def.member
             is C_NsImp_Def_Namespace -> {
                 val impNs = def.ns()
                 val ns = makeNamespace(impNs)
-                nsItemMap.computeIfAbsent(def) {
+                nsMemberMap.computeIfAbsent(def) {
                     val decType = C_DeclarationType.NAMESPACE
                     val restrictions = C_MemberRestrictions.makeUser(def.defName, decType, def.deprecated)
                     val base = C_NamespaceMemberBase(def.defName, def.ideInfo, restrictions)
-                    val member = C_NamespaceMember_Namespace(base, ns, def.importModule)
-                    C_NamespaceItem(member)
+                    C_NamespaceMember_Namespace(base, ns, def.importModule)
                 }
             }
         }

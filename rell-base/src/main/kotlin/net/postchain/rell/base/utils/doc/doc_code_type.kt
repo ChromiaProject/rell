@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils.doc
@@ -11,6 +11,8 @@ import net.postchain.rell.base.utils.checkEquals
 
 sealed class DocType {
     abstract fun genCode(b: DocCode.Builder, nullable: Boolean = false)
+
+    fun toCode(): DocCode = DocCode.builder().also { genCode(it) }.build()
 
     companion object {
         val ANYTHING: DocType = DocType_Simple("anything")

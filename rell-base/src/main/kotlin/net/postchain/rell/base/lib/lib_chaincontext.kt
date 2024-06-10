@@ -57,7 +57,7 @@ private object C_NsProperty_ChainContext_Args: C_NamespaceProperty() {
 
         val ideLink = struct.ideInfo.link
         if (ideLink != null) {
-            ctx.exprCtx.symCtx.setLink(name.last.pos, ideLink)
+            ctx.exprCtx.nameCtx.setLink(name.last.pos, ideLink)
         }
 
         val moduleName = ctx.modCtx.moduleName

@@ -26,6 +26,7 @@ class C_ExprContext private constructor(
     val nsCtx = defCtx.nsCtx
     val globalCtx = defCtx.globalCtx
     val symCtx = defCtx.symCtx
+    val nameCtx = symCtx.nameCtx
     val appCtx = defCtx.appCtx
     val msgCtx = nsCtx.msgCtx
     val typeMgr = modCtx.typeMgr
@@ -36,10 +37,10 @@ class C_ExprContext private constructor(
     fun makeAtEntity(rEntity: R_EntityDefinition, atExprId: R_AtExprId) = R_DbAtEntity(rEntity, appCtx.nextAtEntityId(atExprId))
 
     fun update(
-            blkCtx: C_BlockContext = this.blkCtx,
-            factsCtx: C_VarFactsContext = this.factsCtx,
-            atCtx: C_AtContext? = this.atCtx,
-            insideGuardBlock: Boolean = this.insideGuardBlock
+        blkCtx: C_BlockContext = this.blkCtx,
+        factsCtx: C_VarFactsContext = this.factsCtx,
+        atCtx: C_AtContext? = this.atCtx,
+        insideGuardBlock: Boolean = this.insideGuardBlock,
     ): C_ExprContext {
         val insideGuardBlock2 = insideGuardBlock || this.insideGuardBlock
         return if (

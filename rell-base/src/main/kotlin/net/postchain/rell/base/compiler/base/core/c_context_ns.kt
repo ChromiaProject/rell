@@ -4,12 +4,12 @@
 
 package net.postchain.rell.base.compiler.base.core
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.def.C_GlobalFunction
 import net.postchain.rell.base.compiler.base.expr.C_Expr
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
-import net.postchain.rell.base.compiler.base.lib.C_LibUtils
 import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.lib.C_TypeDef
 import net.postchain.rell.base.compiler.base.modifier.C_ModifierValue
@@ -18,6 +18,7 @@ import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.Nullable
 import net.postchain.rell.base.utils.doc.*
+import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
@@ -28,7 +29,7 @@ class C_NamespaceContext(
     val modCtx: C_ModuleContext,
     val symCtx: C_SymbolContext,
     val namespacePath: C_RNamePath,
-    val scopeBuilder: C_ScopeBuilder
+    val scopeBuilder: C_ScopeBuilder,
 ) {
     val globalCtx = modCtx.globalCtx
     val appCtx = modCtx.appCtx
@@ -51,7 +52,11 @@ class C_NamespaceContext(
         return nameRes.getTypeEx()
     }
 
-    fun getEntity(name: C_QualifiedNameHandle, error: Boolean = true, unknownInfo: Boolean = true): R_EntityDefinition? {
+    fun getEntity(
+        name: C_QualifiedNameHandle,
+        error: Boolean = true,
+        unknownInfo: Boolean = true,
+    ): R_EntityDefinition? {
         val nameRes = resolveName(name, C_NamespaceMemberTag.TYPE.list)
         return nameRes.getEntity(error = error, unknownInfo = unknownInfo)
     }
@@ -64,6 +69,10 @@ class C_NamespaceContext(
     fun getFullName(simpleName: R_Name): R_FullName {
         val qualifiedName = namespacePath.qualifiedName(simpleName)
         return R_FullName(modCtx.moduleName, qualifiedName)
+    }
+
+    fun ideCompletions(): Multimap<String, IdeCompletion> {
+        return scope.ideCompletions(globalCtx.compilerOptions)
     }
 }
 
@@ -87,9 +96,14 @@ class C_DefinitionName(val module: C_DefinitionModuleName, val qualifiedName: C_
     }
 
     fun toPath() = C_DefinitionPath(module, qualifiedName.parts)
+    fun parentPath() = C_DefinitionPath(module, qualifiedName.parts.dropLast(1))
+
+    fun str(): String = "${module.str()}:${qualifiedName.parts.joinToString(".")}"
+
+    override fun toString() = str()
 }
 
-class C_DefinitionPath(private val module: C_DefinitionModuleName, path: List<String>) {
+class C_DefinitionPath(val module: C_DefinitionModuleName, path: List<String>) {
     val path = path.toImmList()
 
     constructor(module: String, path: List<String>): this(C_DefinitionModuleName(module), path)
@@ -101,6 +115,10 @@ class C_DefinitionPath(private val module: C_DefinitionModuleName, path: List<St
         val qName = C_StringQualifiedName.of(path + name.str)
         return C_DefinitionName(module, qName)
     }
+
+    fun str(): String = "${module.str()}:${path.joinToString(".")}"
+
+    override fun toString() = str()
 }
 
 class C_CommonDefinitionBase(
@@ -141,11 +159,13 @@ class C_CommonDefinitionBase(
         memberIdeKind: IdeSymbolKind,
         memberDocKind: DocSymbolKind,
         memberName: R_Name,
-        declaration: DocDeclaration,
+        docDeclarationGetter: C_LateGetter<DocDeclaration>,
     ): C_IdeSymbolDef {
         val memberIdeId = ideId(defType, defName, memberIdeCat to memberName)
-        val doc = makeDocSymbol(memberDocKind, memberName, null, declaration)
-        val docGetter = C_LateGetter.const(Nullable.of(doc))
+        val docGetter = docDeclarationGetter.transform { docDec ->
+            val doc = makeDocSymbol(memberDocKind, memberName, null, docDec)
+            Nullable.of(doc)
+        }
         return ideDef(pos, memberIdeKind, memberIdeId, docGetter)
     }
 
@@ -290,7 +310,7 @@ private class C_NameNode(
     val elem: C_NamespaceElement?,
 ) {
     val name = nameHand.name
-    val ideInfo = elem?.item?.ideInfo ?: C_IdeSymbolInfo.UNKNOWN
+    val ideInfo = elem?.member?.ideInfo ?: C_IdeSymbolInfo.UNKNOWN
 }
 
 class C_GlobalNameResDef<T>(
@@ -316,7 +336,7 @@ sealed class C_GlobalNameRes(
             return C_ExprUtils.errorExpr(ctx, qName.pos)
         }
 
-        val ideInfoPtr = C_UniqueDefaultIdeInfoPtr(ideInfoHand, elem.item.ideInfo)
+        val ideInfoPtr = C_UniqueDefaultIdeInfoPtr(ideInfoHand, elem.member.ideInfo)
         val expr = elem.member.toExpr(ctx, qName, ideInfoPtr)
 
         if (ideInfoPtr.isValid()) {
@@ -374,7 +394,7 @@ sealed class C_GlobalNameRes(
         }
 
         val ideInfoHand = access(bindLastIdeInfo)
-        val ideInfoPtr = C_UniqueDefaultIdeInfoPtr(ideInfoHand, elem.item.ideInfo)
+        val ideInfoPtr = C_UniqueDefaultIdeInfoPtr(ideInfoHand, elem.member.ideInfo)
         return C_GlobalNameResDef(res, ideInfoPtr)
     }
 

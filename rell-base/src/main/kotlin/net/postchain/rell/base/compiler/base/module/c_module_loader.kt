@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.module
 
+import net.postchain.rell.base.compiler.base.core.C_CompilerExecutor
 import net.postchain.rell.base.compiler.base.core.C_CompilerPass
 import net.postchain.rell.base.compiler.base.core.C_MessageContext
 import net.postchain.rell.base.compiler.base.core.C_SymbolContextProvider
@@ -38,12 +39,13 @@ sealed class C_ImportModuleLoader {
 class C_ModuleLoader(
     msgCtx: C_MessageContext,
     symCtxProvider: C_SymbolContextProvider,
+    executor: C_CompilerExecutor,
     sourceDir: C_SourceDir,
     preModuleHeaders: Map<R_ModuleName, C_ModuleHeader>,
 ) {
     private val preModuleHeaders = preModuleHeaders.toImmMap()
 
-    val readerCtx = C_ModuleReaderContext(S_AppContext(msgCtx, symCtxProvider, C_ImportModuleLoaderImpl()))
+    val readerCtx = C_ModuleReaderContext(S_AppContext(msgCtx, symCtxProvider, C_ImportModuleLoaderImpl(), executor))
     private val moduleReader = C_ModuleReader(readerCtx, sourceDir)
 
     private val fcMgr = FcManager.create(allowRecursiveExecution = true)
@@ -345,7 +347,7 @@ private class C_LoaderModule(
         val docDec = DocDeclaration_Module(mods)
         return docFactory.makeDocSymbol(
             DocSymbolKind.MODULE,
-            DocSymbolName.module(moduleName.str()),
+            DocSymbolName.module(moduleName),
             mountName = docMountName,
             declaration = docDec,
         )

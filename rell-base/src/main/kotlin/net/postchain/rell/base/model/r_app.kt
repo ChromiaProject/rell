@@ -266,7 +266,7 @@ class R_Module(
 
     override fun getDocMember(name: String): DocDefinition? {
         val elem = nsLazy.getElement(R_Name.of(name), null)
-        return elem?.item
+        return elem?.member?.docDefinition
     }
 }
 

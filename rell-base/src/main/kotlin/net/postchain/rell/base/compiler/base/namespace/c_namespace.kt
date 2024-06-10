@@ -4,19 +4,18 @@
 
 package net.postchain.rell.base.compiler.base.namespace
 
-import net.postchain.rell.base.compiler.base.core.*
+import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfoHandle
+import net.postchain.rell.base.compiler.base.core.C_MessageContext
+import net.postchain.rell.base.compiler.base.core.C_QualifiedName
+import net.postchain.rell.base.compiler.base.core.C_UniqueDefaultIdeInfoPtr
 import net.postchain.rell.base.compiler.base.expr.C_Expr
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
-import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.*
-import net.postchain.rell.base.utils.doc.DocDefinition
-import net.postchain.rell.base.utils.doc.DocSourcePos
-import net.postchain.rell.base.utils.doc.DocSymbol
 
 class C_Deprecated(
     private val useInstead: String?,
@@ -76,19 +75,17 @@ enum class C_DeclarationType(val msg: String, val article: String = "a") {
 }
 
 class C_NamespaceElement(
-    val item: C_NamespaceItem,
-    allItems: List<C_NamespaceItem>,
+    val member: C_NamespaceMember,
+    allMembers: List<C_NamespaceMember>,
 ) {
-    private val allItems = allItems.toImmList()
-
-    val member: C_NamespaceMember = item.member
+    private val allMembers = allMembers.toImmList()
 
     fun access(msgCtx: C_MessageContext, lazyName: LazyPosString) {
-        if (allItems.size > 1) {
+        if (allMembers.size > 1) {
             val nameStr = lazyName.str
-            val listCodeMsg = allItems.map {
-                val declType = it.member.declarationType()
-                val defName = it.member.defName.appLevelName
+            val listCodeMsg = allMembers.map {
+                val declType = it.declarationType()
+                val defName = it.defName.appLevelName
                 "$declType:[$defName]" toCodeMsg "${declType.msg} '$defName'"
             }
             val listCode = listCodeMsg.joinToString(",") { it.code }
@@ -96,13 +93,13 @@ class C_NamespaceElement(
             msgCtx.error(lazyName.pos, "namespace:ambig:$nameStr:[$listCode]", "Name '$nameStr' is ambiguous: $listMsg")
         }
 
-        item.access(msgCtx, lazyName)
+        member.restrictions.access(msgCtx, lazyName.pos)
     }
 
     fun toExpr(ctx: C_ExprContext, qName: C_QualifiedName, ideInfoHand: C_IdeSymbolInfoHandle): C_Expr {
         access(ctx.msgCtx, qName.toLazyPosString())
 
-        val ideInfoPtr = C_UniqueDefaultIdeInfoPtr(ideInfoHand, item.ideInfo)
+        val ideInfoPtr = C_UniqueDefaultIdeInfoPtr(ideInfoHand, member.ideInfo)
         val expr = member.toExpr(ctx, qName, ideInfoPtr)
 
         if (ideInfoPtr.isValid()) {
@@ -113,36 +110,19 @@ class C_NamespaceElement(
     }
 }
 
-// This class is needed to override IDE info. Exact import alias must have different IDE info than the referenced
-// member (def ID and link).
-class C_NamespaceItem(
-    val member: C_NamespaceMember,
-    val ideInfo: C_IdeSymbolInfo = member.ideInfo,
-    private val restrictions: C_MemberRestrictions = member.restrictions,
-): DocDefinition {
-    override val docSymbol: DocSymbol get() = ideInfo.getIdeInfo().doc ?: DocSymbol.NONE
-    override val docSourcePos: DocSourcePos? get() = member.getDocSourcePos()
-
-    override fun getDocMember(name: String) = member.getDocMember(name)
-
-    fun access(msgCtx: C_MessageContext, lazyName: LazyPosString) {
-        restrictions.access(msgCtx, lazyName.pos)
-    }
-}
-
 class C_NamespaceEntry(
-    directItems: List<C_NamespaceItem>,
-    importItems: List<C_NamespaceItem>,
+    directMembers: List<C_NamespaceMember>,
+    importMembers: List<C_NamespaceMember>,
 ) {
-    val directItems = directItems.toImmList()
-    val importItems = importItems.toImmList()
+    val directMembers = directMembers.toImmList()
+    val importMembers = importMembers.toImmList()
 
     init {
-        check(this.directItems.isNotEmpty() || this.importItems.isNotEmpty())
+        check(this.directMembers.isNotEmpty() || this.importMembers.isNotEmpty())
     }
 
     fun hasTag(tags: List<C_NamespaceMemberTag>): Boolean {
-        return directItems.any { it.member.hasTag(tags) } || importItems.any { it.member.hasTag(tags) }
+        return directMembers.any { it.hasTag(tags) } || importMembers.any { it.hasTag(tags) }
     }
 
     fun element(langVersion: R_LangVersion?, tags: List<C_NamespaceMemberTag> = immListOf()): C_NamespaceElement {
@@ -150,17 +130,17 @@ class C_NamespaceEntry(
     }
 
     private fun element0(langVersion: R_LangVersion?, tags: List<C_NamespaceMemberTag>): C_NamespaceElement? {
-        var items = directItems.filter { it.member.hasTag(tags) }
-            .ifEmpty { importItems.filter { it.member.hasTag(tags) } }
+        var members = directMembers.filter { it.hasTag(tags) }
+            .ifEmpty { importMembers.filter { it.hasTag(tags) } }
 
         if (UNIQUE_ITEMS_SWITCH.isActive(langVersion)) {
-            items = items.toSet().toImmList()
+            members = members.toSet().toImmList()
         }
 
         return when {
-            items.isEmpty() -> null
-            items.size == 1 -> C_NamespaceElement(items[0], immListOf())
-            else -> C_NamespaceElement(items[0], items)
+            members.isEmpty() -> null
+            members.size == 1 -> C_NamespaceElement(members[0], immListOf())
+            else -> C_NamespaceElement(members[0], members)
         }
     }
 
@@ -209,23 +189,23 @@ private class C_LateNamespace(private val getter: LateGetter<C_Namespace>): C_Na
 }
 
 class C_NamespaceBuilder {
-    private val directItems = mutableMultimapOf<R_Name, C_NamespaceItem>()
-    private val importItems = mutableMultimapOf<R_Name, C_NamespaceItem>()
+    private val directMembers = mutableMultimapOf<R_Name, C_NamespaceMember>()
+    private val importMembers = mutableMultimapOf<R_Name, C_NamespaceMember>()
 
-    fun add(name: R_Name, item: C_NamespaceItem) {
-        directItems.put(name, item)
+    fun add(name: R_Name, member: C_NamespaceMember) {
+        directMembers.put(name, member)
     }
 
     fun add(name: R_Name, entry: C_NamespaceEntry) {
-        directItems.putAll(name, entry.directItems)
-        importItems.putAll(name, entry.importItems)
+        directMembers.putAll(name, entry.directMembers)
+        importMembers.putAll(name, entry.importMembers)
     }
 
     fun build(): C_Namespace {
-        val names = directItems.keySet() + importItems.keySet()
+        val names = directMembers.keySet() + importMembers.keySet()
         val entries = names.associateWith {
-            val directIts = directItems.get(it).toImmList()
-            val importIts = importItems.get(it).toImmList()
+            val directIts = directMembers.get(it).toImmList()
+            val importIts = importMembers.get(it).toImmList()
             C_NamespaceEntry(directIts, importIts)
         }.toImmMap()
         return C_BasicNamespace(entries)
