@@ -9,10 +9,6 @@ import assertk.assertions.isNotEmpty
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 import net.postchain.rell.toolbox.core.RellVersionInfo
 import org.eclipse.lsp4j.DefinitionParams
 import org.eclipse.lsp4j.DidChangeTextDocumentParams
@@ -40,6 +36,10 @@ import org.testcontainers.shaded.org.awaitility.Awaitility.await
 import util.TestClient
 import util.TestClientServerLauncher
 import util.TestServerModule
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
 class RellLanguageServerTest {
     private lateinit var clientServerLauncher: TestClientServerLauncher
@@ -220,6 +220,18 @@ class RellLanguageServerTest {
         val response = server.documentSymbol(documentSymbolParams)
 
         assertThat(response.get()).isNotNull().isNotEmpty()
+    }
+
+    @Test
+    fun `can handle file paths with spaces`(@TempDir tempDir: Path) {
+        val dir = tempDir.resolve("my dir")
+        Files.createDirectory(dir)
+        val file = createSimpleRellFileInDirectory(dir)
+
+        val textDocumentItem = createTextDocumentItem(file)
+        val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
+        server.didOpen(didOpenParam)
+        await().until { testClient.diagnostics.isNotEmpty() }
     }
 
     @Test
