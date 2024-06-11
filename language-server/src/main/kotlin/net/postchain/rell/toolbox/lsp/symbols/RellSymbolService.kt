@@ -43,6 +43,9 @@ class RellSymbolService {
         }
     }
 
+    fun getSymbolInfoWithInterval(document: Document, indexer: WorkspaceIndexer, position: Position): IdeSymbolInfoWithInterval? =
+        indexer.getResource(document.fileUri)?.let { getSymbolForDocument(document, it, position) }
+
     fun getSymbolLocationsWithSymbol(
         document: Document,
         indexer: WorkspaceIndexer,

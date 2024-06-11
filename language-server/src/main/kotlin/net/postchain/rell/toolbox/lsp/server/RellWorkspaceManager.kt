@@ -7,6 +7,8 @@ import net.postchain.rell.toolbox.core.indexer.RellIssue
 import net.postchain.rell.toolbox.core.indexer.Resource
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.core.indexer.findRellFilesInWorkspace
+import net.postchain.rell.toolbox.core.parser.RellBaseVisitor
+import net.postchain.rell.toolbox.core.parser.RellParser
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.lsp.hover.formatDocSymbol
@@ -35,6 +37,8 @@ import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration.Companion.minutes
 
+val TYPE_DEFINITIONS =
+    setOf(IdeSymbolKind.DEF_ENTITY, IdeSymbolKind.DEF_STRUCT, IdeSymbolKind.DEF_ENUM, IdeSymbolKind.DEF_TYPE)
 
 class RellWorkspaceManager(
     private val rellSymbolService: RellSymbolService,
@@ -282,9 +286,13 @@ class RellWorkspaceManager(
         return rellSymbolService.getDocumentSymbols(fileUri, document, resource)
     }
 
-    fun getDocument(uri: URI): Document? {
-        return openDocuments[uri]
-    }
+    private fun getDocument(uri: URI): Document = getOpenDocument(uri) ?: Document(
+        uri,
+        version = 0,
+        content = File(uri).readText()
+    )
+
+    fun getOpenDocument(uri: URI): Document? = openDocuments[uri]
 
     fun getReferenceLocations(fileUri: URI, position: Position?, includeDefinition: Boolean = true): List<Location> {
         val indexer = getIndexerFor(fileUri)
@@ -301,17 +309,6 @@ class RellWorkspaceManager(
         return result
     }
 
-    fun rename(fileUri: URI, position: Position, newName: String): WorkspaceEdit {
-        val locations = getReferenceLocations(fileUri, position, true)
-        val changes = mutableMapOf<String, MutableList<TextEdit>>()
-        locations.forEach { location ->
-            val uri = location.uri
-            val change = TextEdit(location.range, newName)
-            changes[uri]?.add(change) ?: changes.put(uri, mutableListOf(change))
-        }
-        return WorkspaceEdit(changes)
-    }
-
     fun prepareRename(
         fileUri: URI,
         position: Position
@@ -323,6 +320,83 @@ class RellWorkspaceManager(
             ?: return Either3.forThird(PrepareRenameDefaultBehavior())
 
         return Either3.forFirst(location.range)
+    }
+
+    fun rename(fileUri: URI, position: Position, newName: String): WorkspaceEdit {
+        val indexer = getIndexerFor(fileUri)
+        val document = openDocuments[fileUri] ?: return WorkspaceEdit()
+        val (_, interval) =
+            rellSymbolService.getSymbolInfoWithInterval(document, indexer, position)
+                ?: return WorkspaceEdit()
+        val oldName = document.getTextIn(interval)
+
+        val locations = getReferenceLocations(fileUri, position, true)
+        val changes = mutableMapOf<String, MutableList<TextEdit>>()
+        locations.forEach { location ->
+            val change = renameLocation(indexer, location, oldName, newName)
+            changes[location.uri]?.add(change) ?: changes.put(location.uri, mutableListOf(change))
+        }
+        return WorkspaceEdit(changes)
+    }
+
+    private fun renameLocation(
+        indexer: WorkspaceIndexer,
+        location: Location,
+        oldName: String,
+        newName: String
+    ): TextEdit {
+        val locationFileUri = URI(location.uri)
+        val symbolInfo = rellSymbolService.getSymbolInfoWithInterval(
+            getDocument(locationFileUri),
+            indexer,
+            location.range.start
+        )?.ideSymbolInfo
+        return if (symbolInfo != null) {
+            if (symbolInfo.kind in TYPE_DEFINITIONS && symbolInfo.defId != null && symbolInfo.link != null) {
+                val resource = indexer.getResource(locationFileUri)
+                val fullNameWithRange = resource?.let { findAnonAttrFullName(it, location) }
+                if (fullNameWithRange != null && fullNameWithRange.fullName.size > 1) {
+                    TextEdit(
+                        fullNameWithRange.range,
+                        "$oldName: ${fullNameWithRange.fullName.dropLast(1).joinToString(separator = ".")}.$newName"
+                    )
+                } else {
+                    TextEdit(location.range, "$oldName: $newName")
+                }
+            } else {
+                TextEdit(location.range, newName)
+            }
+        } else {
+            TextEdit(location.range, newName)
+        }
+    }
+
+    data class FullNameWithRange(val fullName: List<String>, val range: Range)
+
+    private fun findAnonAttrFullName(resource: Resource, location: Location): FullNameWithRange? {
+        val visitor = object : RellBaseVisitor<Unit>() {
+            var result: FullNameWithRange? = null
+            override fun visitRuleX_AnonAttrHeader(ctx: RellParser.RuleX_AnonAttrHeaderContext) {
+                val startPos = ctx.start.line
+                if (startPos == location.range.start.line + 1 && ctx.stop.charPositionInLine == location.range.start.character) {
+                    result = FullNameWithRange(
+                        ctx.ruleX_QualifiedName().ruleX_Name().map { it.text },
+                        Range(
+                            Position(
+                                ctx.ruleX_QualifiedName().start.line - 1,
+                                ctx.ruleX_QualifiedName().start.charPositionInLine
+                            ),
+                            Position(
+                                ctx.ruleX_QualifiedName().stop.line - 1,
+                                ctx.ruleX_QualifiedName().stop.charPositionInLine + ctx.ruleX_QualifiedName().stop.text.length
+                            )
+                        )
+                    )
+                }
+            }
+        }
+        visitor.visit(resource.parseTree)
+        return visitor.result
     }
 
     companion object {

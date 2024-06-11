@@ -1,11 +1,9 @@
 package net.postchain.rell.toolbox.lsp.editing
 
-
+import org.antlr.v4.runtime.misc.Interval
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import java.net.URI
-
-
 
 class Document(val fileUri: URI, val version: Int, val content: String) {
 
@@ -76,6 +74,8 @@ class Document(val fileUri: URI, val version: Int, val content: String) {
         }
         return currentDocument
     }
+
+    fun getTextIn(interval: Interval): String = content.substring(interval.a, interval.b + 1)
 
     companion object {
         const val NL = '\n'
