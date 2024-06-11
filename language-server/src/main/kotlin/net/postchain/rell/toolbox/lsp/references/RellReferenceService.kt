@@ -13,8 +13,7 @@ class RellReferenceService(val symbolService: RellSymbolService) {
         fileUri: URI, document: Document, indexer: WorkspaceIndexer, position: Position?
     ): List<Location> {
         position ?: return listOf()
-        val resource = indexer.getResource(fileUri) ?: return listOf()
-        val symbolInfoWithInterval = symbolService.getSymbolForDocument(document, resource, position)
+        val symbolInfoWithInterval = symbolService.getSymbolInfoWithInterval(document, indexer, position)
             ?: return listOf()
         val referenceIndexer = ReferenceIndexer(indexer.workspaceUri, indexer.fileUriResourceMap)
         return referenceIndexer.findAllReferences(fileUri, symbolInfoWithInterval)

@@ -620,7 +620,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
     }
 
     @Test
-    fun `Find all references for entities`() {
+    fun `Find all references for entity attribute with implicit name`() {
         val rellFileContent = """
             module;
             entity my_entity {
@@ -642,6 +642,60 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         val references = workspaceManager.getReferenceLocations(rellFile.toURI(), Position(6, 7))
         assertThat(references).containsExactlyInAnyOrder(
             Location(rellFile.toURI().toString(), Range(Position(3, 2), Position(3, 16))),
+            Location(rellFile.toURI().toString(), Range(Position(6, 7), Position(6, 21))),
+        )
+    }
+
+    @Test
+    fun `Find all references for entity attribute with explicit name same as type`() {
+        val rellFileContent = """
+            module;
+            entity my_entity {
+              a_property: text;
+              another_entity: another_entity;
+            }
+            
+            entity another_entity {
+              another_property: text;
+            }
+            
+            function q() = my_entity @* { .another_entity.another_property == "test" };
+            """.trimIndent()
+        val rellFile = File(sourceDir, "rell_file.rell").apply {
+            writeText(rellFileContent)
+        }
+        initializeWorkspace()
+        workspaceManager.didOpen(rellFile.toURI(), 1, rellFileContent)
+        val references = workspaceManager.getReferenceLocations(rellFile.toURI(), Position(6, 7))
+        assertThat(references).containsExactlyInAnyOrder(
+            Location(rellFile.toURI().toString(), Range(Position(3, 18), Position(3, 32))),
+            Location(rellFile.toURI().toString(), Range(Position(6, 7), Position(6, 21))),
+        )
+    }
+
+    @Test
+    fun `Find all references for entity attribute with explicit name different from type`() {
+        val rellFileContent = """
+            module;
+            entity my_entity {
+              a_property: text;
+              ref_property: another_entity;
+            }
+            
+            entity another_entity {
+              another_property: text;
+            }
+            
+            function q() = my_entity @* { .ref_property.another_property == "test" };
+            """.trimIndent()
+        val rellFile = File(sourceDir, "rell_file.rell").apply {
+            writeText(rellFileContent)
+        }
+        initializeWorkspace()
+        workspaceManager.didOpen(rellFile.toURI(), 1, rellFileContent)
+        val references = workspaceManager.getReferenceLocations(rellFile.toURI(), Position(6, 7))
+        assertThat(references).containsExactlyInAnyOrder(
+            Location(rellFile.toURI().toString(), Range(Position(3, 16), Position(3, 30))),
             Location(rellFile.toURI().toString(), Range(Position(6, 7), Position(6, 21))),
         )
     }

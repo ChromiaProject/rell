@@ -1,0 +1,5 @@
+module;
+
+entity another_entity {
+    another_property: text;
+}

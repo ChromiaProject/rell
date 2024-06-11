@@ -37,7 +37,7 @@ class RellFormattingManager(
         options: FormattingOptions?
     ): Pair<Document, List<TextReplacement>> {
         val formatterRequest = setUserOptions(fileUri, options)
-        val document = workspaceManager.getDocument(fileUri)
+        val document = workspaceManager.getOpenDocument(fileUri)
         val fileDocument = document ?: Document(fileUri, 1, File(fileUri).readText())
         val replacements = RellFormatter.getFormattingChanges(fileDocument.content, formatterRequest)
         return fileDocument to replacements

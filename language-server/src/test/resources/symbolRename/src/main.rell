@@ -1,5 +1,6 @@
 module;
 import submodule.*;
+import entity_module;
 
 function better_addition(paramA: integer, paramB: integer): integer {
     val localA = paramA;
@@ -13,3 +14,24 @@ function better_addition(paramA: integer, paramB: integer): integer {
 function local_reference() {
     val result = better_addition(4, 6);
 }
+
+entity my_entity1 {
+    a_property: text;
+    entity_module.another_entity;
+}
+
+function q1() = my_entity1 @* { .another_entity.another_property == "test" };
+
+entity my_entity2 {
+    a_property: text;
+    another_entity: entity_module.another_entity;
+}
+
+function q2() = my_entity2 @* { .another_entity.another_property == "test" };
+
+entity my_entity3 {
+    a_property: text;
+    ref_property: entity_module.another_entity;
+}
+
+function q3() = my_entity3 @* { .ref_property.another_property == "test" };
