@@ -6,8 +6,7 @@ fun parseFileUri(fileUri: String): URI? {
     if (!fileUri.startsWith("file:/")) {
         return null
     }
-    val uri = fileUri.replace("file:///", "file:/")
-    return URI(uri)
+    return URI(fileUri.replace("file:///", "file:/"))
 }
 
 fun URI.isRellFile(): Boolean {
