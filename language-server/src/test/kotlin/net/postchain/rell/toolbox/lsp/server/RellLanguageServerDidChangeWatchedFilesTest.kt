@@ -1,10 +1,12 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
+import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import java.io.File
+import kotlin.io.path.createDirectory
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams
 import org.eclipse.lsp4j.FileChangeType
 import org.eclipse.lsp4j.FileEvent
@@ -16,7 +18,6 @@ import org.testcontainers.shaded.org.awaitility.Awaitility.await
 import util.TestClient
 import util.TestClientServerLauncher
 import util.TestServerModule
-import kotlin.io.path.createDirectory
 
 class RellLanguageServerDidChangeWatchedFilesTest {
     private lateinit var clientServerLauncher: TestClientServerLauncher
@@ -200,9 +201,18 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         server.didChangeWatchedFiles(didChangeParams)
         await().until { testClient.diagnostics.size == 5 }
 
-        indexer.getAllIssues().forEach { (uri, issues) ->
+        val issues = indexer.getAllIssues()
+        assertThat(issues.keys.map { it.toString() }).containsExactlyInAnyOrder(
+            "file:$tempDir/folderRename/src/newmodule/another_importing.rell",
+            "file:$tempDir/folderRename/src/newmodule/module.rell",
+            "file:$tempDir/folderRename/src/main.rell",
+        )
+
+        issues.forEach { (uri, issues) ->
             if (uri.toString().endsWith("main.rell")) {
                 assertThat(issues.size).isEqualTo(1)
+                assertThat(issues.first().message).isEqualTo("Module 'submodule' not found")
+
             } else {
                 assertThat(issues.size).isEqualTo(0)
             }

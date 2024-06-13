@@ -1,6 +1,12 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.File
+import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.time.Duration.Companion.minutes
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.core.indexer.RellIssue
@@ -30,12 +36,6 @@ import org.eclipse.lsp4j.WorkspaceEdit
 import org.eclipse.lsp4j.WorkspaceFolder
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.jsonrpc.messages.Either3
-import java.io.File
-import java.net.URI
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.time.Duration.Companion.minutes
 
 val TYPE_DEFINITIONS =
     setOf(IdeSymbolKind.DEF_ENTITY, IdeSymbolKind.DEF_STRUCT, IdeSymbolKind.DEF_ENUM, IdeSymbolKind.DEF_TYPE)
@@ -239,6 +239,8 @@ class RellWorkspaceManager(
             findRellFilesInWorkspace(File(uri), dirtyFiles)
         }
 
+        //Need to do two passes of the files to guarantee that imports and modules are resolved correctly
+        dirtyFiles.addAll(dirtyFiles)
         didChangeFiles(dirtyFiles, deletedFiles, true)
     }
 

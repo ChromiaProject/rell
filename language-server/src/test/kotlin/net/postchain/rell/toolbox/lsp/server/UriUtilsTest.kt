@@ -32,7 +32,8 @@ class UriUtilsTest {
 
     @Test
     fun `Returns null when parsing non file URI`() {
-        val gitUri = "git:/path/to/ft3-lib/rell/src/lib/ft4/accounts/strategies/transfer/operations.rell?{\"path\":\"/path/to/lib/ft3-lib/rell/src/lib/ft4/accounts/strategies/transfer/operations.rell\",\"ref\":\"~\"}"
+        val gitUri =
+            "git:/path/to/ft3-lib/rell/src/lib/ft4/accounts/strategies/transfer/operations.rell?{\"path\":\"/path/to/lib/ft3-lib/rell/src/lib/ft4/accounts/strategies/transfer/operations.rell\",\"ref\":\"~\"}"
         val parsedUri = parseFileUri(gitUri)
         assertThat(parsedUri).isNull()
     }
