@@ -1,6 +1,7 @@
 package util
 
 import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.PrepareRenameResult
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.TextEdit
 
@@ -19,4 +20,11 @@ data class TestRange(val start: TestPosition, val end: TestPosition) {
 
 data class TestPosition(val line: Int, val character: Int) {
     constructor(position: Position) : this(position.line, position.character)
+}
+
+data class TestPrepareRenameResult(val range: TestRange, val placeholder: String) {
+    constructor(prepareRenameResult: PrepareRenameResult) : this(
+        TestRange(prepareRenameResult.range),
+        prepareRenameResult.placeholder
+    )
 }

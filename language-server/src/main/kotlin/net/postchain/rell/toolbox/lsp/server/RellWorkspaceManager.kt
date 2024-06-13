@@ -321,7 +321,23 @@ class RellWorkspaceManager(
         val location = rellSymbolService.getSymbolLocationForRenaming(document, indexer, position)
             ?: return Either3.forThird(PrepareRenameDefaultBehavior())
 
-        return Either3.forFirst(location.range)
+        val placeholder = getPlaceholderText(document, indexer, fileUri, position)
+        return if (placeholder.isNotEmpty()) {
+            Either3.forSecond(PrepareRenameResult(location.range, placeholder))
+        } else {
+            Either3.forFirst(location.range)
+        }
+    }
+
+    private fun getPlaceholderText(
+        document: Document,
+        indexer: WorkspaceIndexer,
+        fileUri: URI,
+        position: Position
+    ): String {
+        val resource = indexer.getResource(fileUri) ?: return ""
+        val clickedSymbol = rellSymbolService.getSymbolForDocument(document, resource, position) ?: return ""
+        return document.getTextIn(clickedSymbol.interval)
     }
 
     fun rename(fileUri: URI, position: Position, newName: String): WorkspaceEdit {

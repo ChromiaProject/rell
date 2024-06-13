@@ -6,6 +6,10 @@ import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
+import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.createParentDirectories
+import kotlin.io.path.writeText
 import org.eclipse.lsp4j.DidOpenTextDocumentParams
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.PrepareRenameDefaultBehavior
@@ -13,7 +17,6 @@ import org.eclipse.lsp4j.PrepareRenameParams
 import org.eclipse.lsp4j.RenameParams
 import org.eclipse.lsp4j.TextDocumentIdentifier
 import org.eclipse.lsp4j.TextDocumentItem
-import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -22,13 +25,10 @@ import org.testcontainers.shaded.org.awaitility.Awaitility.await
 import util.TestClient
 import util.TestClientServerLauncher
 import util.TestPosition
+import util.TestPrepareRenameResult
 import util.TestRange
 import util.TestServerModule
 import util.TestTextEdit
-import java.io.File
-import java.nio.file.Path
-import kotlin.io.path.createParentDirectories
-import kotlin.io.path.writeText
 
 class RellSymbolRenameTest {
     private lateinit var clientServerLauncher: TestClientServerLauncher
@@ -86,8 +86,9 @@ class RellSymbolRenameTest {
                 )
             ).join()
 
-            assertThat(result.left).isNull()
-            assertThat(result.right).isEqualTo(Either.forRight(PrepareRenameDefaultBehavior()))
+            assertThat(result.first).isNull()
+            assertThat(result.second).isNull()
+            assertThat(result.third).isEqualTo(PrepareRenameDefaultBehavior())
         }
     }
 
@@ -97,14 +98,20 @@ class RellSymbolRenameTest {
         val renamedSymbolFile = testWorkspaceSrc.resolve("main.rell")
         val fileUri = openFile(renamedSymbolFile)
 
+        val oldName = "better_addition"
         val newFunctionName = "newName"
 
-        val prepareResult =
-            server.prepareRename(PrepareRenameParams(TextDocumentIdentifier(fileUri), Position(4, 15))).join()
-        assertThat(TestRange(prepareResult.left)).isEqualTo(TestRange(TestPosition(4, 9), TestPosition(4, 24)))
-        assertThat(prepareResult.right).isNull()
+        val prepareResult = server.prepareRename(prepareRenameParams(fileUri, Position(4, 15))).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
+            TestPrepareRenameResult(
+                TestRange(TestPosition(4, 9), TestPosition(4, 24)),
+                oldName
+            )
+        )
+        assertThat(prepareResult.third).isNull()
 
-        val result = server.rename(RenameParams(TextDocumentIdentifier(fileUri), Position(4, 15), "newName")).join()
+        val result = server.rename(renameParams(fileUri, Position(4, 15), "newName")).join()
         val anotherImportingFileUri = testWorkspaceSrc.resolve("submodule/another_importing.rell").toURI().toString()
         assertThat(result.changes.keys).containsOnly(fileUri, anotherImportingFileUri)
         assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
@@ -122,12 +129,12 @@ class RellSymbolRenameTest {
         val renamedSymbolFile = testWorkspaceSrc.resolve("main.js")
         val fileUri = openFile(renamedSymbolFile)
 
-        val prepareResult =
-            server.prepareRename(PrepareRenameParams(TextDocumentIdentifier(fileUri), Position(0, 11))).join()
-        assertThat(prepareResult.left).isNull()
-        assertThat(prepareResult.right).isEqualTo(Either.forRight(PrepareRenameDefaultBehavior(true)))
+        val prepareResult = server.prepareRename(prepareRenameParams(fileUri, Position(0, 11))).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(prepareResult.second).isNull()
+        assertThat(prepareResult.third).isEqualTo(PrepareRenameDefaultBehavior(true))
 
-        val result = server.rename(RenameParams(TextDocumentIdentifier(fileUri), Position(0, 11), "newName")).join()
+        val result = server.rename(renameParams(fileUri, Position(0, 11), "newName")).join()
         assertThat(result.changes).isEmpty()
     }
 
@@ -168,15 +175,20 @@ class RellSymbolRenameTest {
         )
         clientServerLauncher.initializeServer(tempDir.toFile().toURI())
         val fileUri = openFile(rellFile.toFile())
-
+        val oldName = "my_enum"
         val newName = "something_else"
 
-        val prepareResult =
-            server.prepareRename(PrepareRenameParams(TextDocumentIdentifier(fileUri), Position(23, 5))).join()
-        assertThat(TestRange(prepareResult.left)).isEqualTo(TestRange(TestPosition(23, 5), TestPosition(23, 12)))
-        assertThat(prepareResult.right).isNull()
+        val prepareResult = server.prepareRename(prepareRenameParams(fileUri, Position(23, 5))).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
+            TestPrepareRenameResult(
+                TestRange(TestPosition(23, 5), TestPosition(23, 12)),
+                oldName
+            )
+        )
+        assertThat(prepareResult.third).isNull()
 
-        val result = server.rename(RenameParams(TextDocumentIdentifier(fileUri), Position(23, 5), newName)).join()
+        val result = server.rename(renameParams(fileUri, Position(23, 5), newName)).join()
         assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(TestRange(TestPosition(4, 4), TestPosition(4, 11)), "my_enum: $newName"),
             TestTextEdit(TestRange(TestPosition(11, 13), TestPosition(11, 20)), newName),
@@ -221,15 +233,21 @@ class RellSymbolRenameTest {
         )
         clientServerLauncher.initializeServer(tempDir.toFile().toURI())
         val fileUri = openFile(rellFile.toFile())
-
+        val oldName = "another_struct"
         val newName = "something_else"
 
-        val prepareResult =
-            server.prepareRename(PrepareRenameParams(TextDocumentIdentifier(fileUri), Position(23, 9))).join()
-        assertThat(TestRange(prepareResult.left)).isEqualTo(TestRange(TestPosition(23, 7), TestPosition(23, 21)))
-        assertThat(prepareResult.right).isNull()
+        val prepareResult = server.prepareRename(prepareRenameParams(fileUri, Position(23, 9))).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
+            TestPrepareRenameResult(
+                TestRange(TestPosition(23, 7), TestPosition(23, 21)),
+                oldName
+            )
+        )
+        assertThat(prepareResult.third).isNull()
 
-        val result = server.rename(RenameParams(TextDocumentIdentifier(fileUri), Position(23, 9), newName)).join()
+
+        val result = server.rename(renameParams(fileUri, Position(23, 9), newName)).join()
         assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(TestRange(TestPosition(4, 4), TestPosition(4, 18)), "another_struct: $newName"),
             TestTextEdit(TestRange(TestPosition(11, 20), TestPosition(11, 34)), newName),
@@ -275,14 +293,20 @@ class RellSymbolRenameTest {
         clientServerLauncher.initializeServer(tempDir.toFile().toURI())
         val fileUri = openFile(rellFile.toFile())
 
+        val oldName = "another_entity"
         val newName = "something_else"
 
-        val prepareResult =
-            server.prepareRename(PrepareRenameParams(TextDocumentIdentifier(fileUri), Position(23, 9))).join()
-        assertThat(TestRange(prepareResult.left)).isEqualTo(TestRange(TestPosition(23, 7), TestPosition(23, 21)))
-        assertThat(prepareResult.right).isNull()
+        val prepareResult = server.prepareRename(prepareRenameParams(fileUri, Position(23, 9))).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
+            TestPrepareRenameResult(
+                TestRange(TestPosition(23, 7), TestPosition(23, 21)),
+                oldName
+            )
+        )
+        assertThat(prepareResult.third).isNull()
 
-        val result = server.rename(RenameParams(TextDocumentIdentifier(fileUri), Position(23, 9), newName)).join()
+        val result = server.rename(renameParams(fileUri, Position(23, 9), newName)).join()
         assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(TestRange(TestPosition(4, 4), TestPosition(4, 18)), "another_entity: $newName"),
             TestTextEdit(TestRange(TestPosition(11, 20), TestPosition(11, 34)), newName),
@@ -294,18 +318,22 @@ class RellSymbolRenameTest {
     @Test
     fun `Rename entity with attribute with qualified name`() {
         clientServerLauncher.initializeServer(testWorkspaceSrc.toURI())
-        val fileUri = openFile(testWorkspaceSrc.resolve("main.rell"))
-        val entityModuleFileUri = openFile(testWorkspaceSrc.resolve("entity_module.rell"))
-
+        val oldName = "another_entity"
         val newName = "something_else"
 
-        val prepareResult =
-            server.prepareRename(PrepareRenameParams(TextDocumentIdentifier(entityModuleFileUri), Position(2, 10))).join()
-        assertThat(TestRange(prepareResult.left)).isEqualTo(TestRange(TestPosition(2, 7), TestPosition(2, 21)))
-        assertThat(prepareResult.right).isNull()
+        val entityModuleFileUri = openFile(testWorkspaceSrc.resolve("entity_module.rell"))
+        val prepareResult = server.prepareRename(prepareRenameParams(entityModuleFileUri, Position(2, 10))).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
+            TestPrepareRenameResult(
+                TestRange(TestPosition(2, 7), TestPosition(2, 21)),
+                oldName
+            )
+        )
+        assertThat(prepareResult.third).isNull()
 
-        val result =
-            server.rename(RenameParams(TextDocumentIdentifier(entityModuleFileUri), Position(2, 10), newName)).join()
+        val fileUri = testWorkspaceSrc.resolve("main.rell").toURI().toString()
+        val result = server.rename(renameParams(entityModuleFileUri, Position(2, 10), newName)).join()
         assertThat(result.changes.keys).containsOnly(fileUri, entityModuleFileUri)
         assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(
@@ -320,6 +348,57 @@ class RellSymbolRenameTest {
         )
     }
 
+    @Test
+    fun `Rename with import alias`(@TempDir tempDir: Path) {
+        val oldName = "foo_entity"
+
+        val entityModule = tempDir.resolve("rell/src/entity_module/module.rell").createParentDirectories()
+        entityModule.writeText(
+            """
+            module;
+
+            entity $oldName {
+                name;
+            }
+            """.trimIndent()
+        )
+
+        val rellFile = tempDir.resolve("rell/src/main.rell").createParentDirectories()
+        rellFile.createParentDirectories()
+        rellFile.writeText(
+            """
+            module;
+            
+            import a: entity_module.{$oldName};
+            """.trimIndent()
+        )
+
+        clientServerLauncher.initializeServer(tempDir.toFile().toURI())
+        val fileUri = openFile(rellFile.toFile())
+        val positionForRenaming = Position(2, 30)
+
+        val prepareResult = server.prepareRename(prepareRenameParams(fileUri, Position(2, 30))).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
+            TestPrepareRenameResult(
+                TestRange(TestPosition(2, 7), TestPosition(2, 17)),
+                oldName
+            )
+        )
+        assertThat(prepareResult.third).isNull()
+
+
+        val newName = "something_else"
+        val result = server.rename(renameParams(fileUri, positionForRenaming, newName)).join()
+        assertThat(result.changes.keys).containsOnly(fileUri, entityModule.toFileUri())
+        assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
+            TestTextEdit(TestRange(TestPosition(2, 25), TestPosition(2, 35)), newName),
+        )
+        assertThat(result.changes[entityModule.toFileUri()]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
+            TestTextEdit(TestRange(TestPosition(2, 7), TestPosition(2, 17)), newName),
+        )
+    }
+
     private fun openFile(file: File): String {
         val fileUri = file.toURI().toString()
         val textDocumentItem = TextDocumentItem(fileUri, "rell", 1, file.readText())
@@ -327,4 +406,12 @@ class RellSymbolRenameTest {
         server.didOpen(didOpenParam)
         return fileUri
     }
+
+    private fun prepareRenameParams(fileUri: String, position: Position) =
+        PrepareRenameParams(TextDocumentIdentifier(fileUri), position)
+
+    private fun renameParams(fileUri: String, position: Position, newName: String) =
+        RenameParams(TextDocumentIdentifier(fileUri), position, newName)
+
+    private fun Path.toFileUri() = this.toFile().toURI().toString()
 }
