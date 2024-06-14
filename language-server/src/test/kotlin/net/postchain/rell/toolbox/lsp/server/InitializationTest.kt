@@ -1,7 +1,15 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
-import assertk.assertions.isNotEmpty
+import assertk.assertions.containsExactlyInAnyOrder
+import assertk.assertions.containsOnly
+import assertk.assertions.hasSize
+import java.io.File
+import java.io.IOException
+import java.net.Socket
+import java.net.SocketTimeoutException
+import java.net.URI
+import java.nio.file.Path
 import net.postchain.rell.toolbox.core.indexer.findRellFilesInWorkspace
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import org.eclipse.lsp4j.InitializeParams
@@ -13,20 +21,18 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import org.koin.core.qualifier.named
+import org.testcontainers.shaded.org.awaitility.Awaitility.await
 import util.TestClient
 import util.TestServerModule
-import java.io.File
-import java.io.IOException
-import java.net.Socket
-import java.net.SocketTimeoutException
-import java.net.URI
 
 @Suppress("JAVA_CLASS_ON_COMPANION")
 class InitializationTest {
     private lateinit var thread: Thread
     private lateinit var client: LanguageServer
     private lateinit var testClient: TestClient
+    private lateinit var workspaceManager: RellWorkspaceManager
     private val serverModule = TestServerModule()
 
     @BeforeEach
@@ -44,6 +50,7 @@ class InitializationTest {
         clientLauncher.startListening()
 
         client = clientLauncher.remoteProxy
+        workspaceManager = koinApp.koin.get<RellWorkspaceManager>()
     }
 
     @AfterEach
@@ -59,9 +66,29 @@ class InitializationTest {
         client.initialize(initParams).get()
         client.initialized(InitializedParams())
 
-        Thread.sleep(500)
+        await().until { testClient.diagnostics.isNotEmpty() }
 
-        assertThat(testClient.diagnostics).isNotEmpty()
+        val rellFiles = testWorkspaceFolder.walk().filter { it.isFile && it.extension == "rell" }
+            .map { parseFileUri(it.toURI().toString()).toString() }.toList().toTypedArray()
+
+        assertThat(testClient.diagnostics.keys).containsExactlyInAnyOrder(*rellFiles)
+    }
+
+    @Test
+    fun `Workspace folder is used as workspace uri with trailing slash when source dir is not found`(@TempDir dir: Path) {
+        val pathAsString = dir.toUri().toString().removeSuffix("/")
+        val initParams = InitializeParams()
+        initParams.workspaceFolders = listOf(WorkspaceFolder(pathAsString))
+
+        client.initialize(initParams).get()
+        client.initialized(InitializedParams())
+
+        await().until { workspaceManager.indexers.isNotEmpty() }
+
+        val indexers = workspaceManager.indexers
+        val expectedWorkspaceUri = parseFileUri("$pathAsString/")
+        assertThat(indexers.keys).containsOnly(expectedWorkspaceUri)
+        assertThat(indexers[expectedWorkspaceUri]!!.fileUriResourceMap).hasSize(0)
     }
 
     private fun connectToServer(attempt: Int = 0): Socket {
