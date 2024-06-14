@@ -74,5 +74,6 @@ class RellDokkaPluginConfigurationBuilder private constructor(
             suppressInheritedMembers = true,
             sourceSets = if (system) RellModule.entries.map { it.sourceSet(includes) } else rellSourceSets(projectRoot!!, includes, sourceLinks),
             pluginsConfiguration = listOf(configureRellDokkaPlugin().toPluginConfig(), configureDokkaBasePlugin()),
+            finalizeCoroutines = false,
     )
 }
