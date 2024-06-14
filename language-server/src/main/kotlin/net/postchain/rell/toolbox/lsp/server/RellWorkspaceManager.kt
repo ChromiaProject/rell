@@ -103,7 +103,7 @@ class RellWorkspaceManager(
             parentSrcFolder != null -> parentSrcFolder
             else -> null
         }
-        return sourceFolder?.toURI() ?: workspaceUri
+        return sourceFolder?.toURI() ?: workspaceFolder.toURI()
     }
 
     private fun findSrcParentDirectory(uri: URI): File? {
