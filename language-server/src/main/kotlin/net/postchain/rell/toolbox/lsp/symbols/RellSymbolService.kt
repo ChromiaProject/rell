@@ -1,6 +1,5 @@
 package net.postchain.rell.toolbox.lsp.symbols
 
-import java.net.URI
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeFilePath
@@ -23,6 +22,7 @@ import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolInformation
 import org.eclipse.lsp4j.SymbolKind
 import org.eclipse.lsp4j.jsonrpc.messages.Either
+import java.net.URI
 
 class RellSymbolService {
 
@@ -178,7 +178,8 @@ class RellSymbolService {
             IdeSymbolKind.EXPR_IMPORT_ALIAS,
             IdeSymbolKind.DEF_IMPORT_ALIAS,
             IdeSymbolKind.DEF_TYPE,
-            IdeSymbolKind.UNKNOWN
+            IdeSymbolKind.UNKNOWN,
+            IdeSymbolKind.DEF_FUNCTION_SYSTEM,
         )
     }
 }

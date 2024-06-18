@@ -6,10 +6,6 @@ import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
-import java.io.File
-import java.nio.file.Path
-import kotlin.io.path.createParentDirectories
-import kotlin.io.path.writeText
 import org.eclipse.lsp4j.DidOpenTextDocumentParams
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.PrepareRenameDefaultBehavior
@@ -29,6 +25,10 @@ import util.TestPrepareRenameResult
 import util.TestRange
 import util.TestServerModule
 import util.TestTextEdit
+import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.createParentDirectories
+import kotlin.io.path.writeText
 
 class RellSymbolRenameTest {
     private lateinit var clientServerLauncher: TestClientServerLauncher
@@ -76,6 +76,7 @@ class RellSymbolRenameTest {
             Position(2, 24),
             Position(4, 6),
             Position(6, 35),
+            Position(7, 4),
         )
 
         restrictedSymbolPositions.forEach { position ->
