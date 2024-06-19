@@ -14,7 +14,7 @@ dependencies {
     implementation(libs.bundles.rell)
 
     implementation("org.furyio:fury-core:0.4.1")
-    implementation("org.ec4j.core:ec4j-core:0.3.0")
+    implementation(libs.ec4j)
 
     testImplementation(libs.bundles.testcontainers)
     testImplementation(libs.bundles.testing)

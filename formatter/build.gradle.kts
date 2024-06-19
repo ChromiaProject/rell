@@ -6,6 +6,7 @@ plugins {
 
 dependencies {
     implementation(libs.antlr)
+    implementation(libs.ec4j)
     implementation(libs.bundles.logging)
     testImplementation(libs.bundles.testing)
     implementation(project(":core"))
