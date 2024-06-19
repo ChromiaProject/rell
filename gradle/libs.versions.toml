@@ -12,7 +12,6 @@ log4j = "2.20.0"
 mockk = "1.13.8"
 
 [libraries]
-rell = { module = "net.postchain.rell:rell", version.ref = "rell" }
 rell-base = { module = "net.postchain.rell:rell-base", version.ref = "rell" }
 rell-api-base = { module = "net.postchain.rell:rell-api-base", version.ref = "rell" }
 rell-tools = { module = "net.postchain.rell:rell-tools", version.ref = "rell" }
@@ -51,7 +50,7 @@ log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "lo
 [bundles]
 testcontainers = ["testcontainers-base", "testcintainers-junit"]
 logging = ["oshai", "log4j", "log4j-core"]
-rell = ["rell", "rell-base"] # "rell-api-base", "rell-tools"
+rell = ["rell-base"] # "rell-api-base", "rell-tools"
 lsp4j = ["lsp4j", "lsp4j-debug", "lsp4j-websocket"]
 koin = ["koin-core", "koin-logger"]
 jackson = ["jackson", "jackson-yml", "jackson-kotlin"]
