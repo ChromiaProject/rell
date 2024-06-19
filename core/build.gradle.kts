@@ -58,8 +58,6 @@ tasks.generateGrammarSource {
 
 sourceSets.getByName("main") {
     java.srcDir(tasks.generateGrammarSource)
-    java.srcDir("src/main/java")
-    kotlin.srcDir("src/main/kotlin")
 }
 
 sourceSets.getByName("test") {
