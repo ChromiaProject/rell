@@ -1,32 +1,32 @@
 function foo() {
         // Line length above 120
-	val user4 = user4 @* {
-		.first_name == "",
-		.last_name == "",
-		.salary == 2,
-		.age == 2
-	} (
-		@sort .salary,
-		.first_name,
-		.last_name,
-		.age
-	);
+    val user4 = user4 @* {
+        .first_name == "",
+        .last_name == "",
+        .salary == 2,
+        .age == 2
+    } (
+        @sort .salary,
+        .first_name,
+        .last_name,
+        .age
+    );
 
-	val user4b = user4 @* {
-		.first_name == "",
-		.age == 2
-	} (
-		@sort .salary,
-		.first_name
-	);
+    val user4b = user4 @* {
+        .first_name == "",
+        .age == 2
+    } (
+        @sort .salary,
+        .first_name
+    );
 
 
     // Line break remains if user defined expression using line break
-	val user4c = user4 @* {
-		.first_name == "",
-		.age == 2
-	} (
-		@sort .salary,
-		.first_name
-	);
+    val user4c = user4 @* {
+        .first_name == "",
+        .age == 2
+    } (
+        @sort .salary,
+        .first_name
+    );
 }
