@@ -8,6 +8,7 @@ import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.lmodel.*
+import net.postchain.rell.base.model.R_DefinitionName
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.mtype.M_FunctionParam
@@ -15,10 +16,7 @@ import net.postchain.rell.base.mtype.M_ParamArity
 import net.postchain.rell.base.mtype.M_Type_Nullable
 import net.postchain.rell.base.mtype.M_Types
 import net.postchain.rell.base.utils.associateNotNullValues
-import net.postchain.rell.base.utils.doc.DocComment
-import net.postchain.rell.base.utils.doc.DocDeclaration_Parameter
-import net.postchain.rell.base.utils.doc.DocSymbolKind
-import net.postchain.rell.base.utils.doc.DocSymbolName
+import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.toImmList
 
 abstract class Ld_CommonFunctionDslImpl(
@@ -274,11 +272,12 @@ class Ld_FunctionParam(
                 param.name to paramMemberHeaders[i].docComment
             }
 
-            val comments = Ld_FunctionParamComments.make(
-                fullName,
+            val comments = DocFunctionParamComments.make(
+                R_DefinitionName(fullName),
                 funMemberHeader.docComment,
                 paramNames,
                 paramComments,
+                DocException.ERROR_TRACKER,
             )
 
             val lParams = params.mapIndexed { i, param ->

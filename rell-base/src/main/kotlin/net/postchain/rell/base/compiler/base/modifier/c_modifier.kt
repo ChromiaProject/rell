@@ -23,7 +23,10 @@ import net.postchain.rell.base.utils.doc.DocModifier_Keyword
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import java.util.*
 
-class C_ModifierContext(val msgCtx: C_MessageContext, val symCtx: C_SymbolContext)
+class C_ModifierContext(
+    val msgCtx: C_MessageContext,
+    val symCtx: C_SymbolContext,
+)
 
 enum class C_ModifierTargetType {
     MODULE(C_DeclarationType.MODULE),
@@ -173,8 +176,8 @@ class C_ModifierValues(
 }
 
 sealed class C_FixedModifierValues {
-    abstract fun compileKeyword(ctx: C_ModifierContext, kw: C_Name, kind: S_KeywordModifierKind): DocModifier
-    abstract fun compileAnnotation(ctx: C_ModifierContext, name: S_Name, args: List<C_AnnotationArg>): DocModifier
+    abstract fun compileKeyword(ctx: C_ModifierContext, kw: C_Name, kind: S_KeywordModifierKind): DocModifier?
+    abstract fun compileAnnotation(ctx: C_ModifierContext, name: S_Name, args: List<C_AnnotationArg>): DocModifier?
 }
 
 private class C_FixedModifierValues_Impl(
@@ -183,14 +186,14 @@ private class C_FixedModifierValues_Impl(
 ): C_FixedModifierValues() {
     private val mods = mods.toImmMap()
 
-    override fun compileKeyword(ctx: C_ModifierContext, kw: C_Name, kind: S_KeywordModifierKind): DocModifier {
+    override fun compileKeyword(ctx: C_ModifierContext, kw: C_Name, kind: S_KeywordModifierKind): DocModifier? {
         val key = C_ModifierKey_Keyword.of(kind)
         val link = C_ModifierLink(key, kw, target)
         compile0(ctx, link, immListOf())
-        return DocModifier_Keyword(kw.str)
+        return if (!ctx.symCtx.docSymbolFactory.isEnabled) null else DocModifier_Keyword(kw.str)
     }
 
-    override fun compileAnnotation(ctx: C_ModifierContext, name: S_Name, args: List<C_AnnotationArg>): DocModifier {
+    override fun compileAnnotation(ctx: C_ModifierContext, name: S_Name, args: List<C_AnnotationArg>): DocModifier? {
         val nameHand = name.compile(ctx.symCtx)
 
         val key = C_ModifierKey_Annotation.of(nameHand.rName)
@@ -201,8 +204,10 @@ private class C_FixedModifierValues_Impl(
         val ideInfo = if (ok) C_IdeSymbolInfo.get(IdeSymbolKind.MOD_ANNOTATION) else C_IdeSymbolInfo.UNKNOWN
         nameHand.setIdeInfo(ideInfo)
 
-        val docArgs = args.map { it.docArg() }.toImmList()
-        return DocModifier_Annotation(nameHand.rName, docArgs)
+        return if (!ctx.symCtx.docSymbolFactory.isEnabled) null else {
+            val docArgs = args.map { it.docArg() }.toImmList()
+            DocModifier_Annotation(nameHand.rName, docArgs)
+        }
     }
 
     private fun compile0(ctx: C_ModifierContext, link: C_ModifierLink, args: List<C_AnnotationArg>): Boolean {
@@ -214,7 +219,7 @@ private class C_FixedModifierValues_Impl(
 
         val codeMsg = link.key.codeMsg()
         val code = "modifier:invalid:${codeMsg.code}"
-        val msg = "${codeMsg.msg.capitalize()} is invalid"
+        val msg = "${codeMsg.msg.capitalizeEx()} is invalid"
         ctx.msgCtx.error(link.pos, code, msg)
         return false
     }
@@ -293,7 +298,7 @@ private class C_ModifierValue_Impl<T: Any>: C_ModifierValue<T>() {
             if (v0.link.key == modLink.key) {
                 val codeMsg = modLink.key.codeMsg()
                 val code = "modifier:dup:${codeMsg.code}"
-                val msg = "${codeMsg.msg.capitalize()} specified multiple times"
+                val msg = "${codeMsg.msg.capitalizeEx()} specified multiple times"
                 ctx.msgCtx.error(modLink.pos, code, msg)
             } else {
                 C_AnnUtils.errBadCombination(ctx.msgCtx, listOf(v0.link, modLink))

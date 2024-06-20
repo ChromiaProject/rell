@@ -5,6 +5,7 @@
 package net.postchain.rell.base.compiler.base.module
 
 import com.google.common.collect.Multimap
+import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.core.*
@@ -428,7 +429,7 @@ sealed class S_FileContext(
     abstract fun addNamespaceName(
         nameHand: C_NameHandle,
         fullName: R_QualifiedName,
-        docSymbolGetter: C_LateGetter<Nullable<DocSymbol>>,
+        docSymbolGetter: C_LateGetter<DocSymbol?>,
     ): IdeSymbolId
 }
 
@@ -444,7 +445,7 @@ private class S_PrivateFileContext(
     override fun addNamespaceName(
         nameHand: C_NameHandle,
         fullName: R_QualifiedName,
-        docSymbolGetter: C_LateGetter<Nullable<DocSymbol>>,
+        docSymbolGetter: C_LateGetter<DocSymbol?>,
     ): IdeSymbolId {
         val count = namespaces.count(fullName)
         val fullNameStr = fullName.str()
@@ -462,7 +463,7 @@ private class NamespaceNameInfoRec(
     val nameHand: C_NameHandle,
     val defId: IdeSymbolId,
     val link: IdeSymbolLink,
-    val docSymbolGetter: C_LateGetter<Nullable<DocSymbol>>,
+    val docSymbolGetter: C_LateGetter<DocSymbol?>,
 )
 
 class S_DefinitionContext private constructor(
@@ -474,7 +475,7 @@ class S_DefinitionContext private constructor(
     val msgCtx = modCtx.msgCtx
     val symCtx = fileCtx.symCtx
 
-    val docFactory = msgCtx.globalCtx.docFactory
+    val docFactory = symCtx.docSymbolFactory
 
     val moduleName = modCtx.moduleName
 
@@ -497,6 +498,7 @@ class C_SourceModuleHeader(
     val abstract: S_Pos?,
     val external: Boolean,
     val test: Boolean,
+    val comment: S_Comment?,
     val docModifiers: DocModifiers,
 )
 
@@ -594,6 +596,7 @@ class C_ParsedRellFile(
         }
 
         if (ast == null) {
+            // Parsing failed.
             val symCtx = modCtx.appCtx.symCtxProvider.getNopSymbolContext()
             return C_MidModuleFile(path, immListOf(), null, symCtx)
         }

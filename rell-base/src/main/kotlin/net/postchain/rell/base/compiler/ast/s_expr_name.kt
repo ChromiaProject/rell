@@ -82,7 +82,16 @@ class S_NameExpr(val qName: S_QualifiedName): S_Expr(qName.pos) {
         if (entity != null) {
             val atEntityId = ctx.appCtx.nextAtEntityId(itemCtx.fromCtx.atExprId)
             val effectiveAlias = alias ?: qNameHand.last.name
-            val cAtEntity = S_AtExpr.makeDbAtEntity(entity, effectiveAlias, alias, atEntityId, ctx.docFactory)
+
+            val cAtEntity = S_AtExpr.makeDbAtEntity(
+                ctx.symCtx,
+                entity,
+                effectiveAlias,
+                alias,
+                atEntityId,
+                itemCtx.comment,
+            )
+
             return if (!itemCtx.isJoin) {
                 C_AtFromItem_Entity_Simple(qName.pos, cAtEntity)
             } else {

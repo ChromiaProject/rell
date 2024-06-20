@@ -276,7 +276,7 @@ class StructTest: BaseRellTest(false) {
     private fun chkFlags(code: String, expected: String) {
         val actual = tst.processApp(code) { app ->
             val lst = mutableListOf<String>()
-            val structDefs = app.modules.flatMap { it.structs.values }
+            val structDefs = app.rApp.modules.flatMap { it.structs.values }
             for (structDef in structDefs.sortedBy { it.simpleName }) {
                 val struct = structDef.struct
 

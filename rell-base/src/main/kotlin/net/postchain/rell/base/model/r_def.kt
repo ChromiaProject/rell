@@ -113,10 +113,7 @@ class R_EntityDefinition(
         return map.toGtv()
     }
 
-    override fun getDocMember(name: String): DocDefinition? {
-        val attr = attributes[R_Name.of(name)]
-        return attr
-    }
+    override fun getDocMembers0() = strAttributes
 
     companion object {
         private val ERROR_BODY = R_EntityBody(keys = listOf(), indexes = listOf(), attributes = mapOf())
@@ -144,10 +141,7 @@ class R_ObjectDefinition(
     }
 
     override fun toMetaGtv() = rEntity.toMetaGtv(false)
-
-    override fun getDocMember(name: String): DocDefinition? {
-        return rEntity.getDocMember(name)
-    }
+    override fun getDocMembers0() = rEntity.docMembers
 }
 
 class R_StructFlags(
@@ -260,11 +254,7 @@ class R_StructDefinition(
     }
 
     override fun toMetaGtv() = struct.toMetaGtv()
-
-    override fun getDocMember(name: String): DocDefinition? {
-        val attr = struct.strAttributes[name]
-        return attr
-    }
+    override fun getDocMembers0() = struct.strAttributes
 }
 
 class R_EnumAttr(
@@ -272,7 +262,7 @@ class R_EnumAttr(
     val value: Int,
     val ideInfo: C_IdeSymbolInfo,
     override val docSourcePos: DocSourcePos?,
-): DocDefinition {
+): DocDefinition() {
     val name = rName.str
 
     override val docSymbol: DocSymbol get() = ideInfo.getIdeInfo().doc ?: DocSymbol.NONE
@@ -308,18 +298,15 @@ class R_EnumDefinition(
         ).toGtv()
     }
 
-    override fun getDocMember(name: String): DocDefinition? {
-        val attr = attrMap[name]
-        return attr
-    }
+    override fun getDocMembers0() = attrMap
 }
 
 class R_GlobalConstantId(
-        val index: Int,
-        val app: R_AppUid,
-        val module: R_ModuleKey,
-        val appLevelName: String,
-        private val moduleLevelName: String
+    val index: Int,
+    val app: R_AppUid,
+    val module: R_ModuleKey,
+    val appLevelName: String,
+    private val moduleLevelName: String,
 ) {
     fun strCode() = "$index:$module:$moduleLevelName"
 

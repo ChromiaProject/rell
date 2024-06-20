@@ -18,7 +18,6 @@ import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 import net.postchain.rell.base.utils.toImmSet
 import org.apache.commons.collections4.SetUtils
-import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 
 private object C_InternalAppUtils {
@@ -55,7 +54,7 @@ class C_AppContext(
 
     val sysDefs = oldReplState.sysDefs ?: C_SystemDefs.create(this, appUid, extraLibMod)
 
-    val functionReturnTypeCalculator = C_FunctionBody.createReturnTypeCalculator()
+    val functionReturnTypeCalculator = C_DeepDefinitionBody.createReturnTypeCalculator()
 
     val extendableFunctionCompiler = C_ExtendableFunctionCompiler(oldReplState.functionExtensions)
 
@@ -72,7 +71,7 @@ class C_AppContext(
     private val newConstants = C_ListBuilder<C_GlobalConstantDefinition>()
 
     private val nsAsmAppLate = C_LateInit(C_CompilerPass.NAMESPACES, C_NsAsm_App.EMPTY)
-    private val finishLate = C_LateInit(C_CompilerPass.APPLICATION, Optional.empty<Finish>())
+    private val finishLate = C_LateInit<Finish?>(C_CompilerPass.APPLICATION, null)
 
     private var finished = false
 
@@ -103,7 +102,7 @@ class C_AppContext(
         executor.onPass(C_CompilerPass.APPLICATION) {
             val rApp = createApp()
             val replState = createNewReplState(rApp)
-            finishLate.set(Optional.of(Finish(rApp, replState)))
+            finishLate.set(Finish(rApp, replState))
         }
     }
 
@@ -128,7 +127,7 @@ class C_AppContext(
         check(!finished)
         finished = true
         executor.checkPass(C_CompilerPass.FINISH)
-        return finishLate.get().orElse(null)
+        return finishLate.get()
     }
 
     fun createModuleNsAssembler(

@@ -13,32 +13,35 @@ import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.fn.C_FormalParameters
 import net.postchain.rell.base.compiler.base.fn.C_FunctionCallTargetBase
 import net.postchain.rell.base.compiler.base.fn.C_FunctionUtils
+import net.postchain.rell.base.compiler.base.fn.C_SubprogramHeader
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.LazyPosString
+import net.postchain.rell.base.utils.doc.DocComment
 
-class C_QueryFunctionHeader(
+class C_QueryHeader(
+    params: C_FormalParameters,
+    docComment: DocComment?,
     explicitType: R_Type?,
-    val params: C_FormalParameters,
-    val queryBody: C_QueryFunctionBody?,
-): C_FunctionHeader(explicitType, queryBody) {
-    override val declarationType = C_DeclarationType.QUERY
+    val queryBody: C_QueryDeepDefinitionBody?,
+): C_SubprogramHeader(params, docComment) {
+    val deepHeader = C_DeepDefinitionHeader(C_DeclarationType.QUERY, explicitType, queryBody)
 
     companion object {
-        val ERROR = C_QueryFunctionHeader(null, C_FormalParameters.EMPTY, null)
+        val ERROR = C_QueryHeader(C_FormalParameters.EMPTY, docComment = null, explicitType = null, queryBody = null)
     }
 }
 
 class C_QueryGlobalFunction(val rQuery: R_QueryDefinition): C_GlobalFunction() {
-    private val headerLate = C_LateInit(C_CompilerPass.MEMBERS, C_QueryFunctionHeader.ERROR)
+    private val headerLate = C_LateInit(C_CompilerPass.MEMBERS, C_QueryHeader.ERROR)
 
     override fun getDefMeta(): R_DefinitionMeta {
         return R_DefinitionMeta("query", rQuery.defName, mountName = rQuery.mountName)
     }
 
-    fun setHeader(header: C_QueryFunctionHeader) {
+    fun setHeader(header: C_QueryHeader) {
         headerLate.set(header)
     }
 
@@ -49,17 +52,17 @@ class C_QueryGlobalFunction(val rQuery: R_QueryDefinition): C_GlobalFunction() {
         resTypeHint: C_TypeHint,
     ): V_GlobalFunctionCall {
         val header = headerLate.get()
-        val retType = C_FunctionUtils.compileReturnType(ctx, name, header)
+        val retType = header.deepHeader.compileReturnType(ctx, name)
         val callTargetBase = C_FunctionCallTargetBase.forDirectFunction(ctx, name, header.params)
         val callTarget = C_FunctionCallTarget_RegularUserFunction(callTargetBase, retType, rQuery)
         return C_FunctionUtils.compileRegularCall(callTargetBase, callTarget, args, resTypeHint)
     }
 }
 
-class C_QueryFunctionBody(
-        bodyCtx: C_FunctionBodyContext,
-        private val sBody: S_FunctionBody
-): C_CommonFunctionBody<R_QueryBody>(bodyCtx) {
+class C_QueryDeepDefinitionBody(
+    private val bodyCtx: C_FunctionBodyContext,
+    private val sBody: S_FunctionBody,
+): C_CommonDeepDefinitionBody<R_QueryBody>(bodyCtx.appCtx) {
     override fun returnsValue() = sBody.returnsValue()
     override fun getErrorBody() = R_UserQueryBody.ERROR
     override fun getReturnType(body: R_QueryBody) = body.retType

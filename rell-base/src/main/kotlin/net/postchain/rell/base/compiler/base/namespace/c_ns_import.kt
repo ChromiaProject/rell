@@ -39,9 +39,9 @@ class C_NsImp_Def_Namespace(
 
 object C_NsImp_ImportsProcessor {
     fun process(
-            msgCtx: C_MessageContext,
-            modules: Map<C_ModuleKey, C_NsAsm_Namespace>,
-            preModules: Map<C_ModuleKey, C_NsImp_Namespace>
+        msgCtx: C_MessageContext,
+        modules: Map<C_ModuleKey, C_NsAsm_Namespace>,
+        preModules: Map<C_ModuleKey, C_NsImp_Namespace>,
     ): Map<C_ModuleKey, C_NsImp_Namespace> {
         val converter = C_NsImp_NamespaceConverter()
         val asmPreModules = preModules.mapValues { (_, v) -> converter.convert(v) }

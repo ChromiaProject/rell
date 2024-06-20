@@ -5,10 +5,10 @@
 package net.postchain.rell.base.compiler.ast
 
 import net.postchain.rell.base.compiler.base.core.*
-import net.postchain.rell.base.compiler.base.def.C_OperationFunctionHeader
 import net.postchain.rell.base.compiler.base.def.C_OperationGlobalFunction
-import net.postchain.rell.base.compiler.base.def.C_QueryFunctionHeader
+import net.postchain.rell.base.compiler.base.def.C_OperationHeader
 import net.postchain.rell.base.compiler.base.def.C_QueryGlobalFunction
+import net.postchain.rell.base.compiler.base.def.C_QueryHeader
 import net.postchain.rell.base.compiler.base.fn.C_FormalParameters
 import net.postchain.rell.base.compiler.base.fn.C_FunctionUtils
 import net.postchain.rell.base.compiler.base.modifier.C_ModifierFields
@@ -16,12 +16,14 @@ import net.postchain.rell.base.compiler.base.modifier.C_ModifierTargetType
 import net.postchain.rell.base.compiler.base.modifier.C_ModifierValues
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
+import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.base.utils.C_ReservedMountNames
 import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.MutableTypedKeyMap
 import net.postchain.rell.base.utils.TypedKeyMap
+import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.doc.DocDeclaration_Operation
 import net.postchain.rell.base.utils.doc.DocDeclaration_Query
 import net.postchain.rell.base.utils.doc.DocModifiers
@@ -32,12 +34,11 @@ import net.postchain.rell.base.utils.toImmMap
 import net.postchain.rell.base.utils.toImmSet
 
 class S_OperationDefinition(
-    pos: S_Pos,
-    modifiers: S_Modifiers,
+    base: S_DefinitionBase,
     val name: S_Name,
     val params: List<S_FormalParameter>,
     val body: S_Statement,
-): S_BasicDefinition(pos, modifiers) {
+): S_BasicDefinition(base) {
     override fun compileBasic(ctx: C_MountContext) {
         ctx.checkNotExternal(name.pos, C_DeclarationType.OPERATION)
         ctx.checkNotReplOrTest(name.pos, C_DeclarationType.OPERATION)
@@ -53,7 +54,15 @@ class S_OperationDefinition(
         val mountName = ctx.mountName(modMount, cName)
         checkSysMountNameConflict(ctx, name.pos, C_DeclarationType.OPERATION, mountName, C_ReservedMountNames.OPERATIONS)
 
-        val cDefBase = ctx.defBase(nameHand, C_DefinitionType.OPERATION, IdeSymbolKind.DEF_OPERATION, mountName)
+        val docCommentLate = C_LateInit(C_CompilerPass.MEMBERS, null as DocComment?)
+
+        val cDefBase = ctx.defBase(
+            nameHand,
+            C_DefinitionType.OPERATION,
+            IdeSymbolKind.DEF_OPERATION,
+            mountName,
+            docCommentGetter = docCommentLate.getter,
+        )
         val defCtx = cDefBase.defCtx(ctx)
         val defBase = cDefBase.rBase(defCtx.initFrameGetter)
 
@@ -68,10 +77,13 @@ class S_OperationDefinition(
         ctx.mntBuilder.addOperation(cName, rOperation)
 
         ctx.executor.onPass(C_CompilerPass.MEMBERS) {
-            val header = compileHeader(defCtx, cOperation, rOperation.mirrorStructs)
+            val header = compileHeader(defCtx, cName, cOperation, rOperation.mirrorStructs)
+            docCommentLate.set(header.docComment)
+
             ctx.executor.onPass(C_CompilerPass.EXPRESSIONS) {
                 compileBody(defCtx, rOperation, header)
             }
+
             ctx.executor.onPass(C_CompilerPass.DOCS) {
                 val doc = DocDeclaration_Operation(docModifiers, cName.rName, header.params.docParamDeclarations)
                 cDefBase.setDocDeclaration(doc)
@@ -81,14 +93,14 @@ class S_OperationDefinition(
 
     private fun compileHeader(
         defCtx: C_DefinitionContext,
+        cName: C_Name,
         cOperation: C_OperationGlobalFunction,
         mirrorStructs: R_MirrorStructs,
-    ): C_OperationFunctionHeader {
-        val forParams = C_FormalParameters.compile(defCtx, params, true)
-        val header = C_OperationFunctionHeader(forParams)
+    ): C_OperationHeader {
+        val header = C_FunctionUtils.compileOperationHeader(defCtx, cName.pos, params, comment)
         cOperation.setHeader(header)
-        compileMirrorStructAttrs(mirrorStructs, forParams, false)
-        compileMirrorStructAttrs(mirrorStructs, forParams, true)
+        compileMirrorStructAttrs(mirrorStructs, header.params, false)
+        compileMirrorStructAttrs(mirrorStructs, header.params, true)
         return header
     }
 
@@ -121,7 +133,7 @@ class S_OperationDefinition(
         struct.setAttributes(attrMap)
     }
 
-    private fun compileBody(defCtx: C_DefinitionContext, rOperation: R_OperationDefinition, header: C_OperationFunctionHeader) {
+    private fun compileBody(defCtx: C_DefinitionContext, rOperation: R_OperationDefinition, header: C_OperationHeader) {
         val statementVars = processStatementVars()
         val fnCtx = C_FunctionContext(defCtx, rOperation.appLevelName, null, statementVars)
         val frameCtx = C_FrameContext.create(fnCtx)
@@ -146,13 +158,12 @@ class S_OperationDefinition(
 }
 
 class S_QueryDefinition(
-    pos: S_Pos,
-    modifiers: S_Modifiers,
+    base: S_DefinitionBase,
     val name: S_Name,
     val params: List<S_FormalParameter>,
     val retType: S_Type?,
     val body: S_FunctionBody,
-): S_BasicDefinition(pos, modifiers) {
+): S_BasicDefinition(base) {
     override fun compileBasic(ctx: C_MountContext) {
         ctx.checkNotExternal(name.pos, C_DeclarationType.QUERY)
         ctx.checkNotReplOrTest(name.pos, C_DeclarationType.QUERY)
@@ -168,7 +179,15 @@ class S_QueryDefinition(
         val mountName = ctx.mountName(modMount, cName)
         checkSysMountNameConflict(ctx, name.pos, C_DeclarationType.QUERY, mountName, C_ReservedMountNames.QUERIES)
 
-        val cDefBase = ctx.defBase(nameHand, C_DefinitionType.QUERY, IdeSymbolKind.DEF_QUERY, mountName)
+        val docCommentLate = C_LateInit(C_CompilerPass.MEMBERS, null as DocComment?)
+
+        val cDefBase = ctx.defBase(
+            nameHand,
+            C_DefinitionType.QUERY,
+            IdeSymbolKind.DEF_QUERY,
+            mountName,
+            docCommentGetter = docCommentLate.getter,
+        )
         val defCtx = cDefBase.defCtx(ctx)
         val rDefBase = cDefBase.rBase(defCtx.initFrameGetter)
 
@@ -180,15 +199,21 @@ class S_QueryDefinition(
         ctx.mntBuilder.addQuery(cName, rQuery)
 
         ctx.executor.onPass(C_CompilerPass.MEMBERS) {
-            val header = compileHeader(defCtx, cQuery)
+            val header = compileHeader(defCtx, cName, cQuery)
+            docCommentLate.set(header.docComment)
+
             ctx.executor.onPass(C_CompilerPass.EXPRESSIONS) {
                 compileBody(ctx, cDefBase, cName, header, rQuery, docModifiers)
             }
         }
     }
 
-    private fun compileHeader(defCtx: C_DefinitionContext, cQuery: C_QueryGlobalFunction): C_QueryFunctionHeader {
-        val header = C_FunctionUtils.compileQueryHeader(defCtx, name, cQuery.rQuery.defName, params, retType, body)
+    private fun compileHeader(
+        defCtx: C_DefinitionContext,
+        cName: C_Name,
+        cQuery: C_QueryGlobalFunction,
+    ): C_QueryHeader {
+        val header = C_FunctionUtils.compileQueryHeader(defCtx, cName, params, retType, body, comment)
         cQuery.setHeader(header)
         return header
     }
@@ -197,7 +222,7 @@ class S_QueryDefinition(
         ctx: C_MountContext,
         defBase: C_UserDefinitionBase,
         cName: C_Name,
-        header: C_QueryFunctionHeader,
+        header: C_QueryHeader,
         rQuery: R_QueryDefinition,
         docModifiers: DocModifiers,
     ) {

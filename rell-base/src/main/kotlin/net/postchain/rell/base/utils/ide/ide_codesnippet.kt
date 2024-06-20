@@ -6,6 +6,7 @@ package net.postchain.rell.base.utils.ide
 
 import com.fasterxml.jackson.core.util.DefaultIndenter
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
+import com.fasterxml.jackson.core.util.Separators
 import com.fasterxml.jackson.databind.ObjectMapper
 import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
@@ -49,30 +50,33 @@ class IdeCodeSnippet(
     @JvmField val options: C_CompilerOptions,
     messages: List<IdeSnippetMessage>,
     parsing: Map<String, List<IdeSnippetMessage>>,
+    comments: Map<String, String>,
 ) {
     @JvmField val files = files.toImmMap()
     @JvmField val messages = messages.toImmList()
     @JvmField val parsing = parsing.toImmMap()
+    @JvmField val comments = comments.toImmMap()
+
     val serialized: String by lazy { serialize() }
 
     private fun serialize(): String {
         val opts = options.toPojoMap()
 
         val modulesObj = mapOf(
-                "modules" to modules.appModules?.map { it.str() },
-                "test_root_modules" to modules.testModules.map { it.str() },
-                "test_sub_modules" to modules.testSubModules,
+            "modules" to modules.appModules?.map { it.str() },
+            "test_root_modules" to modules.testModules.map { it.str() },
+            "test_sub_modules" to modules.testSubModules,
         )
 
         val messagesObj = messages.map { it.serialize() }
-        val parsingObj = parsing.mapValues { (_, v) -> v.map { it.serialize() } }
 
         val obj = mapOf(
-                "files" to files,
-                "modules" to modulesObj,
-                "options" to opts,
-                "messages" to messagesObj,
-                "parsing" to parsingObj
+            "files" to files,
+            "modules" to modulesObj,
+            "options" to opts,
+            "messages" to messagesObj,
+            "parsing" to parsing.mapValues { (_, v) -> v.map { it.serialize() } },
+            "comments" to comments,
         )
 
         val mapper = ObjectMapper()
@@ -114,9 +118,9 @@ class IdeCodeSnippet(
             val modulesRaw = obj.getValue("modules") as Map<Any, Any>
             val modulesMap = modulesRaw.map { (k, v) -> k as String to v }.toMap()
             val modules = C_CompilerModuleSelection(
-                    appModules = (modulesMap.getValue("modules") as List<Any>?)?.map { R_ModuleName.of(it as String) },
-                    testModules = (modulesMap.getValue("test_root_modules") as List<Any>).map { R_ModuleName.of(it as String) },
-                    testSubModules = (modulesMap["test_sub_modules"] as Boolean?) ?: true,
+                appModules = (modulesMap.getValue("modules") as List<Any>?)?.map { R_ModuleName.of(it as String) },
+                testModules = (modulesMap.getValue("test_root_modules") as List<Any>).map { R_ModuleName.of(it as String) },
+                testSubModules = (modulesMap["test_sub_modules"] as Boolean?) ?: true,
             )
 
             val optionsRaw = obj.getValue("options") as Map<Any, Any>
@@ -126,17 +130,27 @@ class IdeCodeSnippet(
             val messagesRaw = obj.getValue("messages") as List<Any>
             val messages = messagesRaw.map { IdeSnippetMessage.deserialize(it) }
 
-            val parsingRaw = obj.getValue("parsing") as Map<Any, Any>
-            val parsing = parsingRaw.map { (k, v) ->
+            val parsingRaw = obj["parsing"] as Map<Any, Any>?
+            val parsing = parsingRaw?.map { (k, v) ->
                 k as String to (v as List<Any>).map { IdeSnippetMessage.deserialize(it) }
-            }.toMap()
+            }?.toMap() ?: mapOf()
 
-            return IdeCodeSnippet(files, modules, options, messages, parsing)
+            val commentsRaw = obj["comments"] as Map<Any, Any>?
+            val comments = commentsRaw?.map { (k, v) -> k as String to v as String }?.toMap() ?: mapOf()
+
+            return IdeCodeSnippet(files, modules, options, messages, parsing, comments)
         }
 
         private fun prettyFormatJson(json: String): String {
             val mapper = ObjectMapper()
-            val prettyPrinter = DefaultPrettyPrinter().withArrayIndenter(DefaultIndenter("  ", "\n"))
+            val separators = Separators()
+                .withArrayEmptySeparator("")
+                .withObjectEmptySeparator("")
+                .withObjectFieldValueSpacing(Separators.Spacing.AFTER)
+            val prettyPrinter = DefaultPrettyPrinter()
+                .withArrayIndenter(DefaultIndenter("    ", "\n"))
+                .withObjectIndenter(DefaultIndenter("    ", "\n"))
+                .withSeparators(separators)
             val jsonObject = mapper.readValue(json, Any::class.java)
             return mapper.writer().with(prettyPrinter).writeValueAsString(jsonObject)
         }

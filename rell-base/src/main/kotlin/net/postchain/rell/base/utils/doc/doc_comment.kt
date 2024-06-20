@@ -77,9 +77,12 @@ object DocCommentParser {
 
     private val BUILTIN_TAGS: Map<String, DocCommentTag> = DocCommentTag.ALL.associateBy { it.code }.toImmMap()
 
-    fun parse(text: String, ignoreErrors: Boolean = false): DocComment {
+    fun parse(
+        text: String,
+        errorTracker: ErrorTracker = DocException.ERROR_TRACKER,
+    ): DocComment {
         val m = TAG_PATTERN.matcher(text)
-        val b = DocCommentBuilder(ignoreErrors)
+        val b = DocCommentBuilder(errorTracker)
 
         var hasNextTag = m.find()
 
@@ -92,18 +95,20 @@ object DocCommentParser {
             hasNextTag = m.find()
             val textEnd = if (hasNextTag) m.start() else text.length
             val tagText = text.substring(textStart, textEnd).trim()
-            processTag(b, code, tagText, ignoreErrors)
+            processTag(b, code, tagText, errorTracker)
         }
 
         return b.build()
     }
 
-    private fun processTag(b: DocCommentBuilder, code: String, text: String, ignoreErrors: Boolean) {
+    private fun processTag(b: DocCommentBuilder, code: String, text: String, errorTracker: ErrorTracker) {
         val builtinTag = BUILTIN_TAGS[code]
         val tag = when {
             builtinTag != null -> builtinTag
-            ignoreErrors -> DocCommentTag(code, "@$code", multi = true)
-            else -> throw DocException("comment:tag:unknown:$code", "Invalid comment tag: @$code")
+            else -> {
+                errorTracker.error("comment:tag:unknown:$code", "Invalid comment tag: @$code")
+                DocCommentTag(code, "@$code", multi = true)
+            }
         }
 
         var key: String? = null
@@ -123,7 +128,9 @@ object DocCommentParser {
     }
 }
 
-class DocCommentBuilder(private val ignoreErrors: Boolean = false) {
+class DocCommentBuilder(
+    private val errorTracker: ErrorTracker,
+) {
     private var description: String? = null
     private val tags = mutableMultimapOf<DocCommentTag, DocCommentItem>()
     private val keys = mutableSetOf<Pair<DocCommentTag, String?>>()
@@ -145,10 +152,10 @@ class DocCommentBuilder(private val ignoreErrors: Boolean = false) {
         val exists = !keys.add(tag to item.key)
         if (tag.multi || !exists) {
             tags.put(tag, item)
-        } else if (!ignoreErrors) {
+        } else {
             val code = if (item.key == null) tag.code else "${tag.code}[${item.key}]"
             val msg = if (item.key == null) "@${tag.code}" else "@${tag.code} ${item.key}"
-            throw DocException("tag:duplicate:$code", "Duplicate tag: $msg")
+            errorTracker.error("comment:tag:duplicate:$code", "Duplicate tag: $msg")
         }
     }
 

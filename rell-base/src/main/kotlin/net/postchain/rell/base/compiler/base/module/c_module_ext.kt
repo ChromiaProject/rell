@@ -89,10 +89,10 @@ class C_ExtModuleMember_Enum(
 }
 
 class C_ExtModuleMember_Import(
-        private val importDef: C_ImportDefinition,
-        private val target: C_ImportTarget,
-        private val moduleName: R_ModuleName,
-        private val extChainName: C_ExtChainName?
+    private val importDef: C_ImportDefinition,
+    private val target: C_ImportTarget,
+    private val moduleName: R_ModuleName,
+    private val extChainName: C_ExtChainName?,
 ): C_ExtModuleMember() {
     override fun compile0(mntCtx: C_MountContext) {
         val pos = importDef.pos

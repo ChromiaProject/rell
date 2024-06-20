@@ -1,9 +1,12 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.tools
 
+import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
+import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
 import net.postchain.rell.base.compiler.parser.S_Grammar
 import net.postchain.rell.base.utils.checkEquals
 import picocli.CommandLine
@@ -100,8 +103,10 @@ private fun replaceTokens(text: String): Pair<String, Int> {
 }
 
 private fun tokenize(text: String): List<TokenReplace> {
-    val tokenizer = S_Grammar.tokenizer
-    val seq = tokenizer.tokenize(text)
+    val sourcePath = C_SourcePath.parse("?")
+    val idePath = IdeSourcePathFilePath(sourcePath)
+    val parserPath = C_ParserFilePath(sourcePath, idePath)
+    val seq = S_Grammar.tokenizer.tokenize(parserPath, text)
 
     val res = mutableListOf<TokenReplace>()
     for (tk in seq) {

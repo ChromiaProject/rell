@@ -5,6 +5,7 @@
 package net.postchain.rell.base.compiler.base.core
 
 import com.google.common.collect.Multimap
+import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.def.C_GlobalFunction
 import net.postchain.rell.base.compiler.base.expr.C_Expr
@@ -16,7 +17,6 @@ import net.postchain.rell.base.compiler.base.modifier.C_ModifierValue
 import net.postchain.rell.base.compiler.base.namespace.*
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.Nullable
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
@@ -128,7 +128,8 @@ class C_CommonDefinitionBase(
     val cDefName: C_DefinitionName,
     val defName: R_DefinitionName,
     private val mountName: R_MountName?,
-    private val docFactory: DocSymbolFactory,
+    private val docFactory: C_DocSymbolFactory,
+    private val docCommentGetter: C_LateGetter<DocComment?>,
 ) {
     val simpleName = defName.simpleName
     val appLevelName = defName.appLevelName
@@ -159,12 +160,13 @@ class C_CommonDefinitionBase(
         memberIdeKind: IdeSymbolKind,
         memberDocKind: DocSymbolKind,
         memberName: R_Name,
+        memberComment: S_Comment?,
         docDeclarationGetter: C_LateGetter<DocDeclaration>,
     ): C_IdeSymbolDef {
         val memberIdeId = ideId(defType, defName, memberIdeCat to memberName)
+        val docMemberComment = memberComment?.compile(docFactory)
         val docGetter = docDeclarationGetter.transform { docDec ->
-            val doc = makeDocSymbol(memberDocKind, memberName, null, docDec)
-            Nullable.of(doc)
+            makeDocSymbol(memberDocKind, memberName, null, docMemberComment, docDec)
         }
         return ideDef(pos, memberIdeKind, memberIdeId, docGetter)
     }
@@ -173,6 +175,7 @@ class C_CommonDefinitionBase(
         kind: DocSymbolKind,
         memberName: R_Name?,
         mountName: R_MountName?,
+        comment: DocComment?,
         declaration: DocDeclaration,
     ): DocSymbol {
         val fullDefName = if (memberName == null) cDefName else cDefName.toPath().subName(memberName)
@@ -186,18 +189,19 @@ class C_CommonDefinitionBase(
             symbolName = docName,
             mountName = mountNameStr,
             declaration = declaration,
+            comment = comment,
         )
     }
 
     fun docGetter(docDeclarationGetter: C_LateGetter<DocDeclaration>): C_LateGetter<DocSymbol> {
         return docDeclarationGetter.transform { docDec ->
-            makeDocSymbol(defType.docKind, null, mountName, docDec)
+            val comment = docCommentGetter.get()
+            makeDocSymbol(defType.docKind, null, mountName, comment, docDec)
         }
     }
 
     fun ideDef(pos: S_Pos, docGetter: C_LateGetter<DocSymbol>): C_IdeSymbolDef {
-        val docGetter2 = docGetter.transform { Nullable.of(it) }
-        return ideDef(pos, ideKind, ideId, docGetter2)
+        return ideDef(pos, ideKind, ideId, docGetter)
     }
 
     fun userBase(pos: S_Pos): C_UserDefinitionBase {
@@ -225,7 +229,7 @@ class C_CommonDefinitionBase(
             pos: S_Pos,
             ideKind: IdeSymbolKind,
             ideId: IdeSymbolId,
-            docGetter: C_LateGetter<Nullable<DocSymbol>>,
+            docGetter: C_LateGetter<DocSymbol?>,
         ): C_IdeSymbolDef {
             return C_IdeSymbolDef.makeLate(ideKind, pos.idePath(), ideId, docGetter)
         }

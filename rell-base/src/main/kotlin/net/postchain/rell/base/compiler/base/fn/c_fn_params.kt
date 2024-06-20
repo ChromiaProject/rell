@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.fn
 
+import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_FormalParameter
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.C_AttrUtils
@@ -15,10 +16,10 @@ import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_ParameterDefaultValue
 import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.Nullable
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.doc.DocDeclaration
 import net.postchain.rell.base.utils.doc.DocFunctionParam
+import net.postchain.rell.base.utils.doc.DocFunctionParamComments
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.toImmList
@@ -29,9 +30,10 @@ class C_FormalParameter(
     val type: R_Type,
     val ideInfo: C_IdeSymbolInfo,
     val docParam: DocFunctionParam,
+    val comment: S_Comment?,
     private val index: Int,
     private val defaultValue: C_ParameterDefaultValue?,
-    docSymbolGetter: C_LateGetter<Nullable<DocSymbol>>,
+    docSymbolGetter: C_LateGetter<DocSymbol?>,
     private val docDeclarationGetter: C_LateGetter<DocDeclaration>,
 ) {
     val rParam = R_FunctionParam(name.rName, type, docSymbolGetter, name.pos.toDocPos())
@@ -119,11 +121,16 @@ class C_FormalParameters(list: List<C_FormalParameter>) {
     companion object {
         val EMPTY = C_FormalParameters(listOf())
 
-        fun compile(defCtx: C_DefinitionContext, params: List<S_FormalParameter>, gtv: Boolean): C_FormalParameters {
+        fun compile(
+            defCtx: C_DefinitionContext,
+            params: List<S_FormalParameter>,
+            gtv: Boolean,
+            docCommentsGetter: C_LateGetter<DocFunctionParamComments>
+        ): C_FormalParameters {
             val cParams = mutableListOf<C_FormalParameter>()
 
             for ((index, param) in params.withIndex()) {
-                val cParam = param.compile(defCtx, index)
+                val cParam = param.compile(defCtx, index, docCommentsGetter)
                 cParams.add(cParam)
             }
 

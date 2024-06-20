@@ -5,6 +5,7 @@
 package net.postchain.rell.base.compiler.base.def
 
 import net.postchain.rell.base.compiler.ast.S_AttrHeader
+import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
@@ -13,8 +14,10 @@ import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
-import net.postchain.rell.base.utils.Nullable
-import net.postchain.rell.base.utils.doc.*
+import net.postchain.rell.base.utils.doc.DocDeclaration_EntityAttribute
+import net.postchain.rell.base.utils.doc.DocSymbol
+import net.postchain.rell.base.utils.doc.DocSymbolKind
+import net.postchain.rell.base.utils.doc.DocSymbolName
 import net.postchain.rell.base.utils.ide.IdeLocalSymbolLink
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
@@ -22,11 +25,11 @@ import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
 
 class C_AttrHeader(
-        val pos: S_Pos,
-        val name: C_Name,
-        val type: R_Type?,
-        val isExplicitType: Boolean,
-        val ideInfo: C_IdeSymbolInfo,
+    val pos: S_Pos,
+    val name: C_Name,
+    val type: R_Type?,
+    val isExplicitType: Boolean,
+    val ideInfo: C_IdeSymbolInfo,
 ) {
     val rName = name.rName
 }
@@ -39,7 +42,7 @@ class C_GlobalAttrHeaderIdeData(
     private val ideCat: IdeSymbolCategory,
     private val ideKind: IdeSymbolKind,
     private val defIdeInfo: C_IdeSymbolInfo?,
-    private val docGetter: C_LateGetter<Nullable<DocSymbol>> = C_LateGetter.const(Nullable.of()),
+    private val docGetter: C_LateGetter<DocSymbol?> = C_LateGetter.const(null),
 ): C_AttrHeaderIdeData() {
     override fun ideDef(ctx: C_DefinitionContext, pos: S_Pos, attrName: R_Name): C_IdeSymbolDef {
         val ideId = C_CommonDefinitionBase.ideId(ctx.definitionType, ctx.defName, ideCat to attrName)
@@ -50,7 +53,7 @@ class C_GlobalAttrHeaderIdeData(
 
 class C_LocalAttrHeaderIdeData(
     private val ideKind: IdeSymbolKind,
-    private val docGetter: C_LateGetter<Nullable<DocSymbol>>,
+    private val docGetter: C_LateGetter<DocSymbol?>,
 ): C_AttrHeaderIdeData() {
     override fun ideDef(ctx: C_DefinitionContext, pos: S_Pos, attrName: R_Name): C_IdeSymbolDef {
         val ideLink = IdeLocalSymbolLink(pos)
@@ -190,8 +193,8 @@ class C_SysAttribute(
     }
 
     class Maker(
+        private val docFactory: C_DocSymbolFactory,
         private val rEntityDefName: R_DefinitionName,
-        private val docFactory: DocSymbolFactory,
     ) {
         fun make(
             name: String,
@@ -215,6 +218,7 @@ class C_SysAttribute(
                 DocSymbolKind.ENTITY_ATTR,
                 DocSymbolName.global(rEntityDefName.module, "${rEntityDefName.qualifiedName}.$rName"),
                 docDec,
+                comment = null as S_Comment?,
             )
 
             return C_SysAttribute(

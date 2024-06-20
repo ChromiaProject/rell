@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.testutils.tools
 
 import com.google.common.io.Files
+import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.R_ModuleName
@@ -126,7 +127,8 @@ private fun chkRellImport(srcDir: File, module: String, expected: String) {
     val cDir = C_SourceDir.uncachedDiskDir(srcDir)
     writeFile(File(srcDir, "main.rell"), "module; import $module;")
 
-    val actual = RellTestUtils.processApp(cDir, modules = listOf(R_ModuleName.of("main"))) { "OK" }
+    val modSel = C_CompilerModuleSelection(listOf(R_ModuleName.of("main")))
+    val actual = RellTestUtils.processApp(cDir, modSel = modSel) { "OK" }
     checkEquals(actual, expected)
 }
 

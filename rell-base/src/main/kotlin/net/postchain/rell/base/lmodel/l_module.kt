@@ -14,7 +14,7 @@ class L_Module(
     val namespace: L_Namespace,
     val allImports: List<L_Module>,
     override val docSymbol: DocSymbol,
-): DocDefinition {
+): DocDefinition() {
     override val docSourcePos = null
 
     fun getTypeDef(qualifiedName: String): L_TypeDef {
@@ -54,7 +54,5 @@ class L_Module(
         return def?.getAbstractTypeDefOrNull()
     }
 
-    override fun getDocMember(name: String): DocDefinition? {
-        return namespace.getDocMemberOrNull(name)
-    }
+    override fun getDocMembers0() = namespace.docMembers
 }

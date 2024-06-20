@@ -25,7 +25,7 @@ class L_Struct(
     val rStruct: R_Struct,
     private val attributesFuture: FcFuture<Map<String, L_StructAttribute>>,
 ) {
-    val attributesMap: Map<String, L_StructAttribute> get() = attributesFuture.getResult()
+    val docMembers: Map<String, DocDefinition> get() = attributesFuture.getResult()
 }
 
 class L_NamespaceMember_Struct(
@@ -38,8 +38,5 @@ class L_NamespaceMember_Struct(
 
     override fun getAbstractTypeDefOrNull(): L_AbstractTypeDef = L_MTypeDef(struct.rStruct.type.mType)
     override fun getStructOrNull() = struct
-
-    override fun getDocMember(name: String): DocDefinition? {
-        return struct.attributesMap[name]
-    }
+    override fun getDocMembers0() = struct.docMembers
 }

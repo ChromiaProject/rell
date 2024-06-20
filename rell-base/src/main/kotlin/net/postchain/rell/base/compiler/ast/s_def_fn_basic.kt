@@ -15,12 +15,11 @@ import net.postchain.rell.base.compiler.base.modifier.C_ModifierValues
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMemberBase
-import net.postchain.rell.base.compiler.base.utils.C_Errors
-import net.postchain.rell.base.compiler.base.utils.C_StringQualifiedName
-import net.postchain.rell.base.compiler.base.utils.toCodeMsg
+import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_FunctionExtension
+import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.doc.DocDeclaration_Function
 import net.postchain.rell.base.utils.doc.DocFunctionHeader
 import net.postchain.rell.base.utils.doc.DocModifiers
@@ -32,13 +31,12 @@ import net.postchain.rell.base.utils.toImmList
 import kotlin.math.min
 
 class S_FunctionDefinition(
-        pos: S_Pos,
-        modifiers: S_Modifiers,
-        private val qualifiedName: S_QualifiedName?,
-        val params: List<S_FormalParameter>,
-        val retType: S_Type?,
-        val body: S_FunctionBody?
-): S_BasicDefinition(pos, modifiers) {
+    base: S_DefinitionBase,
+    private val qualifiedName: S_QualifiedName?,
+    val params: List<S_FormalParameter>,
+    val retType: S_Type?,
+    val body: S_FunctionBody?,
+): S_BasicDefinition(base) {
     val fnPos = qualifiedName?.pos ?: kwPos
     val typePos = retType?.pos ?: fnPos
 
@@ -97,7 +95,7 @@ private class C_FunctionCompilerBase(
 
     val executor = mntCtx.executor
 
-    fun definitionBase(ideKind: IdeSymbolKind): C_UserDefinitionBase {
+    fun definitionBase(ideKind: IdeSymbolKind, docCommentGetter: C_LateGetter<DocComment?>): C_UserDefinitionBase {
         val cName = if (qualifiedName != null) {
             C_StringQualifiedName.of(qualifiedName)
         } else {
@@ -106,11 +104,17 @@ private class C_FunctionCompilerBase(
             C_StringQualifiedName.of(simpleName)
         }
 
-        val comBase = mntCtx.defBaseCommon(C_DefinitionType.FUNCTION, ideKind, cName, null, null)
+        val comBase = mntCtx.defBaseCommon(
+            C_DefinitionType.FUNCTION,
+            ideKind,
+            cName,
+            mountName = null,
+            extChain = null,
+            docCommentGetter = docCommentGetter,
+        )
+
         return comBase.userBase(sFn.fnPos)
     }
-
-    fun fullName(simpleName: R_Name): R_FullName = mntCtx.nsCtx.getFullName(simpleName)
 }
 
 private abstract class C_FunctionCompiler(
@@ -121,7 +125,9 @@ private abstract class C_FunctionCompiler(
     protected val fnPos = sFn.fnPos
     protected val typePos = sFn.typePos
 
-    val cDefBase = base.definitionBase(ideKind)
+    private val docCommentLate = C_LateInit(C_CompilerPass.EXPRESSIONS, null as DocComment?)
+
+    val cDefBase = base.definitionBase(ideKind, docCommentLate.getter)
 
     abstract fun compile(defCtx: C_DefinitionContext)
 
@@ -144,12 +150,13 @@ private abstract class C_FunctionCompiler(
     }
 
     protected fun compileHeader0(defCtx: C_DefinitionContext): C_UserFunctionHeader {
-        return C_FunctionUtils.compileFunctionHeader(defCtx, fnPos, cDefBase.defName, sFn.params, sFn.retType, sFn.body)
+        return C_FunctionUtils.compileFunctionHeader(defCtx, fnPos, sFn.params, sFn.retType, sFn.body, sFn.comment)
     }
 
     protected fun compileHeaderCommon(defCtx: C_DefinitionContext, cFn: C_UserGlobalFunction): C_UserFunctionHeader {
         val header = compileHeader0(defCtx)
         cFn.setHeader(header)
+        docCommentLate.set(header.docComment, allowEarly = true)
         return header
     }
 
@@ -161,7 +168,7 @@ private abstract class C_FunctionCompiler(
     ) {
         if (simpleName != null) {
             base.executor.onPass(C_CompilerPass.DOCS) {
-                val docType = L_TypeUtils.docType(header.returnType().mType)
+                val docType = L_TypeUtils.docType(header.deepHeader.returnType().mType)
                 val docHeader = DocFunctionHeader(immListOf(), docType, header.params.docParams)
                 val doc = DocDeclaration_Function(
                     base.docModifiers,
@@ -182,7 +189,7 @@ private abstract class C_FunctionCompiler(
         } else {
             // Actually needed only for body-less extendable functions - rell.get_app_structure fails for them
             // without this special handling (entire "else" part was added).
-            val type = header.returnType()
+            val type = header.deepHeader.returnType()
             val params = header.params.list.map { it.rParam }.toImmList()
             val rHeader = R_FunctionHeader(type, params)
             rFnBase.setHeader(rHeader)
@@ -359,8 +366,8 @@ private class C_FunctionCompiler_Override(
                 subCode: String,
                 subDefName: R_DefinitionName
         ) {
-            val baseType = baseHeader.returnType()
-            val subType = subHeader.returnType()
+            val baseType = baseHeader.deepHeader.returnType()
+            val subType = subHeader.deepHeader.returnType()
             val nameCode = subDefName.appLevelName
             C_Types.matchOpt(msgCtx, baseType, subType, subTypePos) {
                 "fn:$subCode:ret_type:$nameCode" toCodeMsg "Return type mismatch"

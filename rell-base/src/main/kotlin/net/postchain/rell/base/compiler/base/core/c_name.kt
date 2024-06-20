@@ -122,7 +122,7 @@ sealed class C_IdeSymbolInfo {
             kind: IdeSymbolKind,
             defId: IdeSymbolId? = null,
             link: IdeSymbolLink? = null,
-            docGetter: C_LateGetter<Nullable<DocSymbol>>,
+            docGetter: C_LateGetter<DocSymbol?>,
         ): C_IdeSymbolInfo {
             return C_IdeSymbolInfo_Late(kind, defId, link, docGetter)
         }
@@ -152,19 +152,18 @@ private class C_IdeSymbolInfo_Late(
     override val kind: IdeSymbolKind,
     override val defId: IdeSymbolId?,
     override val link: IdeSymbolLink?,
-    private val docGetter: C_LateGetter<Nullable<DocSymbol>>,
+    private val docGetter: C_LateGetter<DocSymbol?>,
 ): C_IdeSymbolInfo() {
     private val ideInfoLazy: IdeSymbolInfo by lazy {
-        val doc = docGetter.get().value
+        val doc = docGetter.get()
         IdeSymbolInfo.make(kind = kind, defId = defId, link = link, doc = doc)
     }
 
     override fun getIdeInfo(): IdeSymbolInfo = ideInfoLazy
 
     override fun transformDocSymbol(f: (DocSymbol) -> DocSymbol): C_IdeSymbolInfo {
-        val resDocGetter = docGetter.transform { nDoc ->
-            val resDoc = f(nDoc.value ?: DocSymbol.NONE)
-            Nullable.of(resDoc)
+        val resDocGetter = docGetter.transform { doc ->
+            f(doc ?: DocSymbol.NONE)
         }
         return C_IdeSymbolInfo_Late(kind, defId, link, resDocGetter)
     }
@@ -209,7 +208,7 @@ class C_IdeSymbolDef(
             kind: IdeSymbolKind,
             file: IdeFilePath,
             id: IdeSymbolId,
-            docGetter: C_LateGetter<Nullable<DocSymbol>>,
+            docGetter: C_LateGetter<DocSymbol?>,
         ): C_IdeSymbolDef {
             val globalId = IdeSymbolGlobalId(file, id)
             val link = IdeGlobalSymbolLink(globalId)
@@ -220,7 +219,7 @@ class C_IdeSymbolDef(
             kind: IdeSymbolKind,
             defId: IdeSymbolId? = null,
             link: IdeSymbolLink? = null,
-            docGetter: C_LateGetter<Nullable<DocSymbol>>,
+            docGetter: C_LateGetter<DocSymbol?>,
         ): C_IdeSymbolDef {
             val defInfo = C_IdeSymbolInfo.late(kind, defId = defId, docGetter = docGetter)
             val refInfo = C_IdeSymbolInfo.late(kind, link = link, docGetter = docGetter)

@@ -8,7 +8,6 @@ import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_TypeParam
-import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSymbol
 
 class L_TypeExtension(
@@ -46,8 +45,5 @@ class L_NamespaceMember_TypeExtension(
     }
 
     override fun getTypeExtensionOrNull() = typeExt
-
-    override fun getDocMember(name: String): DocDefinition? {
-        return typeExt.members.getDocDefinition(name)
-    }
+    override fun getDocMembers0() = typeExt.members.docMembers
 }

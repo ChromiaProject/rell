@@ -12,15 +12,15 @@ import net.postchain.rell.base.compiler.base.modifier.*
 import net.postchain.rell.base.compiler.parser.S_Keywords
 import net.postchain.rell.base.utils.doc.DocModifier
 import net.postchain.rell.base.utils.doc.DocModifiers
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.immListOf
 
 sealed class S_Modifier(val pos: S_Pos) {
-    abstract fun compile(ctx: C_ModifierContext, modValues: C_FixedModifierValues): DocModifier
+    abstract fun compile(ctx: C_ModifierContext, modValues: C_FixedModifierValues): DocModifier?
     open fun ideIsTestFile(): Boolean = false
 }
 
 class S_KeywordModifier(private val kw: C_Name, private val kind: S_KeywordModifierKind): S_Modifier(kw.pos) {
-    override fun compile(ctx: C_ModifierContext, modValues: C_FixedModifierValues): DocModifier {
+    override fun compile(ctx: C_ModifierContext, modValues: C_FixedModifierValues): DocModifier? {
         return modValues.compileKeyword(ctx, kw, kind)
     }
 }
@@ -52,7 +52,7 @@ class S_AnnotationArg_Name(val name: S_QualifiedName): S_AnnotationArg() {
 }
 
 class S_Annotation(val name: S_Name, val args: List<S_AnnotationArg>): S_Modifier(name.pos) {
-    override fun compile(ctx: C_ModifierContext, modValues: C_FixedModifierValues): DocModifier {
+    override fun compile(ctx: C_ModifierContext, modValues: C_FixedModifierValues): DocModifier? {
         val cArgs = args.map { it.compile(ctx) }
         return modValues.compileAnnotation(ctx, name, cArgs)
     }
@@ -63,19 +63,19 @@ class S_Annotation(val name: S_Name, val args: List<S_AnnotationArg>): S_Modifie
     }
 }
 
-class S_Modifiers(val modifiers: List<S_Modifier>) {
+class S_Modifiers(val modifiers: List<S_Modifier> = immListOf()) {
     val pos = modifiers.firstOrNull()?.pos
 
     fun compile(modifierCtx: C_ModifierContext, modValues: C_ModifierValues): DocModifiers {
         val fixModValues = modValues.fix()
-        val docMods = mutableListOf<DocModifier>()
 
-        for (modifier in modifiers) {
-            val docMod = modifier.compile(modifierCtx, fixModValues)
-            docMods.add(docMod)
+        // Getting DocModifier-s is not the main purpose of this code, just side product of compilation.
+        // DocModifier-s will be null if doc symbols aren't enabled.
+        val docMods = modifiers.mapNotNull {
+            it.compile(modifierCtx, fixModValues)
         }
 
-        return DocModifiers(docMods.toImmList())
+        return DocModifiers.make(docMods)
     }
 
     fun compile(ctx: C_MountContext, modValues: C_ModifierValues): DocModifiers {

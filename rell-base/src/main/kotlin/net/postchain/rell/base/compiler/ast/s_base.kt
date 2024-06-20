@@ -22,7 +22,11 @@ import net.postchain.rell.base.utils.ide.IdeModuleInfo
 import net.postchain.rell.base.utils.ide.IdeOutlineTreeBuilder
 import net.postchain.rell.base.utils.toImmSet
 
-class S_ModuleHeader(val modifiers: S_Modifiers, val pos: S_Pos) {
+class S_ModuleHeader(
+    private val modifiers: S_Modifiers,
+    val pos: S_Pos,
+    private val comment: S_Comment?,
+) {
     fun compile(ctx: C_ModifierContext): C_SourceModuleHeader {
         val mods = C_ModifierValues(C_ModifierTargetType.MODULE, null)
         val modAbstract = mods.field(C_ModifierFields.ABSTRACT)
@@ -39,7 +43,7 @@ class S_ModuleHeader(val modifiers: S_Modifiers, val pos: S_Pos) {
         val external = modExternal.hasValue()
         val test = modTest.hasValue()
 
-        return C_SourceModuleHeader(pos, mount, abstractPos, external, test, docModifiers)
+        return C_SourceModuleHeader(pos, mount, abstractPos, external, test, comment, docModifiers)
     }
 
     fun ideIsTestFile(): Boolean {
@@ -47,7 +51,10 @@ class S_ModuleHeader(val modifiers: S_Modifiers, val pos: S_Pos) {
     }
 }
 
-class S_RellFile(val header: S_ModuleHeader?, val definitions: List<S_Definition>): S_Node() {
+class S_RellFile(
+    val header: S_ModuleHeader?,
+    private val definitions: List<S_Definition>,
+): S_Node() {
     val startPos = header?.pos ?: definitions.firstOrNull()?.startPos
 
     fun compileHeader(modifierCtx: C_ModifierContext): C_SourceModuleHeader? {

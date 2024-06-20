@@ -120,7 +120,7 @@ sealed class C_NamespaceMember(base: C_NamespaceMemberBase) {
         return C_IdeCompletionsUtils.makeIdeCompletion(defName, doc)
     }
 
-    private inner class DefaultDocDefinition: DocDefinition {
+    private inner class DefaultDocDefinition: DocDefinition() {
         override val docSymbol get() = ideInfo.getIdeInfo().doc ?: DocSymbol.NONE
         override val docSourcePos get() = null
     }
@@ -162,10 +162,10 @@ class C_NamespaceMember_Alias(
         }
     }
 
-    private inner class DocDefinitionImpl: DocDefinition {
+    private inner class DocDefinitionImpl: DocDefinition() {
         override val docSymbol get() = ideInfo.getIdeInfo().doc ?: DocSymbol.NONE
         override val docSourcePos get() = docSourcePos0
-        override fun getDocMember(name: String) = finalTarget.docDefinition.getDocMember(name)
+        override fun getDocMembers0() = finalTarget.docDefinition.docMembers
     }
 }
 
@@ -206,14 +206,10 @@ class C_NamespaceMember_Namespace(
 
     override fun getDocDefinition0(): DocDefinition = DocDefinitionImpl()
 
-    private inner class DocDefinitionImpl: DocDefinition {
+    private inner class DocDefinitionImpl: DocDefinition() {
         override val docSymbol get() = ideInfo.getIdeInfo().doc ?: DocSymbol.NONE
         override val docSourcePos get() = null
-
-        override fun getDocMember(name: String): DocDefinition? {
-            val elem = ns.getElement(R_Name.of(name), null)
-            return elem?.member?.docDefinition
-        }
+        override fun getDocMembers0() = ns.getDocMembers()
     }
 
     private class C_NamespaceExpr(
@@ -317,10 +313,10 @@ private class C_NamespaceMember_UserEntity(
     // (the name in the DocSymbol must be the alias name, not the actual entity name).
     override fun getDocDefinition0(): DocDefinition = DocDefinitionImpl()
 
-    private inner class DocDefinitionImpl: DocDefinition {
+    private inner class DocDefinitionImpl: DocDefinition() {
         override val docSymbol get() = ideInfo.getIdeInfo().doc ?: DocSymbol.NONE
         override val docSourcePos get() = entity.docSourcePos
-        override fun getDocMember(name: String) = entity.getDocMember(name)
+        override fun getDocMembers0() = entity.docMembers
     }
 }
 

@@ -72,7 +72,7 @@ class CLibVersionTest: BaseCLibTest() {
         chkVer("function f() = tada.f();", "ALIAS:[test:tada]")
     }
 
-    @Test fun tsetNsType() {
+    @Test fun testNsType() {
         modTst.extraModule {
             type("data", since = "0.10.5") {
                 modTst.setRTypeFactory(this)

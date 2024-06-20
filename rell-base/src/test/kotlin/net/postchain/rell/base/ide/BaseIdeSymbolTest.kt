@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.ide
 
-import net.postchain.rell.base.compiler.ast.S_BasicPos
+import com.github.h0tk3y.betterParse.lexer.Token
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_CompilationResult
 import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
@@ -13,6 +13,8 @@ import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.base.compiler.parser.RellTokenMatch
+import net.postchain.rell.base.compiler.parser.RellTokenSequence
 import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.compiler.parser.S_Grammar
 import net.postchain.rell.base.lib.type.Rt_TextValue
@@ -22,15 +24,15 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestContext
 import net.postchain.rell.base.testutils.RellTestUtils
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.*
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
-import net.postchain.rell.base.utils.toPair
 import kotlin.test.assertEquals
 
 abstract class BaseIdeSymbolTest: BaseRellTest(false) {
+    protected var docDeclarationsEnabled = true
+    protected var docCommentsEnabled = false
+
     protected fun replaceSymInfo(
         info: String,
         name: String? = null,
@@ -91,11 +93,7 @@ abstract class BaseIdeSymbolTest: BaseRellTest(false) {
         val sourceDir = tst.createSourceDir(code)
         val cRes = compileCode(sourceDir, file, ide = ide)
 
-        val actualErr = if (cRes.errors.isEmpty()) "n/a" else RellTestUtils.msgsToString(cRes.errors)
-        assertEquals(expectedErr ?: "n/a", actualErr)
-
-        val actualWarn = if (cRes.warnings.isEmpty()) "n/a" else RellTestUtils.msgsToString(cRes.warnings)
-        assertEquals(expectedWarn ?: "n/a", actualWarn)
+        chkMessages(cRes, expectedErr, expectedWarn)
 
         val testEntries = getTestEntries(sourceDir, file, cRes, expected)
         assertSyms(testEntries)
@@ -129,7 +127,11 @@ abstract class BaseIdeSymbolTest: BaseRellTest(false) {
         cRes: C_CompilationResult,
         expectedStrings: List<String>,
     ): List<TestEntry> {
-        val expectedPairs = expectedStrings.map { it.split("=", limit = 2).toPair() }
+        val expectedPairs = expectedStrings.map {
+            val parts = it.split("=", limit = 2)
+            checkEquals(parts.size, 2) { it }
+            parts.toPair()
+        }
 
         val symsList = getActualEntries(sourceDir, file, cRes)
 
@@ -171,7 +173,7 @@ abstract class BaseIdeSymbolTest: BaseRellTest(false) {
                 val actExtra = if (doc == null) "-" else when (extra.first) {
                     "?name" -> doc.symbolName.strCode()
                     "?head" -> BaseLTest.getDocHeaderStr(doc)
-                    "?doc" -> docToStr(doc)
+                    "?doc" -> docToStr(doc, declaration = docDeclarationsEnabled, comment = docCommentsEnabled)
                     else -> throw IllegalArgumentException(extra.first)
                 }
 
@@ -232,6 +234,14 @@ abstract class BaseIdeSymbolTest: BaseRellTest(false) {
                 .toImmMap()
         }
 
+        fun chkMessages(cRes: C_CompilationResult, err: String? = null, warn: String? = null) {
+            val actualErr = if (cRes.errors.isEmpty()) "n/a" else RellTestUtils.msgsToString(cRes.errors)
+            assertEquals(err ?: "n/a", actualErr)
+
+            val actualWarn = if (cRes.warnings.isEmpty()) "n/a" else RellTestUtils.msgsToString(cRes.warnings)
+            assertEquals(warn ?: "n/a", actualWarn)
+        }
+
         private fun getActualEntries(
             sourceDir: C_SourceDir,
             file: C_SourcePath,
@@ -264,16 +274,25 @@ abstract class BaseIdeSymbolTest: BaseRellTest(false) {
             val syms = mutableMapOf<S_Pos, String>()
 
             val tokenizer = S_Grammar.tokenizer
-            val ts = tokenizer.tokenize(code)
+            val ts = tokenizer.tokenize(parserPath, code)
 
-            for (t in ts) {
-                if (t.type.pattern == RellTokenizer.IDENTIFIER || t.type.pattern == "$") {
-                    val pos: S_Pos = S_BasicPos(parserPath, t.position, t.row, t.column)
-                    syms[pos] = t.text
-                }
+            for ((t, m) in ts.toList()) {
+                if (t.pattern == RellTokenizer.IDENTIFIER || t.pattern == "$") syms[m.pos] = m.text
             }
 
             return syms.toImmMap()
+        }
+
+        private fun RellTokenSequence.toList(): List<Pair<Token, RellTokenMatch>> {
+            var seq = this
+            val res = mutableListOf<Pair<Token, RellTokenMatch>>()
+            while (true) {
+                val next = seq.nextOrNull()
+                next ?: break
+                res.add(next.match.type to next.rellMatch)
+                seq = next.tail
+            }
+            return res.toList()
         }
 
         private fun ideInfoToStr(ideInfo: IdeSymbolInfo, syms: Map<S_Pos, String>): String {
@@ -299,7 +318,7 @@ abstract class BaseIdeSymbolTest: BaseRellTest(false) {
             }
         }
 
-        private fun docToStr(doc: DocSymbol): String {
+        private fun docToStr(doc: DocSymbol, declaration: Boolean, comment: Boolean): String {
             val parts = mutableListOf<String>()
 
             parts.add(doc.kind.name)
@@ -310,7 +329,13 @@ abstract class BaseIdeSymbolTest: BaseRellTest(false) {
                 parts.add(mountName)
             }
 
-            parts.add(doc.declaration.code.strCode())
+            if (declaration) {
+                parts.add(doc.declaration.code.strCode())
+            }
+
+            if (comment) {
+                parts.add(doc.comment?.strCode() ?: "-")
+            }
 
             return parts.joinToString("|")
         }

@@ -26,7 +26,11 @@ import kotlin.test.assertEquals
 
 fun String.unwrap(sep: String = ""): String = this.trim().replace(Regex("\\n\\s*"), sep)
 
-class T_App(val rApp: R_App, val messages: List<C_Message>)
+class T_App(
+    val rApp: R_App,
+    val messages: List<C_Message>,
+    val sourceDir: C_SourceDir,
+)
 
 abstract class RellTestProjExt: ProjExt() {
     abstract fun getSqlInitProjExt(): SqlInitProjExt

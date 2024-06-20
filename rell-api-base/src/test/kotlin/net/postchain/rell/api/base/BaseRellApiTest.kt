@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.api.base
@@ -38,7 +38,7 @@ abstract class BaseRellApiTest {
     ): RellApiCompilationResult {
         val apiRes = RellApiBaseInternal.compileApp0(config, options, sourceDir, appModules, testModules)
         val modSel = RellApiBaseInternal.makeCompilerModuleSelection(config, appModules, testModules)
-        TestSnippetsRecorder.record(sourceDir, modSel, options, apiRes.cRes)
+        TestSnippetsRecorder.recordParsing(sourceDir, modSel, options, apiRes.cRes)
         return apiRes
     }
 

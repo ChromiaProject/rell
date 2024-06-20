@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.testutils.tools
@@ -69,7 +69,8 @@ private fun compileFile(sourceDir: C_SourceDir, path: C_SourcePath): IdeCompilat
         .build()
 
     val ideRes = IdeApi.compile(sourceDir, listOf(modInfo.name), options)
-    checkEquals(ideRes.messages, listOf()) { path }
+    val errors = ideRes.messages.filter { !it.type.ignorable }
+    checkEquals(errors, listOf()) { path }
     return ideRes
 }
 

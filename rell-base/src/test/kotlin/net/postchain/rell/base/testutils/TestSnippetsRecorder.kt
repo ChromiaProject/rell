@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.testutils
@@ -18,31 +18,34 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
 object TestSnippetsRecorder {
-    private val enabled = System.getProperty("test.snippets.recorder.enabled", "false").toBoolean()
     private const val RELL_BASE_PACKAGE_NAME = "net.postchain.rell"
+
+    private val ENABLED = System.getProperty("test.snippets.recorder.enabled", "false").toBoolean()
     private val ZIP_FILE: Boolean = System.getProperty("test.snippets.recorder.zipfile", "true").toBoolean()
     private val SOURCES_TARGET: String =
         System.getProperty("test.snippets.recorder.target", System.getProperty("user.home"))
-    private val SOURCES_FILE: String = (SOURCES_TARGET + "/testsources-${RellVersions.VERSION_STR}.zip")
+
+    private val SOURCES_FILE: String = "${SOURCES_TARGET}/testsources-${RellVersions.VERSION_STR}.zip"
 
     private val sync = Any()
     private val snippets = mutableMapOf<String, MutableSet<IdeCodeSnippet>>()
     private var shutdownHookInstalled = false
 
-    fun record(
+    fun recordParsing(
         sourceDir: C_SourceDir,
         modules: C_CompilerModuleSelection,
         options: C_CompilerOptions,
-        res: C_CompilationResult
+        res: C_CompilationResult,
     ) {
-        if (!enabled) return
+        if (!ENABLED) return
 
         val files = sourceDirToMap(sourceDir)
         val messages = res.messages.map { IdeSnippetMessage(it.pos.str(), it.type, it.code, it.text) }
         val parsing = makeParsing(files)
+        val comments = makeComments(res)
 
         val snippetFilePath = populateSnippetFilePath();
-        val snippet = IdeCodeSnippet(files, modules, options, messages, parsing)
+        val snippet = IdeCodeSnippet(files, modules, options, messages, parsing, comments)
         addSnippet(snippetFilePath, snippet)
     }
 
@@ -93,6 +96,10 @@ object TestSnippetsRecorder {
         }
 
         return res.toImmMap()
+    }
+
+    private fun makeComments(cRes: C_CompilationResult): Map<String, String> {
+        return cRes.app?.let { C_DocUtils.getAllComments(it) } ?: mapOf()
     }
 
     private fun addSnippet(snippetFilePath: String, snippet: IdeCodeSnippet) {

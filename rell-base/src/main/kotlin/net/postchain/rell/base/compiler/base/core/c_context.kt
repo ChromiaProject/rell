@@ -22,7 +22,7 @@ import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.*
-import net.postchain.rell.base.utils.doc.DocSymbolFactory
+import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
@@ -36,8 +36,6 @@ class C_GlobalContext(
     val compilerOptions: C_CompilerOptions,
     val sourceDir: C_SourceDir,
 ) {
-    val docFactory: DocSymbolFactory = C_DocUtils.getDocFactory(compilerOptions)
-
     companion object {
         private val appUidGen = C_UidGen { id, _ -> R_AppUid(id) }
         fun nextAppUid(): R_AppUid = synchronized(appUidGen) { appUidGen.next("") }
@@ -339,10 +337,19 @@ class C_MountContext(
         qualifiedName: C_StringQualifiedName,
         mountName: R_MountName?,
         extChain: C_ExternalChain?,
+        docCommentGetter: C_LateGetter<DocComment?>,
     ): C_CommonDefinitionBase {
         val moduleKey = modCtx.rModuleKey.copy(externalChain = extChain?.name)
         val fullName = C_StringQualifiedName.of(stringNamespacePath + qualifiedName.parts)
-        return C_Utils.createDefBase(defType, ideKind, moduleKey, fullName, mountName, globalCtx.docFactory)
+        return C_Utils.createDefBase(
+            defType,
+            ideKind,
+            moduleKey,
+            fullName,
+            mountName,
+            symCtx.docSymbolFactory,
+            docCommentGetter,
+        )
     }
 
     fun defBase(
@@ -351,9 +358,10 @@ class C_MountContext(
         ideKind: IdeSymbolKind,
         mountName: R_MountName?,
         extChain: C_ExternalChain? = null,
+        docCommentGetter: C_LateGetter<DocComment?>,
     ): C_UserDefinitionBase {
         val qualifiedName = C_StringQualifiedName.of(simpleName.str)
-        val base = defBaseCommon(defType, ideKind, qualifiedName, mountName, extChain)
+        val base = defBaseCommon(defType, ideKind, qualifiedName, mountName, extChain, docCommentGetter)
         return base.userBase(simpleName.pos)
     }
 
@@ -363,8 +371,9 @@ class C_MountContext(
         ideKind: IdeSymbolKind,
         mountName: R_MountName?,
         extChain: C_ExternalChain? = null,
+        docCommentGetter: C_LateGetter<DocComment?>,
     ): C_UserDefinitionBase {
-        val defBase = defBase(nameHand.name, defType, ideKind, mountName, extChain)
+        val defBase = defBase(nameHand.name, defType, ideKind, mountName, extChain, docCommentGetter)
         nameHand.setIdeInfo(defBase.ideDefInfo)
         return defBase
     }
@@ -537,10 +546,10 @@ class C_FunctionContext(
 class C_FunctionBodyContext(
     val defCtx: C_DefinitionContext,
     val namePos: S_Pos,
-    val defName: R_DefinitionName,
     val explicitRetType: R_Type?,
-    val forParams: C_FormalParameters
+    val formalParams: C_FormalParameters
 ) {
     val appCtx = defCtx.appCtx
     val executor = defCtx.executor
+    val defName = defCtx.defName
 }

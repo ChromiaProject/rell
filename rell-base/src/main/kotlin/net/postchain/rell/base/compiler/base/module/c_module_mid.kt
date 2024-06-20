@@ -14,8 +14,11 @@ import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMemberBase
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.doc.*
+import net.postchain.rell.base.utils.queueOf
+import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.toImmMap
 
 class C_MidModuleContext(
     val msgCtx: C_MessageContext,
@@ -129,6 +132,7 @@ class C_MidModuleMember_Import(
 class C_MidModuleMember_Namespace(
     private val modifiers: S_Modifiers,
     private val qualifiedName: List<NamePart>,
+    private val comment: S_Comment?,
     private val posRange: S_PosRange,
     members: List<C_MidModuleMember>,
 ): C_MidModuleMember() {
@@ -143,9 +147,11 @@ class C_MidModuleMember_Namespace(
         val docModifiers = modifiers.compile(ctx.modifierCtx, mods)
 
         for ((i, namePart) in qualifiedName.withIndex()) {
-            val actualDocModifiers = if (i < qualifiedName.size - 1) DocModifiers.NONE else docModifiers
-            val docSymbol = makeDocSymbol(ctx, namePart, actualDocModifiers)
-            namePart.docSymbolLate.set(Nullable.of(docSymbol), allowEarly = true)
+            val isLast = i == qualifiedName.size - 1
+            val actualDocModifiers = if (isLast) docModifiers else DocModifiers.NONE
+            val actualComment = if (isLast) comment else null
+            val docSymbol = makeDocSymbol(ctx, namePart, actualDocModifiers, actualComment)
+            namePart.docSymbolLate.set(docSymbol, allowEarly = true)
         }
 
         val mount = modMount.value()?.process(true)
@@ -170,20 +176,22 @@ class C_MidModuleMember_Namespace(
         ctx: C_MidMemberContext,
         namePart: NamePart,
         docModifiers: DocModifiers,
+        actualComment: S_Comment?,
     ): DocSymbol {
         val qName = namePart.qualifiedName
         val rFullName = R_FullName(ctx.modCtx.moduleName, qName)
-        return ctx.modCtx.globalCtx.docFactory.makeDocSymbol(
+        return ctx.modifierCtx.symCtx.makeDocSymbol(
             kind = DocSymbolKind.NAMESPACE,
             symbolName = DocSymbolName.global(rFullName),
             declaration = DocDeclaration_Namespace(docModifiers, rFullName.last),
+            comment = actualComment,
         )
     }
 
     class NamePart(
         val ideName: C_IdeName,
         val qualifiedName: R_QualifiedName,
-        val docSymbolLate: C_LateInit<Nullable<DocSymbol>>,
+        val docSymbolLate: C_LateInit<DocSymbol?>,
     )
 }
 

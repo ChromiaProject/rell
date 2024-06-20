@@ -32,7 +32,7 @@ class Ld_MemberHeader(
         return if (since == null && comment == null) null else {
             val c = if (comment == null) DocComment.EMPTY else parseComment(comment)
             if (since == null) c else {
-                val b = DocCommentBuilder()
+                val b = DocCommentBuilder(DocException.ERROR_TRACKER)
                 b.description(c.description)
                 for ((tag, items) in c.tags) {
                     for (item in items) b.tag(tag, item)
@@ -44,42 +44,8 @@ class Ld_MemberHeader(
     }
 
     private fun parseComment(text: String): DocComment {
-        val text2 = fixIndent(text)
+        val text2 = text.trimIndent()
         return DocCommentParser.parse(text2)
-    }
-
-    private fun fixIndent(text: String): String {
-        val lines = text.lines()
-        val subLines = lines.dropWhile { it.isBlank() }
-        if (subLines.isEmpty()) {
-            return ""
-        }
-
-        val line0 = subLines[0]
-        val indentLen = getIndentLen(line0)
-
-        val resLines = mutableListOf<String>()
-        for (line in subLines) {
-            val resLine = removeIndent(line, line0, indentLen)
-            resLines.add(resLine)
-        }
-
-        val resText = resLines.joinToString("\n")
-        return resText
-    }
-
-    private fun getIndentLen(line: String): Int {
-        val n = line.length
-        var i = 0
-        while (i < n && line[i].isWhitespace()) ++i
-        return i
-    }
-
-    private fun removeIndent(line: String, line0: String, indentLen: Int): String {
-        val n = line.length
-        var i = 0
-        while (i < indentLen && i < n && line[i] == line0[i]) ++i
-        return line.substring(i)
     }
 
     companion object {

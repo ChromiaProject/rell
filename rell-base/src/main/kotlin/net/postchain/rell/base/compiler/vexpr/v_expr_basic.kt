@@ -7,7 +7,7 @@ package net.postchain.rell.base.compiler.vexpr
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_TypeAdapter
 import net.postchain.rell.base.compiler.base.core.C_VarUid
-import net.postchain.rell.base.compiler.base.def.C_GlobalConstantFunctionHeader
+import net.postchain.rell.base.compiler.base.def.C_GlobalConstantHeader
 import net.postchain.rell.base.compiler.base.expr.C_DbAtWhatValue
 import net.postchain.rell.base.compiler.base.expr.C_DbAtWhatValue_Complex
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
@@ -200,7 +200,7 @@ class V_GlobalConstantExpr(
         private val resType: R_Type,
         private val varId: C_VarUid,
         private val constId: R_GlobalConstantId,
-        private val header: C_GlobalConstantFunctionHeader
+        private val header: C_GlobalConstantHeader
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(resType)
 

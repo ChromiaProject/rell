@@ -4,17 +4,13 @@
 
 package net.postchain.rell.base.compiler.base.module
 
-import net.postchain.rell.base.compiler.base.core.C_CompilerExecutor
-import net.postchain.rell.base.compiler.base.core.C_CompilerPass
-import net.postchain.rell.base.compiler.base.core.C_MessageContext
-import net.postchain.rell.base.compiler.base.core.C_SymbolContextProvider
+import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_MountName
-import net.postchain.rell.base.utils.Nullable
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.futures.FcFuture
 import net.postchain.rell.base.utils.futures.FcFutures
@@ -25,7 +21,7 @@ import net.postchain.rell.base.utils.toImmMap
 
 class C_ModuleInfo(
     val idePath: IdeFilePath?,
-    val docSymbolGetter: C_LateGetter<Nullable<DocSymbol>>,
+    val docSymbolGetter: C_LateGetter<DocSymbol?>,
 )
 
 sealed class C_ImportModuleLoader {
@@ -222,7 +218,7 @@ class C_ModuleLoader(
 
                 val modInfo = when {
                     job != null -> C_ModuleInfo(job.idePath, job.docSymbolGetter)
-                    curName in preModuleHeaders -> C_ModuleInfo(null, C_LateGetter.const(Nullable.of()))
+                    curName in preModuleHeaders -> C_ModuleInfo(null, C_LateGetter.const(null))
                     else -> null
                 }
                 if (modInfo != null) {
@@ -241,7 +237,7 @@ class C_ModuleLoader(
         val moduleName: R_ModuleName,
         source: C_ModuleSource,
     ) {
-        private val docSymbolLate: C_LateInit<Nullable<DocSymbol>> = C_LateInit(C_CompilerPass.MODULES, Nullable.of())
+        private val docSymbolLate: C_LateInit<DocSymbol?> = C_LateInit(C_CompilerPass.MODULES, null)
 
         val idePath = source.idePath()
         val docSymbolGetter = docSymbolLate.getter
@@ -293,7 +289,7 @@ class C_ModuleLoader(
                 isDirectory = source.isDirectory(),
                 isTestDependency = loadingTestDependencies,
                 docPos = source.docPos(),
-                docFactory = readerCtx.msgCtx.globalCtx.docFactory,
+                docSymbolFactory = readerCtx.appCtx.symCtxProvider.getDocSymbolFactory(),
                 docSymbolLate = docSymbolLate,
             )
         }
@@ -309,12 +305,12 @@ private class C_LoaderModule(
     private val isDirectory: Boolean,
     private val isTestDependency: Boolean,
     private val docPos: DocSourcePos,
-    private val docFactory: DocSymbolFactory,
-    private val docSymbolLate: C_LateInit<Nullable<DocSymbol>>,
+    private val docSymbolFactory: C_DocSymbolFactory,
+    private val docSymbolLate: C_LateInit<DocSymbol?>,
 ) {
     fun toMidModule(isSelected: Boolean): C_MidModule {
-        val docSymbol = makeDocSymbol(moduleName, mountName, header?.docModifiers ?: DocModifiers.NONE)
-        docSymbolLate.set(Nullable.of(docSymbol), allowEarly = true)
+        val docSymbol = makeDocSymbol()
+        docSymbolLate.set(docSymbol, allowEarly = true)
 
         val midHeader = if (header == null) null else {
             C_MidModuleHeader(header.pos, header.abstract, header.external, header.test)
@@ -342,14 +338,15 @@ private class C_LoaderModule(
         )
     }
 
-    private fun makeDocSymbol(moduleName: R_ModuleName, mountName: R_MountName, mods: DocModifiers): DocSymbol {
+    private fun makeDocSymbol(): DocSymbol {
         val docMountName = if (mountName.isEmpty()) null else mountName.str()
-        val docDec = DocDeclaration_Module(mods)
-        return docFactory.makeDocSymbol(
+        val docDec = DocDeclaration_Module(header?.docModifiers ?: DocModifiers.NONE)
+        return docSymbolFactory.makeDocSymbol(
             DocSymbolKind.MODULE,
             DocSymbolName.module(moduleName),
             mountName = docMountName,
             declaration = docDec,
+            comment = header?.comment,
         )
     }
 }

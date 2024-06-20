@@ -16,6 +16,7 @@ import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.doc.DocDefinition
 
 class C_Deprecated(
     private val useInstead: String?,
@@ -152,6 +153,7 @@ class C_NamespaceEntry(
 sealed class C_Namespace {
     abstract fun getEntries(): Map<R_Name, C_NamespaceEntry>
     abstract fun getEntry(name: R_Name): C_NamespaceEntry?
+    abstract fun getDocMembers(): Map<String, DocDefinition>
 
     fun getElement(
         name: R_Name,
@@ -174,6 +176,13 @@ sealed class C_Namespace {
 private class C_BasicNamespace(entries: Map<R_Name, C_NamespaceEntry>): C_Namespace() {
     private val entries = entries.toImmMap()
 
+    private val docMembersLazy: Map<String, DocDefinition> by lazy {
+        entries.entries.associateNotNullValues {
+            val members = it.value.directMembers.ifEmpty { it.value.importMembers }
+            it.key.str to members.singleOrNull()?.docDefinition
+        }
+    }
+
     override fun getEntries(): Map<R_Name, C_NamespaceEntry> {
         return entries
     }
@@ -181,11 +190,14 @@ private class C_BasicNamespace(entries: Map<R_Name, C_NamespaceEntry>): C_Namesp
     override fun getEntry(name: R_Name): C_NamespaceEntry? {
         return entries[name]
     }
+
+    override fun getDocMembers(): Map<String, DocDefinition> = docMembersLazy
 }
 
 private class C_LateNamespace(private val getter: LateGetter<C_Namespace>): C_Namespace() {
     override fun getEntries() = getter.get().getEntries()
     override fun getEntry(name: R_Name) = getter.get().getEntry(name)
+    override fun getDocMembers() = getter.get().getDocMembers()
 }
 
 class C_NamespaceBuilder {

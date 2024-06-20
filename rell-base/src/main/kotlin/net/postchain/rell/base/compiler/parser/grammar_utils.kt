@@ -6,13 +6,12 @@ package net.postchain.rell.base.compiler.parser
 
 import com.github.h0tk3y.betterParse.lexer.Token
 import com.github.h0tk3y.betterParse.lexer.TokenMatch
-import com.github.h0tk3y.betterParse.parser.ErrorResult
-import com.github.h0tk3y.betterParse.parser.ParseResult
-import com.github.h0tk3y.betterParse.parser.Parsed
-import com.github.h0tk3y.betterParse.parser.Parser
+import com.github.h0tk3y.betterParse.lexer.noneMatched
+import com.github.h0tk3y.betterParse.parser.*
 import net.postchain.rell.base.compiler.ast.*
-import net.postchain.rell.base.compiler.base.utils.C_Parser
 import net.postchain.rell.base.model.expr.R_AtCardinality
+
+class G_Node<out T>(val value: T, val firstToken: RellTokenMatch)
 
 sealed class G_BaseExprTail {
     abstract fun toExpr(base: S_Expr): S_Expr
@@ -82,21 +81,41 @@ class G_BaseExprTail_At(
     }
 }
 
+/**
+ * A little hack to provide context information to tokens: Better Parse passes only `Sequence<TokenMatch>` to parsers,
+ * and our tokens cast it to [RellTokenSequence] and get needed information (which is [RellTokenMatch]).
+ *
+ * This interface must not be used as a sequence - calling `iterator()` will fail.
+ */
+interface RellTokenSequence: Sequence<TokenMatch> {
+    fun isValidToken(token: Token): Boolean
+    fun nextOrNull(): Next?
+
+    /**
+     * The maximum reached position among this sequence and all derived sequences.
+     * Mutable, changes when [nextOrNull] is called.
+     */
+    fun getEndPos(): S_Pos
+
+    class Next(val match: TokenMatch, val rellMatch: RellTokenMatch, val tail: RellTokenSequence)
+}
+
 class RellToken(val name: String, val token: Token): Parser<RellTokenMatch> {
     override fun tryParse(tokens: Sequence<TokenMatch>): ParseResult<RellTokenMatch> {
-        val r = token.tryParse(tokens)
-        if (r is ErrorResult) {
-            return r
+        val rellTokens = tokens as RellTokenSequence
+        val next = rellTokens.nextOrNull()
+        val t = next?.match?.type
+        return when {
+            t == null -> UnexpectedEof(token)
+            t == noneMatched -> NoMatchingToken(next.match)
+            t == token -> Parsed(next.rellMatch, next.tail)
+            t.ignored -> this.tryParse(next.tail)
+            rellTokens.isValidToken(token) -> MismatchedToken(token, next.match)
+            else ->throw IllegalArgumentException("Token $this not in lexer tokens")
         }
-
-        r as Parsed<TokenMatch>
-
-        val t = r.value
-        val file = C_Parser.currentFile()
-        val pos = S_BasicPos(file, t.position, t.row, t.column)
-
-        return Parsed(RellTokenMatch(pos, t.text), r.remainder)
     }
 }
 
-class RellTokenMatch(val pos: S_Pos, val text: String)
+class RellTokenMatch(val pos: S_Pos, val text: String, comment: String?) {
+    val comment = if (comment == null) null else S_Comment(pos, comment)
+}

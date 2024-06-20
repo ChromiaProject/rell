@@ -83,8 +83,9 @@ class CodeDefinitionDocPosTest: BaseCodeDocTest() {
     }
 
     private fun chkPos0(code: String, name: String, exp: String) {
-        val def = getDocDef(code, name)
-        val act = def.docSourcePos?.str() ?: "n/a"
+        val act = processDocDef(code, name) { def ->
+            def.docSourcePos?.str() ?: "n/a"
+        }
         assertEquals(exp, act)
     }
 }

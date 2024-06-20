@@ -23,7 +23,7 @@ class LDocCommentTest: BaseLTest() {
         chkIndent("\n    hello\n    world\n", "hello\nworld")
         chkIndent("\n    line1\n    line2\n    line3\n", "line1\nline2\nline3")
         chkIndent("\n    line1\n      line2\n        line3\n", "line1\n  line2\n    line3")
-        chkIndent("\n    line1\n  line2\nline3\n", "line1\nline2\nline3")
+        chkIndent("\n    line1\n  line2\nline3\n", "line1\n  line2\nline3") // Questionable (line2), but fine.
         chkIndent("\n    line1\n\n      line2\n\n        line3\n", "line1\n\n  line2\n\n    line3")
     }
 
@@ -64,19 +64,19 @@ class LDocCommentTest: BaseLTest() {
     }
 
     @Test fun testTagDuplicate() {
-        chkErr("DOCE:tag:duplicate:since") {
+        chkErr("DOCE:comment:tag:duplicate:since") {
             makeModule("test") {
                 type("data", comment = "hello\n@since 0.10.5\n@since 0.10.5")
             }
         }
-        chkErr("DOCE:tag:duplicate:returns") {
+        chkErr("DOCE:comment:tag:duplicate:returns") {
             makeModule("test") {
                 function("f", result = "any", comment = "hello\n@returns 123\n@returns 456") {
                     body { -> Rt_UnitValue }
                 }
             }
         }
-        chkErr("DOCE:tag:duplicate:param[x]") {
+        chkErr("DOCE:comment:tag:duplicate:param[x]") {
             makeModule("test") {
                 function("f", result = "any", comment = "hello\n@param x 123\n@param x 123") {
                     body { -> Rt_UnitValue }
@@ -95,22 +95,22 @@ class LDocCommentTest: BaseLTest() {
         chkComment("foo", "hello|since:0.10.5") {
             type("foo", comment = "hello\n@since 0.10.5")
         }
-        chkErr("DOCE:tag:duplicate:since") {
+        chkErr("DOCE:comment:tag:duplicate:since") {
             makeModule("test") {
                 type("foo", since = "0.10.5", comment = "hello\n@since 0.10.5")
             }
         }
-        chkErr("DOCE:tag:duplicate:since") {
+        chkErr("DOCE:comment:tag:duplicate:since") {
             makeModule("test") {
                 type("foo", since = "0.10.5", comment = "hello\n@since 0.10.6")
             }
         }
-        chkErr("DOCE:tag:duplicate:since") {
+        chkErr("DOCE:comment:tag:duplicate:since") {
             makeModule("test") {
                 type("foo", comment = "hello\n@since 0.10.5\n@since 0.10.5")
             }
         }
-        chkErr("DOCE:tag:duplicate:since") {
+        chkErr("DOCE:comment:tag:duplicate:since") {
             makeModule("test") {
                 type("foo", comment = "hello\n@since 0.10.5\n@since 0.10.6")
             }
@@ -218,14 +218,14 @@ class LDocCommentTest: BaseLTest() {
                 }
             }
         }
-        chkErr("LDE:comment:param:invalid_name:[test:f]:123") {
+        chkErr("DOCE:comment:param:invalid_name:[test:f]:123") {
             makeModule("test") {
                 function("f", result = "any", comment = "desc\n@param 123") {
                     body { -> Rt_UnitValue }
                 }
             }
         }
-        chkErr("LDE:comment:param:unknown:[test:f]:x") {
+        chkErr("DOCE:comment:param:unknown:[test:f]:x") {
             makeModule("test") {
                 function("f", result = "any", comment = "desc\n@param x") {
                     body { -> Rt_UnitValue }

@@ -15,6 +15,7 @@ import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.repl.*
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
 private const val REPL_NAME = "<REPL>"
@@ -79,7 +80,17 @@ class C_ExtReplCommand(
     private fun createReplContext(mntCtx: C_MountContext, codeState: ReplCodeState): C_ReplCommandContext {
         val stmtVars = discoverStatementVars()
         val qName = C_StringQualifiedName.of(REPL_NAME)
-        val cDefBase = mntCtx.defBaseCommon(C_DefinitionType.REPL, IdeSymbolKind.UNKNOWN, qName, null, null)
+        val docCommentGetter = C_LateGetter.const(null as DocComment?)
+
+        val cDefBase = mntCtx.defBaseCommon(
+            C_DefinitionType.REPL,
+            IdeSymbolKind.UNKNOWN,
+            qName,
+            mountName = null,
+            extChain = null,
+            docCommentGetter,
+        )
+
         val defCtx = cDefBase.defCtx(mntCtx)
         val fnCtx = C_FunctionContext(defCtx, REPL_NAME, null, stmtVars)
         val frameCtx = C_FrameContext.create(fnCtx, codeState.cState.frameProto)

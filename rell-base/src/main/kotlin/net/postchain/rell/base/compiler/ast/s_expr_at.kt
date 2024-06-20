@@ -22,7 +22,6 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.doc.DocDeclaration_AtVariable
-import net.postchain.rell.base.utils.doc.DocSymbolFactory
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
 import net.postchain.rell.base.utils.ide.IdeLocalSymbolLink
@@ -43,7 +42,13 @@ class S_AtExprFrom_Simple(val expr: S_Expr): S_AtExprFrom(expr.startPos) {
     }
 
     override fun compileJoin(ctx: C_ExprContext, fromCtx: C_AtFromContext, alias: C_Name?): C_AtFrom {
-        val itemCtx = C_AtFromItemContext(fromCtx, false, null, true)
+        val itemCtx = C_AtFromItemContext(
+            fromCtx,
+            isJoin = false,
+            outerJoinPos = null,
+            atExprAllowed = true,
+            comment = null,
+        )
         val item = expr.compileFromItem(ctx, itemCtx, alias)
         return compile0(ctx, fromCtx, item)
     }
@@ -56,7 +61,10 @@ class S_AtExprFrom_Simple(val expr: S_Expr): S_AtExprFrom(expr.startPos) {
     }
 }
 
-class S_AtExprFrom_Complex(startPos: S_Pos, val items: List<S_AtExprFromItem>): S_AtExprFrom(startPos) {
+class S_AtExprFrom_Complex(
+    startPos: S_Pos,
+    private val items: List<S_AtExprFromItem>,
+): S_AtExprFrom(startPos) {
     init {
         require(items.isNotEmpty())
     }
@@ -146,6 +154,7 @@ class S_AtExprFromItem(
     private val modifiers: S_Modifiers,
     private val alias: S_Name?,
     private val expr: S_Expr,
+    private val comment: S_Comment?,
 ) {
     fun compile(ctx: C_ExprContext, fromCtx: C_AtFromContext, isDb: Boolean?): C_AtFromItem {
         if (modifiers.pos != null) {
@@ -162,7 +171,8 @@ class S_AtExprFromItem(
             ctx.msgCtx.error(outerPos, "expr:at:from:bad_outer_join", "Invalid outer join expression")
         }
 
-        val itemCtx = C_AtFromItemContext(fromCtx, isJoin, if (isJoin) outerPos else null, isDb != null)
+        val outerJoinPos = if (isJoin) outerPos else null
+        val itemCtx = C_AtFromItemContext(fromCtx, isJoin, outerJoinPos, isDb != null, comment = comment)
 
         val aliasNameHand = alias?.compile(ctx, def = true)
 
@@ -209,6 +219,7 @@ class S_AtExprWhatComplexField(
     val attr: S_Name?,
     val expr: S_Expr,
     val modifiers: S_Modifiers,
+    val comment: S_Comment?,
 )
 
 class S_AtExprWhat_Complex(val startPos: S_Pos, val fields: List<S_AtExprWhatComplexField>): S_AtExprWhat() {
@@ -301,7 +312,7 @@ class S_AtExprWhat_Complex(val startPos: S_Pos, val fields: List<S_AtExprWhatCom
             }
         }
 
-        return WhatField(vExpr, explicitNameHand, effectiveName, flags, cSummarization)
+        return WhatField(vExpr, explicitNameHand, effectiveName, flags, cSummarization, field.comment)
     }
 
     private fun compileFieldName(
@@ -313,7 +324,13 @@ class S_AtExprWhat_Complex(val startPos: S_Pos, val fields: List<S_AtExprWhatCom
     ): R_IdeName? {
         field.effectiveName ?: return null
 
-        val ideDef = S_TupleType.makeFieldIdeDef(ctx.docFactory, lazyTupleIdeId.value, field.effectiveName, resultType)
+        val ideDef = S_TupleType.makeFieldIdeDef(
+            ctx.symCtx,
+            lazyTupleIdeId.value,
+            field.effectiveName,
+            resultType,
+            field.comment,
+        )
         val ideDefId = ideDef.defInfo.defId
 
         if (field.explicitNameHand != null) {
@@ -432,6 +449,7 @@ class S_AtExprWhat_Complex(val startPos: S_Pos, val fields: List<S_AtExprWhatCom
         val effectiveName: C_Name?,
         val flags: V_AtWhatFieldFlags,
         val summarization: C_AtSummarization?,
+        val comment: S_Comment?,
     ) {
         val namePos: S_Pos = explicitNameHand?.pos ?: vExpr.pos
 
@@ -442,6 +460,7 @@ class S_AtExprWhat_Complex(val startPos: S_Pos, val fields: List<S_AtExprWhatCom
                 explicitNameHand = explicitNameHand,
                 flags = flags,
                 summarization = summarization,
+                comment = comment,
             )
         }
     }
@@ -716,14 +735,17 @@ class S_AtExpr(
         }
 
         fun makeDbAtEntity(
+            symCtx: C_SymbolContext,
             entity: R_EntityDefinition,
             alias: C_Name,
             explicitAlias: C_Name?,
             atEntityId: R_AtEntityId,
-            docFactory: DocSymbolFactory,
+            comment: S_Comment?,
         ): C_AtEntity {
-            val ideDef = makeDbAtIdeDef(docFactory, alias.str, alias.pos, entity)
-            val dollarIdeDef = makeDbAtIdeDef(docFactory, C_Constants.AT_PLACEHOLDER, alias.pos, entity)
+            val resComment = if (explicitAlias != null) comment else null
+            val ideDef = makeDbAtIdeDef(symCtx, alias.str, alias.pos, entity, resComment)
+            val dollarIdeDef = makeDbAtIdeDef(symCtx, C_Constants.AT_PLACEHOLDER, alias.pos, entity, resComment)
+
             return C_AtEntity(
                 alias.pos,
                 entity,
@@ -736,32 +758,36 @@ class S_AtExpr(
         }
 
         private fun makeDbAtIdeDef(
-            docFactory: DocSymbolFactory,
+            symCtx: C_SymbolContext,
             name: String,
             pos: S_Pos,
             rEntity: R_EntityDefinition,
+            comment: S_Comment?,
         ): C_IdeSymbolDef {
             val docType = L_TypeUtils.docType(rEntity.type.mType)
-            val docSymbol = docFactory.makeDocSymbol(
+            val docSymbol = symCtx.makeDocSymbol(
                 DocSymbolKind.AT_VAR_DB,
                 DocSymbolName.local(name),
                 DocDeclaration_AtVariable(name, docType),
+                comment = comment,
             )
             return C_IdeSymbolDef.make(IdeSymbolKind.LOC_AT_ALIAS, link = IdeLocalSymbolLink(pos), doc = docSymbol)
         }
 
         fun makeColAtIdeDef(
-            docFactory: DocSymbolFactory,
+            symCtx: C_SymbolContext,
             explicitAlias: R_Name?,
             pos: S_Pos,
             itemType: R_Type,
+            comment: S_Comment?,
         ): C_IdeSymbolDef {
             val docName = explicitAlias?.str ?: C_Constants.AT_PLACEHOLDER
             val docType = L_TypeUtils.docType(itemType.mType)
-            val docSymbol = docFactory.makeDocSymbol(
+            val docSymbol = symCtx.makeDocSymbol(
                 DocSymbolKind.AT_VAR_COL,
                 DocSymbolName.local(docName),
                 DocDeclaration_AtVariable(docName, docType),
+                comment = comment,
             )
             return C_IdeSymbolDef.make(IdeSymbolKind.LOC_AT_ALIAS, link = IdeLocalSymbolLink(pos), doc = docSymbol)
         }

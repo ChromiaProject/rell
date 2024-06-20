@@ -16,7 +16,6 @@ import net.postchain.rell.base.model.stmt.R_IterableAdapter
 import net.postchain.rell.base.model.stmt.R_IterableAdapter_Direct
 import net.postchain.rell.base.mtype.M_TypeUtils
 import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.utils.doc.DocSymbolFactory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.toImmSet
 
@@ -76,7 +75,7 @@ abstract class S_Expr(val startPos: S_Pos) {
         }
 
         val aliasPos = alias?.pos ?: startPos
-        val ideDef = S_AtExpr.makeColAtIdeDef(ctx.docFactory, alias?.rName, aliasPos, rItemType)
+        val ideDef = S_AtExpr.makeColAtIdeDef(ctx.symCtx, alias?.rName, aliasPos, rItemType, itemCtx.comment)
 
         return C_AtFromItem_Iterable(startPos, ideDef, alias, vExpr, rItemType, rAdapter)
     }
@@ -328,14 +327,17 @@ class S_ParenthesesExpr(startPos: S_Pos, val expr: S_Expr): S_Expr(startPos) {
     override fun compileNestedAt(ctx: C_ExprContext, parentAtCtx: C_AtContext) = expr.compileNestedAt(ctx, parentAtCtx)
 }
 
-class S_TupleExpr(startPos: S_Pos, private val fields: List<S_NameOptValue<S_Expr>>): S_Expr(startPos) {
+class S_TupleExpr(
+    startPos: S_Pos,
+    private val fields: List<S_GenericTupleAttr<S_Expr>>,
+): S_Expr(startPos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         // ID needs to be allocaed in advance, before processing sub-expressions (for correct numbering).
         val tupleIdeId = ctx.defCtx.tupleIdeId()
 
         val cFields = fields.map {
             val nameHand = it.name?.compile(ctx, def = true)
-            C_TupleField(nameHand, it.value)
+            C_TupleField(nameHand, it.value, it.comment)
         }
 
         checkNameConflicts(ctx, cFields)
@@ -380,9 +382,9 @@ class S_TupleExpr(startPos: S_Pos, private val fields: List<S_NameOptValue<S_Exp
         }
 
         val rFields = vExprs.mapIndexed { i, vExpr ->
-            val nameHand = fields[i].nameHand
+            val field = fields[i]
             val rType = vExpr.type
-            val fieldName = compileFieldName(tupleIdeId, nameHand, rType, ctx.docFactory)
+            val fieldName = compileFieldName(ctx.symCtx, tupleIdeId, field.nameHand, rType, field.comment)
             R_TupleField(fieldName, rType)
         }
 
@@ -391,18 +393,19 @@ class S_TupleExpr(startPos: S_Pos, private val fields: List<S_NameOptValue<S_Exp
     }
 
     private fun compileFieldName(
+        symCtx: C_SymbolContext,
         tupleIdeId: IdeSymbolId,
         nameHand: C_NameHandle?,
         rType: R_Type,
-        docFactory: DocSymbolFactory,
+        comment: S_Comment?,
     ): R_IdeName? {
         nameHand ?: return null
-        val ideDef = S_TupleType.makeFieldIdeDef(docFactory, tupleIdeId, nameHand.name, rType)
+        val ideDef = S_TupleType.makeFieldIdeDef(symCtx, tupleIdeId, nameHand.name, rType, comment)
         nameHand.setIdeInfo(ideDef.defInfo)
         return R_IdeName(nameHand.rName, ideDef.refInfo)
     }
 
-    private class C_TupleField(val nameHand: C_NameHandle?, val sExpr: S_Expr) {
+    private class C_TupleField(val nameHand: C_NameHandle?, val sExpr: S_Expr, val comment: S_Comment?) {
         val name = nameHand?.name
     }
 }

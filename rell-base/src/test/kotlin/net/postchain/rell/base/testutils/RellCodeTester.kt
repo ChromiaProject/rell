@@ -69,11 +69,11 @@ class RellCodeTester(
     fun createInitGlobalCtx(): Rt_GlobalContext {
         val compilerOptions = compilerOptions()
         return Rt_GlobalContext(
-                compilerOptions,
-                Rt_FailingPrinter,
-                Rt_FailingPrinter,
-                logSqlErrors = false,
-                typeCheck = true,
+            compilerOptions,
+            Rt_FailingPrinter,
+            Rt_FailingPrinter,
+            logSqlErrors = false,
+            typeCheck = true,
         )
     }
 
@@ -161,9 +161,8 @@ class RellCodeTester(
 
     fun chkQueryType(bodyCode: String, expected: String) {
         val queryCode = "query q() $bodyCode"
-        val moduleCode = moduleCode(queryCode)
-        val actual = processApp(moduleCode) { module ->
-            module.queries.getValue(R_MountName.of("q")).type().strCode()
+        val actual = processApp(queryCode) { app ->
+            app.rApp.queries.getValue(R_MountName.of("q")).type().strCode()
         }
         checkResult(expected, actual)
     }
@@ -197,8 +196,7 @@ class RellCodeTester(
 
     private fun callFn(code: String): String {
         init()
-        val moduleCode = moduleCode(code)
-        return processWithExeCtx(moduleCode) { modCtx ->
+        return processWithExeCtx(code) { modCtx ->
             RellTestUtils.callFn(modCtx, "f", listOf(), strictToString)
         }
     }
@@ -238,9 +236,7 @@ class RellCodeTester(
                 init()
             }
 
-            val moduleCode = moduleCode(code)
-
-            processWithExeCtx(moduleCode) { appCtx ->
+            processWithExeCtx(code) { appCtx ->
                 RellTestUtils.callQueryGeneric(eval, appCtx, name, args, decoder, encoder)
             }
         }
@@ -263,8 +259,7 @@ class RellCodeTester(
 
     private fun <T> callOp0(code: String, name: String, args: List<T>, decoder: (List<R_FunctionParam>, List<T>) -> List<Rt_Value>): String {
         init()
-        val moduleCode = moduleCode(code)
-        return processWithAppSqlCtx(moduleCode) { appCtx, sqlCtx ->
+        return processWithAppSqlCtx(code) { appCtx, sqlCtx ->
             RellTestUtils.callOpGeneric(appCtx, opContext, sqlCtx, tstCtx.sqlMgr(), name, args, decoder)
         }
     }
@@ -322,7 +317,7 @@ class RellCodeTester(
         return processApp(code) { app ->
             RellTestUtils.catchRtErr {
                 tstCtx.sqlMgr().access { sqlExec ->
-                    val exeCtx = createExeCtx(globalCtx, sqlExec, app)
+                    val exeCtx = createExeCtx(globalCtx, sqlExec, app.rApp)
                     processor(exeCtx)
                 }
             }
@@ -334,8 +329,8 @@ class RellCodeTester(
         val res = processApp(code) { app ->
             RellTestUtils.catchRtErr {
                 val (appCtx, sqlCtx) = tstCtx.sqlMgr().access { sqlExec ->
-                    val appCtx0 = createAppCtx(globalCtx, app, C_SourceDir.EMPTY, false)
-                    val sqlCtx0 = createSqlCtx(app, sqlExec)
+                    val appCtx0 = createAppCtx(globalCtx, app.rApp, C_SourceDir.EMPTY, false)
+                    val sqlCtx0 = createSqlCtx(app.rApp, sqlExec)
                     Pair(appCtx0, sqlCtx0)
                 }
                 processor(appCtx, sqlCtx)
@@ -374,17 +369,16 @@ class RellCodeTester(
 
     private fun processWithTestRunnerCtx(processor: (UnitTestRunnerContext) -> String): String {
         val globalCtx = createGlobalCtx()
-        val moduleCode = moduleCode("")
+        val code = ""
 
-        return processApp(moduleCode) { app ->
+        return processApp(code) { app ->
             val sqlCtx = tstCtx.sqlMgr().access { sqlExec ->
-                createSqlCtx(app, sqlExec)
+                createSqlCtx(app.rApp, sqlExec)
             }
 
-            val sourceDir = createSourceDir(moduleCode)
             val modArgs = getModuleArgs()
             val modArgsGtv = GtvTestUtils.moduleArgsToMap(modArgs).mapKeys { R_ModuleName.of(it.key) }
-            val blockRunner = tstCtx.projExt.createUnitTestBlockRunner(sourceDir, app, modArgsGtv)
+            val blockRunner = tstCtx.projExt.createUnitTestBlockRunner(app.sourceDir, app.rApp, modArgsGtv)
 
             val testRunnerCtx = UnitTestRunnerContext(
                 sqlCtx = sqlCtx,
@@ -395,7 +389,7 @@ class RellCodeTester(
                 chainCtx = createChainContext(),
                 blockRunner = blockRunner,
                 moduleArgsSource = createModuleArgsSource(globalCtx.compilerOptions),
-                app = app,
+                app = app.rApp,
             )
 
             try {

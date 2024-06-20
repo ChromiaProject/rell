@@ -6,6 +6,7 @@ package net.postchain.rell.base.utils.doc
 
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.utils.immMapOf
 
 enum class DocSymbolKind(val msg: String) {
     NONE("symbol"),
@@ -115,67 +116,17 @@ data class DocSourcePos(
     override fun toString() = str()
 }
 
-interface DocDefinition {
-    val docSymbol: DocSymbol
-    val docSourcePos: DocSourcePos?
+abstract class DocDefinition {
+    abstract val docSymbol: DocSymbol
+    abstract val docSourcePos: DocSourcePos?
 
-    fun getDocMember(name: String): DocDefinition? = null
-}
-
-sealed class DocSymbolFactory {
-    abstract fun makeDocSymbol(
-        kind: DocSymbolKind,
-        symbolName: DocSymbolName,
-        declaration: DocDeclaration,
-        mountName: String? = null,
-    ): DocSymbol
-
-    companion object {
-        val NONE: DocSymbolFactory = DocSymbolFactory_None
-        val NORMAL: DocSymbolFactory = DocSymbolFactory_Normal
-    }
-}
-
-private object DocSymbolFactory_None: DocSymbolFactory() {
-    override fun makeDocSymbol(
-        kind: DocSymbolKind,
-        symbolName: DocSymbolName,
-        declaration: DocDeclaration,
-        mountName: String?,
-    ): DocSymbol {
-        return DocSymbol.NONE
-    }
-}
-
-private object DocSymbolFactory_Normal: DocSymbolFactory() {
-    override fun makeDocSymbol(
-        kind: DocSymbolKind,
-        symbolName: DocSymbolName,
-        declaration: DocDeclaration,
-        mountName: String?,
-    ): DocSymbol {
-        return DocSymbol(
-            kind = kind,
-            symbolName = symbolName,
-            declaration = declaration,
-            mountName = mountName,
-            comment = null,
-        )
-    }
-}
-
-object DocUtils {
-    fun getDocDefinitionByPath(def: DocDefinition, path: List<String>): DocDefinition? {
-        var curDef = def
-        for (name in path) {
-            val nextDef = curDef.getDocMember(name)
-            curDef = nextDef ?: return null
-        }
-        return curDef
+    val docMembers: Map<String, DocDefinition> by lazy {
+        getDocMembers0()
     }
 
-    fun getDocSymbolByPath(def: DocDefinition, path: List<String>): DocSymbol? {
-        val resDef = getDocDefinitionByPath(def, path)
-        return resDef?.docSymbol
+    protected open fun getDocMembers0(): Map<String, DocDefinition> = immMapOf()
+
+    fun getDocMember(name: String): DocDefinition? {
+        return docMembers[name]
     }
 }

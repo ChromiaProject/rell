@@ -16,21 +16,21 @@ import net.postchain.rell.base.model.stmt.R_Statement
 import net.postchain.rell.base.model.stmt.R_StatementResult_Return
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.toGtv
-import net.postchain.rell.base.utils.Nullable
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.toImmMap
 
 class R_FunctionParam(
     val name: R_Name,
     val type: R_Type,
-    private val docGetter: C_LateGetter<Nullable<DocSymbol>>,
+    private val docGetter: C_LateGetter<DocSymbol?>,
     override val docSourcePos: DocSourcePos? = null,
-): DocDefinition {
-    override val docSymbol: DocSymbol get() = docGetter.get().value ?: DocSymbol.NONE
+): DocDefinition() {
+    override val docSymbol: DocSymbol get() = docGetter.get() ?: DocSymbol.NONE
 
     fun toMetaGtv(): Gtv = mapOf(
         "name" to name.str.toGtv(),
@@ -46,10 +46,9 @@ sealed class R_RoutineDefinition(
     abstract fun params(): List<R_FunctionParam>
     abstract fun call(callCtx: Rt_CallContext, args: List<Rt_Value>): Rt_Value
 
-    override fun getDocMember(name: String): DocDefinition? {
+    override fun getDocMembers0(): Map<String, DocDefinition> {
         val params = params()
-        val param = params.firstOrNull { it.name.str == name }
-        return param
+        return params.associateBy { it.name.str }.toImmMap()
     }
 }
 

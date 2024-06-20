@@ -29,6 +29,8 @@ class R_DefinitionName(
         if (module.isEmpty()) ":$appLevelName" else appLevelName
     }
 
+    constructor(fullName: R_FullName): this(fullName.moduleName.str(), fullName.qualifiedName.str(), fullName.last.str)
+
     override fun toString() = appLevelName
 
     companion object {
@@ -49,7 +51,7 @@ class R_DefinitionBase(
 
 abstract class R_Definition(
     base: R_DefinitionBase,
-): DocDefinition {
+): DocDefinition() {
     val defId = base.defId
     val defName = base.defName
     val cDefName = base.cDefName
@@ -158,7 +160,7 @@ class R_Attribute(
     val sqlMapping: String = rName.str,
     override val docSourcePos: DocSourcePos? = null,
     private val exprGetter: C_LateGetter<R_DefaultValue>?,
-): DocDefinition {
+): DocDefinition() {
     val ideName = R_IdeName(rName, ideInfo)
     val name = rName.str
 
@@ -230,7 +232,7 @@ class R_Module(
     override val docSymbol: DocSymbol,
     override val docSourcePos: DocSourcePos?,
     private val nsGetter: Getter<C_Namespace>,
-): DocDefinition {
+): DocDefinition() {
     val key = R_ModuleKey(name, externalChain)
 
     private val nsLazy: C_Namespace by lazy { nsGetter() }
@@ -264,10 +266,7 @@ class R_Module(
         }
     }
 
-    override fun getDocMember(name: String): DocDefinition? {
-        val elem = nsLazy.getElement(R_Name.of(name), null)
-        return elem?.member?.docDefinition
-    }
+    override fun getDocMembers0() = nsLazy.getDocMembers()
 }
 
 class R_AppSqlDefs(

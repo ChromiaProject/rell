@@ -11,6 +11,7 @@ import net.postchain.rell.base.compiler.base.core.C_Compiler
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.module.C_ModuleUtils
 import net.postchain.rell.base.compiler.base.utils.*
+import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.runtime.Rt_RellVersion
 import net.postchain.rell.base.runtime.Rt_RellVersionProperty
@@ -126,6 +127,10 @@ object IdeApi {
     ): IdeCompilationResult {
         val res = C_Compiler.compile(sourceDir, modules, options)
         return IdeCompilationResult(res.messages, res.ideSymbolInfos)
+    }
+
+    @JvmStatic fun getAllComments(rApp: R_App): Map<String, String> {
+        return C_DocUtils.getAllComments(rApp)
     }
 }
 

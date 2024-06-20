@@ -19,15 +19,22 @@ import net.postchain.rell.base.model.stmt.R_ExprStatement
 import net.postchain.rell.base.model.stmt.R_ReturnStatement
 import net.postchain.rell.base.mtype.M_ParamArity
 import net.postchain.rell.base.utils.MutableTypedKeyMap
-import net.postchain.rell.base.utils.Nullable
 import net.postchain.rell.base.utils.TypedKeyMap
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
-class S_FormalParameter(private val attr: S_AttrHeader, private val expr: S_Expr?) {
-    fun compile(defCtx: C_DefinitionContext, index: Int): C_FormalParameter {
-        val docSymLate = C_LateInit(C_CompilerPass.EXPRESSIONS, Nullable.of<DocSymbol>())
+class S_FormalParameter(
+    private val attr: S_AttrHeader,
+    private val expr: S_Expr?,
+    private val comment: S_Comment?,
+) {
+    fun compile(
+        defCtx: C_DefinitionContext,
+        index: Int,
+        docCommentsGetter: C_LateGetter<DocFunctionParamComments>,
+    ): C_FormalParameter {
+        val docSymLate = C_LateInit<DocSymbol?>(C_CompilerPass.EXPRESSIONS, null)
 
         val ideData = C_GlobalAttrHeaderIdeData(
             IdeSymbolCategory.PARAMETER,
@@ -48,10 +55,15 @@ class S_FormalParameter(private val attr: S_AttrHeader, private val expr: S_Expr
 
         if (expr == null) {
             val docDec = makeDocDeclaration(docParam, null)
-            val docSym = makeDocSymbol(defCtx, name, docDec)
-            docSymLate.set(Nullable.of(docSym), allowEarly = true)
-            docDecGetter = C_LateGetter.const(docDec)
+
+            defCtx.executor.onPass(C_CompilerPass.EXPRESSIONS) {
+                val docComments = docCommentsGetter.get()
+                val docSym = makeDocSymbol(defCtx, name, docDec, docComments)
+                docSymLate.set(docSym)
+            }
+
             defaultValue = null
+            docDecGetter = C_LateGetter.const(docDec)
         } else {
             val rErrorExpr = C_ExprUtils.errorRExpr(type)
             val rExprLate = C_LateInit(C_CompilerPass.EXPRESSIONS, rErrorExpr)
@@ -65,12 +77,15 @@ class S_FormalParameter(private val attr: S_AttrHeader, private val expr: S_Expr
             defCtx.executor.onPass(C_CompilerPass.EXPRESSIONS) {
                 val vExpr = compileExpr(defCtx, name.rName, type)
                 val rExpr = vExpr.toRExpr()
+
                 val docDec = makeDocDeclaration(docParam, vExpr)
-                val docSym = makeDocSymbol(defCtx, name, docDec)
+                val docComments = docCommentsGetter.get()
+                val docSym = makeDocSymbol(defCtx, name, docDec, docComments)
+
                 rExprLate.set(rExpr)
                 rValueLate.set(R_DefaultValue(rExpr, vExpr.info.hasDbModifications))
                 docDecLate.set(docDec)
-                docSymLate.set(Nullable.of(docSym))
+                docSymLate.set(docSym)
             }
 
             defaultValue = C_ParameterDefaultValue(
@@ -87,6 +102,7 @@ class S_FormalParameter(private val attr: S_AttrHeader, private val expr: S_Expr
             type,
             attrHeader.ideInfo,
             docParam,
+            comment,
             index,
             defaultValue,
             docSymLate.getter,
@@ -118,11 +134,18 @@ class S_FormalParameter(private val attr: S_AttrHeader, private val expr: S_Expr
         return DocDeclaration_Parameter(docParam, isLazy = false, implies = null, expr = docExpr)
     }
 
-    private fun makeDocSymbol(defCtx: C_DefinitionContext, name: C_Name, declaration: DocDeclaration): DocSymbol {
-        return defCtx.globalCtx.docFactory.makeDocSymbol(
+    private fun makeDocSymbol(
+        defCtx: C_DefinitionContext,
+        name: C_Name,
+        declaration: DocDeclaration,
+        docComments: DocFunctionParamComments,
+    ): DocSymbol {
+        val docComment = docComments.paramComments[name.rName]
+        return defCtx.symCtx.docSymbolFactory.makeDocSymbol(
             kind = DocSymbolKind.PARAMETER,
             symbolName = DocSymbolName.local(name.str),
             declaration = declaration,
+            comment = docComment,
         )
     }
 }
@@ -138,7 +161,7 @@ abstract class S_FunctionBody {
         val statementVars = processStatementVars()
         val fnCtx = C_FunctionContext(ctx.defCtx, ctx.defName.appLevelName, ctx.explicitRetType, statementVars)
         val frameCtx = C_FrameContext.create(fnCtx)
-        val actParams = ctx.forParams.compile(frameCtx)
+        val actParams = ctx.formalParams.compile(frameCtx)
 
         val cBody = compileQuery0(ctx, actParams.stmtCtx)
         val callFrame = frameCtx.makeCallFrame(cBody.guardBlock)
@@ -150,7 +173,7 @@ abstract class S_FunctionBody {
         val statementVars = processStatementVars()
         val fnCtx = C_FunctionContext(ctx.defCtx, ctx.defName.appLevelName, ctx.explicitRetType, statementVars)
         val frameCtx = C_FrameContext.create(fnCtx)
-        val actParams = ctx.forParams.compile(frameCtx)
+        val actParams = ctx.formalParams.compile(frameCtx)
 
         val cBody = compileFunction0(ctx, actParams.stmtCtx)
         val callFrame = frameCtx.makeCallFrame(cBody.guardBlock)

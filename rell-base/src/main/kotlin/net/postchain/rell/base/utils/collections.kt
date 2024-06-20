@@ -97,6 +97,13 @@ fun <T, K: Any, V: Any> Iterable<T>.associateNotNullValues(f: (T) -> Pair<K, V?>
     }.toImmMap()
 }
 
+fun <K: Any, V: Any, R: Any> Map<K, V>.mapValuesNotNull(f: (Map.Entry<K, V>) -> R?): Map<K, R> {
+    return mapNotNull {
+        val r = f(it)
+        if (r == null) null else (it.key to r)
+    }.toImmMap()
+}
+
 fun <T: Any> List<T>.mapOrSame(f: (T) -> T): List<T> {
     var res: MutableList<T>? = null
 

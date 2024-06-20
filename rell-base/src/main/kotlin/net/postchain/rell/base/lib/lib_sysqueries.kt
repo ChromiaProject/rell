@@ -15,7 +15,6 @@ import net.postchain.rell.base.runtime.Rt_CallContext
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_RellVersionProperty
 import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.utils.Nullable
 import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf
@@ -80,10 +79,9 @@ private object SysQueryFns {
     }
 
     object GetMountNames: R_SysFunctionEx_N() {
-
         val PARAMS = immListOf(
-            R_FunctionParam(R_Name.of("kinds"), R_ListType(R_TextType), C_LateGetter.const(Nullable.of(null))),
-            R_FunctionParam(R_Name.of("modules"), R_ListType(R_TextType), C_LateGetter.const(Nullable.of(null)))
+            R_FunctionParam(R_Name.of("kinds"), R_ListType(R_TextType), C_LateGetter.const(null)),
+            R_FunctionParam(R_Name.of("modules"), R_ListType(R_TextType), C_LateGetter.const(null)),
         )
 
         val ALLOWED_KINDS = immListOf("query", "operation", "entity", "object")
@@ -128,13 +126,15 @@ private object SysQueryFns {
             update(definitions.values.map { mountNameGetter(it) }.toGtvArrayNode(), resultKey)
         }
 
-        private fun Collection<R_MountName>.toGtvArrayNode() = GtvBuilder.GtvArrayNode(map { GtvBuilder.GtvNode.decode(gtv(it.str())) }, GtvBuilder.GtvArrayMerge.APPEND)
+        private fun Collection<R_MountName>.toGtvArrayNode(): GtvBuilder.GtvArrayNode {
+            val valueNodes = map { GtvBuilder.GtvNode.decode(gtv(it.str())) }
+            return GtvBuilder.GtvArrayNode(valueNodes, GtvBuilder.GtvArrayMerge.APPEND)
+        }
     }
 
     object GetModuleArgs: R_SysFunctionEx_N() {
-
         val PARAMS = immListOf(
-            R_FunctionParam(R_Name.of("modules"), R_ListType(R_TextType), C_LateGetter.const(Nullable.of(null)))
+            R_FunctionParam(R_Name.of("modules"), R_ListType(R_TextType), C_LateGetter.const(null)),
         )
 
         override fun call(ctx: Rt_CallContext, args: List<Rt_Value>): Rt_Value {

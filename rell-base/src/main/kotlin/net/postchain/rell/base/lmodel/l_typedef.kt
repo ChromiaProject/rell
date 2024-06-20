@@ -36,7 +36,7 @@ class L_TypeDefFlags(
 class L_TypeDefMembers(members: List<L_TypeDefMember>) {
     val all = members.toImmList()
 
-    private val allBySymName: Map<String, L_TypeDefMember> by lazy {
+    val docMembers: Map<String, DocDefinition> by lazy {
         all
             .groupBy { it.symName }
             .flatMap { (name, defs) ->
@@ -83,10 +83,6 @@ class L_TypeDefMembers(members: List<L_TypeDefMember>) {
                 )
             }
         }
-    }
-
-    fun getDocDefinition(name: String): DocDefinition? {
-        return allBySymName[name]
     }
 }
 
@@ -225,8 +221,5 @@ class L_NamespaceMember_Type(
 
     override fun getTypeDefOrNull() = typeDef
     override fun getAbstractTypeDefOrNull() = typeDef
-
-    override fun getDocMember(name: String): DocDefinition? {
-        return typeDef.members.getDocDefinition(name)
-    }
+    override fun getDocMembers0() = typeDef.members.docMembers
 }

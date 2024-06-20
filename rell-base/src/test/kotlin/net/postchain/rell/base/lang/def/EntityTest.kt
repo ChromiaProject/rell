@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.def
@@ -579,7 +579,7 @@ class EntityTest: BaseRellTest(false) {
 
     private fun chkEntity(code: String, exp: String) {
         val act = tst.processApp(code) { app ->
-            val e = app.moduleMap.getValue(R_ModuleName.EMPTY).entities.getValue("data")
+            val e = app.rApp.moduleMap.getValue(R_ModuleName.EMPTY).entities.getValue("data")
             entityToString(e)
         }
         assertEquals(exp, act)

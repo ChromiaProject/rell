@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.misc
@@ -215,5 +215,12 @@ class TokenizerTest: BaseRellTest(false) {
         chkEx("{\n\tval x = 5;\n   \tval x = 6;\n\treturn 0;\n}\n", "ct_err:main.rell(3:9):block:name_conflict:x")
         chkEx("{\n\tval x = 5;\n    \tval x = 6;\n\treturn 0;\n}\n", "ct_err:main.rell(3:13):block:name_conflict:x")
         chkEx("{\n\tval x = 5;\n\t val x = 6;\n\treturn 0;\n}\n", "ct_err:main.rell(3:10):block:name_conflict:x")
+    }
+
+    @Test fun testSyntaxErrorBeforeLexicalError() {
+        chkFull("'\\x'", "ct_err:lex:string_esc")
+        chkFull("val x = 123; '\\x'", "ct_err:lex:string_esc")
+        chkFull("val x = ; '\\x'", "ct_err:syntax")
+        chkFull("val x = '\\x'; val y = ;", "ct_err:lex:string_esc")
     }
 }

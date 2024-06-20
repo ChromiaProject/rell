@@ -4,21 +4,16 @@
 
 package net.postchain.rell.base.compiler.base.utils
 
-import com.github.h0tk3y.betterParse.parser.ParseException
-import com.github.h0tk3y.betterParse.parser.Parser
-import com.github.h0tk3y.betterParse.parser.parseToEnd
-import net.postchain.rell.base.compiler.ast.S_BasicPos
-import net.postchain.rell.base.compiler.ast.S_Pos
-import net.postchain.rell.base.compiler.ast.S_RellFile
-import net.postchain.rell.base.compiler.ast.S_ReplCommand
+import com.github.h0tk3y.betterParse.parser.*
+import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.C_AttrUtils
 import net.postchain.rell.base.compiler.base.def.C_SysAttribute
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.lib.C_LibUtils
 import net.postchain.rell.base.compiler.base.module.C_ModuleKey
+import net.postchain.rell.base.compiler.parser.RellTokenSequence
 import net.postchain.rell.base.compiler.parser.RellTokenizerException
-import net.postchain.rell.base.compiler.parser.RellTokenizerState
 import net.postchain.rell.base.compiler.parser.S_Grammar
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.compiler.vexpr.V_ParameterDefaultValueExpr
@@ -29,10 +24,7 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.*
-import net.postchain.rell.base.utils.doc.DocDeclaration
-import net.postchain.rell.base.utils.doc.DocDeclaration_Entity
-import net.postchain.rell.base.utils.doc.DocModifiers
-import net.postchain.rell.base.utils.doc.DocSymbolFactory
+import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.IdeFilePath
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import java.util.*
@@ -174,7 +166,7 @@ object C_Utils {
             C_Constants.BLOCK_ENTITY_RNAME,
             chain,
             R_EntitySqlMapping_Block(chain),
-            appCtx.globalCtx.docFactory,
+            appCtx.symCtxProvider.getDocSymbolFactory(),
         )
 
         val attrs = listOf(
@@ -195,7 +187,7 @@ object C_Utils {
             C_Constants.TRANSACTION_ENTITY_RNAME,
             chain,
             R_EntitySqlMapping_Transaction(chain),
-            appCtx.globalCtx.docFactory,
+            appCtx.symCtxProvider.getDocSymbolFactory(),
         )
 
         val attrs = listOf(
@@ -254,7 +246,7 @@ object C_Utils {
         val simpleName: R_Name,
         val chain: R_ExternalChainRef?,
         val sqlMapping: R_EntitySqlMapping,
-        docFactory: DocSymbolFactory,
+        docFactory: C_DocSymbolFactory,
     ) {
         val moduleKey = R_ModuleKey(C_LibUtils.DEFAULT_MODULE, chain?.name)
 
@@ -269,6 +261,7 @@ object C_Utils {
                 C_StringQualifiedName.of(rQualifiedName),
                 mountName,
                 docFactory,
+                docCommentGetter = C_LateGetter.const(null),
             )
 
             val docDeclaration = DocDeclaration_Entity(DocModifiers.NONE, rQualifiedName.last)
@@ -276,7 +269,7 @@ object C_Utils {
             cDefBase.rBase(R_CallFrame.NONE_INIT_FRAME_GETTER, null, docGetter)
         }
 
-        val attrMaker = C_SysAttribute.Maker(rDefBase.defName, docFactory)
+        val attrMaker = C_SysAttribute.Maker(docFactory, rDefBase.defName)
     }
 
     fun createEntity(
@@ -341,7 +334,8 @@ object C_Utils {
             moduleKey,
             qName,
             mountName,
-            DocSymbolFactory.NORMAL,
+            C_DocSymbolFactory.NONE,
+            docCommentGetter = C_LateGetter.const(null),
         )
 
         val docGetter = cDefBase.docGetter(C_LateGetter.const(DocDeclaration.NONE))
@@ -363,12 +357,13 @@ object C_Utils {
         moduleKey: R_ModuleKey,
         qualifiedName: C_StringQualifiedName,
         mountName: R_MountName?,
-        docFactory: DocSymbolFactory,
+        docFactory: C_DocSymbolFactory,
+        docCommentGetter: C_LateGetter<DocComment?>,
     ): C_CommonDefinitionBase {
         val cDefName = createDefName(moduleKey, qualifiedName)
         val defName = cDefName.toRDefName()
         val defId = R_DefinitionId(defName.module, defName.qualifiedName)
-        return C_CommonDefinitionBase(defType, ideKind, defId, cDefName, defName, mountName, docFactory)
+        return C_CommonDefinitionBase(defType, ideKind, defId, cDefName, defName, mountName, docFactory, docCommentGetter)
     }
 
     private fun createDefName(module: R_ModuleKey, qualifiedName: C_StringQualifiedName): C_DefinitionName {
@@ -426,12 +421,6 @@ data class C_ParserFilePath(val sourcePath: C_SourcePath, val idePath: IdeFilePa
 }
 
 object C_Parser {
-    private val currentFileLocal = let {
-        val sourcePath = C_SourcePath.parse("?")
-        val idePath = IdeSourcePathFilePath(sourcePath)
-        ThreadLocalContext(C_ParserFilePath(sourcePath, idePath))
-    }
-
     private val replParserPath: C_ParserFilePath = let {
         val path = C_SourcePath.parse("<console>")
         C_ParserFilePath(path, IdeSourcePathFilePath(path))
@@ -439,7 +428,7 @@ object C_Parser {
 
     fun parse(filePath: C_SourcePath, idePath: IdeFilePath, sourceCode: String): S_RellFile {
         val parserPath = C_ParserFilePath(filePath, idePath)
-        val res = parse0(parserPath, sourceCode, S_Grammar)
+        val res = parse0(parserPath, sourceCode, S_Grammar.rootParser)
         val ast = res.getAst()
         return ast
     }
@@ -463,29 +452,45 @@ object C_Parser {
         // of an operation, it returns the position of the beginning of the operation.
         // Following workaround handles this by tracking the position of the farthest reached token (seems to work fine).
 
-        val state = RellTokenizerState()
-        val tokenSeq = S_Grammar.tokenizer.tokenize(sourceCode, state)
+        val tokenSeq =  S_Grammar.tokenizer.tokenize(filePath, sourceCode)
 
         return try {
-            val ast = overrideCurrentFile(filePath) {
-                parser.parseToEnd(tokenSeq)
-            }
+            val ast = parseToEnd(tokenSeq, parser)
             C_SuccessParserResult(ast)
         } catch (e: RellTokenizerException) {
             val error = e.toCError()
             C_ErrorParserResult(error, e.eof)
         } catch (e: ParseException) {
-            val pos = S_BasicPos(filePath, state.lastOffset, state.lastRow, state.lastCol)
+            val pos = tokenSeq.getEndPos()
+            val eof = pos.offset() >= sourceCode.length
             val error = C_Error.other(pos, "syntax", "Syntax error")
-            C_ErrorParserResult(error, state.lastEof)
+            C_ErrorParserResult(error, eof)
         }
     }
 
-    private fun <T> overrideCurrentFile(file: C_ParserFilePath, code: () -> T): T {
-        return currentFileLocal.set(file, code)
+    private fun <T> parseToEnd(tokens: RellTokenSequence, parser: Parser<T>): T {
+        val result = parser.tryParse(tokens)
+
+        return when (result) {
+            is ErrorResult -> throw ParseException(result)
+            is Parsed -> {
+                checkUnparsedRemainder(result)
+                result.value
+            }
+        }
     }
 
-    fun currentFile(): C_ParserFilePath = currentFileLocal.get()
+    private fun checkUnparsedRemainder(result: Parsed<*>) {
+        var tail = result.remainder as RellTokenSequence
+        while (true) {
+            val next = tail.nextOrNull()
+            next ?: break
+            if (!next.match.type.ignored) {
+                throw throw ParseException(UnparsedRemainder(next.match))
+            }
+            tail = next.tail
+        }
+    }
 }
 
 object C_GraphUtils {
@@ -680,25 +685,33 @@ private class C_LateInitContext(executor: C_CompilerExecutor) {
     }
 }
 
-sealed class C_LateGetter<T: Any> {
+sealed class C_LateGetter<out T> {
     abstract fun get(): T
 
-    fun <R: Any> transform(transformer: (T) -> R): C_LateGetter<R> = C_TransformingLateGetter(this, transformer)
+    fun <R> transform(transformer: (T) -> R): C_LateGetter<R> = C_TransformingLateGetter(this, transformer)
 
     companion object {
-        fun <T: Any> const(value: T): C_LateGetter<T> = C_ConstLateGetter(value)
+        private val NULL: C_LateGetter<Any?> = C_ConstLateGetter(null)
+
+        @Suppress("UNCHECKED_CAST")
+        fun <T> const(value: T): C_LateGetter<T> {
+            return when (value) {
+                null -> NULL as C_LateGetter<T>
+                else -> C_ConstLateGetter(value)
+            }
+        }
     }
 }
 
-private class C_ConstLateGetter<T: Any>(private val value: T): C_LateGetter<T>() {
+private class C_ConstLateGetter<T>(private val value: T): C_LateGetter<T>() {
     override fun get() = value
 }
 
-private class C_DirectLateGetter<T: Any>(private val init: C_LateInit<T>): C_LateGetter<T>() {
+private class C_DirectLateGetter<T>(private val init: C_LateInit<T>): C_LateGetter<T>() {
     override fun get() = init.get()
 }
 
-private class C_TransformingLateGetter<T: Any, R: Any>(
+private class C_TransformingLateGetter<T, R>(
     private val getter: C_LateGetter<T>,
     private val transformer: (T) -> R,
 ): C_LateGetter<R>() {
@@ -710,16 +723,19 @@ private class C_TransformingLateGetter<T: Any, R: Any>(
     override fun get(): R = lazyValue
 }
 
-class C_LateInit<T: Any>(val pass: C_CompilerPass, fallback: T) {
+class C_LateInit<T>(val pass: C_CompilerPass, fallback: T) {
     private val ctx = C_LateInitContext.getContext()
-    private var value: T? = null
-    private var fallback: T? = fallback
+
+    private var value: T = noValue()
+
+    @Suppress("CanBePrimaryConstructorProperty")
+    private var fallback: T = fallback
 
     init {
         ctx.checkPass(null, pass.prev())
         ctx.onDestroy {
-            if (value == null) value = this.fallback
-            this.fallback = null
+            if (value === NOVALUE) value = this.fallback
+            this.fallback = noValue()
         }
     }
 
@@ -728,21 +744,26 @@ class C_LateInit<T: Any>(val pass: C_CompilerPass, fallback: T) {
     fun set(value: T, allowEarly: Boolean = false) {
         val minPass = if (allowEarly) null else pass
         ctx.checkPass(minPass, pass)
-        check(this.value == null) { "value already set" }
+        check(this.value === NOVALUE) { "value already set" }
         this.value = value
-        fallback = null
+        fallback = noValue()
     }
 
     fun get(): T {
         ctx.checkPass(pass.next(), null)
-        if (value == null) {
-            check(fallback != null)
+        if (value === NOVALUE) {
+            check(fallback !== NOVALUE)
             value = fallback
         }
-        return value!!
+        return value
     }
 
+    @Suppress("UNCHECKED_CAST")
+    private fun noValue(): T = NOVALUE as T
+
     companion object {
+        private val NOVALUE: Any = Object()
+
         fun inContext(): Boolean = C_LateInitContext.inContext()
 
         fun <T> context(executor: C_CompilerExecutor, code: () -> T): T {

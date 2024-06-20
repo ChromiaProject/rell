@@ -7,10 +7,10 @@ package net.postchain.rell.base.lmodel
 import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.model.R_FullName
-import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.mtype.M_TypeParam
 import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSymbol
+import net.postchain.rell.base.utils.toImmMap
 
 class L_ConstructorHeader(
     val typeParams: List<M_TypeParam>,
@@ -30,6 +30,10 @@ class L_Constructor(
     val body: L_FunctionBody,
     val pure: Boolean,
 ) {
+    val docMembers: Map<String, DocDefinition> by lazy {
+        header.params.associateBy { it.name.str }.toImmMap()
+    }
+
     fun strCode(): String {
         val parts = mutableListOf<String>()
         if (deprecated != null) parts.add("@deprecated")
@@ -37,11 +41,6 @@ class L_Constructor(
         parts.add("constructor")
         parts.add(header.strCode())
         return parts.joinToString(" ")
-    }
-
-    fun getDocMember(name: String): DocDefinition? {
-        val rName = R_Name.of(name)
-        return header.getParam(rName)
     }
 }
 
@@ -52,10 +51,7 @@ class L_TypeDefMember_Constructor(
     val constructor: L_Constructor,
 ): L_TypeDefMember(typeName, header, doc, "!init") {
     override fun strCode() = constructor.strCode()
-
-    override fun getDocMember(name: String): DocDefinition? {
-        return constructor.getDocMember(name)
-    }
+    override fun getDocMembers0() = constructor.docMembers
 }
 
 class L_TypeDefMember_SpecialConstructor(

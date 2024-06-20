@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.expr
 
+import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_PosValue
 import net.postchain.rell.base.compiler.base.core.*
@@ -36,6 +37,7 @@ class C_AtFromItemContext(
     val isJoin: Boolean,
     val outerJoinPos: S_Pos?,
     val atExprAllowed: Boolean,
+    val comment: S_Comment?,
 ) {
     val isOuterJoin = outerJoinPos != null
 

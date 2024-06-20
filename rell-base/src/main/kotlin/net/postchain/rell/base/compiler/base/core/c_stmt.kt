@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.core
 
+import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_Statement
 import net.postchain.rell.base.compiler.base.def.C_AttrHeader
@@ -22,7 +23,6 @@ import net.postchain.rell.base.model.stmt.*
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_TypeParamsResolver
 import net.postchain.rell.base.mtype.M_Types
-import net.postchain.rell.base.utils.Nullable
 import net.postchain.rell.base.utils.doc.DocDeclaration_Variable
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
@@ -30,26 +30,24 @@ import net.postchain.rell.base.utils.doc.DocSymbolName
 import net.postchain.rell.base.utils.toImmList
 
 class C_Statement(
-        val rStmt: R_Statement,
-        val returnAlways: Boolean,
-        val varFacts: C_VarFacts = C_VarFacts.EMPTY,
-        val guardBlock: Boolean = false
+    val rStmt: R_Statement,
+    val returnAlways: Boolean,
+    val varFacts: C_VarFacts = C_VarFacts.EMPTY,
+    val guardBlock: Boolean = false,
 ) {
-    fun update(
-            rStmt: R_Statement? = null,
-            returnAlways: Boolean? = null,
-            varFacts: C_VarFacts? = null,
-            guardBlock: Boolean? = null
+    fun copy(
+        rStmt: R_Statement = this.rStmt,
+        returnAlways: Boolean = this.returnAlways,
+        varFacts: C_VarFacts = this.varFacts,
+        guardBlock: Boolean = this.guardBlock,
     ): C_Statement {
-        val rStmt2 = rStmt ?: this.rStmt
-        val returnAlways2 = returnAlways ?: this.returnAlways
-        val varFacts2 = varFacts ?: this.varFacts
-        val guardBlock2 = guardBlock ?: this.guardBlock
-        return if (rStmt2 === this.rStmt
-                && returnAlways2 == this.returnAlways
-                && varFacts2 === this.varFacts
-                && guardBlock2 == this.guardBlock) this
-                else C_Statement(rStmt = rStmt2, returnAlways = returnAlways2, varFacts = varFacts2, guardBlock = guardBlock2)
+        return if (rStmt === this.rStmt
+                && returnAlways == this.returnAlways
+                && varFacts === this.varFacts
+                && guardBlock == this.guardBlock
+        ) this else {
+            C_Statement(rStmt = rStmt, returnAlways = returnAlways, varFacts = varFacts, guardBlock = guardBlock)
+        }
     }
 
     companion object {
@@ -88,10 +86,10 @@ class C_BlockCodeProto(val varFacts: C_VarFacts) {
 }
 
 class C_BlockCodeBuilder(
-        ctx: C_StmtContext,
-        private val repl: Boolean,
-        hasGuardBlock: Boolean,
-        proto: C_BlockCodeProto
+    ctx: C_StmtContext,
+    private val repl: Boolean,
+    hasGuardBlock: Boolean,
+    proto: C_BlockCodeProto,
 ) {
     private val ctx = ctx.updateFacts(proto.varFacts)
     private val rStmts = mutableListOf<R_Statement>()
@@ -160,8 +158,9 @@ class C_SimpleVarDeclarator(
     private val attrHeader: C_AttrHeader,
     private val name: C_Name,
     private val explicitType: R_Type?,
+    private val comment: S_Comment?,
     private val ideInfo: C_IdeSymbolInfo,
-    private val docSymbolLate: C_LateInit<Nullable<DocSymbol>>,
+    private val docSymbolLate: C_LateInit<DocSymbol?>,
 ): C_VarDeclarator(ctx, mutable) {
     override fun getHintType() = explicitType?.mType ?: M_Types.NOTHING
 
@@ -188,7 +187,7 @@ class C_SimpleVarDeclarator(
         val cVarRef = ctx.blkCtx.addLocalVar(name, rVarType, mutable, null, ideInfo)
 
         val docSymbol = makeDocSymbol(rVarType)
-        docSymbolLate.set(Nullable.of(docSymbol), allowEarly = true)
+        docSymbolLate.set(docSymbol, allowEarly = true)
 
         varFacts.putFacts(calcVarFacts(rExprType, rVarType, cVarRef.target.uid))
 
@@ -209,10 +208,11 @@ class C_SimpleVarDeclarator(
 
     private fun makeDocSymbol(rType: R_Type): DocSymbol {
         val docType = L_TypeUtils.docType(rType.mType)
-        return ctx.globalCtx.docFactory.makeDocSymbol(
+        return ctx.symCtx.makeDocSymbol(
             DocSymbolKind.VAR,
             DocSymbolName.local(name.str),
             DocDeclaration_Variable(name.rName, docType, mutable),
+            comment = comment,
         )
     }
 }

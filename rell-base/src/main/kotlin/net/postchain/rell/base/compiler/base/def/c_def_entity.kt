@@ -5,10 +5,7 @@
 package net.postchain.rell.base.compiler.base.def
 
 import com.google.common.collect.Multimap
-import net.postchain.rell.base.compiler.ast.S_AttributeDefinition
-import net.postchain.rell.base.compiler.ast.S_EntityDefinition
-import net.postchain.rell.base.compiler.ast.S_Expr
-import net.postchain.rell.base.compiler.ast.S_Pos
+import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.C_EntityAttrRef
 import net.postchain.rell.base.compiler.base.expr.C_ExprHint
@@ -17,7 +14,6 @@ import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.Nullable
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
@@ -31,11 +27,10 @@ private class C_EntityAttributeClause(
 ) {
     private val msgCtx = defCtx.msgCtx
 
-    private val defs = mutableListOf<C_AttributeDefinition>()
+    private val defs = mutableListOf<AttrDef>()
 
-    fun addDefinition(attrDef: S_AttributeDefinition, attrHeader: C_AttrHeaderHandle, primary: Boolean) {
-        val cDef = C_AttributeDefinition(attrDef, attrHeader, primary)
-        defs.add(cDef)
+    fun addDefinition(def: AttrDef) {
+        defs.add(def)
     }
 
     fun compile(index: Int, keys: Collection<R_Key>, indices: Collection<R_Index>): C_CompiledAttribute {
@@ -61,7 +56,7 @@ private class C_EntityAttributeClause(
         val mutable = mainDef.attrDef.mutablePos != null
         val ideKind = C_AttrUtils.getIdeSymbolKind(persistent, mutable, keyIndexKind)
 
-        val docSymLate = C_LateInit(C_CompilerPass.DOCS, Nullable.of<DocSymbol>())
+        val docSymLate = C_LateInit<DocSymbol?>(C_CompilerPass.DOCS, null)
         val ideData = C_GlobalAttrHeaderIdeData(IdeSymbolCategory.ATTRIBUTE, ideKind, null, docSymLate.getter)
 
         val mainHeader = mainDef.attrHeader.compile(defCtx, false, ideData)
@@ -74,13 +69,14 @@ private class C_EntityAttributeClause(
             S_EntityDefinition.checkAttrNameLen(msgCtx, mainDef.name)
         }
 
+        val comment = (primaryDefs + secondaryDefs).firstNotNullOfOrNull { it.comment }
         val exprGetter = processAttrExpr(mainDef.name, mainDef.attrDef.expr, type)
 
         defCtx.executor.onPass(C_CompilerPass.DOCS) {
             val docExpr = exprGetter?.get()?.vDocExpr
             val docDec = makeDocDeclaration(mainDef.name, type, mutable, docExpr, keys, indices)
-            val docSym = makeDocSymbol(mainDef.name, docDec)
-            docSymLate.set(Nullable.of(docSym))
+            val docSym = makeDocSymbol(mainDef.name, docDec, comment)
+            docSymLate.set(docSym)
         }
 
         val rAttr = R_Attribute(
@@ -126,7 +122,7 @@ private class C_EntityAttributeClause(
         return DocDeclaration_EntityAttribute(name.rName, docType, mutable, keyIndexKind, docExpr, docKeys, docIndices)
     }
 
-    private fun makeDocSymbol(name: C_Name, docDec: DocDeclaration): DocSymbol {
+    private fun makeDocSymbol(name: C_Name, docDec: DocDeclaration, comment: S_Comment?): DocSymbol {
         val docKind = when (defCtx.definitionType) {
             C_DefinitionType.STRUCT -> DocSymbolKind.STRUCT_ATTR
             C_DefinitionType.OBJECT -> DocSymbolKind.OBJECT_ATTR
@@ -135,19 +131,20 @@ private class C_EntityAttributeClause(
 
         val defName = defCtx.cDefName.toPath().subName(name.rName)
 
-        return defCtx.globalCtx.docFactory.makeDocSymbol(
+        return defCtx.symCtx.makeDocSymbol(
             kind = docKind,
             symbolName = DocSymbolName.global(defName.module.module, defName.qualifiedName.str()),
             declaration = docDec,
+            comment = comment,
         )
     }
 
     private fun processOtherDefs(
-            conflictDefs: List<C_AttributeDefinition>,
-            secondaryDefs: List<C_AttributeDefinition>,
-            type: R_Type,
-            ideKind: IdeSymbolKind,
-            mainIdeInfo: C_IdeSymbolInfo,
+        conflictDefs: List<AttrDef>,
+        secondaryDefs: List<AttrDef>,
+        type: R_Type,
+        ideKind: IdeSymbolKind,
+        mainIdeInfo: C_IdeSymbolInfo,
     ) {
         for (def in conflictDefs) {
             val ideData = C_GlobalAttrHeaderIdeData(IdeSymbolCategory.ATTRIBUTE, ideKind, null)
@@ -187,7 +184,7 @@ private class C_EntityAttributeClause(
     }
 
     private fun processSecondaryDef(
-        def: C_AttributeDefinition,
+        def: AttrDef,
         rPrimaryType: R_Type,
         ideKind: IdeSymbolKind,
         mainIdeInfo: C_IdeSymbolInfo,
@@ -216,7 +213,7 @@ private class C_EntityAttributeClause(
         processAttrExpr(def.name, def.attrDef.expr, header.type)
     }
 
-    private fun checkAttrType(attr: C_AttributeDefinition, type: R_Type?) {
+    private fun checkAttrType(attr: AttrDef, type: R_Type?) {
         val isEntity = defCtx.definitionType.isEntityOrObject()
         if (isEntity && type != null) {
             val allowed = type.sqlAdapter.isAllowedForEntityAttributes(defCtx.globalCtx.compilerOptions)
@@ -229,10 +226,11 @@ private class C_EntityAttributeClause(
         }
     }
 
-    private class C_AttributeDefinition(
-            val attrDef: S_AttributeDefinition,
-            val attrHeader: C_AttrHeaderHandle,
-            val primary: Boolean
+    class AttrDef(
+        val attrDef: S_AttributeDefinition,
+        val attrHeader: C_AttrHeaderHandle,
+        val primary: Boolean,
+        val comment: S_Comment?,
     ) {
         val name = attrHeader.name
     }
@@ -244,11 +242,11 @@ private class C_EntityAttributeClause(
 }
 
 class C_EntityContext(
-        val defCtx: C_DefinitionContext,
-        private val entityName: String,
-        private val logAnnotation: Boolean,
-        sysAttributes: List<C_SysAttribute>,
-        private val persistent: Boolean
+    val defCtx: C_DefinitionContext,
+    private val entityName: String,
+    private val logAnnotation: Boolean,
+    sysAttributes: List<C_SysAttribute>,
+    private val persistent: Boolean,
 ) {
     val msgCtx = defCtx.msgCtx
 
@@ -265,11 +263,16 @@ class C_EntityContext(
         }
     }
 
-    fun addAttribute(attrDef: S_AttributeDefinition, attrHeader: C_AttrHeaderHandle, primary: Boolean) {
+    fun addAttribute(
+        attrDef: S_AttributeDefinition,
+        attrHeader: C_AttrHeaderHandle,
+        primary: Boolean,
+        comment: S_Comment?,
+    ) {
         validateAttr(attrDef, attrHeader)
 
         val clause = attrMap.computeIfAbsent(attrHeader.rName) { C_EntityAttributeClause(defCtx, null, persistent) }
-        clause.addDefinition(attrDef, attrHeader, primary)
+        clause.addDefinition(C_EntityAttributeClause.AttrDef(attrDef, attrHeader, primary, comment))
     }
 
     private fun validateAttr(attrDef: S_AttributeDefinition, attrHeader: C_AttrHeaderHandle) {

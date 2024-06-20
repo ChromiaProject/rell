@@ -23,7 +23,7 @@ abstract class L_AbstractMember(
     val fullName: R_FullName,
     val header: L_MemberHeader,
     override val docSymbol: DocSymbol,
-): DocDefinition {
+): DocDefinition() {
     val qualifiedName: R_QualifiedName = fullName.qualifiedName
     val simpleName: R_Name = qualifiedName.last
 
@@ -70,6 +70,10 @@ class L_Namespace(members: List<L_NamespaceMember>) {
         .mapNotNull { (it as? L_NamespaceMember_TypeExtension)?.typeExt }
         .toImmList()
 
+    val docMembers: Map<String, DocDefinition> by lazy {
+        membersMap.entries.associate { it.key.str to it.value }.toImmMap()
+    }
+
     fun getDef(qName: R_QualifiedName): L_NamespaceMember {
         val def = getDefOrNull(qName)
         checkNotNull(def) { "Definition not found: $qName" }
@@ -110,12 +114,6 @@ class L_Namespace(members: List<L_NamespaceMember>) {
         return Iterables.concat(typeExtensions, nested)
     }
 
-    fun getDocMemberOrNull(name: String): DocDefinition? {
-        val rName = R_Name.of(name)
-        val mem = membersMap[rName]
-        return mem
-    }
-
     companion object {
         val EMPTY = L_Namespace(immListOf())
     }
@@ -128,10 +126,7 @@ class L_NamespaceMember_Namespace(
     val namespace: L_Namespace,
 ): L_NamespaceMember(fullName, header, doc) {
     override fun strCode() = "namespace $qualifiedName"
-
-    override fun getDocMember(name: String): DocDefinition? {
-        return namespace.getDocMemberOrNull(name)
-    }
+    override fun getDocMembers0() = namespace.docMembers
 }
 
 class L_NamespaceMember_Alias(

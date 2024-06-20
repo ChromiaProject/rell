@@ -7,6 +7,7 @@ package net.postchain.rell.base.compiler.ast
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.utils.C_FeatureRestrictions
+import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.parser.RellTokenMatch
@@ -14,6 +15,7 @@ import net.postchain.rell.base.model.R_FilePos
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.ide.IdeFilePath
 import java.util.*
@@ -101,8 +103,6 @@ data class S_PosValue<T>(val pos: S_Pos, val value: T) {
 
     override fun toString() = value.toString()
 }
-
-data class S_NameOptValue<T>(val name: S_Name?, val value: T)
 
 class S_Name(val pos: S_Pos, private val rName: R_Name): S_Node() {
     private val str = rName.str
@@ -215,4 +215,32 @@ class S_QualifiedName(parts: List<S_Name>): S_Node() {
     fun compile(ctx: C_SymbolContext) = compile(ctx.nameCtx)
     fun compile(ctx: C_ExprContext) = compile(ctx.nameCtx)
     fun compile(ctx: C_DefinitionContext) = compile(ctx.symCtx)
+}
+
+class S_Comment(
+    private val tokenPos: S_Pos,
+    private val text: String,
+) {
+    // Using token pos for now.
+    val pos = tokenPos
+
+    init {
+        require(text.startsWith("/**") && text.endsWith("*/") && text.length >= 5) { text }
+    }
+
+    fun compile(docFactory: C_DocSymbolFactory): DocComment? {
+        val rawText = text.substring(3, text.length - 2).trim()
+        return docFactory.compileComment(tokenPos, rawText)
+    }
+
+    override fun toString() = text
+}
+
+fun S_Comment?.compileGetter(docFactory: C_DocSymbolFactory): C_LateGetter<DocComment?> {
+    val docComment = this?.compile(docFactory)
+    return C_LateGetter.const(docComment)
+}
+
+fun S_Comment?.compileGetter(symCtx: C_SymbolContext): C_LateGetter<DocComment?> {
+    return compileGetter(symCtx.docSymbolFactory)
 }

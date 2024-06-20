@@ -7,64 +7,106 @@ package net.postchain.rell.base.compiler.base.fn
 import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.*
-import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
+import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.R_CtErrorType
-import net.postchain.rell.base.model.R_DefinitionName
 import net.postchain.rell.base.model.R_GlobalConstantId
-import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.utils.LazyPosString
+import net.postchain.rell.base.utils.associateNotNullValues
+import net.postchain.rell.base.utils.doc.DocComment
+import net.postchain.rell.base.utils.doc.DocFunctionParamComments
+
+abstract class C_SubprogramHeader(
+    val params: C_FormalParameters,
+    val docComment: DocComment?,
+)
 
 object C_FunctionUtils {
     fun compileFunctionHeader(
         defCtx: C_DefinitionContext,
         fnPos: S_Pos,
-        defName: R_DefinitionName,
         params: List<S_FormalParameter>,
         retType: S_Type?,
-        body: S_FunctionBody?
+        body: S_FunctionBody?,
+        comment: S_Comment?,
     ): C_UserFunctionHeader {
         val explicitRetType = if (retType == null) null else (retType.compileOpt(defCtx) ?: R_CtErrorType)
         val bodyRetType = if (body == null) R_UnitType else null
         val rRetType = explicitRetType ?: bodyRetType
 
-        val cParams = C_FormalParameters.compile(defCtx, params, false)
+        val rawHeader = compileCommonHeader(defCtx, fnPos, params, comment, false)
 
         val cBody = if (body == null) null else {
-            val bodyCtx = C_FunctionBodyContext(defCtx, fnPos, defName, rRetType, cParams)
-            C_UserFunctionBody(bodyCtx, body)
+            val bodyCtx = C_FunctionBodyContext(defCtx, fnPos, rRetType, rawHeader.params)
+            C_UserFunctionDeepDefinitionBody(bodyCtx, body)
         }
 
-        return C_UserFunctionHeader(rRetType, cParams, cBody)
+        return C_UserFunctionHeader(rawHeader.params, rawHeader.comment, rRetType, cBody)
+    }
+
+    fun compileOperationHeader(
+        defCtx: C_DefinitionContext,
+        pos: S_Pos,
+        params: List<S_FormalParameter>,
+        comment: S_Comment?,
+    ): C_OperationHeader {
+        val commonHeader = compileCommonHeader(defCtx, pos, params, comment, true)
+        return C_OperationHeader(commonHeader.params, commonHeader.comment)
     }
 
     fun compileQueryHeader(
         defCtx: C_DefinitionContext,
-        simpleName: S_Name,
-        defName: R_DefinitionName,
+        simpleName: C_Name,
         params: List<S_FormalParameter>,
         retType: S_Type?,
-        body: S_FunctionBody
-    ): C_QueryFunctionHeader {
+        body: S_FunctionBody,
+        comment: S_Comment?,
+    ): C_QueryHeader {
         val rRetType = if (retType == null) null else (retType.compileOpt(defCtx) ?: R_CtErrorType)
-        val cParams = C_FormalParameters.compile(defCtx, params, defCtx.globalCtx.compilerOptions.gtv)
-        val bodyCtx = C_FunctionBodyContext(defCtx, simpleName.pos, defName, rRetType, cParams)
-        val cBody = C_QueryFunctionBody(bodyCtx, body)
-        return C_QueryFunctionHeader(rRetType, cParams, cBody)
+        val rawHeader = compileCommonHeader(defCtx, simpleName.pos, params, comment, defCtx.globalCtx.compilerOptions.gtv)
+        val bodyCtx = C_FunctionBodyContext(defCtx, simpleName.pos, rRetType, rawHeader.params)
+        val cBody = C_QueryDeepDefinitionBody(bodyCtx, body)
+        return C_QueryHeader(rawHeader.params, rawHeader.comment, rRetType, cBody)
     }
+
+    private fun compileCommonHeader(
+        defCtx: C_DefinitionContext,
+        pos: S_Pos,
+        params: List<S_FormalParameter>,
+        comment: S_Comment?,
+        gtv: Boolean,
+    ): C_RawSubprogramHeader {
+        //TODO not completely right to use APPDEFS step: functionally correct, but unrelated to docs
+        val docCommentsLate = C_LateInit(C_CompilerPass.APPDEFS, DocFunctionParamComments.NULL)
+        val cParams = C_FormalParameters.compile(defCtx, params, gtv, docCommentsLate.getter)
+
+        val paramNames = cParams.list.map { it.name.rName }
+        val paramComments = cParams.list.associateNotNullValues { it.name.rName to it.comment }
+
+        val docComments = defCtx.symCtx.docSymbolFactory.compileFunctionParamComments(
+            pos,
+            defCtx.defName,
+            comment,
+            paramNames,
+            paramComments,
+        )
+        docCommentsLate.set(docComments, allowEarly = true)
+
+        return C_RawSubprogramHeader(cParams, docComments.functionComment)
+    }
+
+    private class C_RawSubprogramHeader(val params: C_FormalParameters, val comment: DocComment?)
 
     fun compileGlobalConstantHeader(
         defCtx: C_DefinitionContext,
         simpleName: C_Name,
-        defName: R_DefinitionName,
         explicitType: S_Type?,
         expr: S_Expr,
-        constId: R_GlobalConstantId
-    ): C_GlobalConstantFunctionHeader {
+        constId: R_GlobalConstantId,
+    ): C_GlobalConstantHeader {
         val explicitRetType = if (explicitType == null) null else {
             val type = (explicitType.compileOpt(defCtx) ?: R_CtErrorType)
             C_Types.checkNotUnit(defCtx.msgCtx, explicitType.pos, type, simpleName.str) {
@@ -73,9 +115,8 @@ object C_FunctionUtils {
             type
         }
 
-        val bodyCtx = C_FunctionBodyContext(defCtx, simpleName.pos, defName, explicitRetType, C_FormalParameters.EMPTY)
-        val body = C_GlobalConstantFunctionBody(bodyCtx, expr, constId)
-        return C_GlobalConstantFunctionHeader(explicitRetType, body)
+        val body = C_GlobalConstantDeepDefinitionBody(defCtx, expr, constId, explicitRetType)
+        return C_GlobalConstantHeader(explicitRetType, body)
     }
 
     fun compileRegularCall(
@@ -86,29 +127,6 @@ object C_FunctionUtils {
     ): V_GlobalFunctionCall {
         val res = C_FunctionCallArgsUtils.compileCall(base.ctx, args, resTypeHint, callTarget, base.argIdeInfos)
         return res ?: C_ExprUtils.errorVGlobalCall(base.ctx, base.callInfo.callPos, callTarget.retType() ?: R_CtErrorType)
-    }
-
-    fun compileReturnType(ctx: C_ExprContext, name: LazyPosString, header: C_FunctionHeader): R_Type? {
-        if (header.explicitType != null) {
-            return header.explicitType
-        } else if (header.body == null) {
-            return null
-        }
-
-        val decType = header.declarationType
-        val retTypeRes = header.body.returnType()
-
-        if (retTypeRes.recursion) {
-            val nameStr = name.lazyStr.value
-            ctx.msgCtx.error(name.pos, "fn_type_recursion:$decType:[$nameStr]",
-                    "${decType.capitalizedMsg} '$nameStr' is recursive, cannot infer the type; specify type explicitly")
-        } else if (retTypeRes.stackOverflow) {
-            val nameStr = name.lazyStr.value
-            ctx.msgCtx.error(name.pos, "fn_type_stackoverflow:$decType:[$nameStr]",
-                    "Cannot infer type for ${decType.msg} '$nameStr': call chain is too long; specify type explicitly")
-        }
-
-        return retTypeRes.value
     }
 
     fun checkParamRestrictions(

@@ -14,6 +14,7 @@ import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.R_AppUid
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.IdeGlobalSymbolLink
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolGlobalId
@@ -170,9 +171,9 @@ class C_NsAsm_ExactImportNames(
 }
 
 class C_NsAsm_Namespace(
-        defs: Map<R_Name, C_NsAsm_Def>,
-        importDefs: Multimap<R_Name, C_NsAsm_Def>,
-        wildcardImports: List<C_NsAsm_WildcardImport>
+    defs: Map<R_Name, C_NsAsm_Def>,
+    importDefs: Multimap<R_Name, C_NsAsm_Def>,
+    wildcardImports: List<C_NsAsm_WildcardImport>,
 ) {
     val defs = defs.toImmMap()
     val importDefs = importDefs.toImmMultimap()
@@ -949,14 +950,9 @@ private object C_NsAsm_Utils {
         for (entry in ns.entries) {
             if (entry.def is C_NsAsm_RawDef_Namespace && entry.def.merge) {
                 val list = namespaces.remove(entry.name.str)
-                if (list != null && list.size >= 2) {
-                    val mergedNs = mergeNamespaces0(list.map { it.ns })
-                    val mergedDeprecated = list.firstNotNullOfOrNull { it.deprecated }
-                    val mergedDef = C_NsAsm_RawDef_Namespace(mergedNs, true, entry.def.defName, entry.def.ideInfo, mergedDeprecated)
-                    val mergedEntry = C_NsAsm_RawEntry(entry.name, entry.type, mergedDef, entry.identity, entry.container, stamp)
+                if (list != null) {
+                    val mergedEntry = mergeNamespaceDefs(entry, entry.def, list, stamp)
                     entries.add(mergedEntry)
-                } else if (list != null) {
-                    entries.add(entry)
                 }
             } else {
                 entries.add(entry)
@@ -966,10 +962,34 @@ private object C_NsAsm_Utils {
         return C_NsAsm_RawNamespace(entries, ns.wildcardImports)
     }
 
-    private fun mergeNamespaces0(list: List<C_NsAsm_RawNamespace>): C_NsAsm_RawNamespace {
-        val entries = list.flatMap { it.entries }
-        val wildcardImports = list.flatMap { it.wildcardImports }
-        return C_NsAsm_RawNamespace(entries, wildcardImports)
+    private fun mergeNamespaceDefs(
+        entry: C_NsAsm_RawEntry,
+        def: C_NsAsm_RawDef_Namespace,
+        list: List<C_NsAsm_RawDef_Namespace>,
+        stamp: R_AppUid,
+    ): C_NsAsm_RawEntry {
+        if (list.size < 2) {
+            return entry
+        }
+
+        val nsEntries = list.flatMap { it.ns.entries }
+        val wildcardImports = list.flatMap { it.ns.wildcardImports }
+        val mergedNs = C_NsAsm_RawNamespace(nsEntries, wildcardImports)
+
+        val mergedIdeInfo = mergeIdeInfos(list)
+        val mergedDeprecated = list.firstNotNullOfOrNull { it.deprecated }
+        val mergedDef = C_NsAsm_RawDef_Namespace(mergedNs, true, def.defName, mergedIdeInfo, mergedDeprecated)
+
+        return C_NsAsm_RawEntry(entry.name, entry.type, mergedDef, entry.identity, entry.container, stamp)
+    }
+
+    private fun mergeIdeInfos(defs: List<C_NsAsm_RawDef_Namespace>): C_IdeSymbolInfo {
+        val ideInfos = defs.map { it.ideInfo }
+        val firstDef = defs.first()
+        return firstDef.ideInfo.transformDocSymbol { doc ->
+            val comment = ideInfos.firstNotNullOfOrNull { it.getIdeInfo().doc?.comment }
+            DocSymbol(doc.kind, doc.symbolName, doc.mountName, doc.declaration, comment)
+        }
     }
 
     fun concatNamespaces(nss: List<C_NsAsm_RawNamespace>): C_NsAsm_RawNamespace {

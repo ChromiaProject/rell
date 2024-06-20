@@ -5,8 +5,8 @@
 package net.postchain.rell.base.compiler.parser
 
 import com.github.h0tk3y.betterParse.combinators.*
-import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parser
+import com.github.h0tk3y.betterParse.lexer.Token
 import com.github.h0tk3y.betterParse.parser.Parser
 import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.compiler.base.core.C_Name
@@ -21,7 +21,7 @@ object S_Keywords {
     const val OVERRIDE = "override"
 }
 
-object S_Grammar: Grammar<S_RellFile>() {
+object S_Grammar {
     private val rellTokens = arrayListOf<RellToken>()
 
     private val LPAR by relltok("(")
@@ -123,15 +123,25 @@ object S_Grammar: Grammar<S_RellFile>() {
     private val LR_CURL = TokenPair(LCURL, RCURL)
     private val LR_BRACK = TokenPair(LBRACK, RBRACK)
 
-    override val tokenizer: RellTokenizer by lazy { RellTokenizer(rellTokens) }
+    val tokenizer: RellTokenizer by lazy { RellTokenizer(rellTokens) }
 
     private val _commaSeparatedParsers = mutableListOf<Parser<*>>()
 
     val commaSeparatedParsers: List<Parser<*>> get() = _commaSeparatedParsers.toImmList()
 
-    private val name by (ID) map { S_Name(it.pos, RellTokenizer.decodeName(it.pos, it.text)) }
+    private val nameNode by ID map {
+        val sName = S_Name(it.pos, RellTokenizer.decodeName(it.pos, it.text))
+        G_Node(sName, it)
+    }
 
-    private val qualifiedName by separatedTerms(name, DOT, false) map { S_QualifiedName(it) }
+    private val name by nameNode map { it.value }
+
+    private val qualifiedNameNode by separatedTerms(nameNode, DOT, false) map { nameNodes ->
+        val sNames = nameNodes.map { it.value }
+        G_Node(S_QualifiedName(sNames), nameNodes.first().firstToken)
+    }
+
+    private val qualifiedName by qualifiedNameNode map { it.value }
 
     private val typeRef by parser(this::type)
     private val expressionRef by parser(this::expression)
@@ -139,9 +149,9 @@ object S_Grammar: Grammar<S_RellFile>() {
 
     private val nameType by qualifiedName map { S_NameType(it) }
 
-    private val tupleTypeField by optional(name * -COLON) * typeRef map {
+    private val tupleTypeField by optional(nameNode * -COLON) * typeRef map {
         (name, type) ->
-        S_NameOptValue(name, type)
+        S_GenericTupleAttr(name?.value, type, name?.firstToken?.comment)
     }
 
     private val tupleType by commaSeparatedOneMany(tupleTypeField) map {
@@ -204,86 +214,110 @@ object S_Grammar: Grammar<S_RellFile>() {
     private val annotationArg by annotationArgValue or annotationArgName
     private val annotationArgs by commaSeparatedZeroMany(annotationArg) map { it.items }
 
-    private val annotation by -AT * name * optional(annotationArgs) map {
-        (name, args) ->
-        S_Annotation(name, args ?: immListOf())
+    private val annotation by AT * name * optional(annotationArgs) map {
+        (at, name, args) ->
+        G_Node(S_Annotation(name, args ?: immListOf()), at)
     }
 
-    private val keywordModifier by (
-        ( ABSTRACT map { S_KeywordModifier(C_Name.make(it.pos, it.text), S_KeywordModifierKind.ABSTRACT) } )
-        or ( OVERRIDE map { S_KeywordModifier(C_Name.make(it.pos, it.text), S_KeywordModifierKind.OVERRIDE) } )
+    private val keywordModifier0 by (
+        ( ABSTRACT map { it to S_KeywordModifierKind.ABSTRACT } )
+        or ( OVERRIDE map { it to S_KeywordModifierKind.OVERRIDE } )
     )
 
-    private val modifier: Parser<S_Modifier> by keywordModifier or annotation
-
-    private val nameTypeAttrHeader by name * -COLON * type map { (name, type) -> S_NamedAttrHeader(name, type) }
-
-    private val anonAttrHeader by qualifiedName * optional(QUESTION) map {
-        (name, nullable) ->
-        S_AnonAttrHeader(name, nullable != null)
+    private val keywordModifier by keywordModifier0 map { (token, value) ->
+        val cName = C_Name.make(token.pos, token.text)
+        G_Node(S_KeywordModifier(cName, value), token)
     }
 
-    private val attrHeader by ( nameTypeAttrHeader or anonAttrHeader )
+    private val modifier: Parser<G_Node<S_Modifier>> by keywordModifier or annotation
+
+    private val modifiers: Parser<G_Node<S_Modifiers>?> by zeroOrMore(modifier) map { modifierNodes ->
+        if (modifierNodes.isEmpty()) null else {
+            val modifiers = modifierNodes.map { it.value }
+            val firstToken = modifierNodes.first().firstToken
+            G_Node(S_Modifiers(modifiers), firstToken)
+        }
+    }
+
+    private val nameTypeAttrHeader by nameNode * -COLON * type map {
+        (name, type) ->
+        G_Node(S_NamedAttrHeader(name.value, type), name.firstToken)
+    }
+
+    private val anonAttrHeader by qualifiedNameNode * optional(QUESTION) map {
+        (name, nullable) ->
+        G_Node(S_AnonAttrHeader(name.value, nullable != null), name.firstToken)
+    }
+
+    private val attrHeader by nameTypeAttrHeader or anonAttrHeader
 
     private val baseAttributeDefinition by optional(MUTABLE) * attrHeader * optional(-ASSIGN * expressionRef) map {
         (mutable, header, expr) ->
-        S_AttributeDefinition(mutable?.pos, header, expr)
+        val firstToken = mutable ?: header.firstToken
+        G_Node(S_AttributeDefinition(mutable?.pos, header.value, expr), firstToken)
     }
 
     private val attributeDefinition by baseAttributeDefinition * -SEMI
 
-    private val relAttributeClause by attributeDefinition map {
-        S_AttributeClause(it)
+    private val attributeClause by attributeDefinition map {
+        S_AttributeClause(it.value, it.firstToken.comment)
     }
 
     private val keyIndexKind by (
-        ( KEY mapNode { R_KeyIndexKind.KEY } )
-        or ( INDEX mapNode { R_KeyIndexKind.INDEX } )
+        ( KEY map { G_Node(R_KeyIndexKind.KEY, it) } )
+        or ( INDEX map { G_Node(R_KeyIndexKind.INDEX, it) } )
     )
 
-    private val relKeyIndexClause by keyIndexKind * commaSeparatedOneMany0(baseAttributeDefinition) * -SEMI map {
+    private val keyIndexClause by keyIndexKind * commaSeparatedOneMany0(baseAttributeDefinition) * -SEMI map {
         (kind, attrs) ->
-        S_KeyIndexClause(kind.pos, kind.value, attrs.items)
+        val kindToken = kind.firstToken
+        val rawAttrs = attrs.items.map { it.value }
+        S_KeyIndexClause(kindToken.pos, kind.value, rawAttrs, kindToken.comment)
     }
-
-    private val relAnyClause by relAttributeClause or relKeyIndexClause
 
     private val entityAnnotations by commaSeparatedOneMany(name) map { it.items }
 
-    private val entityBodyFull by -LCURL * zeroOrMore(relAnyClause) * -RCURL
+    private val relClause by attributeClause or keyIndexClause
+    private val entityBodyFull by -LCURL * zeroOrMore(relClause) * -RCURL
     private val entityBodyShort by SEMI map { null }
     private val entityBody by entityBodyFull or entityBodyShort
 
-    private val entityKeyword by (ENTITY map { it.pos to false }) or (CLASS map { it.pos to true })
+    private val entityKeyword by
+        (ENTITY map { it to false }) or
+        (CLASS map { it to true })
 
     private val entityDef by entityKeyword * name * optional(entityAnnotations) * optional(entityBody) map {
-        (posDeprecated, name, annotations2, clauses) ->
-        val (pos, deprecated) = posDeprecated
-        val deprecatedKwPos = if (deprecated) pos else null
-        AnnotatedDef {
-            S_EntityDefinition(pos, it, deprecatedKwPos, name, annotations2 ?: listOf(), clauses)
+        (kwDeprecated, name, annotations2, clauses) ->
+        val (kw, deprecated) = kwDeprecated
+        val deprecatedKwPos = if (deprecated) kw.pos else null
+        AnnotatedDef(kw) {
+            S_EntityDefinition(it, deprecatedKwPos, name, annotations2 ?: listOf(), clauses)
         }
     }
 
-    private val objectDef by OBJECT * name * -LCURL * zeroOrMore(attributeDefinition) * -RCURL map {
+    private val objectDef by OBJECT * name * -LCURL * zeroOrMore(attributeClause) * -RCURL map {
         (kw, name, attrs) ->
-        AnnotatedDef { S_ObjectDefinition(kw.pos, it, name, attrs) }
+        AnnotatedDef(kw) { S_ObjectDefinition(it, name, attrs) }
     }
 
     private val structKeyword by
-        (STRUCT map { it.pos to false }) or
-        (RECORD map { it.pos to true })
+        (STRUCT map { it to false }) or
+        (RECORD map { it to true })
 
-    private val structDef by structKeyword * name * -LCURL * zeroOrMore(attributeDefinition) * -RCURL map {
+    private val structDef by structKeyword * name * -LCURL * zeroOrMore(attributeClause) * -RCURL map {
         (posDeprecated, name, attrs) ->
-        val (pos, deprecated) = posDeprecated
-        val deprecatedKwPos = if (deprecated) pos else null
-        AnnotatedDef { S_StructDefinition(pos, it, deprecatedKwPos, name, attrs) }
+        val (kw, deprecated) = posDeprecated
+        val deprecatedKwPos = if (deprecated) kw.pos else null
+        AnnotatedDef(kw) { S_StructDefinition(it, deprecatedKwPos, name, attrs) }
     }
 
-    private val enumDef by ENUM * name * commaSeparatedZeroMany(name, LR_CURL) map {
+    private val enumValue by nameNode map {
+        S_EnumValue(it.value, it.firstToken.comment)
+    }
+
+    private val enumDef by ENUM * name * commaSeparatedZeroMany(enumValue, LR_CURL) map {
         (kw, name, values) ->
-        AnnotatedDef { S_EnumDefinition(kw.pos, it, name, values.items) }
+        AnnotatedDef(kw) { S_EnumDefinition(it, name, values.items) }
     }
 
     private val binaryOperator = (
@@ -356,8 +390,8 @@ object S_Grammar: Grammar<S_RellFile>() {
         booleanLiteralExpr or
         nullLiteralExpr
 
-    private val tupleExprField by optional(name * -ASSIGN) * expressionRef map {
-        (name, expr) -> S_NameOptValue(name, expr)
+    private val tupleExprField by optional(nameNode * -ASSIGN) * expressionRef map {
+        (name, expr) -> S_GenericTupleAttr(name?.value, expr, name?.firstToken?.comment)
     }
 
     private val tupleExpr by commaSeparatedOneMany(tupleExprField) map {
@@ -365,9 +399,11 @@ object S_Grammar: Grammar<S_RellFile>() {
         if (single != null) S_ParenthesesExpr(it.pos, single) else S_TupleExpr(it.pos, it.items)
     }
 
-    private val atExprFromItem by zeroOrMore(annotation) * optional(name * -COLON) * expressionRef map {
-        ( annotations, alias, expr ) ->
-        S_AtExprFromItem(S_Modifiers(annotations), alias, expr)
+    private val atExprFromItem by zeroOrMore(annotation) * optional(nameNode * -COLON) * expressionRef map {
+        (annotations, alias, expr) ->
+        val annotations2 = annotations.map { it.value }
+        val firstToken = annotations.firstOrNull()?.firstToken ?: alias?.firstToken
+        S_AtExprFromItem(S_Modifiers(annotations2), alias?.value, expr, firstToken?.comment)
     }
 
     private val atExprFrom by commaSeparatedOneMany(atExprFromItem) map {
@@ -386,12 +422,12 @@ object S_Grammar: Grammar<S_RellFile>() {
         S_AtExprWhat_Simple(dot.pos, path)
     }
 
-    private val atExprWhatName by name * -ASSIGN
-
-    private val atExprWhatComplexItem by zeroOrMore(annotation) * optional(atExprWhatName) * expressionRef map {
+    private val atExprWhatComplexItem by zeroOrMore(annotation) * optional(nameNode * -ASSIGN) * expressionRef map {
         (annotations, name, expr) ->
-        val modifiers = S_Modifiers(annotations.map { it })
-        S_AtExprWhatComplexField(name, expr, modifiers)
+        val annotations2 = annotations.map { it.value }
+        val modifiers = S_Modifiers(annotations2)
+        val firstToken = annotations.firstOrNull()?.firstToken ?: name?.firstToken
+        S_AtExprWhatComplexField(name?.value, expr, modifiers, firstToken?.comment)
     }
 
     private val atExprWhatComplex by commaSeparatedOneMany(atExprWhatComplexItem) map {
@@ -561,11 +597,11 @@ object S_Grammar: Grammar<S_RellFile>() {
     private val emptyStmt by SEMI map { S_EmptyStatement(it.pos) }
 
     private val varVal by (
-            ( VAL map { S_PosValue(it, false) } )
-            or ( VAR map { S_PosValue(it, true) } )
+            ( VAL map { G_Node(false, it) } )
+            or ( VAR map { G_Node(true, it) } )
     )
 
-    private val simpleVarDeclarator by attrHeader map { S_SimpleVarDeclarator(it) }
+    private val simpleVarDeclarator by attrHeader map { S_SimpleVarDeclarator(it.value) }
 
     private val tupleVarDeclarator by commaSeparatedOneMany(parser(this::varDeclarator)) map {
         S_TupleVarDeclarator(it.pos, it.items)
@@ -574,8 +610,9 @@ object S_Grammar: Grammar<S_RellFile>() {
     private val varDeclarator: Parser<S_VarDeclarator> by simpleVarDeclarator or tupleVarDeclarator
 
     private val varStmt by varVal * varDeclarator * optional(-ASSIGN * expression) * -SEMI map {
-        (mutable, declarator, expr) ->
-        S_VarStatement(mutable.pos, declarator, expr, mutable.value)
+        (mutableNode, declarator, expr) ->
+        val kw = mutableNode.firstToken
+        S_VarStatement(kw.pos, declarator, expr, mutableNode.value, kw.comment)
     }
 
     private val returnStmt by RETURN * optional(expression) * -SEMI map { ( kw, expr ) ->
@@ -638,11 +675,13 @@ object S_Grammar: Grammar<S_RellFile>() {
 
     private val createStmt by createExpr * -SEMI map { expr -> S_ExprStatement(expr) }
 
-    private val updateFromSingle by qualifiedName map { S_PosValue(it.pos, listOf(S_UpdateFromItem(null, it))) }
+    private val updateFromSingle by qualifiedName map {
+        S_PosValue(it.pos, listOf(S_UpdateFromItem(null, it, null)))
+    }
 
-    private val updateFromItem by optional(name * -COLON) * qualifiedName map {
-        ( alias, entityName ) ->
-        S_UpdateFromItem(alias, entityName)
+    private val updateFromItem by optional(nameNode * -COLON) * qualifiedName map {
+        (alias, entityName) ->
+        S_UpdateFromItem(alias?.value, entityName, alias?.firstToken?.comment)
     }
 
     private val updateFromMulti by commaSeparatedOneMany(updateFromItem) map {
@@ -713,13 +752,13 @@ object S_Grammar: Grammar<S_RellFile>() {
     )
 
     private val formalParameter by attrHeader * optional(-ASSIGN * expression) map {
-        (attr, expr) -> S_FormalParameter(attr, expr)
+        (attr, expr) -> S_FormalParameter(attr.value, expr, attr.firstToken.comment)
     }
 
     private val formalParameters by commaSeparatedZeroMany(formalParameter) map { it.items }
 
     private val opDef by OPERATION * name * formalParameters * blockStmt map {
-        (kw, name, params, body) -> AnnotatedDef { S_OperationDefinition(kw.pos, it, name, params, body) }
+        (kw, name, params, body) -> AnnotatedDef(kw) { S_OperationDefinition(it, name, params, body) }
     }
 
     private val functionBodyShort by -ASSIGN * expression * -SEMI map { S_FunctionBodyShort(it) }
@@ -731,18 +770,18 @@ object S_Grammar: Grammar<S_RellFile>() {
 
     private val queryDef by QUERY * name * formalParameters * optional(-COLON * type) * queryBody map {
         (kw, name, params, type, body) ->
-        AnnotatedDef { S_QueryDefinition(kw.pos, it, name, params, type, body) }
+        AnnotatedDef(kw) { S_QueryDefinition(it, name, params, type, body) }
     }
 
     private val functionDef by FUNCTION * optional(qualifiedName) * formalParameters * optional(-COLON * type) * functionBody map {
         (kw, name, params, type, body) ->
-        AnnotatedDef { S_FunctionDefinition(kw.pos, it, name, params, type, body) }
+        AnnotatedDef(kw) { S_FunctionDefinition(it, name, params, type, body) }
     }
 
     private val namespaceDef by NAMESPACE * optional(qualifiedName) * LCURL * zeroOrMore(parser(this::annotatedDef)) * RCURL map {
         (kw, name, lcurl, defs, rcurl) ->
         val bodyPosRange = S_PosRange(lcurl.pos, rcurl.pos)
-        AnnotatedDef { S_NamespaceDefinition(kw.pos, it, bodyPosRange, name, defs) }
+        AnnotatedDef(kw) { S_NamespaceDefinition(it, bodyPosRange, name, defs) }
     }
 
     private val absoluteImportModule by qualifiedName map { S_ImportModulePath(null, it) }
@@ -759,8 +798,10 @@ object S_Grammar: Grammar<S_RellFile>() {
 
     private val importModule by absoluteImportModule or relativeImportModule or upImportModule
 
-    private val importTargetExactItem by optional(name * -COLON) * qualifiedName * optional(-DOT * MUL) map {
-        (alias, name, wildcard) -> S_ExactImportTargetItem(alias, name, wildcard != null)
+    private val importTargetExactItem by optional(nameNode * -COLON) * qualifiedNameNode * optional(-DOT * MUL) map {
+        (alias, name, wildcard) ->
+        val firstToken = alias?.firstToken ?: name.firstToken
+        S_ExactImportTargetItem(alias?.value, name.value, wildcard != null, firstToken.comment)
     }
     private val importTargetExact by commaSeparatedOneMany(importTargetExactItem, LR_CURL) map {
         items -> S_ExactImportTarget(items.items)
@@ -770,17 +811,17 @@ object S_Grammar: Grammar<S_RellFile>() {
 
     private val importDef by IMPORT * optional( name * -COLON) * importModule * optional(importTarget) * -SEMI map {
         (kw, alias, module, target) ->
-        AnnotatedDef { S_ImportDefinition(kw.pos, it, alias, module, target ?: S_DefaultImportTarget) }
+        AnnotatedDef(kw) { S_ImportDefinition(it, alias, module, target ?: S_DefaultImportTarget) }
     }
 
     private val includeDef by INCLUDE * STRING * -SEMI map {
         (kw, _) ->
-        AnnotatedDef { S_IncludeDefinition(kw.pos) }
+        AnnotatedDef(kw) { S_IncludeDefinition(it) }
     }
 
     private val constantDef by VAL * name * optional(-COLON * typeRef) * -ASSIGN * expressionRef * -SEMI map {
         (kw, name, type, expr) ->
-        AnnotatedDef { S_GlobalConstantDefinition(kw.pos, it, name, type, expr) }
+        AnnotatedDef(kw) { S_GlobalConstantDefinition(it, name, type, expr) }
     }
 
     private val replDef: Parser<AnnotatedDef> by (
@@ -801,15 +842,18 @@ object S_Grammar: Grammar<S_RellFile>() {
             or constantDef
     )
 
-    private val annotatedDef by zeroOrMore(modifier) * anyDef map {
+    private val annotatedDef by modifiers * anyDef map {
         (modifiers, def) -> def.createDef(modifiers)
     }
 
-    private val moduleHeader by zeroOrMore(modifier) * MODULE * -SEMI map {
-        (modifiers, kw) -> S_ModuleHeader(S_Modifiers(modifiers), kw.pos)
+    private val moduleHeader by modifiers * MODULE * -SEMI map {
+        (modifiersNode, kw) ->
+        val firstToken = modifiersNode?.firstToken ?: kw
+        val modifiers = modifiersNode?.value ?: S_Modifiers()
+        S_ModuleHeader(modifiers, kw.pos, firstToken.comment)
     }
 
-    private val defReplStep by zeroOrMore(modifier) * replDef map {
+    private val defReplStep by modifiers * replDef map {
         (modifiers, def) ->
         S_DefinitionReplStep(def.createDef(modifiers))
     }
@@ -830,12 +874,12 @@ object S_Grammar: Grammar<S_RellFile>() {
 
     val replParser: Parser<S_ReplCommand> by replCommand
 
-    override val rootParser by optional(moduleHeader) * zeroOrMore(annotatedDef) map {
+    val rootParser by optional(moduleHeader) * zeroOrMore(annotatedDef) map {
         (header, defs) ->
         S_RellFile(header, defs)
     }
 
-    private fun <T> getTupleSingleField(list: S_CommaSeparatedList<S_NameOptValue<T>>): T? {
+    private fun <T> getTupleSingleField(list: S_CommaSeparatedList<S_GenericTupleAttr<T>>): T? {
         val first = list.items.first()
         val isSingle = list.items.size == 1 && !list.trailingComma && first.name == null
         return if (isSingle) first.value else null
@@ -875,19 +919,29 @@ object S_Grammar: Grammar<S_RellFile>() {
     }
 
     private fun relltok(s: String): RellToken {
-        val t = token(s)
+        val t = Token(null, s)
         return RellToken(t.name ?: "", t)
     }
 
-    private operator fun RellToken.provideDelegate(thisRef: Grammar<*>, property: KProperty<*>): RellToken {
+    private operator fun RellToken.provideDelegate(thisRef: S_Grammar, property: KProperty<*>): RellToken {
         val ex = if (token.name != null) this else RellToken(property.name, token)
         rellTokens.add(ex)
         return ex
     }
+
+    private operator fun <T> Parser<T>.getValue(thisRef: S_Grammar, property: KProperty<*>): Parser<T> = this
 }
 
-private class AnnotatedDef(private val creator: (S_Modifiers) -> S_Definition) {
-    fun createDef(modifiers: List<S_Modifier>) = creator(S_Modifiers(modifiers))
+private class AnnotatedDef(
+    private val kw: RellTokenMatch,
+    private val creator: (S_DefinitionBase) -> S_Definition,
+) {
+    fun createDef(modifiersNode: G_Node<S_Modifiers>?): S_Definition {
+        val modifiers = modifiersNode?.value ?: S_Modifiers()
+        val firstToken = modifiersNode?.firstToken ?: kw
+        val base = S_DefinitionBase(kw.pos, modifiers, firstToken.comment)
+        return creator(base)
+    }
 }
 
 private class AtExprMods(val limit: S_Expr?, val offset: S_Expr?)

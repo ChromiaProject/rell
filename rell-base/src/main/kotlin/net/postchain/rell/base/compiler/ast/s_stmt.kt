@@ -18,7 +18,6 @@ import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.stmt.*
 import net.postchain.rell.base.utils.MutableTypedKeyMap
-import net.postchain.rell.base.utils.Nullable
 import net.postchain.rell.base.utils.TypedKey
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
@@ -34,13 +33,13 @@ abstract class S_Statement(val pos: S_Pos) {
         if (cStmt == null) return C_Statement.ERROR
         val filePos = pos.toFilePos()
         val rStmt = R_StackTraceStatement(cStmt.rStmt, filePos)
-        return cStmt.update(rStmt = rStmt)
+        return cStmt.copy(rStmt = rStmt)
     }
 
     fun compileWithFacts(ctx: C_StmtContext, facts: C_VarFacts): C_Statement {
         val subCtx = ctx.updateFacts(facts)
         val cStmt = compile(subCtx)
-        return if (facts.isEmpty()) cStmt else cStmt.update(varFacts = facts.put(cStmt.varFacts))
+        return if (facts.isEmpty()) cStmt else cStmt.copy(varFacts = facts.put(cStmt.varFacts))
     }
 
     fun discoverVars(map: MutableTypedKeyMap): C_StatementVars {
@@ -65,17 +64,19 @@ class S_EmptyStatement(pos: S_Pos): S_Statement(pos) {
 
 sealed class S_VarDeclarator {
     abstract fun discoverVars(vars: MutableSet<R_Name>)
-    abstract fun compile(ctx: C_StmtContext, mutable: Boolean, hasExpr: Boolean): C_VarDeclarator
+    abstract fun compile(ctx: C_StmtContext, mutable: Boolean, hasExpr: Boolean, comment: S_Comment?): C_VarDeclarator
 }
 
-class S_SimpleVarDeclarator(private val attrHeader: S_AttrHeader): S_VarDeclarator() {
+class S_SimpleVarDeclarator(
+    private val attrHeader: S_AttrHeader,
+): S_VarDeclarator() {
     override fun discoverVars(vars: MutableSet<R_Name>) {
         vars.add(attrHeader.discoverVar())
     }
 
-    override fun compile(ctx: C_StmtContext, mutable: Boolean, hasExpr: Boolean): C_VarDeclarator {
+    override fun compile(ctx: C_StmtContext, mutable: Boolean, hasExpr: Boolean, comment: S_Comment?): C_VarDeclarator {
         val ideKind = if (mutable) IdeSymbolKind.LOC_VAR else IdeSymbolKind.LOC_VAL
-        val docLateInit = C_LateInit(C_CompilerPass.DOCS, Nullable.of<DocSymbol>())
+        val docLateInit = C_LateInit<DocSymbol?>(C_CompilerPass.DOCS, null)
         val ideData = C_LocalAttrHeaderIdeData(ideKind, docLateInit.getter)
 
         val cAttrHeader = attrHeader.compile(ctx.defCtx, hasExpr, ideData)
@@ -88,15 +89,18 @@ class S_SimpleVarDeclarator(private val attrHeader: S_AttrHeader): S_VarDeclarat
             }
             C_WildcardVarDeclarator(ctx, mutable)
         } else {
-            C_SimpleVarDeclarator(ctx, mutable, cAttrHeader, cName, explicitType, cAttrHeader.ideInfo, docLateInit)
+            C_SimpleVarDeclarator(ctx, mutable, cAttrHeader, cName, explicitType, comment, cAttrHeader.ideInfo, docLateInit)
         }
     }
 }
 
-class S_TupleVarDeclarator(val pos: S_Pos, val subDeclarators: List<S_VarDeclarator>): S_VarDeclarator() {
-    override fun compile(ctx: C_StmtContext, mutable: Boolean, hasExpr: Boolean): C_VarDeclarator {
+class S_TupleVarDeclarator(
+    val pos: S_Pos,
+    val subDeclarators: List<S_VarDeclarator>,
+): S_VarDeclarator() {
+    override fun compile(ctx: C_StmtContext, mutable: Boolean, hasExpr: Boolean, comment: S_Comment?): C_VarDeclarator {
         val cSubDeclarators = subDeclarators.map {
-            it.compile(ctx, mutable, hasExpr)
+            it.compile(ctx, mutable, hasExpr, comment)
         }
         return C_TupleVarDeclarator(ctx, mutable, pos, cSubDeclarators)
     }
@@ -109,13 +113,14 @@ class S_TupleVarDeclarator(val pos: S_Pos, val subDeclarators: List<S_VarDeclara
 }
 
 class S_VarStatement(
-        pos: S_Pos,
-        val declarator: S_VarDeclarator,
-        val expr: S_Expr?,
-        val mutable: Boolean
+    pos: S_Pos,
+    val declarator: S_VarDeclarator,
+    val expr: S_Expr?,
+    val mutable: Boolean,
+    private val comment: S_Comment?,
 ): S_Statement(pos) {
     override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
-        val cDeclarator = declarator.compile(ctx, mutable, hasExpr = expr != null)
+        val cDeclarator = declarator.compile(ctx, mutable, hasExpr = expr != null, comment = comment)
 
         val typeHint = C_TypeHint.ofType(cDeclarator.getHintType())
         val exprHint = C_ExprHint(typeHint)
@@ -480,7 +485,12 @@ class S_WhileStatement(pos: S_Pos, val expr: S_Expr, val stmt: S_Statement): S_S
     }
 }
 
-class S_ForStatement(pos: S_Pos, val declarator: S_VarDeclarator, val expr: S_Expr, val stmt: S_Statement): S_Statement(pos) {
+class S_ForStatement(
+    pos: S_Pos,
+    val declarator: S_VarDeclarator,
+    val expr: S_Expr,
+    val stmt: S_Statement,
+): S_Statement(pos) {
     override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val loop = S_WhileStatement.compileLoop(ctx, this, expr)
         if (loop == null) {
@@ -503,7 +513,7 @@ class S_ForStatement(pos: S_Pos, val declarator: S_VarDeclarator, val expr: S_Ex
         val (loopCtx, loopBlkCtx) = loop.condCtx.subBlock(loopUid)
 
         val mutVarFacts = C_MutableVarFacts()
-        val cDeclarator = declarator.compile(loopCtx, mutable = false, hasExpr = true)
+        val cDeclarator = declarator.compile(loopCtx, mutable = false, hasExpr = true, comment = null)
         val rDeclarator = cDeclarator.compile(cIterableAdapter.itemType, mutVarFacts)
         val iterFactsCtx = loopCtx.updateFacts(mutVarFacts.toVarFacts())
 
@@ -577,6 +587,6 @@ class S_GuardStatement(pos: S_Pos, private val stmt: S_Statement): S_Statement(p
 
         val cSubStmt = stmt.compile(ctx, repl)
         val rStmt = R_GuardStatement(cSubStmt.rStmt)
-        return cSubStmt.update(rStmt = rStmt, guardBlock = true)
+        return cSubStmt.copy(rStmt = rStmt, guardBlock = true)
     }
 }

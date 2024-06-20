@@ -16,7 +16,6 @@ import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.doc.DocDeclaration_TupleAttribute
-import net.postchain.rell.base.utils.doc.DocSymbolFactory
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
@@ -147,13 +146,15 @@ class S_NullableType(pos: S_Pos, val valueType: S_Type): S_Type(pos) {
     }
 }
 
-class S_TupleType(pos: S_Pos, private val fields: List<S_NameOptValue<S_Type>>): S_Type(pos) {
+data class S_GenericTupleAttr<T>(val name: S_Name?, val value: T, val comment: S_Comment?)
+
+class S_TupleType(pos: S_Pos, private val fields: List<S_GenericTupleAttr<S_Type>>): S_Type(pos) {
     override fun compile0(ctx: C_DefinitionContext): R_Type {
         val names = mutableSetOf<String>()
 
         val typeIdeId = ctx.tupleIdeId()
 
-        val rFields = fields.map { (name, type) ->
+        val rFields = fields.map { (name, type, comment) ->
             val nameHand = name?.compile(ctx.symCtx, def = true)
 
             val rType = C_Types.checkNotUnit(ctx.msgCtx, type.pos, type.compile(ctx), nameHand?.str) {
@@ -166,7 +167,7 @@ class S_TupleType(pos: S_Pos, private val fields: List<S_NameOptValue<S_Type>>):
                     throw C_Error.stop(cName.pos, "type_tuple_dupname:$cName", "Duplicate field: '$cName'")
                 }
 
-                val ideDef = makeFieldIdeDef(ctx.globalCtx.docFactory, typeIdeId, nameHand.name, rType)
+                val ideDef = makeFieldIdeDef(ctx.symCtx, typeIdeId, nameHand.name, rType, comment)
                 nameHand.setIdeInfo(ideDef.defInfo)
 
                 R_IdeName(nameHand.rName, ideDef.refInfo)
@@ -180,18 +181,20 @@ class S_TupleType(pos: S_Pos, private val fields: List<S_NameOptValue<S_Type>>):
 
     companion object {
         fun makeFieldIdeDef(
-            docFactory: DocSymbolFactory,
+            symCtx: C_SymbolContext,
             tupleIdeId: IdeSymbolId,
             cName: C_Name,
             rType: R_Type,
+            comment: S_Comment?,
         ): C_IdeSymbolDef {
             val attrIdeId = tupleIdeId.appendMember(IdeSymbolCategory.ATTRIBUTE, cName.rName)
 
             val docType = L_TypeUtils.docType(rType.mType)
-            val docSymbol = docFactory.makeDocSymbol(
+            val docSymbol = symCtx.makeDocSymbol(
                 DocSymbolKind.TUPLE_ATTR,
                 DocSymbolName.local(cName.str),
                 DocDeclaration_TupleAttribute(cName.rName, docType),
+                comment = comment,
             )
 
             return C_IdeSymbolDef.make(

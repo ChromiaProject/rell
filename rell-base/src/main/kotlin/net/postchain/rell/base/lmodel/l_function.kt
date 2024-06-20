@@ -49,7 +49,7 @@ class L_FunctionParam(
     val implies: L_ParamImplication?,
     val restrictions: C_MemberRestrictions,
     override val docSymbol: DocSymbol,
-): DocDefinition {
+): DocDefinition() {
     val type = mParam.type
     val arity = mParam.arity
     val nullable = mParam.nullable
@@ -185,6 +185,10 @@ class L_Function(
     val flags: L_FunctionFlags,
     val body: L_FunctionBody,
 ) {
+    val docMembers: Map<String, DocDefinition> by lazy {
+        header.params.associateBy { it.name.str }.toImmMap()
+    }
+
     fun strCode(actualName: R_QualifiedName = qualifiedName): String {
         val parts = listOfNotNull(
             if (flags.isStatic) "static" else null,
@@ -266,9 +270,7 @@ class L_NamespaceMember_Function(
         return parts.joinToString(" ")
     }
 
-    override fun getDocMember(name: String): DocDefinition? {
-        return function.getDocMember(name)
-    }
+    override fun getDocMembers0() = function.docMembers
 }
 
 class L_NamespaceMember_SpecialFunction(
@@ -303,9 +305,7 @@ class L_TypeDefMember_Function(
         }
     }
 
-    override fun getDocMember(name: String): DocDefinition? {
-        return function.getDocMember(name)
-    }
+    override fun getDocMembers0() = function.docMembers
 }
 
 class L_TypeDefMember_ValueSpecialFunction(

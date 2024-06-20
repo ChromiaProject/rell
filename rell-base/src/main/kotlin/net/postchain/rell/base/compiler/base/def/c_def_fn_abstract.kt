@@ -20,8 +20,6 @@ import net.postchain.rell.base.model.R_FunctionBase
 import net.postchain.rell.base.model.R_FunctionDefinition
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.utils.Nullable
-import net.postchain.rell.base.utils.One
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmSet
 
@@ -64,7 +62,7 @@ class C_AbstractFunctionDescriptor(
         val hasDefaultBody: Boolean,
         private val headerGetter: C_LateGetter<C_UserFunctionHeader>
 ) {
-    private val overrideFnBaseLate = C_LateInit(C_CompilerPass.ABSTRACT, One<R_FunctionBase?>(null))
+    private val overrideFnBaseLate = C_LateInit<R_FunctionBase?>(C_CompilerPass.ABSTRACT, null)
 
     fun functionPos() = fnPos
     fun functionName() = rFunction.appLevelName
@@ -72,28 +70,28 @@ class C_AbstractFunctionDescriptor(
     fun header() = headerGetter.get()
 
     fun setOverride(overrideFnBase: R_FunctionBase) {
-        overrideFnBaseLate.set(One(overrideFnBase))
+        overrideFnBaseLate.set(overrideFnBase)
     }
 
     fun getOverride(): R_FunctionBase? {
-        return overrideFnBaseLate.get().value
+        return overrideFnBaseLate.get()
     }
 }
 
 class C_OverrideFunctionDescriptor(val fnPos: S_Pos, private val rFnBase: R_FunctionBase) {
-    private val abstractLate = C_LateInit(C_CompilerPass.MEMBERS, Nullable.of<C_AbstractFunctionDescriptor>())
+    private val abstractLate = C_LateInit<C_AbstractFunctionDescriptor?>(C_CompilerPass.MEMBERS, null)
     private var bind = false
 
-    fun abstract() = abstractLate.get().value
+    fun abstract() = abstractLate.get()
 
     fun setAbstract(abstract: C_AbstractFunctionDescriptor?) {
-        abstractLate.set(Nullable.of(abstract))
+        abstractLate.set(abstract)
     }
 
     fun bind(): C_AbstractFunctionDescriptor? {
         check(!bind)
         bind = true
-        val abstract = abstractLate.get().value
+        val abstract = abstractLate.get()
         abstract?.setOverride(rFnBase)
         return abstract
     }

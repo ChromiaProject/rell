@@ -33,7 +33,11 @@ sealed class S_UpdateTarget {
     ): C_UpdateTarget?
 }
 
-class S_UpdateFromItem(val alias: S_Name?, val entityName: S_QualifiedName)
+class S_UpdateFromItem(
+    val alias: S_Name?,
+    val entityName: S_QualifiedName,
+    val comment: S_Comment?,
+)
 
 class S_UpdateTarget_Simple(
     private val cardinality: R_AtCardinality,
@@ -74,9 +78,9 @@ class S_UpdateTarget_Simple(
         return if (cFrom.size != cFrom0.size) null else cFrom
     }
 
-    private fun compileFromEntity(ctx: C_ExprContext, atExprId: R_AtExprId, from: S_UpdateFromItem): C_AtEntity? {
-        val explicitAliasHand = from.alias?.compile(ctx, def = true)
-        val entityNameHand = from.entityName.compile(ctx.nameCtx)
+    private fun compileFromEntity(ctx: C_ExprContext, atExprId: R_AtExprId, item: S_UpdateFromItem): C_AtEntity? {
+        val explicitAliasHand = item.alias?.compile(ctx, def = true)
+        val entityNameHand = item.entityName.compile(ctx.nameCtx)
 
         val entity = ctx.nsCtx.getEntity(entityNameHand)
         if (entity == null) {
@@ -86,7 +90,15 @@ class S_UpdateTarget_Simple(
 
         val alias = explicitAliasHand?.name ?: entityNameHand.last.name
         val atEntityId = ctx.appCtx.nextAtEntityId(atExprId)
-        val cAtEntity = S_AtExpr.makeDbAtEntity(entity, alias, explicitAliasHand?.name, atEntityId, ctx.docFactory)
+
+        val cAtEntity = S_AtExpr.makeDbAtEntity(
+            ctx.symCtx,
+            entity,
+            alias,
+            explicitAliasHand?.name,
+            atEntityId,
+            item.comment,
+        )
 
         explicitAliasHand?.setIdeInfo(cAtEntity.aliasIdeDef.defInfo)
         return cAtEntity
@@ -171,7 +183,7 @@ class S_UpdateTarget_Expr(private val expr: S_Expr): S_UpdateTarget() {
 
     private fun compileFrom(ctx: C_ExprContext, stmtPos: S_Pos, rAtEntity: R_DbAtEntity): C_AtFrom_Entities {
         val cAlias = C_Name.make(expr.startPos, rAtEntity.rEntity.rName)
-        val cAtEntity = S_AtExpr.makeDbAtEntity(rAtEntity.rEntity, cAlias, null, rAtEntity.id, ctx.docFactory)
+        val cAtEntity = S_AtExpr.makeDbAtEntity(ctx.symCtx, rAtEntity.rEntity, cAlias, null, rAtEntity.id, null)
         val fromCtx = C_AtFromContext(stmtPos, cAtEntity.atExprId, null)
         val fromItem = C_AtFromItem_Entity_Simple(cAtEntity.declPos, cAtEntity)
         return C_AtFrom_Entities(ctx, fromCtx, null, immListOf(fromItem))

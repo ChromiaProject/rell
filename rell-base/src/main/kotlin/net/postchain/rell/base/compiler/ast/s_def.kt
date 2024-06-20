@@ -72,10 +72,13 @@ sealed class S_RelClause: S_Node() {
     abstract fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder)
 }
 
-class S_AttributeClause(private val attr: S_AttributeDefinition): S_RelClause() {
+class S_AttributeClause(
+    private val attr: S_AttributeDefinition,
+    private val comment: S_Comment?,
+): S_RelClause() {
     override fun compile(ctx: C_EntityContext) {
         val attrHeader = attr.header.compile(ctx.defCtx)
-        ctx.addAttribute(attr, attrHeader, true)
+        ctx.addAttribute(attr, attrHeader, true, comment)
     }
 
     override fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder) {
@@ -84,7 +87,12 @@ class S_AttributeClause(private val attr: S_AttributeDefinition): S_RelClause() 
     }
 }
 
-class S_KeyIndexClause(val pos: S_Pos, val kind: R_KeyIndexKind, val attrs: List<S_AttributeDefinition>): S_RelClause() {
+class S_KeyIndexClause(
+    private val pos: S_Pos,
+    private val kind: R_KeyIndexKind,
+    private val attrs: List<S_AttributeDefinition>,
+    private val comment: S_Comment?,
+): S_RelClause() {
     override fun compile(ctx: C_EntityContext) {
         val cAttrs = attrs.map {
             val cHeader = it.header.compile(ctx.defCtx)
@@ -92,7 +100,7 @@ class S_KeyIndexClause(val pos: S_Pos, val kind: R_KeyIndexKind, val attrs: List
         }
 
         for (attr in cAttrs) {
-            ctx.addAttribute(attr.sAttr, attr.header, false)
+            ctx.addAttribute(attr.sAttr, attr.header, false, comment)
         }
 
         val nameSet = mutableSetOf<R_Name>()
@@ -151,7 +159,17 @@ class S_AttributeDefinition(val mutablePos: S_Pos?, val header: S_AttrHeader, va
     }
 }
 
-abstract class S_Definition(val kwPos: S_Pos, val modifiers: S_Modifiers): S_Node() {
+class S_DefinitionBase(
+    val kwPos: S_Pos,
+    val modifiers: S_Modifiers,
+    val comment: S_Comment?,
+)
+
+abstract class S_Definition(base: S_DefinitionBase): S_Node() {
+    val kwPos = base.kwPos
+    val modifiers = base.modifiers
+    val comment = base.comment
+
     val startPos = modifiers.pos ?: kwPos
 
     abstract fun compile(ctx: S_DefinitionContext): C_MidModuleMember?
@@ -162,11 +180,11 @@ abstract class S_Definition(val kwPos: S_Pos, val modifiers: S_Modifiers): S_Nod
     }
 
     protected fun checkSysMountNameConflict(
-            ctx: C_MountContext,
-            pos: S_Pos,
-            declType: C_DeclarationType,
-            mountName: R_MountName,
-            sysDefs: Set<R_MountName>
+        ctx: C_MountContext,
+        pos: S_Pos,
+        declType: C_DeclarationType,
+        mountName: R_MountName,
+        sysDefs: Set<R_MountName>,
     ) {
         if (mountName in sysDefs) {
             ctx.msgCtx.error(pos, "mount:conflict:sys:$declType:$mountName",
@@ -175,7 +193,7 @@ abstract class S_Definition(val kwPos: S_Pos, val modifiers: S_Modifiers): S_Nod
     }
 }
 
-abstract class S_BasicDefinition(pos: S_Pos, modifiers: S_Modifiers): S_Definition(pos, modifiers) {
+abstract class S_BasicDefinition(base: S_DefinitionBase): S_Definition(base) {
     final override fun compile(ctx: S_DefinitionContext): C_MidModuleMember {
         return C_MidModuleMember_Basic(this)
     }
@@ -184,13 +202,12 @@ abstract class S_BasicDefinition(pos: S_Pos, modifiers: S_Modifiers): S_Definiti
 }
 
 class S_EntityDefinition(
-    pos: S_Pos,
-    modifiers: S_Modifiers,
-    val deprecatedKwPos: S_Pos?,
-    val name: S_Name,
-    val annotations: List<S_Name>,
-    val body: List<S_RelClause>?,
-): S_BasicDefinition(pos, modifiers) {
+    base: S_DefinitionBase,
+    private val deprecatedKwPos: S_Pos?,
+    private val name: S_Name,
+    private val annotations: List<S_Name>,
+    private val body: List<S_RelClause>?,
+): S_BasicDefinition(base) {
     override fun compileBasic(ctx: C_MountContext) {
         ctx.checkNotReplOrTest(name.pos, C_DeclarationType.ENTITY)
 
@@ -226,6 +243,7 @@ class S_EntityDefinition(
             IdeSymbolKind.DEF_ENTITY,
             mountName,
             extChain = extChain,
+            docCommentGetter = comment.compileGetter(ctx.symCtx),
         )
 
         cDefBase.setDocDeclaration(DocDeclaration_Entity(docModifiers, cName.rName))
@@ -317,6 +335,7 @@ class S_EntityDefinition(
             IdeSymbolKind.DEF_ENTITY,
             mountName,
             extChain = extChain,
+            docCommentGetter = comment.compileGetter(ctx.symCtx),
         )
 
         cDefBase.setDocDeclaration(DocDeclaration_Entity(docModifiers, cName.rName))
@@ -378,14 +397,14 @@ class S_EntityDefinition(
     }
 
     private fun membersPass(
-            defCtx: C_DefinitionContext,
-            cName: C_Name,
-            extChain: C_ExternalChain?,
-            rEntity: R_EntityDefinition,
-            clauses: List<S_RelClause>
+        defCtx: C_DefinitionContext,
+        cName: C_Name,
+        extChain: C_ExternalChain?,
+        rEntity: R_EntityDefinition,
+        clauses: List<S_RelClause>,
     ) {
         val sysAttrs = mutableListOf<C_SysAttribute>()
-        val attrMaker = C_SysAttribute.Maker(rEntity.defName, defCtx.globalCtx.docFactory)
+        val attrMaker = C_SysAttribute.Maker(defCtx.symCtx.docSymbolFactory, rEntity.defName)
 
         if (rEntity.flags.log) {
             val sysDefs = extChain?.sysDefs?.common ?: defCtx.modCtx.sysDefsCommon
@@ -452,22 +471,21 @@ class S_EntityDefinition(
 }
 
 class S_ObjectDefinition(
-        pos: S_Pos,
-        modifiers: S_Modifiers,
-        val name: S_Name,
-        val attrs: List<S_AttributeDefinition>
-): S_BasicDefinition(pos, modifiers) {
+    base: S_DefinitionBase,
+    private val name: S_Name,
+    private val attrs: List<S_AttributeClause>,
+): S_BasicDefinition(base) {
     override fun compileBasic(ctx: C_MountContext) {
         ctx.checkNotExternal(name.pos, C_DeclarationType.OBJECT)
         ctx.checkNotReplOrTest(name.pos, C_DeclarationType.OBJECT)
 
         val entityFlags = R_EntityFlags(
-                isObject = true,
-                canCreate = false,
-                canUpdate = true,
-                canDelete = false,
-                gtv = false,
-                log = false
+            isObject = true,
+            canCreate = false,
+            canUpdate = true,
+            canDelete = false,
+            gtv = false,
+            log = false,
         )
 
         val nameHand = name.compile(ctx, def = true)
@@ -482,7 +500,14 @@ class S_ObjectDefinition(
         val sqlMapping = R_EntitySqlMapping_Regular(mountName)
         S_EntityDefinition.checkEntityMountNameLen(ctx.msgCtx, cName, mountName)
 
-        val cDefBase = ctx.defBase(nameHand, C_DefinitionType.OBJECT, IdeSymbolKind.DEF_OBJECT, mountName)
+        val cDefBase = ctx.defBase(
+            nameHand,
+            C_DefinitionType.OBJECT,
+            IdeSymbolKind.DEF_OBJECT,
+            mountName,
+            docCommentGetter = comment.compileGetter(ctx.symCtx),
+        )
+
         val defCtx = cDefBase.defCtx(ctx)
         val rDefBase = cDefBase.rBase(defCtx.initFrameGetter)
         cDefBase.setDocDeclaration(DocDeclaration_Object(docModifiers, cName.rName))
@@ -512,8 +537,7 @@ class S_ObjectDefinition(
         val entCtx = C_EntityContext(defCtx, cName.str, false, listOf(), persistent = true)
 
         for (attr in attrs) {
-            val attrHeader = attr.header.compile(defCtx)
-            entCtx.addAttribute(attr, attrHeader, true)
+            attr.compile(entCtx)
         }
 
         val body = entCtx.createEntityBody()
@@ -523,19 +547,17 @@ class S_ObjectDefinition(
     override fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder) {
         val sub = b.node(this, name, IdeOutlineNodeType.OBJECT)
         for (attr in attrs) {
-            val attrName = attr.header.ideOutlineTreeNodeName()
-            sub.node(attr, attrName, IdeOutlineNodeType.ATTRIBUTE)
+            attr.ideBuildOutlineTree(sub)
         }
     }
 }
 
 class S_StructDefinition(
-    pos: S_Pos,
-    modifiers: S_Modifiers,
-    val deprecatedKwPos: S_Pos?,
-    val name: S_Name,
-    val attrs: List<S_AttributeDefinition>,
-): S_BasicDefinition(pos, modifiers) {
+    base: S_DefinitionBase,
+    private val deprecatedKwPos: S_Pos?,
+    private val name: S_Name,
+    private val attrs: List<S_AttributeClause>,
+): S_BasicDefinition(base) {
     override fun compileBasic(ctx: C_MountContext) {
         if (deprecatedKwPos != null) {
             ctx.msgCtx.error(deprecatedKwPos, "deprecated_kw:record:struct",
@@ -551,7 +573,13 @@ class S_StructDefinition(
         val modDeprecated = mods.field(C_ModifierFields.DEPRECATED)
         val docModifiers = modifiers.compile(ctx, mods)
 
-        val cDefBase = ctx.defBase(nameHand, C_DefinitionType.STRUCT, IdeSymbolKind.DEF_STRUCT, null)
+        val cDefBase = ctx.defBase(
+            nameHand,
+            C_DefinitionType.STRUCT,
+            IdeSymbolKind.DEF_STRUCT,
+            mountName = null,
+            docCommentGetter = comment.compileGetter(ctx.symCtx),
+        )
         val defCtx = cDefBase.defCtx(ctx)
         val defBase = cDefBase.rBase(defCtx.initFrameGetter)
 
@@ -578,16 +606,15 @@ class S_StructDefinition(
     }
 
     private fun membersPass(
-            defCtx: C_DefinitionContext,
-            cName: C_Name,
-            cStruct: C_Struct,
-            attrsLate: C_LateInit<List<C_CompiledAttribute>>
+        defCtx: C_DefinitionContext,
+        cName: C_Name,
+        cStruct: C_Struct,
+        attrsLate: C_LateInit<List<C_CompiledAttribute>>,
     ) {
         val entCtx = C_EntityContext(defCtx, cName.str, false, immListOf(), persistent = false)
 
         for (attr in attrs) {
-            val attrHeader = attr.header.compile(defCtx)
-            entCtx.addAttribute(attr, attrHeader, true)
+            attr.compile(entCtx)
         }
 
         val cAttributes = entCtx.createStructBody()
@@ -600,18 +627,18 @@ class S_StructDefinition(
     override fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder) {
         val sub = b.node(this, name, IdeOutlineNodeType.STRUCT)
         for (attr in attrs) {
-            val attrName = attr.header.ideOutlineTreeNodeName()
-            sub.node(attr, attrName, IdeOutlineNodeType.ATTRIBUTE)
+            attr.ideBuildOutlineTree(sub)
         }
     }
 }
 
+class S_EnumValue(val name: S_Name, val comment: S_Comment?)
+
 class S_EnumDefinition(
-    pos: S_Pos,
-    modifiers: S_Modifiers,
-    val name: S_Name,
-    val attrs: List<S_Name>,
-): S_Definition(pos, modifiers) {
+    base: S_DefinitionBase,
+    private val name: S_Name,
+    private val attrs: List<S_EnumValue>,
+): S_Definition(base) {
     // TODO Better design: compile external module in two steps, all definitions must be processed same way.
     override fun compile(ctx: S_DefinitionContext): C_MidModuleMember {
         val nameHand = name.compile(ctx.symCtx, def = true)
@@ -629,8 +656,9 @@ class S_EnumDefinition(
             IdeSymbolKind.DEF_ENUM,
             modKey,
             fullName,
-            null,
+            mountName = null,
             ctx.docFactory,
+            docCommentGetter = comment.compileGetter(ctx.symCtx),
         )
 
         val docDec = DocDeclaration_Enum(docModifiers, cName.rName)
@@ -654,7 +682,7 @@ class S_EnumDefinition(
     override fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder) {
         val sub = b.node(this, name, IdeOutlineNodeType.ENUM)
         for (attr in attrs) {
-            sub.node(attr, attr, IdeOutlineNodeType.ENUM_ATTRIBUTE)
+            sub.node(attr.name, attr.name, IdeOutlineNodeType.ENUM_ATTRIBUTE)
         }
     }
 
@@ -663,15 +691,15 @@ class S_EnumDefinition(
         private val rAttrs = mutableListOf<R_EnumAttr>()
         private val attrDocDecInits = mutableListOf<Pair<R_Name, C_LateInit<DocDeclaration>>>()
 
-        fun compileAttrs(cDefBase: C_CommonDefinitionBase, attrs: List<S_Name>): List<R_EnumAttr> {
+        fun compileAttrs(cDefBase: C_CommonDefinitionBase, attrs: List<S_EnumValue>): List<R_EnumAttr> {
             for (attr in attrs) {
                 compileAttr(cDefBase, attr)
             }
             return rAttrs.toImmList()
         }
 
-        private fun compileAttr(cDefBase: C_CommonDefinitionBase, attr: S_Name) {
-            val attrNameHand = attr.compile(ctx.symCtx)
+        private fun compileAttr(cDefBase: C_CommonDefinitionBase, attr: S_EnumValue) {
+            val attrNameHand = attr.name.compile(ctx.symCtx)
             val attrName = attrNameHand.name
 
             val attrDocDecInit = C_LateInit(C_CompilerPass.NAMESPACES, DocDeclaration.NONE)
@@ -683,6 +711,7 @@ class S_EnumDefinition(
                 IdeSymbolKind.MEM_ENUM_VALUE,
                 DocSymbolKind.ENUM_VALUE,
                 attrNameHand.rName,
+                attr.comment,
                 attrDocDecInit.getter,
             )
 
@@ -693,7 +722,7 @@ class S_EnumDefinition(
                 val rAttr = R_EnumAttr(attrName.rName, rAttrs.size, attrIdeDef.refInfo, docPos)
                 rAttrs.add(rAttr)
             } else {
-                ctx.msgCtx.error(attr.pos, "enum_dup:$attr", "Duplicate enum value: '$attrName'")
+                ctx.msgCtx.error(attrName.pos, "enum_dup:$attrName", "Duplicate enum value: '$attrName'")
             }
         }
 
@@ -712,12 +741,11 @@ class S_EnumDefinition(
 }
 
 class S_NamespaceDefinition(
-    pos: S_Pos,
-    modifiers: S_Modifiers,
+    base: S_DefinitionBase,
     private val bodyPosRange: S_PosRange,
     private val qualifiedName: S_QualifiedName?,
     private val definitions: List<S_Definition>,
-): S_Definition(pos, modifiers) {
+): S_Definition(base) {
     override fun compile(ctx: S_DefinitionContext): C_MidModuleMember {
         val nameParts = mutableListOf<C_MidModuleMember_Namespace.NamePart>()
         var nsPath = ctx.namespacePath
@@ -726,7 +754,7 @@ class S_NamespaceDefinition(
             val nameHand = name.compile(ctx.symCtx, def = true)
 
             val fullName = nsPath.qualifiedName(nameHand.rName)
-            val docSymLate = C_LateInit(C_CompilerPass.NAMESPACES, Nullable.of<DocSymbol>())
+            val docSymLate = C_LateInit<DocSymbol?>(C_CompilerPass.NAMESPACES, null)
 
             val ideId = ctx.fileCtx.addNamespaceName(nameHand, fullName, docSymLate.getter)
             val ideLink = IdeGlobalSymbolLink(IdeSymbolGlobalId(name.pos.idePath(), ideId))
@@ -749,7 +777,7 @@ class S_NamespaceDefinition(
         val subCtx = ctx.namespace(rPath)
         val midMembers = definitions.mapNotNull { it.compile(subCtx) }
 
-        return C_MidModuleMember_Namespace(modifiers, midQualifiedName, bodyPosRange, midMembers)
+        return C_MidModuleMember_Namespace(modifiers, midQualifiedName, comment, bodyPosRange, midMembers)
     }
 
     override fun ideGetImportedModules(moduleName: R_ModuleName, res: MutableSet<R_ModuleName>) {
@@ -769,7 +797,7 @@ class S_NamespaceDefinition(
     }
 }
 
-class S_IncludeDefinition(pos: S_Pos): S_Definition(pos, S_Modifiers(listOf())) {
+class S_IncludeDefinition(base: S_DefinitionBase): S_Definition(base) {
     override fun compile(ctx: S_DefinitionContext): C_MidModuleMember? {
         ctx.msgCtx.error(kwPos, "include", "Include not supported since Rell ${RellVersions.MODULE_SYSTEM_VERSION_STR}")
         return null
@@ -781,12 +809,11 @@ class S_IncludeDefinition(pos: S_Pos): S_Definition(pos, S_Modifiers(listOf())) 
 }
 
 class S_GlobalConstantDefinition(
-        pos: S_Pos,
-        modifiers: S_Modifiers,
-        val name: S_Name,
-        val type: S_Type?,
-        val expr: S_Expr
-): S_BasicDefinition(pos, modifiers) {
+    base: S_DefinitionBase,
+    val name: S_Name,
+    val type: S_Type?,
+    val expr: S_Expr,
+): S_BasicDefinition(base) {
     override fun compileBasic(ctx: C_MountContext) {
         val nameHand = name.compile(ctx, def = true)
         val cName = nameHand.name
@@ -795,11 +822,17 @@ class S_GlobalConstantDefinition(
         val modDeprecated = mods.field(C_ModifierFields.DEPRECATED)
         val docModifiers = modifiers.compile(ctx, mods)
 
-        val cDefBase = ctx.defBase(nameHand, C_DefinitionType.CONSTANT, IdeSymbolKind.DEF_CONSTANT, null)
+        val cDefBase = ctx.defBase(
+            nameHand,
+            C_DefinitionType.CONSTANT,
+            IdeSymbolKind.DEF_CONSTANT,
+            mountName = null,
+            docCommentGetter = comment.compileGetter(ctx.symCtx),
+        )
         val defCtx = cDefBase.defCtx(ctx)
         val errorExpr = C_ExprUtils.errorVExpr(defCtx.initExprCtx, expr.startPos)
 
-        val headerLate = C_LateInit(C_CompilerPass.MEMBERS, C_GlobalConstantFunctionHeader.ERROR)
+        val headerLate = C_LateInit(C_CompilerPass.MEMBERS, C_GlobalConstantHeader.ERROR)
         val bodyLate = C_LateInit(C_CompilerPass.EXPRESSIONS, R_GlobalConstantBody.ERROR)
         val exprLate = C_LateInit(C_CompilerPass.EXPRESSIONS, errorExpr)
 
@@ -819,11 +852,11 @@ class S_GlobalConstantDefinition(
         }
 
         ctx.executor.onPass(C_CompilerPass.MEMBERS) {
-            val header = C_FunctionUtils.compileGlobalConstantHeader(defCtx, cName, cDefBase.defName, type, expr, cDef.rDef.constId)
+            val header = C_FunctionUtils.compileGlobalConstantHeader(defCtx, cName, type, expr, cDef.rDef.constId)
             headerLate.set(header)
 
             ctx.executor.onPass(C_CompilerPass.EXPRESSIONS) {
-                val rType = header.returnType()
+                val rType = header.deepHeader.returnType()
                 val cBody = header.constBody
                 val vExpr = cBody?.compile()
                 val rExpr = vExpr?.toRExpr() ?: C_ExprUtils.errorRExpr()

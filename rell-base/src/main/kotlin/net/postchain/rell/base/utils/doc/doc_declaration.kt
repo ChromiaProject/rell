@@ -766,11 +766,9 @@ class DocModifier_Annotation(
     }
 }
 
-class DocModifiers(
+class DocModifiers private constructor(
     private val modifiers: List<DocModifier>,
 ) {
-    constructor(vararg modifiers: DocModifier): this(modifiers.toImmList())
-
     fun appendTo(b: DocCode.Builder) {
         for (mod in modifiers) {
             mod.genCode(b)
@@ -782,7 +780,11 @@ class DocModifiers(
 
         fun make(vararg modifiers: DocModifier?): DocModifiers {
             val list = modifiers.filterNotNull().toImmList()
-            return if (list.isEmpty()) NONE else DocModifiers(list)
+            return make(list)
+        }
+
+        fun make(modifiers: List<DocModifier>): DocModifiers {
+            return if (modifiers.isEmpty()) NONE else DocModifiers(modifiers)
         }
     }
 }

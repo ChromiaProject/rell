@@ -91,7 +91,7 @@ class C_ExtendableUserGlobalFunction(
     private fun compileCombiner(): R_ExtendableFunctionCombiner {
         C_LateInit.checkPass(C_CompilerPass.EXPRESSIONS)
         val header = headerGetter.get()
-        val resType = header.returnType()
+        val resType = header.deepHeader.returnType()
         return when (resType) {
             R_UnitType -> R_ExtendableFunctionCombiner_Unit
             R_BooleanType -> R_ExtendableFunctionCombiner_Boolean

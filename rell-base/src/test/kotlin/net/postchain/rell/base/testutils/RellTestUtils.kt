@@ -44,12 +44,10 @@ object RellTestUtils {
         errPos: Boolean = false,
         options: C_CompilerOptions = DEFAULT_COMPILER_OPTIONS,
         outMessages: MutableList<C_Message>? = null,
-        modules: List<R_ModuleName> = listOf(R_ModuleName.EMPTY),
-        testModules: List<R_ModuleName> = listOf(),
+        modSel: C_CompilerModuleSelection = C_CompilerModuleSelection(listOf(R_ModuleName.EMPTY), listOf()),
         extraLibMod: C_LibModule? = null,
         processor: (T_App) -> String,
     ): String {
-        val modSel = C_CompilerModuleSelection(modules, testModules)
         val cRes = compileApp(sourceDir, modSel, options, extraLibMod)
         outMessages?.addAll(cRes.messages)
 
@@ -58,7 +56,7 @@ object RellTestUtils {
             return "ct_err:$s"
         }
 
-        val tApp = T_App(cRes.app!!, cRes.messages)
+        val tApp = T_App(cRes.app!!, cRes.messages, sourceDir)
         return processor(tApp)
     }
 
@@ -208,7 +206,7 @@ object RellTestUtils {
         extraMod: C_LibModule? = null,
     ): C_CompilationResult {
         val res = C_Compiler.compileInternal(sourceDir, modSel, options, extraMod)
-        TestSnippetsRecorder.record(sourceDir, modSel, options, res)
+        TestSnippetsRecorder.recordParsing(sourceDir, modSel, options, res)
         return res
     }
 

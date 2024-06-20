@@ -33,7 +33,7 @@ abstract class RellBaseTester(
     protected val messages = mutableListOf<C_Message>()
 
     var errMsgPos = false
-    var gtv = gtv
+    @Suppress("CanBePrimaryConstructorProperty") var gtv = gtv
     var deprecatedError = false
     var atAttrShadowing = C_CompilerOptions.DEFAULT.atAttrShadowing
     var defaultLib = true
@@ -44,6 +44,8 @@ abstract class RellBaseTester(
     var allowLibNamedArgsAnyVersion = C_CompilerOptions.DEFAULT.allowLibNamedArgsAnyVersion
     var allowOlderCompatibilityVersion = true
     var complexWhatEnabled = true
+    var ide = false
+    var ideDocSymbolsEnabled = false
     var ideDefIdConflictError = true
     var compatibilityVer: R_LangVersion? = RellVersions.VERSION
     var blockchainRid = RellTestUtils.strToRidHex("DEADBEEF")
@@ -62,6 +64,7 @@ abstract class RellBaseTester(
             field = value
         }
 
+    @Suppress("CanBePrimaryConstructorProperty")
     var inserts: List<String> = inserts
 
     private val files = mutableMapOf<String, String>()
@@ -74,6 +77,7 @@ abstract class RellBaseTester(
 
     private var mainModules: List<String>? = null
     private var testModules: List<String>? = null
+    private var modSelection: C_CompilerModuleSelection? = null
 
     var mainFile: String = RellTestUtils.MAIN_FILE
 
@@ -105,7 +109,7 @@ abstract class RellBaseTester(
     }
 
     private fun initCompile(code: String): R_App {
-        val sourceDir = createSourceDir(code)
+        val sourceDir = createSourceDir0(code)
         val options = compilerOptions()
         val modSel = C_CompilerModuleSelection(mainModules(), testModules())
 
@@ -141,8 +145,8 @@ abstract class RellBaseTester(
             useTestDependencyExtensions = false,
             allowLibNamedArgsAnyVersion = allowLibNamedArgsAnyVersion,
             allowOlderCompatibilityVersion = allowOlderCompatibilityVersion,
-            ide = false,
-            ideDocSymbolsEnabled = false,
+            ide = ide,
+            ideDocSymbolsEnabled = ideDocSymbolsEnabled,
             ideDefIdConflictError = ideDefIdConflictError,
             ideCompletions = null,
         )
@@ -196,8 +200,22 @@ abstract class RellBaseTester(
         testModules = modules.toList().toImmList()
     }
 
-    protected fun mainModules() = (mainModules ?: listOf("")).map { R_ModuleName.of(it) }
-    protected fun testModules() = (testModules ?: listOf()).map { R_ModuleName.of(it) }
+    @Suppress("MemberVisibilityCanBePrivate")
+    fun moduleSelection(modSel: C_CompilerModuleSelection) {
+        checkNotInited()
+        modSelection = modSel
+    }
+
+    fun moduleSelection(appModules: List<R_ModuleName>?, testModules: List<R_ModuleName> = listOf()) {
+        moduleSelection(C_CompilerModuleSelection(appModules, testModules))
+    }
+
+    private fun mainModules() = (mainModules ?: listOf("")).map { R_ModuleName.of(it) }
+    private fun testModules() = (testModules ?: listOf()).map { R_ModuleName.of(it) }
+
+    private fun moduleSelection(): C_CompilerModuleSelection {
+        return modSelection ?: C_CompilerModuleSelection(mainModules(), testModules())
+    }
 
     private var moduleArgs = immMapOf<String, String>()
 
@@ -226,12 +244,18 @@ abstract class RellBaseTester(
     protected open fun postInit() { }
 
     fun createSourceDir(code: String): C_SourceDir {
+        val moduleCode = moduleCode(code)
+        val files = files(moduleCode)
+        return C_SourceDir.mapDirOf(files)
+    }
+
+    private fun createSourceDir0(code: String): C_SourceDir {
         val files = files(code)
         return C_SourceDir.mapDirOf(files)
     }
 
     private fun initSqlInserts(sqlExec: SqlExecutor) {
-        if (!inserts.isEmpty()) {
+        if (inserts.isNotEmpty()) {
             val insertSql = inserts.joinToString("\n") { it }
             sqlExec.execute(insertSql)
         }
@@ -355,36 +379,32 @@ abstract class RellBaseTester(
     }
 
     fun compileModule(code: String): String {
-        val moduleCode = moduleCode(code)
-        return processApp(moduleCode) { "OK" }
+        return processApp(code) { "OK" }
     }
 
     fun compileAppEx(code: String): R_App {
-        val moduleCode = moduleCode(code)
         var res: R_App? = null
-        val s = processApp(moduleCode) {
-            res = it
+        val s = processApp(code) {
+            res = it.rApp
             "OK"
         }
         assertEquals("OK", s)
         return res!!
     }
 
-    fun processApp(code: String, processor: (R_App) -> String): String {
+    fun processApp(code: String, processor: (T_App) -> String): String {
         messages.clear()
         val sourceDir = createSourceDir(code)
-        val mainMods = mainModules()
-        val testMods = testModules()
+        val modSel = moduleSelection()
         return RellTestUtils.processApp(
             sourceDir,
             errMsgPos,
             compilerOptions(),
             messages,
-            mainMods,
-            testModules = testMods,
+            modSel = modSel,
             extraLibMod = extraMod,
         ) {
-            processor(it.rApp)
+            processor(it)
         }
     }
 
