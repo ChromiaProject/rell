@@ -4,7 +4,13 @@ import net.postchain.rell.toolbox.core.editorconfig.EditorConfigParser
 import org.ec4j.core.model.EditorConfig
 import java.io.File
 
-class FormatterOptions {
+
+data class FormatterOptions(
+    var maxLineWidth: Int = 120,
+    var insertSpaces: Boolean = true,
+    var tabSize: Int = 4,
+    var newLineString: String = NewLineStyle.LF.newLineString,
+) {
     fun updateOptionsFromFile(configFile: File) {
         val editorConfig = EditorConfigParser.parse(configFile)
         if (editorConfig != null) {
@@ -16,11 +22,6 @@ class FormatterOptions {
             tabSize = defaultOptions.tabSize
         }
     }
-
-    var maxLineWidth: Int = 120
-    var insertSpaces = false
-    var tabSize = 4
-    var newLineString = NewLineStyle.LF.newLineString
 
     private fun updateFormatterOptions(editorConfig: EditorConfig) {
         editorConfig.sections.forEach { section ->
