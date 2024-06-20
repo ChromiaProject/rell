@@ -10,11 +10,14 @@ kotlin-test = "1.9.10"
 oshai = "5.1.0"
 log4j = "2.20.0"
 mockk = "1.13.8"
+ec4j = "0.3.0"
 
 [libraries]
 rell-base = { module = "net.postchain.rell:rell-base", version.ref = "rell" }
 rell-api-base = { module = "net.postchain.rell:rell-api-base", version.ref = "rell" }
 rell-tools = { module = "net.postchain.rell:rell-tools", version.ref = "rell" }
+
+ec4j = { module = "org.ec4j.core:ec4j-core", version.ref = "ec4j" }
 
 lsp4j = { module = "org.eclipse.lsp4j:org.eclipse.lsp4j", version.ref = "lsp4j" }
 lsp4j-debug = { module = "org.eclipse.lsp4j:org.eclipse.lsp4j.debug", version.ref = "lsp4j" }

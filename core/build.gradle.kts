@@ -10,6 +10,7 @@ val rellTestCasesConfiguration by configurations.creating
 dependencies {
     antlr(libs.antlr)
     implementation(libs.antlr)
+    implementation(libs.ec4j)
     implementation(libs.bundles.rell)
     implementation(libs.bundles.jackson)
     implementation(libs.bundles.logging)
