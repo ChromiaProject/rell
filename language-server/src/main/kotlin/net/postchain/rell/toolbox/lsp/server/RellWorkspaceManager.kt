@@ -55,7 +55,6 @@ class RellWorkspaceManager(
 
     private val workspaceFolderUris get() = workspaceFolders.map { URI(it.uri) }
 
-    //TODO: Should we have this the contractor or a init{} constructor
     fun initialize(workspaceFolders: List<WorkspaceFolder>, diagnosticsPublisher: (uri: URI, List<RellIssue>) -> Unit) {
         this.workspaceFolders = workspaceFolders
         this.diagnosticsPublisher = diagnosticsPublisher
@@ -112,7 +111,7 @@ class RellWorkspaceManager(
         val path = Paths.get(uri)
         var depth = 0
         var currentPath = path
-        while (currentPath.parent != null && depth < 5) { // todo make this variable configurable
+        while (currentPath.parent != null && depth < 5) {
             depth++
             val srcDirectory = currentPath.resolveSibling("src")
             if (Files.exists(srcDirectory) && Files.isDirectory(srcDirectory)) {
@@ -156,8 +155,6 @@ class RellWorkspaceManager(
         reportDiagnostics(indexer, listOf(fileUri))
     }
 
-    //TODO: Revisit how we get the indexer. Would this approach work if the have two indexer active where one
-    // is indexed from from a child folder from the other indexer.
     fun getIndexerFor(fileUri: URI): WorkspaceIndexer {
         for (indexer in indexers.entries) {
             if (fileUri.path.startsWith(indexer.key.path)) {
@@ -343,15 +340,21 @@ class RellWorkspaceManager(
     fun rename(fileUri: URI, position: Position, newName: String): WorkspaceEdit {
         val indexer = getIndexerFor(fileUri)
         val document = openDocuments[fileUri] ?: return WorkspaceEdit()
-        val (_, interval) =
-            rellSymbolService.getSymbolInfoWithInterval(document, indexer, position)
-                ?: return WorkspaceEdit()
-        val oldName = document.getTextIn(interval)
+        val (renamingTriggerSymbol, interval) = rellSymbolService.getSymbolInfoWithInterval(document, indexer, position)
+            ?: return WorkspaceEdit()
 
+        val oldName = document.getTextIn(interval)
         val locations = getReferenceLocations(fileUri, position, true)
         val changes = mutableMapOf<String, MutableList<TextEdit>>()
+
         locations.forEach { location ->
-            val change = renameLocation(indexer, location, oldName, newName)
+            val change = renameLocation(
+                indexer,
+                location,
+                renamingTriggerSymbol,
+                oldName,
+                newName,
+            )
             changes[location.uri]?.add(change) ?: changes.put(location.uri, mutableListOf(change))
         }
         return WorkspaceEdit(changes)
@@ -360,36 +363,105 @@ class RellWorkspaceManager(
     private fun renameLocation(
         indexer: WorkspaceIndexer,
         location: Location,
+        renamingTriggerSymbol: IdeSymbolInfo,
         oldName: String,
-        newName: String
+        newName: String,
     ): TextEdit {
         val locationFileUri = URI(location.uri)
-        val symbolInfo = rellSymbolService.getSymbolInfoWithInterval(
+        val symbolToRename = rellSymbolService.getSymbolInfoWithInterval(
             getDocument(locationFileUri),
             indexer,
             location.range.start
-        )?.ideSymbolInfo
-        return if (symbolInfo != null) {
-            if (symbolInfo.kind in TYPE_DEFINITIONS && symbolInfo.defId != null && symbolInfo.link != null) {
-                val resource = indexer.getResource(locationFileUri)
-                val fullNameWithRange = resource?.let { findAnonAttrFullName(it, location) }
-                if (fullNameWithRange != null && fullNameWithRange.fullName.size > 1) {
-                    TextEdit(
-                        fullNameWithRange.range,
-                        "$oldName: ${fullNameWithRange.fullName.dropLast(1).joinToString(separator = ".")}.$newName"
-                    )
-                } else {
-                    TextEdit(location.range, "$oldName: $newName")
-                }
-            } else {
-                TextEdit(location.range, newName)
-            }
+        )?.ideSymbolInfo ?: return TextEdit(location.range, newName)
+
+        return if (symbolToRename.isTypeDefinition()) {
+            val resource = indexer.getResource(locationFileUri)
+            val fullNameWithRange = resource?.let { findAnonAttrFullName(it, location) }
+            val text = determineNewText(renamingTriggerSymbol, symbolToRename, oldName, newName, fullNameWithRange)
+            TextEdit(fullNameWithRange?.range ?: location.range, text)
         } else {
             TextEdit(location.range, newName)
         }
     }
 
-    data class FullNameWithRange(val fullName: List<String>, val range: Range)
+    private fun determineNewText(
+        renamingTriggerSymbol: IdeSymbolInfo,
+        symbolToRename: IdeSymbolInfo,
+        oldName: String,
+        newName: String,
+        fullNameWithRange: FullNameWithRange?
+    ): String {
+        return when {
+            renamingTriggerSymbol.isTypeReference() -> {
+                "$oldName: ${updateNewName(newName, fullNameWithRange)}"
+            }
+
+            renamingTriggerSymbol.isNotTypeReference() -> {
+                when {
+                    symbolToRename.containsParameter(oldName) -> {
+                        if (renamingTriggerSymbol.isLocalParam()) {
+                            "$newName: ${updateOldName(oldName, fullNameWithRange)}"
+                        } else {
+                            "$oldName: ${updateNewName(newName, fullNameWithRange)}"
+                        }
+                    }
+
+                    symbolToRename.containsAttribute(oldName) -> {
+                        "$oldName: ${updateNewName(newName, fullNameWithRange)}"
+                    }
+
+                    else -> newName
+                }
+            }
+
+            else -> {
+                "$newName: ${updateOldName(oldName, fullNameWithRange)}"
+            }
+        }
+    }
+
+
+    private fun IdeSymbolInfo.isTypeDefinition(): Boolean =
+        this.kind in TYPE_DEFINITIONS && this.defId != null && this.link != null
+
+    private fun IdeSymbolInfo.isReference(): Boolean = this.link != null
+
+    private fun IdeSymbolInfo.isExplicitTypeReference(): Boolean =
+        this.kind in TYPE_DEFINITIONS && this.defId == null
+
+    private fun IdeSymbolInfo.isTypeReference(): Boolean = this.isReference() && this.isExplicitTypeReference()
+
+    private fun IdeSymbolInfo.isNotTypeReference(): Boolean = !this.isReference() && !this.isExplicitTypeReference()
+
+    private fun IdeSymbolInfo.containsParameter(name: String): Boolean =
+        this.defId?.encode()?.contains("param[$name]") == true
+
+    private fun IdeSymbolInfo.containsAttribute(name: String): Boolean =
+        this.defId?.encode()?.contains("attr[$name]") == true
+
+
+    private fun IdeSymbolInfo.isLocalParam(): Boolean = this.kind == IdeSymbolKind.LOC_PARAMETER
+
+    private fun updateNewName(newName: String, fullNameWithRange: FullNameWithRange?): String {
+        return if (fullNameWithRange?.isQualifiedName() == true) {
+            val partialFullName = fullNameWithRange.fullName.dropLast(1).joinToString(separator = ".")
+            "$partialFullName.$newName"
+        } else {
+            newName
+        }
+    }
+
+    private fun updateOldName(oldName: String, fullNameWithRange: FullNameWithRange?): String {
+        return if (fullNameWithRange?.isQualifiedName() == true) {
+            fullNameWithRange.fullName.joinToString(separator = ".")
+        } else {
+            oldName
+        }
+    }
+
+    data class FullNameWithRange(val fullName: List<String>, val range: Range) {
+        fun isQualifiedName(): Boolean = fullName.size > 1
+    }
 
     private fun findAnonAttrFullName(resource: Resource, location: Location): FullNameWithRange? {
         val visitor = object : RellBaseVisitor<Unit>() {

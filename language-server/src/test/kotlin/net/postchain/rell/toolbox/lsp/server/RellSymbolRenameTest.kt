@@ -199,6 +199,123 @@ class RellSymbolRenameTest {
     }
 
     @Test
+    fun `Rename enum type renames enum where used as argument`(@TempDir tempDir: Path) {
+        val rellFile = tempDir.resolve("rell/src/main.rell")
+        rellFile.createParentDirectories()
+        rellFile.writeText(
+            """
+            module;
+
+            function f(my_enum) = my_enum;
+            
+            enum my_enum {
+                foo,
+                bar
+            }
+            """.trimIndent()
+        )
+        clientServerLauncher.initializeServer(tempDir.toFile().toURI())
+        val fileUri = openFile(rellFile.toFile())
+        val oldName = "my_enum"
+        val newName = "something_else"
+        val positionForRenaming = Position(4, 7)
+
+        val prepareResult = server.prepareRename(prepareRenameParams(fileUri, positionForRenaming)).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
+            TestPrepareRenameResult(
+                TestRange(TestPosition(4, 5), TestPosition(4, 12)),
+                oldName
+            )
+        )
+        assertThat(prepareResult.third).isNull()
+
+        val result = server.rename(renameParams(fileUri, positionForRenaming, newName)).join()
+        assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
+            TestTextEdit(TestRange(TestPosition(4, 5), TestPosition(4, 12)), newName),
+            TestTextEdit(TestRange(TestPosition(2, 11), TestPosition(2, 18)), "$oldName: $newName"),
+        )
+    }
+
+    @Test
+    fun `Rename enum where used as argument renames argument without renaming type`(@TempDir tempDir: Path) {
+        val rellFile = tempDir.resolve("rell/src/main.rell")
+        rellFile.createParentDirectories()
+        rellFile.writeText(
+            """
+            module;
+
+            function f(my_enum) = my_enum;
+            
+            enum my_enum {
+                foo,
+                bar
+            }
+            """.trimIndent()
+        )
+        clientServerLauncher.initializeServer(tempDir.toFile().toURI())
+        val fileUri = openFile(rellFile.toFile())
+        val oldName = "my_enum"
+        val newName = "something_else"
+        val positionForRenaming = Position(2, 15)
+
+        val prepareResult = server.prepareRename(prepareRenameParams(fileUri, positionForRenaming)).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
+            TestPrepareRenameResult(
+                TestRange(TestPosition(2, 11), TestPosition(2, 18)),
+                oldName
+            )
+        )
+        assertThat(prepareResult.third).isNull()
+
+        val result = server.rename(renameParams(fileUri, positionForRenaming, newName)).join()
+        assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
+            TestTextEdit(TestRange(TestPosition(2, 11), TestPosition(2, 18)), "$newName: $oldName"),
+            TestTextEdit(TestRange(TestPosition(2, 22), TestPosition(2, 29)), newName),
+        )
+    }
+
+    @Test
+    fun `Rename on local parameter referenced through enum argument, only renames argument and variable`(@TempDir tempDir: Path) {
+        val rellFile = tempDir.resolve("rell/src/main.rell")
+        rellFile.createParentDirectories()
+        rellFile.writeText(
+            """
+            module;
+
+            function f(my_enum) = my_enum;
+            
+            enum my_enum {
+                foo,
+                bar
+            }
+            """.trimIndent()
+        )
+        clientServerLauncher.initializeServer(tempDir.toFile().toURI())
+        val fileUri = openFile(rellFile.toFile())
+        val oldName = "my_enum"
+        val newName = "something_else"
+        val positionForRenaming = Position(2, 25)
+
+        val prepareResult = server.prepareRename(prepareRenameParams(fileUri, positionForRenaming)).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
+            TestPrepareRenameResult(
+                TestRange(TestPosition(2, 11), TestPosition(2, 18)),
+                oldName
+            )
+        )
+        assertThat(prepareResult.third).isNull()
+
+        val result = server.rename(renameParams(fileUri, positionForRenaming, newName)).join()
+        assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
+            TestTextEdit(TestRange(TestPosition(2, 11), TestPosition(2, 18)), "$newName: $oldName"),
+            TestTextEdit(TestRange(TestPosition(2, 22), TestPosition(2, 29)), newName),
+        )
+    }
+
+    @Test
     fun `Rename struct with attribute with unqualified name`(@TempDir tempDir: Path) {
         val rellFile = tempDir.resolve("rell/src/main.rell")
         rellFile.createParentDirectories()
@@ -249,6 +366,124 @@ class RellSymbolRenameTest {
 
 
         val result = server.rename(renameParams(fileUri, Position(23, 9), newName)).join()
+        assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
+            TestTextEdit(TestRange(TestPosition(4, 4), TestPosition(4, 18)), "another_struct: $newName"),
+            TestTextEdit(TestRange(TestPosition(11, 20), TestPosition(11, 34)), newName),
+            TestTextEdit(TestRange(TestPosition(18, 18), TestPosition(18, 32)), newName),
+            TestTextEdit(TestRange(TestPosition(23, 7), TestPosition(23, 21)), newName),
+        )
+    }
+
+    @Test
+    fun `Rename struct on reference type shortcut only rename reference`(@TempDir tempDir: Path) {
+        val rellFile = tempDir.resolve("rell/src/main.rell")
+        rellFile.createParentDirectories()
+        rellFile.writeText(
+            """
+            module;
+            
+            struct my_struct1 {
+                a_property: text;
+                another_struct;
+            }
+            
+            function f1(my_struct1) = my_struct1.another_struct.another_property;
+            
+            struct my_struct2 {
+                a_property: text;
+                another_struct: another_struct;
+            }
+            
+            function f2(my_struct2) = my_struct2.another_struct.another_property;
+            
+            struct my_struct3 {
+                a_property: text;
+                ref_property: another_struct;
+            }
+            
+            function f3(my_struct3) = my_struct3.ref_property.another_property;
+                            
+            struct another_struct {
+                another_property: text;
+            }
+            """.trimIndent()
+        )
+        clientServerLauncher.initializeServer(tempDir.toFile().toURI())
+        val fileUri = openFile(rellFile.toFile())
+        val oldName = "another_struct"
+        val newName = "something_else"
+        val positionForRenaming = Position(4, 12)
+
+        val prepareResult = server.prepareRename(prepareRenameParams(fileUri, positionForRenaming)).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
+            TestPrepareRenameResult(
+                TestRange(TestPosition(4, 4), TestPosition(4, 18)),
+                oldName
+            )
+        )
+        assertThat(prepareResult.third).isNull()
+
+
+        val result = server.rename(renameParams(fileUri, positionForRenaming, newName)).join()
+        assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
+            TestTextEdit(TestRange(TestPosition(4, 4), TestPosition(4, 18)), "$newName: $oldName"),
+            TestTextEdit(TestRange(TestPosition(7, 37), TestPosition(7, 51)), newName),
+        )
+    }
+
+    @Test
+    fun `Rename struct on explicit type reference renames type`(@TempDir tempDir: Path) {
+        val rellFile = tempDir.resolve("rell/src/main.rell")
+        rellFile.createParentDirectories()
+        rellFile.writeText(
+            """
+            module;
+            
+            struct my_struct1 {
+                a_property: text;
+                another_struct;
+            }
+            
+            function f1(my_struct1) = my_struct1.another_struct.another_property;
+            
+            struct my_struct2 {
+                a_property: text;
+                another_struct: another_struct;
+            }
+            
+            function f2(my_struct2) = my_struct2.another_struct.another_property;
+            
+            struct my_struct3 {
+                a_property: text;
+                ref_property: another_struct;
+            }
+            
+            function f3(my_struct3) = my_struct3.ref_property.another_property;
+                            
+            struct another_struct {
+                another_property: text;
+            }
+            """.trimIndent()
+        )
+        clientServerLauncher.initializeServer(tempDir.toFile().toURI())
+        val fileUri = openFile(rellFile.toFile())
+        val oldName = "another_struct"
+        val newName = "something_else"
+        val positionForRenaming = Position(11, 25)
+
+        val prepareResult = server.prepareRename(prepareRenameParams(fileUri, positionForRenaming)).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
+            TestPrepareRenameResult(
+                TestRange(TestPosition(23, 7), TestPosition(23, 21)),
+                oldName
+            )
+        )
+        assertThat(prepareResult.third).isNull()
+
+
+        val result = server.rename(renameParams(fileUri, positionForRenaming, newName)).join()
         assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(TestRange(TestPosition(4, 4), TestPosition(4, 18)), "another_struct: $newName"),
             TestTextEdit(TestRange(TestPosition(11, 20), TestPosition(11, 34)), newName),
@@ -399,6 +634,254 @@ class RellSymbolRenameTest {
             TestTextEdit(TestRange(TestPosition(2, 7), TestPosition(2, 17)), newName),
         )
     }
+
+    @Test
+    fun `Rename on reference type shortcut`(@TempDir tempDir: Path) {
+        val rellFile = tempDir.resolve("rell/src/main.rell").createParentDirectories()
+        rellFile.createParentDirectories()
+        rellFile.writeText(
+            """
+            module;
+            
+            entity foo_entity {}
+            
+            entity bar_entity {
+                foo_entity;
+            }
+            """.trimIndent()
+        )
+
+        clientServerLauncher.initializeServer(tempDir.toFile().toURI())
+        val fileUri = openFile(rellFile.toFile())
+        val positionFoRenaming = Position(5, 7)
+        val oldName = "foo_entity"
+        val newName = "something_else"
+
+        val prepareResult = server.prepareRename(prepareRenameParams(fileUri, positionFoRenaming)).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
+            TestPrepareRenameResult(
+                TestRange(TestPosition(5, 4), TestPosition(5, 14)),
+                oldName
+            )
+        )
+        assertThat(prepareResult.third).isNull()
+
+        val result = server.rename(renameParams(fileUri, positionFoRenaming, newName)).join()
+
+        assertThat(result.changes[fileUri]!![0].newText).isEqualTo("$newName: $oldName")
+        assertThat(result.changes.keys).containsOnly(fileUri, rellFile.toFileUri())
+        assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
+            TestTextEdit(TestRange(TestPosition(5, 4), TestPosition(5, 14)), "$newName: $oldName"),
+        )
+    }
+
+    @Test
+    fun `Rename on entity attribute reference usage with type shortcut as field name`(@TempDir tempDir: Path) {
+        val rellFile = tempDir.resolve("rell/src/main.rell").createParentDirectories()
+        rellFile.createParentDirectories()
+        rellFile.writeText(
+            """
+                module;
+    
+                entity my_entity {
+                    a_property: text;
+                    another_entity;
+                }
+                
+                entity another_entity {
+                    another_property: text;
+                }
+                
+                function q() = my_entity @* { .another_entity.another_property == "test" };
+            """.trimIndent()
+        )
+
+        clientServerLauncher.initializeServer(tempDir.toFile().toURI())
+        val fileUri = openFile(rellFile.toFile())
+        val positionFoRenaming = Position(11, 39)
+        val oldName = "another_entity"
+        val newName = "something_else"
+
+        val prepareResult = server.prepareRename(prepareRenameParams(fileUri, positionFoRenaming)).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
+            TestPrepareRenameResult(
+                TestRange(TestPosition(4, 4), TestPosition(4, 18)),
+                oldName
+            )
+        )
+        assertThat(prepareResult.third).isNull()
+
+        val result = server.rename(renameParams(fileUri, positionFoRenaming, newName)).join()
+
+        assertThat(result.changes.keys).containsOnly(fileUri, rellFile.toFileUri())
+        assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
+            TestTextEdit(TestRange(TestPosition(4, 4), TestPosition(4, 18)), "$newName: $oldName"),
+            TestTextEdit(TestRange(TestPosition(11, 31), TestPosition(11, 45)), newName),
+        )
+    }
+
+    @Test
+    fun `Rename on attribute reference usage with explicit name`(@TempDir tempDir: Path) {
+        val rellFile = tempDir.resolve("rell/src/main.rell").createParentDirectories()
+        rellFile.createParentDirectories()
+        rellFile.writeText(
+            """
+            module;
+
+            entity my_entity {
+                a_property: text;
+                field: my_entity3;
+            }
+            
+            entity my_entity2 {
+                a_property: text;
+                my_entity3;
+            }
+            
+            entity my_entity3 {
+                another_property: text;
+            }
+            
+            function q() = my_entity2 @* { .my_entity3.another_property == "test" };
+            """.trimIndent()
+        )
+
+        clientServerLauncher.initializeServer(tempDir.toFile().toURI())
+        val fileUri = openFile(rellFile.toFile())
+        val positionFoRenaming = Position(16, 35)
+        val oldName = "my_entity3"
+        val newName = "something_else"
+
+        val prepareResult = server.prepareRename(prepareRenameParams(fileUri, positionFoRenaming)).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
+            TestPrepareRenameResult(
+                TestRange(TestPosition(9, 4), TestPosition(9, 14)),
+                oldName
+            )
+        )
+        assertThat(prepareResult.third).isNull()
+
+        val result = server.rename(renameParams(fileUri, positionFoRenaming, newName)).join()
+
+        assertThat(result.changes.keys).containsOnly(fileUri, rellFile.toFileUri())
+        assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
+            TestTextEdit(TestRange(TestPosition(9, 4), TestPosition(9, 14)), "$newName: $oldName"),
+            TestTextEdit(TestRange(TestPosition(16, 32), TestPosition(16, 42)), newName),
+        )
+    }
+
+    @Test
+    fun `Rename on explicit type reference`(@TempDir tempDir: Path) {
+        val rellFile = tempDir.resolve("rell/src/main.rell").createParentDirectories()
+        rellFile.createParentDirectories()
+        rellFile.writeText(
+            """
+            module;
+
+            entity my_entity {
+                a_property: text;
+                field: another_entity;
+            }
+            
+            entity another_entity {
+                another_property: text;
+            }
+            
+            function q() = my_entity @* { .field.another_property == "test" };
+            """.trimIndent()
+        )
+
+        clientServerLauncher.initializeServer(tempDir.toFile().toURI())
+        val fileUri = openFile(rellFile.toFile())
+        val positionFoRenaming = Position(4, 15)
+        val oldName = "another_entity"
+        val newName = "something_else"
+
+        val prepareResult = server.prepareRename(prepareRenameParams(fileUri, positionFoRenaming)).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
+            TestPrepareRenameResult(
+                TestRange(TestPosition(7, 7), TestPosition(7, 21)),
+                oldName
+            )
+        )
+        assertThat(prepareResult.third).isNull()
+
+        val result = server.rename(renameParams(fileUri, positionFoRenaming, newName)).join()
+
+        assertThat(result.changes.keys).containsOnly(fileUri, rellFile.toFileUri())
+        assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
+            TestTextEdit(TestRange(TestPosition(4, 11), TestPosition(4, 25)), newName),
+            TestTextEdit(TestRange(TestPosition(7, 7), TestPosition(7, 21)), newName),
+        )
+    }
+
+    @Test
+    fun `Rename on entity attribute reference type shortcut with qualified name`() {
+        clientServerLauncher.initializeServer(testWorkspaceSrc.toURI())
+        val oldName = "another_entity"
+        val newName = "something_else"
+        val fileUri = openFile(testWorkspaceSrc.resolve("main.rell"))
+        val positionForRenaming = Position(19, 25)
+
+        val prepareResult = server.prepareRename(prepareRenameParams(fileUri, positionForRenaming)).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
+            TestPrepareRenameResult(
+                TestRange(TestPosition(19, 18), TestPosition(19, 32)),
+                oldName
+            )
+        )
+        assertThat(prepareResult.third).isNull()
+
+        val result = server.rename(renameParams(fileUri, positionForRenaming, newName)).join()
+        assertThat(result.changes.keys).containsOnly(fileUri)
+        assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
+            TestTextEdit(
+                TestRange(TestPosition(19, 4), TestPosition(19, 32)),
+                "$newName: entity_module.$oldName"
+            ),
+            TestTextEdit(TestRange(TestPosition(22, 33), TestPosition(22, 47)), newName),
+        )
+    }
+
+    @Test
+    fun `Rename on entity explicit type attribute reference with qualified name`() {
+        clientServerLauncher.initializeServer(testWorkspaceSrc.toURI())
+        val oldName = "another_entity"
+        val newName = "something_else"
+        val fileUri = openFile(testWorkspaceSrc.resolve("main.rell"))
+        val entityModuleUri = openFile(testWorkspaceSrc.resolve("entity_module.rell"))
+        val positionForRenaming = Position(26, 42)
+
+        val prepareResult = server.prepareRename(prepareRenameParams(fileUri, positionForRenaming)).join()
+        assertThat(prepareResult.first).isNull()
+        assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
+            TestPrepareRenameResult(
+                TestRange(TestPosition(2, 7), TestPosition(2, 21)),
+                oldName
+            )
+        )
+        assertThat(prepareResult.third).isNull()
+
+        val result = server.rename(renameParams(fileUri, positionForRenaming, newName)).join()
+        assertThat(result.changes.keys).containsOnly(fileUri, entityModuleUri)
+        assertThat(result.changes[entityModuleUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
+            TestTextEdit(TestRange(TestPosition(2, 7), TestPosition(2, 21)), newName),
+        )
+        assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
+            TestTextEdit(
+                TestRange(TestPosition(19, 4), TestPosition(19, 32)),
+                "$oldName: entity_module.$newName"
+            ),
+            TestTextEdit(TestRange(TestPosition(26, 34), TestPosition(26, 48)), newName),
+            TestTextEdit(TestRange(TestPosition(33, 32), TestPosition(33, 46)), newName),
+        )
+    }
+
 
     private fun openFile(file: File): String {
         val fileUri = file.toURI().toString()
