@@ -24,7 +24,7 @@ class SimpleTypescriptStructTest {
 
     @ParameterizedTest(name = "rell type {0} becomes {1}")
     @CsvSource(
-            "boolean,'a: boolean'",
+            "boolean,'a: number'",
             "integer,'a: number'",
             "big_integer,'a: bigint'",
             "decimal,'a: number'",

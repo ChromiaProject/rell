@@ -81,6 +81,7 @@ internal class KotlinQueryTest {
             "return_type_gtv,)",
             "return_type_nullable_gtv,).let { v0 -> if (v0 is GtvNull) null else v0 }",
             "return_type_list_integer,).asArray().map { v1 -> v1.asInteger() }",
+            "return_type_list_boolean,).asArray().map { v1 -> v1.asBoolean() }",
             "return_type_list_byte_array,).asArray().map { v1 -> v1.asByteArray() }",
             "return_type_set_integer,).asArray().map { v1 -> v1.asInteger() }.toSet()",
             "return_type_list_struct,).asArray().map { v1 -> v1.toObject<TestStruct>() }",

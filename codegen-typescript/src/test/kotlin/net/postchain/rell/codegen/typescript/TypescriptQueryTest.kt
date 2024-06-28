@@ -59,7 +59,7 @@ class TypescriptQueryTest {
     @ParameterizedTest(name = "query for return type {0} should convert to {1}")
     @CsvSource(
             "return_type_enum,TestEnum",
-            "return_type_boolean,boolean",
+            "return_type_boolean,number",
             "return_type_integer,number",
             "return_type_big_integer,bigint",
             "return_type_text,string",
@@ -74,6 +74,7 @@ class TypescriptQueryTest {
             "return_type_gtv,any",
             "return_type_nullable_gtv,'any | null'",
             "return_type_list_integer,number[]",
+            "return_type_list_boolean,number[]",
             "return_type_list_byte_array,Buffer[]",
             "return_type_set_integer,number[]",
             "return_type_list_struct,TestStruct[]",
@@ -107,7 +108,7 @@ class TypescriptQueryTest {
             "input_parameter_integer,i: number,'{ i: i }'",
             "input_parameter_big_integer,i: bigint,'{ i: i }'",
             "input_parameter_enum,e: TestEnum,'{ e: e }'",
-            "input_parameter_boolean,b: boolean,'{ b: b }'",
+            "input_parameter_boolean,b: number,'{ b: b }'",
             "input_parameter_rowid,r: number,'{ r: r }'",
             "input_parameter_pubkey,pubkey: Buffer,'{ pubkey: pubkey }'",
             "input_parameter_blockchain_rid,blockchainRid: Buffer,'{ blockchain_rid: blockchainRid }'",
@@ -141,8 +142,8 @@ class TypescriptQueryTest {
     @CsvSource(
             "return_type_nullable_named_tuple,'foo: number',ReturnTypeNullableNamedTupleReturnType,' | null'",
             "return_type_named_tuple,'foo: number',ReturnTypeNamedTupleReturnType,''",
-            "return_type_named_tuple_list,'rowid: number;a: boolean',ReturnTypeNamedTupleListReturnType,[]",
-            "return_type_proposals_since,'rowid: number;a: boolean',ReturnTypeProposalsSinceReturnType,[]"
+            "return_type_named_tuple_list,'rowid: number;a: number',ReturnTypeNamedTupleListReturnType,[]",
+            "return_type_proposals_since,'rowid: number;a: number',ReturnTypeProposalsSinceReturnType,[]"
     )
     fun namedTupleCreatesObject(name: String, returnType: String, returnName: String, appendedType: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[name])

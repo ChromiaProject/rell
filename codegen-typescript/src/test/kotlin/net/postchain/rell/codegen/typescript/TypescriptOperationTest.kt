@@ -57,7 +57,7 @@ internal class TypescriptOperationTest {
             "input_parameter_big_integer,i: bigint,i",
             "input_parameter_byte_array,b: Buffer,b",
             "input_parameter_enum,e: TestEnum,e",
-            "input_parameter_boolean,b: boolean,b",
+            "input_parameter_boolean,b: number,b",
             "input_parameter_rowid,r: number,r",
             "input_parameter_pubkey,pubkey: Buffer,pubkey",
             "input_parameter_nullable_pubkey,pubkey: Buffer | null,pubkey",
