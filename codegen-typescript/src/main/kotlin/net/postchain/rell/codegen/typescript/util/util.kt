@@ -23,7 +23,7 @@ fun parameterTransformer(name: String, type: R_Type): String = when (type) {
 fun rTypeToString(type: R_Type, allowSet: Boolean = false): String {
     return when (type) {
         is R_NullableType -> "${rTypeToString(type.valueType)} | null"
-        is R_BooleanType -> "boolean"
+        is R_BooleanType -> "number"
         is R_IntegerType -> "number"
         is R_BigIntegerType -> "bigint"
         is R_DecimalType -> "number"

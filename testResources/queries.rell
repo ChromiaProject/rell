@@ -26,6 +26,7 @@ query return_type_nullable_rowid() = test_entity @? { true } (.rowid);
 query return_type_gtv(): gtv = gtv.from_json("17");
 query return_type_nullable_gtv(): gtv? = null;
 query return_type_list_integer() = list<integer>();
+query return_type_list_boolean() = list<boolean>();
 query return_type_list_byte_array() = list<byte_array>();
 query return_type_set_integer() = set<integer>();
 query return_type_list_struct() = list<test_struct>();

@@ -31,7 +31,7 @@ internal class SimpleTypescriptEntityTest {
             contains("type TestEntity = ")
             contains("name: string;")
             contains("num: number;")
-            contains("b_type: boolean;")
+            contains("b_type: number;")
         }
     }
 
@@ -64,7 +64,7 @@ internal class SimpleTypescriptEntityTest {
 
     @ParameterizedTest(name = "rell type {0} becomes {1}")
     @CsvSource(
-            "a,boolean,boolean",
+            "a,boolean,number",
             "a,integer,number",
             "a,big_integer,bigint",
             "a,decimal,number",
