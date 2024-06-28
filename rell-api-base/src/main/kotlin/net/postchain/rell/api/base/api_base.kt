@@ -89,6 +89,8 @@ object RellApiCompile {
         val appModuleInTestsError: Boolean,
         /** Additional GTX-modules to include */
         val additionalGtxModules: List<String>,
+        /** Enable adding documentation symbol to return objects */
+        val docSymbolsEnabled: Boolean,
         /** Do not print non-error compilation messages (warnings) if compilation succeeds, when `true`. */
         val quiet: Boolean,
     ) {
@@ -105,6 +107,7 @@ object RellApiCompile {
                 mountConflictError = true,
                 appModuleInTestsError = true,
                 additionalGtxModules = immListOf(),
+                docSymbolsEnabled = false,
                 quiet = false,
             )
         }
@@ -119,6 +122,7 @@ object RellApiCompile {
             private var mountConflictError = proto.mountConflictError
             private var appModuleInTestsError = proto.appModuleInTestsError
             private var additionalGtxModules = proto.additionalGtxModules
+            private var docSymbolsEnabled = proto.docSymbolsEnabled
             private var quiet = proto.quiet
 
             /** @see [Config.cliEnv] */
@@ -156,6 +160,8 @@ object RellApiCompile {
             fun appModuleInTestsError(v: Boolean) = apply { appModuleInTestsError = v }
             /** @see [Config.additionalGtxModules] */
             fun additionalGtxModules(v: List<String>) = apply { additionalGtxModules = v.toImmList() }
+            /** @see [Config.docSymbolsEnabled] */
+            fun docSymbolsEnabled(v: Boolean) = apply { docSymbolsEnabled = v }
 
             /** @see [Config.quiet] */
             fun quiet(v: Boolean) = apply { quiet = v }
@@ -171,6 +177,7 @@ object RellApiCompile {
                     mountConflictError = mountConflictError,
                     appModuleInTestsError = appModuleInTestsError,
                     additionalGtxModules = additionalGtxModules,
+                    docSymbolsEnabled = docSymbolsEnabled,
                     quiet = quiet,
                 )
             }
@@ -268,6 +275,7 @@ object RellApiBaseInternal {
             .compatibility(config.version)
             .mountConflictError(config.mountConflictError)
             .appModuleInTestsError(config.appModuleInTestsError)
+            .ideDocSymbolsEnabled(config.docSymbolsEnabled)
             .build()
     }
 
