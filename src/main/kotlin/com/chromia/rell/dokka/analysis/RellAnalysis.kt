@@ -24,6 +24,7 @@ class RellAnalysis(sourceRoot: File, entryPointModules: List<String>?) {
         val config = RellApiCompile.Config.Builder()
                 .mountConflictError(false)
                 .moduleArgsMissingError(false)
+                .docSymbolsEnabled(true)
                 .build()
         val app = RellApiCompile.compileApp(config, sourceRoot, entryPointModules)
         modules = app.modules
