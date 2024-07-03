@@ -15,12 +15,9 @@ import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.runtime.Rt_RellVersion
 import net.postchain.rell.base.runtime.Rt_RellVersionProperty
-import net.postchain.rell.base.utils.RellVersions
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
-import net.postchain.rell.base.utils.immMultimapOf
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
 import org.apache.commons.configuration2.PropertiesConfiguration
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder
 import org.apache.commons.configuration2.builder.fluent.Parameters
@@ -129,8 +126,14 @@ object IdeApi {
         return IdeCompilationResult(res.messages, res.ideSymbolInfos)
     }
 
-    @JvmStatic fun getAllComments(rApp: R_App): Map<String, String> {
-        return C_DocUtils.getAllComments(rApp)
+    @JvmStatic fun getAllComments(
+        sourceDir: C_SourceDir,
+        modules: List<R_ModuleName>,
+        options: C_CompilerOptions,
+    ): Map<String, String> {
+        val res = C_Compiler.compile(sourceDir, modules, options)
+        res.app ?: return immMapOf()
+        return C_DocUtils.getAllComments(res.app)
     }
 }
 
