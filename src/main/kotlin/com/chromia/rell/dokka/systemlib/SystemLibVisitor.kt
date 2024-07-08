@@ -190,7 +190,7 @@ class SystemLibVisitor(
                 name = simpleName.str,
                 documentation = mapOf(sourceSet to docSymbol.toDocumentationNode()),
                 constructors = listOf(),
-                properties = struct.attributesMap.map { makeDProperty(sourceSet, dri, it.value.docSymbol, it.key, it.value.type) },
+                properties = struct.rStruct.attributes.map { makeDProperty(sourceSet, dri, it.value.docSymbol, it.key.str, it.value.type.mType) },
                 functions = listOf(),
                 generics = listOf(),
                 classlikes = listOf(),
