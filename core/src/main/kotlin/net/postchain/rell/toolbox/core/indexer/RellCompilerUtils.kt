@@ -39,7 +39,7 @@ class RellCompilerUtils() {
             listOf(
                 C_Message(
                     type = C_MessageType.ERROR,
-                    pos = S_BasicPos(C_ParserFilePath(compilerSrcPath, idePath), 0, 0),
+                    pos = S_BasicPos(C_ParserFilePath(compilerSrcPath, idePath), 0, 0, 0),
                     code = "",
                     text = "Relative workspace path contains '-', cannot compile."
                 )

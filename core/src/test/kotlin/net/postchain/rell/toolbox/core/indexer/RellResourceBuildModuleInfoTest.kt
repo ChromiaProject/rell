@@ -37,14 +37,16 @@ class RellResourceBuildModuleInfoTest {
         val fileContentImport = File(fileUriImport).readText()
         val fileContentSemanticError = File(fileUriSemanticError).readText()
 
-        val parseTreeImport = rellDesc.buildParseTreeWithSyntaxErrors(fileContentImport).first
-        val parseTreeSematicError = rellDesc.buildParseTreeWithSyntaxErrors(fileContentSemanticError).first
+        val importParseResult = rellDesc.buildParseTree(fileContentImport)
+        val parseTreeImport = importParseResult.parseTree
+        val semanticErrorParseResult = rellDesc.buildParseTree(fileContentSemanticError)
+        val parseTreeSematicError = semanticErrorParseResult.parseTree
 
         val compilerSourcePathImport = rellCompilerUtils.createCompilerSourcePath(fileUriImport, workspaceError.toURI())
         val compilerSourcePathSemanticError = rellCompilerUtils.createCompilerSourcePath(fileUriSemanticError, workspaceError.toURI())
 
-        val sRellFileImport = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePathImport, parseTreeImport).first
-        val sRellFileSemanticError = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePathSemanticError, parseTreeSematicError).first
+        val sRellFileImport = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePathImport, parseTreeImport, importParseResult.parser.tokenStream).first
+        val sRellFileSemanticError = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePathSemanticError, parseTreeSematicError, importParseResult.parser.tokenStream).first
 
         val rellCompileResultSemanticError = rellDesc.compileResult(
             compilerSourcePathSemanticError,
@@ -74,8 +76,9 @@ class RellResourceBuildModuleInfoTest {
         val compilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceError.toURI())
 
         val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser())
-        val parseTree = rellDesc.buildParseTreeWithSyntaxErrors(fileContent).first
-        val sRellFile = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePath, parseTree).first
+        val parsingResult = rellDesc.buildParseTree(fileContent)
+        val parseTree = parsingResult.parseTree
+        val sRellFile = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePath, parseTree, parsingResult.parser.tokenStream).first
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
 
         val rellCompileResult = rellDesc.compileResult(

@@ -346,8 +346,9 @@ class RellLanguageServer(
 
     @JsonRequest(useSegment = false, value = "rell/listTestFiles")
     fun getTestFiles(workspaceUri: String): CompletableFuture<List<RellTestFile>> {
+        val parsedUri = parseFileUri(workspaceUri) ?: return CompletableFuture.completedFuture(listOf())
         return requestManager.runRead {
-            testRunner.getTestFiles(URI(workspaceUri))
+            testRunner.getTestFiles(parsedUri)
         }
     }
 

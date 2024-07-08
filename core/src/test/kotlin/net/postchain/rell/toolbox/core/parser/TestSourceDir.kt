@@ -39,13 +39,14 @@ class TestSourceFile(private val parser: AntlrRellParser, private val path: C_So
 
     override fun readAst(): S_RellFile {
         val errorCollector = SyntaxErrorCollector()
-        val root = parser.parse(text, errorListeners = listOf(errorCollector))
+        val parser = parser.parserFor(text, errorListeners = listOf(errorCollector))
+        val root = parser.ruleX_RootParser()
         val errors = errorCollector.errors
         if (errors.isNotEmpty()) {
             throw C_CommonError("syntax", errors.joinToString("\n"))
         }
         val rcPath = RellcFilePath(path, idePath)
-        val pair = RellcAPI.antlrToRellAst(rcPath, root)
+        val pair = RellcAPI.antlrToRellAst(rcPath, root, parser.tokenStream)
         return pair.first
     }
 

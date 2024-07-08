@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.toolbox.core.definitionsField
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import net.postchain.rell.toolbox.core.parser.RellParser
 import net.postchain.rell.toolbox.core.parser.SyntaxErrorCollector
@@ -16,42 +17,43 @@ import java.net.URI
 class RellResourceBuildRellAstTest {
     @Test
     fun `buildRellAst returns S_RellFile with no errors`() {
-        val (rellCSrcPath, parseTree) = getSrcPathAndParseTree(rellFilesCorrect, "objects.rell", workspaceCorrect)
+        val (rellCSrcPath, parseTree, parser) = getSrcPathAndParseTree(rellFilesCorrect, "objects.rell", workspaceCorrect)
         val rellResDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser())
 
-        val (ast, errors) = rellResDesc.buildRellAstWithCompilerErrors(rellCSrcPath, parseTree)
-        assertThat(ast.definitions.size).isEqualTo(1)
+        val (ast, errors) = rellResDesc.buildRellAstWithCompilerErrors(rellCSrcPath, parseTree, parser.tokenStream)
+        assertThat(ast.definitionsField.size).isEqualTo(1)
         assertThat(errors).isEmpty()
     }
 
     @Test
     fun `buildRellAst can build S_RellFile with no errors on syntax incorrect file`() {
-        val (rellCSrcPath, parseTree) = getSrcPathAndParseTree(rellFilesErrors, "syntax_error.rell", workspaceError)
+        val (rellCSrcPath, parseTree, parser) = getSrcPathAndParseTree(rellFilesErrors, "syntax_error.rell", workspaceError)
         val rellResDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser())
 
-        val (ast, errors) = rellResDesc.buildRellAstWithCompilerErrors(rellCSrcPath, parseTree)
-        assertThat(ast.definitions.size).isEqualTo(3)
+        val (ast, errors) = rellResDesc.buildRellAstWithCompilerErrors(rellCSrcPath, parseTree, parser.tokenStream)
+        assertThat(ast.definitionsField.size).isEqualTo(3)
         assertThat(errors).isEmpty()
     }
 
     @Test
     fun `buildRellAst can build S_RellFile with no errors from a semantic incorrect file`() {
-        val (rellCSrcPath, parseTree) = getSrcPathAndParseTree(rellFilesErrors, "semantic_error.rell", workspaceError)
+        val (rellCSrcPath, parseTree, parser) = getSrcPathAndParseTree(rellFilesErrors, "semantic_error.rell", workspaceError)
         val rellResDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser())
 
-        val (ast, errors) = rellResDesc.buildRellAstWithCompilerErrors(rellCSrcPath, parseTree)
-        assertThat(ast.definitions.size).isEqualTo(4)
+        val (ast, errors) = rellResDesc.buildRellAstWithCompilerErrors(rellCSrcPath, parseTree,parser.tokenStream)
+        assertThat(ast.definitionsField.size).isEqualTo(4)
         assertThat(errors).isEmpty()
     }
 
     private fun getSrcPathAndParseTree(workspaceFiles: MutableList<URI>, fileName: String, workspace: File):
-            Pair<C_SourcePath, RellParser.RuleX_RootParserContext> {
+            Triple<C_SourcePath, RellParser.RuleX_RootParserContext, RellParser> {
         val fileUri = workspaceFiles.find { it.toString().endsWith("/$fileName") }!!
         val rellResDesc = RellResourceFactory(workspace.toURI(), AntlrRellParser())
         val rellCSrcPath = rellResDesc.rellCompilerUtils.createCompilerSourcePath(fileUri, workspace.toURI())
         val errorListener = SyntaxErrorCollector()
-        val parseTree = parser.parse(File(fileUri.path).readText(), errorListeners = listOf(errorListener))
-        return Pair(rellCSrcPath, parseTree)
+        val parser = parser.parserFor(File(fileUri.path).readText(), errorListeners = listOf(errorListener))
+        val parseTree = parser.ruleX_RootParser()
+        return Triple(rellCSrcPath, parseTree, parser)
     }
 
     companion object {

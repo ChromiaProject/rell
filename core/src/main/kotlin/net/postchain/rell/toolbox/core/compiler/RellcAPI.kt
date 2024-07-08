@@ -7,15 +7,19 @@ import net.postchain.rell.base.compiler.base.utils.C_Message
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.utils.ide.IdeApi
+import net.postchain.rell.toolbox.core.parser.RellCommonTokenStream
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_RootParserContext
+import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.TokenStream
 
 object RellcAPI {
 
     fun antlrToRellAst(
         path: RellcFilePath,
-        antlrRootNode: RuleX_RootParserContext
+        antlrRootNode: RuleX_RootParserContext,
+        tokenStream: TokenStream,
     ): Pair<S_RellFile, List<C_Error>> {
-        return AntlrToRellContext.runWithContext { ctx ->
+        return AntlrToRellContext.runWithContext(tokenStream) { ctx ->
             RellcFilePathHolder.overrideCurrentFile(path) {
                 val root = AntlrToRell.process(ctx, antlrRootNode)
                 root as S_RellFile

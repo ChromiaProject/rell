@@ -9,21 +9,41 @@ X_RootParser
    ;
 
 X_ModuleHeader
-   : {X_ModuleHeader} (a+=X_Modifier)* b=X_tkMODULE ';'
+   : {X_ModuleHeader} a=X_Modifiers b=X_tkMODULE ';'
+   ;
+
+X_Modifiers
+   : {X_Modifiers} (a+=X_Modifier)*
    ;
 
 X_Modifier
-   : {X_Modifier_0} 'abstract'
-   | {X_Modifier_1} 'override'
+   : X_KeywordModifier
    | X_Annotation
    ;
 
+X_KeywordModifier
+   : {X_KeywordModifier} a=X_KeywordModifier0
+   ;
+
+X_KeywordModifier0
+   : {X_KeywordModifier0_0} 'abstract'
+   | {X_KeywordModifier0_1} 'override'
+   ;
+
 X_Annotation
-   : {X_Annotation} '@' a=X_Name (b=X_AnnotationArgs)?
+   : {X_Annotation} a=X_tkAT b=X_Name (c=X_AnnotationArgs)?
+   ;
+
+X_tkAT
+   : {X_Token} '@'
    ;
 
 X_Name
-   : {X_Name} ID
+   : {X_Name} a=X_NameNode
+   ;
+
+X_NameNode
+   : {X_NameNode} ID
    ;
 
 X_AnnotationArgs
@@ -91,7 +111,11 @@ X_AnnotationArgName
    ;
 
 X_QualifiedName
-   : {X_QualifiedName} a+=X_Name ('.' a+=X_Name)*
+   : {X_QualifiedName} a=X_QualifiedNameNode
+   ;
+
+X_QualifiedNameNode
+   : {X_QualifiedNameNode} a+=X_NameNode ('.' a+=X_NameNode)*
    ;
 
 X_tkCOMMA
@@ -103,7 +127,7 @@ X_tkMODULE
    ;
 
 X_AnnotatedDef
-   : {X_AnnotatedDef} (a+=X_Modifier)* b=X_AnyDef
+   : {X_AnnotatedDef} a=X_Modifiers b=X_AnyDef
    ;
 
 X_AnyDef
@@ -147,16 +171,16 @@ X_EntityBody
    ;
 
 X_EntityBodyFull
-   : {X_EntityBodyFull} '{' (a+=X_RelAnyClause)* '}'
+   : {X_EntityBodyFull} '{' (a+=X_RelClause)* '}'
    ;
 
-X_RelAnyClause
-   : X_RelAttributeClause
-   | X_RelKeyIndexClause
+X_RelClause
+   : X_AttributeClause
+   | X_KeyIndexClause
    ;
 
-X_RelAttributeClause
-   : {X_RelAttributeClause} a=X_AttributeDefinition
+X_AttributeClause
+   : {X_AttributeClause} a=X_AttributeDefinition
    ;
 
 X_AttributeDefinition
@@ -177,7 +201,7 @@ X_AttrHeader
    ;
 
 X_NameTypeAttrHeader
-   : {X_NameTypeAttrHeader} a=X_Name ':' b=X_Type
+   : {X_NameTypeAttrHeader} a=X_NameNode ':' b=X_Type
    ;
 
 X_Type
@@ -251,7 +275,7 @@ X_CommaSeparated_0
    ;
 
 X_TupleTypeField
-   : {X_TupleTypeField} (a=X_Name ':')? b=X_TypeRef
+   : {X_TupleTypeField} (a=X_NameNode ':')? b=X_TypeRef
    ;
 
 X_VirtualType
@@ -279,7 +303,7 @@ X_tkQUESTION
    ;
 
 X_AnonAttrHeader
-   : {X_AnonAttrHeader} a=X_QualifiedName (b=X_tkQUESTION)?
+   : {X_AnonAttrHeader} a=X_QualifiedNameNode (b=X_tkQUESTION)?
    ;
 
 X_ExpressionRef
@@ -389,7 +413,7 @@ X_CommaSeparated_15
    ;
 
 X_AtExprFromItem
-   : {X_AtExprFromItem} (a+=X_Annotation)* (b=X_Name ':')? c=X_ExpressionRef
+   : {X_AtExprFromItem} (a+=X_Annotation)* (b=X_NameNode ':')? c=X_ExpressionRef
    ;
 
 X_BaseExprTailAt
@@ -401,10 +425,6 @@ X_AtExprAt
    | {X_AtExprAt_1} a=X_tkAT b=X_tkMUL
    | {X_AtExprAt_2} a=X_tkAT b=X_tkPLUS
    | {X_AtExprAt_3} '@'
-   ;
-
-X_tkAT
-   : {X_Token} '@'
    ;
 
 X_tkMUL
@@ -457,11 +477,7 @@ X_CommaSeparated_17
    ;
 
 X_AtExprWhatComplexItem
-   : {X_AtExprWhatComplexItem} (a+=X_Annotation)* (b=X_AtExprWhatName)? c=X_ExpressionRef
-   ;
-
-X_AtExprWhatName
-   : {X_AtExprWhatName} a=X_Name '='
+   : {X_AtExprWhatComplexItem} (a+=X_Annotation)* (b=X_NameNode '=')? c=X_ExpressionRef
    ;
 
 X_AtExprModifiers
@@ -502,7 +518,7 @@ X_CommaSeparated_13
    ;
 
 X_TupleExprField
-   : {X_TupleExprField} (a=X_Name '=')? b=X_ExpressionRef
+   : {X_TupleExprField} (a=X_NameNode '=')? b=X_ExpressionRef
    ;
 
 X_CreateExpr
@@ -674,8 +690,8 @@ X_tkIN
    : {X_Token} 'in'
    ;
 
-X_RelKeyIndexClause
-   : {X_RelKeyIndexClause} a=X_KeyIndexKind b=X_CommaSeparated_8 ';'
+X_KeyIndexClause
+   : {X_KeyIndexClause} a=X_KeyIndexKind b=X_CommaSeparated_8 ';'
    ;
 
 X_KeyIndexKind
@@ -692,7 +708,7 @@ X_EntityBodyShort
    ;
 
 X_ObjectDef
-   : {X_ObjectDef} a=X_tkOBJECT b=X_Name '{' (c+=X_AttributeDefinition)* '}'
+   : {X_ObjectDef} a=X_tkOBJECT b=X_Name '{' (c+=X_AttributeClause)* '}'
    ;
 
 X_tkOBJECT
@@ -700,7 +716,7 @@ X_tkOBJECT
    ;
 
 X_StructDef
-   : {X_StructDef} a=X_StructKeyword b=X_Name '{' (c+=X_AttributeDefinition)* '}'
+   : {X_StructDef} a=X_StructKeyword b=X_Name '{' (c+=X_AttributeClause)* '}'
    ;
 
 X_StructKeyword
@@ -721,7 +737,11 @@ X_CommaSeparated_12
    ;
 
 X_CommaSeparated_11
-   : {X_CommaSeparated_11} a+=X_Name (',' a+=X_Name)* (b=X_tkCOMMA)?
+   : {X_CommaSeparated_11} a+=X_EnumValue (',' a+=X_EnumValue)* (b=X_tkCOMMA)?
+   ;
+
+X_EnumValue
+   : {X_EnumValue} a=X_NameNode
    ;
 
 X_FunctionDef
@@ -928,7 +948,7 @@ X_CommaSeparated_31
    ;
 
 X_UpdateFromItem
-   : {X_UpdateFromItem} (a=X_Name ':')? b=X_QualifiedName
+   : {X_UpdateFromItem} (a=X_NameNode ':')? b=X_QualifiedName
    ;
 
 X_UpdateTargetExpr
@@ -1000,11 +1020,15 @@ X_FunctionBodyNone
    ;
 
 X_NamespaceDef
-   : {X_NamespaceDef} a=X_tkNAMESPACE (b=X_QualifiedName)? '{' (c+=X_AnnotatedDef)* '}'
+   : {X_NamespaceDef} a=X_tkNAMESPACE (b=X_QualifiedName)? c=X_tkLCURL (d+=X_AnnotatedDef)* e=X_tkRCURL
    ;
 
 X_tkNAMESPACE
    : {X_Token} 'namespace'
+   ;
+
+X_tkRCURL
+   : {X_Token} '}'
    ;
 
 X_ImportDef
@@ -1054,7 +1078,7 @@ X_CommaSeparated_37
    ;
 
 X_ImportTargetExactItem
-   : {X_ImportTargetExactItem} (a=X_Name ':')? b=X_QualifiedName ('.' c=X_tkMUL)?
+   : {X_ImportTargetExactItem} (a=X_NameNode ':')? b=X_QualifiedNameNode ('.' c=X_tkMUL)?
    ;
 
 X_ImportTargetWildcard

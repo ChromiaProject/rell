@@ -20,6 +20,10 @@ class AntlrPos(val node: ParserRuleContext, val path: C_SourcePath, val idePath:
         return node.start.line
     }
 
+    override fun offset(): Int {
+        return node.start.startIndex
+    }
+
     override fun column(): Int {
         return node.start.charPositionInLine + 1
     }

@@ -4,13 +4,12 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import java.io.File
 import net.postchain.rell.toolbox.lsp.server.utils.WorkspaceManagerTestBase
 import org.eclipse.lsp4j.HoverParams
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.TextDocumentIdentifier
 import org.junit.jupiter.api.Test
-import java.awt.SystemColor.text
-import java.io.File
 
 internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
 
@@ -53,7 +52,7 @@ internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
     }
 
     @Test
-    fun `Hover on user function gives no information (yet)`() {
+    fun `Hover on user function gives signature and Rell Docs`() {
         val testFile = createFile(
             sourceDir, "my_rell_module.rell",
             """
@@ -62,7 +61,7 @@ internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function test() = my_function();
                 
                 /**
-                 * This docs is currently not accessible
+                 * This doc comment is accessible
                  */
                 function my_function() = 32;
             """.trimIndent()
@@ -73,7 +72,8 @@ internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         val hoverDocs = hoverOn("my_function", testFile)
 
         assertThat(hoverDocs.kind).isEqualTo("markdown")
-        assertThat(hoverDocs.value).isEmpty()
+        assertThat(hoverDocs.value).contains("function my_function(): integer")
+        assertThat(hoverDocs.value).contains("This doc comment is accessible")
     }
 
     @Test
@@ -98,7 +98,7 @@ internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         val hoverDocs = workspaceManager.getHoverDocumentation(
             HoverParams(
                 TextDocumentIdentifier("http://localhost"),
-                Position(0,0)
+                Position(0, 0)
             )
         )
         assertThat(hoverDocs.kind).isEqualTo("plaintext")

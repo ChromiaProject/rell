@@ -1,5 +1,7 @@
 package net.postchain.rell.toolbox.core
 
+import net.postchain.rell.base.compiler.ast.S_Definition
+import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.toolbox.core.indexer.RellResourceFactory
@@ -25,3 +27,12 @@ class TestUtil {
         return rellDesc.buildRellResource(fileUri, fileMap)
     }
 }
+
+
+@Suppress("UNCHECKED_CAST")
+val S_RellFile.definitionsField: List<S_Definition>
+    get() {
+        val field = this.javaClass.getDeclaredField("definitions")
+        field.isAccessible = true
+        return field.get(this) as List<S_Definition>
+    }

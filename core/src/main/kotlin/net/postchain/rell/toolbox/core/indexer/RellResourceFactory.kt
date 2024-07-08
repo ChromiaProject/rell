@@ -1,6 +1,9 @@
 package net.postchain.rell.toolbox.core.indexer
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.File
+import java.net.URI
+import java.util.concurrent.ConcurrentHashMap
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_Error
@@ -12,12 +15,12 @@ import net.postchain.rell.base.utils.ide.IdeCompilationResult
 import net.postchain.rell.base.utils.ide.IdeDirApi
 import net.postchain.rell.toolbox.core.compiler.RellcAPI
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
+import net.postchain.rell.toolbox.core.parser.RellCommonTokenStream
 import net.postchain.rell.toolbox.core.parser.RellParser
 import net.postchain.rell.toolbox.core.parser.SyntaxError
 import net.postchain.rell.toolbox.core.parser.SyntaxErrorCollector
-import java.io.File
-import java.net.URI
-import java.util.concurrent.ConcurrentHashMap
+import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.TokenStream
 
 
 class RellResourceFactory(private val workspaceUri: URI, private val parser: AntlrRellParser) {
@@ -32,10 +35,14 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
         return fileMap
     }
 
-    fun buildCSourceFile(fileUri: URI, fileContent: String): Pair<C_SourcePath, C_SourceFile> {
+    private fun buildCSourceFile(fileUri: URI, fileContent: String): Pair<C_SourcePath, C_SourceFile> {
         val rellCompilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
-        val antlrParseTree = buildParseTreeWithSyntaxErrors(fileContent)
-        val ast = buildRellAstWithCompilerErrors(rellCompilerSourcePath, antlrParseTree.first)
+        val parseResult = this.buildParseTree(fileContent)
+        val ast = buildRellAstWithCompilerErrors(
+            rellCompilerSourcePath,
+            parseResult.parseTree,
+            parseResult.parser.tokenStream
+        )
         return rellCompilerSourcePath to AstSourceFile.make(ast.first, IdeSourcePathFilePath(rellCompilerSourcePath))
     }
 
@@ -44,36 +51,41 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
         fileMap[sourcePath] = sourceFile
     }
 
-    fun buildRellResource(fileUri: URI, fileContent: String, fileMap:  MutableMap<C_SourcePath, C_SourceFile>): Resource {
+    fun buildRellResource(
+        fileUri: URI,
+        fileContent: String,
+        fileMap: MutableMap<C_SourcePath, C_SourceFile>
+    ): Resource {
         val rellCompilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
-        val antlrParseTree = buildParseTreeWithSyntaxErrors(fileContent)
-        val ast = buildRellAstWithCompilerErrors(rellCompilerSourcePath, antlrParseTree.first)
+        val parseResult = this.buildParseTree(fileContent)
+        val ast = buildRellAstWithCompilerErrors(rellCompilerSourcePath, parseResult.parseTree, parseResult.parser.tokenStream)
         val compilationResult = compileResult(rellCompilerSourcePath, ast.first, fileMap)
         val symbolInfo = compilationResult?.symbolInfos ?: mapOf()
         val locationInfo = createLocationInfo(symbolInfo)
 
         return Resource(
-            antlrParseTree.first,
+            parseResult.parseTree,
             ast.first.ideModuleInfo(rellCompilerSourcePath),
             fileUri,
             workspaceUri,
             ast.first,
-            antlrParseTree.second,
+            parseResult.syntaxErrors,
             compilationResult?.messages ?: listOf(),
             symbolInfo,
             symbolInfo.asSequence().filter { it.value.defId != null }.associate { it.value.defId!! to it.key },
-            locationInfo
+            locationInfo,
+            null,
         )
     }
 
-    fun buildRellResource(fileUri: URI, fileMap:  MutableMap<C_SourcePath, C_SourceFile>): Resource {
+    fun buildRellResource(fileUri: URI, fileMap: MutableMap<C_SourcePath, C_SourceFile>): Resource {
         val fileContent = File(fileUri).readText()
         return buildRellResource(fileUri, fileContent, fileMap)
     }
 
     fun compileResult(
         compilerSrcPath: C_SourcePath, ast: S_RellFile,
-        fileMap:  MutableMap<C_SourcePath, C_SourceFile>
+        fileMap: MutableMap<C_SourcePath, C_SourceFile>
     ): IdeCompilationResult? {
         // Having a workspace uri that ends with rell means we have a single file indexer.
         // Similar to java we have decided to not compile single file,
@@ -88,7 +100,11 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
         val moduleName = IdeApi.getModuleName(compilerSrcPath, ast)
             ?: throw Exception("Can not find the moduleName for $compilerSrcPath")
 
-        val options = C_CompilerOptions.builder().symbolInfoFile(compilerSrcPath).ide(true).build()
+        val options = C_CompilerOptions.builder()
+            .symbolInfoFile(compilerSrcPath)
+            .ideDocSymbolsEnabled(true)
+            .ide(true)
+            .build()
         val idePath = IdeSourcePathFilePath(compilerSrcPath)
         val mainFile = AstSourceFile.make(ast, idePath)
         fileMap[compilerSrcPath] = mainFile
@@ -103,25 +119,29 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
         }
     }
 
-    fun buildParseTreeWithSyntaxErrors(fileContent: String): Pair<RellParser.RuleX_RootParserContext, MutableList<SyntaxError>> {
+    fun buildParseTree(fileContent: String): ParsingResult {
         val errorListener = SyntaxErrorCollector()
         return try {
-            val parseTree = parser.parse(fileContent, errorListeners = listOf(errorListener))
-            Pair(parseTree, errorListener.errors)
+            val parser = parser.parserFor(fileContent, errorListeners = listOf(errorListener))
+            val parseTree = parser.ruleX_RootParser()
+            ParsingResult(parseTree, errorListener.errors, parser)
         } catch (e: Exception) {
             //If error occurred we build a parse tree from an empty string instead. This is so that we can continue
             //with the flow of building the whole project
             logger.debug { "Stacktrace for failure for building parse tree: $e" }
-            val parseTree = parser.parse("", errorListeners = listOf(errorListener))
-            Pair(parseTree, errorListener.errors)
+            val parser = parser.parserFor("", errorListeners = listOf(errorListener))
+            val parseTree = parser.ruleX_RootParser()
+            ParsingResult(parseTree, errorListener.errors, parser)
         }
     }
 
     fun buildRellAstWithCompilerErrors(
-        rellCompilerSourcePath: C_SourcePath, parseTree: RellParser.RuleX_RootParserContext
+        rellCompilerSourcePath: C_SourcePath,
+        parseTree: RellParser.RuleX_RootParserContext,
+        tokenStream: TokenStream
     ): Pair<S_RellFile, List<C_Error>> {
         val rellCompilerFilePath = rellCompilerUtils.createRellCompilerFilePath(rellCompilerSourcePath)
-        return RellcAPI.antlrToRellAst(rellCompilerFilePath, parseTree)
+        return RellcAPI.antlrToRellAst(rellCompilerFilePath, parseTree, tokenStream)
     }
 
     companion object {
