@@ -87,7 +87,7 @@ class RellWorkspaceManager(
         return indexer
     }
 
-    private fun findSourceDirURI(workspaceUri: URI): URI {
+    fun findSourceDirURI(workspaceUri: URI): URI {
         val workspaceFolder = File(workspaceUri)
 
         val rellSrcFolder = workspaceFolder.resolve("rell/src")
@@ -136,6 +136,7 @@ class RellWorkspaceManager(
         val fileUri = parseFileUri(params.textDocument.uri) ?: return MarkupContent("plaintext", "")
         val indexer = getIndexerFor(fileUri)
         val document = openDocuments[fileUri] ?: return MarkupContent("plaintext", "")
+
         val symbolLocation = rellSymbolService.getSymbolLocationsWithSymbol(document, indexer, params.position)
         return MarkupContent("markdown", formatDocSymbol(symbolLocation?.second?.doc))
     }
@@ -470,15 +471,15 @@ class RellWorkspaceManager(
                 val startPos = ctx.start.line
                 if (startPos == location.range.start.line + 1 && ctx.stop.charPositionInLine == location.range.start.character) {
                     result = FullNameWithRange(
-                        ctx.ruleX_QualifiedName().ruleX_Name().map { it.text },
+                        ctx.ruleX_QualifiedNameNode().ruleX_NameNode().map { it.text },
                         Range(
                             Position(
-                                ctx.ruleX_QualifiedName().start.line - 1,
-                                ctx.ruleX_QualifiedName().start.charPositionInLine
+                                ctx.ruleX_QualifiedNameNode().start.line - 1,
+                                ctx.ruleX_QualifiedNameNode().start.charPositionInLine
                             ),
                             Position(
-                                ctx.ruleX_QualifiedName().stop.line - 1,
-                                ctx.ruleX_QualifiedName().stop.charPositionInLine + ctx.ruleX_QualifiedName().stop.text.length
+                                ctx.ruleX_QualifiedNameNode().stop.line - 1,
+                                ctx.ruleX_QualifiedNameNode().stop.charPositionInLine + ctx.ruleX_QualifiedNameNode().stop.text.length
                             )
                         )
                     )

@@ -3,22 +3,21 @@ package net.postchain.rell.toolbox.core.parser
 import assertk.Assert
 import assertk.assertions.support.expected
 import assertk.assertions.support.show
-import net.postchain.rell.base.compiler.ast.S_Definition
 import net.postchain.rell.base.compiler.ast.S_Pos
 import java.lang.reflect.Field
+import net.postchain.rell.base.compiler.ast.S_RellFile
 
-fun Assert<S_Definition>.isSimilarTo(expected: S_Definition) = given { actual ->
-    val areEqual = DefinitionComparator().compare(actual, expected) == 0
+fun Assert<S_RellFile>.isSimilarTo(expected: S_RellFile) = given { actual ->
+    val areEqual = S_RellFileComparator().compare(actual, expected) == 0
     if (areEqual) {
         return
     }
-    expected("definition ${show(expected)} to be similar to ${show(actual)}")
+    expected("S_RellFile ${show(expected)} to be similar to ${show(actual)}")
 }
 
-class DefinitionComparator : Comparator<S_Definition> {
+class S_RellFileComparator : Comparator<S_RellFile> {
 
-
-    override fun compare(first: S_Definition?, second: S_Definition?): Int {
+    override fun compare(first: S_RellFile?, second: S_RellFile?): Int {
         val seen = mutableSetOf<Any>()
         return if (deepCompare(first, second, seen)) {
             0

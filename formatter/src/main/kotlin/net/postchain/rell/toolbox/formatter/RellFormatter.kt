@@ -43,7 +43,7 @@ import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_NonEmptyMapLitera
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_ObjectDefContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_OpDefContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_QueryDefContext
-import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_RelKeyIndexClauseContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_KeyIndexClauseContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_ReturnStmtContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_RootParserContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_StructDefContext
@@ -455,10 +455,10 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         doc.interiorIndent(xObjectDef)
         doc.surround(xObjectDef.ruleX_Name()) { it.oneSpace() }
 
-        for (xAttriDef in xObjectDef.ruleX_AttributeDefinition()) {
+        for (xAttriDef in xObjectDef.ruleX_AttributeClause()) {
             formatSemicolon(xObjectDef, doc)
             formatEqualSign(xObjectDef, doc)
-            doc.append(xAttriDef.ruleX_BaseAttributeDefinition().ruleX_AttrHeader()) {
+            doc.append(xAttriDef.ruleX_AttributeDefinition().ruleX_BaseAttributeDefinition().ruleX_AttrHeader()) {
                 it.setNewLines(0)
                 it.oneSpace()
             }
@@ -473,7 +473,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         doc.surround(xObjectDef) { it.setNewLines(2) }
         doc.interiorIndent(xObjectDef)
         doc.surround(xObjectDef.ruleX_Name()) { it.oneSpace() }
-        for (xAttriDef in xObjectDef.ruleX_AttributeDefinition()) {
+        for (xAttriDef in xObjectDef.ruleX_AttributeClause()) {
             formatSemicolon(xObjectDef, doc)
             doc.format(xAttriDef)
         }
@@ -501,7 +501,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         doc.prepend(closingCurly) { it.newLine() }
     }
 
-    fun format(xRellKeyIndex: RuleX_RelKeyIndexClauseContext, doc: FormattableDocument) {
+    fun format(xRellKeyIndex: RuleX_KeyIndexClauseContext, doc: FormattableDocument) {
         doc.append(xRellKeyIndex) { it.noSpace() }
         doc.prepend(xRellKeyIndex) { it.newLine() }
         formatSemicolon(xRellKeyIndex, doc)
@@ -528,7 +528,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
     }
 
     fun format(xNameTypeAttrHead: RuleX_NameTypeAttrHeaderContext, doc: FormattableDocument) {
-        doc.append(xNameTypeAttrHead.ruleX_Name()) { it.noSpace() }
+        doc.append(xNameTypeAttrHead.ruleX_NameNode()) { it.noSpace() }
         doc.prepend(xNameTypeAttrHead.ruleX_Type()) { it.oneSpace() }
     }
 
@@ -538,8 +538,13 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             it.newLine()
             it.highPriority()
         }
-        formatModifier(xModifier.ruleX_Modifier_0(), doc)
-        formatModifier(xModifier.ruleX_Modifier_1(), doc)
+        xModifier.ruleX_KeywordModifier()?.ruleX_KeywordModifier0()?.ruleX_Modifier_0()?.let {
+            formatModifier(it, doc)
+        }
+
+        xModifier.ruleX_KeywordModifier()?.ruleX_KeywordModifier0()?.ruleX_Modifier_1()?.let {
+            formatModifier(it, doc)
+        }
     }
 
     fun format(xAnnotation: RuleX_AnnotationContext, doc: FormattableDocument) {
@@ -566,7 +571,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         doc.surround(xNamespaceDef) { it.setNewLines(2) }
         doc.append(xNamespaceDef.ruleX_tkNAMESPACE()) { it.oneSpace() }
         doc.append(xNamespaceDef.ruleX_QualifiedName()) { it.oneSpace() }
-        val openingCurly = tokenFor(xNamespaceDef, "{")
+        val openingCurly = xNamespaceDef.ruleX_tkLCURL()
         if (openingCurly != null) {
             doc.append(openingCurly) {
                 it.setNewLines(1, 1, 2)
@@ -577,7 +582,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         for (xAnnotDef in xNamespaceDef.ruleX_AnnotatedDef()) {
             doc.format(xAnnotDef)
         }
-        val closingCurly = tokenFor(xNamespaceDef, "}")
+        val closingCurly = xNamespaceDef.ruleX_tkRCURL()
         if (closingCurly != null) {
             doc.prepend(closingCurly) {
                 it.setNewLines(1, 1, 2)
@@ -807,7 +812,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
     }
 
     fun format(xTupleEqExpr: RuleX_TupleExprFieldContext, doc: FormattableDocument) {
-        doc.surround(xTupleEqExpr.ruleX_Name()) { it.oneSpace() }
+        doc.surround(xTupleEqExpr.ruleX_NameNode()) { it.oneSpace() }
         doc.surround(xTupleEqExpr.ruleX_tkASSIGN()) { it.oneSpace() }
         doc.format(xTupleEqExpr.ruleX_ExpressionRef())
     }
@@ -852,7 +857,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
     }
 
     fun format(xEntitybody: RuleX_EntityBodyFullContext, doc: FormattableDocument) {
-        val anyClause = xEntitybody.ruleX_RelAnyClause()
+        val anyClause = xEntitybody.ruleX_RelClause()
         anyClause.forEachIndexed { index, xRelAnyClause ->
             doc.prepend(xRelAnyClause) { it.newLine() }
             if (index == anyClause.lastIndex) {

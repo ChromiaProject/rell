@@ -543,12 +543,12 @@ abstract class RellAbstractFormatter(
         return Pair(commaSeparated?.ruleX_FormalParameter(), commaSeparated?.ruleX_tkCOMMA())
     }
 
-    internal fun RellParser.RuleX_EnumDefContext.getXNamesWithTrailingComma(): Pair<List<RellParser.RuleX_NameContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RellParser.RuleX_EnumDefContext.getXNamesWithTrailingComma(): Pair<List<RellParser.RuleX_EnumValueContext>?, RellParser.RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_CommaSeparated_12()?.ruleX_CommaSeparated_11()
-        return Pair(commaSeparated?.ruleX_Name(), commaSeparated?.ruleX_tkCOMMA())
+        return Pair(commaSeparated?.ruleX_EnumValue(), commaSeparated?.ruleX_tkCOMMA())
     }
 
-    internal fun RellParser.RuleX_RelKeyIndexClauseContext.getAttributeDefsWithTrailingComma(): Pair<List<RellParser.RuleX_BaseAttributeDefinitionContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RellParser.RuleX_KeyIndexClauseContext.getAttributeDefsWithTrailingComma(): Pair<List<RellParser.RuleX_BaseAttributeDefinitionContext>?, RellParser.RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_CommaSeparated_8()
         return Pair(commaSeparated?.ruleX_BaseAttributeDefinition(), commaSeparated?.ruleX_tkCOMMA())
     }

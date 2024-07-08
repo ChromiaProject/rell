@@ -98,20 +98,37 @@ ruleX_RootParser:
 
 // Rule X_ModuleHeader
 ruleX_ModuleHeader:
-	ruleX_Modifier
-	*
+	ruleX_Modifiers
 	ruleX_tkMODULE
 	';'
+;
+
+// Rule X_Modifiers
+ruleX_Modifiers:
+	ruleX_Modifier
+	*
 ;
 
 // Rule X_Modifier
 ruleX_Modifier:
 	(
+		ruleX_KeywordModifier
+		    |
+		ruleX_Annotation
+	)
+;
+
+// Rule X_KeywordModifier
+ruleX_KeywordModifier:
+	ruleX_KeywordModifier0
+;
+
+// Rule X_KeywordModifier0
+ruleX_KeywordModifier0:
+	(
 		ruleX_Modifier_0
 		    |
 		ruleX_Modifier_1
-		    |
-		ruleX_Annotation
 	)
 ;
 
@@ -120,7 +137,7 @@ ruleX_Modifier_1: 'override';
 
 // Rule X_Annotation
 ruleX_Annotation:
-	'@'
+	ruleX_tkAT
 	ruleX_Name
 	ruleX_AnnotationArgs
 	?
@@ -128,6 +145,11 @@ ruleX_Annotation:
 
 // Rule X_Name
 ruleX_Name:
+	ruleX_NameNode
+;
+
+// Rule X_NameNode
+ruleX_NameNode:
 	RULE_ID
 ;
 
@@ -236,10 +258,15 @@ ruleX_AnnotationArgName:
 
 // Rule X_QualifiedName
 ruleX_QualifiedName:
-	ruleX_Name
+	ruleX_QualifiedNameNode
+;
+
+// Rule X_QualifiedNameNode
+ruleX_QualifiedNameNode:
+	ruleX_NameNode
 	(
 		'.'
-		ruleX_Name
+		ruleX_NameNode
 	)*
 ;
 
@@ -255,8 +282,7 @@ ruleX_tkMODULE:
 
 // Rule X_AnnotatedDef
 ruleX_AnnotatedDef:
-	ruleX_Modifier
-	*
+	ruleX_Modifiers
 	ruleX_AnyDef
 ;
 
@@ -343,22 +369,22 @@ ruleX_EntityBody:
 // Rule X_EntityBodyFull
 ruleX_EntityBodyFull:
 	'{'
-	ruleX_RelAnyClause
+	ruleX_RelClause
 	*
 	'}'
 ;
 
-// Rule X_RelAnyClause
-ruleX_RelAnyClause:
+// Rule X_RelClause
+ruleX_RelClause:
 	(
-		ruleX_RelAttributeClause
+		ruleX_AttributeClause
 		    |
-		ruleX_RelKeyIndexClause
+		ruleX_KeyIndexClause
 	)
 ;
 
-// Rule X_RelAttributeClause
-ruleX_RelAttributeClause:
+// Rule X_AttributeClause
+ruleX_AttributeClause:
 	ruleX_AttributeDefinition
 ;
 
@@ -395,7 +421,7 @@ ruleX_AttrHeader:
 
 // Rule X_NameTypeAttrHeader
 ruleX_NameTypeAttrHeader:
-	ruleX_Name
+	ruleX_NameNode
 	':'
 	ruleX_Type
 ;
@@ -532,7 +558,7 @@ ruleX_CommaSeparated_0:
 // Rule X_TupleTypeField
 ruleX_TupleTypeField:
 	(
-		ruleX_Name
+		ruleX_NameNode
 		':'
 	)?
 	ruleX_TypeRef
@@ -578,7 +604,7 @@ ruleX_tkQUESTION:
 
 // Rule X_AnonAttrHeader
 ruleX_AnonAttrHeader:
-	ruleX_QualifiedName
+	ruleX_QualifiedNameNode
 	ruleX_tkQUESTION
 	?
 ;
@@ -656,7 +682,7 @@ ruleX_BaseExprHead:
 		ruleX_GenericTypeExpr
 		    |
 		ruleX_AtExpr
-            |
+		    |
 		ruleX_NameExpr
 		    |
 		ruleX_DollarExpr
@@ -798,7 +824,7 @@ ruleX_AtExprFromItem:
 	ruleX_Annotation
 	*
 	(
-		ruleX_Name
+		ruleX_NameNode
 		':'
 	)?
 	ruleX_ExpressionRef
@@ -923,16 +949,13 @@ ruleX_CommaSeparated_17:
 ruleX_AtExprWhatComplexItem:
 	ruleX_Annotation
 	*
-	ruleX_AtExprWhatName
-	?
+	(
+		ruleX_NameNode
+		'='
+	)?
 	ruleX_ExpressionRef
 ;
 
-// Rule X_AtExprWhatName
-ruleX_AtExprWhatName:
-	ruleX_Name
-	'='
-;
 
 // Rule X_AtExprOffset
 ruleX_AtExprOffset:
@@ -988,7 +1011,7 @@ ruleX_CommaSeparated_13:
 // Rule X_TupleExprField
 ruleX_TupleExprField:
 	(
-		ruleX_Name
+		ruleX_NameNode
 		ruleX_tkASSIGN
 	)?
 	ruleX_ExpressionRef
@@ -1339,8 +1362,8 @@ ruleX_tkIN:
 	'in'
 ;
 
-// Rule X_RelKeyIndexClause
-ruleX_RelKeyIndexClause:
+// Rule X_KeyIndexClause
+ruleX_KeyIndexClause:
 	ruleX_KeyIndexKind
 	ruleX_CommaSeparated_8
 	';'
@@ -1379,7 +1402,7 @@ ruleX_ObjectDef:
 	ruleX_tkOBJECT
 	ruleX_Name
 	'{'
-	ruleX_AttributeDefinition
+	ruleX_AttributeClause
 	*
 	'}'
 ;
@@ -1394,7 +1417,7 @@ ruleX_StructDef:
 	ruleX_StructKeyword
 	ruleX_Name
 	'{'
-	ruleX_AttributeDefinition
+	ruleX_AttributeClause
 	*
 	'}'
 ;
@@ -1433,13 +1456,18 @@ ruleX_CommaSeparated_12:
 
 // Rule X_CommaSeparated_11
 ruleX_CommaSeparated_11:
-	ruleX_Name
+	ruleX_EnumValue
 	(
 		','
-		ruleX_Name
+		ruleX_EnumValue
 	)*
 	ruleX_tkCOMMA
 	?
+;
+
+// Rule X_EnumValue
+ruleX_EnumValue:
+	ruleX_NameNode
 ;
 
 // Rule X_FunctionDef
@@ -1840,7 +1868,7 @@ ruleX_CommaSeparated_31:
 // Rule X_UpdateFromItem
 ruleX_UpdateFromItem:
 	(
-		ruleX_Name
+		ruleX_NameNode
 		':'
 	)?
 	ruleX_QualifiedName
@@ -1962,15 +1990,20 @@ ruleX_NamespaceDef:
 	ruleX_tkNAMESPACE
 	ruleX_QualifiedName
 	?
-	'{'
+	ruleX_tkLCURL
 	ruleX_AnnotatedDef
 	*
-	'}'
+	ruleX_tkRCURL
 ;
 
 // Rule X_tkNAMESPACE
 ruleX_tkNAMESPACE:
 	'namespace'
+;
+
+// Rule X_tkRCURL
+ruleX_tkRCURL:
+	'}'
 ;
 
 // Rule X_ImportDef
@@ -2065,10 +2098,10 @@ ruleX_CommaSeparated_37:
 // Rule X_ImportTargetExactItem
 ruleX_ImportTargetExactItem:
 	(
-		ruleX_Name
+		ruleX_NameNode
 		':'
 	)?
-	ruleX_QualifiedName
+	ruleX_QualifiedNameNode
 	(
 		'.'
 		ruleX_tkMUL

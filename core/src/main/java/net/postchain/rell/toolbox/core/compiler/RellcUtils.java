@@ -10,14 +10,13 @@ import com.google.common.collect.Maps;
 import net.postchain.rell.base.compiler.parser.RellTokenMatch;
 import net.postchain.rell.lsp.grammar.AntlrActionEx;
 import net.postchain.rell.lsp.grammar.AntlrGrammarGenerator;
+import net.postchain.rell.toolbox.core.parser.RellCommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.TokenStream;
 import org.apache.commons.text.StringEscapeUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 final class RellcUtils {
 
@@ -35,11 +34,17 @@ final class RellcUtils {
         return transformer;
     }
 
-    static Object token(ParserRuleContext obj) {
-        return token0(obj, obj.getText());
+    static Object token(AntlrToRellContext ctx, ParserRuleContext obj) {
+        return token0(obj, obj.getText(), ctx.getTokenStream());
     }
 
-    static Object tokenString(ParserRuleContext obj) {
+    static String getRellDocComment(ParserRuleContext obj, TokenStream tokenStream) {
+        RellCommonTokenStream rellCommonTokenStream = ((RellCommonTokenStream) tokenStream);
+        Token token = rellCommonTokenStream.getPreviousRellDocCommentToken(obj.start.getTokenIndex());
+        return token != null ? token.getText() : null;
+    }
+
+    static Object tokenString(AntlrToRellContext ctx, ParserRuleContext obj) {
         String text = obj.getText();
         if (!(text.startsWith(SINGLE_QUOTE) && text.endsWith(SINGLE_QUOTE)) && !(text.startsWith(DOUBLE_QUOTE) && text.endsWith(DOUBLE_QUOTE))) {
             return null;
@@ -47,28 +52,28 @@ final class RellcUtils {
         text = extractStringContent(text);
         // Unescaping special characters like: \\n -> \n to match compiler's parser
         String unescaped = StringEscapeUtils.unescapeJava(text);
-        return token0(obj, unescaped);
+        return token0(obj, unescaped, ctx.getTokenStream());
     }
 
     private static String extractStringContent(String text) {
         return text.substring(1, text.length() - 1);
     }
 
-    static Object tokenBytes(ParserRuleContext obj) {
+    static Object tokenBytes(AntlrToRellContext ctx, ParserRuleContext obj) {
         String text = obj.getText();
         if (!(text.startsWith(BYTE_ARRAY_START_SINGLE_QUOTE) && text.endsWith(SINGLE_QUOTE)) &&
                 !(text.startsWith(BYTE_ARRAY_START_DOUBLE_QUOTE) && text.endsWith(DOUBLE_QUOTE))) {
             return null;
         }
         text = extractByteArrayContent(text);
-        return token0(obj, text);
+        return token0(obj, text, ctx.getTokenStream());
     }
 
     private static String extractByteArrayContent(String text) {
         return text.substring(2, text.length() - 1);
     }
 
-    private static Object token0(ParserRuleContext obj, String text) {
+    private static Object token0(ParserRuleContext obj, String text, TokenStream tokenStream) {
         Objects.requireNonNull(obj);
         Objects.requireNonNull(text);
 
@@ -76,7 +81,7 @@ final class RellcUtils {
 
         var pos = new AntlrPos(obj, path.getCPath(), path.getIdePath());
 
-        return new RellTokenMatch(pos, text);
+        return new RellTokenMatch(pos, text, getRellDocComment(obj, tokenStream));
     }
 
     static Object processList(AntlrToRellContext ctx, List<? extends ParserRuleContext> values) {
@@ -126,7 +131,7 @@ final class RellcUtils {
         private static Map<String, RellcTransformer> createTransformers() {
             Map<String, AntlrActionEx> actions = AntlrGrammarGenerator.generateAntlrActions();
             actions = Maps.filterValues(actions, action -> action.getTransform() != null);
-            Map<String, RellcTransformer> transformers = Maps.transformValues(actions, action -> new RellcTransformer(action));
+            Map<String, RellcTransformer> transformers = Maps.transformValues(actions, RellcTransformer::new);
             return ImmutableMap.copyOf(transformers);
         }
     }

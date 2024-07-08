@@ -2,17 +2,23 @@ package net.postchain.rell.toolbox.core.parser
 
 import assertk.assertThat
 import assertk.assertions.containsExactly
-import assertk.assertions.hasSameSizeAs
 import assertk.assertions.isEqualTo
 import assertk.assertions.isGreaterThan
 import assertk.assertions.isGreaterThanOrEqualTo
+import net.postchain.rell.base.compiler.ast.S_RellFile
+import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_Parser
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
+import net.postchain.rell.base.compiler.base.utils.C_SourceFile
+import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
+import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeCodeSnippet
 import net.postchain.rell.base.utils.ide.IdeDirApi
 import net.postchain.rell.toolbox.core.compiler.RellcAPI.validateSimple
+import net.postchain.rell.toolbox.core.indexer.AstSourceFile
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.junit.jupiter.api.Test
@@ -55,16 +61,38 @@ class RellParserTest {
     fun `ANTLR parsed AST is correctly transformed to Rell AST`() {
         val testCases = TestCaseSnippets.getTestCases()
         val parser = AntlrRellParser()
-
         testCases.forEach { testCaseSnippet ->
+            val parsingArtifacts = mutableListOf<ParsingArtifacts>()
+
             for (file in testCaseSnippet.files) {
                 try {
-                    compareAntlrAndCompilerParsedAst(file.value, file.key, parser)
+                    parsingArtifacts += compareAntlrAndCompilerParsedAst(
+                        file.value,
+                        file.key,
+                        parser,
+                    )
                 } catch (error: C_CommonError) {
                     // We are skipping cases with syntax errors, as compiler parser isn't recovering from them,
                     // Thus AST cannot be constructed for later comparison with ANTLR AST
                     continue
                 }
+            }
+
+            validateUserDocs(testCaseSnippet, parsingArtifacts)
+        }
+    }
+
+    private fun validateUserDocs(testCaseSnippet: IdeCodeSnippet, parsingArtifacts: MutableList<ParsingArtifacts>) {
+        if (testCaseSnippet.options.ideDocSymbolsEnabled) {
+            val expectedComments = testCaseSnippet.comments
+            val actualComments = try {
+                getUserDocComments(parsingArtifacts, testCaseSnippet.options)
+            } catch (e: Exception) {
+                // Ignore cases with compilation issues
+                null
+            }
+            if (actualComments != null) {
+                assertThat(actualComments).isEqualTo(expectedComments)
             }
         }
     }
@@ -73,20 +101,27 @@ class RellParserTest {
         sourceCode: String,
         sourceFile: String,
         parser: AntlrRellParser
-    ) {
+    ): ParsingArtifacts {
         val sourcePath = IdeDirApi.parseSourcePath(sourceFile)
         val idePath = IdeSourcePathFilePath(sourcePath!!)
 
         val transformedAst = TestSourceFile(parser, sourcePath, sourceCode).readAst()
         val compilerAst = C_Parser.parse(sourcePath, idePath, sourceCode)
 
-        assertThat(transformedAst.definitions).hasSameSizeAs(compilerAst.definitions)
+        assertThat(transformedAst).isSimilarTo(compilerAst)
 
-        for (i in transformedAst.definitions.indices) {
-            val transformedDefinition = transformedAst.definitions[i]
-            val compilerDefinition = compilerAst.definitions[i]
-            assertThat(transformedDefinition).isSimilarTo(compilerDefinition)
+        return ParsingArtifacts(sourcePath, idePath, transformedAst)
+    }
+
+    private fun getUserDocComments(parsingArtifacts: List<ParsingArtifacts>, options: C_CompilerOptions): Map<String, String> {
+        val fileMap = mutableMapOf<C_SourcePath, C_SourceFile>()
+        val modules = mutableListOf<R_ModuleName>()
+        parsingArtifacts.forEach { (sourcePath, idePath, transformedAst) ->
+            fileMap[sourcePath] = AstSourceFile.make(transformedAst, idePath)
+            modules.add(IdeApi.getModuleName(sourcePath, transformedAst)!!)
         }
+        val selfDir = IdeDirApi.mapDir(fileMap)
+        return IdeApi.getAllComments(selfDir, modules, options)
     }
 
     private fun validateTestCase(testCaseSnippet: IdeCodeSnippet) {
@@ -114,3 +149,9 @@ class RellParserTest {
         return parser.numberOfSyntaxErrors
     }
 }
+
+data class ParsingArtifacts(
+    val sourcePath: C_SourcePath,
+    val idePath: IdeSourcePathFilePath,
+    val transformedAst: S_RellFile,
+)

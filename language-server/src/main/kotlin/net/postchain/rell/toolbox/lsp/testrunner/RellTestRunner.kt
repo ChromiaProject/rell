@@ -1,5 +1,6 @@
 package net.postchain.rell.toolbox.lsp.testrunner
 
+import java.net.URI
 import net.postchain.rell.toolbox.core.indexer.Resource
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
 import net.postchain.rell.toolbox.lsp.symbols.NodeInfo
@@ -8,13 +9,13 @@ import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolKind
-import java.net.URI
 
 
 class RellTestRunner(val workspaceManager: RellWorkspaceManager, val symbolService: RellSymbolService) {
 
     fun getTestFiles(workspaceUri: URI): List<RellTestFile> {
-        val indexer = workspaceManager.getIndexerFor(workspaceUri)
+        val srcDir = workspaceManager.findSourceDirURI(workspaceUri)
+        val indexer = workspaceManager.getIndexerFor(srcDir)
         return indexer.fileUriResourceMap
             .filter { it.value.isTest() }
             .map { (uri, resource) -> RellTestFile(uri, resource.moduleInfo?.name?.str(), true, getTestCases(uri)) }

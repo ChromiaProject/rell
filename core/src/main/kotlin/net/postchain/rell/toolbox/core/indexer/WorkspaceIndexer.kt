@@ -1,15 +1,15 @@
 package net.postchain.rell.toolbox.core.indexer
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.File
+import java.io.IOException
+import java.net.URI
+import java.util.concurrent.ConcurrentHashMap
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
-import java.io.File
-import java.io.IOException
-import java.net.URI
-import java.util.concurrent.ConcurrentHashMap
 
 class WorkspaceIndexer(val workspaceUri: URI) {
     private val logger = KotlinLogging.logger {}
@@ -53,7 +53,7 @@ class WorkspaceIndexer(val workspaceUri: URI) {
         sources.forEach { (fileUri, fileContent) ->
             val checksum = calculateChecksum(fileContent)
             val cachedResource = cachedIndexer.getResource(fileUri)
-            if (cachedResource != null && cachedResource.checksum == checksum) {
+            if (cachedResource != null && cachedResource.checksum == checksum && getResource(fileUri) == null) {
                 fileUriResourceMap[fileUri] = cachedResource
             }
         }
@@ -149,7 +149,8 @@ class WorkspaceIndexer(val workspaceUri: URI) {
 
         shallowCopy.forEach { (key, value) ->
             if (value.imports.contains(changedFileResource.rName) ||
-                implicitImports[value.rName]?.contains(changedFileResource.rName) == true
+                implicitImports[value.rName]?.contains(changedFileResource.rName) == true ||
+                value.rName == changedFileResource.rName
             ) {
                 filesToUpdate.add(key)
             }
