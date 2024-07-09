@@ -15,7 +15,7 @@ fun formatDocSymbol(docSymbol: DocSymbol?): String {
             appendLine()
             appendLine(comment.description)
             mappedTags[DocCommentTag.SINCE.code]?.let { tag -> appendLine("\n*since:* ${tag.first().text}") }
-            mappedTags[DocCommentTag.SINCE.code]?.let { tag -> appendLine("\n*See also:* ${tag.joinToString(", ") { it.text }}") }
+            mappedTags[DocCommentTag.SEE.code]?.let { tag -> appendLine("\n*See also:* ${tag.joinToString(", ") { it.text }}") }
             mappedTags[DocCommentTag.PARAM.code]?.let { items ->
                 items.forEach {
                     appendLine("\n*@param* `${it.key}` - ${it.text}")

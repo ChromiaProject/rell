@@ -62,8 +62,13 @@ internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 
                 /**
                  * This doc comment is accessible
+                 * @see other_function
+                 * @since 1.0.0
+                 * @param first This is the first parameter
+                 * @param second This is the second parameter
+                 * @returns This is the return value
                  */
-                function my_function() = 32;
+                function my_function(first: integer, second: integer) = 32;
             """.trimIndent()
         )
 
@@ -72,8 +77,18 @@ internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         val hoverDocs = hoverOn("my_function", testFile)
 
         assertThat(hoverDocs.kind).isEqualTo("markdown")
-        assertThat(hoverDocs.value).contains("function my_function(): integer")
+        assertThat(hoverDocs.value).contains("""
+            function my_function(
+            	first: integer,
+            	second: integer
+            ): integer
+        """.trimIndent())
         assertThat(hoverDocs.value).contains("This doc comment is accessible")
+        assertThat(hoverDocs.value).contains("*since:* 1.0.0")
+        assertThat(hoverDocs.value).contains("*See also:* other_function")
+        assertThat(hoverDocs.value).contains("*@param* `first` - This is the first parameter")
+        assertThat(hoverDocs.value).contains("*@param* `second` - This is the second parameter")
+        assertThat(hoverDocs.value).contains("*@returns* - This is the return value")
     }
 
     @Test
