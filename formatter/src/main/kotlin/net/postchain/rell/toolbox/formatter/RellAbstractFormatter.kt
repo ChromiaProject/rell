@@ -503,7 +503,7 @@ abstract class RellAbstractFormatter(
 
     fun previousSemanticRegion(token: Token): Token? {
         val commonTokenStream = parser.tokenStream as CommonTokenStream
-        if (token.tokenIndex < 0 || token.tokenIndex >= commonTokenStream.tokens.size) return null
+        if (token.tokenIndex <= 0 || token.tokenIndex >= commonTokenStream.tokens.size) return null
         return commonTokenStream.get(token.tokenIndex - 1)
     }
 
