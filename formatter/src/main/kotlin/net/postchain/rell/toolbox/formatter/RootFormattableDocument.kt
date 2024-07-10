@@ -1,6 +1,8 @@
 package net.postchain.rell.toolbox.formatter
 
+import net.postchain.rell.toolbox.core.parser.RellCommonTokenStream
 import net.postchain.rell.toolbox.core.parser.RellLexer
+import net.postchain.rell.toolbox.core.tokens.RellCustomTokenChannels
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.misc.Interval
@@ -33,7 +35,7 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
         val change = Changes(prependBeforeNode.start.startIndex, prependBeforeNode.start.startIndex, formatterOptions)
         changeModifier(change)
         hiddenRegionChangePrependModifier(change, prependBeforeNode.start)
-        commentRegionChange(prependBeforeNode.start)
+        commentRegionChangePrepend(prependBeforeNode.start)
         changes.add(change)
     }
 
@@ -42,7 +44,7 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
         val change = Changes(prependBeforeNode.symbol.startIndex, prependBeforeNode.symbol.startIndex, formatterOptions)
         changeModifier(change)
         hiddenRegionChangePrependModifier(change, prependBeforeNode.symbol)
-        commentRegionChange(prependBeforeNode.symbol)
+        commentRegionChangePrepend(prependBeforeNode.symbol)
         changes.add(change)
     }
 
@@ -61,6 +63,23 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
         if (node == null) return null
         formatter.format(node, this)
         return node
+    }
+
+    override fun formatRellDocsComments(tokenStream: RellCommonTokenStream) {
+        val comments = tokenStream.tokens.filter {
+            it.channel == RellCustomTokenChannels.COMMENTS.channel && tokenStream.isRellDocComment(it)
+        }
+        comments.forEach { token ->
+            val prependChange = Changes(token.startIndex, token.startIndex, formatterOptions).apply {
+                setNewLines(1, 1, 2)
+            }
+            hiddenRegionChangePrependModifier(prependChange, token)
+            changes.add(prependChange)
+
+            changes.add(Changes(token.stopIndex + 1, token.stopIndex + 1, formatterOptions).apply {
+                setNewLines(1, 1, 1)
+            })
+        }
     }
 
     override fun interiorIndent(interiorNode: ParserRuleContext?) {
@@ -210,7 +229,7 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
         }
     }
 
-    private fun commentRegionChange(token: Token) {
+    private fun commentRegionChangePrepend(token: Token) {
         val prevCommentRegion = formatter.previousCommentRegion(token)
         if (prevCommentRegion != null) {
             val change =

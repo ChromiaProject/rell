@@ -1,0 +1,70 @@
+entity account {
+    /** Id
+comment */
+    key id: byte_array;
+    /** Type
+    comment */
+    index type: text;
+    /** Age
+    comment */
+    age: integer;
+}
+
+entity account {
+    /** Id
+comment */
+    key id: byte_array;
+    /** Type
+comment */
+    index type: text;
+    /** Age
+comment */
+    age: integer;
+}
+
+entity account {
+    /** Id
+    comment */
+    key id: byte_array;
+    /** Type
+    comment */
+    index type: text;
+    /** Age
+    comment */
+    age: integer;
+}
+
+entity account {
+    /**
+    Id
+    comment
+    */
+    key id: byte_array;
+    /**
+    Type
+    comment
+     */
+    index type: text;
+    /**
+     Age
+    comment
+     */
+    age: integer;
+}
+
+entity account {
+
+    /** Id
+        comment */
+    key id: byte_array;
+
+    /** Type
+comment */
+    index type: text;
+
+    /** Age
+
+        comment
+            */
+    age: integer;
+}

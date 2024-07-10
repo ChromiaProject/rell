@@ -1,5 +1,6 @@
 package net.postchain.rell.toolbox.formatter
 
+import net.postchain.rell.toolbox.core.parser.RellCommonTokenStream
 import net.postchain.rell.toolbox.core.parser.RellLexer
 import net.postchain.rell.toolbox.core.parser.RellParser
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_AnnotationArgsContext
@@ -33,6 +34,7 @@ import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_GenericTypeExprCo
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_IfExprContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_IfStmtContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_IncrementOperatorContext
+import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_KeyIndexClauseContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_ListLiteralExprContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_MirrorStructType0Context
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_ModifierContext
@@ -43,7 +45,6 @@ import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_NonEmptyMapLitera
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_ObjectDefContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_OpDefContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_QueryDefContext
-import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_KeyIndexClauseContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_ReturnStmtContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_RootParserContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_StructDefContext
@@ -60,11 +61,10 @@ import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_WhenStmtContext
 import net.postchain.rell.toolbox.core.parser.RellParser.RuleX_WhileStmtContext
 import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CharStreams
-import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.ParserRuleContext
 
 class RellFormatter(parser: RellParser, source: String, formatterRequest: FormatterOptions) :
-        RellAbstractFormatter(parser, source, formatterRequest) {
+    RellAbstractFormatter(parser, source, formatterRequest) {
 
     fun format(rootNode: RuleX_RootParserContext, doc: FormattableDocument) {
         doc.format(rootNode.ruleX_ModuleHeader())
@@ -91,13 +91,13 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         formatType(xFunctionDef, doc)
         val lineSeparate = lineSeparateArguments(xFunctionDef, BracePairTypes.PARENTHESES)
         val (formalParameters, trailingComma) = xFunctionDef.ruleX_FormalParameters()
-                .getFormalParameterWithTrailingComma()
+            .getFormalParameterWithTrailingComma()
 
         formatTrailingComma(trailingComma, doc, lineSeparate)
         formatArguments(
-                formalParameters,
-                doc,
-                formatAsMultiLine = lineSeparate
+            formalParameters,
+            doc,
+            formatAsMultiLine = lineSeparate
         )
         formatParametersType(formalParameters, doc)
         doc.format(xFunctionDef.ruleX_FunctionBody())
@@ -210,9 +210,9 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
 
             if (tupleExprField != null) {
                 formatArguments(
-                        tupleExprField,
-                        doc,
-                        indent = false
+                    tupleExprField,
+                    doc,
+                    indent = false
                 )
             }
             doc.prepend(closing) { it.newLine() }
@@ -270,8 +270,8 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
                     it.indent()
                 }
                 doc.interiorIndentRangeIncludeLast(
-                        xIfStmt.ruleX_StatementRef(),
-                        xIfStmt.ruleX_StatementRef()
+                    xIfStmt.ruleX_StatementRef(),
+                    xIfStmt.ruleX_StatementRef()
                 )
             }
         } else {
@@ -287,8 +287,8 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
                     it.indent()
                 }
                 doc.interiorIndentRangeIncludeLast(
-                        elseStatement.ruleX_StatementRef(),
-                        elseStatement.ruleX_StatementRef()
+                    elseStatement.ruleX_StatementRef(),
+                    elseStatement.ruleX_StatementRef()
                 )
                 doc.append(elseStatement.ruleX_StatementRef()) { it.noSpace() }
             } else {
@@ -696,9 +696,9 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
                     doc.prepend(tailCall) { it.oneSpace() }
                     doc.interiorIndentRangeIncludeLast(baseExpr, tailCall)
                     formatExprTailCall(
-                            baseExpr.ruleX_BaseExprTail().first(),
-                            null,
-                            doc
+                        baseExpr.ruleX_BaseExprTail().first(),
+                        null,
+                        doc
                     )
                 }
             }
@@ -751,10 +751,10 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         val mapExprContext = xMapExpr.getMapExprContext()
 
         formatSkewedOpeningClosing(
-                mapExprContext.ruleX_tkLBRACK(),
-                mapExprContext,
-                doc,
-                BracePairTypes.BRACKETS
+            mapExprContext.ruleX_tkLBRACK(),
+            mapExprContext,
+            doc,
+            BracePairTypes.BRACKETS
         )
         val lineSeparate = lineSeparateArguments(xMapExpr, BracePairTypes.BRACKETS)
         val (mapExprEntries, trailingComma) = xMapExpr.getMapExprEntryWithTrailingComma()
@@ -820,10 +820,10 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
     fun format(xListExpr: RuleX_ListLiteralExprContext, doc: FormattableDocument) {
         val xLisExprContext = xListExpr.getListLiteralExprContext()
         formatSkewedOpeningClosing(
-                xLisExprContext.ruleX_tkLBRACK(),
-                xLisExprContext,
-                doc,
-                BracePairTypes.BRACKETS
+            xLisExprContext.ruleX_tkLBRACK(),
+            xLisExprContext,
+            doc,
+            BracePairTypes.BRACKETS
         )
         val (expressionRef, trailingComma) = xListExpr.getExpressionRefWithTrailingComma()
         val lineSeparate = formatAsMultiLine(expressionRef)
@@ -883,7 +883,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             if (child is ParserRuleContext) {
                 try {
                     val formatMethod =
-                            javaClass.getDeclaredMethod("format", child.javaClass, FormattableDocument::class.java)
+                        javaClass.getDeclaredMethod("format", child.javaClass, FormattableDocument::class.java)
                     formatMethod.invoke(this, child, doc)
                 } catch (e: NoSuchMethodException) {
                     format(child, doc)
@@ -902,12 +902,14 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         fun getFormattingChanges(source: String, formatterRequest: FormatterOptions): List<TextReplacement> {
             val input: CharStream = CharStreams.fromString(source)
             val lexer = RellLexer(input)
-            val tokens = CommonTokenStream(lexer)
-            val parser = RellParser(tokens)
+            val tokenStream = RellCommonTokenStream(lexer)
+            val parser = RellParser(tokenStream)
+            val rootNode = parser.ruleX_RootParser()
 
             val formatter = RellFormatter(parser, source, formatterRequest)
             val doc = RootFormattableDocument(formatter, formatterRequest)
-            formatter.format(parser.ruleX_RootParser(), doc)
+            doc.formatRellDocsComments(tokenStream)
+            formatter.format(rootNode, doc)
             return doc.createReplacements()
         }
 
@@ -919,7 +921,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
 
             for (replacement in sortedReplacements) {
                 if (replacement.startOffset < 0 || replacement.startOffset > source.length ||
-                        replacement.stopOffset < replacement.startOffset || replacement.stopOffset > source.length
+                    replacement.stopOffset < replacement.startOffset || replacement.stopOffset > source.length
                 ) {
                     // Skip invalid replacements
                     continue

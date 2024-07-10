@@ -1,0 +1,24 @@
+        /**
+This Module
+*/
+module;
+
+    /**
+  This Name Space
+*/
+namespace ns {
+/** Ns Foo */
+    function foo() {}
+
+/** Ns Entity Foo */
+    entity entity_foo {
+                /** Ns Entity Foo Name*/
+        name;
+    }
+
+/**
+    Ns
+    Ns_op
+    */
+    operation ns_op() {}
+}
