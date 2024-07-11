@@ -4,6 +4,7 @@ import com.chromia.rell.dokka.dri.toDRI
 import net.postchain.rell.base.model.R_QualifiedName
 import org.jetbrains.dokka.InternalDokkaApi
 import org.jetbrains.dokka.analysis.markdown.jb.MarkdownParser
+import org.jetbrains.dokka.model.doc.See
 
 @OptIn(InternalDokkaApi::class)
 class RellMarkdownParser(sourceLocation: String? = null) : MarkdownParser(
@@ -15,4 +16,13 @@ class RellMarkdownParser(sourceLocation: String? = null) : MarkdownParser(
             }
         },
         sourceLocation
-)
+) {
+    fun parseStringToSeeTag(content: String): See {
+        val referencedName = content.substringBefore(' ')
+        return See(
+            root = this.parseStringToDocNode(content.substringAfter(' ')),
+            name = referencedName,
+            address = null
+        )
+    }
+}

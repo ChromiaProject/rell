@@ -13,7 +13,7 @@ fun DocComment.formatDescription(additionalTags: TagWrapper? = null) = Documenta
                 buildList {
                     val p = RellMarkdownParser()
 
-                    tags[DocCommentTag.SEE]?.forEach { add(See(P(listOf(Text(it.text))), name = it.text, address = null)) }
+                    tags[DocCommentTag.SEE]?.forEach { add(p.parseStringToSeeTag(it.text)) }
                     tags[DocCommentTag.PARAM]?.forEach { add(Param(p.parseStringToDocNode(it.text), it.key!!)) }
                     tags[DocCommentTag.RETURNS]?.let { add(Return(p.parseStringToDocNode(it.first().text))) }
                     //tags[DocCommentTag.RETURNS]?.let { add(Return(P(listOf(Text(it.first().text))))) }
