@@ -21,7 +21,7 @@ object EditorConfigParser {
             parser.parse(
                 Resource.Resources.ofPath(configFile.toPath(), StandardCharsets.UTF_8),
                 handler,
-                ErrorHandler.THROW_SYNTAX_ERRORS_IGNORE_OTHERS
+                ErrorHandler.IGNORING
             )
             handler.editorConfig
         } catch (e: Exception) {
