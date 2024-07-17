@@ -17,7 +17,6 @@ import net.postchain.rell.toolbox.core.compiler.RellcAPI
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import net.postchain.rell.toolbox.core.parser.RellCommonTokenStream
 import net.postchain.rell.toolbox.core.parser.RellParser
-import net.postchain.rell.toolbox.core.parser.SyntaxError
 import net.postchain.rell.toolbox.core.parser.SyntaxErrorCollector
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.TokenStream
@@ -62,6 +61,7 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
         val compilationResult = compileResult(rellCompilerSourcePath, ast.first, fileMap)
         val symbolInfo = compilationResult?.symbolInfos ?: mapOf()
         val locationInfo = createLocationInfo(symbolInfo)
+        val tokenStream = parseResult.parser.tokenStream as RellCommonTokenStream
 
         return Resource(
             parseResult.parseTree,
@@ -71,10 +71,13 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
             ast.first,
             parseResult.syntaxErrors,
             compilationResult?.messages ?: listOf(),
+            listOf(),
+            listOf(),
             symbolInfo,
             symbolInfo.asSequence().filter { it.value.defId != null }.associate { it.value.defId!! to it.key },
             locationInfo,
             null,
+            tokenStream
         )
     }
 

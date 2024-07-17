@@ -1,0 +1,16 @@
+function FooBar() {
+}
+
+function foo() {
+    val Bar = 5;
+    val valid_val = 17;
+}
+
+enum colors {
+    RED, GREEN, BLUE
+}
+
+val CONSTANT = 17;
+
+// rell-lint-disable-next-line
+val sTrange__namE = 4711;

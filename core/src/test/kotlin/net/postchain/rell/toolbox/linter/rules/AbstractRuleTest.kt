@@ -1,0 +1,33 @@
+package net.postchain.rell.toolbox.linter.rules
+
+import java.net.URI
+import net.postchain.rell.base.compiler.base.utils.C_SourceFile
+import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.toolbox.core.indexer.RellResourceFactory
+import net.postchain.rell.toolbox.core.parser.AntlrRellParser
+import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.linter.RellLinter
+import net.postchain.rell.toolbox.linter.issues.LinterIssue
+
+open class AbstractRuleTest {
+    private val rellLinter = RellLinter()
+    private val resourceFactory = RellResourceFactory(javaClass.getResource("/linter/")!!.toURI(), AntlrRellParser())
+    protected fun lint(
+        fileName: String,
+        config: LinterOptions,
+        importedModuleFileNames: List<String> = listOf()
+    ): List<LinterIssue> {
+        val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
+        importedModuleFileNames.forEach { moduleFileName ->
+            val dependencyUri = getFileUri(moduleFileName)
+            resourceFactory.buildRellResource(dependencyUri, fileMap)
+        }
+        val fileUri = getFileUri(fileName)
+        val resource = resourceFactory.buildRellResource(fileUri, fileMap)
+        return rellLinter.lint(config, resource)
+    }
+
+    private fun getFileUri(fileName: String): URI {
+        return javaClass.getResource("/linter/$fileName")!!.toURI()
+    }
+}

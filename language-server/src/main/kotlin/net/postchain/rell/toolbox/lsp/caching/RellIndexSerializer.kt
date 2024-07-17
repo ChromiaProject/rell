@@ -2,6 +2,7 @@ package net.postchain.rell.toolbox.lsp.caching
 
 import io.fury.Fury
 import io.fury.config.Language
+import java.util.concurrent.ConcurrentHashMap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
@@ -9,21 +10,38 @@ import net.postchain.rell.toolbox.core.indexer.Resource
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.core.indexer.calculateChecksum
 import net.postchain.rell.toolbox.core.indexer.createLocationInfo
-import java.util.concurrent.ConcurrentHashMap
+import net.postchain.rell.toolbox.linter.FormattingStyleLinter
+import net.postchain.rell.toolbox.linter.RellLinter
+import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
+import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 
-class RellIndexSerializer {
+class RellIndexSerializer(
+    private val rellLinter: RellLinter,
+    private val formattingStyleLinter: FormattingStyleLinter,
+    private val formatterOptionsResolver: RellFormatterOptionsResolver,
+    private val linterOptionsResolver: RellLinterOptionsResolver
+) {
 
     fun deserializeAsWorkspaceIndexer(indexAsBytes: ByteArray): WorkspaceIndexer =
         fromSerializableWorkspaceIndexer(deserialize(indexAsBytes))
 
     fun serializeAsBytes(indexer: WorkspaceIndexer): ByteArray = serialize(toSerializableWorkspaceIndexer(indexer))
 
-    private fun deserialize(indexAsBytes: ByteArray) = getFury().deserialize(indexAsBytes) as SerializableWorkspaceIndexer
+    private fun deserialize(indexAsBytes: ByteArray) =
+        getFury().deserialize(indexAsBytes) as SerializableWorkspaceIndexer
 
-    private fun serialize(serializableData: SerializableWorkspaceIndexer): ByteArray = getFury().serialize(serializableData)
+    private fun serialize(serializableData: SerializableWorkspaceIndexer): ByteArray =
+        getFury().serialize(serializableData)
 
     private fun toSerializableWorkspaceIndexer(indexer: WorkspaceIndexer): SerializableWorkspaceIndexer {
-        return SerializableWorkspaceIndexer(indexer.workspaceUri, toSerializableResources(indexer))
+        val linterOptions = linterOptionsResolver.getLinterConfig(indexer.workspaceUri)
+        val formatterOptions = formatterOptionsResolver.getWorkspaceFormattingOptions(indexer.workspaceUri)
+        return SerializableWorkspaceIndexer(
+            indexer.workspaceUri,
+            toSerializableResources(indexer),
+            linterOptions,
+            formatterOptions
+        )
     }
 
     private fun toSerializableResources(indexer: WorkspaceIndexer): List<SerializableResource> {
@@ -38,7 +56,10 @@ class RellIndexSerializer {
                 resource.syntaxErrors,
                 resource.semanticErrors,
                 toSerializableSymbolInfos(resource.symbolInfos),
-                checksum
+                checksum,
+                resource.tokenStream,
+                resource.linterIssues,
+                resource.formatterIssues,
             )
         }
         return serializableData
@@ -55,12 +76,23 @@ class RellIndexSerializer {
     }
 
     private fun fromSerializableWorkspaceIndexer(serializableWorkspaceIndexer: SerializableWorkspaceIndexer): WorkspaceIndexer {
-        val indexer = WorkspaceIndexer(serializableWorkspaceIndexer.workspaceUri)
-        indexer.fileUriResourceMap = ConcurrentHashMap(fromSerializableResources(serializableWorkspaceIndexer.serializableResources))
+        val indexer =
+            WorkspaceIndexer(
+                serializableWorkspaceIndexer.workspaceUri,
+                rellLinter,
+                serializableWorkspaceIndexer.linterOptions,
+                formattingStyleLinter,
+                serializableWorkspaceIndexer.formatterOptions
+            )
+        indexer.fileUriResourceMap = ConcurrentHashMap(
+            fromSerializableResources(serializableWorkspaceIndexer.serializableResources)
+        )
         return indexer
     }
 
-    private fun fromSerializableResources(serializedResources: List<SerializableResource>) =
+    private fun fromSerializableResources(
+        serializedResources: List<SerializableResource>
+    ) =
         serializedResources.associate { res ->
             val symbolInfos = fromSerializableSymbolInfos(res.symbolInfos)
             val resource = Resource(
@@ -71,10 +103,13 @@ class RellIndexSerializer {
                 res.ast,
                 res.syntaxErrors,
                 res.semanticErrors,
+                res.linterIssues,
+                res.formatterIssues,
                 symbolInfos,
                 symbolInfos.asSequence().filter { it.value.defId != null }.associate { it.value.defId!! to it.key },
                 createLocationInfo(symbolInfos),
-                res.checksum
+                res.checksum,
+                res.tokenStream,
             )
             resource.fileUri to resource
         }

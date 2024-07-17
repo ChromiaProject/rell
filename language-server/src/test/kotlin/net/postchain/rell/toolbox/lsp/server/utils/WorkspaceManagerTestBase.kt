@@ -1,8 +1,14 @@
 package net.postchain.rell.toolbox.lsp.server.utils
 
 import net.postchain.rell.toolbox.core.indexer.RellIssue
+import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.linter.FormattingStyleLinter
+import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer
+import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
+import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
@@ -20,13 +26,31 @@ open class WorkspaceManagerTestBase {
     protected lateinit var sourceDir: File
     protected val symbolService = RellSymbolService()
 
+    protected val rellLinter = RellLinter()
+    protected val formattingStyleLinter = FormattingStyleLinter()
+    protected val formatterOptions = FormatterOptions()
+    protected val linterOptions = LinterOptions()
+
     @BeforeEach
     fun setup(@TempDir tempWorkspace: File) {
         workspace = tempWorkspace
         sourceDir = File(workspace, "src").apply { mkdir() }
         val referenceService = RellReferenceService(symbolService)
-        val indexCachingService = RellIndexCachingService(RellIndexSerializer())
-        workspaceManager = RellWorkspaceManager(symbolService, referenceService, indexCachingService)
+        val indexCachingService = RellIndexCachingService(
+            RellIndexSerializer(
+                rellLinter,
+                formattingStyleLinter,
+                RellFormatterOptionsResolver(),
+                RellLinterOptionsResolver()
+            )
+        )
+        workspaceManager =
+            RellWorkspaceManager(
+                symbolService, referenceService, indexCachingService, rellLinter,
+                formattingStyleLinter,
+                RellFormatterOptionsResolver(),
+                RellLinterOptionsResolver()
+            )
     }
 
     @AfterEach

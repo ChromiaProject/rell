@@ -9,4 +9,3 @@ rootProject.name = "rell-toolbox"
 
 include("core")
 include("language-server")
-include("formatter")

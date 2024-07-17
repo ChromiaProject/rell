@@ -12,7 +12,7 @@ import net.postchain.rell.toolbox.core.compiler.RellcFilePath
 import java.io.File
 import java.net.URI
 
-class RellCompilerUtils() {
+class RellCompilerUtils {
 
     fun createCompilerSourcePath(uri: URI, workspaceUri: URI): C_SourcePath {
         var relativePath = File(uri).relativeTo(File(workspaceUri)).toString()

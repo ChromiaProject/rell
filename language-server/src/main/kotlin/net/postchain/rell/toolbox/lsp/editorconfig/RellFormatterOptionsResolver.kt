@@ -1,14 +1,16 @@
 package net.postchain.rell.toolbox.lsp.editorconfig
 
 import net.postchain.rell.toolbox.formatter.FormatterOptions
-import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
 import java.io.File
 import java.net.URI
 
-class RellFormatterOptionsResolver(val workspaceManager: RellWorkspaceManager) {
+class RellFormatterOptionsResolver {
 
-    fun getFormattingOptionsFor(fileUri: URI): FormatterOptions? {
-        val workspaceUri = workspaceManager.getIndexerFor(fileUri).workspaceUri
+    fun getWorkspaceFormattingOptions(workspaceUri: URI): FormatterOptions {
+        return getWorkspaceFormattingOptionsOrNull(workspaceUri) ?: FormatterOptions()
+    }
+
+    fun getWorkspaceFormattingOptionsOrNull(workspaceUri: URI): FormatterOptions? {
         return extractFormattingOptionsFromFile(workspaceUri)
     }
 

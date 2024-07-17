@@ -3,8 +3,11 @@ package net.postchain.rell.toolbox.lsp.references
 import assertk.assertThat
 import assertk.assertions.containsAll
 import assertk.assertions.hasSize
-import java.io.File
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.linter.FormattingStyleLinter
+import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import org.eclipse.lsp4j.Location
@@ -12,6 +15,7 @@ import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import java.io.File
 
 @Suppress("JAVA_CLASS_ON_COMPANION")
 class ReferenceServiceTest {
@@ -179,7 +183,11 @@ class ReferenceServiceTest {
     companion object {
         private val classLoader = javaClass.getClassLoader()
         val workspaceFile = File(classLoader.getResource("rellReferences").file)
-        val indexer = WorkspaceIndexer(workspaceFile.toURI())
+        private val rellLinter = RellLinter()
+        private val formattingStyleLinter = FormattingStyleLinter()
+        private val formatterOptions = FormatterOptions()
+        private val linterOptions = LinterOptions()
+        val indexer = WorkspaceIndexer(workspaceFile.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
 
         @JvmStatic
         @BeforeAll

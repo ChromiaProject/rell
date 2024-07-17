@@ -6,6 +6,7 @@ import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.minutes
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
@@ -15,11 +16,20 @@ import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.core.indexer.findRellFilesInWorkspace
 import net.postchain.rell.toolbox.core.parser.RellBaseVisitor
 import net.postchain.rell.toolbox.core.parser.RellParser
+import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.linter.FormattingStyleLinter
+import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
+import net.postchain.rell.toolbox.lsp.editing.CodeActionService
 import net.postchain.rell.toolbox.lsp.editing.Document
+import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
+import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.hover.formatDocSymbol
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
+import org.eclipse.lsp4j.CodeAction
+import org.eclipse.lsp4j.Command
 import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.HoverParams
 import org.eclipse.lsp4j.Location
@@ -43,7 +53,11 @@ val TYPE_DEFINITIONS =
 class RellWorkspaceManager(
     private val rellSymbolService: RellSymbolService,
     private val rellReferenceService: RellReferenceService,
-    private val indexCachingService: RellIndexCachingService
+    private val indexCachingService: RellIndexCachingService,
+    private val rellLinter: RellLinter,
+    private val formattingStyleLinter: FormattingStyleLinter,
+    private val formatterOptionsResolver: RellFormatterOptionsResolver,
+    private val linterOptionsResolver: RellLinterOptionsResolver
 ) {
 
     var indexCachingEnabled: Boolean = false
@@ -78,13 +92,30 @@ class RellWorkspaceManager(
         indexCachingService.cleanupOldCaches()
     }
 
+    fun runLinter() {
+        indexers.values.forEach { indexer ->
+            indexer.runLinter()
+            reportDiagnostics(indexer)
+        }
+    }
+
     private fun doIndex(workspaceFolderUri: URI): WorkspaceIndexer {
         val resolvedSourceDirUri = findSourceDirURI(workspaceFolderUri)
         val cachedIndexer =
             if (indexCachingEnabled) indexCachingService.getWorkspaceIndexer(resolvedSourceDirUri) else null
-        val indexer = WorkspaceIndexer(resolvedSourceDirUri)
+
+        val (linterOptions, formatterOptions) = getLinterAndFormatterOptions(workspaceFolderUri)
+
+        val indexer =
+            WorkspaceIndexer(resolvedSourceDirUri, rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         indexer.initialFileIndexBuild(cachedIndexer)
         return indexer
+    }
+
+    private fun getLinterAndFormatterOptions(workspaceFolderUri: URI): Pair<LinterOptions, FormatterOptions> {
+        val formatterOptions = formatterOptionsResolver.getWorkspaceFormattingOptions(workspaceFolderUri)
+        val linterOptions = linterOptionsResolver.getLinterConfig(workspaceFolderUri)
+        return Pair(linterOptions, formatterOptions)
     }
 
     fun findSourceDirURI(workspaceUri: URI): URI {
@@ -156,18 +187,25 @@ class RellWorkspaceManager(
         reportDiagnostics(indexer, listOf(fileUri))
     }
 
-    fun getIndexerFor(fileUri: URI): WorkspaceIndexer {
+    //TODO: Revisit how we get the indexer. Would this approach work if the have two indexer active where one
+    // is indexed from from a child folder from the other indexer.
+    fun getIndexerFor(fileUri: URI): WorkspaceIndexer = getIndexerForOrNull(fileUri) ?: doSingleFileIndex(fileUri)
+
+    fun getIndexerForOrNull(fileUri: URI): WorkspaceIndexer? {
         for (indexer in indexers.entries) {
             if (fileUri.path.startsWith(indexer.key.path)) {
                 return indexer.value
             }
         }
-        return doSingleFileIndex(fileUri)
+        return null
     }
 
     private fun doSingleFileIndex(fileUri: URI): WorkspaceIndexer {
         val workspace = findSourceDirURI(fileUri)
-        val indexer = WorkspaceIndexer(workspace)
+
+        val (linterOptions, formatterOptions) = getLinterAndFormatterOptions(workspace)
+
+        val indexer = WorkspaceIndexer(workspace, rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         val cachedIndexer = if (indexCachingEnabled) indexCachingService.getWorkspaceIndexer(workspace) else null
 
         indexer.initialFileIndexBuild(cachedIndexer)
@@ -228,7 +266,7 @@ class RellWorkspaceManager(
         val deletedFiles = mutableListOf<URI>()
         val dirtyFiles = mutableListOf<URI>()
         deletedFolders.forEach { uri ->
-            getIndexerFor(uri).let { indexer ->
+            getIndexerForOrNull(uri)?.let { indexer ->
                 deletedFiles.addAll(indexer.getFileUrisWithPrefix(uri))
             }
         }
@@ -336,6 +374,16 @@ class RellWorkspaceManager(
         val resource = indexer.getResource(fileUri) ?: return ""
         val clickedSymbol = rellSymbolService.getSymbolForDocument(document, resource, position) ?: return ""
         return document.getTextIn(clickedSymbol.interval)
+    }
+
+    fun getCodeActions(fileUri: URI, range: Range): List<Either<Command, CodeAction>> {
+        val indexer = getIndexerFor(fileUri)
+        return CodeActionService.getCodeActions(fileUri, range, indexer)
+    }
+
+    fun getCodeActionForFile(fileUri: URI): CodeAction {
+        val indexer = getIndexerFor(fileUri)
+        return CodeActionService.getCodeActionForFile(fileUri, indexer)
     }
 
     fun rename(fileUri: URI, position: Position, newName: String): WorkspaceEdit {
@@ -488,6 +536,13 @@ class RellWorkspaceManager(
         }
         visitor.visit(resource.parseTree)
         return visitor.result
+    }
+
+    fun getIndexerForConfigFile(uri: URI): WorkspaceIndexer? {
+        val configFolder = uri.toPath().parent
+        return indexers.values.find {
+            it.workspaceUri.toPath().startsWith(configFolder)
+        }
     }
 
     companion object {

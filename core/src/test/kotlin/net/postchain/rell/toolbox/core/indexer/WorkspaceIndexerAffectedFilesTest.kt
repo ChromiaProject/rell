@@ -3,6 +3,10 @@ package net.postchain.rell.toolbox.core.indexer
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isTrue
+import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.linter.FormattingStyleLinter
+import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.linter.RellLinter
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -16,6 +20,10 @@ class WorkspaceIndexerAffectedFilesTest {
     private lateinit var importFileDepth1: File
     private lateinit var implicitlyImporting: File
 
+    private val rellLinter = RellLinter()
+    private val formattingStyleLinter = FormattingStyleLinter()
+    private val formatterOptions = FormatterOptions()
+    private val linterOptions = LinterOptions()
 
     @BeforeEach
     fun setup() {
@@ -58,7 +66,8 @@ class WorkspaceIndexerAffectedFilesTest {
 
     @Test
     fun `find Affected Files depth one`() {
-        val workspaceIndexer = WorkspaceIndexer(tempDir.toURI())
+        val workspaceIndexer =
+            WorkspaceIndexer(tempDir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         workspaceIndexer.initialFileIndexBuild()
         val files = workspaceIndexer.findAffectedFiles(importFileDepth1.toURI())
         assertThat(files.size).isEqualTo(4)
@@ -67,7 +76,8 @@ class WorkspaceIndexerAffectedFilesTest {
 
     @Test
     fun `find Affected Files no imports`() {
-        val workspaceIndexer = WorkspaceIndexer(tempDir.toURI())
+        val workspaceIndexer =
+            WorkspaceIndexer(tempDir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         workspaceIndexer.initialFileIndexBuild()
         val files = workspaceIndexer.findAffectedFiles(mainFile.toURI())
         assertThat(files.size).isEqualTo(1)

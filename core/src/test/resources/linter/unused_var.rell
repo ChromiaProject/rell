@@ -1,0 +1,12 @@
+function foo() {
+    val x = 5;
+    var y = x + 1;
+    val z = 17;
+
+    // rell-lint-disable-next-line
+    val ok = 17;
+
+    val (a, _b, _) = (1, 2, 3);
+
+    val (f, (q, n, _)) = (1, (2, 3, 4));
+}

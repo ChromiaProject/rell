@@ -1,0 +1,6 @@
+module;
+
+import something;
+
+function foo() {
+}

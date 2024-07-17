@@ -1,9 +1,10 @@
 package net.postchain.rell.toolbox.core.indexer
 
-import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.utils.C_Message
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.toolbox.core.parser.SyntaxError
+import net.postchain.rell.toolbox.linter.FormatterIssue
+import net.postchain.rell.toolbox.linter.issues.LinterIssue
 
 enum class RellIssueSeverity {
     WARNING,
@@ -41,6 +42,26 @@ class RellIssue(
                 severity = RellIssueSeverity.ERROR,
                 line = syntaxError.line,
                 column = syntaxError.charPositionInLine + 1
+            )
+        }
+
+        fun fromLinterIssue(linterIssue: LinterIssue): RellIssue {
+            return RellIssue(
+                message = linterIssue.message,
+                code = "linter_issue:${linterIssue.ruleId}",
+                severity = RellIssueSeverity.WARNING,
+                line = linterIssue.ctx.start.line,
+                column = linterIssue.ctx.start.charPositionInLine + 1
+            )
+        }
+
+        fun fromFormatterIssue(formatterIssue: FormatterIssue): RellIssue {
+            return RellIssue(
+                message = formatterIssue.message,
+                code = "linter_issue:formatting",
+                severity = RellIssueSeverity.WARNING,
+                line = formatterIssue.line,
+                column = formatterIssue.column + 1
             )
         }
     }

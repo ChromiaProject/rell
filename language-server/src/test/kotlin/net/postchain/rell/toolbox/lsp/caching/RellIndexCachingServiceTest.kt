@@ -16,6 +16,12 @@ import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.toolbox.core.indexer.RellResourceFactory
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
+import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.linter.FormattingStyleLinter
+import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.linter.RellLinter
+import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
+import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -37,9 +43,21 @@ class RellIndexCachingServiceTest {
     lateinit var dummyWorkspaceIndexer: WorkspaceIndexer
     lateinit var cacheFile: File
 
+    private val rellLinter = RellLinter()
+    private val formattingStyleLinter = FormattingStyleLinter()
+    private val formatterOptions = FormatterOptions()
+    private val linterOptions = LinterOptions()
+
     @BeforeEach
     fun setup(@TempDir tempDir: Path) {
-        indexSerializer = spyk<RellIndexSerializer>()
+        indexSerializer = spyk(
+            RellIndexSerializer(
+                rellLinter,
+                formattingStyleLinter,
+                RellFormatterOptionsResolver(),
+                RellLinterOptionsResolver()
+            )
+        )
         cachingService = spyk(RellIndexCachingService(indexSerializer))
         workspaceFolderUri = Files.createDirectories(tempDir.resolve("src")).toUri()
         val sourceFiles = listOf(
@@ -67,7 +85,7 @@ class RellIndexCachingServiceTest {
 
     @Test
     fun `Should delete cache file when deserialization fails`() {
-        every { indexSerializer.deserializeAsWorkspaceIndexer(any())} throws IOException()
+        every { indexSerializer.deserializeAsWorkspaceIndexer(any()) } throws IOException()
         cachingService.saveWorkspaceIndexers(listOf(dummyWorkspaceIndexer))
 
         assertThat(cacheFile.exists()).isTrue()
@@ -138,7 +156,10 @@ class RellIndexCachingServiceTest {
 
     @Test
     fun `Should skip persisting indexers with single files`() {
-        val singleFileIndexer = createDummyWorkspaceIndexer(workspaceFolderUri, listOf(SourceFile("dummy.rell", "module; function dummy() {}")))
+        val singleFileIndexer = createDummyWorkspaceIndexer(
+            workspaceFolderUri,
+            listOf(SourceFile("dummy.rell", "module; function dummy() {}"))
+        )
         every { cachingService.getCacheFolder() } returns cacheFile.parentFile
 
         cachingService.saveWorkspaceIndexers(listOf(singleFileIndexer))
@@ -148,7 +169,8 @@ class RellIndexCachingServiceTest {
 
     private fun createDummyWorkspaceIndexer(workspaceFolderUri: URI, sourceFiles: List<SourceFile>): WorkspaceIndexer {
         val resourceFactory = RellResourceFactory(workspaceFolderUri, AntlrRellParser())
-        val indexer = WorkspaceIndexer(workspaceFolderUri)
+        val indexer =
+            WorkspaceIndexer(workspaceFolderUri, rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
 
         sourceFiles.forEach {
