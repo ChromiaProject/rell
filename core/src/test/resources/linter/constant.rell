@@ -1,0 +1,15 @@
+function foo() {
+    var x = 5;
+    var y = x + 1;
+    var z: integer = x + y;
+    z++;
+
+    // rell-lint-disable-next-line
+    var ok = 17;
+
+    var last_one = 4711;
+    var _ = 4;
+    var (a, b) = (1, 2);
+
+    var (f, (q, n, _)) = (1, (2, 3, 4));
+}

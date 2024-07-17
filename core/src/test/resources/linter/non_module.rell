@@ -1,0 +1,7 @@
+import bogus;
+
+// rell-lint-disable-next-line
+import ok;
+
+function foo() {
+}

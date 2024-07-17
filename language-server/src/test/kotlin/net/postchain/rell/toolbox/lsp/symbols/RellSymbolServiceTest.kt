@@ -5,14 +5,15 @@ import assertk.assertions.containsExactly
 import assertk.assertions.extracting
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
-import assertk.assertions.isNotEmpty
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.linter.FormattingStyleLinter
+import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.editing.Document
-import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.Position
-import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolKind
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -20,6 +21,10 @@ import java.io.File
 
 class RellSymbolServiceTest {
     private val rellSymbolService = RellSymbolService()
+    private val rellLinter = RellLinter()
+    private val formattingStyleLinter = FormattingStyleLinter()
+    private val formatterOptions = FormatterOptions()
+    private val linterOptions = LinterOptions()
 
     @Test
     fun `Returns empty list when resource does not exist`(@TempDir dir: File) {
@@ -34,7 +39,7 @@ class RellSymbolServiceTest {
             )
         }
 
-        val indexer = WorkspaceIndexer(dir.toURI())
+        val indexer = WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         indexer.initialFileIndexBuild()
         val unIndexedFile = File(dir, "unindexed_file.rell").apply { writeText("""""") }
         val document = Document(unIndexedFile.toURI(), 1, rellFile.readText())
@@ -56,7 +61,7 @@ class RellSymbolServiceTest {
             )
         }
         val document = Document(rellFile.toURI(), 1, rellFile.readText())
-        val indexer = WorkspaceIndexer(dir.toURI())
+        val indexer = WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         indexer.initialFileIndexBuild()
         val position = Position(1, 1)
         val res = rellSymbolService.getSymbolLocations(document, indexer, position)
@@ -102,7 +107,7 @@ class RellSymbolServiceTest {
         }
         val rellFileUri = rellFile.toURI()
         val document = Document(rellFile.toURI(), 1, rellFile.readText())
-        val indexer = WorkspaceIndexer(dir.toURI())
+        val indexer = WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         indexer.initialFileIndexBuild()
         val resource = indexer.getResource(rellFileUri)!!
 

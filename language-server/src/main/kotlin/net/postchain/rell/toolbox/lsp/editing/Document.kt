@@ -1,54 +1,19 @@
 package net.postchain.rell.toolbox.lsp.editing
 
+import java.net.URI
+import net.postchain.rell.toolbox.core.offsetToPosition
+import net.postchain.rell.toolbox.core.positionToOffset
+import net.postchain.rell.toolbox.util.toLspPosition
 import org.antlr.v4.runtime.misc.Interval
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
-import java.net.URI
 
 class Document(val fileUri: URI, val version: Int, val content: String) {
 
-    fun getOffSet(position: Position): Int {
-        var line = 0
-        var column = 0
-        for (i in content.indices) {
-            val ch = content[i]
-            if (position.line == line && position.character == column) {
-                return i
-            }
-            if (ch == NL) {
-                line++
-                column = 0
-            } else {
-                column++
-            }
-        }
-        if (position.line == line && position.character == column) {
-            return content.length
-        }
-        throw IndexOutOfBoundsException("Position $position out of bounds")
-    }
+    fun getOffSet(position: Position): Int =
+        positionToOffset(content, net.postchain.rell.toolbox.core.Position(position.line, position.character))
 
-    fun getPosition(offset: Int): Position {
-        val contentLength = content.length
-        if (offset < 0 || offset > contentLength) {
-            throw IndexOutOfBoundsException("Offset $offset is out of bounds for range [0, $contentLength]")
-        }
-        var line = 0
-        var column = 0
-
-        for (i in content.indices) {
-            val ch = content[i]
-            if (i == offset) break
-            if (ch == NL) {
-                line++
-                column = 0
-            } else {
-                column++
-            }
-        }
-        return Position(line, column)
-    }
-
+    fun getPosition(offset: Int): Position = offsetToPosition(content, offset).toLspPosition()
 
     /**
      * As opposed to [TextEdit][] the positions in the edits of a [DidChangeTextDocumentParams] refer to the
@@ -77,7 +42,4 @@ class Document(val fileUri: URI, val version: Int, val content: String) {
 
     fun getTextIn(interval: Interval): String = content.substring(interval.a, interval.b + 1)
 
-    companion object {
-        const val NL = '\n'
-    }
 }

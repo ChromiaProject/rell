@@ -1,6 +1,8 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
+import org.eclipse.lsp4j.CodeActionKind
+import org.eclipse.lsp4j.CodeActionOptions
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.RenameOptions
 import org.eclipse.lsp4j.SemanticTokensLegend
@@ -33,6 +35,21 @@ class CapabilitiesProvider {
 
             setDocumentFormattingProvider(true)
             setDocumentRangeFormattingProvider(true)
+            //setCodeActionProvider(true)
+            setCodeActionProvider(
+                CodeActionOptions(
+                    listOf(
+                        CodeActionKind.QuickFix,
+                        CodeActionKind.Refactor,
+                        CodeActionKind.Source,
+                        CodeActionKind.SourceOrganizeImports,
+                        CodeActionKind.SourceFixAll,
+                        CodeActionKind.RefactorExtract,
+                        CodeActionKind.RefactorInline,
+                        CodeActionKind.RefactorRewrite,
+                    )
+                ).apply { this.resolveProvider = true }
+            )
         }
 
         val clientCapabilities = params.capabilities

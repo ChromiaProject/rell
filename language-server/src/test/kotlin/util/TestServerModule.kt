@@ -1,20 +1,23 @@
 package util
 
 import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
+import net.postchain.rell.toolbox.linter.FormattingStyleLinter
+import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
+import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
 import net.postchain.rell.toolbox.lsp.server.CapabilitiesProvider
 import net.postchain.rell.toolbox.lsp.server.LauncherType
+import net.postchain.rell.toolbox.lsp.server.RellFormattingManager
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServerTerminator
 import net.postchain.rell.toolbox.lsp.server.RellRequestManager
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
-import net.postchain.rell.toolbox.lsp.server.RellFormattingManager
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestRunner
 import org.koin.core.KoinApplication
@@ -41,11 +44,14 @@ class TestServerModule {
 
     private val serverModule = module {
         single { RellSymbolService() }
-        single { RellIndexSerializer() }
+        single { RellLinter() }
+        single { FormattingStyleLinter() }
         singleOf(::RellIndexCachingService)
+        singleOf(::RellIndexSerializer)
         single { RellReferenceService(get()) }
         singleOf(::RellWorkspaceManager)
-        single { RellFormatterOptionsResolver(get()) }
+        single { RellFormatterOptionsResolver() }
+        single { RellLinterOptionsResolver() }
         single { RellRequestManager() }
         singleOf(::RellLanguageServerTerminator)
         single { CapabilitiesProvider() }

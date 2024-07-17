@@ -5,11 +5,15 @@ import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import org.eclipse.lsp4j.Diagnostic
+import org.eclipse.lsp4j.DiagnosticSeverity
 import java.io.File
 import kotlin.io.path.createDirectory
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams
 import org.eclipse.lsp4j.FileChangeType
 import org.eclipse.lsp4j.FileEvent
+import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.Range
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -69,6 +73,48 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         assertThat(indexer.fileUriResourceMap.keys).containsOnly(newFileUri)
         assertThat(testClient.diagnostics.keys).containsOnly(newFileUri.toString())
         assertThat(testClient.diagnostics[newFileUri.toString()]!!.size).isEqualTo(0)
+    }
+
+    @Test
+    fun `didChangeWatched linter config created`() {
+        val rellFile = File(srcDir.toString(), "code.rell").apply {
+            writeText(
+                """
+                module;
+                function foo() {
+                    val x = 123;
+                }
+            """.trimIndent()
+            )
+        }.toURI()
+        clientServerLauncher.initializeServer(srcDir.toURI())
+        val indexer = workspaceManager.indexers[srcDir.toURI()]!!
+        val configFileUri = File(tempDir.toString(), ".rell_lint").apply {
+            writeText(
+                """
+                [*.rell]
+                rule_unused_variable=true
+            """.trimIndent()
+            )
+        }.toURI()
+
+        val fileEvent = FileEvent(configFileUri.toString(), FileChangeType.Created)
+        val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEvent))
+        server.didChangeWatchedFiles(didChangeParams)
+        await().until { testClient.diagnostics.isNotEmpty() }
+
+        val diagnostics = testClient.diagnostics
+        assertThat(indexer.fileUriResourceMap.keys).containsOnly(rellFile)
+        assertThat(diagnostics.keys).containsOnly(rellFile.toString())
+        assertThat(diagnostics[rellFile.toString()]!!).containsOnly(
+            Diagnostic(
+                Range(Position(2, 8), Position(2, 8)),
+                "Variable 'x' is never used",
+                DiagnosticSeverity.Warning,
+                null,
+                "linter_issue:rule_unused_variable"
+            ),
+        )
     }
 
     @Test
@@ -194,8 +240,8 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         val newFolderName = File(submoduleFolder.path.replace("submodule", "newmodule"))
         submoduleFolder.renameTo(newFolderName)
 
-        val fileEventDelete = FileEvent(submoduleFolder.toURI().toString(), FileChangeType.Deleted)
-        val fileEventCreate = FileEvent(newFolderName.toURI().toString(), FileChangeType.Created)
+        val fileEventDelete = FileEvent(submoduleFolder.toURI().toString().trimEnd('/'), FileChangeType.Deleted)
+        val fileEventCreate = FileEvent(newFolderName.toURI().toString().trimEnd('/'), FileChangeType.Created)
         val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEventDelete, fileEventCreate))
 
         server.didChangeWatchedFiles(didChangeParams)
@@ -218,4 +264,6 @@ class RellLanguageServerDidChangeWatchedFilesTest {
             }
         }
     }
+
+    // TODO: Add test to make sure we aren't creating redundant single file indexers when renaming or adding new files
 }

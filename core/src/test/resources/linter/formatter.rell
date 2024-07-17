@@ -1,0 +1,6 @@
+import something;
+function   foo    (name: text)  {
+
+val x = "hi";
+
+} // some comment

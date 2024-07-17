@@ -4,6 +4,10 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEqualTo
 import assertk.assertions.isNull
+import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.linter.FormattingStyleLinter
+import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.linter.RellLinter
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -18,6 +22,11 @@ import kotlin.test.assertNotNull
 class WorkspaceIndexerUpdateIndexTest {
     @TempDir
     lateinit var tempDir: Path
+
+    private val rellLinter = RellLinter()
+    private val formattingStyleLinter = FormattingStyleLinter()
+    private val formatterOptions = FormatterOptions()
+    private val linterOptions = LinterOptions()
 
     @BeforeEach
     fun setup() {
@@ -35,7 +44,7 @@ class WorkspaceIndexerUpdateIndexTest {
 
     @Test
     fun `updateFileUriResourceMap updates resource of existing uri`() {
-        val workspaceIndexer = WorkspaceIndexer(tempDir.toUri())
+        val workspaceIndexer = WorkspaceIndexer(tempDir.toUri(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         workspaceIndexer.initialFileIndexBuild()
 
         val prevUriResourceMap = workspaceIndexer.fileUriResourceMap.toMap()
@@ -56,7 +65,7 @@ class WorkspaceIndexerUpdateIndexTest {
 
     @Test
     fun `updateFileUriResourceMap updates uri of existing resource`() {
-        val workspaceIndexer = WorkspaceIndexer(tempDir.toUri())
+        val workspaceIndexer = WorkspaceIndexer(tempDir.toUri(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         workspaceIndexer.initialFileIndexBuild()
         val prevUriResourceMap = workspaceIndexer.fileUriResourceMap.toMap()
 

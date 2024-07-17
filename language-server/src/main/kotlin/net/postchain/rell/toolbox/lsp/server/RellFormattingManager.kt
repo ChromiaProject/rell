@@ -55,8 +55,8 @@ class RellFormattingManager(
 
     private fun setUserOptions(fileUri: URI, options: FormattingOptions?): FormatterOptions {
         val formatterRequest = FormatterOptions()
-
-        val resolvedFormatterOptions = formatterOptionsResolver.getFormattingOptionsFor(fileUri)
+        val workspaceUri = workspaceManager.getIndexerFor(fileUri).workspaceUri
+        val resolvedFormatterOptions = formatterOptionsResolver.getWorkspaceFormattingOptionsOrNull(workspaceUri)
         if (resolvedFormatterOptions != null) {
             return resolvedFormatterOptions
         }

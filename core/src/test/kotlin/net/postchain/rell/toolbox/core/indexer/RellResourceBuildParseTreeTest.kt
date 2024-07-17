@@ -5,11 +5,11 @@ import assertk.assertions.containsAll
 import assertk.assertions.containsExactly
 import assertk.assertions.extracting
 import assertk.assertions.isEqualTo
+import java.io.File
+import java.net.URI
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import java.io.File
-import java.net.URI
 
 
 @Suppress("JAVA_CLASS_ON_COMPANION")

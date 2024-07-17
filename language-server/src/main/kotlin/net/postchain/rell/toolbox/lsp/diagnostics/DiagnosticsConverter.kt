@@ -31,7 +31,7 @@ object DiagnosticsConverter {
         return Range(start, end)
     }
 
-    private fun toDiagnosticSeverity(severity: RellIssueSeverity): DiagnosticSeverity? {
+    private fun toDiagnosticSeverity(severity: RellIssueSeverity): DiagnosticSeverity {
         return when (severity) {
             RellIssueSeverity.ERROR -> DiagnosticSeverity.Error
             RellIssueSeverity.WARNING -> DiagnosticSeverity.Warning

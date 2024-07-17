@@ -11,10 +11,14 @@ import net.postchain.rell.toolbox.core.indexer.RellIssue
 import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsConverter
+import net.postchain.rell.toolbox.lsp.editing.CodeActionTitles
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestCase
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestFile
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestRunner
 import net.postchain.rell.toolbox.util.getCurrentLogFileName
+import org.eclipse.lsp4j.CodeAction
+import org.eclipse.lsp4j.CodeActionParams
+import org.eclipse.lsp4j.Command
 import org.eclipse.lsp4j.DefinitionParams
 import org.eclipse.lsp4j.DidChangeConfigurationParams
 import org.eclipse.lsp4j.DidChangeTextDocumentParams
@@ -219,11 +223,19 @@ class RellLanguageServer(
                     dirtyFiles.add(uri)
                 }
             } else {
-                if (change.type == FileChangeType.Deleted) {
-                    deletedFolders.add(uri)
+                val indexer = workspaceManager.getIndexerForConfigFile(uri)
+                if (indexer != null && indexer.isLinterOrFormatterConfigFile(uri)) {
+                    requestManager.runWrite {
+                        indexer.updateConfig(uri)
+                        workspaceManager.runLinter()
+                    }
                 } else {
-                    if (File(uri).isDirectory) {
-                        dirtyFolders.add(uri)
+                    if (change.type == FileChangeType.Deleted) {
+                        deletedFolders.add(uri)
+                    } else {
+                        if (File(uri).isDirectory) {
+                            dirtyFolders.add(uri)
+                        }
                     }
                 }
             }
@@ -358,5 +370,21 @@ class RellLanguageServer(
         return requestManager.runRead {
             testRunner.getTestCases(fileUri)
         }
+    }
+
+    override fun resolveCodeAction(unresolved: CodeAction): CompletableFuture<CodeAction> {
+        val codeActionTitle = unresolved.title
+        val fileUri = parseFileUri((unresolved.data as JsonObject).get("fileUri").asString)
+            ?: return CompletableFuture.completedFuture(CodeAction())
+        return if (codeActionTitle == CodeActionTitles.AUTO_FIXABLE.title) {
+            return CompletableFuture.completedFuture(workspaceManager.getCodeActionForFile(fileUri))
+        } else {
+            CompletableFuture.completedFuture(CodeAction())
+        }
+    }
+
+    override fun codeAction(params: CodeActionParams): CompletableFuture<List<Either<Command, CodeAction>>> {
+        val fileUri = parseFileUri(params.textDocument.uri) ?: return CompletableFuture.completedFuture(listOf())
+        return CompletableFuture.completedFuture(workspaceManager.getCodeActions(fileUri, params.range))
     }
 }

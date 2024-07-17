@@ -5,27 +5,47 @@ import java.io.File
 import java.io.IOException
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.io.path.toPath
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
+import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.linter.FormattingStyleLinter
+import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.linter.RellLinter
 
-class WorkspaceIndexer(val workspaceUri: URI) {
+class WorkspaceIndexer(
+    val workspaceUri: URI,
+    private val rellLinter: RellLinter,
+    private val linterOptions: LinterOptions,
+    private val formattingStyleLinter: FormattingStyleLinter,
+    private val formatterOptions: FormatterOptions,
+) {
     private val logger = KotlinLogging.logger {}
     private val resourceFactory = RellResourceFactory(workspaceUri, AntlrRellParser())
     private val rellCompilerUtils = RellCompilerUtils()
     var fileUriResourceMap = ConcurrentHashMap<URI, Resource>()
     private var fileMap: ConcurrentHashMap<C_SourcePath, C_SourceFile> = ConcurrentHashMap()
 
+    fun updateConfig(fileUri: URI) {
+        val configFile = File(fileUri)
+        if (isLinterConfig(fileUri)) {
+            linterOptions.updateOptionsFromFile(configFile)
+        }
+        if (isFormatterConfig(fileUri)) {
+            formatterOptions.updateOptionsFromFile(configFile)
+        }
+    }
+
     fun initialFileIndexBuild(cachedIndexer: WorkspaceIndexer? = null) {
         val rellUris = addRellFilesUri()
         val sources = readAllSource(rellUris)
         fileMap = resourceFactory.buildFileMap(sources)
 
-        useDataFromCachedIndexer(cachedIndexer, sources)
-
-        val dirtyFiles: MutableList<URI> = mutableListOf()
+        val alreadyLintedFiles = useDataFromCachedIndexer(cachedIndexer, sources)
+        val dirtyFiles = mutableListOf<URI>()
 
         for (source in sources) {
             val (fileUri, fileContent) = source
@@ -42,21 +62,42 @@ class WorkspaceIndexer(val workspaceUri: URI) {
         for (fileUri in dirtyFiles) {
             fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileMap)
         }
+
+        for (source in sources) {
+            val (fileUri, fileContent) = source
+            if (alreadyLintedFiles.contains(fileUri)) {
+                continue
+            }
+            fileUriResourceMap[fileUri]?.let {
+                runLinter(it, fileContent)
+            }
+        }
+    }
+
+    private fun ideConfigOptionsMatch(cachedIndexer: WorkspaceIndexer? = null): Boolean {
+        return linterOptions == cachedIndexer?.linterOptions && formatterOptions == cachedIndexer.formatterOptions
     }
 
     private fun hasImplicitImports(resource: Resource) =
         resource.locationInfo.filter { it.value.ideSymbolInfo.kind == IdeSymbolKind.UNKNOWN }.isNotEmpty()
 
-    private fun useDataFromCachedIndexer(cachedIndexer: WorkspaceIndexer?, sources: Map<URI, String>) {
-        if (cachedIndexer == null) return
+    private fun useDataFromCachedIndexer(cachedIndexer: WorkspaceIndexer?, sources: Map<URI, String>): Set<URI> {
+        if (cachedIndexer == null) return setOf()
+        val linterOptionsMatch = ideConfigOptionsMatch(cachedIndexer)
+        val alreadyLintedFiles = mutableSetOf<URI>()
 
         sources.forEach { (fileUri, fileContent) ->
             val checksum = calculateChecksum(fileContent)
             val cachedResource = cachedIndexer.getResource(fileUri)
             if (cachedResource != null && cachedResource.checksum == checksum && getResource(fileUri) == null) {
                 fileUriResourceMap[fileUri] = cachedResource
+                if (linterOptionsMatch) {
+                    alreadyLintedFiles.add(fileUri)
+                }
             }
         }
+
+        return alreadyLintedFiles
     }
 
     private fun readAllSource(rellUris: List<URI>): Map<URI, String> {
@@ -82,7 +123,12 @@ class WorkspaceIndexer(val workspaceUri: URI) {
     }
 
     private fun collectIssues(resource: Resource): List<RellIssue> {
-        return listOf(getSyntaxErrors(resource), getSemanticErrors(resource)).flatten()
+        return listOf(
+            getSyntaxErrors(resource),
+            getSemanticErrors(resource),
+            getLinterIssues(resource),
+            getFormatterIssues(resource)
+        ).flatten()
     }
 
     private fun getSyntaxErrors(resource: Resource): List<RellIssue> {
@@ -93,12 +139,25 @@ class WorkspaceIndexer(val workspaceUri: URI) {
         return resource.fileSpecificSemanticErrors.map(RellIssue::fromCMessage)
     }
 
+    private fun getLinterIssues(resource: Resource): List<RellIssue> {
+        return resource.linterIssues.map(RellIssue::fromLinterIssue)
+    }
+
+    private fun getFormatterIssues(resource: Resource): List<RellIssue> {
+        return resource.formatterIssues.map(RellIssue::fromFormatterIssue)
+    }
+
     //Change in source code
     fun updateFileUriResourceMap(fileUri: URI) {
         if (!File(fileUri).exists()) {
             removeFileUriResourceMap(fileUri)
         } else {
-            fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileMap)
+            val fileContent = File(fileUri).readText()
+            val resource = resourceFactory.buildRellResource(fileUri, fileContent, fileMap)
+
+            runLinter(resource, fileContent)
+
+            fileUriResourceMap[fileUri] = resource
             resourceFactory.updateFileMap(fileMap, fileUri)
         }
     }
@@ -111,7 +170,9 @@ class WorkspaceIndexer(val workspaceUri: URI) {
         if (!File(fileUri).exists()) {
             removeFileUriResourceMap(fileUri)
         } else {
-            fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileContent, fileMap)
+            val resource = resourceFactory.buildRellResource(fileUri, fileContent, fileMap)
+            runLinter(resource, fileContent)
+            fileUriResourceMap[fileUri] = resource
             resourceFactory.updateFileMap(fileMap, fileUri, fileContent)
         }
     }
@@ -185,4 +246,22 @@ class WorkspaceIndexer(val workspaceUri: URI) {
         }
     }
 
+    fun runLinter() {
+        fileUriResourceMap.entries.forEach { (fileUri, resource) ->
+            val fileContent = File(fileUri).readText()
+            runLinter(resource, fileContent)
+        }
+    }
+
+    private fun runLinter(resource: Resource, fileContent: String) {
+        rellLinter.enhanceWithLintIssues(linterOptions, resource)
+        formattingStyleLinter.enhanceWithFormatterIssues(linterOptions, formatterOptions, resource, fileContent)
+    }
+
+    fun isLinterOrFormatterConfigFile(uri: URI) = isLinterConfig(uri) || isFormatterConfig(uri)
+    private fun isLinterConfig(uri: URI) = uri.toPath().fileName.toString() == LinterOptions.CONFIG_FILE_NAME
+    private fun isFormatterConfig(uri: URI) = uri.toPath().fileName.toString() in setOf(
+        FormatterOptions.PREFERRED_RELL_FORMAT_FILE_NAME,
+        FormatterOptions.DEPRECATED_RELL_FORMAT_FILE_NAME
+    )
 }

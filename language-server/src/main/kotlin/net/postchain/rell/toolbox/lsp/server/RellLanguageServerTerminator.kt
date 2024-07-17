@@ -15,9 +15,9 @@ class RellLanguageServerTerminator(val requestManager: RellRequestManager,
 
     fun exit() {
         if (hasBeenShutdown) {
-            exitProcess(0);
+            exitProcess(0)
         } else {
-            exitProcess(1);
+            exitProcess(1)
         }
     }
 }

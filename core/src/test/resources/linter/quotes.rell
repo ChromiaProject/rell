@@ -1,0 +1,14 @@
+function single() {
+    val x = 'hello';
+    val y = 'with "quote" inside';
+    val z = 'with escaped \"quote\" inside';
+}
+
+function double() {
+    val x = "world";
+    val y = "with 'quote' inside";
+    val z = "with escaped \'quote\' inside";
+
+    // rell-lint-disable-next-line
+    val xyz = "valid";
+}

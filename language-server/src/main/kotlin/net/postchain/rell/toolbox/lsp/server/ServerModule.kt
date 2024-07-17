@@ -1,10 +1,12 @@
 package net.postchain.rell.toolbox.lsp.server
 
-import net.postchain.rell.toolbox.core.indexer.RellCompilerUtils
 import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
+import net.postchain.rell.toolbox.linter.FormattingStyleLinter
+import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
+import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
@@ -19,12 +21,15 @@ import org.koin.dsl.module
 
 val serverModule = module {
     single { RellSymbolService() }
-    single { RellIndexSerializer() }
+    single { RellLinter() }
+    single { FormattingStyleLinter() }
     singleOf(::RellIndexCachingService)
+    singleOf(::RellIndexSerializer)
     single { RellReferenceService(get()) }
     singleOf(::RellWorkspaceManager)
     single { RellRequestManager() }
-    single { RellFormatterOptionsResolver(get()) }
+    single { RellFormatterOptionsResolver() }
+    single { RellLinterOptionsResolver() }
     singleOf(::RellLanguageServerTerminator)
     single { CapabilitiesProvider() }
     single { RellSemanticTokensManager() }

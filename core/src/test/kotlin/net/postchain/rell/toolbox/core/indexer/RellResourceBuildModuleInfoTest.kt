@@ -5,14 +5,14 @@ import assertk.assertions.containsAll
 import assertk.assertions.extracting
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import java.io.File
+import java.net.URI
 import net.postchain.rell.base.compiler.base.utils.C_Message
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import java.io.File
-import java.net.URI
 
 
 @Suppress("JAVA_CLASS_ON_COMPANION")
@@ -43,7 +43,8 @@ class RellResourceBuildModuleInfoTest {
         val parseTreeSematicError = semanticErrorParseResult.parseTree
 
         val compilerSourcePathImport = rellCompilerUtils.createCompilerSourcePath(fileUriImport, workspaceError.toURI())
-        val compilerSourcePathSemanticError = rellCompilerUtils.createCompilerSourcePath(fileUriSemanticError, workspaceError.toURI())
+        val compilerSourcePathSemanticError =
+            rellCompilerUtils.createCompilerSourcePath(fileUriSemanticError, workspaceError.toURI())
 
         val sRellFileImport = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePathImport, parseTreeImport, importParseResult.parser.tokenStream).first
         val sRellFileSemanticError = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePathSemanticError, parseTreeSematicError, importParseResult.parser.tokenStream).first

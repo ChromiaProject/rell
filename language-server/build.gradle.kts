@@ -10,11 +10,11 @@ dependencies {
     implementation(libs.bundles.logging)
     implementation(libs.bundles.koin)
     implementation(project(":core"))
-    implementation(project(":formatter"))
     implementation(libs.bundles.rell)
 
     implementation("org.furyio:fury-core:0.4.1")
     implementation(libs.ec4j)
+    implementation("io.github.java-diff-utils:java-diff-utils:4.12")
 
     testImplementation(libs.bundles.testcontainers)
     testImplementation(libs.bundles.testing)

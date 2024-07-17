@@ -59,7 +59,7 @@ class TestClientServerLauncher(private val koinApp: KoinApplication) {
             throw SocketTimeoutException("Failed to connect to server after $maxRetryAttempts retries.")
         }
         return try {
-            Socket("127.0.0.1", 5008);
+            Socket("127.0.0.1", 5008)
         } catch (e: IOException) {
             Thread.sleep(500)
             connectToServer(attempt + 1)

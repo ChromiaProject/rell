@@ -4,6 +4,10 @@ import assertk.assertThat
 import assertk.assertions.containsOnly
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
+import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.linter.FormattingStyleLinter
+import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.linter.RellLinter
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledOnOs
 import org.junit.jupiter.api.condition.OS
@@ -15,6 +19,11 @@ import kotlin.io.path.createDirectory
 
 
 class WorkspaceIndexerTest {
+    private val rellLinter = RellLinter()
+    private val formattingStyleLinter = FormattingStyleLinter()
+    private val formatterOptions = FormatterOptions()
+    private val linterOptions = LinterOptions()
+
     @Test
     fun `initialFileIndexBuild builds index mapper of files in workspace`(@TempDir dir: File) {
         val childDir = File(dir, "directory").toPath().createDirectory()
@@ -28,7 +37,8 @@ class WorkspaceIndexerTest {
             writeText("{module}")
         }
 
-        val workspaceIndexer = WorkspaceIndexer(dir.toURI())
+        val workspaceIndexer =
+            WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         workspaceIndexer.initialFileIndexBuild()
 
         assertThat(workspaceIndexer.fileUriResourceMap.size).isEqualTo(2)
@@ -50,7 +60,8 @@ class WorkspaceIndexerTest {
         val notAllowedPermissions = PosixFilePermissions.fromString("---------")
         Files.setPosixFilePermissions(notAllowedFile.toPath(), notAllowedPermissions)
 
-        val workspaceIndexer = WorkspaceIndexer(dir.toURI())
+        val workspaceIndexer =
+            WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         workspaceIndexer.initialFileIndexBuild()
 
         assertThat(workspaceIndexer.fileUriResourceMap.keys().toList()).containsOnly(allowedFile.toURI())
@@ -64,25 +75,30 @@ class WorkspaceIndexerTest {
     fun `initialFileIndexBuild builds index mapper of files in workspace imports file with error and same name`(@TempDir dir: File) {
         val childDir = File(dir, "directory").toPath().createDirectory()
         File(childDir.toFile(), "main.rell").apply {
-            writeText("""
+            writeText(
+                """
                 module;
                 import ^^.main.*;
                 
                 function d() {
                     create f(name = "");
                 }
-            """.trimIndent())
+            """.trimIndent()
+            )
         }
         File(dir, "main.rell").apply {
-            writeText("""
+            writeText(
+                """
                 module;
                 function a() {
                     create b(name = "");
                 }
-            """.trimIndent())
+            """.trimIndent()
+            )
         }
 
-        val workspaceIndexer = WorkspaceIndexer(dir.toURI())
+        val workspaceIndexer =
+            WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         workspaceIndexer.initialFileIndexBuild()
 
         assertThat(workspaceIndexer.fileUriResourceMap.size).isEqualTo(2)
@@ -96,25 +112,30 @@ class WorkspaceIndexerTest {
     fun `initialFileIndexBuild builds index mapper of files in workspace imports file with error`(@TempDir dir: File) {
 
         File(dir, "main.rell").apply {
-            writeText("""
+            writeText(
+                """
                 module;
                 import ^.importer.*;
                 
                 function d() {
                     create f(name = "");
                 }
-            """.trimIndent())
+            """.trimIndent()
+            )
         }
         File(dir, "importer.rell").apply {
-            writeText("""
+            writeText(
+                """
                 module;
                 function a() {
                     create b(name = "");
                 }
-            """.trimIndent())
+            """.trimIndent()
+            )
         }
 
-        val workspaceIndexer = WorkspaceIndexer(dir.toURI())
+        val workspaceIndexer =
+            WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         workspaceIndexer.initialFileIndexBuild()
 
         workspaceIndexer.fileUriResourceMap.forEach {
@@ -130,7 +151,8 @@ class WorkspaceIndexerTest {
 
         realWorldExamples.listFiles()!!.forEach { dir ->
             val srcDir = dir.resolve("rell/src")
-            val workspaceIndexer = WorkspaceIndexer(srcDir.toURI())
+            val workspaceIndexer =
+                WorkspaceIndexer(srcDir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
             workspaceIndexer.initialFileIndexBuild()
             assertThat(workspaceIndexer.fileUriResourceMap).isNotEmpty()
         }

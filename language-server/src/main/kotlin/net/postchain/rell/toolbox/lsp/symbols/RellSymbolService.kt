@@ -74,9 +74,11 @@ class RellSymbolService {
         }
     }
 
-    fun getSymbolLocationForRenaming(document: Document,
-                                     indexer: WorkspaceIndexer,
-                                     position: Position): Location? {
+    fun getSymbolLocationForRenaming(
+        document: Document,
+        indexer: WorkspaceIndexer,
+        position: Position
+    ): Location? {
         val (location, symbolInfo) = getSymbolLocationsWithSymbol(document, indexer, position) ?: return null
         return if (isEligibleForRenaming(symbolInfo)) {
             location
@@ -170,6 +172,8 @@ class RellSymbolService {
         val path = uri.getPath()
         return path.substring(path.lastIndexOf('/') + 1)
     }
+
+
 
     companion object {
         val NON_RENAMEABLE_SYMBOLS = setOf(
