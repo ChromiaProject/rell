@@ -6,12 +6,8 @@ package net.postchain.rell.base.compiler.vexpr
 
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_TypeAdapter
-import net.postchain.rell.base.compiler.base.core.C_VarUid
 import net.postchain.rell.base.compiler.base.def.C_GlobalConstantHeader
-import net.postchain.rell.base.compiler.base.expr.C_DbAtWhatValue
-import net.postchain.rell.base.compiler.base.expr.C_DbAtWhatValue_Complex
-import net.postchain.rell.base.compiler.base.expr.C_ExprContext
-import net.postchain.rell.base.compiler.base.expr.C_ExprVarFacts
+import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
@@ -45,16 +41,16 @@ class V_ConstantValueExpr(
 }
 
 class V_IfExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        private val resType: R_Type,
-        private val condExpr: V_Expr,
-        private val trueExpr: V_Expr,
-        private val falseExpr: V_Expr,
-        private val resVarFacts: C_ExprVarFacts
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    private val resType: R_Type,
+    private val condExpr: V_Expr,
+    private val trueExpr: V_Expr,
+    private val falseExpr: V_Expr,
+    private val resVarStates: C_ExprVarStatesDelta,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(resType, condExpr, trueExpr, falseExpr)
-    override fun varFacts0() = resVarFacts
+    override fun varStatesDelta0() = resVarStates
 
     override fun toRExpr0(): R_Expr {
         val rCond = condExpr.toRExpr()
@@ -194,13 +190,13 @@ class V_StructExpr(
 }
 
 class V_GlobalConstantExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        private val name: R_Name,
-        private val resType: R_Type,
-        private val varId: C_VarUid,
-        private val constId: R_GlobalConstantId,
-        private val header: C_GlobalConstantHeader
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    private val name: R_Name,
+    private val resType: R_Type,
+    private val varKey: C_VarStateKey,
+    private val constId: R_GlobalConstantId,
+    private val header: C_GlobalConstantHeader,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(resType)
 
@@ -211,7 +207,7 @@ class V_GlobalConstantExpr(
         return cBody?.constantValue(ctx)
     }
 
-    override fun varId() = varId
+    override fun varKey() = varKey
     override fun globalConstantId() = constId
 
     override fun implicitTargetAttrName() = name

@@ -20,16 +20,13 @@ import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
-import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDeclaration_AtVariable
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
 import net.postchain.rell.base.utils.ide.IdeLocalSymbolLink
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.immSetOf
-import net.postchain.rell.base.utils.toImmList
 
 sealed class S_AtExprFrom(val startPos: S_Pos) {
     abstract fun compile(ctx: C_ExprContext, fromCtx: C_AtFromContext): C_AtFrom
@@ -105,7 +102,7 @@ class S_AtExprFrom_Complex(
 
         var isDb: Boolean? = null
         val fromBlkCtx = ctx.blkCtx.createSubContext("@from")
-        val fromExprCtx = ctx.update(blkCtx = fromBlkCtx)
+        val fromExprCtx = ctx.copy(blkCtx = fromBlkCtx)
 
         for (item in items) {
             val cItem = item.compile(fromExprCtx, fromCtx, isDb)
@@ -466,9 +463,20 @@ class S_AtExprWhat_Complex(val startPos: S_Pos, val fields: List<S_AtExprWhatCom
     }
 }
 
-class S_AtExprWhere(val exprs: List<S_Expr>) {
+class S_AtExprWhere(private val exprs: List<S_Expr>) {
     fun compile(ctx: C_ExprContext, atExprId: R_AtExprId, subValues: MutableList<V_Expr>): V_Expr? {
-        val whereExprs = exprs.withIndex().map { (idx, expr) -> compileWhereExpr(ctx, atExprId, idx, expr, subValues) }
+        var whereCtx = ctx
+        val whereExprs0 = mutableListOf<V_Expr>()
+
+        for ((idx, expr) in exprs.withIndex()) {
+            val vExpr = compileWhereExpr(whereCtx, atExprId, idx, expr, subValues)
+            if (S_AtExpr.WHERE_VAR_STATES_SWITCH.isActive(ctx)) {
+                whereCtx = whereCtx.updateVarStates(vExpr.varStatesDelta.whenTrue)
+            }
+            whereExprs0.add(vExpr)
+        }
+
+        val whereExprs = whereExprs0.toImmList()
         return makeWhere(ctx, whereExprs)
     }
 
@@ -586,7 +594,7 @@ class S_AtExprWhere(val exprs: List<S_Expr>) {
             return null
         }
 
-        val vExpr = CommonUtils.foldSimple(compiledExprs) { left, right ->
+        val vExpr = compiledExprs.foldSimple { left, right ->
             val opCtx = C_BinOpContext(ctx, right.pos)
             C_BinOp_And.compile(opCtx, left, right) ?: C_ExprUtils.errorVExpr(ctx, left.pos)
         }
@@ -626,7 +634,7 @@ class S_AtExpr(
             return super.compileFromItem(ctx, itemCtx, alias)
         }
 
-        RESTRICTIONS.access(ctx.msgCtx, startPos)
+        JOIN_RESTRICTIONS.access(ctx.msgCtx, startPos)
 
         val fromCtx = itemCtx.fromCtx
         val atExprId = fromCtx.atExprId
@@ -655,19 +663,22 @@ class S_AtExpr(
     ): C_AtDetails {
         val subValues = cFrom.getAllExprs().toMutableList()
 
-        val innerCtx = cFrom.innerExprCtx()
-        val vWhere = where.compile(innerCtx, atExprId, subValues)
+        val whereCtx = cFrom.innerExprCtx()
+        val vWhere = where.compile(whereCtx, atExprId, subValues)
 
-        val cWhat = what.compile(innerCtx, cFrom, subValues)
+        val whatCtx = if (!WHERE_VAR_STATES_SWITCH.isActive(ctx)) whereCtx else {
+            whereCtx.updateVarStates(vWhere?.varStatesDelta?.whenTrue ?: C_VarStatesDelta.EMPTY)
+        }
+        val cWhat = what.compile(whatCtx, cFrom, subValues)
         val cResult = compileAtResult(cWhat.allFields)
 
         val vLimit = compileLimitOffset(limit, "limit", ctx, subValues)
         val vOffset = compileLimitOffset(offset, "offset", ctx, subValues)
 
         val base = C_AtExprBase(cWhat, vWhere)
-        val facts = C_ExprVarFacts.forSubExpressions(subValues)
+        val varStatesDelta = C_ExprVarStatesDelta.forExpressions(subValues)
 
-        return C_AtDetails(startPos, cardinality, base, vLimit, vOffset, cResult, facts)
+        return C_AtDetails(startPos, cardinality, base, vLimit, vOffset, cResult, varStatesDelta)
     }
 
     private fun compileAtResult(whatFields: List<V_DbAtWhatField>): C_AtExprResult {
@@ -688,7 +699,7 @@ class S_AtExpr(
             rowDecoder = R_AtExprRowDecoder_Simple
             recordType = selFields[0].resultType
         } else if (selFields.isNotEmpty()) {
-            val tupleFields = selFields.map { R_TupleField(it.name, it.resultType) }
+            val tupleFields = selFields.mapIndexed { i, field -> R_TupleField(i, field.name, field.resultType) }
             val type = R_TupleType(tupleFields)
             rowDecoder = R_AtExprRowDecoder_Tuple(type)
             recordType = type
@@ -715,7 +726,7 @@ class S_AtExpr(
             return null
         }
 
-        val subCtx = ctx.update(atCtx = null)
+        val subCtx = ctx.copy(atCtx = null)
         val vExpr = sExpr.compile(subCtx).value()
         subValues.add(vExpr)
 
@@ -724,7 +735,9 @@ class S_AtExpr(
     }
 
     companion object {
-        private val RESTRICTIONS = C_FeatureRestrictions.make("0.13.10", "at_expr_join", "Join syntax is")
+        private val JOIN_RESTRICTIONS = C_FeatureRestrictions.make("0.13.10", "at_expr_join", "Join syntax is")
+
+        val WHERE_VAR_STATES_SWITCH = C_FeatureSwitch(RellVersions.SINCE_NOW, false)
 
         fun findWhereContextAttrsByType(ctx: C_ExprContext, type: R_Type): List<C_AtFromImplicitAttr> {
             return if (type == R_BooleanType) {

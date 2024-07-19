@@ -14,10 +14,7 @@ import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.*
 import net.postchain.rell.base.lib.type.*
-import net.postchain.rell.base.model.R_AtExprId
-import net.postchain.rell.base.model.R_FrameBlock
-import net.postchain.rell.base.model.R_Name
-import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_IterableAdapter
 import net.postchain.rell.base.runtime.Rt_Value
@@ -50,7 +47,7 @@ class C_AtFromItemContext(
 
 abstract class C_AtFromBase {
     abstract fun nameMsg(): C_CodeMsg
-    abstract fun compile(pos: S_Pos): V_Expr
+    abstract fun compile(ctx: C_ExprContext, pos: S_Pos): V_Expr
 }
 
 class C_AtFromMember(
@@ -65,9 +62,10 @@ class C_AtFromMember(
     fun isCallable() = member.isCallable()
 
     fun compile(ctx: C_ExprContext, cNameHand: C_NameHandle): C_Expr {
-        val baseExpr = base.compile(cNameHand.pos)
-        val link = C_MemberLink(baseExpr, selfType, cNameHand.pos, cNameHand.name, safe)
-        return member.compile(ctx, link, cNameHand)
+        val baseExpr = base.compile(ctx, cNameHand.pos)
+        val actualSafe = safe && baseExpr.type is R_NullableType
+        val link = C_MemberLink(baseExpr, selfType, cNameHand.pos, cNameHand.name, actualSafe)
+        return member.compile(ctx, link, cNameHand, null)
     }
 }
 
@@ -269,7 +267,7 @@ class C_AtDetails(
     val limit: V_Expr?,
     val offset: V_Expr?,
     val res: C_AtExprResult,
-    val exprFacts: C_ExprVarFacts,
+    val varStatesDelta: C_ExprVarStatesDelta,
 ) {
     fun compileJoin(msgCtx: C_MessageContext): V_Expr? {
         val where = base.compileJoin(msgCtx)
@@ -463,9 +461,9 @@ class C_AtFromImplicitAttr(
     }
 
     fun compile(ctx: C_ExprContext, pos: S_Pos): V_Expr {
-        val vBase = base.compile(pos)
+        val vBase = base.compile(ctx, pos)
         val link = C_MemberLink(vBase, selfType, pos, null, false)
-        val cExpr = attr.member.compile(ctx, link, C_IdeSymbolInfoHandle.NOP_HANDLE)
+        val cExpr = attr.member.compile(ctx, link, C_IdeSymbolInfoHandle.NOP_HANDLE, null)
         return cExpr.value()
     }
 }

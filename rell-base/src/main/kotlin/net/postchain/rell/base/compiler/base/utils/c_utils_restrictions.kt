@@ -10,12 +10,19 @@ import net.postchain.rell.base.compiler.base.core.C_GlobalContext
 import net.postchain.rell.base.compiler.base.core.C_MessageContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.model.R_LangVersion
-import net.postchain.rell.base.utils.RellVersions
 
-class C_FeatureSwitch(private val since: R_LangVersion) {
-    constructor(version: String): this(R_LangVersion.of(version))
+/** [default] is the status if compatibility version is not set, which is the case when the compiler (not source)
+ * version is not specified (allowed for source versions < 0.13.11) */
+class C_FeatureSwitch(
+    private val since: R_LangVersion,
+    private val default: Boolean = true,
+) {
+    constructor(version: String, default: Boolean = true): this(R_LangVersion.of(version), default)
 
-    fun isActive(version: R_LangVersion?): Boolean = (version ?: RellVersions.VERSION) >= since
+    fun isActive(version: R_LangVersion?): Boolean {
+        return if (version != null) version >= since else default
+    }
+
     fun isActive(compilerOptions: C_CompilerOptions) = isActive(compilerOptions.compatibility)
     fun isActive(globalCtx: C_GlobalContext) = isActive(globalCtx.compilerOptions)
     fun isActive(exprCtx: C_ExprContext) = isActive(exprCtx.globalCtx)

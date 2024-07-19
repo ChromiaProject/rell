@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.expr
@@ -69,7 +69,13 @@ class NullPropagationTest: BaseRellTest(false) {
     }
 
     private fun chkExprBinaryInt(op: String) {
-        chkExprBinary(op, "integer", "_nullable_int(123)", "456")
+        val init = "_nullable_int(123)"
+        chkExprBinary(op, "integer", init, "456")
+
+        //TODO make this work
+        val err = "ct_err:binop_operand_type:+:[integer?]:[integer]"
+        chkEx("{ val x = $init; val t = x!! $op (x+1); return _type_of(x); }", err)
+        chkEx("{ val x = $init; val t = (x+1) $op x!!; return _type_of(x); }", err)
     }
 
     private fun chkExprBinary(op: String, type: String, init: String, operand: String) {
@@ -282,6 +288,13 @@ class NullPropagationTest: BaseRellTest(false) {
         chkEx("{ val a = [1,2,3,4,5]; val x = _nullable(3); a[0] = a[x!!]; return _type_of(x); }", "integer")
         chkEx("{ val a = [1,2,3,4,5]; val x = _nullable(3); a[0] += a[x!!]; return _type_of(x); }", "integer")
         chkEx("{ val a = [1,2,3,4,5]; val x = _nullable(3); a[0] *= a[x!!]; return _type_of(x); }", "integer")
+
+        chkEx("{ val a = ['@']; val x = _nullable(0); a[0] = _type_of(x); return a; }", "[integer?]")
+        chkEx("{ val a = ['@']; val x = _nullable(0); a[0] += _type_of(x); return a; }", "[@integer?]")
+        chkEx("{ val a = ['@']; val x = _nullable(0); a[x!!] = _type_of(x); return a; }", "[integer]")
+        chkEx("{ val a = ['@']; val x = _nullable(0); a[x!!] += _type_of(x); return a; }", "[@integer]")
+        chkEx("{ val a = ['@']; val x = _nullable(0); a[x!!] = '' + (x + 1); return a; }", "[1]")
+        chkEx("{ val a = ['@']; val x = _nullable(0); a[x!!] += '' + (x + 1); return a; }", "[@1]")
     }
 
     @Test fun testStmtWhile() {
@@ -294,18 +307,33 @@ class NullPropagationTest: BaseRellTest(false) {
         chkEx("{ var x = _nullable(true); while (x!!){ x = _nullable(true); return _type_of(x); } return ''; }", "boolean?")
         chkEx("{ var x = _nullable(false); while (x!!){} return _type_of(x); }", "boolean")
         chkEx("{ var x = _nullable(true); while (x!!){ x = _nullable(false); } return _type_of(x); }", "boolean?")
-        chkEx("{ var x = _nullable(false); while (x!!){ x = true; } return _type_of(x); }", "boolean?")
+        chkEx("{ var x = _nullable(false); while (x!!){ x = true; } return _type_of(x); }", "boolean")
+        chkEx("{ val x = _nullable_int(null); while (x != null) {} return _type_of(x); }", "integer?")
     }
 
     @Test fun testStmtFor() {
         tst.strictToString = false
-        chkEx("{ var x = _nullable(123); return _type_of(x); }", "integer?")
-        chkEx("{ var x = _nullable(123); for (y in [456]) { return _type_of(x); } return ''; }", "integer?")
-        chkEx("{ var x = _nullable(123); for (y in [x]) { return _type_of(x); } return ''; }", "integer?")
-        chkEx("{ var x = _nullable(123); for (y in [x!!]) { return _type_of(x); } return ''; }", "integer")
-        chkEx("{ var x = _nullable(123); for (y in [x]) {} return _type_of(x); }", "integer?")
-        chkEx("{ var x = _nullable(123); for (y in [x!!]) {} return _type_of(x); }", "integer")
-        chkEx("{ var x = _nullable(123); for (y in [x!!]) { x = 456; } return _type_of(x); }", "integer?")
+        def("function i(x: integer?): integer? = x;")
+
+        chkEx("{ var x = i(123); return _type_of(x); }", "integer?")
+        chkEx("{ var x = i(123); for (y in [456]) { return _type_of(x); } return ''; }", "integer?")
+        chkEx("{ var x = i(123); for (y in [x]) { return _type_of(x); } return ''; }", "integer?")
+        chkEx("{ var x = i(123); for (y in [x!!]) { return _type_of(x); } return ''; }", "integer")
+        chkEx("{ var x = i(123); for (y in [x]) {} return _type_of(x); }", "integer?")
+        chkEx("{ var x = i(123); for (y in [x!!]) {} return _type_of(x); }", "integer")
+        chkEx("{ var x = i(123); for (y in [x!!]) { x = i(456); } return _type_of(x); }", "integer?")
+        chkEx("{ var x = i(123); for (y in [x!!]) { x = 456; } return _type_of(x); }", "integer")
+        chkEx("{ var x = i(123); for (y in [x!!]) { x = 456; } return _type_of(x); }", "integer")
+
+        val xyz = "var x = i(1); var y = i(2); var z = i(3);"
+        chkEx("{ $xyz x!!; y!!; for (j in [0]) {} return _type_of(x); }", "integer")
+        chkEx("{ $xyz x!!; y!!; for (j in [0]) {} return _type_of(y); }", "integer")
+        chkEx("{ $xyz x!!; y!!; for (j in [0]) {} return _type_of(z); }", "integer?")
+        chkEx("{ $xyz x!!; y!!; for (j in [0]) { x = y; } return _type_of(x); }", "integer")
+        chkEx("{ $xyz x!!; y!!; for (j in [0]) { x = y; y = x; } return _type_of(x); }", "integer?")
+        chkEx("{ $xyz x!!; y!!; for (j in [0]) { x = y; y = z; } return _type_of(x); }", "integer?")
+        chkEx("{ $xyz x!!; y!!; for (j in [0]) { y = x; x = y; } return _type_of(y); }", "integer?")
+        chkEx("{ $xyz x!!; y!!; for (j in [0]) { z = x; x = y; } return _type_of(z); }", "integer?")
     }
 
     @Test fun testStmtIf() {
@@ -335,8 +363,14 @@ class NullPropagationTest: BaseRellTest(false) {
         chkEx("{ var x = _nullable(123); when (x!!) { 123 -> x = _nullable(456); } return _type_of(x); }", "integer?")
         chkEx("{ var x = _nullable(123); when (x!!) { else -> x = _nullable(456); } return _type_of(x); }", "integer?")
 
-        //chkEx("{ var x = _nullable(123); when (x!!) { else -> x = null; } return x != null; }", "false")
-        //chkWarn("expr:smartnull:var:always:x")
+        chkEx("{ var x = _nullable(123); x!!; when (x) { 123 -> {} } return _type_of(x); }", "integer")
+        chkEx("{ var x = _nullable(123); x!!; when (x) { 123 -> x = 456; } return _type_of(x); }", "integer")
+        chkEx("{ var x = _nullable(123); x!!; when (x) { else -> x = 456; } return _type_of(x); }", "integer")
+        chkEx("{ var x = _nullable(123); x!!; when (x) { 123 -> x = _nullable(456); } return _type_of(x); }", "integer?")
+        chkEx("{ var x = _nullable(123); x!!; when (x) { else -> x = _nullable(456); } return _type_of(x); }", "integer?")
+
+        chkEx("{ var x = _nullable(123); when (x!!) { else -> x = null; } return x != null; }", "false")
+        chkWarn("expr:smartnull:var:always:[x]")
 
         chkEx("{ var x = _nullable(123); when { 1>0-> x = 456; } return _type_of(x); }", "integer?")
         chkEx("{ var x = _nullable(123); when { 1>0-> {} else-> x = 456; } return _type_of(x); }", "integer?")

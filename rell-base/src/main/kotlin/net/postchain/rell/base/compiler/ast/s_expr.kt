@@ -32,9 +32,13 @@ abstract class S_Expr(val startPos: S_Pos) {
         return compileOpt(ctx, hint) ?: C_ExprUtils.errorExpr(ctx, startPos)
     }
 
-    fun compileWithFacts(ctx: C_ExprContext, facts: C_VarFacts, hint: C_ExprHint = C_ExprHint.DEFAULT): C_Expr {
-        val factsCtx = ctx.updateFacts(facts)
-        return compile(factsCtx, hint)
+    fun compileWithVarStates(
+        ctx: C_ExprContext,
+        delta: C_VarStatesDelta,
+        hint: C_ExprHint = C_ExprHint.DEFAULT,
+    ): C_Expr {
+        val subCtx = ctx.updateVarStates(delta)
+        return compile(subCtx, hint)
     }
 
     fun compile(ctx: C_StmtContext, hint: C_ExprHint = C_ExprHint.DEFAULT) = compile(ctx.exprCtx, hint)
@@ -177,7 +181,7 @@ class S_SubscriptExpr(val opPos: S_Pos, val base: S_Expr, val expr: S_Expr): S_E
         }
     }
 
-    private fun compileTuple0(vExpr: V_Expr, baseType: R_TupleType): Int {
+    private fun compileTuple0(vExpr: V_Expr, baseType: R_TupleType): R_TupleField {
         val indexZ = C_ExprUtils.evaluate(expr.startPos) {
             val value = vExpr.constantValue(V_ConstantValueEvalContext())
             value?.asInteger()
@@ -194,7 +198,7 @@ class S_SubscriptExpr(val opPos: S_Pos, val base: S_Expr, val expr: S_Expr): S_E
             "Index out of bounds, must be from 0 to ${fields.size - 1}"
         }
 
-        return index.toInt()
+        return fields[index.toInt()]
     }
 
     private inner abstract class Subscript(val keyType: R_Type) {
@@ -207,21 +211,32 @@ class S_SubscriptExpr(val opPos: S_Pos, val base: S_Expr, val expr: S_Expr): S_E
         }
     }
 
-    private inner class Subscript_Tuple(private val baseType: R_TupleType): Subscript(R_IntegerType) {
-        override fun compile(ctx: C_ExprContext, base: V_Expr, key: V_Expr): V_Expr {
-            val index = compileTuple0(key, baseType)
-            val resType = baseType.fields[index].type
-            return V_TupleSubscriptExpr(ctx, startPos, base, V_TupleSubscriptKind_Simple, resType, index)
+    private abstract inner class Subscript_CommonTuple(
+        private val tupleType: R_TupleType,
+        private val kind: V_TupleSubscriptKind,
+    ): Subscript(R_IntegerType) {
+        protected abstract fun resultType(fieldType: R_Type): R_Type
+
+        final override fun compile(ctx: C_ExprContext, base: V_Expr, key: V_Expr): V_Expr {
+            val field = compileTuple0(key, tupleType)
+            val resType = resultType(field.type)
+
+            val varPathItem = C_VarPathItem.forTupleAttr(field)
+            val vExpr = V_TupleSubscriptExpr(ctx, startPos, base, kind, resType, field.index, varPathItem)
+            return V_SmartNullableExpr.wrap(ctx, vExpr, "attr" toCodeMsg "attribute")
         }
     }
 
-    private inner class Subscript_VirtualTuple(private val baseType: R_VirtualTupleType): Subscript(R_IntegerType) {
-        override fun compile(ctx: C_ExprContext, base: V_Expr, key: V_Expr): V_Expr {
-            val index = compileTuple0(key, baseType.innerType)
-            val fieldType = baseType.innerType.fields[index].type
-            val resType = S_VirtualType.virtualMemberType(fieldType)
-            return V_TupleSubscriptExpr(ctx, startPos, base, V_TupleSubscriptKind_Virtual, resType, index)
-        }
+    private inner class Subscript_Tuple(
+        baseType: R_TupleType,
+    ): Subscript_CommonTuple(baseType, V_TupleSubscriptKind_Simple) {
+        override fun resultType(fieldType: R_Type) = fieldType
+    }
+
+    private inner class Subscript_VirtualTuple(
+        baseType: R_VirtualTupleType,
+    ): Subscript_CommonTuple(baseType.innerType, V_TupleSubscriptKind_Virtual) {
+        override fun resultType(fieldType: R_Type) = S_VirtualType.virtualMemberType(fieldType)
     }
 }
 
@@ -385,7 +400,7 @@ class S_TupleExpr(
             val field = fields[i]
             val rType = vExpr.type
             val fieldName = compileFieldName(ctx.symCtx, tupleIdeId, field.nameHand, rType, field.comment)
-            R_TupleField(fieldName, rType)
+            R_TupleField(i, fieldName, rType)
         }
 
         val type = R_TupleType(rFields)
@@ -410,10 +425,15 @@ class S_TupleExpr(
     }
 }
 
-class S_IfExpr(pos: S_Pos, val cond: S_Expr, val trueExpr: S_Expr, val falseExpr: S_Expr): S_Expr(pos) {
+class S_IfExpr(
+    pos: S_Pos,
+    private val cond: S_Expr,
+    private val trueExpr: S_Expr,
+    private val falseExpr: S_Expr,
+): S_Expr(pos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val cCond = cond.compile(ctx).value()
-        val (cTrue, cFalse, resFacts) = compileTrueFalse(ctx, cCond, hint)
+        val (cTrue, cFalse, resState) = compileTrueFalse(ctx, cCond, hint)
 
         C_Types.match(R_BooleanType, cCond.type, cond.startPos) {
             "expr_if_cond_type" toCodeMsg "Wrong type of condition expression"
@@ -429,25 +449,27 @@ class S_IfExpr(pos: S_Pos, val cond: S_Expr, val trueExpr: S_Expr, val falseExpr
             "expr_if_restype" toCodeMsg "Incompatible types of if branches"
         }
 
-        val vExpr = V_IfExpr(ctx, startPos, resType, cCond, cTrue, cFalse, resFacts)
+        val vExpr = V_IfExpr(ctx, startPos, resType, cCond, cTrue, cFalse, resState)
         return C_ValueExpr(vExpr)
     }
 
-    private fun compileTrueFalse(ctx: C_ExprContext, cCond: V_Expr, hint: C_ExprHint): Triple<V_Expr, V_Expr, C_ExprVarFacts> {
-        val condFacts = cCond.varFacts
-        val trueFacts = condFacts.postFacts.and(condFacts.trueFacts)
-        val falseFacts = condFacts.postFacts.and(condFacts.falseFacts)
+    private fun compileTrueFalse(
+        ctx: C_ExprContext,
+        cCond: V_Expr,
+        hint: C_ExprHint,
+    ): Triple<V_Expr, V_Expr, C_ExprVarStatesDelta> {
+        val condVarStates = cCond.varStatesDelta
+        val trueVarStates = condVarStates.always.and(condVarStates.whenTrue)
+        val falseVarStates = condVarStates.always.and(condVarStates.whenFalse)
 
-        val cTrue0 = trueExpr.compileWithFacts(ctx, trueFacts, hint).value()
-        val cFalse0 = falseExpr.compileWithFacts(ctx, falseFacts, hint).value()
-        val (cTrue, cFalse) = C_BinOp_Common.promoteNumeric(ctx, cTrue0, cFalse0)
+        val vTrue0 = trueExpr.compileWithVarStates(ctx, trueVarStates, hint).value()
+        val vFalse0 = falseExpr.compileWithVarStates(ctx, falseVarStates, hint).value()
+        val (vTrue, vFalse) = C_BinOp_Common.promoteNumeric(ctx, vTrue0, vFalse0)
 
-        val truePostFacts = trueFacts.and(cTrue.varFacts.postFacts)
-        val falsePostFacts = falseFacts.and(cFalse.varFacts.postFacts)
-        val resPostFacts = condFacts.postFacts.and(C_VarFacts.forBranches(ctx, listOf(truePostFacts, falsePostFacts)))
-        val resFacts = C_ExprVarFacts.of(postFacts = resPostFacts)
+        val resTrueFalseVarStates = vTrue.varStatesDelta.always.or(vFalse.varStatesDelta.always)
+        val resVarStates = condVarStates.always.and(resTrueFalseVarStates)
 
-        return Triple(cTrue, cFalse, resFacts)
+        return Triple(vTrue, vFalse, C_ExprVarStatesDelta.make(always = resVarStates))
     }
 
     private fun checkUnitType(expr: S_Expr, vExpr: V_Expr) {

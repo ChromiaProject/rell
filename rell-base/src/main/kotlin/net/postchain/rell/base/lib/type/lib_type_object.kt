@@ -61,7 +61,7 @@ object Lib_Type_Object {
     private class C_TypeValueMember_ObjectAttr(
         private val rObject: R_ObjectDefinition,
         private val attr: R_Attribute,
-    ): C_TypeValueMember_Value(attr.ideName, attr.type, attr.restrictions) {
+    ): C_TypeValueMember_Value(attr.rName, attr.type, attr.restrictions) {
         override fun kindMsg() = "attribute"
         override fun nameMsg(): C_CodeMsg = attr.rName.str toCodeMsg attr.rName.str
 

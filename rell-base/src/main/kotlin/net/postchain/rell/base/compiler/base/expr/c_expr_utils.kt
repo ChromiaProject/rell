@@ -6,12 +6,10 @@ package net.postchain.rell.base.compiler.base.expr
 
 import net.postchain.rell.base.compiler.ast.C_BinOp_Eq
 import net.postchain.rell.base.compiler.ast.S_Pos
-import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
-import net.postchain.rell.base.compiler.base.core.C_MessageContext
-import net.postchain.rell.base.compiler.base.core.C_QualifiedName
-import net.postchain.rell.base.compiler.base.core.C_Types
+import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_Errors
+import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.*
 import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.model.R_CtErrorType
@@ -22,9 +20,9 @@ import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_ExprStatement
 import net.postchain.rell.base.runtime.Rt_CommonError
 import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.LazyString
+import net.postchain.rell.base.utils.foldSimple
 import net.postchain.rell.base.utils.immMapOf
 
 object C_ExprUtils {
@@ -58,12 +56,12 @@ object C_ExprUtils {
     }
 
     fun makeDbBinaryExprChain(type: R_Type, rOp: R_BinaryOp, dbOp: Db_BinaryOp, exprs: List<Db_Expr>): Db_Expr {
-        return CommonUtils.foldSimple(exprs) { left, right -> makeDbBinaryExpr(type, rOp, dbOp, left, right) }
+        return exprs.foldSimple { left, right -> makeDbBinaryExpr(type, rOp, dbOp, left, right) }
     }
 
     fun makeVBinaryExprEq(ctx: C_ExprContext, pos: S_Pos, left: V_Expr, right: V_Expr): V_Expr {
         val vOp = C_BinOp_Eq.createVOp(left.type)
-        return V_BinaryExpr(ctx, pos, vOp, left, right, C_ExprVarFacts.EMPTY)
+        return V_BinaryExpr(ctx, pos, vOp, left, right, C_ExprVarStatesDelta.EMPTY)
     }
 
     fun createSysCallRExpr(type: R_Type, fn: R_SysFunction, args: List<R_Expr>, nameMsg: LazyPosString): R_Expr {
@@ -79,29 +77,33 @@ object C_ExprUtils {
     }
 
     fun createSysGlobalPropExpr(
-            exprCtx: C_ExprContext,
-            type: R_Type,
-            fn: R_SysFunction,
-            qName: C_QualifiedName,
-            pure: Boolean
+        exprCtx: C_ExprContext,
+        type: R_Type,
+        fn: R_SysFunction,
+        qName: C_QualifiedName,
+        pure: Boolean,
+        varId: C_VarId? = null,
     ): V_Expr {
         val nameStr = qName.str()
-        return createSysGlobalPropExpr(exprCtx, type, fn, qName.pos, nameStr, pure)
+        return createSysGlobalPropExpr(exprCtx, type, fn, qName.pos, nameStr, pure, varId = varId)
     }
 
     fun createSysGlobalPropExpr(
-            exprCtx: C_ExprContext,
-            type: R_Type,
-            fn: R_SysFunction,
-            pos: S_Pos,
-            nameMsg: String,
-            pure: Boolean
+        exprCtx: C_ExprContext,
+        type: R_Type,
+        fn: R_SysFunction,
+        pos: S_Pos,
+        nameMsg: String,
+        pure: Boolean,
+        varId: C_VarId? = null,
     ): V_Expr {
         val nameMsgLazy = LazyString.of(nameMsg)
         val desc = V_SysFunctionTargetDescriptor(type, fn, null, nameMsgLazy, pure = pure, synth = true)
         val vCallTarget: V_FunctionCallTarget = V_FunctionCallTarget_SysGlobalFunction(desc)
         val vCall = V_CommonFunctionCall_Full(pos, pos, type, vCallTarget, V_FunctionCallArgs.EMPTY)
-        return V_FunctionCallExpr(exprCtx, pos, null, vCall, false)
+        val resVarId = if (pure) varId else null
+        val vExpr = V_FunctionCallExpr(exprCtx, pos, null, vCall, false, varId = resVarId)
+        return V_SmartNullableExpr.wrap(exprCtx, vExpr, "prop" toCodeMsg "property")
     }
 
     fun errorRExpr(type: R_Type = R_CtErrorType, msg: String = "Compilation error"): R_Expr {

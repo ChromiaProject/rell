@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib
@@ -149,5 +149,18 @@ class LibHiddenTest: BaseRellTest(false) {
         chk("_test.external_chain(0)", "ct_err:expr_call:bad_arg:[_test.external_chain]")
         chk("_test.external_chain(print)", "ct_err:expr_call:bad_arg:[_test.external_chain]")
         chk("_test.external_chain(gtx_operation)", "ct_err:expr_call:bad_arg:[_test.external_chain]")
+    }
+
+    @Test fun testFakeAssert() {
+        chkEx("{ val x = _nullable_int(123); return x + 1; }", "ct_err:binop_operand_type:+:[integer?]:[integer]")
+        chkEx("{ val x = _nullable_int(123); _test.fake_assert(x != null); return x + 1; }", "int[124]")
+        chkEx("{ val x = _nullable_int(null); _test.fake_assert(x != null); return x + 1; }", "rt_err:null_value")
+    }
+
+    @Test fun testGetNulled() {
+        chkEx("{ val x: integer? = 123; return _test.get_nulled(x); }", "text[no]")
+        chkEx("{ val x: integer? = null; return _test.get_nulled(x); }", "text[yes]")
+        chkEx("{ val x: integer? = _nullable_int(123); return _test.get_nulled(x); }", "text[maybe]")
+        chkEx("{ val x: integer? = _nullable_int(null); return _test.get_nulled(x); }", "text[maybe]")
     }
 }

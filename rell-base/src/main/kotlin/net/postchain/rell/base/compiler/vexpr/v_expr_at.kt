@@ -51,6 +51,10 @@ class V_AtEntityExpr(
         val rAtEntity = cAtEntity.toRAtEntityValidated(exprCtx, pos, isAmbiguous)
         return Db_EntityExpr(rAtEntity, actualType)
     }
+
+    override fun varKey(): C_VarStateKey {
+        return C_VarStateKey(cAtEntity.varId)
+    }
 }
 
 class V_DbAtFromItem(
@@ -184,10 +188,10 @@ class V_TopDbAtExpr(
     private val extras: V_AtExprExtras,
     private val cardinality: R_AtCardinality,
     private val internals: R_DbAtExprInternals,
-    private val resVarFacts: C_ExprVarFacts,
+    private val resVarStates: C_ExprVarStatesDelta,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo(resultType, base.innerExprs() + extras.innerExprs())
-    override fun varFacts0() = resVarFacts
+    override fun varStatesDelta0() = resVarStates
 
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("at_expr", null)
 
@@ -205,7 +209,7 @@ class V_NestedDbAtExpr(
     private val base: V_AtExprBase,
     private val extras: V_AtExprExtras,
     private val rBlock: R_FrameBlock,
-    private val resVarFacts: C_ExprVarFacts,
+    private val resVarStates: C_ExprVarStatesDelta,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(
         resultType,
@@ -213,7 +217,7 @@ class V_NestedDbAtExpr(
         dependsOnDbAtEntity = true,
     )
 
-    override fun varFacts0() = resVarFacts
+    override fun varStatesDelta0() = resVarStates
 
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("at_expr", null)
 
@@ -285,14 +289,14 @@ class V_ColAtExpr(
     private val extras: V_AtExprExtras,
     private val block: R_FrameBlock,
     private val param: R_ColAtParam,
-    private val resVarFacts: C_ExprVarFacts,
+    private val resVarStates: C_ExprVarStatesDelta,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0(): V_ExprInfo {
         val subExprs = from.innerExprs() + what.innerExprs() + listOfNotNull(where) + extras.innerExprs()
         return V_ExprInfo(result.resultType, subExprs)
     }
 
-    override fun varFacts0() = resVarFacts
+    override fun varStatesDelta0() = resVarStates
 
     override fun toRExpr0(): R_Expr {
         val rFrom = from.toRFrom()

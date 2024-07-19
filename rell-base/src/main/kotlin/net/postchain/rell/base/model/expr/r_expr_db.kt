@@ -15,7 +15,7 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.foldSimple
 import net.postchain.rell.base.utils.immListOf
 
 sealed class Db_BinaryOp(val code: String) {
@@ -478,7 +478,7 @@ class Db_InCollectionExpr(val left: Db_Expr, val right: R_Expr, val not: Boolean
 
 object RedDb_Utils {
     fun makeRedDbBinaryExprChain(op: Db_BinaryOp, exprs: List<RedDb_Expr>): RedDb_Expr {
-        return CommonUtils.foldSimple(exprs) { left, right -> RedDb_BinaryExpr(op, left, right) }
+        return exprs.foldSimple { left, right -> RedDb_BinaryExpr(op, left, right) }
     }
 
     fun makeRedDbEqExpr(left: RedDb_Expr, right: RedDb_Expr, equal: Boolean, nullable: Boolean): RedDb_Expr {

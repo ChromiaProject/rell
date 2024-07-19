@@ -5,7 +5,6 @@
 package net.postchain.rell.base.lmodel.dsl
 
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
-import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty_RtValue
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.type.Rt_IntValue
@@ -132,8 +131,8 @@ class LDocTest: BaseLTest() {
 
     @Test fun testNamespaceProperty() {
         val mod = makeDocModule {
-            property("prop", type = "integer") { value { Rt_UnitValue } }
-            property("pure_prop", type = "integer", pure = true) { value { Rt_UnitValue } }
+            property("prop", type = "integer") { value { _ -> Rt_UnitValue } }
+            property("pure_prop", type = "integer", pure = true) { value { _ -> Rt_UnitValue } }
         }
         chkDoc(mod, "prop", "PROPERTY|mod:prop", "prop: [integer]")
         chkDoc(mod, "pure_prop", "PROPERTY|mod:pure_prop", "<pure> pure_prop: [integer]")
@@ -141,7 +140,7 @@ class LDocTest: BaseLTest() {
 
     @Test fun testNamespacePropertySpecial() {
         val mod = makeDocModule {
-            property("prop", C_NamespaceProperty_RtValue(Rt_UnitValue))
+            property("prop", makeNsProp(Rt_UnitValue))
         }
         chkDoc(mod, "prop", "PROPERTY|mod:prop", "prop")
     }

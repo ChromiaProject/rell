@@ -401,11 +401,17 @@ class AtExprJoinTest: BaseRellTest() {
 
     @Test fun testOuterJoinNullComparison() {
         initData()
+
         val from = "(p: person, @outer h: home @* { .person == p })"
         val what = "( _=p.name, _=h?.city?.name )"
+
         chk("$from @* { h != null } $what", "[(Bob,London), (Alice,Paris), (Alice,Rome)]")
-        chk("$from @* { h == null } $what", "[(Trudy,null)]")
+        chkWarn("expr:smartnull:expr:never:[h.city]", "expr:smartnull:var:never:[h]")
+
         chk("$from @* { h?.city != null } $what", "[(Bob,London), (Alice,Paris), (Alice,Rome)]")
+        chkWarn("expr:smartnull:expr:never:[h.city]", "expr:smartnull:var:never:[h]")
+
+        chk("$from @* { h == null } $what", "[(Trudy,null)]")
         chk("$from @* { h?.city == null } $what", "[(Trudy,null)]")
     }
 

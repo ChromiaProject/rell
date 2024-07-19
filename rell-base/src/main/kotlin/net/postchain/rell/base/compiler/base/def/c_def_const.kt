@@ -10,6 +10,7 @@ import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprHint
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
+import net.postchain.rell.base.compiler.base.expr.C_VarStateKey
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_GraphUtils
@@ -18,6 +19,7 @@ import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.V_ConstantValueEvalContext
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.compiler.vexpr.V_GlobalConstantExpr
+import net.postchain.rell.base.compiler.vexpr.V_SmartNullableExpr
 import net.postchain.rell.base.model.R_CtErrorType
 import net.postchain.rell.base.model.R_GlobalConstantDefinition
 import net.postchain.rell.base.model.R_GlobalConstantId
@@ -33,16 +35,18 @@ import net.postchain.rell.base.utils.toImmMap
 class C_GlobalConstantDefinition(
     val rDef: R_GlobalConstantDefinition,
     private val typePos: S_Pos,
-    private val varUid: C_VarUid,
+    varId: C_VarId,
     private val headerGetter: C_LateGetter<C_GlobalConstantHeader>,
     private val exprGetter: C_LateGetter<V_Expr>,
 ) {
+    private val varKey: C_VarStateKey = C_VarStateKey(varId)
+
     fun compileRead(exprCtx: C_ExprContext, name: C_Name): V_Expr {
         val header = headerGetter.get()
         val lazyName = LazyPosString.of(name.pos, name.str)
         val type = header.deepHeader.compileReturnType(exprCtx, lazyName) ?: R_CtErrorType
-        val vExpr = V_GlobalConstantExpr(exprCtx, name.pos, name.rName, type, varUid, rDef.constId, header)
-        return C_LocalVarRef.smartNullable(exprCtx, vExpr, type, varUid, rDef.simpleName, SMART_KIND)
+        val vExpr = V_GlobalConstantExpr(exprCtx, name.pos, name.rName, type, varKey, rDef.constId, header)
+        return V_SmartNullableExpr.wrap(exprCtx, vExpr, SMART_KIND)
     }
 
     companion object {

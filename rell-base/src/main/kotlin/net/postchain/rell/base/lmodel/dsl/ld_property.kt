@@ -9,20 +9,67 @@ import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionCtx
 import net.postchain.rell.base.lmodel.L_NamespaceProperty
 import net.postchain.rell.base.lmodel.L_TypeProperty
+import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.runtime.Rt_CallContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 
+abstract class Ld_PropertyValue {
+    abstract fun finish(type: M_Type): Finish
+
+    class Finish(val fn: C_SysFunction, val pure: Boolean)
+
+    private class Ld_PropertyValue_NamespaceProp(
+        private val internalState: Ld_InternalFunctionBodyState,
+        private val block: (Rt_CallContext, R_Type) -> Rt_Value,
+    ): Ld_PropertyValue() {
+        override fun finish(type: M_Type): Finish {
+            val rType = L_TypeUtils.getRTypeNotNull(type)
+            val internalBody = internalState.bodyContextN { ctx, args ->
+                Rt_Utils.checkEquals(args.size, 0)
+                block(ctx, rType)
+            }
+            return Finish(internalBody.fn, internalBody.pure)
+        }
+    }
+
+    private class Ld_PropertyValue_TypeProp(
+        private val fnGetter: (R_Type) -> C_SysFunctionBody,
+    ): Ld_PropertyValue() {
+        override fun finish(type: M_Type): Finish {
+            val rType = L_TypeUtils.getRTypeNotNull(type)
+            val body = fnGetter(rType)
+            val fn = C_SysFunction.direct(body)
+            return Finish(fn, body.pure)
+        }
+    }
+
+    companion object {
+        internal fun namespaceProp(
+            internalState: Ld_InternalFunctionBodyState,
+            block: (Rt_CallContext, R_Type) -> Rt_Value,
+        ): Ld_PropertyValue {
+            return Ld_PropertyValue_NamespaceProp(internalState, block)
+        }
+
+        internal fun typeProp(fnGetter: (R_Type) -> C_SysFunctionBody): Ld_PropertyValue {
+            return Ld_PropertyValue_TypeProp(fnGetter)
+        }
+    }
+}
+
 class Ld_NamespaceProperty(
     val memberHeader: Ld_MemberHeader,
     private val type: Ld_Type,
-    private val fn: C_SysFunction,
-    private val pure: Boolean,
+    private val value: Ld_PropertyValue,
 ) {
     fun finish(ctx: Ld_TypeFinishContext): L_NamespaceProperty {
         val mType = type.finish(ctx)
-        return L_NamespaceProperty(mType, fn, pure)
+        val valueFin = value.finish(mType)
+        return L_NamespaceProperty(mType, valueFin.fn, valueFin.pure)
     }
 }
 
@@ -30,11 +77,12 @@ class Ld_TypeProperty(
     val simpleName: R_Name,
     val memberHeader: Ld_MemberHeader,
     private val type: Ld_Type,
-    private val body: C_SysFunctionBody,
+    private val value: Ld_PropertyValue,
 ) {
     fun finish(ctx: Ld_TypeFinishContext): L_TypeProperty {
         val mType = type.finish(ctx)
-        return L_TypeProperty(simpleName, mType, body)
+        val valueFin = value.finish(mType)
+        return L_TypeProperty(simpleName, mType, valueFin.fn, valueFin.pure)
     }
 }
 
@@ -58,15 +106,20 @@ class Ld_NamespacePropertyDslImpl(
     }
 
     override fun value(block: (Rt_CallContext) -> Rt_Value): Ld_BodyResult {
+        return value { ctx, _ ->
+            block(ctx)
+        }
+    }
+
+    override fun value(block: (Rt_CallContext, R_Type) -> Rt_Value): Ld_BodyResult {
         check(buildRes == null) { "Body already set" }
 
         val internalState = bodyBuilder.build()
-        val internalBody = internalState.bodyContextN { ctx, args ->
-            Rt_Utils.checkEquals(args.size, 0)
-            block(ctx)
+        val propValue: Ld_PropertyValue = Ld_PropertyValue.namespaceProp(internalState) { ctx, rType ->
+            block(ctx, rType)
         }
 
-        val res = Ld_BodyRes(internalBody)
+        val res = Ld_BodyRes(propValue)
         buildRes = res
         return res
     }
@@ -79,12 +132,11 @@ class Ld_NamespacePropertyDslImpl(
         return Ld_NamespaceProperty(
             memberHeader = memberBuilder.buildMemberHeader(),
             type = type,
-            fn = res.body.fn,
-            pure = res.body.pure,
+            value = res.value,
         )
     }
 
-    private class Ld_BodyRes(val body: Ld_InternalFunctionBody): Ld_BodyResult()
+    private class Ld_BodyRes(val value: Ld_PropertyValue): Ld_BodyResult()
 }
 
 class Ld_TypePropertyDslImpl(
@@ -97,8 +149,17 @@ class Ld_TypePropertyDslImpl(
     private var bodyRes: Ld_BodyRes? = null
 
     override fun value(getter: (Rt_Value) -> Rt_Value): Ld_BodyResult {
+        return value { self, _ ->
+            getter(self)
+        }
+    }
+
+    override fun value(getter: (Rt_Value, R_Type) -> Rt_Value): Ld_BodyResult {
         require(bodyRes == null)
-        val res = Ld_BodyRes(C_SysFunctionBody.simple(pure = pure, rCode = getter))
+        val value = Ld_PropertyValue.typeProp { rType ->
+            C_SysFunctionBody.simple(pure = pure) { self -> getter(self, rType) }
+        }
+        val res = Ld_BodyRes(value)
         bodyRes = res
         return res
     }
@@ -112,9 +173,9 @@ class Ld_TypePropertyDslImpl(
             simpleName,
             memberHeader = memberBuilder.buildMemberHeader(),
             type = type,
-            body = res.body,
+            value = res.value,
         )
     }
 
-    private class Ld_BodyRes(val body: C_SysFunctionBody): Ld_BodyResult()
+    private class Ld_BodyRes(val value: Ld_PropertyValue): Ld_BodyResult()
 }

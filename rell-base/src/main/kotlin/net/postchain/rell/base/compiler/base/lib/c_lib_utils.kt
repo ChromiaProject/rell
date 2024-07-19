@@ -5,7 +5,11 @@
 package net.postchain.rell.base.compiler.base.lib
 
 import net.postchain.rell.base.compiler.base.core.C_DefinitionName
+import net.postchain.rell.base.compiler.base.core.C_VarId
+import net.postchain.rell.base.lmodel.L_Constant
+import net.postchain.rell.base.lmodel.L_NamespaceProperty
 import net.postchain.rell.base.lmodel.L_TypeUtils
+import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_Type_Tuple
@@ -26,4 +30,15 @@ object C_LibUtils {
             mType.fieldTypes[0] to mType.fieldTypes[1]
         } else null
     }
+}
+
+data class C_LibConstantVarId(private val fullName: R_FullName, private val constant: L_Constant): C_VarId() {
+    override fun nameMsg() = fullName.str()
+}
+
+data class C_LibNamespacePropertyVarId(
+    private val fullName: R_FullName,
+    private val property: L_NamespaceProperty,
+): C_VarId() {
+    override fun nameMsg() = fullName.str()
 }

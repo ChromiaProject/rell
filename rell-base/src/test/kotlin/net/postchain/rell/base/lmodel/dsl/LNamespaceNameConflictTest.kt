@@ -21,7 +21,7 @@ class LNamespaceNameConflictTest: BaseLTest() {
         chkNameConflictErr(defs, block, "ns") { type("ns") }
         chkNameConflictErr(defs, block, "ns") { struct("ns") {} }
         chkNameConflictErr(defs, block, "ns") { constant("ns", "anything", Rt_UnitValue) }
-        chkNameConflictErr(defs, block, "ns") { property("ns", "anything") { value { Rt_UnitValue } } }
+        chkNameConflictErr(defs, block, "ns") { property("ns", "anything") { value { _ -> Rt_UnitValue } } }
         chkNameConflictErr(defs, block, "ns") { property("ns", makeNsProp()) }
         chkNameConflictErr(defs, block, "ns") { function("ns", "anything") { body { -> Rt_UnitValue } } }
         chkNameConflictErr(defs, block, "ns") { function("ns", makeNsFun()) }
@@ -35,7 +35,7 @@ class LNamespaceNameConflictTest: BaseLTest() {
         chkNameConflictErr(defs, block, "f") { type("f") }
         chkNameConflictErr(defs, block, "f") { struct("f") {} }
         chkNameConflictErr(defs, block, "f") { constant("f", "anything", Rt_UnitValue) }
-        chkNameConflictErr(defs, block, "f") { property("f", "anything") { value { Rt_UnitValue } } }
+        chkNameConflictErr(defs, block, "f") { property("f", "anything") { value { _ -> Rt_UnitValue } } }
         chkNameConflictErr(defs, block, "f") { property("f", makeNsProp()) }
         chkNameConflictOK(defs, block, "function f(a: anything): anything") {
             function("f", "anything") { param("a", "anything"); body { -> Rt_UnitValue } }
@@ -46,8 +46,8 @@ class LNamespaceNameConflictTest: BaseLTest() {
     @Test fun testOther() {
         chkNameConflictCommon("data", "type data") { type("data") }
         chkNameConflictCommon("data", "struct data") { struct("data") {} }
-        chkNameConflictCommon("c", "constant c: anything = unit") { constant("c", "anything", Rt_UnitValue) }
-        chkNameConflictCommon("p", "property p: anything") { property("p", "anything") { value { Rt_UnitValue } } }
+        chkNameConflictCommon("c", "constant c: integer = unit") { constant("c", "integer", Rt_UnitValue) }
+        chkNameConflictCommon("p", "property p: integer") { property("p", "integer") { value { _ -> Rt_UnitValue } } }
         chkNameConflictCommon("p", "property p") { property("p", makeNsProp()) }
         chkNameConflictCommon("f", "special function f()") { function("f", makeNsFun()) }
     }
@@ -58,7 +58,7 @@ class LNamespaceNameConflictTest: BaseLTest() {
         chkNameConflictErr(defs, block, name) { type(name) }
         chkNameConflictErr(defs, block, name) { struct(name) {} }
         chkNameConflictErr(defs, block, name) { constant(name, "anything", Rt_UnitValue) }
-        chkNameConflictErr(defs, block, name) { property(name, "anything") { value { Rt_UnitValue } } }
+        chkNameConflictErr(defs, block, name) { property(name, "anything") { value { _ -> Rt_UnitValue } } }
         chkNameConflictErr(defs, block, name) { property(name, makeNsProp()) }
         chkNameConflictErr(defs, block, name) { function(name, "anything") { body { -> Rt_UnitValue } } }
         chkNameConflictErr(defs, block, name) { function(name, makeNsFun()) }
@@ -75,7 +75,7 @@ class LNamespaceNameConflictTest: BaseLTest() {
         chkNameConflictErr(defs, block, "l") { type("l") }
         chkNameConflictErr(defs, block, "l") { struct("l") {} }
         chkNameConflictErr(defs, block, "l") { constant("l", "anything", Rt_UnitValue) }
-        chkNameConflictErr(defs, block, "l") { property("l", "anything") { value { Rt_UnitValue } } }
+        chkNameConflictErr(defs, block, "l") { property("l", "anything") { value { _ -> Rt_UnitValue } } }
         chkNameConflictErr(defs, block, "l") { property("l", makeNsProp()) }
         chkNameConflictErr(defs, block, "l") { function("l", makeNsFun()) }
 
@@ -132,9 +132,9 @@ class LNamespaceNameConflictTest: BaseLTest() {
             type("t")
             struct("s") {}
             constant("c", "integer", Rt_IntValue.ZERO)
-            property("p1", "anything") { value { Rt_UnitValue } }
+            property("p1", "integer") { value { _ -> Rt_UnitValue } }
             property("p2", makeNsProp())
-            function("f1", "anything") { body { -> Rt_UnitValue } }
+            function("f1", "integer") { body { -> Rt_UnitValue } }
             function("f2", makeNsFun())
         }
 
@@ -143,9 +143,9 @@ class LNamespaceNameConflictTest: BaseLTest() {
             "type t",
             "struct s",
             "constant c: integer = int[0]",
-            "property p1: anything",
+            "property p1: integer",
             "property p2",
-            "function f1(): anything",
+            "function f1(): integer",
             "special function f2()",
         )
 

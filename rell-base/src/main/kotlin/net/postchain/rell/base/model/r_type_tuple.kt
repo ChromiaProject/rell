@@ -24,6 +24,9 @@ class R_TupleType(fields: List<R_TupleField>): R_Type(calcName(fields)) {
 
     init {
         check(this.fields.isNotEmpty())
+        for (i in this.fields.indices) {
+            checkEquals(this.fields[i].index, i)
+        }
     }
 
     private val isError = fields.any { it.type.isError() }
@@ -76,10 +79,10 @@ class R_TupleType(fields: List<R_TupleField>): R_Type(calcName(fields)) {
             val type = commonTypeOpt(field.type, otherField.type)
             if (type == null) return null
 
-            when {
-                type == field.type -> field
-                type == otherField.type -> otherField
-                else -> R_TupleField(field.name, type)
+            when (type) {
+                field.type -> field
+                otherField.type -> otherField
+                else -> R_TupleField(i, field.name, type)
             }
         }
 
@@ -115,21 +118,25 @@ class R_TupleType(fields: List<R_TupleField>): R_Type(calcName(fields)) {
         }
 
         fun create(fields: List<R_Type>): R_TupleType {
-            val fieldsList = fields.map { R_TupleField(null, it) }
+            val fieldsList = fields.mapIndexed { i, type -> R_TupleField(i, null, type) }
             return R_TupleType(fieldsList)
         }
 
         fun createNamed(vararg fields: Pair<String?, R_Type>): R_TupleType {
-            val fieldsList = fields.map {
-                val name = it.first?.let { s -> R_IdeName(R_Name.of(s), C_IdeSymbolInfo.MEM_TUPLE_ATTR) }
-                R_TupleField(name, it.second)
+            val fieldsList = fields.mapIndexed { i, (name, type) ->
+                val rIdeName = name?.let { s -> R_IdeName(R_Name.of(s), C_IdeSymbolInfo.MEM_TUPLE_ATTR) }
+                R_TupleField(i, rIdeName, type)
             }
             return R_TupleType(fieldsList)
         }
     }
 }
 
-class R_TupleField(val name: R_IdeName?, val type: R_Type) {
+class R_TupleField(val index: Int, val name: R_IdeName?, val type: R_Type) {
+    init {
+        check(index >= 0)
+    }
+
     fun str(): String = strCode()
 
     fun strCode(): String {
@@ -145,8 +152,8 @@ class R_TupleField(val name: R_IdeName?, val type: R_Type) {
     override fun hashCode() = Objects.hash(name, type)
 
     fun toMetaGtv() = mapOf(
-            "name" to (name?.rName?.str?.toGtv() ?: GtvNull),
-            "type" to type.toMetaGtv()
+        "name" to (name?.rName?.str?.toGtv() ?: GtvNull),
+        "type" to type.toMetaGtv(),
     ).toGtv()
 }
 

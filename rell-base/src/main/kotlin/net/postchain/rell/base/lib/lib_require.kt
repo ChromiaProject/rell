@@ -18,7 +18,9 @@ object Lib_Require {
     val NAMESPACE = Ld_NamespaceDsl.make {
         function("require", "unit", pure = true, since = "0.6.0") {
             comment("Checks a boolean condition and throws an exception if false.")
-            param("value", "boolean", comment = "The boolean condition to be checked.")
+            param("value", "boolean", implies = L_ParamImplication.TRUE) {
+                comment("The boolean condition to be checked.")
+            }
             param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
                 comment("The error message to be thrown if the condition is false.")
             }
@@ -43,7 +45,9 @@ object Lib_Require {
             alias("requireNotEmpty", C_MessageType.ERROR, since = "0.6.0")
             generic("T")
             result(type = "list<T>")
-            param("value", type = "list<T>?", comment = "The list to be checked.")
+            param("value", type = "list<T>?", implies = L_ParamImplication.NOT_NULL) {
+                comment("The list to be checked.")
+            }
             param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
                 comment("The error message to be thrown if the list is empty.")
             }
@@ -55,7 +59,7 @@ object Lib_Require {
             alias("requireNotEmpty", C_MessageType.ERROR, since = "0.6.0")
             generic("T", subOf = "immutable")
             result(type = "set<T>")
-            param("value", type = "set<T>?", comment = "The set to be checked.")
+            param("value", type = "set<T>?", implies = L_ParamImplication.NOT_NULL, comment = "The set to be checked.")
             param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
                 comment("The error message to be thrown if the set is empty.")
             }
@@ -68,7 +72,9 @@ object Lib_Require {
             generic("K", subOf = "immutable")
             generic("V")
             result(type = "map<K,V>")
-            param("value", type = "map<K,V>?", comment = "The map to be checked.")
+            param("value", type = "map<K,V>?", implies = L_ParamImplication.NOT_NULL) {
+                comment("The map to be checked.")
+            }
             param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
                 comment("The error message to be thrown if the map is empty.")
             }

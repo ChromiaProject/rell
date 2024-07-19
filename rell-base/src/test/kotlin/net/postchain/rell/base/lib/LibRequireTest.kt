@@ -17,6 +17,9 @@ class LibRequireTest: BaseRellTest(false) {
 
         chkEx("{ require(true, ''+(1/0)); return 0; }", "int[0]")
         chkEx("{ require(false, ''+(1/0)); return 0; }", "rt_err:expr:/:div0:1")
+
+        chkEx("{ val x = _nullable_int(123); return _type_of(x); }", "text[integer?]")
+        chkEx("{ val x = _nullable_int(123); require(x != null); return _type_of(x); }", "text[integer]")
     }
 
     @Test fun testRequireNullable() {
@@ -77,8 +80,15 @@ class LibRequireTest: BaseRellTest(false) {
         chkEx("{ val x: set<integer>? = _nullable(set([123])); return require_not_empty(x); }", "set<integer>[int[123]]")
         chkEx("{ val x: set<integer>? = _nullable(set<integer>()); return require_not_empty(x); }", "req_err:null")
 
-        chkEx("{ val x: list<integer>? = _nullable([123]); return _type_of(x); }", "text[list<integer>?]")
-        chkEx("{ val x: list<integer>? = _nullable([123]); return _type_of(require_not_empty(x)); }", "text[list<integer>]")
+        var init = "val x: list<integer>? = _nullable([123]);"
+        chkEx("{ $init return _type_of(x); }", "text[list<integer>?]")
+        chkEx("{ $init return _type_of(require_not_empty(x)); }", "text[list<integer>]")
+        chkEx("{ $init require_not_empty(x); return _type_of(x); }", "text[list<integer>]")
+
+        init = "val x: set<integer>? = _nullable(set([123]));"
+        chkEx("{ $init return _type_of(x); }", "text[set<integer>?]")
+        chkEx("{ $init return _type_of(require_not_empty(x)); }", "text[set<integer>]")
+        chkEx("{ $init require_not_empty(x); return _type_of(x); }", "text[set<integer>]")
     }
 
     @Test fun testRequireNotEmptyMap() {
@@ -93,8 +103,10 @@ class LibRequireTest: BaseRellTest(false) {
         chkEx("{ val x: $type? = _nullable([123:'A']); return require_not_empty(x); }", "map<integer,text>[int[123]=text[A]]")
         chkEx("{ val x: $type? = _nullable(map<integer,text>()); return require_not_empty(x); }", "req_err:null")
 
-        chkEx("{ val x: $type? = _nullable([123:'A']); return _type_of(x); }", "text[map<integer,text>?]")
-        chkEx("{ val x: $type? = _nullable([123:'A']); return _type_of(require_not_empty(x)); }", "text[map<integer,text>]")
+        val init = "val x: $type? = _nullable([123:'A']);"
+        chkEx("{ $init return _type_of(x); }", "text[map<integer,text>?]")
+        chkEx("{ $init return _type_of(require_not_empty(x)); }", "text[map<integer,text>]")
+        chkEx("{ $init require_not_empty(x); return _type_of(x); }", "text[map<integer,text>]")
     }
 
     @Test fun testRequireNotEmptyWrongArgs() {

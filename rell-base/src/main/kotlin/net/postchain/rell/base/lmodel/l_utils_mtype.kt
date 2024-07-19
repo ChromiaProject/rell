@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lmodel
@@ -114,7 +114,7 @@ object L_TypeUtils {
             if (rFieldType == null) null else {
                 val mName = mType.fieldNames[i].value
                 val rName = if (mName == null) null else R_IdeName(R_Name.of(mName), C_IdeSymbolInfo.MEM_TUPLE_ATTR)
-                R_TupleField(rName, rFieldType)
+                R_TupleField(i, rName, rFieldType)
             }
         }
         return if (rFields == null) null else R_TupleType(rFields)

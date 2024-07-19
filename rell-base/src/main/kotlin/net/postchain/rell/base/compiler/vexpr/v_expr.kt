@@ -26,12 +26,12 @@ import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmSet
 
 class V_ExprInfo(
-        val type: R_Type,
-        subExprs: List<V_Expr>,
-        val hasDbModifications: Boolean = false,
-        val canBeDbExpr: Boolean = true,
-        val dependsOnDbAtEntity: Boolean = false,
-        dependsOnAtExprs: Set<R_AtExprId> = immSetOf()
+    val type: R_Type,
+    subExprs: List<V_Expr>,
+    val hasDbModifications: Boolean = false,
+    val canBeDbExpr: Boolean = true,
+    val dependsOnDbAtEntity: Boolean = false,
+    dependsOnAtExprs: Set<R_AtExprId> = immSetOf(),
 ) {
     val subExprs = subExprs.toImmList()
     val dependsOnAtExprs = dependsOnAtExprs.toImmSet()
@@ -111,7 +111,10 @@ class V_ExprWrapper(
     }
 }
 
-abstract class V_Expr(protected val exprCtx: C_ExprContext, val pos: S_Pos) {
+abstract class V_Expr(
+    protected val exprCtx: C_ExprContext,
+    val pos: S_Pos,
+) {
     protected val msgCtx = exprCtx.msgCtx
 
     val info: V_ExprInfo by lazy {
@@ -122,14 +125,14 @@ abstract class V_Expr(protected val exprCtx: C_ExprContext, val pos: S_Pos) {
         info.type
     }
 
-    val varFacts: C_ExprVarFacts by lazy {
-        varFacts0()
+    val varStatesDelta: C_ExprVarStatesDelta by lazy {
+        varStatesDelta0()
     }
 
     protected abstract fun exprInfo0(): V_ExprInfo
 
-    protected open fun varFacts0(): C_ExprVarFacts {
-        return C_ExprVarFacts.forSubExpressions(info.subExprs)
+    protected open fun varStatesDelta0(): C_ExprVarStatesDelta {
+        return C_ExprVarStatesDelta.forExpressions(info.subExprs)
     }
 
     protected abstract fun toRExpr0(): R_Expr
@@ -180,20 +183,32 @@ abstract class V_Expr(protected val exprCtx: C_ExprContext, val pos: S_Pos) {
     fun member(ctx: C_ExprContext, memberNameHand: C_NameHandle, safe: Boolean, exprHint: C_ExprHint): C_Expr {
         val memberName = memberNameHand.name
 
+        var self = this
+        var selfType = type
+        var baseNulled: C_VarNulled? = null
+
         if (safe) {
-            if (asNullable().unwrap().type !is R_NullableType && type.isNotError()) {
-                val typeStr = type.strCode()
-                ctx.msgCtx.error(memberName.pos, "expr_safemem_type:[$typeStr]", "Wrong type for operator '?.': $typeStr")
+            if (selfType.isNotError()) {
+                if (selfType !is R_NullableType) {
+                    baseNulled = C_VarNulled.NO
+                }
+                self = self.asNullable().unwrap()
+                selfType = self.type
+                if (selfType !is R_NullableType) {
+                    val typeStr = type.strCode()
+                    val msg = "Wrong type for operator '?.': $typeStr"
+                    ctx.msgCtx.error(memberName.pos, "expr_safemem_type:[$typeStr]:$memberName", msg)
+                }
             }
         } else {
-            if (type is R_NullableType) {
+            if (selfType is R_NullableType) {
                 val nameStr = memberName.str
                 val msg = "Cannot access member '$nameStr' of nullable type ${type.str()}"
                 ctx.msgCtx.error(memberName.pos, "expr_mem_null:${type.strCode()}:$nameStr", msg)
             }
         }
 
-        val selfType = C_Types.removeNullable(type)
+        selfType = C_Types.removeNullable(selfType)
 
         val members = ctx.typeMgr.getValueMembers(selfType, memberName.rName)
         val member = C_TypeMember.getMember(ctx.msgCtx, members, exprHint, memberName, selfType, "type_value_member")
@@ -203,7 +218,8 @@ abstract class V_Expr(protected val exprCtx: C_ExprContext, val pos: S_Pos) {
             return C_ExprUtils.errorExpr(ctx, memberName.pos)
         }
 
-        return member0(ctx, selfType, memberNameHand, member, safe && (type is R_NullableType), exprHint)
+        val actualSafe = safe && (self.type is R_NullableType)
+        return self.member0(ctx, selfType, memberNameHand, member, actualSafe, baseNulled, exprHint)
     }
 
     protected open fun member0(
@@ -212,11 +228,12 @@ abstract class V_Expr(protected val exprCtx: C_ExprContext, val pos: S_Pos) {
         memberNameHand: C_NameHandle,
         memberValue: C_TypeValueMember,
         safe: Boolean,
+        baseNulled: C_VarNulled?,
         exprHint: C_ExprHint,
     ): C_Expr {
         val memberName = memberNameHand.name
         val link = C_MemberLink(this, selfType, memberName.pos, memberName, safe)
-        return memberValue.compile(ctx, link, memberNameHand)
+        return memberValue.compile(ctx, link, memberNameHand, baseNulled)
     }
 
     open fun call(ctx: C_ExprContext, pos: S_Pos, args: List<S_CallArgument>, resTypeHint: C_TypeHint): V_Expr {
@@ -224,12 +241,12 @@ abstract class V_Expr(protected val exprCtx: C_ExprContext, val pos: S_Pos) {
     }
 
     protected fun callCommon(
-            ctx: C_ExprContext,
-            pos: S_Pos,
-            args: List<S_CallArgument>,
-            resTypeHint: C_TypeHint,
-            type: R_Type,
-            safe: Boolean
+        ctx: C_ExprContext,
+        pos: S_Pos,
+        args: List<S_CallArgument>,
+        resTypeHint: C_TypeHint,
+        type: R_Type,
+        safe: Boolean,
     ): V_Expr {
         if (type is R_FunctionType) {
             val callTargetBase = C_FunctionCallTargetBase.forFunctionType(ctx, pos, type)
@@ -283,7 +300,7 @@ abstract class V_Expr(protected val exprCtx: C_ExprContext, val pos: S_Pos) {
     open fun implicitTargetAttrName(): R_Name? = null
     open fun implicitAtWhereAttrName(): R_Name? = implicitTargetAttrName()
     open fun implicitAtWhatAttrName(): C_Name? = null
-    open fun varId(): C_VarUid? = null
+    open fun varKey(): C_VarStateKey? = null
     open fun globalConstantId(): R_GlobalConstantId? = null
     open fun globalConstantRestriction(): V_GlobalConstantRestriction? = null
     open fun asNullable(): V_ExprWrapper = asWrapper()

@@ -84,28 +84,28 @@ enum class S_AssignOpCode(val op: S_AssignOp) {
 }
 
 sealed class S_AssignOp {
-    abstract fun compile(ctx: C_BinOpContext, dstValue: V_Expr, srcValue: V_Expr): C_Statement
+    abstract fun compile(ctx: C_BinOpContext, dstExpr: V_Expr, srcExpr: V_Expr): C_Statement
 
     abstract fun compileDbUpdate(
         ctx: C_BinOpContext,
         entity: R_DbAtEntity,
         attr: R_Attribute,
-        srcValue: V_Expr,
+        srcExpr: V_Expr,
     ): R_UpdateStatementWhat?
 
-    protected open fun compileVarFacts(
-            dstValue: V_Expr,
-            dstExpr: C_Destination,
-            srcValue: V_Expr,
-            srcType: R_Type
-    ): C_VarFacts {
-        return dstValue.varFacts.postFacts.and(srcValue.varFacts.postFacts)
+    protected open fun compileVarStates(
+        dstExpr: V_Expr,
+        destination: C_Destination,
+        srcExpr: V_Expr,
+        srcType: R_Type,
+    ): C_VarStatesDelta {
+        return dstExpr.varStatesDelta.always.and(srcExpr.varStatesDelta.always)
     }
 }
 
 object S_AssignOp_Eq: S_AssignOp() {
-    override fun compile(ctx: C_BinOpContext, dstValue: V_Expr, srcExpr: V_Expr): C_Statement {
-        val destination = dstValue.destination()
+    override fun compile(ctx: C_BinOpContext, dstExpr: V_Expr, srcExpr: V_Expr): C_Statement {
+        val destination = dstExpr.destination()
         val dstType = destination.type()
         val srcType = srcExpr.type
 
@@ -117,34 +117,33 @@ object S_AssignOp_Eq: S_AssignOp() {
 
         val rStmt = destination.compileAssignStatement(ctx.exprCtx, rSrcAdapterExpr, null)
 
-        val varFacts = compileVarFacts(dstValue, destination, srcExpr, srcType)
-        return C_Statement(rStmt, false, varFacts)
+        val varStates = compileVarStates(dstExpr, destination, srcExpr, srcType)
+        return C_Statement(rStmt, false, varStates)
     }
 
-    override fun compileVarFacts(
-        dstValue: V_Expr,
-        dstExpr: C_Destination,
-        srcValue: V_Expr,
+    override fun compileVarStates(
+        dstExpr: V_Expr,
+        destination: C_Destination,
+        srcExpr: V_Expr,
         srcType: R_Type,
-    ): C_VarFacts {
-        var varFacts = super.compileVarFacts(dstValue, dstExpr, srcValue, srcType)
-        val cVarId = dstValue.varId()
-        if (cVarId != null) {
-            val inited = mapOf(cVarId to C_VarFact.YES)
-            val dstType = dstExpr.type()
-            val nulled = C_VarFacts.varTypeToNulled(cVarId, dstType, srcType)
-            varFacts = varFacts.put(C_VarFacts.of(inited = inited, nulled = nulled))
+    ): C_VarStatesDelta {
+        var res = super.compileVarStates(dstExpr, destination, srcExpr, srcType)
+        val varKey = dstExpr.varKey()
+        if (varKey != null) {
+            val dstType = destination.type()
+            val nulled = C_VarNulled.forVarType(dstType, srcType)
+            res = res.changed(varKey, nulled = nulled)
         }
-        return varFacts
+        return res
     }
 
     override fun compileDbUpdate(
         ctx: C_BinOpContext,
         entity: R_DbAtEntity,
         attr: R_Attribute,
-        srcValue: V_Expr,
+        srcExpr: V_Expr,
     ): R_UpdateStatementWhat {
-        val expr = srcValue.toDbExpr()
+        val expr = srcExpr.toDbExpr()
         val adapter = attr.type.getTypeAdapter(expr.type)
         val expr2 = if (adapter == null) {
             val name = attr.name
@@ -160,30 +159,30 @@ object S_AssignOp_Eq: S_AssignOp() {
 }
 
 class S_AssignOp_Op(val code: String, val op: C_BinOp_Common): S_AssignOp() {
-    override fun compile(ctx: C_BinOpContext, dstValue: V_Expr, srcValue: V_Expr): C_Statement {
-        val dstExpr = dstValue.destination()
-        val dstType = dstExpr.effectiveType()
+    override fun compile(ctx: C_BinOpContext, dstExpr: V_Expr, srcExpr: V_Expr): C_Statement {
+        val destination = dstExpr.destination()
+        val dstType = destination.effectiveType()
 
-        val srcValue2 = op.adaptRight(ctx.exprCtx, dstType, srcValue)
-        val rSrcExpr = srcValue2.toRExpr()
+        val srcExpr2 = op.adaptRight(ctx.exprCtx, dstType, srcExpr)
+        val rSrcExpr = srcExpr2.toRExpr()
         val srcType = rSrcExpr.type
 
         val binOp = compileBinOp(ctx, dstType, srcType)
         val cOp = C_AssignOp(ctx.opPos, code, binOp.rOp, binOp.dbOp)
-        val rStmt = dstExpr.compileAssignStatement(ctx.exprCtx, rSrcExpr, cOp)
+        val rStmt = destination.compileAssignStatement(ctx.exprCtx, rSrcExpr, cOp)
 
-        val varFacts = compileVarFacts(dstValue, dstExpr, srcValue, rSrcExpr.type)
-        return C_Statement(rStmt, false, varFacts)
+        val varStates = compileVarStates(dstExpr, destination, srcExpr, rSrcExpr.type)
+        return C_Statement(rStmt, false, varStates)
     }
 
     override fun compileDbUpdate(
         ctx: C_BinOpContext,
         entity: R_DbAtEntity,
         attr: R_Attribute,
-        srcValue: V_Expr,
+        srcExpr: V_Expr,
     ): R_UpdateStatementWhat {
-        val srcValue2 = op.adaptRight(ctx.exprCtx, attr.type, srcValue)
-        val dbSrcExpr = srcValue2.toDbExpr()
+        val srcExpr2 = op.adaptRight(ctx.exprCtx, attr.type, srcExpr)
+        val dbSrcExpr = srcExpr2.toDbExpr()
         val srcType = dbSrcExpr.type
 
         val binOp = compileBinOp(ctx, attr.type, srcType)
@@ -206,10 +205,10 @@ class S_AssignOp_Op(val code: String, val op: C_BinOp_Common): S_AssignOp() {
 sealed class C_BinOp {
     abstract fun compile(ctx: C_BinOpContext, left: V_Expr, right: V_Expr): V_Expr?
     open fun compileRight(ctx: C_ExprContext, sExpr: S_Expr): V_Expr = sExpr.compile(ctx).value()
-    open fun rightVarFacts(left: V_Expr): C_VarFacts = C_VarFacts.EMPTY
+    open fun rightVarStatesDelta(left: V_Expr): C_VarStatesDelta = C_VarStatesDelta.EMPTY
 
-    protected open fun compileExprVarFacts(left: V_Expr, right: V_Expr): C_ExprVarFacts {
-        return C_ExprVarFacts.forSubExpressions(left, right)
+    protected open fun compileExprVarStatesDelta(left: V_Expr, right: V_Expr): C_ExprVarStatesDelta {
+        return C_ExprVarStatesDelta.forExpressions(left, right)
     }
 
     companion object {
@@ -247,8 +246,8 @@ sealed class C_BinOp_Common: C_BinOp() {
             return null
         }
 
-        val exprVarFacts = compileExprVarFacts(left, right)
-        return V_BinaryExpr(ctx.exprCtx, left.pos, op, left, right, exprVarFacts)
+        val resVarStates = compileExprVarStatesDelta(left, right)
+        return V_BinaryExpr(ctx.exprCtx, left.pos, op, left, right, resVarStates)
     }
 
     protected open fun adaptOperands0(ctx: C_ExprContext, left: V_Expr, right: V_Expr): Pair<V_Expr, V_Expr> {
@@ -342,12 +341,9 @@ sealed class C_BinOp_EqNe(private val eq: Boolean, private val rOp: R_BinaryOp):
             return null
         }
 
-        val baseFacts = C_ExprVarFacts.forSubExpressions(expr)
-        val nullFacts = C_ExprVarFacts.forNullCheck(expr, eq)
-        val exprVarFacts = baseFacts.update(trueFacts = nullFacts.trueFacts, falseFacts = nullFacts.falseFacts)
-
         val op = V_UnaryOp_IsNull(!eq)
-        return V_UnaryExpr(ctx, expr.pos, op, expr, exprVarFacts)
+        val resVarStates = C_ExprVarStatesDelta.forNullCheck(expr, eq)
+        return V_UnaryExpr(ctx, expr.pos, op, expr, resVarStates)
     }
 
     final override fun compileOp(ctx: C_BinOpContext, left: R_Type, right: R_Type): V_BinaryOp? {
@@ -578,36 +574,28 @@ sealed class C_BinOp_Logic(val rOp: R_BinaryOp, val dbOp: Db_BinaryOp): C_BinOp_
 }
 
 object C_BinOp_And: C_BinOp_Logic(R_BinaryOp_And, Db_BinaryOp_And) {
-    override fun compileExprVarFacts(left: V_Expr, right: V_Expr): C_ExprVarFacts {
-        val leftFacts = left.varFacts
-        val rightFacts = right.varFacts
-
-        val trueFacts = leftFacts.trueFacts.and(rightFacts.trueFacts)
-                .and(leftFacts.postFacts).and(rightFacts.postFacts)
-        val falseFacts = leftFacts.postFacts
-
-        return C_ExprVarFacts.of(trueFacts = trueFacts, falseFacts = falseFacts, postFacts = falseFacts)
+    override fun compileExprVarStatesDelta(left: V_Expr, right: V_Expr): C_ExprVarStatesDelta {
+        val leftVarStates = left.varStatesDelta
+        val rightVarStates = right.varStatesDelta
+        val trueVarStates = rightVarStates.always.and(leftVarStates.whenTrue).and(rightVarStates.whenTrue)
+        return C_ExprVarStatesDelta.make(always = leftVarStates.always, whenTrue = trueVarStates)
     }
 
-    override fun rightVarFacts(left: V_Expr): C_VarFacts {
-        return left.varFacts.trueFacts
+    override fun rightVarStatesDelta(left: V_Expr): C_VarStatesDelta {
+        return left.varStatesDelta.whenTrue
     }
 }
 
 object C_BinOp_Or: C_BinOp_Logic(R_BinaryOp_Or, Db_BinaryOp_Or) {
-    override fun compileExprVarFacts(left: V_Expr, right: V_Expr): C_ExprVarFacts {
-        val leftFacts = left.varFacts
-        val rightFacts = right.varFacts
-
-        val trueFacts = leftFacts.postFacts
-        val falseFacts = leftFacts.falseFacts.and(rightFacts.falseFacts)
-                .and(leftFacts.postFacts).and(rightFacts.postFacts)
-
-        return C_ExprVarFacts.of(trueFacts = trueFacts, falseFacts = falseFacts)
+    override fun compileExprVarStatesDelta(left: V_Expr, right: V_Expr): C_ExprVarStatesDelta {
+        val leftVarStates = left.varStatesDelta
+        val rightVarStates = right.varStatesDelta
+        val falseVarStates = rightVarStates.always.and(leftVarStates.whenFalse).and(rightVarStates.whenFalse)
+        return C_ExprVarStatesDelta.make(always = leftVarStates.always, whenFalse = falseVarStates)
     }
 
-    override fun rightVarFacts(left: V_Expr): C_VarFacts {
-        return left.varFacts.falseFacts
+    override fun rightVarStatesDelta(left: V_Expr): C_VarStatesDelta {
+        return left.varStatesDelta.whenFalse
     }
 }
 
@@ -659,11 +647,11 @@ class C_BinOp_In(private val not: Boolean): C_BinOp() {
     private inner class BasicOpMatch(elemType: R_Type, val rOp: R_BinaryOp): OpMatch(elemType) {
         override fun compile(ctx: C_ExprContext, left: V_Expr, right: V_Expr): V_Expr {
             val vOp = V_BinaryOp.of(R_BooleanType, rOp, null)
-            val varFacts = compileExprVarFacts(left, right)
+            val resVarStates = compileExprVarStatesDelta(left, right)
 
-            var vExpr: V_Expr = V_BinaryExpr(ctx, left.pos, vOp, left, right, varFacts)
+            var vExpr: V_Expr = V_BinaryExpr(ctx, left.pos, vOp, left, right, resVarStates)
             if (not) {
-                vExpr = V_UnaryExpr(ctx, vExpr.pos, V_UnaryOp_Not(), vExpr, varFacts)
+                vExpr = V_UnaryExpr(ctx, vExpr.pos, V_UnaryOp_Not(), vExpr, resVarStates)
             }
             return vExpr
         }
@@ -760,8 +748,8 @@ class S_BinaryExpr(val head: S_Expr, val tail: List<S_BinaryExprTail>): S_Expr(h
             val leftValue = left.compile(ctx)
 
             val op = sOp.value.op
-            val rightFacts = op.rightVarFacts(leftValue)
-            val rightCtx = ctx.updateFacts(rightFacts)
+            val rightState = op.rightVarStatesDelta(leftValue)
+            val rightCtx = ctx.updateVarStates(rightState)
             val rightValue = right.compileRight(rightCtx, op)
 
             val opPos = sOp.pos

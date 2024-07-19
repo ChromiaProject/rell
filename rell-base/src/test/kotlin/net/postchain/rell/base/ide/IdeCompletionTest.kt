@@ -279,7 +279,7 @@ class IdeCompletionTest: BaseRellTest(false) {
             type("my_type")
             struct("my_struct") {}
             constant("C", 123L)
-            property("prop", "integer") { value { Rt_UnitValue } }
+            property("prop", "integer") { value { _ -> Rt_UnitValue } }
             property("spec_prop", BaseLTest.makeNsProp())
             function("f", "my_type") {
                 param("x", "my_struct")
@@ -321,7 +321,7 @@ class IdeCompletionTest: BaseRellTest(false) {
         fullCompStr = false
         libModule {
             constant("C", 123L)
-            property("my_prop", "integer") { value { Rt_UnitValue } }
+            property("my_prop", "integer") { value { _ -> Rt_UnitValue } }
         }
 
         chkComps("entity data {}", "C|CONSTANT|test:C", "data|ENTITY|:data", "my_prop|PROPERTY|test:my_prop")
@@ -333,7 +333,7 @@ class IdeCompletionTest: BaseRellTest(false) {
         libModule {
             type("my_type", since = "0.11.0")
             constant("C", 123L, since = "0.13.0")
-            property("my_prop", "integer", since = "0.12.0") { value { Rt_UnitValue } }
+            property("my_prop", "integer", since = "0.12.0") { value { _ -> Rt_UnitValue } }
         }
 
         chkComps("", "C|CONSTANT|test:C", "my_prop|PROPERTY|test:my_prop", "my_type|TYPE|test:my_type")

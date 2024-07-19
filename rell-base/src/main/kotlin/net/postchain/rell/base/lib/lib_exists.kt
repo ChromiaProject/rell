@@ -8,7 +8,7 @@ import net.postchain.rell.base.compiler.ast.S_Expr
 import net.postchain.rell.base.compiler.base.core.C_Types
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
-import net.postchain.rell.base.compiler.base.expr.C_ExprVarFacts
+import net.postchain.rell.base.compiler.base.expr.C_ExprVarStatesDelta
 import net.postchain.rell.base.compiler.base.lib.C_LibFuncCaseUtils
 import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
 import net.postchain.rell.base.compiler.vexpr.V_Expr
@@ -66,9 +66,8 @@ private class C_SysFn_Exists(private val not: Boolean): C_SpecialLibGlobalFuncti
             return C_ExprUtils.errorVExpr(ctx, name.pos, R_BooleanType)
         }
 
-        val preFacts = C_ExprVarFacts.forSubExpressions(listOf(vArg))
-        val varFacts = preFacts.and(C_ExprVarFacts.forNullCheck(vArg, not))
-        return V_ExistsExpr(ctx, name, vArg, condition, not, varFacts)
+        val resVarStates = C_ExprVarStatesDelta.forNullCheck(vArg, not)
+        return V_ExistsExpr(ctx, name, vArg, condition, not, resVarStates)
     }
 
     private fun compileCondition(arg: V_Expr): R_RequireCondition? {
@@ -87,15 +86,15 @@ private class C_SysFn_Exists(private val not: Boolean): C_SpecialLibGlobalFuncti
 }
 
 private class V_ExistsExpr(
-        exprCtx: C_ExprContext,
-        private val name: LazyPosString,
-        private val subExpr: V_Expr,
-        private val condition: R_RequireCondition,
-        private val not: Boolean,
-        private val resVarFacts: C_ExprVarFacts
+    exprCtx: C_ExprContext,
+    private val name: LazyPosString,
+    private val subExpr: V_Expr,
+    private val condition: R_RequireCondition,
+    private val not: Boolean,
+    private val resVarStates: C_ExprVarStatesDelta,
 ): V_Expr(exprCtx, name.pos) {
     override fun exprInfo0() = V_ExprInfo.simple(R_BooleanType, subExpr)
-    override fun varFacts0() = resVarFacts
+    override fun varStatesDelta0() = resVarStates
 
     override fun toRExpr0(): R_Expr {
         val fn = R_SysFn_Exists(condition, not)

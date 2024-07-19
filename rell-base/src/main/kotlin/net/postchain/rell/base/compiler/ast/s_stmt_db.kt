@@ -233,8 +233,8 @@ class S_UpdateStatement(pos: S_Pos, val target: S_UpdateTarget, val what: List<S
         val rFromBlock = cTarget.cFrom.compileUpdate()
         val rStmt = R_UpdateStatement(cTarget.rTarget, rFromBlock, rWhat)
 
-        val resFacts = C_ExprVarFacts.forSubExpressions(subValues)
-        return C_Statement(rStmt, false, resFacts.postFacts)
+        val resState = C_ExprVarStatesDelta.forExpressions(subValues)
+        return C_Statement(rStmt, false, resState.always)
     }
 
     private fun compileWhat(
@@ -292,7 +292,7 @@ class S_DeleteStatement(pos: S_Pos, val target: S_UpdateTarget): S_Statement(pos
         val rFromBlock = cTarget.cFrom.compileUpdate()
         val rStmt = R_DeleteStatement(cTarget.rTarget, rFromBlock)
 
-        val resFacts = C_ExprVarFacts.forSubExpressions(subValues)
-        return C_Statement(rStmt, false, resFacts.postFacts)
+        val resState = C_ExprVarStatesDelta.forExpressions(subValues)
+        return C_Statement(rStmt, false, resState.always)
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.atexpr
@@ -60,14 +60,14 @@ class AtExprCommonDbTest: AtExprCommonBaseTest() {
         initDataUserCompanyCity()
 
         chk("$fromUser @* {} ( _=.name, $fromCompany @ {} (.user_attr) limit 1 )",
-            "ct_err:at_expr:attr:belongs_to_outer:user_attr:user:user")
+            "ct_err:[at:entity:outer:user][at_expr:attr:belongs_to_outer:user_attr:user:user]")
 
         chk("(u:$fromUser) @* {} ( $fromCompany @ {} (u.name) limit 1 )", "ct_err:at:entity:outer:u")
 
         chkNestedAttributes("$fromUser @* {} ( _=.name, $fromCompany @ {} (.user_attr) limit 1 )",
-                "ct_err:at_expr:attr:belongs_to_outer:user_attr:user:user",
-                "ct_err:at_expr:attr:belongs_to_outer:user_attr:user:user",
-                "ct_err:at_expr:attr:belongs_to_outer:user_attr:user:user"
+                "ct_err:[at:entity:outer:user][at_expr:attr:belongs_to_outer:user_attr:user:user]",
+                "ct_err:[at:entity:outer:user][at_expr:attr:belongs_to_outer:user_attr:user:user]",
+                "ct_err:[at:entity:outer:user][at_expr:attr:belongs_to_outer:user_attr:user:user]"
         )
     }
 

@@ -700,7 +700,7 @@ class NullableTest: BaseRellTest(false) {
         chkEx("{ val x: integer? = _nullable(123); return x?.to_hex(); }", "text[7b]")
         chkEx("{ val x: integer? = _nullable(123); return _type_of(x?.to_hex()); }", "text[text?]")
         chkEx("{ val x: integer? = null; return x?.to_hex(); }", "null")
-        chkEx("{ val x: integer = 123; return x?.to_hex(); }", "ct_err:expr_safemem_type:[integer]")
+        chkEx("{ val x: integer = 123; return x?.to_hex(); }", "ct_err:expr_safemem_type:[integer]:to_hex")
 
         chkEx("{ val x: text? = _nullable('Hello'); return x.upper_case(); }", "ct_err:expr_mem_null:text?:upper_case")
         chkEx("{ val x: text? = _nullable('Hello'); return x?.upper_case(); }", "text[HELLO]")
@@ -718,7 +718,7 @@ class NullableTest: BaseRellTest(false) {
         chkEx("{ val x: (a:integer?)? = _nullable((a=null)); return x?.a?.to_hex(); }", "null")
         chkEx("{ val x: (a:integer?)? = null; return x?.a?.to_hex(); }", "null")
 
-        chkEx("{ null?.str(); return 0; }", "ct_err:[expr_safemem_type:[null]][unknown_member:[null]:str]")
+        chkEx("{ null?.str(); return 0; }", "ct_err:[expr_safemem_type:[null]:str][unknown_member:[null]:str]")
 
         chkEx("{ return integer.from_hex('7b'); }", "int[123]")
         chkEx("{ return integer?.from_hex('7b'); }", "ct_err:expr_novalue:type:[integer]")
@@ -743,12 +743,12 @@ class NullableTest: BaseRellTest(false) {
         chkEx("{ val u = user@?{.name=='Alice'}; return u?.company?.name; }", "text[Apple]")
         chkEx("{ val u = user@?{.name=='Trudy'}; return u?.company?.name; }", "null")
 
-        chkEx("{ val u = user@{.name=='Bob'}; return u?.company.name; }", "ct_err:expr_safemem_type:[user]")
-        chkEx("{ val u = user@{.name=='Bob'}; return u.company?.name; }", "ct_err:expr_safemem_type:[company]")
+        chkEx("{ val u = user@{.name=='Bob'}; return u?.company.name; }", "ct_err:expr_safemem_type:[user]:company")
+        chkEx("{ val u = user@{.name=='Bob'}; return u.company?.name; }", "ct_err:expr_safemem_type:[company]:name")
         chkEx("{ val u = user@{.name=='Bob'}; return u.company.name; }", "text[Microsoft]")
 
         chkEx("{ return user@{.company.name=='Microsoft'}(.name); }", "text[Bob]")
-        chkEx("{ return user@{.company?.name=='Microsoft'}(.name); }", "ct_err:expr_safemem_type:[company]")
+        chkEx("{ return user@{.company?.name=='Microsoft'}(.name); }", "ct_err:expr_safemem_type:[company]:name")
     }
 
     @Test fun testSpecOpSafeSideEffects() {

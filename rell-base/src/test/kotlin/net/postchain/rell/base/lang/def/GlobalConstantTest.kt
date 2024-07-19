@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.def
@@ -658,9 +658,9 @@ class GlobalConstantTest: BaseRellTest(false) {
 
         chkWarn()
         chk("if (X != null) X!! else 0", "int[123]")
-        chkWarn("expr:smartnull:const:never:X")
+        chkWarn("expr:smartnull:const:never:[X]")
         chk("if (Y == null) Y!! else 1", "rt_err:null_value")
-        chkWarn("expr:smartnull:const:always:Y")
+        chkWarn("expr:smartnull:const:always:[Y]")
     }
 
     @Test fun testAssignment() {

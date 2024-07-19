@@ -18,7 +18,7 @@ import net.postchain.rell.base.runtime.Rt_Value
 import org.junit.Test
 
 class CLibFunctionLazyParamTest: BaseCLibTest() {
-    @Test fun testLazyParamVarFacts() {
+    @Test fun testLazyParamVarStates() {
         tst.extraMod = makeModule {
             function("f", result = "unit") {
                 param("a", type = "integer", lazy = true)

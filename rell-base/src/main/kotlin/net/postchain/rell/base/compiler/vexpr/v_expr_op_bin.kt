@@ -8,7 +8,7 @@ import net.postchain.rell.base.compiler.ast.C_BinOp
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
-import net.postchain.rell.base.compiler.base.expr.C_ExprVarFacts
+import net.postchain.rell.base.compiler.base.expr.C_ExprVarStatesDelta
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_Value
@@ -25,10 +25,10 @@ class V_BinaryExpr(
     private val op: V_BinaryOp,
     private val left: V_Expr,
     private val right: V_Expr,
-    private val resVarFacts: C_ExprVarFacts,
+    private val resVarStates: C_ExprVarStatesDelta,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(op.resType, left, right, canBeDbExpr = op.dbOp != null)
-    override fun varFacts0() = resVarFacts
+    override fun varStatesDelta0() = resVarStates
 
     override fun constantValue(ctx: V_ConstantValueEvalContext): Rt_Value? {
         val leftValue = left.constantValue(ctx)
@@ -64,7 +64,7 @@ class V_ElvisExpr(
     private val right: V_Expr,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(resType, left, right)
-    override fun varFacts0() = C_ExprVarFacts.forSubExpressions(left) // left is always evaluated, right is not
+    override fun varStatesDelta0() = C_ExprVarStatesDelta.forExpressions(left) // left is always evaluated, right is not
 
     override fun toRExpr0(): R_Expr {
         val rLeft = left.toRExpr()

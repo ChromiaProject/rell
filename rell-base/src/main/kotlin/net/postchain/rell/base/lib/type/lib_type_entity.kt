@@ -79,7 +79,7 @@ object Lib_Type_Entity {
 
     private class C_TypeValueMember_EntityAttr(
         val attr: C_EntityAttrRef,
-    ): C_TypeValueMember_Value(attr.ideName, attr.type, attr.attribute()?.restrictions ?: C_MemberRestrictions.NULL) {
+    ): C_TypeValueMember_Value(attr.attrName, attr.type, attr.attribute()?.restrictions ?: C_MemberRestrictions.NULL) {
         override fun kindMsg() = "attribute"
         override fun nameMsg(): C_CodeMsg = attr.attrName.str toCodeMsg attr.attrName.str
 
@@ -128,6 +128,7 @@ object Lib_Type_Entity {
         }
 
         override fun canBeDbExpr(safe: Boolean) = true
+        override fun varPathItem() = attrRef.varPathItem()
 
         override fun dbExpr(base: Db_Expr): Db_Expr {
             val path = CommonUtils.chainToList(this) { it.prev }.map { it.attrRef }.asReversed().toImmList()
@@ -144,7 +145,6 @@ object Lib_Type_Entity {
             ctx: C_ExprContext,
             memberNameHand: C_NameHandle,
             member: C_TypeValueMember,
-            safe: Boolean,
             exprHint: C_ExprHint,
         ): V_TypeValueMember? {
             if (member !is C_TypeValueMember_EntityAttr) return null

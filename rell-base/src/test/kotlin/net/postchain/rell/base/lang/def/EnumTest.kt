@@ -196,7 +196,7 @@ class EnumTest: BaseRellTest() {
         def("function nop(x: foo?): foo? = x;")
 
         chkEx("{ val f: foo = foo.A; return f.name; }", "text[A]")
-        chkEx("{ val f: foo = foo.A; return f?.name; }", "ct_err:expr_safemem_type:[foo]")
+        chkEx("{ val f: foo = foo.A; return f?.name; }", "ct_err:expr_safemem_type:[foo]:name")
         chkEx("{ val f: foo = foo.A; return f!!.name; }", "ct_err:unop_operand_type:!!:[foo]")
         chkEx("{ val f: foo = foo.A; return f ?: foo.C; }", "ct_err:binop_operand_type:?::[foo]:[foo]")
 

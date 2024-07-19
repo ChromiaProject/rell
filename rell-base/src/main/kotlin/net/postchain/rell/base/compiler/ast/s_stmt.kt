@@ -14,7 +14,6 @@ import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.R_Name
-import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.stmt.*
 import net.postchain.rell.base.utils.MutableTypedKeyMap
@@ -36,10 +35,9 @@ abstract class S_Statement(val pos: S_Pos) {
         return cStmt.copy(rStmt = rStmt)
     }
 
-    fun compileWithFacts(ctx: C_StmtContext, facts: C_VarFacts): C_Statement {
-        val subCtx = ctx.updateFacts(facts)
-        val cStmt = compile(subCtx)
-        return if (facts.isEmpty()) cStmt else cStmt.copy(varFacts = facts.put(cStmt.varFacts))
+    fun compileWithVarStates(ctx: C_StmtContext, delta: C_VarStatesDelta): C_Statement {
+        val subCtx = ctx.updateVarStates(delta)
+        return compile(subCtx)
     }
 
     fun discoverVars(map: MutableTypedKeyMap): C_StatementVars {
@@ -125,16 +123,16 @@ class S_VarStatement(
         val typeHint = C_TypeHint.ofType(cDeclarator.getHintType())
         val exprHint = C_ExprHint(typeHint)
 
-        val cValue = expr?.compileSafe(ctx.exprCtx, exprHint)?.value()
-        val rExpr = cValue?.toRExpr()
+        val vExpr = expr?.compileSafe(ctx.exprCtx, exprHint)?.value()
+        val rExpr = vExpr?.toRExpr()
 
-        val varFacts = C_MutableVarFacts()
-        varFacts.putFacts(cValue?.varFacts?.postFacts ?: C_VarFacts.EMPTY)
+        val declaratorRes = cDeclarator.compile(rExpr?.type)
+        val rStmt = R_VarStatement(declaratorRes.rDeclarator, rExpr)
 
-        val rDeclarator = cDeclarator.compile(rExpr?.type, varFacts)
-        val rStmt = R_VarStatement(rDeclarator, rExpr)
+        val valueVarStates = vExpr?.varStatesDelta?.always ?: C_VarStatesDelta.EMPTY
+        val resVarStates = valueVarStates.and(declaratorRes.varStatesDelta)
 
-        return C_Statement(rStmt, false, varFacts.toVarFacts())
+        return C_Statement(rStmt, false, resVarStates)
     }
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
@@ -190,21 +188,30 @@ class S_ReturnStatement(pos: S_Pos, val expr: S_Expr?): S_Statement(pos) {
     override fun returnsValue() = expr != null
 }
 
-class S_BlockStatement(pos: S_Pos, val stmts: List<S_Statement>): S_Statement(pos) {
+class S_BlockStatement(
+    pos: S_Pos,
+    val stmts: List<S_Statement>,
+): S_Statement(pos) {
     override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val (subCtx, subBlkCtx) = ctx.subBlock(ctx.loop)
 
         val hasGuardBlock = stmts.any { it is S_GuardStatement }
+        val builder = C_BlockCodeBuilder(
+            subCtx,
+            repl = false,
+            hasGuardBlock = hasGuardBlock,
+            proto = C_BlockCodeProto.EMPTY,
+        )
 
-        val builder = C_BlockCodeBuilder(subCtx, repl = false, hasGuardBlock = hasGuardBlock, proto = C_BlockCodeProto.EMPTY)
         for (stmt in stmts) {
             builder.add(stmt)
         }
+
         val blockCode = builder.build()
 
         val frameBlock = subBlkCtx.buildBlock()
         val rStmt = R_BlockStatement(blockCode.rStmts, frameBlock.rBlock)
-        return C_Statement(rStmt, blockCode.returnAlways, blockCode.deltaVarFacts, blockCode.guardBlock)
+        return C_Statement(rStmt, blockCode.alwaysReturns, blockCode.varStatesDelta, blockCode.guardBlock)
     }
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
@@ -232,12 +239,9 @@ class S_BlockStatement(pos: S_Pos, val stmts: List<S_Statement>): S_Statement(po
 class S_ExprStatement(val expr: S_Expr): S_Statement(expr.startPos) {
     override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val value = expr.compile(ctx).value()
-
         val rExpr = value.toRExpr()
         val rStmt = if (repl) R_ReplExprStatement(rExpr) else R_ExprStatement(rExpr)
-
-        val varFacts = value.varFacts.postFacts
-        return C_Statement(rStmt, false, varFacts)
+        return C_Statement(rStmt, false, value.varStatesDelta.always)
     }
 }
 
@@ -248,18 +252,19 @@ class S_AssignStatement(
 ): S_Statement(dstExpr.startPos) {
     override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val cDstExpr = dstExpr.compileOpt(ctx)
+        val vDstExpr = cDstExpr?.value()
 
-        val exprHint = C_ExprHint.ofType(cDstExpr?.value()?.type)
-        val cSrcExpr = srcExpr.compileOpt(ctx, exprHint)
+        val srcCtx = ctx.updateVarStates(vDstExpr?.varStatesDelta?.always ?: C_VarStatesDelta.EMPTY)
+        val exprHint = C_ExprHint.ofType(vDstExpr?.type)
+        val cSrcExpr = srcExpr.compileOpt(srcCtx, exprHint)
+        val vSrcExpr = cSrcExpr?.value()
 
-        if (cDstExpr == null || cSrcExpr == null) {
+        if (vDstExpr == null || vSrcExpr == null) {
             return C_Statement.EMPTY
         }
 
         val opCtx = C_BinOpContext(ctx.exprCtx, op.pos)
-        val cDstValue = cDstExpr.value()
-        val cSrcValue = cSrcExpr.value()
-        return op.value.op.compile(opCtx, cDstValue, cSrcValue)
+        return op.value.op.compile(opCtx, vDstExpr, vSrcExpr)
     }
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
@@ -271,10 +276,15 @@ class S_AssignStatement(
     }
 }
 
-class S_IfStatement(pos: S_Pos, val expr: S_Expr, val trueStmt: S_Statement, val falseStmt: S_Statement?): S_Statement(pos) {
+class S_IfStatement(
+    pos: S_Pos,
+    private val expr: S_Expr,
+    private val trueStmt: S_Statement,
+    private val falseStmt: S_Statement?,
+): S_Statement(pos) {
     override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val rExpr: R_Expr
-        val exprVarFacts: C_ExprVarFacts
+        val exprVarStates: C_ExprVarStatesDelta
 
         val cExpr = expr.compileOpt(ctx)
         if (cExpr != null) {
@@ -283,30 +293,37 @@ class S_IfStatement(pos: S_Pos, val expr: S_Expr, val trueStmt: S_Statement, val
             C_Types.matchOpt(ctx.msgCtx, R_BooleanType, rExpr.type, expr.startPos) {
                 "stmt_if_expr_type" toCodeMsg "Wrong type of if-expression"
             }
-            exprVarFacts = value.varFacts
+            exprVarStates = value.varStatesDelta
         } else {
             rExpr = C_ExprUtils.errorRExpr(R_BooleanType)
-            exprVarFacts = C_ExprVarFacts.EMPTY
+            exprVarStates = C_ExprVarStatesDelta.EMPTY
         }
 
-        val subCtx = ctx.update(topLevel = false)
+        val subCtx = ctx.copy(topLevel = false)
 
-        val trueFacts = exprVarFacts.postFacts.and(exprVarFacts.trueFacts)
-        val cTrueStmt = trueStmt.compileWithFacts(subCtx, trueFacts)
-
-        val falseFacts = exprVarFacts.postFacts.and(exprVarFacts.falseFacts)
-        val cFalseStmt = if (falseStmt != null) {
-            falseStmt.compileWithFacts(subCtx, falseFacts)
-        } else {
-            C_Statement.empty(falseFacts)
-        }
-
-        val returns = cTrueStmt.returnAlways && cFalseStmt.returnAlways
-
+        val cTrueStmt = compileBranchStmt(subCtx, trueStmt, exprVarStates.always, exprVarStates.whenTrue)
+        val cFalseStmt = compileBranchStmt(subCtx, falseStmt, exprVarStates.always, exprVarStates.whenFalse)
         val rStmt = R_IfStatement(rExpr, cTrueStmt.rStmt, cFalseStmt.rStmt)
 
-        val varFacts = C_Statement.calcBranchedVarFacts(subCtx, listOf(cTrueStmt, cFalseStmt))
-        return C_Statement(rStmt, returns, varFacts)
+        val returns = cTrueStmt.alwaysReturns && cFalseStmt.alwaysReturns
+
+        val branchesVarStates = C_Statement.varStatesDeltaForBranches(listOf(cTrueStmt, cFalseStmt))
+        val resVarStates = exprVarStates.always.and(branchesVarStates)
+
+        return C_Statement(rStmt, returns, resVarStates)
+    }
+
+    private fun compileBranchStmt(
+        ctx: C_StmtContext,
+        stmt: S_Statement?,
+        always: C_VarStatesDelta,
+        whenMatch: C_VarStatesDelta,
+    ): C_Statement {
+        val cStmt = if (stmt == null) C_Statement.EMPTY else {
+            val varStates = always.and(whenMatch)
+            stmt.compileWithVarStates(ctx, varStates)
+        }
+        return cStmt.copy(varStatesDelta = whenMatch.and(cStmt.varStatesDelta))
     }
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
@@ -333,19 +350,23 @@ class S_WhenStatement(pos: S_Pos, val expr: S_Expr?, val cases: List<S_WhenState
             return C_Statement.ERROR
         }
 
-        val bodyCtx = ctx.update(exprCtx = chooser.bodyExprCtx)
+        val bodyCtx = ctx.copy(exprCtx = chooser.bodyExprCtx)
 
-        val cStmts = cases.mapIndexed { i, case -> case.stmt.compileWithFacts(bodyCtx, chooser.caseFacts[i]) }
-        val returns = chooser.full && cStmts.all { it.returnAlways }
+        val cStmts = cases.mapIndexed { i, case ->
+            val delta = chooser.caseVarStatesDeltas[i]
+            val cStmt = case.stmt.compileWithVarStates(bodyCtx, delta)
+            cStmt.copy(varStatesDelta = delta.and(cStmt.varStatesDelta))
+        }
+        val returns = chooser.full && cStmts.all { it.alwaysReturns }
 
         val rStmts = cStmts.map { it.rStmt }
         val rStmt = R_WhenStatement(chooser.rChooser, rStmts)
 
-        val fullStmts = if (chooser.full) cStmts else cStmts + listOf(C_Statement.empty(chooser.elseFacts))
-        val stmtFacts = C_Statement.calcBranchedVarFacts(bodyCtx, fullStmts)
-        val varFacts = chooser.keyPostFacts.and(stmtFacts)
+        val fullStmts = if (chooser.full) cStmts else cStmts + listOf(C_Statement.empty(chooser.elseVarStatesDelta))
+        val stmtState = C_Statement.varStatesDeltaForBranches(fullStmts)
+        val resState = chooser.keyVarStatesDelta.and(stmtState)
 
-        return C_Statement(rStmt, returns, varFacts)
+        return C_Statement(rStmt, returns, resState)
     }
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
@@ -367,10 +388,9 @@ class S_WhenStatement(pos: S_Pos, val expr: S_Expr?, val cases: List<S_WhenState
 }
 
 class C_LoopStatement(
-        val condCtx: C_StmtContext,
-        val condExpr: R_Expr,
-        val condFacts: C_ExprVarFacts,
-        val postFacts: C_VarFacts
+    val condCtx: C_StmtContext,
+    val condExpr: R_Expr,
+    val condVarStatesDelta: C_ExprVarStatesDelta,
 )
 
 class S_WhileStatement(pos: S_Pos, val expr: S_Expr, val stmt: S_Statement): S_Statement(pos) {
@@ -390,18 +410,16 @@ class S_WhileStatement(pos: S_Pos, val expr: S_Expr, val stmt: S_Statement): S_S
         val loopUid = ctx.fnCtx.nextLoopUid()
         val (loopCtx, loopBlkCtx) = loop.condCtx.subBlock(loopUid)
 
-        val condFacts = loop.condFacts
-        val bodyFacts = condFacts.postFacts.and(condFacts.trueFacts)
-        val bodyCtx = loopCtx.updateFacts(bodyFacts)
-
-        val cBodyStmt = stmt.compile(bodyCtx)
+        val condState = loop.condVarStatesDelta
+        val bodyState = condState.always.and(condState.whenTrue)
+        val cBodyStmt = stmt.compileWithVarStates(loopCtx, bodyState)
         val rBodyStmt = cBodyStmt.rStmt
 
         val cBlock = loopBlkCtx.buildBlock()
         val rStmt = R_WhileStatement(rExpr, rBodyStmt, cBlock.rBlock)
 
-        val varFacts = loop.postFacts.and(calcVarFacts(ctx, cBodyStmt))
-        return C_Statement(rStmt, false, varFacts)
+        val varStates = calcResVarStatesDelta(condState, cBodyStmt)
+        return C_Statement(rStmt, false, varStates)
     }
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
@@ -414,19 +432,16 @@ class S_WhileStatement(pos: S_Pos, val expr: S_Expr, val stmt: S_Statement): S_S
     companion object {
         fun compileLoop(ctx: C_StmtContext, stmt: S_Statement, expr: S_Expr): C_LoopStatement? {
             val modifiedVars = getModifiedVars(stmt, ctx)
-            val condCtx = ctx.updateFacts(calcUpdatedVarFacts(modifiedVars, ctx.exprCtx.factsCtx))
+            val condCtx = ctx.updateVarStates(calcUpdatedVarStatesDelta(modifiedVars))
 
             val condExpr = expr.compileOpt(condCtx)
             if (condExpr == null) {
                 return null
             }
 
-            val condValue = condExpr.value()
-            val condFacts = condValue.varFacts
-            val postFacts = calcPostFacts(condFacts.postFacts, modifiedVars)
-
-            val rExpr = condValue.toRExpr()
-            return C_LoopStatement(condCtx, rExpr, condFacts, postFacts)
+            val vCondExpr = condExpr.value()
+            val rExpr = vCondExpr.toRExpr()
+            return C_LoopStatement(condCtx, rExpr, vCondExpr.varStatesDelta)
         }
 
         private fun getModifiedVars(stmt: S_Statement, ctx: C_StmtContext): List<C_LocalVar> {
@@ -443,53 +458,27 @@ class S_WhileStatement(pos: S_Pos, val expr: S_Expr, val stmt: S_Statement): S_S
             return res
         }
 
-        private fun calcUpdatedVarFacts(modifiedVars: List<C_LocalVar>, factsCtx: C_VarFactsContext): C_VarFacts {
-            val inited = mutableMapOf<C_VarUid, C_VarFact>()
-            val nulled = mutableMapOf<C_VarUid, C_VarFact>()
-
-            for (localVar in modifiedVars) {
-                val id = localVar.uid
-
-                val initedFact = factsCtx.inited(id)
-                if (initedFact == C_VarFact.NO) {
-                    inited[id] = C_VarFact.MAYBE
-                }
-
-                if (localVar.type is R_NullableType) {
-                    val nulledFact = factsCtx.nulled(id)
-                    if (nulledFact != C_VarFact.MAYBE) {
-                        nulled[id] = C_VarFact.MAYBE
-                    }
-                }
+        private fun calcUpdatedVarStatesDelta(modifiedVars: List<C_LocalVar>): C_VarStatesDelta {
+            var res = C_VarStatesDelta.EMPTY
+            for (modVar in modifiedVars) {
+                res = res.changed(modVar.varKey, C_VarChanged.MAYBE)
             }
-
-            return C_VarFacts.of(inited = inited, nulled = nulled)
+            return res
         }
 
-        private fun calcPostFacts(facts: C_VarFacts, modifiedVars: List<C_LocalVar>): C_VarFacts {
-            if (facts.isEmpty() || modifiedVars.isEmpty()) {
-                return facts
-            }
-            val nulled = facts.nulled.toMutableMap()
-            for (localVar in modifiedVars) {
-                nulled.remove(localVar.uid)
-            }
-            return C_VarFacts.of(nulled = nulled)
-        }
-
-        fun calcVarFacts(ctx: C_StmtContext, cBodyStmt: C_Statement): C_VarFacts {
+        fun calcResVarStatesDelta(condVarStates: C_ExprVarStatesDelta, cBodyStmt: C_Statement): C_VarStatesDelta {
             val stmts = listOf(cBodyStmt, C_Statement.EMPTY)
-            val varFacts = C_Statement.calcBranchedVarFacts(ctx, stmts)
-            return varFacts
+            val bodyStates = C_Statement.varStatesDeltaForBranches(stmts)
+            return condVarStates.always.and(bodyStates)
         }
     }
 }
 
 class S_ForStatement(
     pos: S_Pos,
-    val declarator: S_VarDeclarator,
-    val expr: S_Expr,
-    val stmt: S_Statement,
+    private val declarator: S_VarDeclarator,
+    private val expr: S_Expr,
+    private val stmt: S_Statement,
 ): S_Statement(pos) {
     override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val loop = S_WhileStatement.compileLoop(ctx, this, expr)
@@ -512,20 +501,20 @@ class S_ForStatement(
         val loopUid = ctx.fnCtx.nextLoopUid()
         val (loopCtx, loopBlkCtx) = loop.condCtx.subBlock(loopUid)
 
-        val mutVarFacts = C_MutableVarFacts()
         val cDeclarator = declarator.compile(loopCtx, mutable = false, hasExpr = true, comment = null)
-        val rDeclarator = cDeclarator.compile(cIterableAdapter.itemType, mutVarFacts)
-        val iterFactsCtx = loopCtx.updateFacts(mutVarFacts.toVarFacts())
+        val cDeclaratorRes = cDeclarator.compile(cIterableAdapter.itemType)
+        val rDeclarator = cDeclaratorRes.rDeclarator
+        val iterFactsCtx = loopCtx.updateVarStates(cDeclaratorRes.varStatesDelta)
 
-        val bodyCtx = iterFactsCtx.updateFacts(loop.condFacts.postFacts)
+        val bodyCtx = iterFactsCtx.updateVarStates(loop.condVarStatesDelta.always)
         val cBodyStmt = stmt.compile(bodyCtx)
         val rBodyStmt = cBodyStmt.rStmt
 
         val cBlock = loopBlkCtx.buildBlock()
         val rStmt = R_ForStatement(rDeclarator, rExpr, cIterableAdapter.rAdapter, rBodyStmt, cBlock.rBlock)
 
-        val varFacts = loop.postFacts.and(S_WhileStatement.calcVarFacts(ctx, cBodyStmt))
-        return C_Statement(rStmt, false, varFacts)
+        val resVarStates = S_WhileStatement.calcResVarStatesDelta(loop.condVarStatesDelta, cBodyStmt)
+        return C_Statement(rStmt, false, resVarStates)
     }
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {

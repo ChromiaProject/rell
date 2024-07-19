@@ -53,55 +53,92 @@ class NullAnalysisTest: BaseRellTest(false) {
     }
 
     @Test fun testAssignmentIf() {
-        tst.strictToString = false
-        chkEx("{ var x = _nullable_int(null); if (abs(5)>0) x = 123; else x = 456; return _type_of(x); }", "integer")
-        chkEx("{ var x = _nullable_int(123); if (abs(5)>0) x = 456; else x = null; return _type_of(x); }", "integer?")
-        chkEx("{ var x = _nullable_int(123); if (abs(5)>0) x = null; else x = null; return _type_of(x); }", "integer?")
-        chkEx("{ var x = _nullable_int(null); if (x == null) x = 123; return _type_of(x); }", "integer")
-        chkEx("{ var x = _nullable_int(null); if (x != null) x = 123; return _type_of(x); }", "integer?")
-        chkEx("{ var x = _nullable_int(null); if (x != null) x = null; return _type_of(x); }", "integer?")
+        initLib()
+
+        chkType("var x = intz(null); if (bool(1)) x = 123; else x = 456;", "integer")
+        chkType("var x = intz(123); if (bool(1)) x = 456; else x = null;", "integer?")
+        chkType("var x = intz(123); if (bool(1)) x = null; else x = null;", "integer?")
+
+        chkType("var x = intz(null); if (x == null) x = 123;", "integer")
+        chkType("var x = intz(null); if (x != null) x = 123;", "integer?")
+        chkType("var x = intz(null); if (x != null) x = null;", "integer?")
+
+        chkType("var x = intz(123); if (bool(1)) x = 456;", "integer?")
+        chkType("var x = intz(123); if (bool(1)) x = 456; else x = 789;", "integer")
+        chkType("var x = intz(123); if (bool(1)) x = 456; else x!!;", "integer")
+        chkType("var x = intz(123); if (bool(1)) x!!; else x = 789;", "integer")
+
+        chkType("var x = intz(123); x!!; if (bool(1)) x = 456;", "integer")
+        chkType("var x = intz(123); x!!; if (bool(1)) x = intz(456);", "integer?")
+        chkType("var x = intz(123); x!!; if (bool(1)) x = 456; else x = 789;", "integer")
+        chkType("var x = intz(123); x!!; if (bool(1)) x = intz(456); else x = 789;", "integer?")
+        chkType("var x = intz(123); x!!; if (bool(1)) x = 456; else x = intz(789);", "integer?")
+        chkType("var x = intz(123); x!!; if (bool(1)) { x = intz(456); x!!; } else x = 789;", "integer")
+        chkType("var x = intz(123); x!!; if (bool(1)) x = 456; else { x = intz(789); x!!; }", "integer")
     }
 
     @Test fun testAssignmentWhen() {
-        tst.strictToString = false
-        chkEx("{ var x = _nullable_int(null); when { abs(5)>0 -> x = 123; else -> x = 456; } return _type_of(x); }", "integer")
-        chkEx("{ var x = _nullable_int(123); when { abs(5)>0 -> x = 456; else -> x = null; } return _type_of(x); }", "integer?")
-        chkEx("{ var x = _nullable_int(123); when { abs(5)>0 -> x = null; else -> x = null; } return _type_of(x); }", "integer?")
-        chkEx("{ var x = _nullable_int(null); when { x == null -> x = 123; } return _type_of(x); }", "integer")
-        chkEx("{ var x = _nullable_int(null); when { x != null -> x = 123; } return _type_of(x); }", "integer?")
+        initLib()
+
+        chkType("var x = intz(null); when { bool(1) -> x = 123; else -> x = 456; }", "integer")
+        chkType("var x = intz(123); when { bool(1) -> x = 456; else -> x = null; }", "integer?")
+        chkType("var x = intz(123); when { bool(1) -> x = null; else -> x = null; }", "integer?")
+        chkType("var x = intz(null); when { x == null -> x = 123; }", "integer")
+        chkType("var x = intz(null); when { x != null -> x = 123; }", "integer?")
+
+        chkType("var x = intz(123); when { bool(1) -> x = 456; }", "integer?")
+        chkType("var x = intz(123); when { bool(1) -> x = 456; bool(0) -> x = 789; }", "integer?")
+        chkType("var x = intz(123); when { bool(1) -> x = 456; else -> x = 789; }", "integer")
+        chkType("var x = intz(123); when { bool(1) -> x = 456; bool(0) -> x!!; }", "integer?")
+        chkType("var x = intz(123); when { bool(1) -> x = 456; else -> x!!; }", "integer")
+        chkType("var x = intz(123); when { bool(1) -> x!!; bool(0) -> x = 789; }", "integer?")
+        chkType("var x = intz(123); when { bool(1) -> x!!; else -> x = 789; }", "integer")
+
+        chkType("var x = intz(123); x!!; when { bool(1) -> x = 456; }", "integer")
+        chkType("var x = intz(123); x!!; when { bool(1) -> x = intz(456); }", "integer?")
+        chkType("var x = intz(123); x!!; when { bool(1) -> x = 456; bool(0) -> x = 789; }", "integer")
+        chkType("var x = intz(123); x!!; when { bool(1) -> x = 456; else -> x = 789; }", "integer")
+        chkType("var x = intz(123); x!!; when { bool(1) -> x = intz(456); else -> x = 789; }", "integer?")
+        chkType("var x = intz(123); x!!; when { bool(1) -> x = 456; else -> x = intz(789); }", "integer?")
+        chkType("var x = intz(123); x!!; when { bool(1) -> { x = intz(456); x!!; } bool(0) -> x = 789; }", "integer")
+        chkType("var x = intz(123); x!!; when { bool(1) -> { x = intz(456); x!!; } else -> x = 789; }", "integer")
+        chkType("var x = intz(123); x!!; when { bool(1) -> x = 456; bool(0) -> { x = intz(789); x!!; } }", "integer")
+        chkType("var x = intz(123); x!!; when { bool(1) -> x = 456; else -> { x = intz(789); x!!; } }", "integer")
     }
 
     @Test fun testCompoundAssignment() {
-        chkEx("{ var x = _nullable_int(123); x += 1; return x; }", "ct_err:binop_operand_type:+=:[integer?]:[integer]")
+        initLib()
+        chkEx("{ var x = intz(123); x += 1; return x; }", "ct_err:binop_operand_type:+=:[integer?]:[integer]")
         chkEx("{ var x: integer? = null; x += 1; return x; }", "ct_err:binop_operand_type:+=:[integer?]:[integer]")
-        chkEx("{ var x: integer? = 123; x += 1; return x; }", "int[124]")
+        chkEx("{ var x: integer? = 123; x += 1; return x; }", "124")
 
-        chkEx("{ var x = _nullable_int(123); if (x != null) x += 1; return x; }", "int[124]")
-        chkEx("{ var x = _nullable_int(null); if (x != null) x += 1; return x; }", "null")
+        chkEx("{ var x = intz(123); if (x != null) x += 1; return x; }", "124")
+        chkEx("{ var x = intz(null); if (x != null) x += 1; return x; }", "null")
     }
 
     @Test fun testIncrement() {
-        chkEx("{ var x = _nullable_int(123); x++; return x; }", "ct_err:expr_incdec_type:++:integer?")
+        initLib()
+        chkEx("{ var x = intz(123); x++; return x; }", "ct_err:expr_incdec_type:++:integer?")
 
         chkEx("{ var x: integer? = null; x++; return x; }", "ct_err:expr_incdec_type:++:integer?")
         chkEx("{ var x: integer? = null; ++x; return x; }", "ct_err:expr_incdec_type:++:integer?")
         chkEx("{ var x: integer? = null; x--; return x; }", "ct_err:expr_incdec_type:--:integer?")
         chkEx("{ var x: integer? = null; --x; return x; }", "ct_err:expr_incdec_type:--:integer?")
 
-        chkEx("{ var x: integer? = 123; x++; return x; }", "int[124]")
-        chkEx("{ var x: integer? = 123; ++x; return x; }", "int[124]")
-        chkEx("{ var x: integer? = 123; x--; return x; }", "int[122]")
-        chkEx("{ var x: integer? = 123; --x; return x; }", "int[122]")
+        chkEx("{ var x: integer? = 123; x++; return x; }", "124")
+        chkEx("{ var x: integer? = 123; ++x; return x; }", "124")
+        chkEx("{ var x: integer? = 123; x--; return x; }", "122")
+        chkEx("{ var x: integer? = 123; --x; return x; }", "122")
 
-        chkEx("{ var x = _nullable_int(123); if (x != null) x++; return x; }", "int[124]")
-        chkEx("{ var x = _nullable_int(123); if (x != null) ++x; return x; }", "int[124]")
-        chkEx("{ var x = _nullable_int(123); if (x != null) x--; return x; }", "int[122]")
-        chkEx("{ var x = _nullable_int(123); if (x != null) --x; return x; }", "int[122]")
+        chkEx("{ var x = intz(123); if (x != null) x++; return x; }", "124")
+        chkEx("{ var x = intz(123); if (x != null) ++x; return x; }", "124")
+        chkEx("{ var x = intz(123); if (x != null) x--; return x; }", "122")
+        chkEx("{ var x = intz(123); if (x != null) --x; return x; }", "122")
 
-        chkEx("{ var x = _nullable_int(null); if (x != null) x++; return x; }", "null")
-        chkEx("{ var x = _nullable_int(null); if (x != null) ++x; return x; }", "null")
-        chkEx("{ var x = _nullable_int(null); if (x != null) x--; return x; }", "null")
-        chkEx("{ var x = _nullable_int(null); if (x != null) --x; return x; }", "null")
+        chkEx("{ var x = intz(null); if (x != null) x++; return x; }", "null")
+        chkEx("{ var x = intz(null); if (x != null) ++x; return x; }", "null")
+        chkEx("{ var x = intz(null); if (x != null) x--; return x; }", "null")
+        chkEx("{ var x = intz(null); if (x != null) --x; return x; }", "null")
     }
 
     @Test fun testBooleanExpressions() {
@@ -109,6 +146,7 @@ class NullAnalysisTest: BaseRellTest(false) {
         chkFull("query q(x: integer?) = x != null;", 5, "boolean[true]")
         chkFull("query q(x: integer?) = x == null;", 5, "boolean[false]")
 
+        @Suppress("JoinDeclarationAndAssignment")
         var q: String
 
         q = "query q(x: integer?) = x != null and x > 5;"
@@ -181,17 +219,33 @@ class NullAnalysisTest: BaseRellTest(false) {
     }
 
     @Test fun testIf() {
-        chkEx("{ val x = _nullable(123); return x + 1; }", "ct_err:binop_operand_type:+:[integer?]:[integer]")
-        chkEx("{ val x = _nullable(123); if (x != null) return x + 1; return -1; }", "int[124]")
-        chkEx("{ val x = _nullable(123); if (x == null) return -1; return x + 1; }", "int[124]")
+        initLib()
 
-        chkEx("{ val x = _nullable(123); return abs(x); }", "ct_err:expr_call_badargs:[abs]:[integer?]")
-        chkEx("{ val x = _nullable(123); if (x == null) return 0; return abs(x); }", "int[123]")
-        chkEx("{ val x = _nullable(123); if (x != null) return 0; return abs(x); }",
+        chkEx("{ val x = intz(123); return x + 1; }", "ct_err:binop_operand_type:+:[integer?]:[integer]")
+        chkEx("{ val x = intz(123); if (x != null) return x + 1; return -1; }", "124")
+        chkEx("{ val x = intz(123); if (x != null) {} else return -1; return x + 1; }", "124")
+        chkEx("{ val x = intz(123); if (x == null) return -1; return x + 1; }", "124")
+        chkEx("{ val x = intz(123); if (x == null) return -1; else return x + 1; }", "124")
+
+        chkEx("{ val x = intz(123); return abs(x); }", "ct_err:expr_call_badargs:[abs]:[integer?]")
+        chkEx("{ val x = intz(123); if (x == null) return 0; return abs(x); }", "123")
+        chkEx("{ val x = intz(123); if (x != null) return 0; return abs(x); }",
             "ct_err:expr_call_badargs:[abs]:[integer?]")
-        chkEx("{ val x = _nullable(123); if (x != null) return abs(x); return 0; }", "int[123]")
-        chkEx("{ val x = _nullable(123); if (x == null) return abs(x); return 0; }",
+        chkEx("{ val x = intz(123); if (x != null) return abs(x); return 0; }", "123")
+        chkEx("{ val x = intz(123); if (x == null) return abs(x); return 0; }",
             "ct_err:expr_call_badargs:[abs]:[integer?]")
+    }
+
+    @Test fun testIfMore() {
+        initLib()
+
+        val xy = "val x = intz(123); val y = intz(456);"
+        chkEx("{ $xy if (x == null and y == null) return 'A'; return _type_of(x); }", "integer?")
+        chkEx("{ $xy if (x == null or y == null) return 'A'; return _type_of(x); }", "integer")
+
+        val code = "if (x == null and y == null) return 'A'; else if (x == null) return 'B';"
+        chkEx("{ $xy $code return _type_of(x); }", "integer")
+        chkEx("{ $xy $code return _type_of(y); }", "integer?")
     }
 
     @Test fun testIfType() {
@@ -203,8 +257,13 @@ class NullAnalysisTest: BaseRellTest(false) {
 
         chkEx("{ val x = f(123); if (x != null) return _type_of(x); return _type_of(x); }", "text[integer]")
         chkEx("{ val x = f(null); if (x != null) return _type_of(x); return _type_of(x); }", "text[integer?]")
+        chkEx("{ val x = f(123); if (x != null) {} else return _type_of(x); return _type_of(x); }", "text[integer]")
+        chkEx("{ val x = f(null); if (x != null) {} else return _type_of(x); return _type_of(x); }", "text[integer?]")
+
         chkEx("{ val x = f(123); if (x == null) return _type_of(x); return _type_of(x); }", "text[integer]")
         chkEx("{ val x = f(null); if (x == null) return _type_of(x); return _type_of(x); }", "text[integer?]")
+        chkEx("{ val x = f(123); if (x == null) return _type_of(x); else return _type_of(x); }", "text[integer]")
+        chkEx("{ val x = f(null); if (x == null) return _type_of(x); else return _type_of(x); }", "text[integer?]")
 
         chkEx("{ val x = f(123); if (null != x) return _type_of(x); return _type_of(x); }", "text[integer]")
         chkEx("{ val x = f(null); if (null != x) return _type_of(x); return _type_of(x); }", "text[integer?]")
@@ -223,17 +282,11 @@ class NullAnalysisTest: BaseRellTest(false) {
     }
 
     @Test fun testIfBlockVar() {
-        chkEx("{ val x = _nullable_int(123); if (x != null) { val y = x; return _type_of(y); } return ''; }",
-                "text[integer]")
-
-        chkEx("{ val x = _nullable_int(null); if (x == null) { val y = x; return _type_of(y); } return ''; }",
-                "text[integer?]")
-
-        chkEx("{ val x = _nullable_int(null); if (x != null) return ''; val y = x; return _type_of(y); }",
-                "text[integer?]")
-
-        chkEx("{ val x = _nullable_int(123); if (x == null) return ''; val y = x; return _type_of(y); }",
-                "text[integer]")
+        initLib()
+        chkEx("{ val x = intz(123); if (x != null) { val y = x; return _type_of(y); } return ''; }", "integer")
+        chkEx("{ val x = intz(null); if (x == null) { val y = x; return _type_of(y); } return ''; }", "integer?")
+        chkEx("{ val x = intz(null); if (x != null) return ''; val y = x; return _type_of(y); }", "integer?")
+        chkEx("{ val x = intz(123); if (x == null) return ''; val y = x; return _type_of(y); }", "integer")
     }
 
     @Test fun testIfExpr() {
@@ -296,21 +349,27 @@ class NullAnalysisTest: BaseRellTest(false) {
     }
 
     @Test fun testWhenMultipleConditions() {
+        initLib()
         val err = "ct_err:binop_operand_type:+:[integer?]:[integer]"
 
-        chkEx("{ val x = _nullable(123); return x + 1; }", err)
-        chkEx("{ val x = _nullable(123); when { x != null -> return x + 1; } return -1; }", "int[124]")
+        chkEx("{ val x = intz(123); return x + 1; }", err)
+        chkEx("{ val x = intz(123); when { x != null -> return x + 1; } return -1; }", "124")
 
-        chkEx("{ val x = _nullable(123); when { x != null, abs(5)>0 -> return x + 1; } return -1; }", err)
-        chkEx("{ val x = _nullable(123); when { abs(5)>0, x != null -> return x + 1; } return -1; }", err)
+        chkEx("{ val x = intz(123); when { x != null, bool(1) -> return x + 1; } return -1; }", err)
+        chkEx("{ val x = intz(123); when { bool(1), x != null -> return x + 1; } return -1; }", err)
 
-        chkEx("{ val x = _nullable(123); when { x == null -> {} else -> return x + 1; } return -1; }", "int[124]")
-        chkEx("{ val x = _nullable(123); when { x == null, abs(5)<0 -> {} else -> return x + 1; } return -1; }", "int[124]")
-        chkEx("{ val x = _nullable(123); when { abs(5)<0, x == null -> {} else -> return x + 1; } return -1; }", "int[124]")
+        chkEx("{ val x = intz(123); when { x == null -> {} else -> return x + 1; } return -1; }", "124")
+        chkEx("{ val x = intz(123); when { x == null, bool(0) -> {} else -> return x + 1; } return -1; }", "124")
+        chkEx("{ val x = intz(123); when { bool(0), x == null -> {} else -> return x + 1; } return -1; }", "124")
 
-        chkEx("{ val x = _nullable(123); when { x == null -> return 0; } return x + 1; }", "int[124]")
-        chkEx("{ val x = _nullable(123); when { x == null, abs(5)<0 -> return 0; } return x + 1; }", "int[124]")
-        chkEx("{ val x = _nullable(123); when { abs(5)<0, x == null -> return 0; } return x + 1; }", "int[124]")
+        chkEx("{ val x = intz(123); when { x == null -> return 0; } return x + 1; }", "124")
+        chkEx("{ val x = intz(123); when { x == null, bool(0) -> return 0; } return x + 1; }", "124")
+        chkEx("{ val x = intz(123); when { bool(0), x == null -> return 0; } return x + 1; }", "124")
+
+        chkEx("{ val x = intz(123); return when { x < 0 -> 0; else -> -1; }; }",
+            "ct_err:binop_operand_type:<:[integer?]:[integer]")
+        chkEx("{ val x = intz(123); return when { x == null, x < 0 -> 0; else -> -1; }; }", "-1")
+        chkEx("{ val x = intz(123); return when { x == null -> 0; x < 0 -> 1; else -> -1; }; }", "-1")
     }
 
     @Test fun testWhenExpr() {
@@ -321,6 +380,9 @@ class NullAnalysisTest: BaseRellTest(false) {
         chkFull("query q(x: integer?) = _type_of(when { x == null -> null; else -> x + 1 });", 0, "text[integer?]")
         chkFull("query q(x: integer?) = _type_of(when(x) { null -> 0; else -> x + 1 });", 0, "text[integer]")
         chkFull("query q(x: integer?) = _type_of(when(x) { null -> null; else -> x + 1 });", 0, "text[integer?]")
+
+        chkFull("query q(x: integer?) = when(x) { null -> ''; else -> _type_of(x) };", 0, "text[integer]")
+        chkFull("query q(x: integer?) = when(x) { 123 -> ''; else -> _type_of(x) };", 0, "text[integer?]")
 
         chkFull("query q(x: integer?) = when { x == null -> 0; else -> x + 1 };", 123, "int[124]")
         chkFull("query q(x: integer?) = when { x != null -> x + 1; else -> 0 };", 123, "int[124]")
@@ -342,36 +404,36 @@ class NullAnalysisTest: BaseRellTest(false) {
     }
 
     @Test fun testIfReturn() {
-        tst.strictToString = false
-        chkEx("{ val x = _nullable_int(123); return _type_of(x); }", "integer?")
-        chkEx("{ val x = _nullable_int(123); if (x == null) return ''; return _type_of(x); }", "integer")
-        chkEx("{ val x = _nullable_int(null); if (x != null) return ''; return _type_of(x); }", "integer?")
-        chkEx("{ val x = _nullable_int(null); if (x == null) {} else return ''; return _type_of(x); }", "integer?")
-        chkEx("{ val x = _nullable_int(123); if (x != null) {} else return ''; return _type_of(x); }", "integer")
+        initLib()
+        chkEx("{ val x = intz(123); return _type_of(x); }", "integer?")
+        chkEx("{ val x = intz(123); if (x == null) return ''; return _type_of(x); }", "integer")
+        chkEx("{ val x = intz(null); if (x != null) return ''; return _type_of(x); }", "integer?")
+        chkEx("{ val x = intz(null); if (x == null) {} else return ''; return _type_of(x); }", "integer?")
+        chkEx("{ val x = intz(123); if (x != null) {} else return ''; return _type_of(x); }", "integer")
     }
 
     @Test fun testWhenReturn() {
-        tst.strictToString = false
+        initLib()
 
-        chkEx("{ val x = _nullable_int(123); return _type_of(x); }", "integer?")
-        chkEx("{ val x = _nullable_int(123); when { x == null -> return ''; } return _type_of(x); }", "integer")
-        chkEx("{ val x = _nullable_int(null); when { x != null -> return ''; } return _type_of(x); }", "integer?")
-        chkEx("{ val x = _nullable_int(null); when { x == null -> {} else -> return ''; } return _type_of(x); }", "integer?")
-        chkEx("{ val x = _nullable_int(123); when { x != null -> {} else -> return ''; } return _type_of(x); }", "integer")
+        chkEx("{ val x = intz(123); return _type_of(x); }", "integer?")
+        chkEx("{ val x = intz(123); when { x == null -> return ''; } return _type_of(x); }", "integer")
+        chkEx("{ val x = intz(null); when { x != null -> return ''; } return _type_of(x); }", "integer?")
+        chkEx("{ val x = intz(null); when { x == null -> {} else -> return ''; } return _type_of(x); }", "integer?")
+        chkEx("{ val x = intz(123); when { x != null -> {} else -> return ''; } return _type_of(x); }", "integer")
 
-        chkEx("{ val x = _nullable_int(123); when(x) { null -> return ''; } return _type_of(x); }", "integer")
-        chkEx("{ val x = _nullable_int(123); when(x) { 456 -> return ''; } return _type_of(x); }", "integer?")
-        chkEx("{ val x = _nullable_int(123); when(x) { 456 -> return ''; null -> return ''; } return _type_of(x); }", "integer")
-        chkEx("{ val x = _nullable_int(123); when(x) { 456, null -> return ''; } return _type_of(x); }", "integer")
+        chkEx("{ val x = intz(123); when(x) { null -> return ''; } return _type_of(x); }", "integer")
+        chkEx("{ val x = intz(123); when(x) { 456 -> return ''; } return _type_of(x); }", "integer?")
+        chkEx("{ val x = intz(123); when(x) { 456 -> return ''; null -> return ''; } return _type_of(x); }", "integer")
+        chkEx("{ val x = intz(123); when(x) { 456, null -> return ''; } return _type_of(x); }", "integer")
     }
 
     @Test fun testExists() {
-        tst.strictToString = false
-        chkEx("{ val x = _nullable_int(123); return _type_of(x); }", "integer?")
-        chkEx("{ val x = _nullable_int(123); if (exists(x)) return _type_of(x); return ''; }", "integer")
-        chkEx("{ val x = _nullable_int(123); if (not exists(x)) return ''; return _type_of(x); }", "integer")
-        chkEx("{ val x = _nullable_int(123); if (exists(x)) return _type_of(x); return ''; }", "integer")
-        chkEx("{ val x = _nullable_int(null); if (not exists(x)) return _type_of(x); return ''; }", "integer?")
+        initLib()
+        chkEx("{ val x = intz(123); return _type_of(x); }", "integer?")
+        chkEx("{ val x = intz(123); if (exists(x)) return _type_of(x); return ''; }", "integer")
+        chkEx("{ val x = intz(123); if (not exists(x)) return ''; return _type_of(x); }", "integer")
+        chkEx("{ val x = intz(123); if (exists(x)) return _type_of(x); return ''; }", "integer")
+        chkEx("{ val x = intz(null); if (not exists(x)) return _type_of(x); return ''; }", "integer?")
     }
 
     @Test fun testExistsCollection() {
@@ -384,12 +446,12 @@ class NullAnalysisTest: BaseRellTest(false) {
     }
 
     @Test fun testEmpty() {
-        tst.strictToString = false
-        chkEx("{ val x = _nullable_int(123); return _type_of(x); }", "integer?")
-        chkEx("{ val x = _nullable_int(123); if (not empty(x)) return _type_of(x); return ''; }", "integer")
-        chkEx("{ val x = _nullable_int(123); if (empty(x)) return ''; return _type_of(x); }", "integer")
-        chkEx("{ val x = _nullable_int(123); if (not empty(x)) return _type_of(x); return ''; }", "integer")
-        chkEx("{ val x = _nullable_int(null); if (empty(x)) return _type_of(x); return ''; }", "integer?")
+        initLib()
+        chkEx("{ val x = intz(123); return _type_of(x); }", "integer?")
+        chkEx("{ val x = intz(123); if (not empty(x)) return _type_of(x); return ''; }", "integer")
+        chkEx("{ val x = intz(123); if (empty(x)) return ''; return _type_of(x); }", "integer")
+        chkEx("{ val x = intz(123); if (not empty(x)) return _type_of(x); return ''; }", "integer")
+        chkEx("{ val x = intz(null); if (empty(x)) return _type_of(x); return ''; }", "integer?")
     }
 
     @Test fun testEmptyCollection() {
@@ -402,11 +464,11 @@ class NullAnalysisTest: BaseRellTest(false) {
     }
 
     @Test fun testList() {
-        tst.strictToString = false
-        chkEx("{ val x: integer? = _nullable_int(123); return _type_of([x]); }", "list<integer?>")
+        initLib()
+        chkEx("{ val x: integer? = intz(123); return _type_of([x]); }", "list<integer?>")
         chkEx("{ val x: integer? = 123; return _type_of([x]); }", "list<integer>")
         chkEx("{ val x: integer? = null; return _type_of([x]); }", "list<integer?>")
-        chkEx("{ val x: integer? = _nullable_int(123); if (x != null) return _type_of([x]); return ''; }", "list<integer>")
+        chkEx("{ val x: integer? = intz(123); if (x != null) return _type_of([x]); return ''; }", "list<integer>")
     }
 
     @Test fun testWhileNull() {
@@ -480,7 +542,7 @@ class NullAnalysisTest: BaseRellTest(false) {
     @Test fun testDefiniteFactSafeMember() {
         def("struct rec { a: integer; }")
         def("function f(r: rec?): rec? = r;")
-        chkDefiniteFactExpr("x?.a", "null", "int[123]", "ct_err:expr_safemem_type:[rec]")
+        chkDefiniteFactExpr("x?.a", "null", "int[123]", "ct_err:expr_safemem_type:[rec]:a")
     }
 
     @Test fun testDefiniteFactExists() {
@@ -495,23 +557,25 @@ class NullAnalysisTest: BaseRellTest(false) {
         chkWarn()
 
         chkEx("{ val x: rec? = rec(123); return $expr; }", resNotNull)
-        chkWarn("expr:smartnull:var:never:x")
+        chkWarn("expr:smartnull:var:never:[x]")
 
         chkEx("{ val x: rec? = null; return $expr; }", resNull)
-        chkWarn("expr:smartnull:var:always:x")
+        chkWarn("expr:smartnull:var:always:[x]")
 
         chkEx("{ val x = f(rec(123)); if (x == null) return null; return $expr; }", resNotNull)
-        chkWarn("expr:smartnull:var:never:x")
+        chkWarn("expr:smartnull:var:never:[x]")
 
         chkEx("{ val x = f(null); if (x != null) return null; return $expr; }", resNull)
-        chkWarn("expr:smartnull:var:always:x")
+        chkWarn("expr:smartnull:var:always:[x]")
     }
 
     @Test fun testDefiniteFactOperatorNotNull() {
+        initLib()
         chkDefiniteFactNullCast("x!!", "ct_err:unop_operand_type:!!:[integer]", "rt_err:null_value")
     }
 
     @Test fun testDefiniteFactRequire() {
+        initLib()
         chkDefiniteFactNullCast("require(x)", "ct_err:expr_call_badargs:[require]:[integer]", "req_err:null")
         chkDefiniteFactNullCast("require_not_empty(x)",
             "ct_err:expr_call_badargs:[require_not_empty]:[integer]", "req_err:null")
@@ -521,17 +585,17 @@ class NullAnalysisTest: BaseRellTest(false) {
         chkEx("{ val x = 123; return $expr; }", ctErr)
         chkWarn()
 
-        chkEx("{ val x: integer? = 123; return $expr; }", "int[123]")
-        chkWarn("expr:smartnull:var:never:x")
+        chkEx("{ val x: integer? = 123; return $expr; }", "123")
+        chkWarn("expr:smartnull:var:never:[x]")
 
         chkEx("{ val x: integer? = null; return $expr; }", rtErr)
-        chkWarn("expr:smartnull:var:always:x")
+        chkWarn("expr:smartnull:var:always:[x]")
 
-        chkEx("{ val x = _nullable(123); if (x == null) return 0; return $expr; }", "int[123]")
-        chkWarn("expr:smartnull:var:never:x")
+        chkEx("{ val x = _nullable(123); if (x == null) return 0; return $expr; }", "123")
+        chkWarn("expr:smartnull:var:never:[x]")
 
-        chkEx("{ val x = _nullable_int(null); if (x != null) return 0; return $expr; }", rtErr)
-        chkWarn("expr:smartnull:var:always:x")
+        chkEx("{ val x = intz(null); if (x != null) return 0; return $expr; }", rtErr)
+        chkWarn("expr:smartnull:var:always:[x]")
     }
 
     @Test fun testAtExpr() {
@@ -556,12 +620,14 @@ class NullAnalysisTest: BaseRellTest(false) {
 
     private fun initEntity() {
         tstCtx.useSql = true
+        initLib()
         def("entity user { name; score: integer; }")
         insert("c0.user", "name,score", "33,'Bob',1000")
     }
 
+    @Suppress("SameParameterValue")
     private fun chkAtExpr(v: String, expr: String, expected: String) {
-        chkEx("{ val x = _nullable_int($v); return user @? { $expr }; }", expected)
+        chkEx("{ val x = intz($v); return user @? { $expr }; }", expected)
     }
 
     @Test fun testAtExprPlaceholder() {
@@ -569,7 +635,7 @@ class NullAnalysisTest: BaseRellTest(false) {
         chk("data()", "list<integer?>[int[123],null,int[456],null,int[789]]")
         chk("data() @* {}", "list<integer?>[int[123],null,int[456],null,int[789]]")
         chk("data() @* { $ != null }", "list<integer?>[int[123],int[456],int[789]]")
-        chk("data() @* { $ != null } ( $ )", "list<integer?>[int[123],int[456],int[789]]")
+        chk("data() @* { $ != null } ( $ )", "list<integer>[int[123],int[456],int[789]]")
         chk("data() @* {} ( if ($ != null) _type_of($) else '?' )",
                 "list<text>[text[integer],text[?],text[integer],text[?],text[integer]]")
         chk("data() @* {} ( if ($ != null) $ * $ else 0 )", "list<integer>[int[15129],int[0],int[207936],int[0],int[622521]]")
@@ -577,30 +643,30 @@ class NullAnalysisTest: BaseRellTest(false) {
 
     @Test fun testOperationCall() {
         tst.testLib = true
-        tst.strictToString = false
+        initLib()
         def("operation op(x: integer) {}")
-        chkEx("{ val x = _nullable_int(123); return _type_of(x); }", "integer?")
-        chkEx("{ val x = _nullable_int(123); op(x); return _type_of(x); }", "ct_err:expr_call_argtype:[op]:0:x:integer:integer?")
-        chkEx("{ val x = _nullable_int(123); op(x!!); return _type_of(x); }", "integer")
+        chkEx("{ val x = intz(123); return _type_of(x); }", "integer?")
+        chkEx("{ val x = intz(123); op(x); return _type_of(x); }", "ct_err:expr_call_argtype:[op]:0:x:integer:integer?")
+        chkEx("{ val x = intz(123); op(x!!); return _type_of(x); }", "integer")
     }
 
     @Test fun testEntityAttr() {
         initEntity()
         def("function f(x: integer) = user @ { .score >= x };")
-        chkEx("{ val x = _nullable_int(10); print(f(x?:0).name); return _type_of(x); }", "text[integer?]")
-        chkEx("{ val x = _nullable_int(10); print(f(x!!).name); return _type_of(x); }", "text[integer]")
+        chkEx("{ val x = intz(10); print(f(x?:0).name); return _type_of(x); }", "integer?")
+        chkEx("{ val x = intz(10); print(f(x!!).name); return _type_of(x); }", "integer")
     }
 
     @Test fun testEntityToStruct() {
         initEntity()
         def("function f(x: integer) = user @ { .score >= x };")
-        chkEx("{ val x = _nullable_int(10); print(f(x?:0).to_struct()); return _type_of(x); }", "text[integer?]")
-        chkEx("{ val x = _nullable_int(10); print(f(x!!).to_struct()); return _type_of(x); }", "text[integer]")
+        chkEx("{ val x = intz(10); print(f(x?:0).to_struct()); return _type_of(x); }", "integer?")
+        chkEx("{ val x = intz(10); print(f(x!!).to_struct()); return _type_of(x); }", "integer")
     }
 
     @Test fun testEntityCreate() {
         initEntity()
-        val base = "val x = _nullable_int(10);"
+        val base = "val x = intz(10);"
 
         chkOpOut("$base create user(name = 'Alice', score = x?:0); print(_type_of(x));", "integer?")
         chkOpOut("$base create user(name = 'Alice', score = x!!); print(_type_of(x));", "integer")
@@ -614,33 +680,51 @@ class NullAnalysisTest: BaseRellTest(false) {
     }
 
     @Test fun testEnumAttr() {
+        initLib()
         def("enum colors { red, green, blue }")
         def("function f(x: integer) = colors.value(x);")
-        chkEx("{ val x = _nullable_int(1); print(f(x?:0).value); return _type_of(x); }", "text[integer?]")
-        chkEx("{ val x = _nullable_int(1); print(f(x?:0).name); return _type_of(x); }", "text[integer?]")
-        chkEx("{ val x = _nullable_int(1); print(f(x!!).value); return _type_of(x); }", "text[integer]")
-        chkEx("{ val x = _nullable_int(1); print(f(x!!).name); return _type_of(x); }", "text[integer]")
+
+        chkEx("{ val x = intz(1); print(f(x?:0).value); return _type_of(x); }", "integer?")
+        chkEx("{ val x = intz(1); print(f(x?:0).name); return _type_of(x); }", "integer?")
+        chkEx("{ val x = intz(1); print(f(x!!).value); return _type_of(x); }", "integer")
+        chkEx("{ val x = intz(1); print(f(x!!).name); return _type_of(x); }", "integer")
     }
 
     @Test fun testStructConstructor() {
+        initLib()
         def("struct s { a: integer; }")
-        val base = "val x = _nullable_int(10);"
-        chkEx("{ $base print(s(a = x?:0)); return _type_of(x); }", "text[integer?]")
-        chkEx("{ $base print(s(a = x!!)); return _type_of(x); }", "text[integer]")
-        chkEx("{ $base print(s(x?:0)); return _type_of(x); }", "text[integer?]")
-        chkEx("{ $base print(s(x!!)); return _type_of(x); }", "text[integer]")
+
+        val base = "val x = intz(10);"
+        chkEx("{ $base print(s(a = x?:0)); return _type_of(x); }", "integer?")
+        chkEx("{ $base print(s(a = x!!)); return _type_of(x); }", "integer")
+        chkEx("{ $base print(s(x?:0)); return _type_of(x); }", "integer?")
+        chkEx("{ $base print(s(x!!)); return _type_of(x); }", "integer")
     }
 
     @Test fun testIncDecExpr() {
+        initLib()
         def("struct s { mutable a: integer; }")
-        val base = "val x = _nullable_int(10);"
-        chkEx("{ $base print(s(a = x?:0).a++); return _type_of(x); }", "text[integer?]")
-        chkEx("{ $base print(s(a = x!!).a++); return _type_of(x); }", "text[integer]")
-        chkEx("{ $base print(++s(a = x?:0).a); return _type_of(x); }", "text[integer?]")
-        chkEx("{ $base print(++s(a = x!!).a); return _type_of(x); }", "text[integer]")
+
+        val base = "val x = intz(10);"
+        chkEx("{ $base print(s(a = x?:0).a++); return _type_of(x); }", "integer?")
+        chkEx("{ $base print(s(a = x!!).a++); return _type_of(x); }", "integer")
+        chkEx("{ $base print(++s(a = x?:0).a); return _type_of(x); }", "integer?")
+        chkEx("{ $base print(++s(a = x!!).a); return _type_of(x); }", "integer")
     }
 
-    /*@Test*/ fun testBugConditionalAssignmentInLoop() {
+    @Test fun testContradictoryState() {
+        initLib()
+
+        val ret = "return _type_of(x);"
+        chkEx("{ val x = intz(1); if (x != null) { _test.fake_assert(x == null); $ret } return ''; }", "integer?")
+        chkEx("{ val x = intz(1); if (x!! > 0) { $ret } return ''; }", "integer")
+        chkEx("{ val x = intz(1); if (x!! > 0) { _test.fake_assert(x == null); $ret } return ''; }", "integer?")
+        chkEx("{ val x = intz(1); _test.fake_assert(x!! > 0 and x == null); $ret }", "integer?")
+    }
+
+    @Test fun testBugConditionalAssignmentInLoop() {
+        initLib()
+
         val code = """
             function test_bug() {
                 var t: integer? = null;
@@ -652,15 +736,26 @@ class NullAnalysisTest: BaseRellTest(false) {
         """
         chkCompile(code, "OK")
         chkWarn()
+
+        chkEx("{ var x: integer? = null; for (t in [1,2,3]) { print(t); } return x == null; }", "true")
+        chkWarn("expr:smartnull:var:always:[x]")
+        chkEx("{ var x: integer? = null; for (t in [1,2,3]) { x = t; } return x == null; }", "false")
+        chkWarn()
+        chkEx("{ var x: integer? = null; for (t in [1,2,3]) { if (bool(1)) x = t; } return x == null; }", "false")
+        chkWarn()
+        chkEx("{ var x: integer? = null; for (t in [1,2,3]) { x = null; } return x == null; }", "true")
+        chkWarn("expr:smartnull:var:always:[x]")
+        chkEx("{ var x: integer? = null; for (t in [1,2,3]) { if (bool(1)) x = null; } return x == null; }", "true")
+        chkWarn("expr:smartnull:var:always:[x]")
     }
 
-    // null-dependent: when (x) { null -> }
+    private fun initLib() {
+        tst.strictToString = false
+        def("function intz(x: integer?): integer? = x;")
+        def("function bool(x: integer): boolean = x != 0;")
+    }
 
-    // contradictory operations:
-    // if (x != null) if (x == null)
-    // if (x!! > 0) if (x == null)
-    // if (x!! > 0 and x == null)
-
-    // struct fields: if (x.y.z == null) return; // x.y.z is not nullable from now
-    // if (f?.x?.y?.z != null) print(f.x.y.z)
+    private fun chkType(code: String, exp: String) {
+        chkEx("{ $code return _type_of(x); }", exp)
+    }
 }

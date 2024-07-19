@@ -841,8 +841,8 @@ class S_GlobalConstantDefinition(
             val defBase = cDefBase.rBase(defCtx.initFrameGetter)
             val rDef = R_GlobalConstantDefinition(defBase, constId, filePos, bodyLate.getter)
             val typePos = type?.pos ?: cName.pos
-            val varUid = ctx.modCtx.nextConstVarUid(cDefBase.qualifiedName)
-            C_GlobalConstantDefinition(rDef, typePos, varUid, headerLate.getter, exprLate.getter)
+            val varId = ctx.modCtx.nextConstVarUid(cDefBase.qualifiedName)
+            C_GlobalConstantDefinition(rDef, typePos, varId, headerLate.getter, exprLate.getter)
         }
 
         ctx.nsBuilder.addConstant(cDefBase.nsMemBase(modDeprecated), cName, cDef)

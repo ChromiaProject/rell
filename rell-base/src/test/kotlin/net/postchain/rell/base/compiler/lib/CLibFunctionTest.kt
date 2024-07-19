@@ -128,13 +128,13 @@ class CLibFunctionTest: BaseCLibTest() {
         chk("f(true)", "ct_err:expr_call_badargs:[f]:[boolean]")
 
         chkEx("{ val x: text? = 'hello'; return f(x); }", "text[f(text?)]")
-        chkWarn("expr:smartnull:var:never:x")
+        chkWarn("expr:smartnull:var:never:[x]")
         chkEx("{ val x: integer? = 123; return f(x); }", "text[f(integer?)]")
-        chkWarn("expr:smartnull:var:never:x")
+        chkWarn("expr:smartnull:var:never:[x]")
         chkEx("{ val x: boolean? = true; return f(x); }", "text[f(boolean?)]")
-        chkWarn("expr:smartnull:var:never:x")
+        chkWarn("expr:smartnull:var:never:[x]")
         chkEx("{ val x: text? = 'hello'; return f(x) + f(x); }", "text[f(text?)f(text?)]")
-        chkWarn("expr:smartnull:var:never:x", "expr:smartnull:var:never:x")
+        chkWarn("expr:smartnull:var:never:[x]", "expr:smartnull:var:never:[x]")
     }
 
     @Test fun testInferTypeParamsFromReturnType() {

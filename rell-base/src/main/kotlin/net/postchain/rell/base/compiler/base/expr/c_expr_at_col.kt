@@ -47,15 +47,16 @@ class C_AtFrom_Iterable(
     }
 
     private val innerExprCtx: C_ExprContext = let {
-        val factsCtx = outerExprCtx.factsCtx.sub(C_VarFacts.of(inited = mapOf(placeholderVar.uid to C_VarFact.YES)))
-        outerExprCtx.update(blkCtx = innerBlkCtx, factsCtx = factsCtx, atCtx = innerAtCtx)
+        outerExprCtx
+            .updateVarStates(C_VarStatesDelta.changed(placeholderVar.varKey))
+            .copy(blkCtx = innerBlkCtx, atCtx = innerAtCtx)
     }
 
     override fun getAllExprs() = immListOf(item.vExpr)
     override fun innerExprCtx() = innerExprCtx
 
     override fun makeDefaultWhatFields(): List<V_DbAtWhatField> {
-        val vExpr = compilePlaceholderRef(pos)
+        val vExpr = compilePlaceholderRef(innerExprCtx, pos)
         val field = V_DbAtWhatField(outerExprCtx.appCtx, null, vExpr.type, vExpr, V_AtWhatFieldFlags.DEFAULT, null)
         return immListOf(field)
     }
@@ -84,8 +85,8 @@ class C_AtFrom_Iterable(
             .toImmList()
     }
 
-    private fun compilePlaceholderRef(pos: S_Pos): V_Expr {
-        return C_BlockEntry_Var.compile0(innerExprCtx, pos, placeholderVar)
+    private fun compilePlaceholderRef(ctx: C_ExprContext, pos: S_Pos): V_Expr {
+        return C_BlockEntry_Var.compile0(ctx, pos, placeholderVar)
     }
 
     override fun compile(details: C_AtDetails): V_Expr {
@@ -107,7 +108,7 @@ class C_AtFrom_Iterable(
             extras = extras,
             block = cBlock.rBlock,
             param = rParam,
-            resVarFacts = details.exprFacts,
+            resVarStates = details.varStatesDelta,
         )
     }
 
@@ -121,8 +122,8 @@ class C_AtFrom_Iterable(
             return "${placeholderVar.metaName}:${item.elemType.name}" toCodeMsg placeholderVar.metaName
         }
 
-        override fun compile(pos: S_Pos): V_Expr {
-            return compilePlaceholderRef(pos)
+        override fun compile(ctx: C_ExprContext, pos: S_Pos): V_Expr {
+            return compilePlaceholderRef(ctx, pos)
         }
     }
 }

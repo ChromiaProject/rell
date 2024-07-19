@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.type
@@ -28,7 +28,7 @@ object Lib_Type_VirtualTuple {
             return V_TypeValueMember_VirtualTupleAttr(type, fieldIndex)
         }
 
-        private class V_TypeValueMember_VirtualTupleAttr(type: R_Type, fieldIndex: Int)
+        private inner class V_TypeValueMember_VirtualTupleAttr(type: R_Type, fieldIndex: Int)
             : V_MemberAttr_TupleAttr(type, fieldIndex)
         {
             override fun calculator() = R_MemberCalculator_VirtualTupleAttr(type, fieldIndex)

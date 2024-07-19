@@ -164,6 +164,7 @@ interface Ld_NamespaceDsl: Ld_NamespaceBodyDsl, Ld_MemberDsl {
 interface Ld_NamespacePropertyDsl: Ld_MemberDsl {
     fun validate(validator: (C_SysFunctionCtx) -> Unit)
     fun value(block: (Rt_CallContext) -> Rt_Value): Ld_BodyResult
+    fun value(block: (Rt_CallContext, R_Type) -> Rt_Value): Ld_BodyResult
 }
 
 @RellLibDsl

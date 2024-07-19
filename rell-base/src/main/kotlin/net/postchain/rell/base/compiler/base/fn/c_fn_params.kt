@@ -9,8 +9,8 @@ import net.postchain.rell.base.compiler.ast.S_FormalParameter
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.C_AttrUtils
 import net.postchain.rell.base.compiler.base.expr.C_StmtContext
-import net.postchain.rell.base.compiler.base.expr.C_VarFact
-import net.postchain.rell.base.compiler.base.expr.C_VarFacts
+import net.postchain.rell.base.compiler.base.expr.C_VarStateKey
+import net.postchain.rell.base.compiler.base.expr.C_VarStatesDelta
 import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_ParameterDefaultValue
@@ -90,10 +90,10 @@ class C_FormalParameters(list: List<C_FormalParameter>) {
     }
 
     fun compile(frameCtx: C_FrameContext): C_ActualParameters {
-        val inited = mutableMapOf<C_VarUid, C_VarFact>()
         val names = mutableSetOf<String>()
         val rParams = mutableListOf<R_FunctionParam>()
         val rParamVars = mutableListOf<R_ParamVar>()
+        var varStates = C_VarStatesDelta.EMPTY
 
         val blkCtx = frameCtx.rootBlkCtx
 
@@ -105,16 +105,13 @@ class C_FormalParameters(list: List<C_FormalParameter>) {
                 frameCtx.msgCtx.error(name.pos, "dup_param_name:$nameStr", "Duplicate parameter: '$nameStr'")
             } else if (param.type.isNotError()) {
                 val cVarRef = blkCtx.addLocalVar(name, param.type, false, null, param.ideInfo)
-                inited[cVarRef.target.uid] = C_VarFact.YES
+                varStates = varStates.changed(C_VarStateKey(cVarRef.target.uid))
                 rParams.add(param.rParam)
                 rParamVars.add(R_ParamVar(param.type, cVarRef.ptr))
             }
         }
 
-        val varFacts = C_VarFacts.of(inited = inited.toMap())
-        val stmtCtx = C_StmtContext.createRoot(blkCtx)
-                .updateFacts(varFacts)
-
+        val stmtCtx = C_StmtContext.createRoot(blkCtx).updateVarStates(varStates)
         return C_ActualParameters(stmtCtx, rParams, rParamVars)
     }
 

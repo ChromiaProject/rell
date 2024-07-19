@@ -279,7 +279,7 @@ private class C_LibTypeMemberHeader(
 }
 
 private class C_LibTypeBodyBuilder(
-    typeName: R_FullName,
+    private val typeName: R_FullName,
     private val namingFactory: (R_Name) -> C_MemberNaming,
     private val typeDef: L_TypeDef?,
 ) {
@@ -294,8 +294,9 @@ private class C_LibTypeBodyBuilder(
 
     fun addConstant(header: C_LibTypeMemberHeader, constant: L_Constant) {
         val defName = defPath.subName(header.simpleName)
-        val prop = C_NamespaceProperty_RtValue(constant.value)
         val rType = L_TypeUtils.getRTypeNotNull(constant.type)
+        val varId = C_LibConstantVarId(typeName.append(header.simpleName), constant)
+        val prop = C_NamespaceProperty_RtValue(constant.value, rType, varId)
         val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_CONSTANT, doc = header.docSymbol)
         val cMember = C_TypeStaticMember.makeProperty(defName, header.simpleName, prop, rType, ideInfo, header.restrictions)
         staticMembers.add(cMember)
@@ -306,9 +307,15 @@ private class C_LibTypeBodyBuilder(
         val ideInfo = C_IdeSymbolInfo.direct(ideKind, doc = header.docSymbol)
         val ideName = R_IdeName(header.simpleName, ideInfo)
         val rResType = L_TypeUtils.getRTypeNotNull(property.type)
-        val fn = C_SysFunction.direct(property.body)
         val naming = namingFactory(header.simpleName)
-        val attr: C_MemberAttr = C_MemberAttr_SysProperty(ideName, rResType, fn, naming, header.restrictions)
+        val attr: C_MemberAttr = C_MemberAttr_SysProperty(
+            ideName,
+            rResType,
+            property.fn,
+            naming,
+            header.restrictions,
+            pure = property.pure,
+        )
         val cMember = C_TypeValueMember_BasicAttr(attr)
         valueMembers.add(cMember)
     }

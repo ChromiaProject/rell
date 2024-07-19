@@ -5,7 +5,6 @@
 package net.postchain.rell.base.compiler.ast
 
 import net.postchain.rell.base.compiler.base.core.C_Types
-import net.postchain.rell.base.compiler.base.core.C_VarUid
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.C_Utils
@@ -23,44 +22,49 @@ import net.postchain.rell.base.utils.immSetOf
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 
-class C_WhenChooserDetailsBuilder(val keyExpr: V_Expr?, val keyPostFacts: C_VarFacts, val bodyExprCtx: C_ExprContext) {
+class C_WhenChooserDetailsBuilder(
+    val keyExpr: V_Expr?,
+    val keyVarStatesDelta: C_VarStatesDelta,
+    val bodyExprCtx: C_ExprContext,
+) {
     val constantCases = mutableMapOf<Rt_Value, Int>()
     val variableCases = mutableListOf<IndexedValue<V_Expr>>()
     var elseCase: IndexedValue<S_Pos>? = null
     var fullCoverage = false
-    val caseFacts = mutableMapOf<Int, C_VarFacts>()
-    val elseFacts = C_MutableVarFacts()
+    val caseVarStatesDeltas = mutableMapOf<Int, C_VarStatesDelta>()
+    var elseVarStatesDelta = C_VarStatesDelta.EMPTY
 }
 
 class C_WhenChooserDetails(b: C_WhenChooserDetailsBuilder) {
     val keyExpr = b.keyExpr
-    val keyPostFacts = b.keyPostFacts
+    val keyVarStatesDelta = b.keyVarStatesDelta
     val bodyExprCtx = b.bodyExprCtx
     val constantCases = b.constantCases.toImmMap()
     val variableCases = b.variableCases.toImmList()
     val elseCase = b.elseCase
     val full = b.fullCoverage
-    val caseFacts = (0 until b.caseFacts.size).map { b.caseFacts.getValue(it) }.toImmList()
-    val elseFacts = b.elseFacts.toVarFacts()
+    val caseVarStatesDeltas = (0 until b.caseVarStatesDeltas.size).map {
+        b.caseVarStatesDeltas.getValue(it)
+    }.toImmList()
+    val elseVarStatesDelta = b.elseVarStatesDelta
 
     fun toVDetails() = V_WhenChooserDetails(
-            keyExpr = keyExpr,
-            keyPostFacts = keyPostFacts,
-            constantCases = constantCases,
-            variableCases = variableCases,
-            elseCase = elseCase,
-            full = full,
-            caseFacts = caseFacts,
-            elseFacts = elseFacts
+        keyExpr = keyExpr,
+        keyVarStatesDelta = keyVarStatesDelta,
+        constantCases = constantCases,
+        variableCases = variableCases,
+        elseCase = elseCase,
+        full = full,
+        caseVarStatesDeltas = caseVarStatesDeltas,
     )
 }
 
 class C_WhenChooser(details: C_WhenChooserDetails) {
     val bodyExprCtx = details.bodyExprCtx
-    val keyPostFacts = details.keyPostFacts
+    val keyVarStatesDelta = details.keyVarStatesDelta
     val full = details.full
-    val caseFacts = details.caseFacts
-    val elseFacts = details.elseFacts
+    val caseVarStatesDeltas = details.caseVarStatesDeltas
+    val elseVarStatesDelta = details.elseVarStatesDelta
 
     val rChooser = let {
         val vDetails = details.toVDetails()
@@ -72,12 +76,12 @@ sealed class S_WhenCondition {
     abstract fun compileBad(ctx: C_ExprContext)
 
     abstract fun compile(
-            ctx: C_ExprContext,
-            builder: C_WhenChooserDetailsBuilder,
-            keyVarUid: C_VarUid?,
-            keyType: R_Type?,
-            idx: Int,
-            last: Boolean
+        ctx: C_ExprContext,
+        builder: C_WhenChooserDetailsBuilder,
+        keyVarKey: C_VarStateKey?,
+        keyType: R_Type?,
+        idx: Int,
+        last: Boolean,
     )
 }
 
@@ -89,27 +93,28 @@ class S_WhenConditionExpr(val exprs: List<S_Expr>): S_WhenCondition() {
     }
 
     override fun compile(
-            ctx: C_ExprContext,
-            builder: C_WhenChooserDetailsBuilder,
-            keyVarUid: C_VarUid?,
-            keyType: R_Type?,
-            idx: Int,
-            last: Boolean
+        ctx: C_ExprContext,
+        builder: C_WhenChooserDetailsBuilder,
+        keyVarKey: C_VarStateKey?,
+        keyType: R_Type?,
+        idx: Int,
+        last: Boolean,
     ) {
-        var caseFacts = C_VarFacts.EMPTY
+        var caseVarStates = C_VarStatesDelta.EMPTY
 
         for (expr in exprs) {
-            val elseFacts = builder.elseFacts.toVarFacts()
-            val exprCtx = ctx.updateFacts(elseFacts)
+            val elseVarStates = builder.elseVarStatesDelta
+            val exprCtx = ctx.updateVarStates(elseVarStates)
             val vExpr = compileExpr(exprCtx, keyType, expr)
 
             builder.variableCases.add(IndexedValue(idx, vExpr))
 
-            val valueFacts = getVarFacts(keyVarUid, keyType, vExpr)
-            builder.elseFacts.andFacts(valueFacts.falseFacts)
+            val exprVarStates = getVarStates(keyVarKey, keyType, vExpr)
+            val commonVarStates = elseVarStates.and(exprVarStates.always)
+            builder.elseVarStatesDelta = commonVarStates.and(exprVarStates.whenFalse)
 
             if (exprs.size == 1) {
-                caseFacts = elseFacts.and(valueFacts.trueFacts)
+                caseVarStates = commonVarStates.and(exprVarStates.whenTrue)
             }
 
             val value = evaluateConstantValue(vExpr)
@@ -121,7 +126,7 @@ class S_WhenConditionExpr(val exprs: List<S_Expr>): S_WhenCondition() {
             }
         }
 
-        builder.caseFacts[idx] = caseFacts
+        builder.caseVarStatesDeltas[idx] = caseVarStates
     }
 
     private fun evaluateConstantValue(vExpr: V_Expr): Rt_Value? {
@@ -130,19 +135,19 @@ class S_WhenConditionExpr(val exprs: List<S_Expr>): S_WhenCondition() {
         }
     }
 
-    private fun getVarFacts(keyVarUid: C_VarUid?, keyType: R_Type?, vExpr: V_Expr): C_ExprVarFacts {
+    private fun getVarStates(keyVarKey: C_VarStateKey?, keyType: R_Type?, vExpr: V_Expr): C_ExprVarStatesDelta {
         if (keyType == null) {
-            return vExpr.varFacts
+            return vExpr.varStatesDelta
         }
 
         val type = vExpr.type
-        if (keyVarUid != null && type == R_NullType) {
-            val trueFacts = C_VarFacts.of(nulled = mapOf(keyVarUid to C_VarFact.YES))
-            val falseFacts = C_VarFacts.of(nulled = mapOf(keyVarUid to C_VarFact.NO))
-            return C_ExprVarFacts.of(trueFacts, falseFacts)
+        if (keyVarKey != null && type == R_NullType) {
+            val whenTrue = C_VarStatesDelta.nulled(keyVarKey, C_VarNulled.YES)
+            val whenFalse = C_VarStatesDelta.nulled(keyVarKey, C_VarNulled.NO)
+            return C_ExprVarStatesDelta.make(always = vExpr.varStatesDelta.always, whenTrue = whenTrue, whenFalse = whenFalse)
         }
 
-        return C_ExprVarFacts.EMPTY
+        return C_ExprVarStatesDelta.EMPTY
     }
 
     private fun compileExpr(ctx: C_ExprContext, keyType: R_Type?, expr: S_Expr): V_Expr {
@@ -168,12 +173,12 @@ class S_WhenCondtiionElse(val pos: S_Pos): S_WhenCondition() {
     }
 
     override fun compile(
-            ctx: C_ExprContext,
-            builder: C_WhenChooserDetailsBuilder,
-            keyVarUid: C_VarUid?,
-            keyType: R_Type?,
-            idx: Int,
-            last: Boolean
+        ctx: C_ExprContext,
+        builder: C_WhenChooserDetailsBuilder,
+        keyVarKey: C_VarStateKey?,
+        keyType: R_Type?,
+        idx: Int,
+        last: Boolean,
     ) {
         if (!last) {
             ctx.msgCtx.error(pos, "when_else_notlast", "Else case must be the last one")
@@ -181,14 +186,18 @@ class S_WhenCondtiionElse(val pos: S_Pos): S_WhenCondition() {
 
         check(builder.elseCase == null)
         builder.elseCase = IndexedValue(idx, pos)
-        builder.caseFacts[idx] = builder.elseFacts.toVarFacts()
-        builder.elseFacts.clear()
+        builder.caseVarStatesDeltas[idx] = builder.elseVarStatesDelta
+        builder.elseVarStatesDelta = C_VarStatesDelta.EMPTY
     }
 }
 
 class S_WhenExprCase(val cond: S_WhenCondition, val expr: S_Expr)
 
-class S_WhenExpr(pos: S_Pos, val expr: S_Expr?, val cases: List<S_WhenExprCase>): S_Expr(pos) {
+class S_WhenExpr(
+    pos: S_Pos,
+    val expr: S_Expr?,
+    val cases: List<S_WhenExprCase>,
+): S_Expr(pos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val conds = cases.map { it.cond }
 
@@ -202,16 +211,16 @@ class S_WhenExpr(pos: S_Pos, val expr: S_Expr?, val cases: List<S_WhenExprCase>)
             ctx.msgCtx.error(startPos, "when_no_else", "Else case missing")
         }
 
-        val (resType, valueExprs) = compileExprs(ctx, chooserDetails.caseFacts)
+        val (resType, valueExprs) = compileExprs(ctx, chooserDetails.caseVarStatesDeltas)
 
-        val resFacts = C_ExprVarFacts.of(postFacts = chooserDetails.keyPostFacts)
-        val vResExpr = V_WhenExpr(ctx, startPos, chooserDetails, valueExprs, resType, resFacts)
+        val resVarStates = C_ExprVarStatesDelta.make(always = chooserDetails.keyVarStatesDelta)
+        val vResExpr = V_WhenExpr(ctx, startPos, chooserDetails, valueExprs, resType, resVarStates)
         return C_ValueExpr(vResExpr)
     }
 
-    private fun compileExprs(ctx: C_ExprContext, caseFacts: List<C_VarFacts>): Pair<R_Type, List<V_Expr>> {
+    private fun compileExprs(ctx: C_ExprContext, caseStates: List<C_VarStatesDelta>): Pair<R_Type, List<V_Expr>> {
         val cValuesRaw = cases.mapIndexed { i, case ->
-            case.expr.compileWithFacts(ctx, caseFacts[i]).value()
+            case.expr.compileWithVarStates(ctx, caseStates[i]).value()
         }
 
         val cValues = C_BinOp_Common.promoteNumeric(ctx, cValuesRaw)
@@ -263,19 +272,19 @@ class S_WhenExpr(pos: S_Pos, val expr: S_Expr?, val cases: List<S_WhenExprCase>)
                 keyExpr.value()
             }
 
-            val keyVarId = keyValue?.varId()
+            val keyVarKey = keyValue?.varKey()
             val keyType = keyValue?.type
-            val keyPostFacts = keyValue?.varFacts?.postFacts ?: C_VarFacts.EMPTY
+            val keyVarStates = keyValue?.varStatesDelta?.always ?: C_VarStatesDelta.EMPTY
 
             if (keyType == R_NullType) {
                 ctx.msgCtx.error(expr!!.startPos, "when_expr_type:null", "Cannot use null as when expression")
             }
 
-            val bodyCtx = ctx.updateFacts(keyPostFacts)
-            val builder = C_WhenChooserDetailsBuilder(keyValue, keyPostFacts, bodyCtx)
+            val bodyCtx = ctx.updateVarStates(keyVarStates)
+            val builder = C_WhenChooserDetailsBuilder(keyValue, keyVarStates, bodyCtx)
 
             for ((i, cond) in conds.withIndex()) {
-                cond.compile(bodyCtx, builder, keyVarId, keyType, i, i == conds.size - 1)
+                cond.compile(bodyCtx, builder, keyVarKey, keyType, i, i == conds.size - 1)
             }
 
             checkTypes(ctx, builder)
@@ -289,7 +298,9 @@ class S_WhenExpr(pos: S_Pos, val expr: S_Expr?, val cases: List<S_WhenExprCase>)
 
             if (keyValue == null) {
                 for (case in builder.variableCases) {
-                    C_Types.match(R_BooleanType, case.value.type, case.value.pos) { "when_case_type" toCodeMsg "Type mismatch" }
+                    C_Types.match(R_BooleanType, case.value.type, case.value.pos) {
+                        "when_case_type" toCodeMsg "Type mismatch"
+                    }
                 }
             } else {
                 val keyType = keyValue.type

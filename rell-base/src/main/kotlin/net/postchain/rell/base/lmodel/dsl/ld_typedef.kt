@@ -101,7 +101,7 @@ private class Ld_TypeDefMember_Property(
         val fullName = typeName.append(property.simpleName)
         val lProperty = property.finish(ctx)
         val lMemberHeader = property.memberHeader.finish(ctx.modCfg, fullName)
-        val doc = Ld_DocSymbols.property(fullName, lMemberHeader, lProperty.type, lProperty.body.pure)
+        val doc = Ld_DocSymbols.property(fullName, lMemberHeader, lProperty.type, lProperty.pure)
         return immListOf(L_TypeDefMember_Property(fullName, lMemberHeader, doc, lProperty))
     }
 }
@@ -714,7 +714,8 @@ private class Ld_TypeDefBuilder(
 
         val memberHeader = Ld_MemberHeader.make(hdr, block)
         val ldType = Ld_Type.parse(type)
-        val property = Ld_TypeProperty(rName, memberHeader, ldType, body)
+        val value = Ld_PropertyValue.typeProp { body }
+        val property = Ld_TypeProperty(rName, memberHeader, ldType, value)
         members.add(Ld_TypeDefMember_Property(property))
     }
 

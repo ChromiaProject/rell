@@ -345,9 +345,10 @@ class IdeSymbolLibTest: BaseIdeSymbolTest() {
             "b=EXPR_CALL_ARG|-|-", "?doc=PARAMETER|b|b: [big_integer]",
         )
 
-        chkSymsExpr("require(value = true)", "value=EXPR_CALL_ARG|-|-", "?doc=PARAMETER|value|value: [boolean]")
+        chkSymsExpr("require(value = true)", "value=EXPR_CALL_ARG|-|-",
+            "?doc=PARAMETER|value|@implies(TRUE) value: [boolean]")
         chkSymsExpr("require(value = true, message = 'hello')",
-            "value=EXPR_CALL_ARG|-|-", "?doc=PARAMETER|value|value: [boolean]",
+            "value=EXPR_CALL_ARG|-|-", "?doc=PARAMETER|value|@implies(TRUE) value: [boolean]",
             "message=EXPR_CALL_ARG|-|-", "?doc=PARAMETER|message|<lazy> <zero_one> message: [text]",
         )
 

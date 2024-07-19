@@ -97,7 +97,7 @@ class ObjectTest: BaseRellTest() {
         chkEx("{ foo = 123; return 456; }", "ct_err:expr_bad_dst")
         chkEx("{ foo += 123; return 456; }", "ct_err:expr_bad_dst")
 
-        chk("foo?.x", "ct_err:expr_safemem_type:[foo]")
+        chk("foo?.x", "ct_err:expr_safemem_type:[foo]:x")
     }
 
     @Test fun testGtv() {

@@ -162,8 +162,8 @@ class CLibFunctionNamedArgsTest: BaseCLibTest() {
         chkNamedArgs("(b = _nullable(123), a = 'A')", "OK", "text[#0:A,123]")
 
         val body = "val x: integer? = 123; return {FN}{CODE};"
-        chkNamedArgs("(a = 'A', b = x)", "OK", "text[#0:A,123]", body = body, warn = "expr:smartnull:var:never:x")
-        chkNamedArgs("(b = x, a = 'A')", "OK", "text[#0:A,123]", body = body, warn = "expr:smartnull:var:never:x")
+        chkNamedArgs("(a = 'A', b = x)", "OK", "text[#0:A,123]", body = body, warn = "expr:smartnull:var:never:[x]")
+        chkNamedArgs("(b = x, a = 'A')", "OK", "text[#0:A,123]", body = body, warn = "expr:smartnull:var:never:[x]")
     }
 
     @Test fun testNamedArgsImplication() {

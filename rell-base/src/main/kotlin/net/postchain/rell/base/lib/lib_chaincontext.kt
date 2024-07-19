@@ -5,6 +5,7 @@
 package net.postchain.rell.base.lib
 
 import net.postchain.rell.base.compiler.base.core.C_QualifiedName
+import net.postchain.rell.base.compiler.base.core.C_VarId
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty
 import net.postchain.rell.base.compiler.base.namespace.C_NamespacePropertyContext
@@ -62,8 +63,16 @@ private object C_NsProperty_ChainContext_Args: C_NamespaceProperty() {
 
         val moduleName = ctx.modCtx.moduleName
         val rFn = FnArgs(moduleName)
+        val varId = C_ModuleArgsVarId(moduleName)
 
-        return C_ExprUtils.createSysGlobalPropExpr(ctx.exprCtx, struct.structDef.type, rFn, name, pure = true)
+        return C_ExprUtils.createSysGlobalPropExpr(
+            ctx.exprCtx,
+            struct.structDef.type,
+            rFn,
+            name,
+            pure = true,
+            varId = varId,
+        )
     }
 
     private class FnArgs(private val moduleName: R_ModuleName): R_SysFunctionEx_N() {
@@ -75,5 +84,9 @@ private object C_NsProperty_ChainContext_Args: C_NamespaceProperty() {
                 "No module args for module '$moduleName'",
             )
         }
+    }
+
+    private data class C_ModuleArgsVarId(private val moduleName: R_ModuleName): C_VarId() {
+        override fun nameMsg() = "${moduleName.str()}:chain_context.args"
     }
 }

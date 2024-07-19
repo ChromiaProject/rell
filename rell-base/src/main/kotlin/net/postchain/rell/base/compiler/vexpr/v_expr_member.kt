@@ -13,6 +13,7 @@ import net.postchain.rell.base.compiler.base.core.C_TypeHint
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.C_Utils
+import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_Type
@@ -26,7 +27,7 @@ import net.postchain.rell.base.utils.immListOf
 abstract class V_TypeValueMember(val type: R_Type, val ideInfo: C_IdeSymbolInfo) {
     abstract fun implicitAttrName(): C_Name?
     abstract fun vExprs(): List<V_Expr>
-    open fun postVarFacts(): C_VarFacts = C_VarFacts.andPostFacts(vExprs())
+    open fun varStatesDelta(): C_VarStatesDelta = C_VarStatesDelta.forExpressions(vExprs())
     open fun globalConstantRestriction(): V_GlobalConstantRestriction? = null
     open fun safeCallable() = true
 
@@ -37,11 +38,12 @@ abstract class V_TypeValueMember(val type: R_Type, val ideInfo: C_IdeSymbolInfo)
     open fun dbExpr(base: Db_Expr): Db_Expr? = null
     open fun dbExprWhat(base: V_Expr, safe: Boolean): C_DbAtWhatValue? = null
 
+    open fun varPathItem(): C_VarPathItem? = null
+
     open fun member(
         ctx: C_ExprContext,
         memberNameHand: C_NameHandle,
         member: C_TypeValueMember,
-        safe: Boolean,
         exprHint: C_ExprHint,
     ): V_TypeValueMember? = null
 }
@@ -58,25 +60,27 @@ class V_TypeValueMember_Error(
     override fun destination(base: V_Expr) = throw C_Errors.errBadDestination(pos)
 }
 
-class V_ValueMemberExpr(
+class V_ValueMemberExpr private constructor(
     exprCtx: C_ExprContext,
     private val base: V_Expr,
+    private val actualType: R_Type,
     private val member: V_TypeValueMember,
     private val memberPos: S_Pos,
     private val safe: Boolean,
+    private val baseNulled: C_VarNulled?,
 ): V_Expr(exprCtx, base.pos) {
-    private val actualType = C_Utils.effectiveMemberType(member.type, safe)
-
     override fun exprInfo0() = V_ExprInfo.simple(
         actualType,
         subExprs = immListOf(base) + member.vExprs(),
         canBeDbExpr = member.canBeDbExpr(safe),
     )
 
-    override fun varFacts0(): C_ExprVarFacts {
-        var postFacts = base.varFacts.postFacts
-        postFacts = postFacts.and(member.postVarFacts())
-        return C_ExprVarFacts.of(postFacts = postFacts)
+    override fun varStatesDelta0(): C_ExprVarStatesDelta {
+        var resDelta = base.varStatesDelta.always
+        if (!safe || baseNulled == C_VarNulled.NO) {
+            resDelta = resDelta.and(member.varStatesDelta())
+        }
+        return C_ExprVarStatesDelta.make(always = resDelta)
     }
 
     override fun implicitTargetAttrName(): R_Name? {
@@ -87,6 +91,11 @@ class V_ValueMemberExpr(
     override fun implicitAtWhatAttrName(): C_Name? {
         val isAt = base.isAtExprItem()
         return if (isAt) member.implicitAttrName() else null
+    }
+
+    override fun varKey(): C_VarStateKey? {
+        val item = member.varPathItem()
+        return varKey(base, item)
     }
 
     override fun globalConstantRestriction() = member.globalConstantRestriction()
@@ -136,13 +145,14 @@ class V_ValueMemberExpr(
         memberNameHand: C_NameHandle,
         memberValue: C_TypeValueMember,
         safe: Boolean,
+        baseNulled: C_VarNulled?,
         exprHint: C_ExprHint,
     ): C_Expr {
         val memberName = memberNameHand.name
-        val member2 = member.member(ctx, memberNameHand, memberValue, safe, exprHint)
-        member2 ?: return super.member0(ctx, selfType, memberNameHand, memberValue, safe, exprHint)
+        val member2 = member.member(ctx, memberNameHand, memberValue, exprHint)
+        member2 ?: return super.member0(ctx, selfType, memberNameHand, memberValue, safe, baseNulled, exprHint)
 
-        val vExpr = V_ValueMemberExpr(ctx, base, member2, memberName.pos, safe)
+        val vExpr = make(ctx, base, member2, memberName.pos, safe, baseNulled)
         return C_ValueExpr(vExpr)
     }
 
@@ -153,6 +163,34 @@ class V_ValueMemberExpr(
             callCommon(ctx, pos, args, resTypeHint, member.type, true)
         } else {
             super.call(ctx, pos, args, resTypeHint)
+        }
+    }
+
+    companion object {
+        fun make(
+            exprCtx: C_ExprContext,
+            base: V_Expr,
+            member: V_TypeValueMember,
+            memberPos: S_Pos,
+            safe: Boolean,
+            baseNulled: C_VarNulled?,
+        ): V_Expr {
+            val type = C_Utils.effectiveMemberType(member.type, safe)
+            val vExpr = V_ValueMemberExpr(exprCtx, base, type, member, memberPos, safe, baseNulled)
+
+            val smartKind = "expr" toCodeMsg "expression"
+            val forceNotNull = baseNulled == C_VarNulled.NO && safe && member.type !is R_NullableType
+            return V_SmartNullableExpr.wrap(exprCtx, vExpr, smartKind, forceNotNull = forceNotNull)
+        }
+
+        fun varKey(base: V_Expr, item: C_VarPathItem?): C_VarStateKey? {
+            val baseKey = base.varKey()
+            return when {
+                baseKey == null -> null
+                !baseKey.isFull -> baseKey
+                item == null -> C_VarStateKey(baseKey.varId, baseKey.path, isFull = false)
+                else -> C_VarStateKey(baseKey.varId, baseKey.path + item)
+            }
         }
     }
 }

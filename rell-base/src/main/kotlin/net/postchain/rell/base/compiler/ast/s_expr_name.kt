@@ -209,7 +209,7 @@ class S_MemberExpr(val base: S_Expr, val name: S_Name): S_Expr(base.startPos) {
 
         val vBase = base.compileSafe(ctx, C_ExprHint.DEFAULT).value()
         val link = C_MemberLink(vBase, R_NullType, cName.pos, cName, false)
-        return member.compile(ctx, link, cNameHand)
+        return member.compile(ctx, link, cNameHand, null)
     }
 }
 

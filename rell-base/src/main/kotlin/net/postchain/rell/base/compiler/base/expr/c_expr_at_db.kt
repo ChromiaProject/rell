@@ -29,6 +29,7 @@ class C_AtEntity(
     val dollarIdeInfo: C_IdeSymbolInfo,
 ) {
     val atExprId = atEntityId.exprId
+    val varId: C_VarId = C_AtEntityVarId(this)
 
     private val rAtEntity = R_DbAtEntity(rEntity, atEntityId)
 
@@ -37,7 +38,8 @@ class C_AtEntity(
     }
 
     fun toVExpr(ctx: C_ExprContext, pos: S_Pos, isOuter: Boolean, isAmbiguous: Boolean): V_Expr {
-        return V_AtEntityExpr(ctx, pos, this, isOuter, isAmbiguous)
+        val vExpr = V_AtEntityExpr(ctx, pos, this, isOuter, isAmbiguous)
+        return V_SmartNullableExpr.wrap(ctx, vExpr, "var" toCodeMsg "variable")
     }
 
     fun toRAtEntityValidated(ctx: C_ExprContext, pos: S_Pos, ambiguous: Boolean): R_DbAtEntity {
@@ -51,6 +53,10 @@ class C_AtEntity(
     private fun isValidAccess(ctx: C_ExprContext): Boolean {
         return chainToIterable(ctx.atCtx) { it.parent }.any { it.atExprId == atExprId }
     }
+
+    private data class C_AtEntityVarId(private val atEntity: C_AtEntity): C_VarId() {
+        override fun nameMsg() = atEntity.alias.str
+    }
 }
 
 class C_AtFrom_Entities(
@@ -62,7 +68,7 @@ class C_AtFrom_Entities(
     private val items = items.toImmList()
     private val entities = this.items.map { it.atEntity }.toImmList()
 
-    private val innerExprCtx = outerExprCtx.update(blkCtx = innerBlkCtx, atCtx = innerAtCtx)
+    private val innerExprCtx = outerExprCtx.copy(blkCtx = innerBlkCtx, atCtx = innerAtCtx)
 
     init {
         check(entities.isNotEmpty())
@@ -178,7 +184,7 @@ class C_AtFrom_Entities(
             extras,
             details.cardinality.value,
             internals,
-            details.exprFacts,
+            details.varStatesDelta,
         )
     }
 
@@ -213,7 +219,7 @@ class C_AtFrom_Entities(
             extras = V_AtExprExtras(null, null),
             cardinality = R_AtCardinality.ZERO_MANY,
             internals = R_DbAtExprInternals(cBlock.rBlock, rowDecoder),
-            resVarFacts = details.exprFacts,
+            resVarStates = details.varStatesDelta,
         )
     }
 
@@ -225,13 +231,14 @@ class C_AtFrom_Entities(
     ): V_Expr {
         val cBlock = innerBlkCtx2.buildBlock()
         val itemVarRef = itemVar.toRef(cBlock.rBlock.uid)
-        val factsCtx = outerExprCtx.factsCtx.sub(C_VarFacts.of(inited = mapOf(itemVar.uid to C_VarFact.YES)))
-        val innerExprCtx2 = outerExprCtx.update(blkCtx = innerBlkCtx2, factsCtx = factsCtx, atCtx = innerAtCtx)
+        val innerExprCtx2 = outerExprCtx
+            .updateVarStates(C_VarStatesDelta.changed(itemVar.varKey))
+            .copy(blkCtx = innerBlkCtx2, atCtx = innerAtCtx)
         val itemExpr: V_Expr = V_LocalVarExpr(innerExprCtx2, details.startPos, itemVarRef)
 
         val colWhat = details.base.what.allFields.mapIndexed { i, field ->
             val kind = V_TupleSubscriptKind_Simple
-            val expr = V_TupleSubscriptExpr(innerExprCtx2, field.expr.pos, itemExpr, kind, field.expr.type, i)
+            val expr = V_TupleSubscriptExpr(innerExprCtx2, field.expr.pos, itemExpr, kind, field.expr.type, i, null)
             field.update(expr = expr)
         }
 
@@ -246,7 +253,7 @@ class C_AtFrom_Entities(
             extras = V_AtExprExtras(details.limit, details.offset),
             block = cBlock.rBlock,
             param = R_ColAtParam(itemVar.type, itemVarRef.ptr),
-            resVarFacts = details.exprFacts,
+            resVarStates = details.varStatesDelta,
         )
     }
 
@@ -270,7 +277,7 @@ class C_AtFrom_Entities(
             cBase.toVBase(),
             extras,
             cBlock.rBlock,
-            details.exprFacts,
+            details.varStatesDelta,
         )
     }
 
@@ -299,8 +306,8 @@ class C_AtFrom_Entities(
             return "${atEntity.alias}:${atEntity.rEntity.type.name}" toCodeMsg atEntity.alias.str
         }
 
-        override fun compile(pos: S_Pos): V_Expr {
-            return V_AtEntityExpr(innerExprCtx, pos, atEntity, isOuter = isOuter, isAmbiguous = false)
+        override fun compile(ctx: C_ExprContext, pos: S_Pos): V_Expr {
+            return atEntity.toVExpr(ctx, pos, isOuter = isOuter, isAmbiguous = false)
         }
     }
 

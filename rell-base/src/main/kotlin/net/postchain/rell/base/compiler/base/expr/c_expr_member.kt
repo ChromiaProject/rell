@@ -54,32 +54,39 @@ abstract class C_TypeValueMember(optionalName: R_Name?): C_TypeMember(optionalNa
         resTypeHint: C_TypeHint,
     ): V_TypeValueMember? = null
 
-    abstract fun compile(ctx: C_ExprContext, link: C_MemberLink, ideInfoHand: C_IdeSymbolInfoHandle): C_Expr
+    fun compile(
+        ctx: C_ExprContext,
+        link: C_MemberLink,
+        ideInfoHand: C_IdeSymbolInfoHandle,
+        baseNulled: C_VarNulled?,
+    ): C_Expr {
+        access(ctx.msgCtx, link.linkPos)
+        return C_ValueMemberExpr(ctx, link, this, baseNulled, ideInfoHand)
+    }
+
+    protected open fun access(msgCtx: C_MessageContext, pos: S_Pos) {
+    }
 }
 
 abstract class C_TypeValueMember_Value(
-    private val ideName: R_IdeName?,
+    rName: R_Name?,
     val valueType: R_Type,
     private val restrictions: C_MemberRestrictions,
-): C_TypeValueMember(ideName?.rName) {
+): C_TypeValueMember(rName) {
     final override fun isValue() = true
     final override fun isCallable() = valueType is R_FunctionType
 
     // Not supported yet.
     final override fun replaceTypeParams(rep: C_TypeMemberReplacement) = this
 
-    final override fun compile(ctx: C_ExprContext, link: C_MemberLink, ideInfoHand: C_IdeSymbolInfoHandle): C_Expr {
-        val expr: C_Expr = C_ValueMemberExpr(ctx, link, this, C_IdeSymbolInfoHandle.NOP_HANDLE)
-        val ideInfo = ideName?.ideInfo ?: C_IdeSymbolInfo.UNKNOWN
-        ideInfoHand.setIdeInfo(ideInfo)
-        restrictions.access(ctx.msgCtx, link.linkPos)
-        return expr
+    override fun access(msgCtx: C_MessageContext, pos: S_Pos) {
+        restrictions.access(msgCtx, pos)
     }
 }
 
 class C_TypeValueMember_BasicAttr(
     private val attr: C_MemberAttr,
-): C_TypeValueMember_Value(attr.ideName, attr.type, attr.restrictions()) {
+): C_TypeValueMember_Value(attr.rName, attr.type, attr.restrictions()) {
     override fun kindMsg() = "attribute"
     override fun nameMsg() = attr.nameMsg()
 
@@ -98,6 +105,7 @@ class C_TypeValueMember_BasicAttr(
         override fun implicitAttrName() = memberName
         override fun vExprs() = immListOf<V_Expr>()
         override fun calculator() = attr.calculator()
+        override fun varPathItem() = attr.varPathItem()
 
         override fun destination(base: V_Expr): C_Destination {
             val rBase = base.toRExpr()
@@ -163,17 +171,13 @@ class C_TypeValueMember_Function(
         return V_TypeValueMember_FunctionCall(retType, vCall, linkPos)
     }
 
-    override fun compile(ctx: C_ExprContext, link: C_MemberLink, ideInfoHand: C_IdeSymbolInfoHandle): C_Expr {
-        return C_ValueMemberExpr(ctx, link, this, ideInfoHand)
-    }
-
     private class V_TypeValueMember_FunctionCall(
         type: R_Type,
         private val call: V_MemberFunctionCall,
         private val memberPos: S_Pos,
     ): V_TypeValueMember(type, call.ideInfo) {
         override fun implicitAttrName() = null
-        override fun postVarFacts() = call.postVarFacts()
+        override fun varStatesDelta() = call.varStatesDelta()
         override fun vExprs() = call.vExprs()
         override fun globalConstantRestriction() = call.globalConstantRestriction()
         override fun safeCallable() = false
@@ -199,14 +203,25 @@ abstract class C_MemberAttr(
     val ideName: R_IdeName?,
     val type: R_Type,
 ) {
+    val rName = ideName?.rName
+
+    private val varPathItem: C_VarPathItem? by lazy { varPathItem0() }
+
+    protected abstract fun varPathItem0(): C_VarPathItem?
+
     abstract fun nameMsg(): C_CodeMsg
     abstract fun restrictions(): C_MemberRestrictions
     abstract fun vAttr(exprCtx: C_ExprContext, pos: S_Pos): V_MemberAttr
+
+    protected abstract inner class V_MemberAttr_Common(type: R_Type): V_MemberAttr(type) {
+        final override fun varPathItem() = varPathItem
+    }
 }
 
 abstract class V_MemberAttr(val type: R_Type) {
     abstract fun calculator(): R_MemberCalculator
     abstract fun destination(pos: S_Pos, base: R_Expr): R_DestinationExpr
+    abstract fun varPathItem(): C_VarPathItem?
     open fun canBeDbExpr(): Boolean = false
     open fun dbExpr(base: Db_Expr): Db_Expr? = null
 }
@@ -216,6 +231,8 @@ abstract class C_MemberAttr_TupleAttr(
     protected val fieldIndex: Int,
     protected val field: R_TupleField,
 ): C_MemberAttr(field.name, type) {
+    final override fun varPathItem0() = C_VarPathItem.forTupleAttr(field)
+
     final override fun nameMsg(): C_CodeMsg {
         return if (field.name != null) {
             field.name.str toCodeMsg field.name.str
@@ -226,19 +243,26 @@ abstract class C_MemberAttr_TupleAttr(
 
     final override fun restrictions() = C_MemberRestrictions.NULL
 
-    protected abstract class V_MemberAttr_TupleAttr(
+    protected abstract inner class V_MemberAttr_TupleAttr(
         type: R_Type,
         protected val fieldIndex: Int,
-    ): V_MemberAttr(type) {
+    ): V_MemberAttr_Common(type) {
         final override fun destination(pos: S_Pos, base: R_Expr) = throw C_Errors.errBadDestination(pos)
     }
 }
 
-abstract class C_MemberAttr_StructAttr(type: R_Type, protected val attr: R_Attribute): C_MemberAttr(attr.ideName, type) {
+abstract class C_MemberAttr_StructAttr(
+    type: R_Type,
+    protected val attr: R_Attribute,
+): C_MemberAttr(attr.ideName, type) {
+    final override fun varPathItem0() = if (attr.mutable) null else C_VarPathItem.forRAttr(attr)
     final override fun nameMsg() = attr.rName.str toCodeMsg attr.rName.str
     final override fun restrictions() = attr.restrictions
 
-    protected abstract class V_MemberAttr_StructAttr(type: R_Type, protected val attr: R_Attribute): V_MemberAttr(type)
+    protected abstract inner class V_MemberAttr_StructAttr(
+        type: R_Type,
+        protected val attr: R_Attribute,
+    ): V_MemberAttr_Common(type)
 }
 
 class C_MemberAttr_SysProperty(
@@ -247,23 +271,23 @@ class C_MemberAttr_SysProperty(
     private val fn: C_SysFunction,
     private val naming: C_MemberNaming,
     private val restrictions: C_MemberRestrictions,
+    private val pure: Boolean,
 ): C_MemberAttr(ideName, type) {
     private val name = ideName.rName
 
+    override fun varPathItem0() = if (!pure) null else C_VarPathItem.forMemberAttr(name, this)
     override fun nameMsg() = name.str toCodeMsg name.str
     override fun restrictions() = restrictions
 
     override fun vAttr(exprCtx: C_ExprContext, pos: S_Pos): V_MemberAttr {
         val cBody = fn.compileCall(C_SysFunctionCtx(exprCtx, pos))
-        return V_MemberAttr_SysProperty(type, name, naming, cBody)
+        return V_MemberAttr_SysProperty(type, cBody)
     }
 
-    private class V_MemberAttr_SysProperty(
+    private inner class V_MemberAttr_SysProperty(
         type: R_Type,
-        private val name: R_Name,
-        private val naming: C_MemberNaming,
         private val cBody: C_SysFunctionBody,
-    ): V_MemberAttr(type) {
+    ): V_MemberAttr_Common(type) {
         override fun calculator(): R_MemberCalculator {
             return R_MemberCalculator_SysProperty(type, cBody)
         }
@@ -302,6 +326,7 @@ sealed class C_EntityAttrRef(
     val attrName = ideName.rName
 
     abstract fun attribute(): R_Attribute?
+    abstract fun varPathItem(): C_VarPathItem?
     abstract fun createDbContextAttrExpr(baseExpr: Db_TableExpr): Db_Expr
     abstract fun createDbMemberExpr(ctx: C_ExprContext, base: Db_TableExpr): Db_Expr
 
@@ -346,6 +371,10 @@ private class C_EntityAttrRef_Regular(
 ): C_EntityAttrRef(rEntity, attr.ideName, attr.type) {
     override fun attribute() = attr
 
+    override fun varPathItem(): C_VarPathItem? {
+        return if (attr.mutable) null else C_VarPathItem.forRAttr(attr)
+    }
+
     override fun createDbContextAttrExpr(baseExpr: Db_TableExpr): Db_Expr {
         return makeDbAttrExpr(baseExpr)
     }
@@ -371,6 +400,7 @@ private class C_EntityAttrRef_Rowid(
     ideInfo: C_IdeSymbolInfo,
 ): C_EntityAttrRef(rEntity, R_IdeName(ROWID_RNAME, ideInfo), ROWID_TYPE) {
     override fun attribute() = null
+    override fun varPathItem() = null
 
     override fun createDbContextAttrExpr(baseExpr: Db_TableExpr): Db_Expr {
         return Db_RowidExpr(baseExpr)

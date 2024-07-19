@@ -231,7 +231,7 @@ class S_FunctionBodyFull(val body: S_Statement): S_FunctionBody() {
     override fun compileQuery0(bodyCtx: C_FunctionBodyContext, stmtCtx: C_StmtContext): C_Statement {
         val cBody = body.compile(stmtCtx)
 
-        C_Errors.check(cBody.returnAlways, bodyCtx.namePos) {
+        C_Errors.check(cBody.alwaysReturns, bodyCtx.namePos) {
             val nameStr = bodyCtx.defName.qualifiedName
             "query_noreturn:$nameStr" toCodeMsg "Query '$nameStr': not all code paths return value"
         }
@@ -244,7 +244,7 @@ class S_FunctionBodyFull(val body: S_Statement): S_FunctionBody() {
 
         val retType = stmtCtx.fnCtx.actualReturnType()
         if (retType != R_UnitType) {
-            C_Errors.check(cBody.returnAlways, bodyCtx.namePos) {
+            C_Errors.check(cBody.alwaysReturns, bodyCtx.namePos) {
                 val nameStr = bodyCtx.defName.qualifiedName
                 "fun_noreturn:$nameStr" toCodeMsg "Function '$nameStr': not all code paths return value"
             }

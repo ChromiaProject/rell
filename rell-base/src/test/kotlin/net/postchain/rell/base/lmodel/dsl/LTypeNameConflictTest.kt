@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.lmodel.dsl
 
+import net.postchain.rell.base.lib.type.R_IntegerType
 import net.postchain.rell.base.lib.type.Rt_UnitValue
 import org.junit.Test
 
@@ -24,7 +25,7 @@ class LTypeNameConflictTest: BaseLTest() {
             constant("f", 123)
         }
         chkNameConflictErr(defs, block, "f") {
-            property("f", "anything") { value { Rt_UnitValue } }
+            property("f", "anything") { value { _ -> Rt_UnitValue } }
         }
     }
 
@@ -43,8 +44,8 @@ class LTypeNameConflictTest: BaseLTest() {
         chkNameConflictErr(defs, block, "f") {
             constant("f", 123)
         }
-        chkNameConflictOK(defs, block, "property f: anything") {
-            property("f", "anything") { value { Rt_UnitValue } }
+        chkNameConflictOK(defs, block, "property f: integer") {
+            property("f", "integer") { value { _ -> Rt_UnitValue } }
         }
     }
 
@@ -64,35 +65,35 @@ class LTypeNameConflictTest: BaseLTest() {
             constant("f", 123)
         }
         chkNameConflictErr(defs, block, "f") {
-            property("f", "anything") { value { Rt_UnitValue } }
+            property("f", "anything") { value { _ -> Rt_UnitValue } }
         }
     }
 
     @Test fun testConstant() {
         val block = makeBlock { constant("c", 123) }
         val defs = arrayOf("constant c: integer = int[123]")
-        chkNameConflictOK(defs, block, "function c(): anything") {
-            function("c", "anything") { body { -> Rt_UnitValue } }
+        chkNameConflictOK(defs, block, "function c(): integer") {
+            function("c", "integer") { body { -> Rt_UnitValue } }
         }
         chkNameConflictOK(defs, block, "special function c(...)") {
             function("c", makeTypeFun())
         }
         chkNameConflictErr(defs, block, "c") {
-            staticFunction("c", "anything") { body { -> Rt_UnitValue } }
+            staticFunction("c", "integer") { body { -> Rt_UnitValue } }
         }
         chkNameConflictErr(defs, block, "c") {
             constant("c", 123)
         }
-        chkNameConflictOK(defs, block, "property c: anything") {
-            property("c", "anything") { value { Rt_UnitValue } }
+        chkNameConflictOK(defs, block, "property c: integer") {
+            property("c", "integer") { value { _ -> Rt_UnitValue } }
         }
     }
 
     @Test fun testProperty() {
-        val block = makeBlock { property("p", "anything") { value { Rt_UnitValue } } }
-        val defs = arrayOf("property p: anything")
+        val block = makeBlock { property("p", "integer") { value { _ -> Rt_UnitValue } } }
+        val defs = arrayOf("property p: integer")
         chkNameConflictErr(defs, block, "p") {
-            function("p", "anything") { body { -> Rt_UnitValue } }
+            function("p", "integer") { body { -> Rt_UnitValue } }
         }
         chkNameConflictErr(defs, block, "p") {
             function("p", makeTypeFun())
@@ -104,29 +105,29 @@ class LTypeNameConflictTest: BaseLTest() {
             constant("p", 123)
         }
         chkNameConflictErr(defs, block, "p") {
-            property("p", "anything") { value { Rt_UnitValue } }
+            property("p", "anything") { value { _ -> Rt_UnitValue } }
         }
     }
 
     @Test fun testAliasFunction() {
         val (defs, block) = initAlias()
-        chkNameConflictOK(defs, block, "function x(): anything", "alias c = x") {
-            function("x", "anything") { alias("c"); body { -> Rt_UnitValue } }
+        chkNameConflictOK(defs, block, "function x(): integer", "alias c = x") {
+            function("x", "integer") { alias("c"); body { -> Rt_UnitValue } }
         }
         chkNameConflictErr(defs, block, "p") {
-            function("x", "anything") { alias("p"); body { -> Rt_UnitValue } }
+            function("x", "integer") { alias("p"); body { -> Rt_UnitValue } }
         }
-        chkNameConflictOK(defs, block, "function x(a: anything): anything", "alias f = x") {
-            function("x", "anything") { alias("f"); param("a", "anything"); body { -> Rt_UnitValue } }
+        chkNameConflictOK(defs, block, "function x(a: integer): integer", "alias f = x") {
+            function("x", "integer") { alias("f"); param("a", "integer"); body { -> Rt_UnitValue } }
         }
         chkNameConflictErr(defs, block, "g") {
-            function("x", "anything") { alias("g"); body { -> Rt_UnitValue } }
+            function("x", "integer") { alias("g"); body { -> Rt_UnitValue } }
         }
-        chkNameConflictOK(defs, block, "function x(): anything", "alias h = x") {
-            function("x", "anything") { alias("h"); body { -> Rt_UnitValue } }
+        chkNameConflictOK(defs, block, "function x(): integer", "alias h = x") {
+            function("x", "integer") { alias("h"); body { -> Rt_UnitValue } }
         }
-        chkNameConflictOK(defs, block, "function x(): anything", "alias i = x") {
-            function("x", "anything") { alias("i"); body { -> Rt_UnitValue } }
+        chkNameConflictOK(defs, block, "function x(): integer", "alias i = x") {
+            function("x", "integer") { alias("i"); body { -> Rt_UnitValue } }
         }
     }
 
@@ -155,19 +156,19 @@ class LTypeNameConflictTest: BaseLTest() {
     private fun initAlias(): Pair<Array<String>, Ld_TypeDefDsl.() -> Unit> {
         val block = makeBlock {
             constant("c", 123)
-            property("p", "anything") { value { Rt_UnitValue } }
-            function("f", "anything") { body { -> Rt_UnitValue } }
+            property("p", "integer") { value { _ -> Rt_UnitValue } }
+            function("f", "integer") { body { -> Rt_UnitValue } }
             function("g", makeTypeFun())
-            staticFunction("h", "anything") { param("a", "anything"); body { -> Rt_UnitValue } }
+            staticFunction("h", "integer") { param("a", "integer"); body { -> Rt_UnitValue } }
             staticFunction("i", makeNsFun())
         }
 
         val defs = arrayOf(
             "constant c: integer = int[123]",
-            "property p: anything",
-            "function f(): anything",
+            "property p: integer",
+            "function f(): integer",
             "special function g(...)",
-            "static function h(a: anything): anything",
+            "static function h(a: integer): integer",
             "static special function i(...)",
         )
 
@@ -181,7 +182,9 @@ class LTypeNameConflictTest: BaseLTest() {
         block2: Ld_TypeDefDsl.() -> Unit,
     ) {
         val mod = makeModule("test") {
-            type("integer")
+            type("integer") {
+                rType(R_IntegerType)
+            }
             type("data") {
                 block1(this)
                 block2(this)
@@ -197,7 +200,9 @@ class LTypeNameConflictTest: BaseLTest() {
         block2: Ld_TypeDefDsl.() -> Unit,
     ) {
         val mod = makeModule("test") {
-            type("integer")
+            type("integer") {
+                rType(R_IntegerType)
+            }
             type("data") {
                 block1(this)
                 chkErr("LDE:name_conflict:$name") { block2(this) }

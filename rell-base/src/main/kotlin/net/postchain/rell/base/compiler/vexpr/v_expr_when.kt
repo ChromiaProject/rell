@@ -7,8 +7,8 @@ package net.postchain.rell.base.compiler.vexpr
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
-import net.postchain.rell.base.compiler.base.expr.C_ExprVarFacts
-import net.postchain.rell.base.compiler.base.expr.C_VarFacts
+import net.postchain.rell.base.compiler.base.expr.C_ExprVarStatesDelta
+import net.postchain.rell.base.compiler.base.expr.C_VarStatesDelta
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_Value
@@ -17,17 +17,16 @@ import net.postchain.rell.base.utils.toImmMap
 
 class V_WhenChooserDetails(
     val keyExpr: V_Expr?,
-    val keyPostFacts: C_VarFacts,
+    val keyVarStatesDelta: C_VarStatesDelta,
     constantCases: Map<Rt_Value, Int>,
     variableCases: List<IndexedValue<V_Expr>>,
     val elseCase: IndexedValue<S_Pos>?,
     val full: Boolean,
-    caseFacts: List<C_VarFacts>,
-    val elseFacts: C_VarFacts,
+    caseVarStatesDeltas: List<C_VarStatesDelta>,
 ) {
     val constantCases = constantCases.toImmMap()
     val variableCases = variableCases.toImmList()
-    val caseFacts = caseFacts.toImmList()
+    val caseVarStatesDeltas = caseVarStatesDeltas.toImmList()
 
     fun makeChooser(): R_WhenChooser {
         if (keyExpr == null) {
@@ -55,14 +54,14 @@ class V_WhenExpr(
     private val chooserDetails: V_WhenChooserDetails,
     private val valueExprs: List<V_Expr>,
     private val resType: R_Type,
-    private val resVarFacts: C_ExprVarFacts,
+    private val resVarStates: C_ExprVarStatesDelta,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0(): V_ExprInfo {
         val subExprs = listOfNotNull(chooserDetails.keyExpr) + chooserDetails.variableCases.map { it.value } + valueExprs
         return V_ExprInfo.simple(resType, subExprs)
     }
 
-    override fun varFacts0() = resVarFacts
+    override fun varStatesDelta0() = resVarStates
 
     override fun toRExpr0(): R_Expr {
         val rChooser = chooserDetails.makeChooser()

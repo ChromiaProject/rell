@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.expr
@@ -72,7 +72,7 @@ class C_Destination_EntityAttr(
         val metaName = "${rEntity.appLevelName}.${attr.name}="
 
         val lambdaBlkCtx = ctx.blkCtx.createSubContext("<$metaName:lambda>")
-        val lambdaCtx = ctx.update(blkCtx = lambdaBlkCtx)
+        val lambdaCtx = ctx.copy(blkCtx = lambdaBlkCtx)
         val baseVar = lambdaBlkCtx.newLocalVar("<$metaName:base>", null, base.type, false, null)
         val srcVar = lambdaBlkCtx.newLocalVar("<$metaName:src>", null, srcExpr.type, false, null)
 

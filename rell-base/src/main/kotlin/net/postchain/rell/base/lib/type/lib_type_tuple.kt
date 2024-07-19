@@ -28,7 +28,7 @@ object Lib_Type_Tuple {
             return V_MemberAttr_RegularTupleAttr(type, fieldIndex)
         }
 
-        private class V_MemberAttr_RegularTupleAttr(
+        private inner class V_MemberAttr_RegularTupleAttr(
             type: R_Type,
             fieldIndex: Int,
         ): V_MemberAttr_TupleAttr(type, fieldIndex) {

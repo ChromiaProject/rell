@@ -4,12 +4,14 @@
 
 package net.postchain.rell.base.lib.type
 
+import net.postchain.rell.base.compiler.base.core.C_VarId
 import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.compiler.base.lib.C_TypeStaticMember
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty_RtValue
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
+import net.postchain.rell.base.model.R_EnumAttr
 import net.postchain.rell.base.model.R_EnumType
 import net.postchain.rell.base.model.expr.Db_SysFunction
 import net.postchain.rell.base.runtime.Rt_Exception
@@ -108,10 +110,14 @@ object Lib_Type_Enum {
         return type.enum.attrs
             .map { attr ->
                 val defName = defPath.subName(attr.rName)
-                val prop = C_NamespaceProperty_RtValue(type.getValue(attr))
+                val prop = C_NamespaceProperty_RtValue(type.getValue(attr), type, C_EnumValueVarId(type, attr))
                 val restrictions = C_MemberRestrictions.NULL
                 C_TypeStaticMember.makeProperty(defName, attr.rName, prop, type, attr.ideInfo, restrictions)
             }
             .toImmList()
+    }
+
+    private data class C_EnumValueVarId(private val enumType: R_EnumType, private val attr: R_EnumAttr): C_VarId() {
+        override fun nameMsg() = "${enumType.defName.appLevelName}.${attr.name}"
     }
 }

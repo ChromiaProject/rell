@@ -5,7 +5,6 @@
 package net.postchain.rell.base.lmodel
 
 import net.postchain.rell.base.compiler.base.lib.C_SysFunction
-import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
@@ -38,14 +37,17 @@ class L_NamespaceMember_SpecialProperty(
     override fun strCode() = "property $qualifiedName"
 }
 
-class L_TypeProperty(val simpleName: R_Name, val type: M_Type, val body: C_SysFunctionBody) {
-    val pure: Boolean = body.pure
-
+class L_TypeProperty(
+    val simpleName: R_Name,
+    val type: M_Type,
+    val fn: C_SysFunction,
+    val pure: Boolean,
+) {
     fun strCode() = "property $simpleName: ${type.strCode()}"
 
     fun replaceTypeParams(map: Map<M_TypeParam, M_TypeSet>): L_TypeProperty {
         val type2 = type.replaceParamsOut(map)
-        return if (type2 === type) this else L_TypeProperty(simpleName, type2, body = body)
+        return if (type2 === type) this else L_TypeProperty(simpleName, type2, fn = fn, pure = pure)
     }
 }
 

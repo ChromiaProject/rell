@@ -277,8 +277,8 @@ class CompilerErrorsTest: BaseRellTest(false) {
 
         chk("($badExpr1)?.foo", "ct_err:$badError1")
 
-        chkCompile("function f(d: data) = d?.x;", "ct_err:expr_safemem_type:[data]")
-        chkCompile("function f(d: data) = d?.q;", "ct_err:[expr_safemem_type:[data]][unknown_member:[data]:q]")
+        chkCompile("function f(d: data) = d?.x;", "ct_err:expr_safemem_type:[data]:x")
+        chkCompile("function f(d: data) = d?.q;", "ct_err:[expr_safemem_type:[data]:q][unknown_member:[data]:q]")
     }
 
     @Test fun testExprAt() {

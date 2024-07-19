@@ -29,7 +29,18 @@ import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import org.apache.commons.lang3.mutable.MutableLong
 
-data class C_VarUid(val id: Long, val name: String, val fn: R_FnUid)
+abstract class C_VarId {
+    abstract fun nameMsg(): String
+}
+
+data class C_LocalVarUid(val id: Long, val name: String, val fn: R_FnUid): C_VarId() {
+    override fun nameMsg() = name
+}
+
+data class C_GlobalConstantUid(val id: Long, val name: String, val container: R_ContainerUid): C_VarId() {
+    override fun nameMsg() = name
+}
+
 data class C_LoopUid(val id: Long, val fn: R_FnUid)
 
 class C_GlobalContext(
@@ -98,14 +109,12 @@ sealed class C_ModuleContext(
 
     private val containerUid = appCtx.nextContainerUid(containerKey.keyStr())
     private val fnUidGen = C_UidGen { id, name -> R_FnUid(id, name, containerUid) }
-
-    private val constFnUid = nextFnUid("<const>")
-    private val constUidGen = C_UidGen { id, name -> C_VarUid(id, name, constFnUid) }
+    private val constUidGen = C_UidGen { id, name -> C_GlobalConstantUid(id, name, containerUid) }
 
     private val namelessFunctionIds = mutableMapOf<C_RNamePath, MutableLong>()
 
     fun nextFnUid(name: String) = fnUidGen.next(name)
-    fun nextConstVarUid(name: String) = constUidGen.next(name)
+    fun nextConstVarUid(name: String): C_VarId = constUidGen.next(name)
 
     fun nextNamelessFunctionId(namespace: C_RNamePath): Long {
         val idCtr = namelessFunctionIds.computeIfAbsent(namespace) { MutableLong(0) }
@@ -469,7 +478,7 @@ class C_FunctionContext(
 
     val fnUid = defCtx.modCtx.nextFnUid(name)
     private val blockUidGen = C_UidGen { id, name -> R_FrameBlockUid(id, name, fnUid) }
-    private val varUidGen = C_UidGen { id, name -> C_VarUid(id, name, fnUid) }
+    private val varUidGen = C_UidGen { id, name -> C_LocalVarUid(id, name, fnUid) }
     private val loopUidGen = C_UidGen { id, _ -> C_LoopUid(id, fnUid) }
 
     private val retTypeTracker =

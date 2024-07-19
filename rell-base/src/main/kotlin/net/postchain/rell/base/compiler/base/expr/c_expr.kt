@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.expr
@@ -98,6 +98,7 @@ class C_ValueMemberExpr(
     private val exprCtx: C_ExprContext,
     memberLink: C_MemberLink,
     private val member: C_TypeValueMember,
+    private val baseNulled: C_VarNulled?,
     private val ideInfoHand: C_IdeSymbolInfoHandle,
 ): C_Expr() {
     private val vBase = memberLink.base
@@ -124,6 +125,6 @@ class C_ValueMemberExpr(
     }
 
     private fun makeMemberExpr(vMember: V_TypeValueMember): V_Expr {
-        return V_ValueMemberExpr(exprCtx, vBase, vMember, memberPos, safe)
+        return V_ValueMemberExpr.make(exprCtx, vBase, vMember, memberPos, safe, baseNulled)
     }
 }

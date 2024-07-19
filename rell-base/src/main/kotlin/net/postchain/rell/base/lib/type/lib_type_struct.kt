@@ -208,7 +208,7 @@ object Lib_Type_Struct {
             return V_MemberAttr_RegularStructAttr(type, attr, struct)
         }
 
-        private class V_MemberAttr_RegularStructAttr(
+        private inner class V_MemberAttr_RegularStructAttr(
             type: R_Type,
             attr: R_Attribute,
             private val struct: R_Struct,

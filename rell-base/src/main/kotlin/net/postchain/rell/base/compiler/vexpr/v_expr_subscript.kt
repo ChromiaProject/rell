@@ -9,6 +9,7 @@ import net.postchain.rell.base.compiler.ast.S_VirtualType
 import net.postchain.rell.base.compiler.base.expr.C_Destination
 import net.postchain.rell.base.compiler.base.expr.C_Destination_Simple
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
+import net.postchain.rell.base.compiler.base.expr.C_VarPathItem
 import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.lib.type.Lib_Type_ByteArray
@@ -81,17 +82,17 @@ object V_TupleSubscriptKind_Virtual: V_TupleSubscriptKind() {
 }
 
 sealed class V_SubscriptExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        protected val baseExpr: V_Expr
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    protected val baseExpr: V_Expr,
 ): V_Expr(exprCtx, pos)
 
 class V_CommonSubscriptExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        baseExpr: V_Expr,
-        private val keyExpr: V_Expr,
-        private val kind: V_CommonSubscriptKind
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    baseExpr: V_Expr,
+    private val keyExpr: V_Expr,
+    private val kind: V_CommonSubscriptKind,
 ): V_SubscriptExpr(exprCtx, pos, baseExpr) {
     override fun exprInfo0() = V_ExprInfo.simple(kind.resType, baseExpr, keyExpr, canBeDbExpr = kind.canBeDbExpr())
 
@@ -127,6 +128,7 @@ class V_TupleSubscriptExpr(
     private val kind: V_TupleSubscriptKind,
     private val resType: R_Type,
     private val index: Int,
+    private val varPathItem: C_VarPathItem?,
 ): V_SubscriptExpr(exprCtx, pos, baseExpr) {
     override fun exprInfo0() = V_ExprInfo.simple(resType, baseExpr, canBeDbExpr = false)
 
@@ -135,4 +137,6 @@ class V_TupleSubscriptExpr(
         val calculator = kind.compile(resType, index)
         return R_MemberExpr(rBase, calculator, false)
     }
+
+    override fun varKey() = V_ValueMemberExpr.varKey(baseExpr, varPathItem)
 }

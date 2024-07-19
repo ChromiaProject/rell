@@ -6,6 +6,7 @@ package net.postchain.rell.base.compiler.vexpr
 
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
+import net.postchain.rell.base.compiler.base.core.C_VarId
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
@@ -51,9 +52,11 @@ class V_FunctionCallExpr(
     private val base: V_Expr?,
     private val call: V_CommonFunctionCall,
     private val safe: Boolean,
+    varId: C_VarId? = null,
 ): V_Expr(exprCtx, pos) {
     private val allExprs = (listOfNotNull(base) + call.args).toImmList()
     private val actualType = C_Utils.effectiveMemberType(call.returnType, safe)
+    private val varKey = if (varId == null) null else C_VarStateKey(varId)
 
     override fun exprInfo0() = V_ExprInfo.simple(
         actualType,
@@ -61,12 +64,12 @@ class V_FunctionCallExpr(
         canBeDbExpr = call.canBeDbExpr()
     )
 
-    override fun varFacts0(): C_ExprVarFacts {
-        var postFacts = call.postVarFacts()
+    override fun varStatesDelta0(): C_ExprVarStatesDelta {
+        var resDelta = call.varStatesDelta()
         if (base != null) {
-            postFacts = postFacts.and(base.varFacts.postFacts)
+            resDelta = resDelta.and(base.varStatesDelta.always)
         }
-        return C_ExprVarFacts.of(postFacts = postFacts)
+        return C_ExprVarStatesDelta.make(always = resDelta)
     }
 
     override fun globalConstantRestriction() = call.globalConstantRestriction()
@@ -85,6 +88,8 @@ class V_FunctionCallExpr(
     override fun toDbExprWhat0(): C_DbAtWhatValue {
         return call.dbExprWhat(base, safe)
     }
+
+    override fun varKey() = varKey
 }
 
 sealed class V_CommonFunctionCall(
@@ -95,7 +100,7 @@ sealed class V_CommonFunctionCall(
 ) {
     val args = args.toImmList()
 
-    abstract fun postVarFacts(): C_VarFacts
+    abstract fun varStatesDelta(): C_VarStatesDelta
     abstract fun globalConstantRestriction(): V_GlobalConstantRestriction?
 
     fun canBeDbExpr() = target.canBeDb()
@@ -144,11 +149,11 @@ class V_CommonFunctionCall_Full(
     returnType: R_Type,
     target: V_FunctionCallTarget,
     private val callArgs: V_FunctionCallArgs,
-    private val argsPostVarFacts: C_VarFacts = C_VarFacts.andPostFacts(callArgs.exprs)
+    private val argsVarStatesDelta: C_VarStatesDelta = C_VarStatesDelta.forExpressions(callArgs.exprs)
 ): V_CommonFunctionCall(pos, returnType, target, callArgs.exprs) {
     private val callFilePos = callPos.toFilePos()
 
-    override fun postVarFacts() = argsPostVarFacts
+    override fun varStatesDelta() = argsVarStatesDelta
     override fun globalConstantRestriction() = target.globalConstantRestriction()
 
     override fun callTarget(
@@ -179,7 +184,7 @@ class V_CommonFunctionCall_Partial(
     args: List<V_Expr>,
     private val mapping: R_PartialCallMapping,
 ): V_CommonFunctionCall(pos, returnType, target, args) {
-    override fun postVarFacts(): C_VarFacts = C_VarFacts.andPostFacts(args)
+    override fun varStatesDelta(): C_VarStatesDelta = C_VarStatesDelta.forExpressions(args)
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("partial_call", null)
 
     override fun rCall0(rTarget: R_FunctionCallTarget, rArgExprs: List<R_Expr>): R_FunctionCall {
@@ -305,7 +310,7 @@ abstract class V_MemberFunctionCall(
     paramIdeInfos: Map<R_Name, C_IdeSymbolInfo>,
 ): V_FunctionCall(paramIdeInfos) {
     abstract fun vExprs(): List<V_Expr>
-    open fun postVarFacts(): C_VarFacts = C_VarFacts.andPostFacts(vExprs())
+    open fun varStatesDelta(): C_VarStatesDelta = C_VarStatesDelta.forExpressions(vExprs())
     open fun globalConstantRestriction(): V_GlobalConstantRestriction? = null
 
     abstract fun returnType(): R_Type
@@ -324,7 +329,7 @@ class V_MemberFunctionCall_CommonCall(
     private val returnType: R_Type,
 ): V_MemberFunctionCall(exprCtx, ideInfo, argIdeInfos) {
     override fun vExprs() = call.args
-    override fun postVarFacts() = call.postVarFacts()
+    override fun varStatesDelta() = call.varStatesDelta()
     override fun globalConstantRestriction() = call.globalConstantRestriction()
     override fun returnType() = returnType
 

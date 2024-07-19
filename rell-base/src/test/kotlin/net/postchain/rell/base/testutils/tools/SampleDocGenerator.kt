@@ -9,7 +9,6 @@ package net.postchain.rell.base.testutils.tools
 import com.google.common.io.Files
 import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
-import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty_RtValue
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.ide.BaseIdeSymbolTest
 import net.postchain.rell.base.lib.Lib_Rell
@@ -187,7 +186,7 @@ private class StringBuilderDocCodeTokenVisitor(private val buf: StringBuilder): 
 private object SampleDocLib {
     val MODULE: C_LibModule = C_LibModule.make("sample", Lib_Rell.MODULE) {
         namespace("sample") {
-            property("special_prop", C_NamespaceProperty_RtValue(Rt_UnitValue))
+            property("special_prop", BaseLTest.makeNsProp(Rt_UnitValue))
 
             function("dep_fun_warn", result = "integer") {
                 deprecated("other_fun", error = false)
@@ -219,8 +218,8 @@ private object SampleDocLib {
                     body { -> Rt_UnitValue }
                 }
 
-                property("prop", type = "integer") { value { Rt_UnitValue } }
-                property("pure_prop", pure = true, type = "integer") { value { Rt_UnitValue } }
+                property("prop", type = "integer") { value { _ -> Rt_UnitValue } }
+                property("pure_prop", pure = true, type = "integer") { value { _ -> Rt_UnitValue } }
                 property("spec_prop", type = "integer", C_SysFunctionBody.simple { _ -> Rt_UnitValue })
 
                 function("spec_fun", BaseLTest.makeTypeFun())

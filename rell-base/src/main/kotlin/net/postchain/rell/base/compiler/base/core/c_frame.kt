@@ -17,33 +17,20 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.utils.*
 
-class C_LocalVarRef(val target: C_LocalVar, val ptr: R_VarPtr) {
+class C_LocalVarRef(
+    val target: C_LocalVar,
+    val ptr: R_VarPtr,
+) {
     fun toRExpr(): R_DestinationExpr = R_VarExpr(target.type, ptr, target.metaName)
     fun toDbExpr(): Db_Expr = Db_InterpretedExpr(toRExpr())
 
     fun compile(ctx: C_ExprContext, pos: S_Pos): V_Expr {
         val vExpr = V_LocalVarExpr(ctx, pos, this)
-        return smartNullable(ctx, vExpr, target.type, target.uid, target.metaName, SMART_KIND)
+        return V_SmartNullableExpr.wrap(ctx, vExpr, SMART_KIND)
     }
 
     companion object {
         private val SMART_KIND = C_CodeMsg("var", "Variable")
-
-        fun smartNullable(
-                ctx: C_ExprContext,
-                vExpr: V_Expr,
-                formalType: R_Type,
-                varUid: C_VarUid,
-                varName: String,
-                varKind: C_CodeMsg
-        ): V_Expr {
-            val nulled = ctx.factsCtx.nulled(varUid)
-            val smartType = if (formalType is R_NullableType && nulled == C_VarFact.NO) formalType.valueType else null
-
-            return if (nulled == C_VarFact.MAYBE && smartType == null) vExpr else {
-                V_SmartNullableExpr(ctx, vExpr, nulled == C_VarFact.YES, smartType, varName, varKind)
-            }
-        }
     }
 }
 
@@ -53,9 +40,11 @@ class C_LocalVar(
     val type: R_Type,
     val mutable: Boolean,
     val offset: Int,
-    val uid: C_VarUid,
+    val uid: C_LocalVarUid,
     val atExprId: R_AtExprId?,
 ) {
+    val varKey = C_VarStateKey(uid)
+
     fun toRef(blockUid: R_FrameBlockUid): C_LocalVarRef {
         val ptr = R_VarPtr(metaName, blockUid, offset)
         return C_LocalVarRef(this, ptr)
@@ -514,7 +503,7 @@ class C_LambdaBlock(
 
 class C_LambdaBlockBuilder(ctx: C_ExprContext, private val varType: R_Type) {
     val innerBlkCtx = ctx.blkCtx.createSubContext("<lambda>")
-    val innerExprCtx = ctx.update(blkCtx = innerBlkCtx)
+    val innerExprCtx = ctx.copy(blkCtx = innerBlkCtx)
 
     private val localVar = innerBlkCtx.newLocalVar("<lambda>", null, varType, false, null)
 

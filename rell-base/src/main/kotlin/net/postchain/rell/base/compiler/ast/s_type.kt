@@ -154,7 +154,7 @@ class S_TupleType(pos: S_Pos, private val fields: List<S_GenericTupleAttr<S_Type
 
         val typeIdeId = ctx.tupleIdeId()
 
-        val rFields = fields.map { (name, type, comment) ->
+        val rFields = fields.mapIndexed { index, (name, type, comment) ->
             val nameHand = name?.compile(ctx.symCtx, def = true)
 
             val rType = C_Types.checkNotUnit(ctx.msgCtx, type.pos, type.compile(ctx), nameHand?.str) {
@@ -173,7 +173,7 @@ class S_TupleType(pos: S_Pos, private val fields: List<S_GenericTupleAttr<S_Type
                 R_IdeName(nameHand.rName, ideDef.refInfo)
             }
 
-            R_TupleField(fieldName, rType)
+            R_TupleField(index, fieldName, rType)
         }
 
         return R_TupleType(rFields)

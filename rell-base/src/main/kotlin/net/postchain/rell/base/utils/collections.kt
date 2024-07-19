@@ -51,6 +51,16 @@ private class ChainIterable<T>(private val head: T, private val nextGetter: (T) 
     }
 }
 
+fun <T> Iterable<T>.startsWith(prefix: Iterable<T>): Boolean {
+    val iter1 = iterator()
+    val iter2 = prefix.iterator()
+    while (iter2.hasNext()) {
+        if (!iter1.hasNext()) return false
+        if (iter1.next() != iter2.next()) return false
+    }
+    return true
+}
+
 fun <T: Any> Array<out T?>.filterNotNullAllOrNull(): List<T>? {
     val res: MutableList<T> = ArrayList(this.size)
     for (value in this) {
@@ -97,6 +107,21 @@ fun <T, K: Any, V: Any> Iterable<T>.associateNotNullValues(f: (T) -> Pair<K, V?>
     }.toImmMap()
 }
 
+fun <T, R> Iterable<T>.mapView(op: (T) -> R): Iterable<R> = Iterables.transform(this, op)
+
+fun <T> Iterable<T>.foldSimple(op: (T, T) -> T): T {
+    val iter = iterator()
+    check(iter.hasNext())
+
+    var res = iter.next()
+    while (iter.hasNext()) {
+        val item = iter.next()
+        res = op(res, item)
+    }
+
+    return res
+}
+
 fun <K: Any, V: Any, R: Any> Map<K, V>.mapValuesNotNull(f: (Map.Entry<K, V>) -> R?): Map<K, R> {
     return mapNotNull {
         val r = f(it)
@@ -129,7 +154,7 @@ fun <T: Any> List<T>.mapIndexedOrSame(f: (Int, T) -> T): List<T> {
         val v = this[i]
         val v2 = f(i, v)
         if (res == null && v2 !== v) {
-            res = ArrayList(this.size)
+            res = ArrayList<T>(this.size)
             for (j in 0 until i) {
                 res.add(this[j])
             }
@@ -149,6 +174,8 @@ fun <T> List<T>.countLastWhile(predicate: (T) -> Boolean): Int {
     val i = this.indexOfLast { !predicate(it) }
     return if (i >= 0) (this.size - 1 - i) else this.size
 }
+
+fun <T> List<T>.dropView(n: Int): List<T> = subList(n, size)
 
 fun <T, R: Any> Iterable<T>.partitionMap(f: (T) -> Pair<R, Boolean>): Pair<List<R>, List<R>> {
     val first = mutableListOf<R>()
@@ -197,8 +224,18 @@ fun <T: Any> Iterable<T>.toImmSet(): Set<T> = ImmutableSet.copyOf(this)
 fun <T: Any> Array<T>.toImmSet(): Set<T> = ImmutableSet.copyOf(this)
 
 fun <K: Any, V: Any> immMapOf(vararg entries: Pair<K, V>): Map<K, V> = mapOf(*entries).toImmMap()
+
+fun <K: Any, V: Any> immMapOfNotNullValues(vararg entries: Pair<K, V?>): Map<K, V> {
+    val res = mutableMapOf<K, V>()
+    for ((k, v) in entries) {
+        if (v != null) res[k] = v
+    }
+    return res.toImmMap()
+}
+
 fun <K: Any, V: Any> Map<K, V>.toImmMap(): Map<K, V> = ImmutableMap.copyOf(this)
 fun <K: Any, V: Any> Iterable<Pair<K, V>>.toImmMap(): Map<K, V> = toMap().toImmMap()
+fun <K: Any, V: Any> Array<out Pair<K, V>>.toImmMap(): Map<K, V> = toMap().toImmMap()
 
 fun <K: Any, V: Any> immMultimapOf(): Multimap<K, V> = ImmutableMultimap.of()
 fun <K: Any, V: Any> mutableMultimapOf(): Multimap<K, V> = LinkedListMultimap.create()

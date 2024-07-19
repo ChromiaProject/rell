@@ -576,3 +576,30 @@ Throws an error for invalid module names. If a module is not found it is ignored
 
 Return structure is a dictionary map<text, map<text, gtv>> where the key is module name and value module arguments.
 
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+32. Null analysis of complex expressions
+
+In older versions, null analysis worked only for simple variable expressions:
+
+    val v: my_type? = get_v();
+    if (v != null) {
+        // compiler knows that "v" is not nullable here, i.e. has type "my_type", not "my_type?"
+    }
+
+Now it will also work for name chain expressions:
+
+    // given that "a" and "a.b" are not nullable
+    if (a.b.c != null) {
+        // compiler knows that "a.b.c" is not nullable here
+    }
+
+Safe access operator "?." allows to check multiple name chain parts at once:
+
+    // "a", "a.b" and "a.b.c" are nullable
+    if (a?.b?.c != null) {
+        // compiler knows that "a", "a.b" and "a.b.c" are not nullable here
+    }
+
+Note. This is a breaking change - it may break compilation of existing code, because types of some expressions in the
+code may change from nullable to not nullable. Applications deployed with older versions of Rell will not be affected
+(thanks to the backward compatibility mode).

@@ -33,7 +33,7 @@ object Lib_Type_VirtualStruct {
             return V_MemberAttr_VirtualStructAttr(type, attr, outerType)
         }
 
-        private class V_MemberAttr_VirtualStructAttr(
+        private inner class V_MemberAttr_VirtualStructAttr(
             type: R_Type,
             attr: R_Attribute,
             private val outerType: R_Type,

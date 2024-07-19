@@ -6,17 +6,21 @@ package net.postchain.rell.base.lib
 
 import net.postchain.rell.base.compiler.ast.S_Expr
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
+import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
 import net.postchain.rell.base.compiler.vexpr.V_ConstantValueExpr
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lib.type.R_TextType
 import net.postchain.rell.base.lib.type.Rt_TextValue
+import net.postchain.rell.base.lib.type.Rt_UnitValue
+import net.postchain.rell.base.lmodel.L_ParamImplication
 import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
 import net.postchain.rell.base.utils.LazyPosString
+import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.checkEquals
 
 object Lib_RellHidden {
@@ -49,6 +53,13 @@ object Lib_RellHidden {
             }
 
             function("external_chain", fnExternalChain, since = "0.13.2")
+
+            function("fake_assert", result = "unit", since = RellVersions.SINCE_NOW) {
+                param("value", type = "boolean", implies = L_ParamImplication.TRUE)
+                body { _ -> Rt_UnitValue }
+            }
+
+            function("get_nulled", C_SysFn_GetNulled, since = RellVersions.SINCE_NOW)
         }
 
         function("_type_of", C_SysFn_TypeOf, since = "0.6.0")
@@ -112,5 +123,27 @@ private object C_SysFn_TypeOf: C_SpecialLibGlobalFunctionBody() {
         val value = Rt_TextValue.get(str)
 
         return V_ConstantValueExpr(ctx, name.pos, value, dependsOnAtExprs = vArg.info.dependsOnAtExprs)
+    }
+}
+
+private object C_SysFn_GetNulled: C_SpecialLibGlobalFunctionBody() {
+    override fun paramCount() = 1 .. 1
+
+    override fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: List<S_Expr>): V_Expr {
+        checkEquals(1, args.size)
+
+        val arg = args[0]
+        val cArg = arg.compile(ctx)
+        val vArg = cArg.value()
+
+        val varKey = vArg.varKey()
+        if (varKey == null) {
+            ctx.msgCtx.error(name.pos, "lib:$name:no_var_key", "No variable state key")
+            return C_ExprUtils.errorVExpr(ctx, name.pos)
+        }
+
+        val nulled = ctx.varStates.getNulled(varKey)
+        val res = when (nulled) { null -> "maybe"; true -> "yes"; false -> "no" }
+        return V_ConstantValueExpr(ctx, name.pos, Rt_TextValue.get(res))
     }
 }

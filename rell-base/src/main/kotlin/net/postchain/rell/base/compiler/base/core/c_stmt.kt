@@ -27,91 +27,99 @@ import net.postchain.rell.base.utils.doc.DocDeclaration_Variable
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
+import net.postchain.rell.base.utils.foldSimple
+import net.postchain.rell.base.utils.mapView
 import net.postchain.rell.base.utils.toImmList
 
 class C_Statement(
     val rStmt: R_Statement,
-    val returnAlways: Boolean,
-    val varFacts: C_VarFacts = C_VarFacts.EMPTY,
+    val alwaysReturns: Boolean,
+    val varStatesDelta: C_VarStatesDelta = C_VarStatesDelta.EMPTY,
     val guardBlock: Boolean = false,
 ) {
     fun copy(
         rStmt: R_Statement = this.rStmt,
-        returnAlways: Boolean = this.returnAlways,
-        varFacts: C_VarFacts = this.varFacts,
+        alwaysReturns: Boolean = this.alwaysReturns,
+        varStatesDelta: C_VarStatesDelta = this.varStatesDelta,
         guardBlock: Boolean = this.guardBlock,
     ): C_Statement {
-        return if (rStmt === this.rStmt
-                && returnAlways == this.returnAlways
-                && varFacts === this.varFacts
-                && guardBlock == this.guardBlock
-        ) this else {
-            C_Statement(rStmt = rStmt, returnAlways = returnAlways, varFacts = varFacts, guardBlock = guardBlock)
-        }
+        return if (
+            rStmt === this.rStmt
+            && alwaysReturns == this.alwaysReturns
+            && varStatesDelta === this.varStatesDelta
+            && guardBlock == this.guardBlock
+        ) this else C_Statement(
+            rStmt = rStmt,
+            alwaysReturns = alwaysReturns,
+            varStatesDelta = varStatesDelta,
+            guardBlock = guardBlock,
+        )
     }
 
     companion object {
         val EMPTY = C_Statement(R_EmptyStatement, false)
         val ERROR = C_Statement(C_ExprUtils.ERROR_STATEMENT, false)
 
-        fun empty(varFacts: C_VarFacts): C_Statement {
-            return if (varFacts.isEmpty()) EMPTY else C_Statement(R_EmptyStatement, false, varFacts)
+        fun empty(varStatesDelta: C_VarStatesDelta): C_Statement {
+            return if (varStatesDelta.isEmpty()) EMPTY else C_Statement(R_EmptyStatement, false, varStatesDelta)
         }
 
-        fun calcBranchedVarFacts(ctx: C_StmtContext, stmts: List<C_Statement>): C_VarFacts {
-            val noRetStmts = stmts.filter { !it.returnAlways }
-            val cases = noRetStmts.map { it.varFacts }
-            return C_VarFacts.forBranches(ctx.exprCtx, cases)
+        fun varStatesDeltaForBranches(stmts: List<C_Statement>): C_VarStatesDelta {
+            val noRetStmts = stmts.filter { !it.alwaysReturns }
+            if (noRetStmts.isEmpty()) {
+                return C_VarStatesDelta.EMPTY
+            }
+
+            val deltas = noRetStmts.mapView { it.varStatesDelta }
+            return deltas.foldSimple(C_VarStatesDelta::or)
         }
     }
 }
 
 class C_BlockCode(
     rStmts: List<R_Statement>,
-    val returnAlways: Boolean,
+    val alwaysReturns: Boolean,
     val guardBlock: Boolean,
-    val deltaVarFacts: C_VarFacts,
-    val factsCtx: C_VarFactsContext,
+    val varStatesDelta: C_VarStatesDelta,
 ) {
     val rStmts = rStmts.toImmList()
 
     fun createProto(): C_BlockCodeProto {
-        val varFacts = factsCtx.toVarFacts()
-        return C_BlockCodeProto(varFacts)
+        return C_BlockCodeProto(varStatesDelta)
     }
 }
 
-class C_BlockCodeProto(val varFacts: C_VarFacts) {
-    companion object { val EMPTY = C_BlockCodeProto(C_VarFacts.EMPTY) }
+class C_BlockCodeProto(val varStatesDelta: C_VarStatesDelta) {
+    companion object { val EMPTY = C_BlockCodeProto(C_VarStatesDelta.EMPTY) }
 }
 
 class C_BlockCodeBuilder(
-    ctx: C_StmtContext,
+    private val ctx: C_StmtContext,
     private val repl: Boolean,
     hasGuardBlock: Boolean,
     proto: C_BlockCodeProto,
 ) {
-    private val ctx = ctx.updateFacts(proto.varFacts)
     private val rStmts = mutableListOf<R_Statement>()
-    private var returnAlways = false
+    private var alwaysReturns = false
     private var deadCode = false
     private var insideGuardBlock = hasGuardBlock
     private var afterGuardBlock = false
-    private val blkVarFacts = C_BlockVarFacts(this.ctx.exprCtx.factsCtx)
+    private var varStatesDelta = proto.varStatesDelta
     private var build = false
 
     fun add(stmt: S_Statement) {
         check(!build)
 
-        val subExprCtx = ctx.exprCtx.update(factsCtx = blkVarFacts.subContext(), insideGuardBlock = insideGuardBlock)
-
-        val subCtx = ctx.update(
-                exprCtx = subExprCtx,
-                afterGuardBlock = afterGuardBlock
+        val subExprCtx = ctx.exprCtx
+            .updateVarStates(varStatesDelta)
+            .copy(insideGuardBlock = insideGuardBlock)
+        val subCtx = ctx.copy(
+            exprCtx = subExprCtx,
+            afterGuardBlock = afterGuardBlock,
         )
         val cStmt = stmt.compile(subCtx, repl)
 
-        if (returnAlways && !deadCode) {
+        if (alwaysReturns && !deadCode) {
             ctx.msgCtx.error(stmt.pos, "stmt_deadcode", "Dead code")
             deadCode = true
         }
@@ -123,32 +131,35 @@ class C_BlockCodeBuilder(
             afterGuardBlock = true
         }
 
-        returnAlways = returnAlways || cStmt.returnAlways
-        blkVarFacts.putFacts(cStmt.varFacts)
+        alwaysReturns = alwaysReturns || cStmt.alwaysReturns
+        varStatesDelta = varStatesDelta.and(cStmt.varStatesDelta)
     }
 
     fun build(): C_BlockCode {
         check(!build)
         build = true
-        val deltaVarFacts = blkVarFacts.copyFacts()
-        val factsCtx = ctx.exprCtx.factsCtx.sub(deltaVarFacts)
-        return C_BlockCode(rStmts, returnAlways, afterGuardBlock, deltaVarFacts, factsCtx)
+        return C_BlockCode(rStmts, alwaysReturns, afterGuardBlock, varStatesDelta)
     }
 }
 
-sealed class C_VarDeclarator(protected val ctx: C_StmtContext, protected val mutable: Boolean) {
+sealed class C_VarDeclarator(
+    protected val ctx: C_StmtContext,
+    protected val mutable: Boolean,
+) {
     abstract fun getHintType(): M_Type
-    abstract fun compile(rExprType: R_Type?, varFacts: C_MutableVarFacts): R_VarDeclarator
+    abstract fun compile(rExprType: R_Type?): Result
+
+    class Result(val rDeclarator: R_VarDeclarator, val varStatesDelta: C_VarStatesDelta)
 }
 
 class C_WildcardVarDeclarator(
-        ctx: C_StmtContext,
-        mutable: Boolean,
+    ctx: C_StmtContext,
+    mutable: Boolean,
 ): C_VarDeclarator(ctx, mutable) {
     override fun getHintType() = M_Types.NOTHING
 
-    override fun compile(rExprType: R_Type?, varFacts: C_MutableVarFacts): R_VarDeclarator {
-        return R_WildcardVarDeclarator
+    override fun compile(rExprType: R_Type?): Result {
+        return Result(R_WildcardVarDeclarator, C_VarStatesDelta.EMPTY)
     }
 }
 
@@ -164,7 +175,7 @@ class C_SimpleVarDeclarator(
 ): C_VarDeclarator(ctx, mutable) {
     override fun getHintType() = explicitType?.mType ?: M_Types.NOTHING
 
-    override fun compile(rExprType: R_Type?, varFacts: C_MutableVarFacts): R_VarDeclarator {
+    override fun compile(rExprType: R_Type?): Result {
         val rType = explicitType ?: (if (rExprType == null) attrHeader.type else null)
 
         if (rType == null && rExprType == null) {
@@ -189,20 +200,16 @@ class C_SimpleVarDeclarator(
         val docSymbol = makeDocSymbol(rVarType)
         docSymbolLate.set(docSymbol, allowEarly = true)
 
-        varFacts.putFacts(calcVarFacts(rExprType, rVarType, cVarRef.target.uid))
-
         val rTypeAdapter = typeAdapter.toRAdapter()
-        return R_SimpleVarDeclarator(cVarRef.ptr, rVarType, rTypeAdapter)
+        val varStates = calcVarState(cVarRef.target.uid, rExprType, rVarType)
+        return Result(R_SimpleVarDeclarator(cVarRef.ptr, rVarType, rTypeAdapter), varStates)
     }
 
-    private fun calcVarFacts(rExprType: R_Type?, rVarType: R_Type, varUid: C_VarUid): C_VarFacts {
-        return if (rExprType != null) {
-            val inited = mapOf(varUid to C_VarFact.YES)
-            val nulled = C_VarFacts.varTypeToNulled(varUid, rVarType, rExprType)
-            C_VarFacts.of(inited = inited, nulled = nulled)
-        } else {
-            val inited = mapOf(varUid to C_VarFact.NO)
-            C_VarFacts.of(inited = inited)
+    private fun calcVarState(varId: C_VarId, rExprType: R_Type?, rVarType: R_Type): C_VarStatesDelta {
+        return if (rExprType == null) C_VarStatesDelta.EMPTY else {
+            val varKey = C_VarStateKey(varId)
+            val nulled = C_VarNulled.forVarType(rVarType, rExprType)
+            C_VarStatesDelta.changed(varKey, C_VarChanged.YES, nulled)
         }
     }
 
@@ -218,24 +225,26 @@ class C_SimpleVarDeclarator(
 }
 
 class C_TupleVarDeclarator(
-        ctx: C_StmtContext,
-        mutable: Boolean,
-        private val pos: S_Pos,
-        subDeclarators: List<C_VarDeclarator>
+    ctx: C_StmtContext,
+    mutable: Boolean,
+    private val pos: S_Pos,
+    subDeclarators: List<C_VarDeclarator>,
 ): C_VarDeclarator(ctx, mutable) {
     private val subDeclarators = subDeclarators.toImmList()
     private val hintType = M_Types.tuple(subDeclarators.map { it.getHintType() })
 
     override fun getHintType() = hintType
 
-    override fun compile(rExprType: R_Type?, varFacts: C_MutableVarFacts): R_VarDeclarator {
-        val rSubDeclarators = compileSub(rExprType, varFacts)
-        return R_TupleVarDeclarator(rSubDeclarators)
+    override fun compile(rExprType: R_Type?): Result {
+        val subResults = compileSub(rExprType)
+        val rSubDeclarators = subResults.map { it.rDeclarator }
+        val varStatesDelta = subResults.fold(C_VarStatesDelta.EMPTY) { d, res -> d.and(res.varStatesDelta) }
+        return Result(R_TupleVarDeclarator(rSubDeclarators), varStatesDelta)
     }
 
-    private fun compileSub(rExprType: R_Type?, varFacts: C_MutableVarFacts): List<R_VarDeclarator> {
+    private fun compileSub(rExprType: R_Type?): List<Result> {
         if (rExprType == null) {
-            return subDeclarators.map { it.compile(null, varFacts) }
+            return subDeclarators.map { it.compile(null) }
         }
 
         val fieldTypes = if (rExprType is R_TupleType) {
@@ -257,7 +266,7 @@ class C_TupleVarDeclarator(
         }
 
         return subDeclarators.withIndex().map { (i, subDeclarator) ->
-            subDeclarator.compile(fieldTypes[i], varFacts)
+            subDeclarator.compile(fieldTypes[i])
         }
     }
 }

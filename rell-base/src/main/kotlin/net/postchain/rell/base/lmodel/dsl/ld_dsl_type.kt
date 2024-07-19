@@ -121,4 +121,5 @@ interface Ld_ConstructorDsl: Ld_CommonFunctionDsl
 @RellLibDsl
 interface Ld_TypePropertyDsl: Ld_MemberDsl {
     fun value(getter: (Rt_Value) -> Rt_Value): Ld_BodyResult
+    fun value(getter: (Rt_Value, R_Type) -> Rt_Value): Ld_BodyResult
 }

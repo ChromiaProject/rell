@@ -49,14 +49,12 @@ class LDocCommentDefTest: BaseLTest() {
 
     @Test fun testNamespaceProperty() {
         chkNamespace("prop") {
-            type("cls")
-            property("prop", "cls", since = it.since, comment = it.comment) {
+            property("prop", "integer", since = it.since, comment = it.comment) {
                 it.fn(this)
-                value { Rt_UnitValue }
+                value { _ -> Rt_UnitValue }
             }
         }
         chkNamespace("prop") {
-            type("cls")
             property("prop", makeNsProp(), since = it.since, comment = it.comment) { it.fn(this) }
         }
     }
@@ -181,7 +179,7 @@ class LDocCommentDefTest: BaseLTest() {
         chkType("prop") {
             property("prop", "integer", since = it.since, comment = it.comment) {
                 it.fn(this)
-                value { Rt_UnitValue }
+                value { _ -> Rt_UnitValue }
             }
         }
         chkType("prop") {

@@ -24,7 +24,7 @@ class CLibVersionTest: BaseCLibTest() {
                 modTst.setRTypeFactory(this)
             }
             struct("rec", since = "0.10.5") {}
-            property("prop", "integer", since = "0.10.5") { value { Rt_UnitValue } }
+            property("prop", "integer", since = "0.10.5") { value { _ -> Rt_UnitValue } }
             property("spec_prop", BaseLTest.makeNsProp(), since = "0.10.5")
             function("f", result = "integer", since = "0.10.5") { body { -> Rt_UnitValue } }
             function("g", BaseLTest.makeNsFun(), since = "0.10.5")
@@ -158,7 +158,7 @@ class CLibVersionTest: BaseCLibTest() {
             type("data") {
                 modTst.setRTypeFactory(this)
                 constant("MAGIC", 123, since = "0.10.5")
-                property("prop", "integer", since = "0.10.5") { value { Rt_UnitValue } }
+                property("prop", "integer", since = "0.10.5") { value { _ -> Rt_UnitValue } }
                 property("spec_prop", "integer", BaseLTest.makeTypeProp(), since = "0.10.5")
                 function("f", "integer", since = "0.10.5") { body { -> Rt_UnitValue } }
                 function("g", BaseLTest.makeTypeFun(), since = "0.10.5")
@@ -262,7 +262,7 @@ class CLibVersionTest: BaseCLibTest() {
     @Test fun testExtensionBasic() {
         tst.extraMod = makeModule {
             extension("test_ext", "integer") {
-                property("prop", "integer", since = "0.10.5") { value { Rt_UnitValue } }
+                property("prop", "integer", since = "0.10.5") { value { _ -> Rt_UnitValue } }
                 function("f", "integer", since = "0.10.5") { body { -> Rt_UnitValue } }
                 staticFunction("g", "integer", since = "0.10.5") { body { -> Rt_UnitValue } }
             }

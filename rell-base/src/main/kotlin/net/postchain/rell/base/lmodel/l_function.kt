@@ -6,9 +6,6 @@ package net.postchain.rell.base.lmodel
 
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_TypeAdapter
-import net.postchain.rell.base.compiler.base.core.C_VarUid
-import net.postchain.rell.base.compiler.base.expr.C_VarFact
-import net.postchain.rell.base.compiler.base.expr.C_VarFacts
 import net.postchain.rell.base.compiler.base.fn.C_ArgMatching
 import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
@@ -32,14 +29,8 @@ enum class L_ParamArity(val mArity: M_ParamArity) {
 }
 
 enum class L_ParamImplication {
-    NOT_NULL {
-        override fun toVarFacts(varId: C_VarUid): C_VarFacts {
-            return C_VarFacts.of(nulled = mapOf(varId to C_VarFact.NO))
-        }
-    },
-    ;
-
-    abstract fun toVarFacts(varId: C_VarUid): C_VarFacts
+    TRUE,
+    NOT_NULL,
 }
 
 class L_FunctionParam(

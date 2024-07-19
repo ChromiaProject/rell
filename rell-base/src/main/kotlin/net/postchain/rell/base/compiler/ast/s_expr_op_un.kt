@@ -33,8 +33,8 @@ object S_UnaryOp_Plus: S_UnaryOp("+") {
 
         // Cannot simply return "expr", because then expressions like "(+x)++" or "(+x) = 123" will be allowed.
         val vOp = V_UnaryOp_Plus(type)
-        val varFacts = C_ExprVarFacts.forSubExpressions(expr)
-        return V_UnaryExpr(ctx, startPos, vOp, expr, varFacts)
+        val varStates = C_ExprVarStatesDelta.forExpressions(expr)
+        return V_UnaryExpr(ctx, startPos, vOp, expr, varStates)
     }
 }
 
@@ -52,8 +52,8 @@ object S_UnaryOp_Minus: S_UnaryOp("-") {
             }
         }
 
-        val varFacts = C_ExprVarFacts.forSubExpressions(expr)
-        return V_UnaryExpr(ctx, startPos, vOp, expr, varFacts)
+        val varStates = C_ExprVarStatesDelta.forExpressions(expr)
+        return V_UnaryExpr(ctx, startPos, vOp, expr, varStates)
     }
 }
 
@@ -64,14 +64,14 @@ object S_UnaryOp_Not: S_UnaryOp("not") {
             errTypeMismatch(ctx, opPos, type)
         }
 
-        val varFacts = expr.varFacts
-        val resVarFacts = C_ExprVarFacts.of(
-                trueFacts = varFacts.falseFacts,
-                falseFacts = varFacts.trueFacts,
-                postFacts = varFacts.postFacts
+        val exprVarStates = expr.varStatesDelta
+        val resVarStates = C_ExprVarStatesDelta.make(
+            always = exprVarStates.always,
+            whenTrue = exprVarStates.whenFalse,
+            whenFalse = exprVarStates.whenTrue,
         )
 
-        return V_UnaryExpr(ctx, startPos, V_UnaryOp_Not(), expr, resVarFacts)
+        return V_UnaryExpr(ctx, startPos, V_UnaryOp_Not(), expr, resVarStates)
     }
 }
 
@@ -125,9 +125,11 @@ object S_UnaryOp_NotNull: S_UnaryOp("!!") {
             type
         }
 
-        val preFacts = exprN.varFacts.postFacts
-        val varFacts = C_ExprVarFacts.forNullCast(preFacts, exprN)
-        return V_UnaryExpr(ctx, startPos, V_UnaryOp_NotNull(valueType), exprN, varFacts)
+        val notNullVarStates = C_VarStatesDelta.forNotNull(exprN)
+        val alwaysVarStates = exprN.varStatesDelta.always.and(notNullVarStates)
+        val resExprVarStates = C_ExprVarStatesDelta.make(always = alwaysVarStates)
+
+        return V_UnaryExpr(ctx, startPos, V_UnaryOp_NotNull(valueType), exprN, resExprVarStates)
     }
 }
 
@@ -139,9 +141,8 @@ object S_UnaryOp_IsNull: S_UnaryOp("??") {
             errTypeMismatch(ctx, opPos, type)
         }
 
-        val preFacts = exprN.varFacts
-        val varFacts = C_ExprVarFacts.forNullCheck(exprN, false).update(postFacts = preFacts.postFacts)
-        return V_UnaryExpr(ctx, startPos, V_UnaryOp_IsNull(true), exprN, varFacts)
+        val resVarStates = C_ExprVarStatesDelta.forNullCheck(exprN, false)
+        return V_UnaryExpr(ctx, startPos, V_UnaryOp_IsNull(true), exprN, resVarStates)
     }
 }
 

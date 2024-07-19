@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.ide
 
-import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty_RtValue
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.type.R_IntegerType
@@ -68,9 +67,9 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
 
     @Test fun testNamespaceProperty() {
         extraModule {
-            property("prop", type = "integer") { value { Rt_UnitValue } }
-            property("pure_prop", pure = true, type = "integer") { value { Rt_UnitValue } }
-            property("spec_prop", C_NamespaceProperty_RtValue(Rt_IntValue.ZERO))
+            property("prop", type = "integer") { value { _ -> Rt_UnitValue } }
+            property("pure_prop", pure = true, type = "integer") { value { _ -> Rt_UnitValue } }
+            property("spec_prop", BaseLTest.makeNsProp(Rt_IntValue.ZERO))
         }
         chkSyms("query q() = prop;", "prop=MEM_SYS_PROPERTY|-|-", "?head=PROPERTY|mod:prop")
         chkSyms("query q() = pure_prop;", "pure_prop=MEM_SYS_PROPERTY_PURE|-|-", "?head=PROPERTY|mod:pure_prop")

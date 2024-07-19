@@ -9,17 +9,19 @@ import net.postchain.rell.base.compiler.base.core.C_LocalVarRef
 import net.postchain.rell.base.compiler.base.expr.C_AssignOp
 import net.postchain.rell.base.compiler.base.expr.C_Destination
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
-import net.postchain.rell.base.compiler.base.expr.C_VarFact
+import net.postchain.rell.base.compiler.base.expr.C_VarStateKey
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_PosCodeMsg
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
+import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.R_AssignExpr
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.expr.R_NotNullExpr
 import net.postchain.rell.base.model.stmt.R_AssignStatement
 import net.postchain.rell.base.model.stmt.R_Statement
+import net.postchain.rell.base.utils.capitalizeEx
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmSet
 
@@ -34,7 +36,7 @@ class V_LocalVarExpr(
         dependsOnAtExprs = listOfNotNull(varRef.target.atExprId).toImmSet(),
     )
 
-    override fun varId() = varRef.target.uid
+    override fun varKey() = varRef.target.varKey
 
     override fun isAtExprItem() = varRef.target.atExprId != null
     override fun implicitTargetAttrName() = varRef.target.rName
@@ -46,7 +48,7 @@ class V_LocalVarExpr(
 
     override fun destination(): C_Destination {
         if (!varRef.target.mutable) {
-            if (exprCtx.factsCtx.inited(varRef.target.uid) != C_VarFact.NO) {
+            if (exprCtx.varStates.getInited(varRef.target.varKey) != false) {
                 val name = varRef.target.metaName
                 throw C_Error.stop(pos, "expr_assign_val:$name", "Value of '$name' cannot be changed")
             }
@@ -55,7 +57,7 @@ class V_LocalVarExpr(
     }
 
     private fun checkInitialized() {
-        if (exprCtx.factsCtx.inited(varRef.target.uid) != C_VarFact.YES) {
+        if (exprCtx.varStates.getInited(varRef.target.varKey) != true) {
             val name = varRef.target.metaName
             throw C_Error.stop(pos, "expr_var_uninit:$name", "Variable '$name' may be uninitialized")
         }
@@ -88,22 +90,23 @@ class V_LocalVarExpr(
     }
 }
 
-class V_SmartNullableExpr(
+class V_SmartNullableExpr private constructor(
     exprCtx: C_ExprContext,
     private val subExpr: V_Expr,
     private val nulled: Boolean,
     private val smartType: R_Type?,
-    private val name: String,
+    private val targetVarKey: C_VarStateKey?,
     private val kind: C_CodeMsg,
 ): V_Expr(exprCtx, subExpr.pos) {
     override fun exprInfo0() = V_ExprInfo.simple(smartType ?: subExpr.type, subExpr)
 
     override fun toDbExpr0() = subExpr.toDbExpr()
-    override fun varId() = subExpr.varId()
+    override fun varKey() = subExpr.varKey()
 
     override fun isAtExprItem() = subExpr.isAtExprItem()
     override fun implicitTargetAttrName() = subExpr.implicitTargetAttrName()
     override fun implicitAtWhereAttrName() = subExpr.implicitAtWhereAttrName()
+    override fun implicitAtWhatAttrName() = subExpr.implicitAtWhatAttrName()
 
     override fun toRExpr0(): R_Expr {
         val rExpr = subExpr.toRExpr()
@@ -113,37 +116,58 @@ class V_SmartNullableExpr(
     override fun asNullable(): V_ExprWrapper {
         return V_ExprWrapper(msgCtx, subExpr) {
             val cm = if (nulled) ("always" toCodeMsg "is always") else ("never" toCodeMsg "cannot be")
-            val code = "expr:smartnull:${kind.code}:${cm.code}:$name"
-            val msg = "${kind.msg} '$name' ${cm.msg} null at this location"
+            val name = if (targetVarKey != null && targetVarKey.isFull) targetVarKey.nameMsg() else null
+            val baseCode = "expr:smartnull:${kind.code}:${cm.code}"
+            val code = if (name != null) "$baseCode:[$name]" else baseCode
+            val kindMsg = kind.msg.capitalizeEx()
+            val baseMsg = if (name != null) "$kindMsg '$name'" else kindMsg
+            val msg = "$baseMsg ${cm.msg} null at this location"
             C_PosCodeMsg(pos, code, msg)
         }
     }
 
     override fun destination(): C_Destination {
         val dst = subExpr.destination()
-        return if (smartType == null) dst else C_Destination_SmartNullable(dst, smartType)
+        return if (smartType == null) dst else C_Destination_ImplicitCast(dst, smartType)
     }
 
-    private class C_Destination_SmartNullable(
-        val destination: C_Destination,
-        val effectiveType: R_Type,
-    ): C_Destination() {
-        override fun type() = destination.type()
-        override fun effectiveType() = effectiveType
+    companion object {
+        fun wrap(ctx: C_ExprContext, vExpr: V_Expr, varKind: C_CodeMsg, forceNotNull: Boolean = false): V_Expr {
+            val varKey = vExpr.varKey()
 
-        override fun compileAssignExpr(
-                ctx: C_ExprContext,
-                startPos: S_Pos,
-                resType: R_Type,
-                srcExpr: R_Expr,
-                op: C_AssignOp,
-                post: Boolean
-        ): R_Expr {
-            return destination.compileAssignExpr(ctx, startPos, resType, srcExpr, op, post)
-        }
+            val nulled = when {
+                forceNotNull -> false
+                varKey != null -> ctx.varStates.getNulled(varKey)
+                else -> null
+            }
+            nulled ?: return vExpr
 
-        override fun compileAssignStatement(ctx: C_ExprContext, srcExpr: R_Expr, op: C_AssignOp?): R_Statement {
-            return destination.compileAssignStatement(ctx, srcExpr, op)
+            val type = vExpr.type
+            val smartType = if (type is R_NullableType && nulled == false) type.valueType else null
+            return V_SmartNullableExpr(ctx, vExpr, nulled == true, smartType, varKey, varKind)
         }
+    }
+}
+
+private class C_Destination_ImplicitCast(
+    val destination: C_Destination,
+    val effectiveType: R_Type,
+): C_Destination() {
+    override fun type() = destination.type()
+    override fun effectiveType() = effectiveType
+
+    override fun compileAssignExpr(
+        ctx: C_ExprContext,
+        startPos: S_Pos,
+        resType: R_Type,
+        srcExpr: R_Expr,
+        op: C_AssignOp,
+        post: Boolean,
+    ): R_Expr {
+        return destination.compileAssignExpr(ctx, startPos, resType, srcExpr, op, post)
+    }
+
+    override fun compileAssignStatement(ctx: C_ExprContext, srcExpr: R_Expr, op: C_AssignOp?): R_Statement {
+        return destination.compileAssignStatement(ctx, srcExpr, op)
     }
 }

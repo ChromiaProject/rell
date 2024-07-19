@@ -21,6 +21,7 @@ import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.R_MemberCalculator
 import net.postchain.rell.base.model.expr.R_MemberCalculator_Error
+import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.doc.DocException
 import net.postchain.rell.base.utils.doc.DocSymbol
@@ -160,8 +161,8 @@ abstract class BaseLTest {
             }
         }
 
-        fun makeNsProp(): C_NamespaceProperty {
-            return C_NamespaceProperty_RtValue(Rt_IntValue.get(123))
+        fun makeNsProp(value: Rt_Value = Rt_IntValue.get(123)): C_NamespaceProperty {
+            return C_NamespaceProperty_RtValue(value, value.type(), null)
         }
 
         fun makeTypeProp(pure: Boolean = false): C_SysFunctionBody {
