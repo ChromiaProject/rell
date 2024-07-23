@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.misc
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class TokenizerTest: BaseRellTest(false) {
+class TokenizerTest: BaseRellTest() {
     @Test fun testName() {
         tst.errMsgPos = true
         chk("\n$", "ct_err:main.rell(2:1):expr:placeholder:none")

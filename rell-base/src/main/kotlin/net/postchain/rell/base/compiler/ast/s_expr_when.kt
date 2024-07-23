@@ -163,7 +163,7 @@ class S_WhenConditionExpr(val exprs: List<S_Expr>): S_WhenCondition() {
             return C_ExprUtils.errorVExpr(ctx, expr.startPos, valueType ?: R_CtErrorType)
         }
 
-        return cExpr.value()
+        return cExpr.vExpr()
     }
 }
 
@@ -219,30 +219,29 @@ class S_WhenExpr(
     }
 
     private fun compileExprs(ctx: C_ExprContext, caseStates: List<C_VarStatesDelta>): Pair<R_Type, List<V_Expr>> {
-        val cValuesRaw = cases.mapIndexed { i, case ->
-            case.expr.compileWithVarStates(ctx, caseStates[i]).value()
+        val vRawExprs = cases.mapIndexed { i, case ->
+            case.expr.compileWithVarStates(ctx, caseStates[i]).vExpr()
         }
 
-        val cValues = C_BinOp_Common.promoteNumeric(ctx, cValuesRaw)
-
-        if (cValues.isEmpty()) {
+        val vExprs = C_BinOp_Common.promoteNumeric(ctx, vRawExprs)
+        if (vExprs.isEmpty()) {
             return Pair(R_CtErrorType, immListOf())
         }
 
-        val type = cValues.withIndex().fold(cValues[0].type) { t, (i, value) ->
+        val type = vExprs.withIndex().fold(vExprs[0].type) { t, (i, value) ->
             C_Types.commonType(t, value.type, cases[i].expr.startPos) {
                 "expr_when_incompatible_type" toCodeMsg "When case expressions have incompatible types"
             }
         }
 
-        for (cValue in cValues) {
-            val valueType = cValue.type
-            C_Utils.checkUnitType(ctx.msgCtx, cValue.pos, valueType) {
+        for (vExpr in vExprs) {
+            val exprType = vExpr.type
+            C_Utils.checkUnitType(ctx.msgCtx, vExpr.pos, exprType) {
                 "when_exprtype_unit" toCodeMsg "Expression returns nothing"
             }
         }
 
-        return Pair(type, cValues)
+        return Pair(type, vExprs)
     }
 
     companion object {
@@ -263,25 +262,25 @@ class S_WhenExpr(
             expr: S_Expr?,
             conds: List<S_WhenCondition>,
         ): C_WhenChooserDetails? {
-            val keyValue = if (expr == null) null else {
+            val vKeyExpr = if (expr == null) null else {
                 val keyExpr = expr.compileOpt(ctx)
                 if (keyExpr == null) {
                     conds.forEach { it.compileBad(ctx) }
                     return null
                 }
-                keyExpr.value()
+                keyExpr.vExpr()
             }
 
-            val keyVarKey = keyValue?.varKey()
-            val keyType = keyValue?.type
-            val keyVarStates = keyValue?.varStatesDelta?.always ?: C_VarStatesDelta.EMPTY
+            val keyVarKey = vKeyExpr?.varKey()
+            val keyType = vKeyExpr?.type
+            val keyVarStates = vKeyExpr?.varStatesDelta?.always ?: C_VarStatesDelta.EMPTY
 
             if (keyType == R_NullType) {
                 ctx.msgCtx.error(expr!!.startPos, "when_expr_type:null", "Cannot use null as when expression")
             }
 
             val bodyCtx = ctx.updateVarStates(keyVarStates)
-            val builder = C_WhenChooserDetailsBuilder(keyValue, keyVarStates, bodyCtx)
+            val builder = C_WhenChooserDetailsBuilder(vKeyExpr, keyVarStates, bodyCtx)
 
             for ((i, cond) in conds.withIndex()) {
                 cond.compile(bodyCtx, builder, keyVarKey, keyType, i, i == conds.size - 1)

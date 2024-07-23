@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.misc
@@ -8,7 +8,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import org.junit.Test
 
-class StackTraceTest: BaseRellTest(false) {
+class StackTraceTest: BaseRellTest() {
     @Test fun testRequire() {
         def("function f() { require(false, 'Fail'); }")
         def("function g() { f(); }")

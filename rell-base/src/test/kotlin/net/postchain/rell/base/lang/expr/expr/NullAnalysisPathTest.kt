@@ -17,7 +17,7 @@ import net.postchain.rell.base.testutils.LibModuleTester
 import net.postchain.rell.base.utils.RellVersions
 import org.junit.Test
 
-class NullAnalysisPathTest: BaseRellTest(false) {
+class NullAnalysisPathTest: BaseRellTest() {
     @Test fun testBasic() {
         initFooBar()
 

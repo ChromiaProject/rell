@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.expr
@@ -8,7 +8,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.QueryTester
 import org.junit.Test
 
-class RedDbExprTest: BaseRellTest() {
+class RedDbExprTest: BaseRellTest(useSql = true) {
     private fun initDefault() {
         tst.strictToString = false
         def("entity user { name; score: integer; }")

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.module
@@ -9,7 +9,7 @@ import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestContext
 import org.junit.Test
 
-class ModuleDirTest: BaseRellTest(false) {
+class ModuleDirTest: BaseRellTest() {
     @Test fun testImportFileDirConflict() {
         chkFileDirConflict("a/foo.rell", "module;", "a/foo/sub.rell", "module;", "a.foo", "ct_err:import:file_dir:a.foo")
         chkFileDirConflict("a/foo.rell", "module;", "a/foo/sub.rell", "", "a.foo", "ct_err:import:file_dir:a.foo")

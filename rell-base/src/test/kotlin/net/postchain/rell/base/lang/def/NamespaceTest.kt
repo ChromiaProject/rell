@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.def
@@ -138,16 +138,20 @@ class NamespaceTest: BaseRellTest() {
     }
 
     @Test fun testForwardReference() {
+        tstCtx.useSql = true
         def("function g(): integer = foo.f();")
         def("object bar { x: integer = foo.f(); }")
         def("namespace foo { function f(): integer = 123; }")
+
         chk("g()", "int[123]")
         chk("bar.x", "int[123]")
     }
 
     @Test fun testEntities() {
+        tstCtx.useSql = true
         def("namespace foo { entity bar { x: integer; } }")
         insert("c0.foo.bar", "x", "0,123")
+
         chk("foo.bar @ {} ( foo.bar )", "ct_err:expr_novalue:type:[foo.bar]")
         chk("foo.bar @ {} ( bar )", "foo.bar[0]")
         chk("foo.bar @ {} ( foo )", "ct_err:expr_novalue:namespace:[foo]")
@@ -155,6 +159,7 @@ class NamespaceTest: BaseRellTest() {
     }
 
     @Test fun testTableNameConflict() {
+        tstCtx.useSql = true
         def("entity user { x: integer; }")
         def("namespace foo { entity user { y: integer; } }")
         def("namespace bar { object user { z: integer = 789; } }")
@@ -167,6 +172,7 @@ class NamespaceTest: BaseRellTest() {
     }
 
     @Test fun testAllowedDefs() {
+        tstCtx.useSql = true
         def("""
             namespace foo {
                 function f(): integer = 123;
@@ -207,6 +213,7 @@ class NamespaceTest: BaseRellTest() {
     }
 
     @Test fun testNamespacedTypes() {
+        tstCtx.useSql = true
         def("""
             namespace foo {
                 namespace bar {

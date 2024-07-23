@@ -206,7 +206,7 @@ class S_AtExprWhat_Simple(val startPos: S_Pos, val path: List<S_Name>): S_AtExpr
             expr = expr.member(ctx, stepHand, C_ExprHint.DEFAULT)
         }
 
-        val vExpr = expr.value()
+        val vExpr = expr.vExpr()
         val field = V_DbAtWhatField(ctx.appCtx, null, vExpr.type, vExpr, V_AtWhatFieldFlags.DEFAULT, null)
         return C_AtWhat(immListOf(field), startPos)
     }
@@ -285,7 +285,7 @@ class S_AtExprWhat_Complex(val startPos: S_Pos, val fields: List<S_AtExprWhatCom
             aggregate = if (summ != null && summ.value != C_AtSummarizationKind.GROUP) summ.pos else null,
         )
 
-        val vExpr = field.expr.compileSafe(ctx).value()
+        val vExpr = field.expr.compileSafe(ctx).vExpr()
         val cSummarization = compileSummarization(ctx, vExpr, summ?.value)
 
         var explicitNameHand: C_NameHandle? = null
@@ -488,7 +488,7 @@ class S_AtExprWhere(private val exprs: List<S_Expr>) {
         subValues: MutableList<V_Expr>,
     ): V_Expr {
         val cExpr = expr.compileSafe(ctx)
-        val vExpr = cExpr.value()
+        val vExpr = cExpr.vExpr()
         subValues.add(vExpr)
 
         val type = vExpr.type
@@ -513,8 +513,9 @@ class S_AtExprWhere(private val exprs: List<S_Expr>) {
         }
 
         if (dependsOnThisAtExpr) {
-            throw C_Errors.errTypeMismatch(vExpr.pos, type, R_BooleanType, "at_where:type:$idx",
-                    "Wrong type of ${whereExprMsg(idx)}")
+            val msg = "Wrong type of ${whereExprMsg(idx)}"
+            C_Errors.errTypeMismatch(ctx.msgCtx, vExpr.pos, type, R_BooleanType, "at_where:type:$idx", msg)
+            return C_ExprUtils.errorVExpr(ctx, vExpr.pos, R_BooleanType)
         }
 
         val attrs = S_AtExpr.findWhereContextAttrsByType(ctx, type)
@@ -727,7 +728,7 @@ class S_AtExpr(
         }
 
         val subCtx = ctx.copy(atCtx = null)
-        val vExpr = sExpr.compile(subCtx).value()
+        val vExpr = sExpr.compile(subCtx).vExpr()
         subValues.add(vExpr)
 
         C_Types.match(R_IntegerType, vExpr.type, sExpr.startPos) { "expr_at_${msg}_type" toCodeMsg "Wrong $msg type" }

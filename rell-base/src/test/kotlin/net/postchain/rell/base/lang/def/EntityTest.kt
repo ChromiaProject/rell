@@ -12,7 +12,7 @@ import net.postchain.rell.base.testutils.RellCodeTester
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class EntityTest: BaseRellTest(false) {
+class EntityTest: BaseRellTest() {
     @Test fun testAttrNoType() {
         chkCompile("entity foo { name; }", "OK")
         chkCompile("entity foo { name123; }", "ct_err:unknown_name:name123")

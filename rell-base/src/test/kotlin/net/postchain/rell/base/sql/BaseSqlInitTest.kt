@@ -17,7 +17,7 @@ abstract class BaseSqlInitTest: BaseContextTest(useSql = true) {
 
     private var lastDefs = ""
 
-    protected fun chkInit(code: String, expected: String = "OK", expectedWarnings: String = "") {
+    protected fun chkInit(code: String, expected: String = "OK", warn: String = "") {
         val tst = createTester()
         tst.chainId = 0
         createSysTables(tst)
@@ -39,7 +39,7 @@ abstract class BaseSqlInitTest: BaseContextTest(useSql = true) {
         }
 
         assertEquals(expected, actual)
-        assertEquals(expectedWarnings, actualWarnings)
+        assertEquals(warn, actualWarnings)
 
         lastDefs = code
     }

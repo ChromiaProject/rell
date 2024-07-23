@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.misc
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class CompilerErrorsTest: BaseRellTest(false) {
+class CompilerErrorsTest: BaseRellTest() {
     private val badExpr1 = "abs(x'')"
     private val badError1 = "expr_call_badargs:[abs]:[byte_array]"
     private val badExpr2 = "min()"

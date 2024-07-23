@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.type
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class NullableTest: BaseRellTest(false) {
+class NullableTest: BaseRellTest() {
     @Test fun testNullableTypes() {
         chkFn(": boolean = null;", "ct_err:fn_rettype:[boolean]:[null]")
         chkFn(": boolean? = null;", "null")

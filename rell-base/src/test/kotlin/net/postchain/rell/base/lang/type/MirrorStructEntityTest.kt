@@ -9,7 +9,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import org.junit.Test
 
-class MirrorStructEntityTest: BaseRellTest(false) {
+class MirrorStructEntityTest: BaseRellTest() {
     @Test fun testValidParameterKinds() {
         def("entity my_entity {}")
         def("object my_object {}")

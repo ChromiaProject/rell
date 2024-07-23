@@ -12,7 +12,7 @@ import net.postchain.rell.base.utils.toImmList
 import org.junit.Test
 import java.math.BigInteger
 
-class DecimalTest: BaseRellTest(false) {
+class DecimalTest: BaseRellTest() {
     @Test fun testType() {
         chkFull("query q(a: decimal) = _type_of(a);", listOf(Rt_DecimalValue.ZERO), "text[decimal]")
         chk("_type_of(decimal(0))", "text[decimal]")

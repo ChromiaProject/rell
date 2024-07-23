@@ -9,8 +9,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.VirtualTestUtils
 import org.junit.Test
 
-class LibIterableJoinToTextTest: BaseRellTest(false) {
-
+class LibIterableJoinToTextTest: BaseRellTest() {
     @Test fun testAllCollectionElementTypes() {
         chkElementType("integer", "[1, 2, 3, 4]", "text[<foo1*foo2*foo3*&&>]")
         chkElementType("rowid", "[rowid(1), rowid(2), rowid(3), rowid(4)]", "text[<foo1*foo2*foo3*&&>]")

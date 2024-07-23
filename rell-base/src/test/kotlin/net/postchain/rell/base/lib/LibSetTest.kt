@@ -7,7 +7,7 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class LibSetTest: BaseRellTest(false) {
+class LibSetTest: BaseRellTest() {
     @Test fun testConstructorRaw() {
         chk("set()", "ct_err:fn:sys:unresolved_type_params:[set]:T")
         chk("set([])", "ct_err:expr_list_no_type")

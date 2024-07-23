@@ -24,7 +24,7 @@ import net.postchain.rell.base.utils.toImmMultimap
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class IdeCompletionTest: BaseRellTest(false) {
+class IdeCompletionTest: BaseRellTest() {
     private var fullCompStr = true
     private var defaultLib = false
 

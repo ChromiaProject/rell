@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.def
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class DeprecatedAnnotationTest: BaseRellTest(useSql = false) {
+class DeprecatedAnnotationTest: BaseRellTest() {
     @Test fun testAnnotationVisibility() {
         tst.hiddenLib = false
         chkFull("@deprecated function f() = 123; query q() = f();", "ct_err:modifier:invalid:ann:deprecated")

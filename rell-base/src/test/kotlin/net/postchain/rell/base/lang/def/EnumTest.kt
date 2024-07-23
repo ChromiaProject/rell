@@ -101,6 +101,7 @@ class EnumTest: BaseRellTest() {
     }
 
     @Test fun testEntityAttribute() {
+        tstCtx.useSql = true
         def("enum foo { A, B, C }")
         def("entity cls { name; f: foo; }")
         def("object obj { mutable f: foo = foo.A; }")
@@ -124,6 +125,7 @@ class EnumTest: BaseRellTest() {
     }
 
     @Test fun testNameConflicts() {
+        tstCtx.useSql = true
         def("enum foo { A, B, C }")
         def("entity user { name: text; f: foo; }")
         insert("c0.user", "name,f", "0,'Bob',1")
@@ -173,6 +175,7 @@ class EnumTest: BaseRellTest() {
     }
 
     @Test fun testMemberPropertiesAt() {
+        tstCtx.useSql = true
         def("enum foo { A, B, C }")
         def("entity user { name; foo; }")
         insert("c0.user", "name,foo", "1,'Bob',0")

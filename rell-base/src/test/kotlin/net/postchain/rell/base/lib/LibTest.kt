@@ -7,7 +7,7 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class LibTest: BaseRellTest(false) {
+class LibTest: BaseRellTest() {
     @Test fun testPrint() {
         chkEx("{ print('Hello'); return 123; }", "int[123]")
         chkOut("Hello")

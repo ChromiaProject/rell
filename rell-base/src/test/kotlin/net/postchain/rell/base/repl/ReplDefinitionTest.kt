@@ -7,7 +7,7 @@ package net.postchain.rell.base.repl
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class ReplDefinitionTest: BaseRellTest(false) {
+class ReplDefinitionTest: BaseRellTest() {
     @Test fun testModule() {
         file("lib/main.rell", "struct rec { x: integer; } function f(x: integer): integer = x * x;")
         file("lib/sub.rell", "module; function g(): integer = 456;")

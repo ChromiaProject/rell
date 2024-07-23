@@ -207,7 +207,7 @@ class S_MemberExpr(val base: S_Expr, val name: S_Name): S_Expr(base.startPos) {
         if (members.size != 1) return null
         val member = members[0]
 
-        val vBase = base.compileSafe(ctx, C_ExprHint.DEFAULT).value()
+        val vBase = base.compileSafe(ctx, C_ExprHint.DEFAULT).vExpr()
         val link = C_MemberLink(vBase, R_NullType, cName.pos, cName, false)
         return member.compile(ctx, link, cNameHand, null)
     }
@@ -216,7 +216,7 @@ class S_MemberExpr(val base: S_Expr, val name: S_Name): S_Expr(base.startPos) {
 class S_SafeMemberExpr(val base: S_Expr, val name: S_Name): S_Expr(base.startPos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val cBase = base.compile(ctx)
-        val vBase = cBase.value()
+        val vBase = cBase.vExpr()
         val nameHand = name.compile(ctx)
         return vBase.member(ctx, nameHand, true, hint)
     }

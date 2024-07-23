@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.def
@@ -9,7 +9,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.Rt_TestOpContext
 import org.junit.Test
 
-class LogAnnotationTest: BaseRellTest() {
+class LogAnnotationTest: BaseRellTest(useSql = true) {
     @Test fun testLegacyAnnotation() {
         chkCompile("entity foo (log) { x: integer; }", "OK")
         tst.chkWarn("ann:legacy:log")

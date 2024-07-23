@@ -11,6 +11,7 @@ import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
+import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.R_Name
@@ -123,7 +124,7 @@ class S_VarStatement(
         val typeHint = C_TypeHint.ofType(cDeclarator.getHintType())
         val exprHint = C_ExprHint(typeHint)
 
-        val vExpr = expr?.compileSafe(ctx.exprCtx, exprHint)?.value()
+        val vExpr = expr?.compileSafe(ctx.exprCtx, exprHint)?.vExpr()
         val rExpr = vExpr?.toRExpr()
 
         val declaratorRes = cDeclarator.compile(rExpr?.type)
@@ -144,18 +145,30 @@ class S_VarStatement(
 
 class S_ReturnStatement(pos: S_Pos, val expr: S_Expr?): S_Statement(pos) {
     override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
-        val rStmt = ctx.msgCtx.consumeError { compileInternal(ctx) } ?: C_ExprUtils.ERROR_STATEMENT
+        val rStmt = compileInternal(ctx)
         return C_Statement(rStmt, true)
     }
 
     private fun compileInternal(ctx: C_StmtContext): R_Statement {
-        val cExpr = expr?.compile(ctx, C_ExprHint.ofType(ctx.fnCtx.explicitReturnType))
-        var vExpr = cExpr?.value()
+        var vExpr: V_Expr? = null
 
-        if (vExpr != null) {
-            C_Utils.checkUnitType(pos, vExpr.type) { "stmt_return_unit" toCodeMsg "Expression returns nothing" }
+        if (expr != null) {
+            val cExpr = expr.compileOpt(ctx, C_ExprHint.ofType(ctx.fnCtx.explicitReturnType))
+            vExpr = cExpr?.vExprOrNull(ctx.msgCtx)
+            vExpr ?: return C_ExprUtils.ERROR_STATEMENT
+
+            if (!C_Utils.checkUnitType(ctx.msgCtx, pos, vExpr.type, "stmt_return_unit", "Expression returns nothing")) {
+                return C_ExprUtils.ERROR_STATEMENT
+            }
         }
 
+        vExpr = processExpr(ctx, vExpr)
+        val rExpr = vExpr?.toRExpr()
+        return R_ReturnStatement(rExpr)
+    }
+
+    private fun processExpr(ctx: C_StmtContext, vExpr: V_Expr?): V_Expr? {
+        var vResExpr = vExpr
         val defType = ctx.defCtx.definitionType
 
         when (defType) {
@@ -173,7 +186,7 @@ class S_ReturnStatement(pos: S_Pos, val expr: S_Expr?): S_Statement(pos) {
                 val adapter = ctx.fnCtx.matchReturnType(pos, rRetType)
 
                 if (vExpr != null) {
-                    vExpr = adapter.adaptExpr(ctx.exprCtx, vExpr)
+                    vResExpr = adapter.adaptExpr(ctx.exprCtx, vExpr)
                 }
             }
             else -> {
@@ -181,8 +194,7 @@ class S_ReturnStatement(pos: S_Pos, val expr: S_Expr?): S_Statement(pos) {
             }
         }
 
-        val rExpr = vExpr?.toRExpr()
-        return R_ReturnStatement(rExpr)
+        return vResExpr
     }
 
     override fun returnsValue() = expr != null
@@ -238,10 +250,10 @@ class S_BlockStatement(
 
 class S_ExprStatement(val expr: S_Expr): S_Statement(expr.startPos) {
     override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
-        val value = expr.compile(ctx).value()
-        val rExpr = value.toRExpr()
+        val vExpr = expr.compile(ctx).vExpr()
+        val rExpr = vExpr.toRExpr()
         val rStmt = if (repl) R_ReplExprStatement(rExpr) else R_ExprStatement(rExpr)
-        return C_Statement(rStmt, false, value.varStatesDelta.always)
+        return C_Statement(rStmt, false, vExpr.varStatesDelta.always)
     }
 }
 
@@ -252,12 +264,12 @@ class S_AssignStatement(
 ): S_Statement(dstExpr.startPos) {
     override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val cDstExpr = dstExpr.compileOpt(ctx)
-        val vDstExpr = cDstExpr?.value()
+        val vDstExpr = cDstExpr?.vExpr()
 
         val srcCtx = ctx.updateVarStates(vDstExpr?.varStatesDelta?.always ?: C_VarStatesDelta.EMPTY)
         val exprHint = C_ExprHint.ofType(vDstExpr?.type)
         val cSrcExpr = srcExpr.compileOpt(srcCtx, exprHint)
-        val vSrcExpr = cSrcExpr?.value()
+        val vSrcExpr = cSrcExpr?.vExpr()
 
         if (vDstExpr == null || vSrcExpr == null) {
             return C_Statement.EMPTY
@@ -288,12 +300,12 @@ class S_IfStatement(
 
         val cExpr = expr.compileOpt(ctx)
         if (cExpr != null) {
-            val value = cExpr.value()
-            rExpr = value.toRExpr()
+            val vExpr = cExpr.vExpr()
+            rExpr = vExpr.toRExpr()
             C_Types.matchOpt(ctx.msgCtx, R_BooleanType, rExpr.type, expr.startPos) {
                 "stmt_if_expr_type" toCodeMsg "Wrong type of if-expression"
             }
-            exprVarStates = value.varStatesDelta
+            exprVarStates = vExpr.varStatesDelta
         } else {
             rExpr = C_ExprUtils.errorRExpr(R_BooleanType)
             exprVarStates = C_ExprVarStatesDelta.EMPTY
@@ -439,7 +451,7 @@ class S_WhileStatement(pos: S_Pos, val expr: S_Expr, val stmt: S_Statement): S_S
                 return null
             }
 
-            val vCondExpr = condExpr.value()
+            val vCondExpr = condExpr.vExpr()
             val rExpr = vCondExpr.toRExpr()
             return C_LoopStatement(condCtx, rExpr, vCondExpr.varStatesDelta)
         }

@@ -12,7 +12,7 @@ import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_Value
 
 abstract class BaseRellTest(
-    useSql: Boolean = true,
+    useSql: Boolean = false,
     private val gtv: Boolean = false,
 ): BaseTesterTest(useSql) {
     private var tst0: RellCodeTester? = null

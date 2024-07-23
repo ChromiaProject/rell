@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.type
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class FunctionTypeComplexWhatTest: BaseRellTest(false) {
+class FunctionTypeComplexWhatTest: BaseRellTest() {
     @Test fun testInvokeFunctionValue() {
         def("function f(i: integer, t: text) = 'f:'+i+','+t;")
         initComplexWhat()

@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.type
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class FunctionTypePartialApplicationTest: BaseRellTest(false) {
+class FunctionTypePartialApplicationTest: BaseRellTest() {
     @Test fun testBasic() {
         def("function square(x: integer) = x * x;")
         def("function cube(x: integer) = x * x * x;")

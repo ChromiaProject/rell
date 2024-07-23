@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.expr.expr
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class NullAnalysisLogicTest: BaseRellTest(false) {
+class NullAnalysisLogicTest: BaseRellTest() {
     @Test fun testAndOldOld() {
         initLib()
 

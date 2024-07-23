@@ -11,7 +11,7 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
-class LibHiddenTest: BaseRellTest(false) {
+class LibHiddenTest: BaseRellTest() {
     @Test fun testBasic() {
         chk("_type_of(123)", "text[integer]")
         chk("_nullable(123)", "int[123]")

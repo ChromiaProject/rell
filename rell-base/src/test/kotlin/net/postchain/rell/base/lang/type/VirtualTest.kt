@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.type
@@ -12,7 +12,7 @@ import net.postchain.rell.base.testutils.GtvTestUtils
 import net.postchain.rell.base.testutils.VirtualTestUtils
 import org.junit.Test
 
-class VirtualTest: BaseRellTest(false) {
+class VirtualTest: BaseRellTest() {
     init {
         tst.strictToString = false
         tst.gtvResult = true

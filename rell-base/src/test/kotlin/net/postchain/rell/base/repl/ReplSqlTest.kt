@@ -8,7 +8,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import org.junit.Test
 
-class ReplSqlTest: BaseRellTest(true) {
+class ReplSqlTest: BaseRellTest(useSql = true) {
     @Test fun testEntityDeclare() {
         repl.chk("entity user { name; }", "CTE:<console>:def_repl:ENTITY")
         repl.chk("user @* {}", "CTE:<console>:unknown_name:user")

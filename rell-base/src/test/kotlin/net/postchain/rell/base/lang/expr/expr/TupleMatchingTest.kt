@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.expr
@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.expr.expr
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class TupleMatchingTest: BaseRellTest(false) {
+class TupleMatchingTest: BaseRellTest() {
     @Test fun testSimple() {
         chkEx("{ val (i, s) = (123, 'Hello'); return i; }", "int[123]")
         chkEx("{ val (i, s) = (123, 'Hello'); return s; }", "text[Hello]")

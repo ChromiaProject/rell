@@ -7,7 +7,7 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class LibByteArrayTest: BaseRellTest(false) {
+class LibByteArrayTest: BaseRellTest() {
     @Test fun testConstructorText() {
         chk("byte_array('0123abcd')", "byte_array[0123abcd]")
         chk("byte_array('0123ABCD')", "byte_array[0123abcd]")

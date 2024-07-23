@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.module
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class ImportTest: BaseRellTest(false) {
+class ImportTest: BaseRellTest() {
     @Test fun testExact() {
         file("a.rell", "module; function f(): integer = 123; function g(): integer = 456;")
         chkImport("import a.{f};", "f()", "int[123]")

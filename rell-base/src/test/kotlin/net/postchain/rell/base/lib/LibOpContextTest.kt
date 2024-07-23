@@ -14,7 +14,7 @@ import net.postchain.rell.base.utils.hexStringToBytes
 import net.postchain.rell.base.utils.toImmList
 import org.junit.Test
 
-class LibOpContextTest: BaseRellTest(false) {
+class LibOpContextTest: BaseRellTest() {
     @Test fun testLastBlockTime() {
         tst.opContext = opContext(lastBlockTime = 12345)
         chkOp("print(op_context.last_block_time);")

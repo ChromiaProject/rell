@@ -7,7 +7,7 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class LibMetaTest: BaseRellTest(false) {
+class LibMetaTest: BaseRellTest() {
     @Test fun testType() {
         chkCompile("struct data { m: rell.meta; }", "OK")
         chkCompile("struct data { m: set<rell.meta>; }", "OK")

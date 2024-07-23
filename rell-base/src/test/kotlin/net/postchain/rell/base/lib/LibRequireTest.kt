@@ -7,7 +7,7 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class LibRequireTest: BaseRellTest(false) {
+class LibRequireTest: BaseRellTest() {
     @Test fun testRequireBoolean() {
         chkEx("{ require(true); return 0; }", "int[0]")
         chkEx("{ require(true, 'Hello'); return 0; }", "int[0]")

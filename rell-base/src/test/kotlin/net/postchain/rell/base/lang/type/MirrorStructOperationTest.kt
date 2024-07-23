@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.type
@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.type
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class MirrorStructOperationTest: BaseRellTest(false) {
+class MirrorStructOperationTest: BaseRellTest() {
     @Test fun testConstructor() {
         def("operation new_user(name, rating: integer) {}")
 

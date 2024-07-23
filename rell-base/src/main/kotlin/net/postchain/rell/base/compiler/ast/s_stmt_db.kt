@@ -113,12 +113,10 @@ class S_UpdateTarget_Expr(private val expr: S_Expr): S_UpdateTarget() {
             subValues: MutableList<V_Expr>
     ): C_UpdateTarget? {
         val cExpr = expr.compile(ctx)
-        val cValue = cExpr.value()
-        subValues.add(cValue)
+        val vExpr = cExpr.vExpr()
+        subValues.add(vExpr)
 
-        val vExpr = cExpr.value()
         val rExpr = vExpr.toRExpr()
-
         val targetCtx = C_TargetContext(ctx, stmtPos, atExprId, rExpr)
         return compileTarget(targetCtx)
     }
@@ -251,7 +249,7 @@ class S_UpdateStatement(pos: S_Pos, val target: S_UpdateTarget, val what: List<S
             }
 
             val cExpr = w.expr.compileSafe(ctx)
-            val vExpr = cExpr.value()
+            val vExpr = cExpr.vExpr()
             C_AttrArgument(i, nameHand?.name, vExpr)
         }
 

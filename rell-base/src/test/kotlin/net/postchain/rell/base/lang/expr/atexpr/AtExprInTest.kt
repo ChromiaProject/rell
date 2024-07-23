@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.expr.atexpr
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class AtExprInTest: BaseRellTest() {
+class AtExprInTest: BaseRellTest(useSql = true) {
     private fun initData() {
         tst.strictToString = false
         def("entity city { name; country: text; }")

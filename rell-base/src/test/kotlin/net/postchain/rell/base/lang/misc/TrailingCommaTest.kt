@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.misc
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class TrailingCommaTest: BaseRellTest(false) {
+class TrailingCommaTest: BaseRellTest() {
     @Test fun testAnnotation() {
         chkCompile("@extend function f() {}", "ct_err:ann:extend:arg_count:0")
         chkCompile("@extend() function f() {}", "ct_err:ann:extend:arg_count:0")

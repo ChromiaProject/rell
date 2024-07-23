@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.expr.expr
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class CreateTest: BaseRellTest() {
+class CreateTest: BaseRellTest(useSql = true) {
     override fun entityDefs() = listOf(
         "entity city { name: text; }",
         "entity person { name: text; city; street: text; house: integer; score: integer; }",

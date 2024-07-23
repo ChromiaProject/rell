@@ -204,7 +204,7 @@ class S_AssignOp_Op(val code: String, val op: C_BinOp_Common): S_AssignOp() {
 
 sealed class C_BinOp {
     abstract fun compile(ctx: C_BinOpContext, left: V_Expr, right: V_Expr): V_Expr?
-    open fun compileRight(ctx: C_ExprContext, sExpr: S_Expr): V_Expr = sExpr.compile(ctx).value()
+    open fun compileRight(ctx: C_ExprContext, sExpr: S_Expr): V_Expr = sExpr.compile(ctx).vExpr()
     open fun rightVarStatesDelta(left: V_Expr): C_VarStatesDelta = C_VarStatesDelta.EMPTY
 
     protected open fun compileExprVarStatesDelta(left: V_Expr, right: V_Expr): C_ExprVarStatesDelta {
@@ -625,7 +625,7 @@ class C_BinOp_In(private val not: Boolean): C_BinOp() {
         } else {
             sExpr.compile(ctx)
         }
-        return cExpr.value()
+        return cExpr.vExpr()
     }
 
     private fun matchOp(right: R_Type): OpMatch? {
@@ -727,7 +727,7 @@ class S_BinaryExpr(val head: S_Expr, val tail: List<S_BinaryExprTail>): S_Expr(h
     private class TermBinExprNode(private val expr: S_Expr): BinExprNode() {
         override fun compile(ctx: C_ExprContext): V_Expr {
             val cExpr = expr.compile(ctx)
-            val vExpr = cExpr.value()
+            val vExpr = cExpr.vExpr()
             C_Utils.checkUnitType(expr.startPos, vExpr.type) {
                 "expr_operand_unit" toCodeMsg "Operand expression returns nothing"
             }
@@ -745,19 +745,19 @@ class S_BinaryExpr(val head: S_Expr, val tail: List<S_BinaryExprTail>): S_Expr(h
         private val right: BinExprNode,
     ): BinExprNode() {
         override fun compile(ctx: C_ExprContext): V_Expr {
-            val leftValue = left.compile(ctx)
+            val vLeftExpr = left.compile(ctx)
 
             val op = sOp.value.op
-            val rightState = op.rightVarStatesDelta(leftValue)
+            val rightState = op.rightVarStatesDelta(vLeftExpr)
             val rightCtx = ctx.updateVarStates(rightState)
-            val rightValue = right.compileRight(rightCtx, op)
+            val vRightExpr = right.compileRight(rightCtx, op)
 
             val opPos = sOp.pos
             val opCtx = C_BinOpContext(ctx, opPos)
-            val value = op.compile(opCtx, leftValue, rightValue)
+            val vResExpr = op.compile(opCtx, vLeftExpr, vRightExpr)
 
-            return if (value != null) value else {
-                C_BinOp.errTypeMismatch(ctx.msgCtx, opPos, sOp.value.code, leftValue.type, rightValue.type)
+            return if (vResExpr != null) vResExpr else {
+                C_BinOp.errTypeMismatch(ctx.msgCtx, opPos, sOp.value.code, vLeftExpr.type, vRightExpr.type)
                 C_ExprUtils.errorVExpr(ctx, opPos)
             }
         }

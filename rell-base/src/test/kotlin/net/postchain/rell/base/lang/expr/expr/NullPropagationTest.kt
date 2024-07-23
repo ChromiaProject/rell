@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.expr.expr
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class NullPropagationTest: BaseRellTest(false) {
+class NullPropagationTest: BaseRellTest() {
     @Test fun testExprUnary() {
         tst.strictToString = false
         chkExprUnary("+x!!", "integer", "_nullable(123)")

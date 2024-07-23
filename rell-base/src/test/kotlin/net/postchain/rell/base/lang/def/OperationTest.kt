@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.def
@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.def
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class OperationTest: BaseRellTest() {
+class OperationTest: BaseRellTest(useSql = true) {
     @Test fun testReturn() {
         chkOp("print('Hello'); print('World');")
         chkOut("Hello", "World")

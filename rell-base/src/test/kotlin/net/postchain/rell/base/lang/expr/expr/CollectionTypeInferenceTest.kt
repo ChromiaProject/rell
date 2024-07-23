@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.expr
@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.expr.expr
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class CollectionTypeInferenceTest: BaseRellTest(false) {
+class CollectionTypeInferenceTest: BaseRellTest() {
     @Test fun testLocalVariableAssignment() {
         chkEx("{ val x: list<integer>; x = []; return x; }", "list<integer>[]")
         chkEx("{ val x: list<integer>; x = list(); return x; }", "list<integer>[]")

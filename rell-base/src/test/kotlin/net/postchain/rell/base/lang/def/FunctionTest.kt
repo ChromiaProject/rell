@@ -8,7 +8,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 import kotlin.test.assertTrue
 
-class FunctionTest: BaseRellTest(false) {
+class FunctionTest: BaseRellTest() {
     @Test fun testSimple() {
         chkFn("function f(): integer = 123;", "f()", "int[123]")
         chkFn("function f(): integer { return 123; }", "f()", "int[123]")

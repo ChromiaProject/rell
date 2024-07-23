@@ -27,6 +27,7 @@ class TypeTest: BaseRellTest() {
     }
 
     @Test fun testByteArraySql() {
+        tstCtx.useSql = true
         def("entity foo { mutable x: byte_array; }")
 
         chkOp("create foo(x'0123456789abcdef');")
@@ -49,6 +50,7 @@ class TypeTest: BaseRellTest() {
     }
 
     @Test fun testJsonSql() {
+        tstCtx.useSql = true
         def("entity foo { mutable j: json; }")
 
         chkOp("""create foo(json('{ "a" : 5, "b" : [1,2,3], "c": { "x":10,"y":20 } }'));""")

@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.def
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class ObjectTest: BaseRellTest() {
+class ObjectTest: BaseRellTest(useSql = true) {
     @Test fun testInitialization() {
         def("object foo { n: integer = 123; s: text = 'Hello'; }")
         chkData("foo(0,123,Hello)")

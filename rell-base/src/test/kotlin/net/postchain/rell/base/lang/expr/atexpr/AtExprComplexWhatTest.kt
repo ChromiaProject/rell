@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.expr.atexpr
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class AtExprComplexWhatTest: BaseRellTest() {
+class AtExprComplexWhatTest: BaseRellTest(useSql = true) {
     private fun initData() {
         def("entity city { name; country: text; }")
         def("entity user { name; score: integer; }")

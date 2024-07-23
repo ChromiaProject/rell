@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.atexpr
@@ -9,7 +9,7 @@ import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.toImmMap
 
-abstract class AtExprBaseTest: BaseRellTest() {
+abstract class AtExprBaseTest: BaseRellTest(useSql = true) {
     protected abstract fun impKind(): AtExprTestKind
     protected var impKind = impKind()
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.expr
@@ -158,12 +158,13 @@ class StatementTest: BaseRellTest() {
     }
 
     @Test fun testFor() {
+        tstCtx.useSql = true
         def("entity user { name: text; }")
         chkOp("create user('Bob'); create user('Alice'); create user('Trudy');")
 
         val code = """{
             var s = '';
-            for (name in user@*{}.name) {
+            for (name in user @* {}.name) {
                 if (s.size() > 0) s = s + ',';
                 s = s + name;
             }
@@ -174,13 +175,14 @@ class StatementTest: BaseRellTest() {
     }
 
     @Test fun testForBreak() {
+        tstCtx.useSql = true
         def("entity user { name: text; }")
         chkOp("create user('Bob'); create user('Alice'); create user('Trudy');")
 
         val code = """{
             var s = '';
             var n = 0;
-            for (name in user@*{}.name) {
+            for (name in user @* {}.name) {
                 if (s.size() > 0) s = s + ',';
                 s = s + name;
                 n = n + 1;
@@ -210,6 +212,7 @@ class StatementTest: BaseRellTest() {
     }
 
     @Test fun testForReturn() {
+        tstCtx.useSql = true
         def("entity user { name: text; }")
         chkOp("create user('Bob'); create user('Alice'); create user('Trudy');")
 

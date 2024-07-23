@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.expr.expr
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class WhenTest: BaseRellTest(false) {
+class WhenTest: BaseRellTest() {
     @Test fun testExprSimple() {
         val code = "= when(a) { 0 -> 'A'; 1 -> 'B'; 2 -> 'C'; else -> '?'; };"
         chkWhen("integer", code, "0" to "text[A]", "1" to "text[B]", "2" to "text[C]", "3" to "text[?]", "4" to "text[?]")

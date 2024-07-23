@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.atexpr
@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.expr.atexpr
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class AtExprInExistsComplexTest: BaseRellTest() {
+class AtExprInExistsComplexTest: BaseRellTest(useSql = true) {
     fun initData() {
         tst.strictToString = false
 
@@ -79,7 +79,7 @@ class AtExprInExistsComplexTest: BaseRellTest() {
             (user, trip) @* {
                 trip.city1 == user.city1, trip.city2 == user.city2
             }
-            ( _=user.name, _=trip.city1, _=trip.city2 )            
+            ( _=user.name, _=trip.city1, _=trip.city2 )
         """)
     }
 
@@ -89,7 +89,7 @@ class AtExprInExistsComplexTest: BaseRellTest() {
         chkList(listOf("Alice"), """
             user @* {
                 user.city1 in trip @* {
-                    trip.city2 == user.city2                
+                    trip.city2 == user.city2
                 } (trip.city1)
             } (.name)
         """)
@@ -101,7 +101,7 @@ class AtExprInExistsComplexTest: BaseRellTest() {
         chkList(listOf("Alice"), """
             user @* {
                 exists(
-                    trip @* { user.city1 == trip.city1, trip.city2 == user.city2 }            
+                    trip @* { user.city1 == trip.city1, trip.city2 == user.city2 }
                 )
             } (.name)
         """)

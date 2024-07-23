@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.repl
@@ -7,7 +7,7 @@ package net.postchain.rell.base.repl
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class ReplValueFormatTest: BaseRellTest(false) {
+class ReplValueFormatTest: BaseRellTest() {
     @Test fun testDefault() {
         initRepl("od")
         repl.chk("123", "123")

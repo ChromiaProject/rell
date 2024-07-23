@@ -170,7 +170,7 @@ private class C_EntityAttributeClause(
 
         defCtx.executor.onPass(C_CompilerPass.EXPRESSIONS) {
             val exprCtx = defCtx.initExprCtx
-            val vExpr0 = expr.compile(exprCtx, C_ExprHint.ofType(exprType)).value()
+            val vExpr0 = expr.compile(exprCtx, C_ExprHint.ofType(exprType)).vExpr()
             val adapter = C_Types.adaptSafe(msgCtx, exprType, vExpr0.type, name.pos) {
                 "attr_type:$name" toCodeMsg "Default value type mismatch for '$name'"
             }

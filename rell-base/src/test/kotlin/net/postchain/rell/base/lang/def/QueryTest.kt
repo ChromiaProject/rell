@@ -40,12 +40,14 @@ class QueryTest: BaseRellTest() {
     }
 
     @Test fun testReturnSelectAllNoObjects() {
+        tstCtx.useSql = true
         def("entity user { name: text; }")
         insert("c0.user", "name", "11, 'Alice'")
         chkEx("= user @* { .name == 'Bob' } ;", "list<user>[]")
     }
 
     @Test fun testReturnSelectAllOneObject() {
+        tstCtx.useSql = true
         def("entity user { name: text; }")
         insert("c0.user", "name", "11,'Alice'")
         insert("c0.user", "name", "33,'Bob'")
@@ -53,6 +55,7 @@ class QueryTest: BaseRellTest() {
     }
 
     @Test fun testReturnSelectAllManyObjects() {
+        tstCtx.useSql = true
         def("entity user { name: text; }")
         insert("c0.user", "name", "11,'Alice'")
         insert("c0.user", "name", "33,'Bob'")

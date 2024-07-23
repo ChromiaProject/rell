@@ -7,7 +7,7 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class LibRellTestAssertTest: BaseRellTest(false) {
+class LibRellTestAssertTest: BaseRellTest() {
     init {
         tst.testLib = true
     }

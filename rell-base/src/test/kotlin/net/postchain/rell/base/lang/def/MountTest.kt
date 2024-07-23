@@ -13,7 +13,7 @@ import org.apache.commons.lang3.StringUtils
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class MountTest: BaseRellTest() {
+class MountTest: BaseRellTest(useSql = true) {
     @Test fun testInvalidAnnotation() {
         chkCompile("@foo entity user { x: integer; }", "ct_err:modifier:invalid:ann:foo")
         chkCompile("@foo struct rec { x: integer; }", "ct_err:modifier:invalid:ann:foo")

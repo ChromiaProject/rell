@@ -59,7 +59,7 @@ private class C_SysFn_Exists(private val not: Boolean): C_SpecialLibGlobalFuncti
             arg.compile(ctx)
         }
 
-        val vArg = cArg.value()
+        val vArg = cArg.vExpr()
         val condition = compileCondition(vArg)
         if (condition == null) {
             C_LibFuncCaseUtils.errNoMatch(ctx.msgCtx, name.pos, name.str, listOf(null to vArg.type))

@@ -8,7 +8,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.SqlTestUtils
 import org.junit.Test
 
-class AtExprTest: BaseRellTest() {
+class AtExprTest: BaseRellTest(useSql = true) {
     override fun entityDefs() = listOf(
             "entity company { name: text; }",
             "entity user { firstName: text; lastName: text; company; }"

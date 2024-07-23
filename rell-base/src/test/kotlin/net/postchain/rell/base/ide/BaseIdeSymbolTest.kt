@@ -29,7 +29,7 @@ import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.*
 import kotlin.test.assertEquals
 
-abstract class BaseIdeSymbolTest: BaseRellTest(false) {
+abstract class BaseIdeSymbolTest: BaseRellTest() {
     protected var docDeclarationsEnabled = true
     protected var docCommentsEnabled = false
 

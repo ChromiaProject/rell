@@ -10,7 +10,7 @@ import net.postchain.rell.base.testutils.RellCodeTester
 import org.junit.Test
 import java.math.BigDecimal
 
-class LibDecimalTest: BaseRellTest(false) {
+class LibDecimalTest: BaseRellTest() {
     @Test fun testConstants() {
         chk("decimal.PRECISION", "int[131092]")
         chk("decimal.SCALE", "int[20]")

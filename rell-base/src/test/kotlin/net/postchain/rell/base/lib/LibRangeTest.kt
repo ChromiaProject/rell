@@ -7,7 +7,7 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class LibRangeTest: BaseRellTest(false) {
+class LibRangeTest: BaseRellTest() {
     @Test fun testConstructor() {
         chk("range(10)", "range[0,10,1]")
         chk("range(5,10)", "range[5,10,1]")

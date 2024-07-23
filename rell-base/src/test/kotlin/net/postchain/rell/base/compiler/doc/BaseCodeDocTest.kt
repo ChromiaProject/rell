@@ -10,7 +10,7 @@ import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocUtils
 import net.postchain.rell.base.utils.immListOf
 
-abstract class BaseCodeDocTest: BaseRellTest(useSql = false) {
+abstract class BaseCodeDocTest: BaseRellTest() {
     private fun initTst() {
         tst.ide = true
         tst.ideDocSymbolsEnabled = true

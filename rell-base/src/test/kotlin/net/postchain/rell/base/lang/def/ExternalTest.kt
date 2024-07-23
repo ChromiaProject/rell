@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.def
@@ -11,7 +11,7 @@ import net.postchain.rell.base.testutils.RellTestContext
 import net.postchain.rell.base.testutils.RellTestUtils
 import org.junit.Test
 
-class ExternalTest: BaseRellTest() {
+class ExternalTest: BaseRellTest(useSql = true) {
     @Test fun testSimple() {
         tstCtx.blockchain(333, "deadbeef")
 

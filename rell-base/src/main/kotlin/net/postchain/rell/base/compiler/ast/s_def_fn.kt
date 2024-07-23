@@ -115,7 +115,7 @@ class S_FormalParameter(
         val cExpr = expr!!.compileOpt(exprCtx, C_ExprHint.ofType(paramType))
         cExpr ?: return C_ExprUtils.errorVExpr(exprCtx, expr.startPos, paramType)
 
-        val vExpr = cExpr.value()
+        val vExpr = cExpr.vExpr()
 
         return if (paramType.isError()) vExpr else {
             val valueType = vExpr.type
@@ -189,7 +189,7 @@ class S_FunctionBodyShort(val expr: S_Expr): S_FunctionBody() {
 
     override fun compileQuery0(bodyCtx: C_FunctionBodyContext, stmtCtx: C_StmtContext): C_Statement {
         val cExpr = expr.compile(stmtCtx, C_ExprHint.ofType(bodyCtx.explicitRetType))
-        val vExpr = cExpr.value()
+        val vExpr = cExpr.vExpr()
 
         val type = vExpr.type
         C_Utils.checkUnitType(bodyCtx.namePos, type) { "query_exprtype_unit" toCodeMsg "Query expressions returns nothing" }
@@ -202,7 +202,7 @@ class S_FunctionBodyShort(val expr: S_Expr): S_FunctionBody() {
     }
 
     override fun compileFunction0(bodyCtx: C_FunctionBodyContext, stmtCtx: C_StmtContext): C_Statement {
-        val vExpr = expr.compile(stmtCtx, C_ExprHint.ofType(bodyCtx.explicitRetType)).value()
+        val vExpr = expr.compile(stmtCtx, C_ExprHint.ofType(bodyCtx.explicitRetType)).vExpr()
         val type = vExpr.type
 
         val adapter = stmtCtx.fnCtx.matchReturnType(bodyCtx.namePos, type)

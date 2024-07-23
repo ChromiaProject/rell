@@ -12,7 +12,7 @@ import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestContext
 import org.junit.Test
 
-class LibRellTestTxTest: BaseRellTest(false) {
+class LibRellTestTxTest: BaseRellTest() {
     override fun getProjExt() = PostchainRellTestProjExt
 
     init {

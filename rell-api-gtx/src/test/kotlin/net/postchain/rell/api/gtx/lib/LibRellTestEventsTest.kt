@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.api.gtx.lib
@@ -8,7 +8,7 @@ import net.postchain.rell.api.gtx.testutils.PostchainRellTestProjExt
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class LibRellTestEventsTest: BaseRellTest(false) {
+class LibRellTestEventsTest: BaseRellTest() {
     override fun getProjExt() = PostchainRellTestProjExt
 
     @Test fun testGetEvents() {

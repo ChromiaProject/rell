@@ -155,11 +155,11 @@ object C_Types {
     }
 
     fun matchOpt(
-            msgCtx: C_MessageContext,
-            dstType: R_Type,
-            srcType: R_Type,
-            errPos: S_Pos,
-            errSupplier: C_CodeMsgSupplier
+        msgCtx: C_MessageContext,
+        dstType: R_Type,
+        srcType: R_Type,
+        errPos: S_Pos,
+        errSupplier: C_CodeMsgSupplier,
     ): Boolean {
         val err = match0(dstType, srcType, errPos, errSupplier)
         return if (err != null) {
@@ -187,11 +187,11 @@ object C_Types {
     }
 
     fun adaptSafe(
-            msgCtx: C_MessageContext,
-            dstType: R_Type,
-            srcType: R_Type,
-            errPos: S_Pos,
-            errSupplier: C_CodeMsgSupplier
+        msgCtx: C_MessageContext,
+        dstType: R_Type,
+        srcType: R_Type,
+        errPos: S_Pos,
+        errSupplier: C_CodeMsgSupplier,
     ): C_TypeAdapter {
         val adapter = dstType.getTypeAdapter(srcType)
         return if (adapter != null) adapter else {

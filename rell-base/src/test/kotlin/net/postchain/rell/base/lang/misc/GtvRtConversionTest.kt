@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.misc
@@ -12,7 +12,7 @@ import net.postchain.rell.base.utils.CommonUtils
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class GtvRtConversionTest: BaseRellTest(useSql = false, gtv = true) {
+class GtvRtConversionTest: BaseRellTest(gtv = true) {
     init {
         tst.gtvResultRaw = true
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.repl
@@ -7,7 +7,7 @@ package net.postchain.rell.base.repl
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class ReplExpressionTest: BaseRellTest(false) {
+class ReplExpressionTest: BaseRellTest() {
     @Test fun testExpr() {
         repl.chk("2 + 2", "RES:int[4]")
         repl.chk("1*2*3*4*5*6*7*8*9*10*11*12*13", "RES:int[6227020800]")

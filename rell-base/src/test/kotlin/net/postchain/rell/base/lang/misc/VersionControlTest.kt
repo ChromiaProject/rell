@@ -11,7 +11,7 @@ import net.postchain.rell.base.utils.RellVersions
 import org.junit.Test
 
 /** Version control tests for cases with no other suitable test class. */
-class VersionControlTest: BaseRellTest(false) {
+class VersionControlTest: BaseRellTest() {
     @Test fun testNameListSetMap() {
         chkNameOldKw("list")
         chkNameOldKw("set")

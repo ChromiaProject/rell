@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.expr
@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.expr.expr
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class IncrementTest: BaseRellTest(false) {
+class IncrementTest: BaseRellTest() {
     @Test fun testStatement() {
         chkEx("{ var x = 123; x++; return x; }", "int[124]")
         chkEx("{ var x = 123; x--; return x; }", "int[122]")

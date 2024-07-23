@@ -8,7 +8,7 @@ import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class LibMapTest: BaseRellTest(false) {
+class LibMapTest: BaseRellTest() {
     @Test fun testLiteral() {
         chk("[:]", "ct_err:expr_map_no_type")
         chk("['Bob':123]", "map<text,integer>[text[Bob]=int[123]]")
@@ -26,6 +26,13 @@ class LibMapTest: BaseRellTest(false) {
         chkEx("{ val x: map<integer, text?> = [123:'Hello']; return x; }", "map<integer,text?>[int[123]=text[Hello]]")
         chkEx("{ val x: map<integer, (text?,boolean)> = [123:('Hello',true)]; return x; }",
             "map<integer,(text?,boolean)>[int[123]=(text[Hello],boolean[true])]")
+
+        chkEx("{ val x: map<text,map<text,integer?>> = ['A':['B':123]]; return x; }",
+            "map<text,map<text,integer?>>[text[A]=map<text,integer?>[text[B]=int[123]]]")
+        chkEx("{ val x: map<text,map<text?,integer>> = ['A':['B':123]]; return x; }",
+            "map<text,map<text?,integer>>[text[A]=map<text?,integer>[text[B]=int[123]]]")
+        chkEx("{ val x: map<text,map<text?,integer?>> = ['A':['B':123]]; return x; }",
+            "map<text,map<text?,integer?>>[text[A]=map<text?,integer?>[text[B]=int[123]]]")
     }
 
     @Test fun testConstructorRaw() {

@@ -7,7 +7,7 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class LibRowidTest: BaseRellTest(false) {
+class LibRowidTest: BaseRellTest() {
     @Test fun testConstructor() {
         chk("_type_of(rowid(0))", "text[rowid]")
         chk("rowid(0)", "rowid[0]")

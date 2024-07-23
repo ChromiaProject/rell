@@ -7,7 +7,7 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class LibTryCallTest: BaseRellTest(false) {
+class LibTryCallTest: BaseRellTest() {
     @Test fun testOneArgUnit() {
         def("function f(x: integer) { require(x > 0); }")
         chk("_type_of(try_call(f(1, *)))", "text[boolean]")

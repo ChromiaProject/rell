@@ -10,7 +10,7 @@ import org.junit.Test
 import java.math.BigInteger
 import kotlin.math.sign
 
-class ExpressionTest: BaseRellTest(false) {
+class ExpressionTest: BaseRellTest() {
     @Test fun testPrecedence() {
         chk("2 * 3 + 4", "int[10]")
         chk("4 + 2 * 3", "int[10]")

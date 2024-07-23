@@ -9,7 +9,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import org.junit.Test
 
-class GlobalConstantTest: BaseRellTest(false) {
+class GlobalConstantTest: BaseRellTest() {
     @Test fun testSimplest() {
         def("val X = 123;")
         chk("X", "int[123]")

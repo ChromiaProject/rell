@@ -38,9 +38,9 @@ class C_SpecificTypeExpr(
         }
     }
 
-    override fun valueOrError(): C_ValueOrError<V_Expr> {
+    override fun vExprOrError(): C_ValueOrError<V_Expr> {
         ideInfoPtr.setDefault()
-        return super.valueOrError()
+        return super.vExprOrError()
     }
 
     override fun member(ctx: C_ExprContext, memberNameHand: C_NameHandle, exprHint: C_ExprHint): C_Expr {

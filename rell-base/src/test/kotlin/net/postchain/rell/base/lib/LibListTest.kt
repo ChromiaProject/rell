@@ -7,7 +7,7 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class LibListTest: BaseRellTest(false) {
+class LibListTest: BaseRellTest() {
     @Test fun testLiteral() {
         chk("[]", "ct_err:expr_list_no_type")
         chk("[123]", "list<integer>[int[123]]")
@@ -22,6 +22,7 @@ class LibListTest: BaseRellTest(false) {
         chkEx("{ val x: list<integer?> = [123]; return x; }", "list<integer?>[int[123]]")
         chkEx("{ val x: list<(integer?,text)> = [(123,'Hello')]; return x; }",
             "list<(integer?,text)>[(int[123],text[Hello])]")
+        chkEx("{ val x: list<list<integer?>> = [[123]]; return x; }", "list<list<integer?>>[list<integer?>[int[123]]]")
     }
 
     @Test fun testConstructorRaw() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib
@@ -9,7 +9,7 @@ import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestContext
 import org.junit.Test
 
-class LibBlockTransactionTest: BaseRellTest() {
+class LibBlockTransactionTest: BaseRellTest(useSql = true) {
     companion object {
         val BLOCK_INSERTS_0 = RellTestContext.BlockBuilder(0)
                 .block(710, 10, "BC00", 1600000000000)

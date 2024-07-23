@@ -481,8 +481,10 @@ class C_FunctionContext(
     private val varUidGen = C_UidGen { id, name -> C_LocalVarUid(id, name, fnUid) }
     private val loopUidGen = C_UidGen { id, _ -> C_LoopUid(id, fnUid) }
 
-    private val retTypeTracker =
-            if (explicitReturnType != null) RetTypeTracker.Explicit(explicitReturnType) else RetTypeTracker.Implicit()
+    private val retTypeTracker: RetTypeTracker = when {
+        explicitReturnType != null -> RetTypeTracker.Explicit(msgCtx, explicitReturnType)
+        else -> RetTypeTracker.Implicit(msgCtx)
+    }
 
     fun nextBlockUid(name: String) = blockUidGen.next(name)
     fun nextVarUid(name: String) = varUidGen.next(name)
@@ -494,11 +496,11 @@ class C_FunctionContext(
 
     fun actualReturnType(): R_Type = retTypeTracker.getRetType()
 
-    private sealed class RetTypeTracker {
+    private sealed class RetTypeTracker(protected val msgCtx: C_MessageContext) {
         abstract fun getRetType(): R_Type
         abstract fun match(pos: S_Pos, type: R_Type): C_TypeAdapter
 
-        class Implicit: RetTypeTracker() {
+        class Implicit(msgCtx: C_MessageContext): RetTypeTracker(msgCtx) {
             private var impType: R_Type? = null
 
             override fun getRetType(): R_Type {
@@ -517,20 +519,21 @@ class C_FunctionContext(
                     // Do nothing.
                 } else if (t == R_UnitType) {
                     if (type != R_UnitType) {
-                        throw errRetTypeMiss(pos, t, type)
+                        msgCtx.error(pos, errRetTypeMiss(t, type))
                     }
                 } else {
                     val comType = R_Type.commonTypeOpt(t, type)
-                    if (comType == null) {
-                        throw errRetTypeMiss(pos, t, type)
+                    if (comType != null) {
+                        impType = comType
+                    } else {
+                        msgCtx.error(pos, errRetTypeMiss(t, type))
                     }
-                    impType = comType
                 }
                 return C_TypeAdapter_Direct
             }
         }
 
-        class Explicit(val expType: R_Type): RetTypeTracker() {
+        class Explicit(msgCtx: C_MessageContext, val expType: R_Type): RetTypeTracker(msgCtx) {
             override fun getRetType() = expType
 
             override fun match(pos: S_Pos, type: R_Type): C_TypeAdapter {
@@ -540,15 +543,19 @@ class C_FunctionContext(
                     } else {
                         expType.getTypeAdapter(type)
                     }
-                    m ?: throw errRetTypeMiss(pos, expType, type)
+                    if (m != null) m else {
+                        msgCtx.error(pos, errRetTypeMiss(expType, type))
+                        C_TypeAdapter_Direct
+                    }
                 }
             }
         }
     }
 
     companion object {
-        private fun errRetTypeMiss(pos: S_Pos, dstType: R_Type, srcType: R_Type): C_Error =
-                C_Errors.errTypeMismatch(pos, srcType, dstType, "fn_rettype", "Return type mismatch")
+        private fun errRetTypeMiss(dstType: R_Type, srcType: R_Type): C_CodeMsg {
+            return C_Errors.errTypeMismatch(srcType, dstType, "fn_rettype", "Return type mismatch")
+        }
     }
 }
 

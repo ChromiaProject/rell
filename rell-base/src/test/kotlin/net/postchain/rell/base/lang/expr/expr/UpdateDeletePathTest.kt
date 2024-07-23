@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.expr
@@ -9,7 +9,7 @@ import org.junit.Test
 
 // Purpose: make sure that complex combinations of path expressions work (i. e. translated into proper JOINs).
 
-class UpdateDeletePathTest: BaseRellTest() {
+class UpdateDeletePathTest: BaseRellTest(useSql = true) {
     override fun entityDefs() = listOf(
             "entity country { name: text; }",
             "entity city { name: text; country; }",

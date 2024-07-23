@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.atexpr
@@ -8,7 +8,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.SqlTestUtils
 import org.junit.Test
 
-class AtExprPathTest: BaseRellTest() {
+class AtExprPathTest: BaseRellTest(useSql = true) {
     override fun entityDefs() = listOf(
             "entity country { name: text; }",
             "entity state { name: text; country; }",

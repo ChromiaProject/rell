@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.type
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class FunctionTypeTest: BaseRellTest(false) {
+class FunctionTypeTest: BaseRellTest() {
     @Test fun testType() {
         chkEx("{ var f: (integer) -> text; return _type_of(f); }", "text[(integer)->text]")
         chkEx("{ var f: (integer) -> (decimal) -> text; return _type_of(f); }", "text[(integer)->(decimal)->text]")

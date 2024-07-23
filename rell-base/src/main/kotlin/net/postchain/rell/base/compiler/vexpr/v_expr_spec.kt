@@ -59,7 +59,7 @@ class V_LocalVarExpr(
     private fun checkInitialized() {
         if (exprCtx.varStates.getInited(varRef.target.varKey) != true) {
             val name = varRef.target.metaName
-            throw C_Error.stop(pos, "expr_var_uninit:$name", "Variable '$name' may be uninitialized")
+            msgCtx.error(pos, "expr_var_uninit:$name", "Variable '$name' may be uninitialized")
         }
     }
 

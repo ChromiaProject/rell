@@ -438,9 +438,9 @@ class C_FunctionExpr(
         return fn.getDefMeta()
     }
 
-    override fun valueOrError(): C_ValueOrError<V_Expr> {
+    override fun vExprOrError(): C_ValueOrError<V_Expr> {
         ideInfoPtr.setDefault()
-        return super.valueOrError()
+        return super.vExprOrError()
     }
 
     override fun call(ctx: C_ExprContext, pos: S_Pos, args: List<S_CallArgument>, resTypeHint: C_TypeHint): C_Expr {

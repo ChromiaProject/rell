@@ -8,7 +8,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class StructTest: BaseRellTest(false) {
+class StructTest: BaseRellTest() {
     @Test fun testGeneral() {
         def("struct foo { x: integer; s: text; }")
         chkEx("{ val r = foo(x = 123, s = 'Hello'); return r.x; }", "int[123]")

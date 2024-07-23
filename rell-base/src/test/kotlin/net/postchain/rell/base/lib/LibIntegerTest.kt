@@ -7,7 +7,7 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class LibIntegerTest: BaseRellTest(false) {
+class LibIntegerTest: BaseRellTest() {
     @Test fun testConstants() {
         chk("integer.MIN_VALUE", "int[-9223372036854775808]")
         chk("integer.MAX_VALUE", "int[9223372036854775807]")

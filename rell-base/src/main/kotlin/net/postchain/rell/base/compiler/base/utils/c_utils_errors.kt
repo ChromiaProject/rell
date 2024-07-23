@@ -18,21 +18,40 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.LazyString
 
 object C_Errors {
-    fun errTypeMismatch(pos: S_Pos, srcType: R_Type, dstType: R_Type, errCode: String, errMsg: String): C_Error {
+    fun errTypeMismatch(srcType: R_Type, dstType: R_Type, errCode: String, errMsg: String): C_CodeMsg {
         val code = "$errCode:[${dstType.strCode()}]:[${srcType.strCode()}]"
         val msg = "$errMsg: ${srcType.str()} instead of ${dstType.str()}"
-        return C_Error.stop(pos, code, msg)
+        return code toCodeMsg msg
+    }
+
+    fun errTypeMismatch(
+        msgCtx: C_MessageContext,
+        pos: S_Pos,
+        srcType: R_Type,
+        dstType: R_Type,
+        errCode: String,
+        errMsg: String,
+    ) {
+        val codeMsg = errTypeMismatch(srcType, dstType, errCode, errMsg)
+        msgCtx.error(pos, codeMsg)
+    }
+
+    fun errTypeMismatch(
+        msgCtx: C_MessageContext,
+        pos: S_Pos,
+        srcType: R_Type,
+        dstType: R_Type,
+        errSupplier: C_CodeMsgSupplier,
+    ) {
+        if (srcType.isNotError() && dstType.isNotError()) {
+            msgCtx.error(errTypeMismatch(pos, srcType, dstType, errSupplier))
+        }
     }
 
     fun errTypeMismatch(pos: S_Pos, srcType: R_Type, dstType: R_Type, errSupplier: C_CodeMsgSupplier): C_Error {
         val errCodeMsg = errSupplier()
-        return errTypeMismatch(pos, srcType, dstType, errCodeMsg.code, errCodeMsg.msg)
-    }
-
-    fun errTypeMismatch(msgCtx: C_MessageContext, pos: S_Pos, srcType: R_Type, dstType: R_Type, errSupplier: C_CodeMsgSupplier) {
-        if (srcType.isNotError() && dstType.isNotError()) {
-            msgCtx.error(errTypeMismatch(pos, srcType, dstType, errSupplier))
-        }
+        val codeMsg = errTypeMismatch(srcType, dstType, errCodeMsg.code, errCodeMsg.msg)
+        return C_Error.stop(pos, codeMsg)
     }
 
     fun errMultipleAttrs(pos: S_Pos, attrs: List<C_AtFromImplicitAttr>, errCode: String, errMsg: String): C_Error {

@@ -14,7 +14,7 @@ import org.junit.Test
 import java.math.BigInteger
 import kotlin.test.assertEquals
 
-class LibGtvTest: BaseRellTest(false) {
+class LibGtvTest: BaseRellTest() {
     @Test fun testFromBytes() {
         chkToGtv("gtv.from_bytes(x'a30302017b')", gtv(123))
         chkToGtv("gtv.from_bytes(x'a60302017b')", gtv(BigInteger.valueOf(123)))

@@ -20,7 +20,7 @@ import org.junit.Test
 import java.math.BigInteger
 import java.security.MessageDigest
 
-class LibCryptoTest: BaseRellTest(false) {
+class LibCryptoTest: BaseRellTest() {
     @Test fun testGetSignature() {
         chkGetSignature("0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF")
         chkGetSignature("1234DEAD5678BEEF1234DEAD5678BEEF1234DEAD5678BEEF1234DEAD5678BEEF")

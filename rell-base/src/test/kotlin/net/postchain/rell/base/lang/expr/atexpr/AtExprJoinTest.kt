@@ -8,7 +8,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.unwrap
 import org.junit.Test
 
-class AtExprJoinTest: BaseRellTest() {
+class AtExprJoinTest: BaseRellTest(useSql = true) {
     @Test fun testBasic() {
         initData()
         val what = "( _=p.name, _=h.city.name )"

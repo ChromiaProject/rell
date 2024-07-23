@@ -8,7 +8,7 @@ import net.postchain.rell.base.compiler.base.core.C_AtAttrShadowing
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class UpdateDeleteTest: BaseRellTest() {
+class UpdateDeleteTest: BaseRellTest(useSql = true) {
     override fun entityDefs() = listOf(
         "entity city { name: text; }",
         "entity person { name: text; mutable city; mutable street: text; mutable house: integer; mutable score: integer; }",

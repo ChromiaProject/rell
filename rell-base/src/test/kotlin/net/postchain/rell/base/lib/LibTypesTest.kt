@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib
@@ -10,7 +10,7 @@ import org.junit.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class LibTypesTest: BaseRellTest(false) {
+class LibTypesTest: BaseRellTest() {
     @Test fun testComparable() {
         val comparable = Lib_Rell.MODULE.lModule.getType("comparable").mType
 

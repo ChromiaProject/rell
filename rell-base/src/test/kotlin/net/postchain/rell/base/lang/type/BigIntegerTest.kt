@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.type
@@ -11,7 +11,7 @@ import net.postchain.rell.base.utils.toImmList
 import org.junit.Test
 import java.math.BigInteger
 
-class BigIntegerTest: BaseRellTest(false) {
+class BigIntegerTest: BaseRellTest() {
     @Test fun testType() {
         chkFull("query q(a: big_integer) = _type_of(a);", listOf(Rt_BigIntegerValue.ZERO), "text[big_integer]")
         chk("_type_of(big_integer(0))", "text[big_integer]")

@@ -147,7 +147,7 @@ class C_GlobalConstantDeepDefinitionBody(
         val exprCtx = defCtx.initExprCtx
 
         val exprHint = C_ExprHint.ofType(explicitRetType)
-        val vExpr = sExpr.compile(exprCtx, exprHint).value()
+        val vExpr = sExpr.compile(exprCtx, exprHint).vExpr()
 
         val actualType = vExpr.type
 

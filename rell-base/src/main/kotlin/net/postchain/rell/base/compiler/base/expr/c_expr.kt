@@ -6,10 +6,7 @@ package net.postchain.rell.base.compiler.base.expr
 
 import net.postchain.rell.base.compiler.ast.S_CallArgument
 import net.postchain.rell.base.compiler.ast.S_Pos
-import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
-import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfoHandle
-import net.postchain.rell.base.compiler.base.core.C_NameHandle
-import net.postchain.rell.base.compiler.base.core.C_TypeHint
+import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMemberTag
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.V_Expr
@@ -35,10 +32,21 @@ class C_ExprHint(val typeHint: C_TypeHint, val callable: Boolean = false) {
 abstract class C_Expr {
     abstract fun startPos(): S_Pos
 
-    abstract fun valueOrError(): C_ValueOrError<V_Expr>
+    abstract fun vExprOrError(): C_ValueOrError<V_Expr>
 
-    fun value(): V_Expr {
-        val res = valueOrError()
+    fun vExprOrNull(msgCtx: C_MessageContext): V_Expr? {
+        val res = vExprOrError()
+        return when (res) {
+            is C_ValueOrError_Value -> res.value
+            is C_ValueOrError_Error -> {
+                msgCtx.error(res.error)
+                null
+            }
+        }
+    }
+
+    fun vExpr(): V_Expr {
+        val res = vExprOrError()
         return when (res) {
             is C_ValueOrError_Value -> res.value
             is C_ValueOrError_Error -> throw C_Error.stop(res.error)
@@ -49,12 +57,12 @@ abstract class C_Expr {
     open fun getDefMeta(): R_DefinitionMeta? = null
 
     open fun member(ctx: C_ExprContext, memberNameHand: C_NameHandle, exprHint: C_ExprHint): C_Expr {
-        val vExpr = value()
+        val vExpr = vExpr()
         return vExpr.member(ctx, memberNameHand, false, exprHint)
     }
 
     open fun call(ctx: C_ExprContext, pos: S_Pos, args: List<S_CallArgument>, resTypeHint: C_TypeHint): C_Expr {
-        val vExpr = value() // May fail with "not a value" - that's OK.
+        val vExpr = vExpr() // May fail with "not a value" - that's OK.
         val vResExpr = vExpr.call(ctx, pos, args, resTypeHint)
         return C_ValueExpr(vResExpr)
     }
@@ -62,7 +70,7 @@ abstract class C_Expr {
 
 class C_ValueExpr(private val vExpr: V_Expr): C_Expr() {
     override fun startPos() = vExpr.pos
-    override fun valueOrError() = C_ValueOrError_Value(vExpr)
+    override fun vExprOrError() = C_ValueOrError_Value(vExpr)
     override fun isCallable() = vExpr.type is R_FunctionType
     override fun getDefMeta(): R_DefinitionMeta? = vExpr.getDefMeta()
 }
@@ -70,7 +78,7 @@ class C_ValueExpr(private val vExpr: V_Expr): C_Expr() {
 abstract class C_NoValueExpr: C_Expr() {
     protected abstract fun errKindName(): Pair<String, String>
 
-    override fun valueOrError(): C_ValueOrError<V_Expr> {
+    override fun vExprOrError(): C_ValueOrError<V_Expr> {
         return C_ValueOrError_Error(errNoValue())
     }
 
@@ -110,7 +118,7 @@ class C_ValueMemberExpr(
     override fun startPos() = vBase.pos
     override fun isCallable() = member.isCallable()
 
-    override fun valueOrError(): C_ValueOrError<V_Expr> {
+    override fun vExprOrError(): C_ValueOrError<V_Expr> {
         val vMember = member.value(exprCtx, memberPos, memberName)
         ideInfoHand.setIdeInfo(vMember.ideInfo)
         return C_ValueOrError_Value(makeMemberExpr(vMember))

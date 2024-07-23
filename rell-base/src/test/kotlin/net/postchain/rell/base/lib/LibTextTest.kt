@@ -7,7 +7,7 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class LibTextTest: BaseRellTest(false) {
+class LibTextTest: BaseRellTest() {
     @Test fun testEmpty() {
         chk("''.empty()", "boolean[true]")
         chk("'X'.empty()", "boolean[false]")

@@ -8,7 +8,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import org.junit.Test
 
-class AtExprExistsTest: BaseRellTest() {
+class AtExprExistsTest: BaseRellTest(useSql = true) {
     private fun initDataUserGroupMembership() {
         tst.strictToString = false
         def("entity user { name; }")

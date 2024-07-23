@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.expr.expr
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class NullAnalysisTest: BaseRellTest(false) {
+class NullAnalysisTest: BaseRellTest() {
     @Test fun testInit() {
         def("function f(a: integer?): integer? = a;")
 

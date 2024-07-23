@@ -135,6 +135,10 @@ object C_Utils {
         C_Errors.check(type != R_UnitType, pos, errSupplier)
     }
 
+    fun checkUnitType(msgMgr: C_MessageManager, pos: S_Pos, type: R_Type, code: String, msg: String): Boolean {
+        return checkUnitType(msgMgr, pos, type) { code toCodeMsg msg }
+    }
+
     fun checkUnitType(msgMgr: C_MessageManager, pos: S_Pos, type: R_Type, errSupplier: C_CodeMsgSupplier): Boolean {
         if (type == R_UnitType) {
             val codeMsg = errSupplier()

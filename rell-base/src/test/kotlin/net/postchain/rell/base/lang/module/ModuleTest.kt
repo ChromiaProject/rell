@@ -17,7 +17,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class ModuleTest: BaseRellTest(false) {
+class ModuleTest: BaseRellTest() {
     @Test fun testForwardTypeReferenceFunction() {
         val code = """
             function f(x: foo): bar = bar(x);

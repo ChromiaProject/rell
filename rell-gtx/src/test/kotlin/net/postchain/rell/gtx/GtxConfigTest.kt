@@ -161,9 +161,8 @@ class GtxConfigTest: BaseGtxTest() {
 
     @Test fun testCompilerVersion() {
         chkConfig("'sources':SOURCES,'version':'0.13.10'", "OK")
-        chkConfig("'sources':SOURCES,'version':'0.13.11'",
-            "ERR:compilerVersion not specified in configuration")
-        //TODO test version > MIN_COMPILER_VERSION
+        chkConfig("'sources':SOURCES,'version':'0.13.11'", "ERR:compilerVersion not specified in configuration")
+        chkConfig("'sources':SOURCES,'version':'0.13.12'", "ERR:compilerVersion not specified in configuration")
 
         chkConfig("'sources':SOURCES,'version':'0.12.0','compilerVersion':'0.13.11'", "OK")
         chkConfig("'sources':SOURCES,'version':'0.12.0','compilerVersion':'0.14.0'", "OK")
@@ -173,10 +172,15 @@ class GtxConfigTest: BaseGtxTest() {
             "ERR:Unknown compilerVersion: 0.12.99")
         chkConfig("'sources':SOURCES,'version':'0.12.0','compilerVersion':'999.0.0'", "OK")
 
-        chkConfig("'sources':SOURCES,'version':'0.13.11','compilerVersion':'0.13.11'", "OK")
         chkConfig("'sources':SOURCES,'version':'0.13.10','compilerVersion':'0.13.11'", "OK")
-        //TODO uncomment when 0.13.11+ is available
-        //chkConfig("'sources':SOURCES,'version':'0.13.11+1','compilerVersion':'0.13.11'", "OK")
+        chkConfig("'sources':SOURCES,'version':'0.13.11','compilerVersion':'0.13.11'", "OK")
+        chkConfig("'sources':SOURCES,'version':'0.13.12','compilerVersion':'0.13.11'",
+            "ERR:version (0.13.12) is newer than compilerVersion (0.13.11)")
+
+        chkConfig("'sources':SOURCES,'version':'0.13.13','compilerVersion':'0.13.12'",
+            "ERR:version (0.13.13) is newer than compilerVersion (0.13.12)")
+        chkConfig("'sources':SOURCES,'version':'0.13.13','compilerVersion':'0.13.13'", "OK")
+        chkConfig("'sources':SOURCES,'version':'0.13.13','compilerVersion':'0.13.14'", "OK")
     }
 
     @Test fun testVersionControl() {

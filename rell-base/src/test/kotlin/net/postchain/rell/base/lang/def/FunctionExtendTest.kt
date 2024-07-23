@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.def
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class FunctionExtendTest: BaseRellTest(false) {
+class FunctionExtendTest: BaseRellTest() {
     @Test fun testSimplest() {
         file("lib.rell", "module; @extendable function f(x: integer) { print('lib.f:' + x); }")
         def("import lib;")

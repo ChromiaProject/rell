@@ -149,7 +149,7 @@ object S_UnaryOp_IsNull: S_UnaryOp("??") {
 class S_UnaryExpr(startPos: S_Pos, val op: S_PosValue<S_UnaryOp>, val expr: S_Expr): S_Expr(startPos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val cExpr = expr.compile(ctx)
-        val vExpr = cExpr.value()
+        val vExpr = cExpr.vExpr()
         checkUnitType(vExpr.type)
         val vResExpr = op.value.compile(ctx, startPos, op.pos, vExpr)
         return C_ValueExpr(vResExpr)

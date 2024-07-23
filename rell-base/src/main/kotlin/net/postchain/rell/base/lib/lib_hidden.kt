@@ -116,7 +116,7 @@ private object C_SysFn_TypeOf: C_SpecialLibGlobalFunctionBody() {
 
         val arg = args[0]
         val cArg = arg.compile(ctx)
-        val vArg = cArg.value()
+        val vArg = cArg.vExpr()
 
         val type = vArg.type
         val str = type.strCode()
@@ -134,7 +134,7 @@ private object C_SysFn_GetNulled: C_SpecialLibGlobalFunctionBody() {
 
         val arg = args[0]
         val cArg = arg.compile(ctx)
-        val vArg = cArg.value()
+        val vArg = cArg.vExpr()
 
         val varKey = vArg.varKey()
         if (varKey == null) {

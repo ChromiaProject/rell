@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.module
@@ -11,7 +11,7 @@ import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestContext
 import org.junit.Test
 
-class ExternalModuleTest: BaseRellTest() {
+class ExternalModuleTest: BaseRellTest(useSql = true) {
     @Test fun testImportMainToExternalAsRegular() {
         initBasic()
         file("ext.rell", "@external module; @log entity user { name; }")

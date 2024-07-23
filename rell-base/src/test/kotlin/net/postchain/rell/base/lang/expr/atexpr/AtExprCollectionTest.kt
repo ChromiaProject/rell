@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.expr.atexpr
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class AtExprCollectionTest: BaseRellTest(false) {
+class AtExprCollectionTest: BaseRellTest() {
     @Test fun testConstants() {
         chk("[1,2,3,4,5] @* {} ( 123 )", "list<integer>[int[123],int[123],int[123],int[123],int[123]]")
         chk("[1,2,3] @* {} ( 123 )", "list<integer>[int[123],int[123],int[123]]")

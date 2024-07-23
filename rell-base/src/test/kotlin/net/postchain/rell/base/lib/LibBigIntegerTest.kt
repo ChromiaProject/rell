@@ -9,7 +9,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 import java.math.BigInteger
 
-class LibBigIntegerTest: BaseRellTest(false) {
+class LibBigIntegerTest: BaseRellTest() {
     @Test fun testConstants() {
         val expMax = "9".repeat(Lib_BigIntegerMath.PRECISION)
         chk("big_integer.PRECISION", "int[131072]")

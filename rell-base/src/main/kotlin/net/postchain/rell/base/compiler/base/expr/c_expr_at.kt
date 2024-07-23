@@ -464,7 +464,7 @@ class C_AtFromImplicitAttr(
         val vBase = base.compile(ctx, pos)
         val link = C_MemberLink(vBase, selfType, pos, null, false)
         val cExpr = attr.member.compile(ctx, link, C_IdeSymbolInfoHandle.NOP_HANDLE, null)
-        return cExpr.value()
+        return cExpr.vExpr()
     }
 }
 

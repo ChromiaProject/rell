@@ -11,16 +11,17 @@ import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class LibQueriesTest: BaseRellTest(false) {
-
+class LibQueriesTest: BaseRellTest() {
     @Test fun testGetMountNamesFilterKind() {
-        file("lib.rell", """module;
+        file("lib.rell", """
+            module;
             entity user {}
             object state {}
             query q() = "";
             operation op() {}
         """)
         def("import lib;")
+
         chkMntNames("", listOf(), listOf(), """{"entities":["user"],"objects":["state"],"operations":["op"],"queries":["q"]}""")
         chkMntNames("", listOf("query"), listOf(), """{"queries":["q"]}""")
         chkMntNames("", listOf("operation"), listOf(), """{"operations":["op"]}""")
@@ -34,6 +35,7 @@ class LibQueriesTest: BaseRellTest(false) {
         file("b/module.rell", """module; import .c; operation op_b() {}""")
         file("b/c.rell", """module;operation op_c() {}""")
         def("import a;import b;")
+
         chkMntNames("", listOf("operation"), listOf(), """{"operations":["op_a","op_b","op_c"]}""")
         chkMntNames("query my_q() = 1;", listOf(), listOf(""), """{"entities":[],"objects":[],"operations":[],"queries":["my_q"]}""")
         chkMntNames("", listOf("operation"), listOf("a"), """{"operations":["op_a"]}""")
@@ -42,7 +44,8 @@ class LibQueriesTest: BaseRellTest(false) {
     }
 
     @Test fun testGetMountNamesCustomMountNames() {
-        file( "lib.rell", """module;
+        file( "lib.rell", """
+            module;
             @mount("admin")
             entity user {}
             @mount("city")
@@ -51,9 +54,9 @@ class LibQueriesTest: BaseRellTest(false) {
             query q() = "";
             @mount("task")
             operation op() {}
-        """
-        )
+        """)
         def("import lib;")
+
         chkMntNames( "", listOf(), listOf(), """{"entities":["admin"],"objects":["city"],"operations":["task"],"queries":["question"]}""")
     }
 
@@ -72,13 +75,15 @@ class LibQueriesTest: BaseRellTest(false) {
         Rt_ListValue(R_ListType(R_TextType), map { Rt_TextValue.get(it) }.toMutableList())
 
     @Test fun testGetModuleArgs() {
-        file("lib_a.rell", """module;
+        file("lib_a.rell", """
+            module;
             struct module_args {
                 x: integer = 123;
                 y: text = 'hi';
             }
         """)
-        file("lib_b.rell", """module;
+        file("lib_b.rell", """
+            module;
             struct module_args {
                 a: integer = 456;
                 b: text = 'hello';
@@ -93,7 +98,8 @@ class LibQueriesTest: BaseRellTest(false) {
     }
 
     @Test fun testGetModuleArgsWrongInput() {
-        file("lib_a.rell", """module;
+        file("lib_a.rell", """
+            module;
             struct module_args {
                 x: integer = 123;
                 y: text = 'hi';
@@ -114,7 +120,8 @@ class LibQueriesTest: BaseRellTest(false) {
     }
 
     @Test fun testGetModuleArgsNonDefault() {
-        file("lib_a.rell", """module;
+        file("lib_a.rell", """
+            module;
             struct module_args {
                 x: integer;
                 y: text;

@@ -7,7 +7,7 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class LibMathTest: BaseRellTest(false) {
+class LibMathTest: BaseRellTest() {
     @Test fun testAbs() {
         chk("abs(a)", 0, "int[0]")
         chk("abs(a)", -123, "int[123]")

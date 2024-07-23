@@ -15,7 +15,7 @@ import kotlin.test.assertEquals
  * Main issue: Java BigDecimal type allows multiple distinct (not equal to each other) representations of the same
  * number.
  */
-class DecimalSqlTest: BaseRellTest(true) {
+class DecimalSqlTest: BaseRellTest(useSql = true) {
     @Test fun testPureSqlRead() {
         initPureSql()
         chkPureSqlRead(makeDec(123, -6), "(123000000,0)")
