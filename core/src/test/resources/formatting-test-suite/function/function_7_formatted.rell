@@ -1,0 +1,7 @@
+module;
+
+import bar; // some comment
+
+function foo() {
+    return bar();
+}
