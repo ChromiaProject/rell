@@ -345,7 +345,7 @@ class RellPageCreator(
             documentable: Documentable
     ) {
         documentable.sourceSets.forEach { sourceSet ->
-            documentable.documentation[sourceSet]?.let {
+            documentable.documentation[sourceSet]?.let { node ->
                 /*
                     Get description or a tag that holds documentation.
                     This tag can be either property or constructor but constructor tags are handled already in analysis so we
@@ -353,11 +353,12 @@ class RellPageCreator(
 
                     We purposefully ignore all other tags as they should not be visible in brief
                  */
-                it.firstMemberOfTypeOrNull<Description>() ?: it.firstMemberOfTypeOrNull<Property>()
+
+                node.firstMemberOfTypeOrNull<Description>() ?: node.firstMemberOfTypeOrNull<Property>()
                         .takeIf { documentable is DProperty }
-            }?.let {
+            }?.let { tag ->
                 group(sourceSets = setOf(sourceSet), kind = ContentKind.BriefComment) {
-                    createBriefComment(documentable, sourceSet, it)
+                    createBriefComment(documentable, sourceSet, tag)
                 }
             }
         }
@@ -389,11 +390,12 @@ class RellPageCreator(
     }
 
     private fun PageContentBuilder.DocumentableContentBuilder.createBriefComment(
-            documentable: Documentable,
-            sourceSet: DokkaConfiguration.DokkaSourceSet,
-            tag: TagWrapper
-    ) {     firstParagraphComment(tag.root) }
-
+        documentable: Documentable,
+        sourceSet: DokkaConfiguration.DokkaSourceSet,
+        tag: TagWrapper
+    ) {
+        comment(tag.root)
+    }
 
 
     private fun PageContentBuilder.DocumentableContentBuilder.rellTypesBlock(types: List<Documentable>) {
