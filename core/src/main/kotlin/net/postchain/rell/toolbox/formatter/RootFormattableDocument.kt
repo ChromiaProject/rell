@@ -1,5 +1,6 @@
 package net.postchain.rell.toolbox.formatter
 
+import net.postchain.rell.toolbox.core.TextReplacement
 import net.postchain.rell.toolbox.core.parser.RellCommonTokenStream
 import net.postchain.rell.toolbox.core.parser.RellLexer
 import net.postchain.rell.toolbox.core.tokens.RellCustomTokenChannels

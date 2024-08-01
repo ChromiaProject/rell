@@ -85,3 +85,25 @@ fun positionToOffset(content: String, position: Position): Int {
     }
     throw IndexOutOfBoundsException("Position $position out of bounds")
 }
+
+class TextReplacement(val startOffset: Int, val stopOffset: Int, val text: String)
+
+fun applyTextReplacements(source: String, replacements: List<TextReplacement>): String {
+    val result = StringBuilder(source)
+
+    // Apply replacements in reverse order to avoid issues with changing offsets
+    val sortedReplacements = replacements.sortedByDescending { it.startOffset }
+
+    for (replacement in sortedReplacements) {
+        if (replacement.startOffset < 0 || replacement.startOffset > source.length ||
+            replacement.stopOffset < replacement.startOffset || replacement.stopOffset > source.length
+        ) {
+            // Skip invalid replacements
+            continue
+        }
+
+        result.replace(replacement.startOffset, replacement.stopOffset, replacement.text)
+    }
+
+    return result.toString()
+}

@@ -1,5 +1,7 @@
 package net.postchain.rell.toolbox.formatter
 
+import net.postchain.rell.toolbox.core.TextReplacement
+import net.postchain.rell.toolbox.core.applyTextReplacements
 import net.postchain.rell.toolbox.core.parser.RellCommonTokenStream
 import net.postchain.rell.toolbox.core.parser.RellLexer
 import net.postchain.rell.toolbox.core.parser.RellParser
@@ -911,26 +913,6 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             doc.formatRellDocsComments(tokenStream)
             formatter.format(rootNode, doc)
             return doc.createReplacements()
-        }
-
-        fun applyTextReplacements(source: String, replacements: List<TextReplacement>): String {
-            val result = StringBuilder(source)
-
-            // Apply replacements in reverse order to avoid issues with changing offsets
-            val sortedReplacements = replacements.sortedByDescending { it.startOffset }
-
-            for (replacement in sortedReplacements) {
-                if (replacement.startOffset < 0 || replacement.startOffset > source.length ||
-                    replacement.stopOffset < replacement.startOffset || replacement.stopOffset > source.length
-                ) {
-                    // Skip invalid replacements
-                    continue
-                }
-
-                result.replace(replacement.startOffset, replacement.stopOffset, replacement.text)
-            }
-
-            return result.toString()
         }
     }
 }

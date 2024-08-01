@@ -1,0 +1,9 @@
+module;
+
+function baz() {
+    var x = "wrong \'quotes";
+
+    var y = "more wrong quotes";
+
+    val namingIssue = "wrong quotes";
+}
