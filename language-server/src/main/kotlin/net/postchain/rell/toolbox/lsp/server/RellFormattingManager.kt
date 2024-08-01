@@ -2,7 +2,7 @@ package net.postchain.rell.toolbox.lsp.server
 
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.formatter.RellFormatter
-import net.postchain.rell.toolbox.formatter.TextReplacement
+import net.postchain.rell.toolbox.core.TextReplacement
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import org.eclipse.lsp4j.FormattingOptions
