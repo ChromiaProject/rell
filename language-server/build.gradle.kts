@@ -18,6 +18,7 @@ dependencies {
 
     testImplementation(libs.bundles.testcontainers)
     testImplementation(libs.bundles.testing)
+    testImplementation(libs.rell.api.base)
 }
 
 tasks.check {

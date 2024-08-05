@@ -6,13 +6,17 @@ import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
+import net.postchain.rell.api.base.RellApiCompile
+import net.postchain.rell.toolbox.lsp.editing.Document
 import org.eclipse.lsp4j.DidOpenTextDocumentParams
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.PrepareRenameDefaultBehavior
 import org.eclipse.lsp4j.PrepareRenameParams
 import org.eclipse.lsp4j.RenameParams
+import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import org.eclipse.lsp4j.TextDocumentIdentifier
 import org.eclipse.lsp4j.TextDocumentItem
+import org.eclipse.lsp4j.TextEdit
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -26,8 +30,11 @@ import util.TestRange
 import util.TestServerModule
 import util.TestTextEdit
 import java.io.File
+import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.createParentDirectories
+import kotlin.io.path.readText
+import kotlin.io.path.toPath
 import kotlin.io.path.writeText
 
 class RellSymbolRenameTest {
@@ -122,6 +129,9 @@ class RellSymbolRenameTest {
         assertThat(result.changes[anotherImportingFileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(TestRange(TestPosition(2, 17), TestPosition(2, 32)), newFunctionName)
         )
+
+        applyChanges(result.changes)
+        compileRell(testWorkspaceSrc)
     }
 
     @Test
@@ -140,9 +150,8 @@ class RellSymbolRenameTest {
     }
 
     @Test
-    fun `Rename enum with value with unqualified name`(@TempDir tempDir: Path) {
-        val rellFile = tempDir.resolve("rell/src/main.rell")
-        rellFile.createParentDirectories()
+    fun `Rename enum with value with unqualified name`() {
+        val rellFile = testWorkspaceSrc.resolve("test.rell")
         rellFile.writeText(
             """
             module;
@@ -174,8 +183,8 @@ class RellSymbolRenameTest {
             }
             """.trimIndent()
         )
-        clientServerLauncher.initializeServer(tempDir.toFile().toURI())
-        val fileUri = openFile(rellFile.toFile())
+        clientServerLauncher.initializeServer(testWorkspaceSrc.toURI())
+        val fileUri = openFile(rellFile)
         val oldName = "my_enum"
         val newName = "something_else"
 
@@ -196,6 +205,9 @@ class RellSymbolRenameTest {
             TestTextEdit(TestRange(TestPosition(18, 18), TestPosition(18, 25)), newName),
             TestTextEdit(TestRange(TestPosition(23, 5), TestPosition(23, 12)), newName),
         )
+
+        applyChanges(result.changes)
+        compileRell(testWorkspaceSrc)
     }
 
     @Test
@@ -235,6 +247,9 @@ class RellSymbolRenameTest {
             TestTextEdit(TestRange(TestPosition(4, 5), TestPosition(4, 12)), newName),
             TestTextEdit(TestRange(TestPosition(2, 11), TestPosition(2, 18)), "$oldName: $newName"),
         )
+
+        applyChanges(result.changes)
+        compileRell(testWorkspaceSrc)
     }
 
     @Test
@@ -274,6 +289,9 @@ class RellSymbolRenameTest {
             TestTextEdit(TestRange(TestPosition(2, 11), TestPosition(2, 18)), "$newName: $oldName"),
             TestTextEdit(TestRange(TestPosition(2, 22), TestPosition(2, 29)), newName),
         )
+
+        applyChanges(result.changes)
+        compileRell(testWorkspaceSrc)
     }
 
     @Test
@@ -313,12 +331,14 @@ class RellSymbolRenameTest {
             TestTextEdit(TestRange(TestPosition(2, 11), TestPosition(2, 18)), "$newName: $oldName"),
             TestTextEdit(TestRange(TestPosition(2, 22), TestPosition(2, 29)), newName),
         )
+
+        applyChanges(result.changes)
+        compileRell(testWorkspaceSrc)
     }
 
     @Test
-    fun `Rename struct with attribute with unqualified name`(@TempDir tempDir: Path) {
-        val rellFile = tempDir.resolve("rell/src/main.rell")
-        rellFile.createParentDirectories()
+    fun `Rename struct with attribute with unqualified name`() {
+        val rellFile = testWorkspaceSrc.resolve("test.rell")
         rellFile.writeText(
             """
             module;
@@ -349,8 +369,8 @@ class RellSymbolRenameTest {
             }
             """.trimIndent()
         )
-        clientServerLauncher.initializeServer(tempDir.toFile().toURI())
-        val fileUri = openFile(rellFile.toFile())
+        clientServerLauncher.initializeServer(testWorkspaceSrc.toURI())
+        val fileUri = openFile(rellFile)
         val oldName = "another_struct"
         val newName = "something_else"
 
@@ -364,7 +384,6 @@ class RellSymbolRenameTest {
         )
         assertThat(prepareResult.third).isNull()
 
-
         val result = server.rename(renameParams(fileUri, Position(23, 9), newName)).join()
         assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(TestRange(TestPosition(4, 4), TestPosition(4, 18)), "another_struct: $newName"),
@@ -372,6 +391,9 @@ class RellSymbolRenameTest {
             TestTextEdit(TestRange(TestPosition(18, 18), TestPosition(18, 32)), newName),
             TestTextEdit(TestRange(TestPosition(23, 7), TestPosition(23, 21)), newName),
         )
+
+        applyChanges(result.changes)
+        compileRell(testWorkspaceSrc)
     }
 
     @Test
@@ -430,6 +452,9 @@ class RellSymbolRenameTest {
             TestTextEdit(TestRange(TestPosition(4, 4), TestPosition(4, 18)), "$newName: $oldName"),
             TestTextEdit(TestRange(TestPosition(7, 37), TestPosition(7, 51)), newName),
         )
+
+        applyChanges(result.changes)
+        compileRell(testWorkspaceSrc)
     }
 
     @Test
@@ -490,12 +515,14 @@ class RellSymbolRenameTest {
             TestTextEdit(TestRange(TestPosition(18, 18), TestPosition(18, 32)), newName),
             TestTextEdit(TestRange(TestPosition(23, 7), TestPosition(23, 21)), newName),
         )
+
+        applyChanges(result.changes)
+        compileRell(testWorkspaceSrc)
     }
 
     @Test
-    fun `Rename entity with attribute with unqualified name`(@TempDir tempDir: Path) {
-        val rellFile = tempDir.resolve("rell/src/main.rell")
-        rellFile.createParentDirectories()
+    fun `Rename entity with attribute with unqualified name`() {
+        val rellFile = testWorkspaceSrc.resolve("test.rell")
         rellFile.writeText(
             """
             module;
@@ -526,8 +553,8 @@ class RellSymbolRenameTest {
             }
             """.trimIndent()
         )
-        clientServerLauncher.initializeServer(tempDir.toFile().toURI())
-        val fileUri = openFile(rellFile.toFile())
+        clientServerLauncher.initializeServer(testWorkspaceSrc.toURI())
+        val fileUri = openFile(rellFile)
 
         val oldName = "another_entity"
         val newName = "something_else"
@@ -549,6 +576,9 @@ class RellSymbolRenameTest {
             TestTextEdit(TestRange(TestPosition(18, 18), TestPosition(18, 32)), newName),
             TestTextEdit(TestRange(TestPosition(23, 7), TestPosition(23, 21)), newName),
         )
+
+        applyChanges(result.changes)
+        compileRell(testWorkspaceSrc)
     }
 
     @Test
@@ -582,13 +612,16 @@ class RellSymbolRenameTest {
         assertThat(result.changes[entityModuleFileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(TestRange(TestPosition(2, 7), TestPosition(2, 21)), newName),
         )
+
+        applyChanges(result.changes)
+        compileRell(testWorkspaceSrc)
     }
 
     @Test
-    fun `Rename with import alias`(@TempDir tempDir: Path) {
+    fun `Rename with import alias`() {
         val oldName = "foo_entity"
 
-        val entityModule = tempDir.resolve("rell/src/entity_module/module.rell").createParentDirectories()
+        val entityModule = testWorkspaceSrc.resolve("foobar_module/module.rell").toPath().createParentDirectories()
         entityModule.writeText(
             """
             module;
@@ -599,17 +632,17 @@ class RellSymbolRenameTest {
             """.trimIndent()
         )
 
-        val rellFile = tempDir.resolve("rell/src/main.rell").createParentDirectories()
+        val rellFile = testWorkspaceSrc.resolve("test.rell").toPath().createParentDirectories()
         rellFile.createParentDirectories()
         rellFile.writeText(
             """
             module;
             
-            import a: entity_module.{$oldName};
+            import a: foobar_module.{$oldName};
             """.trimIndent()
         )
 
-        clientServerLauncher.initializeServer(tempDir.toFile().toURI())
+        clientServerLauncher.initializeServer(testWorkspaceSrc.toURI())
         val fileUri = openFile(rellFile.toFile())
         val positionForRenaming = Position(2, 30)
 
@@ -633,6 +666,9 @@ class RellSymbolRenameTest {
         assertThat(result.changes[entityModule.toFileUri()]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(TestRange(TestPosition(2, 7), TestPosition(2, 17)), newName),
         )
+
+        applyChanges(result.changes)
+        compileRell(testWorkspaceSrc)
     }
 
     @Test
@@ -674,6 +710,9 @@ class RellSymbolRenameTest {
         assertThat(result.changes[fileUri]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(TestRange(TestPosition(5, 4), TestPosition(5, 14)), "$newName: $oldName"),
         )
+
+        applyChanges(result.changes)
+        compileRell(testWorkspaceSrc)
     }
 
     @Test
@@ -720,6 +759,9 @@ class RellSymbolRenameTest {
             TestTextEdit(TestRange(TestPosition(4, 4), TestPosition(4, 18)), "$newName: $oldName"),
             TestTextEdit(TestRange(TestPosition(11, 31), TestPosition(11, 45)), newName),
         )
+
+        applyChanges(result.changes)
+        compileRell(testWorkspaceSrc)
     }
 
     @Test
@@ -771,6 +813,9 @@ class RellSymbolRenameTest {
             TestTextEdit(TestRange(TestPosition(9, 4), TestPosition(9, 14)), "$newName: $oldName"),
             TestTextEdit(TestRange(TestPosition(16, 32), TestPosition(16, 42)), newName),
         )
+
+        applyChanges(result.changes)
+        compileRell(testWorkspaceSrc)
     }
 
     @Test
@@ -817,6 +862,9 @@ class RellSymbolRenameTest {
             TestTextEdit(TestRange(TestPosition(4, 11), TestPosition(4, 25)), newName),
             TestTextEdit(TestRange(TestPosition(7, 7), TestPosition(7, 21)), newName),
         )
+
+        applyChanges(result.changes)
+        compileRell(testWorkspaceSrc)
     }
 
     @Test
@@ -846,6 +894,9 @@ class RellSymbolRenameTest {
             ),
             TestTextEdit(TestRange(TestPosition(22, 33), TestPosition(22, 47)), newName),
         )
+
+        applyChanges(result.changes)
+        compileRell(testWorkspaceSrc)
     }
 
     @Test
@@ -880,6 +931,9 @@ class RellSymbolRenameTest {
             TestTextEdit(TestRange(TestPosition(26, 34), TestPosition(26, 48)), newName),
             TestTextEdit(TestRange(TestPosition(33, 32), TestPosition(33, 46)), newName),
         )
+
+        applyChanges(result.changes)
+        compileRell(testWorkspaceSrc)
     }
 
 
@@ -898,4 +952,30 @@ class RellSymbolRenameTest {
         RenameParams(TextDocumentIdentifier(fileUri), position, newName)
 
     private fun Path.toFileUri() = this.toFile().toURI().toString()
+
+    private fun applyChanges(changes: Map<String, List<TextEdit>>) {
+        changes.forEach { (fileUri, textEdits) ->
+            val uri = URI(fileUri)
+            val document = workspaceManager.getOpenDocument(uri) ?: Document(uri, 1, uri.toPath().readText())
+            val changedDocument = document.applyTextDocumentChanges(textEdits.map {
+                TextDocumentContentChangeEvent(
+                    it.range,
+                    it.newText
+                )
+            })
+            uri.toPath().writeText(changedDocument.content)
+        }
+    }
+
+    private fun compileRell(rellSourceDir: File) {
+        RellApiCompile.compileApp(
+            RellApiCompile.Config.Builder()
+                .mountConflictError(false)
+                .moduleArgsMissingError(false)
+                .quiet(false)
+                .build(),
+            rellSourceDir,
+            appModules = null
+        )
+    }
 }
