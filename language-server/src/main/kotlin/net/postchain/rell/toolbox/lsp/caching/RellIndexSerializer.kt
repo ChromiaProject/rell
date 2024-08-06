@@ -40,7 +40,8 @@ class RellIndexSerializer(
             indexer.workspaceUri,
             toSerializableResources(indexer),
             linterOptions,
-            formatterOptions
+            formatterOptions,
+            indexer.projectRootUri
         )
     }
 
@@ -82,7 +83,8 @@ class RellIndexSerializer(
                 rellLinter,
                 serializableWorkspaceIndexer.linterOptions,
                 formattingStyleLinter,
-                serializableWorkspaceIndexer.formatterOptions
+                serializableWorkspaceIndexer.formatterOptions,
+                serializableWorkspaceIndexer.projectRootUri
             )
         indexer.fileUriResourceMap = ConcurrentHashMap(
             fromSerializableResources(serializableWorkspaceIndexer.serializableResources)

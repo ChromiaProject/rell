@@ -224,7 +224,7 @@ class RellLanguageServer(
                 }
             } else {
                 val indexer = workspaceManager.getIndexerForConfigFile(uri)
-                if (indexer != null && indexer.isLinterOrFormatterConfigFile(uri)) {
+                if (indexer != null && indexer.isConfigFile(uri)) {
                     requestManager.runWrite {
                         indexer.updateConfig(uri)
                         workspaceManager.runLinter()

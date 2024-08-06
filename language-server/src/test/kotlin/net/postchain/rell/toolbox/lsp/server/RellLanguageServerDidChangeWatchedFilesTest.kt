@@ -5,10 +5,10 @@ import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
-import org.eclipse.lsp4j.Diagnostic
-import org.eclipse.lsp4j.DiagnosticSeverity
 import java.io.File
 import kotlin.io.path.createDirectory
+import org.eclipse.lsp4j.Diagnostic
+import org.eclipse.lsp4j.DiagnosticSeverity
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams
 import org.eclipse.lsp4j.FileChangeType
 import org.eclipse.lsp4j.FileEvent
@@ -87,7 +87,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
             """.trimIndent()
             )
         }.toURI()
-        clientServerLauncher.initializeServer(srcDir.toURI())
+        clientServerLauncher.initializeServer(tempDir.toURI())
         val indexer = workspaceManager.indexers[srcDir.toURI()]!!
         val configFileUri = File(tempDir.toString(), ".rell_lint").apply {
             writeText(
@@ -113,6 +113,54 @@ class RellLanguageServerDidChangeWatchedFilesTest {
                 DiagnosticSeverity.Warning,
                 null,
                 "linter_issue:rule_unused_variable"
+            ),
+        )
+    }
+
+    @Test
+    fun `didChangeWatched linter config created at a wrong location will not add linter issues to diagnostics`() {
+        val rellFileUri = File(srcDir.toString(), "code.rell").apply {
+            writeText(
+                """
+                module;
+                /**
+                * @return wrong doc tag (should be returns)
+                */
+                function Foo() {
+                    val x = 123;
+                }
+            """.trimIndent()
+            )
+        }.toURI()
+        clientServerLauncher.initializeServer(srcDir.toURI())
+        val indexer = workspaceManager.indexers[srcDir.toURI()]!!
+        val configFileUri = File(tempDir.toString(), ".rell_lint").apply {
+            writeText(
+                """
+                [*.rell]
+                rule_naming_convention=true
+            """.trimIndent()
+            )
+        }.toURI()
+
+        val fileEvent = FileEvent(configFileUri.toString(), FileChangeType.Created)
+        val rellFileUpdate = FileEvent(rellFileUri.toString(), FileChangeType.Changed)
+        val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEvent, rellFileUpdate))
+
+        server.didChangeWatchedFiles(didChangeParams)
+
+        await().until { testClient.diagnostics.isNotEmpty() }
+
+        val diagnostics = testClient.diagnostics
+        assertThat(indexer.fileUriResourceMap.keys).containsOnly(rellFileUri)
+        assertThat(diagnostics.keys).containsOnly(rellFileUri.toString())
+        assertThat(diagnostics[rellFileUri.toString()]!!).containsOnly(
+            Diagnostic(
+                Range(Position(4, 0), Position(4, 0)),
+                "Invalid comment tag: @return",
+                DiagnosticSeverity.Warning,
+                null,
+                "comment:tag:unknown:return"
             ),
         )
     }

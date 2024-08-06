@@ -4,6 +4,10 @@ import assertk.assertThat
 import assertk.assertions.containsOnly
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.attribute.PosixFilePermissions
+import kotlin.io.path.createDirectory
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
@@ -12,10 +16,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledOnOs
 import org.junit.jupiter.api.condition.OS
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.attribute.PosixFilePermissions
-import kotlin.io.path.createDirectory
 
 
 class WorkspaceIndexerTest {
@@ -156,5 +156,74 @@ class WorkspaceIndexerTest {
             workspaceIndexer.initialFileIndexBuild()
             assertThat(workspaceIndexer.fileUriResourceMap).isNotEmpty()
         }
+    }
+
+    @Test
+    fun `Linter issues from external libs is not reported`(@TempDir dir: File) {
+        val srcDir = File(dir, "src")
+        srcDir.mkdirs()
+
+        val externalLibName = "external"
+        val fileContent = """
+            module;
+
+            function notSnakeCase() {
+            	return 2;
+            }
+
+            function foo() = unknown();
+
+        """.trimIndent()
+
+        val main = File(srcDir, "main.rell").apply {
+            parentFile.mkdirs()
+            writeText(fileContent)
+        }.toURI()
+
+        val internalLib = File(srcDir, "lib/internal/module.rell").apply {
+            parentFile.mkdirs()
+            writeText(fileContent)
+        }.toURI()
+
+        val externalLib = File(srcDir, "lib/$externalLibName/module.rell").apply {
+            parentFile.mkdirs()
+            writeText(fileContent)
+        }.toURI()
+
+        File(dir, "chromia.yml").apply {
+            writeText(
+                """
+                blockchains:
+                  rellDappWithLib:
+                    module: main
+
+                libs:
+                  $externalLibName:
+                    registry: a.registry.abc
+                    path: a/path/to/registry
+            """.trimIndent()
+            )
+        }
+
+        val linterOptions = LinterOptions(enabled = true, ruleNamingConvention = true, ruleFormatter = true)
+        val formatterOptions = FormatterOptions(tabSize = 0)
+
+        val workspaceIndexer =
+            WorkspaceIndexer(
+                srcDir.toURI(),
+                rellLinter,
+                linterOptions,
+                formattingStyleLinter,
+                formatterOptions,
+                dir.toURI()
+            )
+        workspaceIndexer.initialFileIndexBuild()
+        val allIssues = workspaceIndexer.getAllIssues()
+
+        assertThat(allIssues.keys).containsOnly(main, internalLib, externalLib)
+        assertThat(allIssues[main]!!.size).isEqualTo(3)
+        assertThat(allIssues[internalLib]!!.size).isEqualTo(3)
+        assertThat(allIssues[externalLib]!!.size).isEqualTo(1)
+        assertThat(allIssues[externalLib]!!.first().code).isEqualTo("unknown_name:unknown")
     }
 }

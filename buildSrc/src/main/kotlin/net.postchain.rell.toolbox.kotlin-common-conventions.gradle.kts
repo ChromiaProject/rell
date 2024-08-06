@@ -34,6 +34,10 @@ repositories {
         name = "Chromia parent GitLab Registry"
         url = uri("https://gitlab.com/api/v4/projects/50818999/packages/maven")
     }
+    maven {
+        name = "Chromia Build Tools Registry"
+        url = uri("https://gitlab.com/api/v4/projects/39844192/packages/maven")
+    }
 }
 
 val catalog: VersionCatalog = versionCatalogs.named("libs")
@@ -91,8 +95,8 @@ tasks.withType<JacocoReport> {
             fileTree(it).apply {
                 exclude("**/core/RellVersionInfo.*")
                 exclude("**/core/RellAbout.*")
-                exclude ("net/postchain/rell/toolbox/core/parser/**")
-                exclude ("net/postchain/rell/lsp/grammar/**")
+                exclude("net/postchain/rell/toolbox/core/parser/**")
+                exclude("net/postchain/rell/lsp/grammar/**")
             }
         }))
     }
