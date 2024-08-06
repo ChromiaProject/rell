@@ -10,6 +10,7 @@ import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.minutes
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
+import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.core.indexer.RellIssue
 import net.postchain.rell.toolbox.core.indexer.Resource
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
@@ -107,7 +108,14 @@ class RellWorkspaceManager(
         val (linterOptions, formatterOptions) = getLinterAndFormatterOptions(workspaceFolderUri)
 
         val indexer =
-            WorkspaceIndexer(resolvedSourceDirUri, rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
+            WorkspaceIndexer(
+                resolvedSourceDirUri,
+                rellLinter,
+                linterOptions,
+                formattingStyleLinter,
+                formatterOptions,
+                workspaceFolderUri
+            )
         indexer.initialFileIndexBuild(cachedIndexer)
         return indexer
     }
@@ -201,17 +209,38 @@ class RellWorkspaceManager(
     }
 
     private fun doSingleFileIndex(fileUri: URI): WorkspaceIndexer {
-        val workspace = findSourceDirURI(fileUri)
+        val sourceDirUri = findSourceDirURI(fileUri)
+        val projectRootUri = findProjectRootURI(sourceDirUri)
 
-        val (linterOptions, formatterOptions) = getLinterAndFormatterOptions(workspace)
+        val (linterOptions, formatterOptions) = getLinterAndFormatterOptions(sourceDirUri)
 
-        val indexer = WorkspaceIndexer(workspace, rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
-        val cachedIndexer = if (indexCachingEnabled) indexCachingService.getWorkspaceIndexer(workspace) else null
+        val indexer = WorkspaceIndexer(
+            sourceDirUri,
+            rellLinter,
+            linterOptions,
+            formattingStyleLinter,
+            formatterOptions,
+            projectRootUri
+        )
+        val cachedIndexer = if (indexCachingEnabled) indexCachingService.getWorkspaceIndexer(sourceDirUri) else null
 
         indexer.initialFileIndexBuild(cachedIndexer)
-        indexers[workspace] = indexer
+        indexers[sourceDirUri] = indexer
         reportDiagnostics(indexer)
         return indexer
+    }
+
+    private fun findProjectRootURI(sourceDirUri: URI): URI? {
+        val parentDir = File(sourceDirUri).parentFile ?: return null
+        val grandParentDir = parentDir.parentFile ?: return null
+
+        return when {
+            parentDir.resolve(ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME).exists() -> parentDir.toURI()
+            grandParentDir.resolve(ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME)
+                .exists() -> grandParentDir.toURI()
+
+            else -> null
+        }
     }
 
     fun didClose(fileUri: URI) {

@@ -10,6 +10,7 @@ import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
+import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
@@ -22,12 +23,16 @@ class WorkspaceIndexer(
     private val linterOptions: LinterOptions,
     private val formattingStyleLinter: FormattingStyleLinter,
     private val formatterOptions: FormatterOptions,
+    val projectRootUri: URI? = null
 ) {
     private val logger = KotlinLogging.logger {}
     private val resourceFactory = RellResourceFactory(workspaceUri, AntlrRellParser())
     private val rellCompilerUtils = RellCompilerUtils()
     var fileUriResourceMap = ConcurrentHashMap<URI, Resource>()
     private var fileMap: ConcurrentHashMap<C_SourcePath, C_SourceFile> = ConcurrentHashMap()
+    private val chromiaModelProvider = ChromiaModelProvider()
+    private var ignoreReportingUris: Set<URI> =
+        chromiaModelProvider.resolveIgnoreReportingUris(projectRootUri, workspaceUri)
 
     fun updateConfig(fileUri: URI) {
         val configFile = File(fileUri)
@@ -36,6 +41,9 @@ class WorkspaceIndexer(
         }
         if (isFormatterConfig(fileUri)) {
             formatterOptions.updateOptionsFromFile(configFile)
+        }
+        if (isChromiaModelFile(fileUri)) {
+            ignoreReportingUris = chromiaModelProvider.resolveIgnoreReportingUris(projectRootUri, workspaceUri)
         }
     }
 
@@ -140,11 +148,23 @@ class WorkspaceIndexer(
     }
 
     private fun getLinterIssues(resource: Resource): List<RellIssue> {
-        return resource.linterIssues.map(RellIssue::fromLinterIssue)
+        return if (shouldIgnoreReportingIssue(resource)) {
+            emptyList()
+        } else {
+            resource.linterIssues.map(RellIssue::fromLinterIssue)
+        }
     }
 
     private fun getFormatterIssues(resource: Resource): List<RellIssue> {
-        return resource.formatterIssues.map(RellIssue::fromFormatterIssue)
+        return if (shouldIgnoreReportingIssue(resource)) {
+            emptyList()
+        } else {
+            resource.formatterIssues.map(RellIssue::fromFormatterIssue)
+        }
+    }
+
+    private fun shouldIgnoreReportingIssue(resource: Resource): Boolean {
+        return ignoreReportingUris.any { resource.fileUri.path.startsWith(it.path) }
     }
 
     //Change in source code
@@ -258,10 +278,27 @@ class WorkspaceIndexer(
         formattingStyleLinter.enhanceWithFormatterIssues(linterOptions, formatterOptions, resource, fileContent)
     }
 
-    fun isLinterOrFormatterConfigFile(uri: URI) = isLinterConfig(uri) || isFormatterConfig(uri)
-    private fun isLinterConfig(uri: URI) = uri.toPath().fileName.toString() == LinterOptions.CONFIG_FILE_NAME
-    private fun isFormatterConfig(uri: URI) = uri.toPath().fileName.toString() in setOf(
-        FormatterOptions.PREFERRED_RELL_FORMAT_FILE_NAME,
-        FormatterOptions.DEPRECATED_RELL_FORMAT_FILE_NAME
-    )
+    fun isConfigFile(uri: URI) =
+        isLinterConfig(uri) || isFormatterConfig(uri) || isChromiaModelFile(uri)
+
+    private fun isLinterConfig(uri: URI): Boolean {
+        return uri.toPath().fileName.toString() == LinterOptions.CONFIG_FILE_NAME && isInProjectRoot(uri)
+    }
+
+    private fun isFormatterConfig(uri: URI): Boolean {
+        return uri.toPath().fileName.toString() in setOf(
+            FormatterOptions.PREFERRED_RELL_FORMAT_FILE_NAME,
+            FormatterOptions.DEPRECATED_RELL_FORMAT_FILE_NAME
+        ) && isInProjectRoot(uri)
+    }
+
+    private fun isChromiaModelFile(uri: URI): Boolean {
+        return uri.toPath().fileName.toString() == ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME &&
+                isInProjectRoot(uri)
+    }
+
+    private fun isInProjectRoot(uri: URI): Boolean {
+        val parent = File(uri).parentFile ?: return false
+        return parent.toPath() == projectRootUri?.toPath()
+    }
 }
