@@ -13,8 +13,8 @@ dependencies {
     implementation(libs.ec4j)
     implementation(libs.bundles.rell)
     implementation(libs.bundles.jackson)
-    implementation(libs.bundles.logging)
-    implementation(libs.ec4j)
+    implementation(libs.oshai)
+    implementation(libs.slf4j)
     implementation("io.github.java-diff-utils:java-diff-utils:4.12")
 
     rellTestCasesConfiguration(group = "net.postchain.rell", name = "rell-api-gtx", version = libs.versions.rell.get(), classifier = "rell-test-cases", ext = "zip")
