@@ -9,6 +9,7 @@ assertk = "0.27.0"
 kotlin-test = "1.9.10"
 oshai = "5.1.0"
 log4j = "2.20.0"
+slf4j = "1.7.36"
 mockk = "1.13.8"
 ec4j = "0.3.0"
 
@@ -48,7 +49,7 @@ testcintainers-junit = { module = "org.testcontainers:junit-jupiter", version.re
 oshai = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "oshai" }
 log4j = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
-
+slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 
 [bundles]
 testcontainers = ["testcontainers-base", "testcintainers-junit"]
