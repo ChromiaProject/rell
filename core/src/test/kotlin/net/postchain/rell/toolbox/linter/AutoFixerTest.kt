@@ -32,6 +32,14 @@ class AutoFixerTest {
         checkAutofix("all.rell", LinterOptions(enabled = true, ruleFormatter = true, ruleQuoteFormat = Quote.DOUBLE))
     }
 
+    @Test
+    fun `should remove extra trailing new line`() {
+        checkAutofix(
+            "end_of_line.rell",
+            LinterOptions(enabled = true, ruleFormatter = true, ruleQuoteFormat = Quote.DOUBLE)
+        )
+    }
+
     private fun checkAutofix(fileName: String, linterOptions: LinterOptions) {
         val fixedContent = autofix(fileName, linterOptions)
         val expectedContent = getExpectedContent(fileName)
