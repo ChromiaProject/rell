@@ -130,6 +130,14 @@ class WorkspaceIndexer(
         return issues
     }
 
+    fun getAllLintAndFormatIssues(): Map<URI, List<RellIssue>> {
+        val issues: MutableMap<URI, List<RellIssue>> = mutableMapOf()
+        fileUriResourceMap.forEach { (uri, resource) ->
+            issues[uri] = getLinterIssues(resource) + getFormatterIssues(resource)
+        }
+        return issues
+    }
+
     private fun collectIssues(resource: Resource): List<RellIssue> {
         return listOf(
             getSyntaxErrors(resource),

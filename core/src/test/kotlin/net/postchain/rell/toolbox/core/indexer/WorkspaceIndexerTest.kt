@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.containsOnly
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
+import assertk.assertions.startsWith
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
@@ -225,5 +226,50 @@ class WorkspaceIndexerTest {
         assertThat(allIssues[internalLib]!!.size).isEqualTo(3)
         assertThat(allIssues[externalLib]!!.size).isEqualTo(1)
         assertThat(allIssues[externalLib]!!.first().code).isEqualTo("unknown_name:unknown")
+    }
+
+    @Test
+    fun `getAllLintAndFormatIssues returns all expected issues`(@TempDir dir: File) {
+        val srcDir = File(dir, "src")
+        srcDir.mkdirs()
+
+        val fileContent = """
+            module;
+            /**
+            * @return faulty-tag
+            */
+            function notSnakeCase() {
+            	return 2
+            }
+
+            function foo()  =  unknown();
+
+        """.trimIndent()
+
+        val mainUri = File(srcDir, "main.rell").apply {
+            parentFile.mkdirs()
+            writeText(fileContent)
+        }.toURI()
+
+
+        val linterOptions = LinterOptions(enabled = true, ruleNamingConvention = true, ruleFormatter = true)
+        val formatterOptions = FormatterOptions(tabSize = 0)
+
+        val workspaceIndexer =
+            WorkspaceIndexer(
+                srcDir.toURI(),
+                rellLinter,
+                linterOptions,
+                formattingStyleLinter,
+                formatterOptions,
+                dir.toURI()
+            )
+        workspaceIndexer.initialFileIndexBuild()
+        val lintFormatIssues = workspaceIndexer.getAllLintAndFormatIssues()
+
+        assertThat(lintFormatIssues.keys).containsOnly(mainUri)
+        lintFormatIssues[mainUri]!!.forEach {
+            assertThat(it.code).startsWith("linter")
+        }
     }
 }

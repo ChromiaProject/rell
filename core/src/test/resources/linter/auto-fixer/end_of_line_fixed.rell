@@ -1,0 +1,9 @@
+query get_allowed_assets(sender_blockchain_rid: byte_array, sender_id: byte_array, recipient_id: byte_array): list<(asset_id: byte_array, min_amount: big_integer)>? {
+    val rule = find_allowed_assets(sender_blockchain_rid, sender_id, recipient_id);
+    if (rule == null) return null;
+    val allowed_assets = list<(asset_id: byte_array, min_amount: big_integer)>();
+    for ((asset_id, min_amount) in rule) {
+        allowed_assets.add((asset_id = asset_id, min_amount = min_amount));
+    }
+    return allowed_assets;
+}
