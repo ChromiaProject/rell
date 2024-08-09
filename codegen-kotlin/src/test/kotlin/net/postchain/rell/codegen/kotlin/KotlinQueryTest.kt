@@ -6,7 +6,6 @@ import assertk.assertions.contains
 import assertk.assertions.endsWith
 import net.postchain.gtv.GtvNull
 import net.postchain.rell.codegen.SingleFileRellApp
-import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -31,8 +30,9 @@ internal class KotlinQueryTest {
         val k = KotlinQuery(q)
         val formatted = k.format()
         assertThat(formatted).all {
+            contains("const val INPUT_PARAMETER_NARGS = \"input_parameter_nargs\"")
             contains("fun PostchainQuery.inputParameterNargs() =")
-            contains("query(\"input_parameter_nargs\"")
+            contains("query(INPUT_PARAMETER_NARGS")
         }
     }
 
@@ -56,9 +56,11 @@ internal class KotlinQueryTest {
         val q = kotlin.test.assertNotNull(testModule.queries[rellQualifiedName])
         val k = KotlinQuery(q)
         val formatted = k.format()
+        val constantName = rellQualifiedName.uppercase().replace('.', '_')
         assertThat(formatted).all {
+            contains("const val $constantName = \"$rellQualifiedName\"")
             contains("fun PostchainQuery.$kotlinQualifiedName($params) =")
-            contains("query(\"$rellQualifiedName\"")
+            contains("query($constantName")
             contains(retValue)
         }
     }
@@ -102,9 +104,10 @@ internal class KotlinQueryTest {
         val query = kotlin.test.assertNotNull(testModule.queries[type])
         val k = KotlinQuery(query)
         val formatted = k.format()
+        val constantName = type.uppercase()
         assertThat(formatted.trim()).all {
+            contains("const val $constantName = ")
             contains("fun PostchainQuery.")
-            contains(type.snakeToLowerCamelCase())
             endsWith(returnType)
         }
     }
@@ -137,9 +140,11 @@ internal class KotlinQueryTest {
         val query = kotlin.test.assertNotNull(testModule.queries[queryName])
         val k = KotlinQuery(query)
         val formatted = k.format()
+        val constantName = queryName.uppercase()
         assertThat(formatted).all {
+            contains("const val $constantName = \"$queryName\"")
             contains("($params) =")
-            contains("\"$queryName\", gtv(mapOf($gtvParam")
+            contains("$constantName, gtv(mapOf($gtvParam")
         }
     }
 
