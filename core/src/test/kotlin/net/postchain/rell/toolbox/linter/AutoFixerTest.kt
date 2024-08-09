@@ -40,6 +40,11 @@ class AutoFixerTest {
         )
     }
 
+    @Test
+    fun `should delete newline and indent`() {
+        checkAutofix("delete.rell", LinterOptions(enabled = true, ruleFormatter = true, ruleQuoteFormat = Quote.DOUBLE))
+    }
+
     private fun checkAutofix(fileName: String, linterOptions: LinterOptions) {
         val fixedContent = autofix(fileName, linterOptions)
         val expectedContent = getExpectedContent(fileName)

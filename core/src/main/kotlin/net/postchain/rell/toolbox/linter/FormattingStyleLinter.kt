@@ -101,7 +101,11 @@ class FormattingStyleLinter {
     private fun getTextEditForDelete(chunk: Chunk<String>, line: Int, character: Int): TextEdit {
         val newText = chunk.lines.joinToString(" ")
         val newLinesCount = newText.count { it == '\n' }
-        val stopColumn = if (newLinesCount > 0) 0 else character + newText.length
+        val stopColumn = if (newLinesCount > 0) {
+            newText.substringAfterLast('\n', "").length
+        } else {
+            character + newText.length
+        }
         return TextEdit(Range(Position(line, character), Position(line + newLinesCount, stopColumn)), "")
     }
 
