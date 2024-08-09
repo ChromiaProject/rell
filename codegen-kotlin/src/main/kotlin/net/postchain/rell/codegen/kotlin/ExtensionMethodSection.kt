@@ -26,6 +26,7 @@ import javax.annotation.processing.Generated
 import kotlin.reflect.KClass
 
 abstract class ExtensionMethodSection(
+        protected val kind: String,
         protected val className: ClassName,
         protected val mountName: R_MountName,
         private val extendedClass: KClass<*>,
@@ -65,9 +66,13 @@ abstract class ExtensionMethodSection(
 
     override fun format(): String {
         val functionString = """
+        |const val ${className.constantName} = "$mountName"
+        |/**
+        | * $kind ${className.rellName} 
+        | */
         |${GeneratedAnnotation.createAnnotation(className.rellName)}
         |fun ${extendedClass.simpleName}.${className.className}(${formatInputParameters()}) = 
-        |   $extendenMethod("$mountName"${formatGtvParameters()})${formatReturnType(returnType)}
+        |   $extendenMethod(${className.constantName}${formatGtvParameters()})${formatReturnType(returnType)}
     """.trimMargin()
         val returnTypeString = "\n${returnStructure(returnType)}"
         return StringBuilder()

@@ -7,6 +7,7 @@ import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Operation
 
 class KotlinOperation(op: R_OperationDefinition) : ExtensionMethodSection(
+    "Operation",
     CamelCaseClassName.fromRellOperation(op),
     op.mountName,
     TransactionBuilder::class,
@@ -14,13 +15,6 @@ class KotlinOperation(op: R_OperationDefinition) : ExtensionMethodSection(
     op.params(),
     null
 ), Operation {
-
-    override fun format() = """
-       |/**
-       | * Operation ${className.rellName}
-       | */
-       |${super.format()}
-    """.trimMargin()
 
     override fun formatGtvParameters(): String {
         if (params.isEmpty()) return ""

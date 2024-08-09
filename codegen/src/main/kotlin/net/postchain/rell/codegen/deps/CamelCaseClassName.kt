@@ -6,10 +6,12 @@ import net.postchain.rell.base.model.R_QueryDefinition
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
+import java.util.Locale
 
 data class CamelCaseClassName(
         override val rellName: String,
         override val className: String,
+        override val constantName: String,
         override val module: String,
 ) : ClassName {
 
@@ -18,6 +20,7 @@ data class CamelCaseClassName(
             return CamelCaseClassName(
                 def.appLevelName,
                 def.cDefName.qualifiedName.parts.joinToString("_").snakeToUpperCamelCase(),
+                def.cDefName.qualifiedName.parts.joinToString("_").uppercase(Locale.getDefault()),
                 def.defId.module.substringBefore("[")
             )
         }
@@ -26,6 +29,7 @@ data class CamelCaseClassName(
             return CamelCaseClassName(
                 op.appLevelName,
                 op.cDefName.qualifiedName.parts.joinToString("_").snakeToLowerCamelCase() + "Operation",
+                op.cDefName.qualifiedName.parts.joinToString("_").uppercase(Locale.getDefault()),
                 op.defId.module.substringBefore("[")
             )
         }
@@ -34,6 +38,7 @@ data class CamelCaseClassName(
             return CamelCaseClassName(
                 q.appLevelName,
                 q.cDefName.qualifiedName.parts.joinToString("_").snakeToLowerCamelCase(),
+                q.cDefName.qualifiedName.parts.joinToString("_").uppercase(Locale.getDefault()),
                 q.defId.module.substringBefore("[")
             )
         }
@@ -49,6 +54,7 @@ data class CamelCaseClassName(
                 return CamelCaseClassName(
                     str,
                     str.replace(".", "_").snakeToUpperCamelCase(),
+                    str.replace(".", "_").uppercase(Locale.getDefault()),
                     ""
                 )
             }
@@ -56,6 +62,7 @@ data class CamelCaseClassName(
             return CamelCaseClassName(
                 str,
                 obj.replace(".", "_").snakeToUpperCamelCase(),
+                obj.replace(".", "_").uppercase(Locale.getDefault()),
                 module.substringBefore("[") // external entities
             )
         }

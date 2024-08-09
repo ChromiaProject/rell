@@ -17,22 +17,17 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Query
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
+import java.util.Locale
 
 class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
-        CamelCaseClassName.fromRellQuery(queryDef),
-        queryDef.mountName,
-        PostchainQuery::class,
-        "query",
-        queryDef.params(),
-        queryDef.type()
+    "Query",
+    CamelCaseClassName.fromRellQuery(queryDef),
+    queryDef.mountName,
+    PostchainQuery::class,
+    "query",
+    queryDef.params(),
+    queryDef.type()
 ), Query {
-
-    override fun format() = """
-        |/**
-        | * Query ${className.rellName} 
-        | */
-        |${super.format()}
-    """.trimMargin()
 
     override fun formatGtvParameters(): String {
         if (params.isEmpty()) return ", gtv(mapOf())"
@@ -84,7 +79,7 @@ class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
         if (returnType is R_CollectionType) return returnStructure(returnType.elementType)
         if (returnType !is R_TupleType || !returnType.name.contains(":")) return "" // Non-tuples and unnamed tuples
         val resultObject = DataClassSection(
-                CamelCaseClassName("", buildResultType(), className.module),
+                CamelCaseClassName("", buildResultType(), mountName.toString().replace(".", "_").uppercase(Locale.getDefault()), className.module),
                 returnType.fields.associateBy({ it.name!!.str }, { it.type })
         )
         return "\n${resultObject.format()}"

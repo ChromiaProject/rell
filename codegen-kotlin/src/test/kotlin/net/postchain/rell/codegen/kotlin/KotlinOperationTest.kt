@@ -26,8 +26,9 @@ internal class KotlinOperationTest {
         val k = KotlinOperation(op)
         val formatted = k.format()
         assertThat(formatted).all {
+            contains("const val INPUT_PARAMETER_TEXT = \"input_parameter_text\"")
             contains("fun TransactionBuilder.inputParameterTextOperation(t: String) =")
-            contains("addOperation(\"input_parameter_text\", gtv(t))")
+            contains("addOperation(INPUT_PARAMETER_TEXT, gtv(t))")
         }
     }
 
@@ -42,9 +43,11 @@ internal class KotlinOperationTest {
         val op = kotlin.test.assertNotNull(testModule.operations[rellQualifiedOpName])
         val k = KotlinOperation(op)
         val formatted = k.format()
+        val constantName = rellQualifiedOpName.uppercase().replace('.', '_')
         assertThat(formatted).all {
+            contains("const val $constantName = \"$rellQualifiedOpName\"")
             contains("fun TransactionBuilder.$kotlinQualifiedOpName() =")
-            contains("addOperation(\"$rellQualifiedOpName\")")
+            contains("addOperation($constantName)")
         }
     }
 
@@ -86,10 +89,11 @@ internal class KotlinOperationTest {
         val op = kotlin.test.assertNotNull(testModule.operations[opName])
         val k = KotlinOperation(op)
         val formatted = k.format()
+        val constantName = opName.uppercase().replace('.', '_')
         assertThat(formatted).all {
             contains("fun TransactionBuilder.")
             contains("($params) =")
-            contains("addOperation(\"$opName\"")
+            contains("addOperation($constantName")
             contains("$gtvParam)")
         }
     }

@@ -8,6 +8,7 @@ import net.postchain.rell.codegen.typescript.util.parameterTransformer
 import net.postchain.rell.codegen.typescript.util.rTypeToString
 import net.postchain.rell.codegen.util.capitalize
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
+import java.util.Locale
 
 class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         CamelCaseClassName.fromRellQuery(queryDef),
@@ -34,7 +35,7 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         if (returnType is R_CollectionType) return returnStructure(returnType.elementType)
         if (returnType !is R_TupleType || !returnType.name.contains(":")) return "" // Non-tuples and unnamed tuples
         val resultObject = DataTypeSection(
-                CamelCaseClassName("", buildReturnType(false), className.module),
+                CamelCaseClassName("", buildReturnType(false), className.className.uppercase(Locale.getDefault()), className.module),
                 returnType.fields.associateBy({ it.name!!.str }, { it.type })
         )
         return resultObject.format()
