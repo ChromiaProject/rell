@@ -1566,9 +1566,7 @@ public final class AntlrToRell {
                         }
                     }
                 }
-                //TODO: Might need to handle this better. We get here when we expect a child
-                // but no child is defined. At least we should log a warning before returning
-                System.out.println("No child:" + node);
+                // We get here when we expect a child but no child is defined.
                 return null;
             }
         }
