@@ -13,7 +13,7 @@ group = rootProject.group
 
 repositories {
     mavenCentral()
-    maven { url = uri("https://jitpack.io") }
+    maven(projectDir.parentFile.resolve("libs/repository/").toURI())
     maven {
         name = "bintray"
         url = uri("https://jcenter.bintray.com")

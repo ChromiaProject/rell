@@ -232,15 +232,16 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
 
     private fun commentRegionChangePrepend(token: Token) {
         val prevCommentRegion = formatter.previousCommentRegion(token)
-
+        var newLines = 1
         if (prevCommentRegion != null) {
-            val prevSemanticRegion = formatter.previousSemanticRegion(prevCommentRegion)
-            if (prevSemanticRegion != null && prevCommentRegion.type == RellLexer.RULE_SL_COMMENT && prevCommentRegion.line == prevSemanticRegion.line) {
-                return
+            val diffLines = token.line - prevCommentRegion.line
+            if (diffLines >= 2 && prevCommentRegion.type == RellLexer.RULE_SL_COMMENT) {
+                newLines = 2
             }
+            
             val change =
                 Changes(prevCommentRegion.stopIndex + 1, prevCommentRegion.stopIndex + 1, formatterOptions)
-            change.newLine()
+            change.setNewLines(newLines)
             change.superHighPriority()
             changes.add(change)
         }
