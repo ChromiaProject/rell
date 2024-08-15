@@ -220,7 +220,9 @@ object S_DefaultImportTarget: S_ImportTarget() {
         val docDeclaration = if (actualAlias == null) DocDeclaration.NONE else {
             DocDeclaration_ImportModule(docModifiers, moduleName, explicitAlias?.rName)
         }
-        val docComment = if (importAlias?.explicit == null) null else comment?.compile(ctx.symCtx.docSymbolFactory)
+        val docComment = if (importAlias?.explicit == null) null else {
+            comment?.compile(ctx.symCtx.docSymbolFactory, DocSymbolKind.ALIAS)
+        }
 
         return C_DefaultImportTarget(
             ctx.symCtx,
@@ -287,7 +289,7 @@ object S_DefaultImportTarget: S_ImportTarget() {
                 ideKind,
                 mountName = null,
                 extChain = module.extChain,
-                docCommentGetter = C_LateGetter.const(docComment),
+                commentProvider = ctx.symCtx.commentProvider(C_LateGetter.const(docComment)),
             )
 
             cDefBase.setDocDeclaration(docDeclaration)

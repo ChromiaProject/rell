@@ -19,7 +19,7 @@ class Ld_ConstructorBuilder(
     outerTypeParams: Set<R_Name>,
     bodyBuilder: Ld_FunctionBodyBuilder,
 ): Ld_CommonFunctionBuilder(hdr, outerTypeParams, bodyBuilder), Ld_ConstructorMaker {
-    fun build(bodyRes: Ld_BodyResult): Ld_Constructor {
+    fun build(bodyRes: Ld_BodyResult): Ld_MemberDef<Ld_Constructor> {
         val cf = buildCommon(bodyRes)
 
         val memberHeader = buildMemberHeader()
@@ -29,7 +29,8 @@ class Ld_ConstructorBuilder(
             params = cf.header.params,
         )
 
-        return Ld_Constructor(memberHeader, header, cf.deprecated, cf.body)
+        val constructor = Ld_Constructor(header, cf.deprecated, cf.body)
+        return Ld_MemberDef(memberHeader, constructor)
     }
 }
 
@@ -56,19 +57,16 @@ class Ld_ConstructorHeader(
 }
 
 class Ld_Constructor(
-    private val memberHeader: Ld_MemberHeader,
     private val header: Ld_ConstructorHeader,
     private val deprecated: C_Deprecated?,
     private val body: Ld_FunctionBody,
 ) {
     class Finish(
         val lConstructor: L_Constructor,
-        val memberHeader: L_MemberHeader,
         val comment: DocComment?,
     )
 
-    fun finish(ctx: Ld_TypeFinishContext, fullName: R_FullName): Finish {
-        val lMemberHeader = memberHeader.finish(ctx.modCfg, fullName)
+    fun finish(ctx: Ld_TypeFinishContext, fullName: R_FullName, lMemberHeader: L_MemberHeader): Finish {
         val finHeader = header.finish(ctx, fullName, lMemberHeader)
         val lBody = body.finish(fullName.qualifiedName)
 
@@ -79,6 +77,6 @@ class Ld_Constructor(
             pure = body.pure,
         )
 
-        return Finish(lConstructor, lMemberHeader, finHeader.comment)
+        return Finish(lConstructor, finHeader.comment)
     }
 }

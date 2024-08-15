@@ -7,9 +7,11 @@ package net.postchain.rell.gtx.testutils.tools
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.utils.C_Message
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
+import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.runtime.Rt_Printer
 import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.PostchainGtvUtils
+import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.module.RellPostchainModuleEnvironment
 import net.postchain.rell.module.RellPostchainModuleFactory
@@ -21,6 +23,8 @@ import kotlin.math.min
 private const val LINES_BEFORE = 20
 private const val LINES_AFTER = 0
 
+private const val SAVE_SYMBOLS = false
+
 fun main(args: Array<String>) {
     val dataDir = if (args.isNotEmpty()) File(args[0]) else File(System.getProperty("user.home"), "rell-blockchains")
     App(dataDir).processData()
@@ -29,6 +33,10 @@ fun main(args: Array<String>) {
 private const val FILE_PATH_CONTAINS: String = ""
 
 private class App(private val dataDir: File) {
+    private val outDir = File("target")
+    private val messagesFile = File(outDir, "messages.txt")
+    private val symbolsFile = File(outDir, "symbols.txt")
+
     private val startTimeMs = System.currentTimeMillis()
     private var totCount = 0
     private var okCount = 0
@@ -37,6 +45,10 @@ private class App(private val dataDir: File) {
     private val allMessages = mutableMapOf<File, List<C_Message>>()
 
     fun processData() {
+        outDir.mkdirs()
+        messagesFile.delete()
+        symbolsFile.delete()
+
         for (sub in dataDir.listFiles().orEmpty().sorted()) {
             if (sub.isDirectory) {
                 val name = sub.name
@@ -83,10 +95,69 @@ private class App(private val dataDir: File) {
             lines.add("")
         }
 
+        appendLines(lines, messagesFile)
+    }
+
+    private fun saveDocSymbols(path: File, docModules: Map<R_ModuleName, DocDefinition>) {
+        val lines = mutableListOf<String>()
+        lines.add("-".repeat(100))
+        lines.add(path.path)
+
+        for (moduleName in docModules.keys.sorted()) {
+            saveDocSymbols0(moduleName, listOf(), docModules.getValue(moduleName), lines, mutableSetOf())
+        }
+
+        lines.add("")
+        appendLines(lines, symbolsFile)
+    }
+
+    private fun saveDocSymbols0(
+        moduleName: R_ModuleName,
+        path: List<String>,
+        def: DocDefinition,
+        lines: MutableList<String>,
+        set: MutableSet<DocDefinition>,
+    ) {
+        if (!set.add(def)) {
+            return
+        }
+
+        saveDocDefinition(moduleName, path, def, lines)
+
+        val subDefs = def.docMembers
+        for (name in subDefs.keys.sorted()) {
+            val subDef = subDefs.getValue(name)
+            saveDocSymbols0(moduleName, path + listOf(name), subDef, lines, set)
+        }
+    }
+
+    private fun saveDocDefinition(
+        moduleName: R_ModuleName,
+        path: List<String>,
+        def: DocDefinition,
+        lines: MutableList<String>,
+    ) {
+        val fullName = "$moduleName:${path.joinToString(".")}"
+        lines.add("")
+        lines.add(fullName)
+        lines.add("pos:" + (def.docSourcePos?.str() ?: "n/a"))
+
+        val doc = def.docSymbol
+        lines.add("kind:${doc.kind}")
+        lines.add("name:${doc.symbolName.strCode()}")
+        if (doc.mountName != null) lines.add("mount:${doc.mountName}")
+        lines.add("declaration:")
+        lines.add(doc.declaration.code.strCode())
+
+        if (doc.comment != null) {
+            lines.add("comment:")
+            lines.add(doc.comment?.strCode() ?: "")
+        }
+    }
+
+    private fun appendLines(lines: List<String>, file: File) {
         val text = lines.joinToString("\n")
-        val file = File("target/messages.txt")
-        file.parentFile.mkdirs()
-        FileUtils.write(file, text, Charsets.UTF_8)
+        FileUtils.write(file, text, Charsets.UTF_8, true)
     }
 
     private fun processManual(dir: File) {
@@ -144,10 +215,18 @@ private class App(private val dataDir: File) {
             hiddenLib = false,
             copyOutputToPrinter = true,
             logCompilerMessages = false,
+            ideDocSymbolsEnabled = true,
         )
 
         val (cRes, sourceDir) = RellPostchainModuleFactory.compileApp(gtv, env)
         allMessages[file] = cRes.messages
+
+        if (SAVE_SYMBOLS) {
+            val docModules = cRes.app?.modules.orEmpty()
+                .filter { it.externalChain == null }
+                .associateBy { it.name }
+            saveDocSymbols(file, docModules)
+        }
 
         if (cRes.errors.isNotEmpty()) {
             println("$file ERROR MODULE")

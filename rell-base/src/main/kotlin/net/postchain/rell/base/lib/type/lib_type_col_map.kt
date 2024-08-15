@@ -208,7 +208,7 @@ object Lib_Type_Map {
         function("get_or_default", pure = true, since = "0.11.0") {
             comment("""
                 Gets the value associated with a key in the map, or a default value if the key is not found.
-                @returns The value associated with the key, or the default value if the key is not found.
+                @return The value associated with the key, or the default value if the key is not found.
             """)
             generic("R", superOf = "V")
             result(type = "R")

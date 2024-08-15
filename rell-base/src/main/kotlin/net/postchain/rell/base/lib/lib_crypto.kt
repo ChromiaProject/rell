@@ -63,7 +63,7 @@ object Lib_Crypto {
                 comment("""
                     Calculates a ECDSA (secp256k1) signature. The returned value can be verified with the
                     `verify_signature()` function.
-                    @returns 64-byte signature
+                    @return 64-byte signature
                     @see `verify_signature()`
                 """)
                 param(name = "data_hash", type = "byte_array") {
@@ -89,7 +89,7 @@ object Lib_Crypto {
             function("verify_signature", result = "boolean", pure = true, since = "0.10.6") {
                 comment("""
                     Verifies a signature against a message and public key.
-                    @returns true if the signature is valid, indicating that the message was indeed signed
+                    @return true if the signature is valid, indicating that the message was indeed signed
                     by the owner of the private key corresponding to the provided public key.
                     @see `get_signature()`
                 """)
@@ -117,7 +117,7 @@ object Lib_Crypto {
             function("eth_ecrecover", result = "byte_array", pure = true, since = "0.10.6") {
                 comment("""
                     Calculates an Ethereum public key from a signature and hash.
-                    @returns a byte array representing the public key.
+                    @return a byte array representing the public key.
                 """)
                 param(name = "r", type = "byte_array", comment = "The first component of the Ethereum signature.")
                 param(name = "s", type = "byte_array", comment = "The second component of the Ethereum signature.")
@@ -152,7 +152,7 @@ object Lib_Crypto {
                     Calculates an Ethereum signature.
                     Takes a hash and a private key and returns values `r`, `s`,
                     and `rec_id` that are accepted by `eth_ecrecover`.
-                    @returns tuple containing the ethereum signature components.
+                    @return tuple containing the ethereum signature components.
                 """)
                 param(name = "data_hash", type = "byte_array") {
                     comment("The byte array representing the hash to be signed.")

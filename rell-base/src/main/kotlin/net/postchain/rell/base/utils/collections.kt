@@ -122,6 +122,22 @@ fun <T> Iterable<T>.foldSimple(op: (T, T) -> T): T {
     return res
 }
 
+fun <T: Any> Iterable<T>.separated(block: (T, T) -> T): List<T> {
+    val res = mutableListOf<T>()
+    var prev: T? = null
+    var first = true
+    for (cur in this) {
+        if (!first && prev != null) {
+            val sep = block(prev, cur)
+            res.add(sep)
+        }
+        res.add(cur)
+        prev = cur
+        first = false
+    }
+    return res.toImmList()
+}
+
 fun <K: Any, V: Any, R: Any> Map<K, V>.mapValuesNotNull(f: (Map.Entry<K, V>) -> R?): Map<K, R> {
     return mapNotNull {
         val r = f(it)
@@ -186,6 +202,28 @@ fun <T, R: Any> Iterable<T>.partitionMap(f: (T) -> Pair<R, Boolean>): Pair<List<
         dst.add(value)
     }
     return Pair(first.toImmList(), second.toImmList())
+}
+
+fun <T: Any, K: Any, V: Any> Iterable<T>.groupAdjacent(f: (T) -> Pair<K, V>): List<Pair<K, List<V>>> {
+    val res = mutableListOf<Pair<K, List<V>>>()
+    val group = mutableListOf<V>()
+    var groupKey: K? = null
+
+    for (item in this) {
+        val (key, value) = f(item)
+        if (group.isNotEmpty() && key != groupKey && groupKey != null) {
+            res.add(groupKey to group.toImmList())
+            group.clear()
+        }
+        group.add(value)
+        groupKey = key
+    }
+
+    if (group.isNotEmpty() && groupKey != null) {
+        res.add(groupKey to group.toImmList())
+    }
+
+    return res.toImmList()
 }
 
 fun <T: Any> MutableList<T?>.computeIfAbsent(index: Int, f: () -> T): T {

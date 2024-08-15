@@ -8,26 +8,29 @@ import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.utils.immMapOf
 
-enum class DocSymbolKind(val msg: String) {
+enum class DocSymbolKind constructor(
+    val msg: String,
+    val supportedTags: SupportedCommentTags = tags(),
+) {
     NONE("symbol"),
-    MODULE("module"),
-    NAMESPACE("namespace"),
-    CONSTANT("constant"),
-    PROPERTY("property"),
-    TYPE("type"),
-    TYPE_EXTENSION("type extension"),
-    ENUM("enum"),
+    MODULE("module", tags(author = true)),
+    NAMESPACE("namespace", tags(author = true)),
+    CONSTANT("constant", tags(author = true)),
+    PROPERTY("property", tags(author = true, throws = true)),
+    TYPE("type", tags(author = true)),
+    TYPE_EXTENSION("type extension", tags(author = true)),
+    ENUM("enum", tags(author = true)),
     ENUM_VALUE("enum value"),
-    ENTITY("entity"),
+    ENTITY("entity", tags(author = true)),
     ENTITY_ATTR("entity attribute"),
-    OBJECT("object"),
+    OBJECT("object", tags(author = true)),
     OBJECT_ATTR("object attribute"),
-    STRUCT("struct"),
+    STRUCT("struct", tags(author = true)),
     STRUCT_ATTR("struct attribute"),
-    CONSTRUCTOR("constructor"),
-    FUNCTION("function"),
-    OPERATION("operation"),
-    QUERY("query"),
+    CONSTRUCTOR("constructor", tags(param = true, throws = true)),
+    FUNCTION("function", tags(author = true, param = true, returns = true, throws = true)),
+    OPERATION("operation", tags(author = true, param = true, throws = true)),
+    QUERY("query", tags(author = true, param = true, returns = true, throws = true)),
     ALIAS("alias"),
     PARAMETER("parameter"),
     IMPORT("import"),
@@ -35,7 +38,27 @@ enum class DocSymbolKind(val msg: String) {
     AT_VAR_COL("collection-at variable"),
     AT_VAR_DB("database-at variable"),
     VAR("variable"),
+    ;
+
+    class SupportedCommentTags(
+        val author: Boolean,
+        val param: Boolean,
+        val returns: Boolean,
+        val throws: Boolean,
+    )
 }
+
+private fun tags(
+    author: Boolean = false,
+    param: Boolean = false,
+    returns: Boolean = false,
+    throws: Boolean = false,
+) = DocSymbolKind.SupportedCommentTags(
+    author = author,
+    param = param,
+    returns = returns,
+    throws = throws,
+)
 
 class DocSymbol(
     val kind: DocSymbolKind,

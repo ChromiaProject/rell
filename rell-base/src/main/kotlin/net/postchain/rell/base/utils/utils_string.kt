@@ -35,6 +35,13 @@ fun String.toLowerCaseEx(): String {
     return uppercase(Locale.getDefault())
 }
 
+fun String.nounWithArticle(): String {
+    val c = this.getOrNull(0)
+    if (c == null || !c.isLetter()) return this
+    val article = if (c.uppercaseChar() in "AEIO") "an" else "a"
+    return "$article $this"
+}
+
 sealed class LazyString {
     abstract val value: String
     final override fun toString() = value

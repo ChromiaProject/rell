@@ -58,79 +58,219 @@ class DocComment(
     }
 }
 
-data class DocCommentTag(val code: String, val title: String, val hasKey: Boolean = false, val multi: Boolean = false) {
+sealed class DocCommentTag(
+    val code: String,
+) {
+    abstract val title: String
+    abstract val hasKey: Boolean
+    abstract val multi: Boolean
+
+    final override fun toString() = "@$code"
+
+    abstract fun isAllowedForSymbol(kind: DocSymbolKind): Boolean
+
     @Suppress("MemberVisibilityCanBePrivate")
     companion object {
-        val PARAM = DocCommentTag("param", "Parameters", hasKey = true)
-        val RETURNS = DocCommentTag("returns", "Returns")
-        val SINCE = DocCommentTag("since", "Since")
-        val SEE = DocCommentTag("see", "See Also", multi = true)
+        val AUTHOR = predef("author", "Author", multi = true) { it.author }
+        val PARAM = predef("param", "Parameters", hasKey = true) { it.param }
+        val RETURN = predef("return", "Returns") { it.returns }
+        val THROWS = predef("throws", "Throws", multi = true) { it.throws }
+        val SEE = predef("see", "See Also", multi = true)
+        val SINCE = predef("since", "Since")
 
-        val ALL: List<DocCommentTag> = immListOf(PARAM, RETURNS, SINCE, SEE)
+        val ALL: List<DocCommentTag> = immListOf(AUTHOR, PARAM, RETURN, THROWS, SEE, SINCE)
+
+        private fun predef(
+            code: String,
+            title: String,
+            hasKey: Boolean = false,
+            multi: Boolean = false,
+            supportChecker: (DocSymbolKind.SupportedCommentTags) -> Boolean = { true },
+        ): DocCommentTag {
+            return DocCommentTag_Predef(code, title, hasKey, multi, supportChecker)
+        }
+
+        fun custom(code: String): DocCommentTag = DocCommentTag_Custom(code)
     }
 }
 
-class DocCommentItem(val key: String?, val text: String)
+// Not overriding equals() and hashCode() - using identity equality.
+private class DocCommentTag_Predef(
+    code: String,
+    override val title: String,
+    override val hasKey: Boolean,
+    override val multi: Boolean,
+    private val supportChecker: (DocSymbolKind.SupportedCommentTags) -> Boolean,
+): DocCommentTag(code) {
+    override fun isAllowedForSymbol(kind: DocSymbolKind) = supportChecker(kind.supportedTags)
+}
+
+private class DocCommentTag_Custom(
+    code: String,
+): DocCommentTag(code) {
+    override val title: String = "@$code"
+    override val hasKey: Boolean = false
+    override val multi: Boolean = true
+
+    override fun isAllowedForSymbol(kind: DocSymbolKind) = true
+
+    override fun equals(other: Any?) = other is DocCommentTag_Custom && code == other.code
+    override fun hashCode() = code.hashCode()
+}
+
+abstract class DocCommentPos {
+    private data object DocCommentPos_None: DocCommentPos() {
+        override fun toString() = "n/a"
+    }
+
+    companion object {
+        val NONE: DocCommentPos = DocCommentPos_None
+    }
+}
+
+class DocCommentItem(
+    val key: String?,
+    val text: String,
+    val codePos: DocCommentPos,
+    val keyPos: DocCommentPos?,
+)
+
+fun interface DocCommentErrorTracker {
+    fun error(pos: DocCommentPos, code: String, msg: String)
+
+    private class DocCommentErrorTracker_Throwing(private val exFactory: (String, String) -> RuntimeException): DocCommentErrorTracker {
+        override fun error(pos: DocCommentPos, code: String, msg: String) {
+            throw exFactory(code, msg)
+        }
+    }
+
+    companion object {
+        fun throwing(exFactory: (String, String) -> RuntimeException): DocCommentErrorTracker {
+            return DocCommentErrorTracker_Throwing(exFactory)
+        }
+    }
+}
 
 object DocCommentParser {
-    private val TAG_PATTERN = Pattern.compile("^@([A-Za-z0-9_]+)(\\s+|$)", Pattern.MULTILINE)
+    private val TAG_PATTERN = Pattern.compile("^\\s*(?:[*] )?@([A-Za-z0-9_]+)(?=\\s|$)", Pattern.MULTILINE)
+    private val KEY_PATTERN = Pattern.compile("^\\s*(\\S+)(\\s|$)")
 
     private val BUILTIN_TAGS: Map<String, DocCommentTag> = DocCommentTag.ALL.associateBy { it.code }.toImmMap()
 
     fun parse(
         text: String,
-        errorTracker: ErrorTracker = DocException.ERROR_TRACKER,
+        kind: DocSymbolKind,
+        errorTracker: DocCommentErrorTracker = DocException.ERROR_TRACKER,
+        posGetter: (Int) -> DocCommentPos = { DocCommentPos.NONE },
     ): DocComment {
         val m = TAG_PATTERN.matcher(text)
         val b = DocCommentBuilder(errorTracker)
 
         var hasNextTag = m.find()
 
-        val description = if (hasNextTag) text.substring(0, m.start()).trim() else text.trim()
+        val rawDescription = if (hasNextTag) text.substring(0, m.start()) else text
+        val description = cleanupCommentText(rawDescription)
         b.description(description)
 
         while (hasNextTag) {
             val code = m.group(1)
+            val codeOfs = m.start(1) - 1
             val textStart = m.end()
             hasNextTag = m.find()
             val textEnd = if (hasNextTag) m.start() else text.length
-            val tagText = text.substring(textStart, textEnd).trim()
-            processTag(b, code, tagText, errorTracker)
+            val tagText = text.substring(textStart, textEnd)
+            processTag(b, kind, code, codeOfs, tagText, textStart, errorTracker, posGetter)
         }
 
         return b.build()
     }
 
-    private fun processTag(b: DocCommentBuilder, code: String, text: String, errorTracker: ErrorTracker) {
+    private fun cleanupCommentText(text: String): String {
+        // Need to group "raw" lines (which don't start with "*"), because they have to be trim-indented together
+        // (in order to allow inserting non-*-prefixed code blocks into comments).
+        val groups = text.lines()
+            .mapIndexed { i, line -> cleanupCommentLine(i, line) }
+            .groupAdjacent { it }
+
+        val resLines = groups
+            .flatMap { (aster, list) ->
+                if (aster) list else {
+                    val line = list.joinToString("\n").trimIndent()
+                    listOf(line)
+                }
+            }
+
+        return resLines
+            .dropWhile { it.isEmpty() }
+            .dropLastWhile { it.isEmpty() }
+            .joinToString("\n")
+    }
+
+    private fun cleanupCommentLine(i: Int, line: String): Pair<Boolean, String> {
+        val trim = line.trim()
+        return when {
+            i == 0 -> true to trim
+            trim.startsWith("* ") -> true to trim.substring(2)
+            trim == "*" -> true to ""
+            else -> false to line.trimEnd()
+        }
+    }
+
+    private fun processTag(
+        b: DocCommentBuilder,
+        kind: DocSymbolKind,
+        code: String,
+        codeOfs: Int,
+        text: String,
+        textOfs: Int,
+        errorTracker: DocCommentErrorTracker,
+        posGetter: (Int) -> DocCommentPos,
+    ) {
+        val codePos = posGetter(codeOfs)
+
         val builtinTag = BUILTIN_TAGS[code]
+
         val tag = when {
             builtinTag != null -> builtinTag
-            else -> {
-                errorTracker.error("comment:tag:unknown:$code", "Invalid comment tag: @$code")
-                DocCommentTag(code, "@$code", multi = true)
+            code == "returns" -> {
+                val otherTag = DocCommentTag.RETURN
+                val msg = "Tag @$code is deprecated, use @${otherTag.code} instead"
+                errorTracker.error(codePos, "comment:tag:deprecated:$code", msg)
+                otherTag
             }
+            else -> {
+                errorTracker.error(codePos, "comment:tag:unknown:$code", "Invalid comment tag: @$code")
+                DocCommentTag.custom(code)
+            }
+        }
+
+        if (!tag.isAllowedForSymbol(kind)) {
+            val msg = "Comment tag @$code not allowed for ${kind.msg.nounWithArticle()}"
+            errorTracker.error(codePos, "comment:tag:not_allowed:$kind:$code", msg)
+            return
         }
 
         var key: String? = null
+        var keyPos: DocCommentPos? = null
         var tagText = text
 
         if (tag.hasKey) {
-            var i = tagText.indexOfFirst { it.isWhitespace() }
-            if (i < 0) i = tagText.length
-            val key0 = tagText.substring(0, i).trim()
-            if (key0.isNotEmpty()) {
-                key = key0
-                tagText = tagText.substring(i).trim()
+            val m = KEY_PATTERN.matcher(tagText)
+            if (m.find()) {
+                key = m.group(1)
+                keyPos = posGetter(textOfs + m.start(1))
+                tagText = tagText.substring(m.end())
             }
         }
 
-        b.tag(tag, DocCommentItem(key, tagText))
+        tagText = cleanupCommentText(tagText)
+
+        val item = DocCommentItem(key, tagText, codePos, keyPos)
+        b.tag(tag, item)
     }
 }
 
-class DocCommentBuilder(
-    private val errorTracker: ErrorTracker,
-) {
+class DocCommentBuilder(private val errorTracker: DocCommentErrorTracker) {
     private var description: String? = null
     private val tags = mutableMultimapOf<DocCommentTag, DocCommentItem>()
     private val keys = mutableSetOf<Pair<DocCommentTag, String?>>()
@@ -142,8 +282,9 @@ class DocCommentBuilder(
 
     fun tag(tag: DocCommentTag, item: DocCommentItem) {
         if (tag.hasKey) {
-            DocException.check(item.key != null) {
-                "tag:no_key:${tag.code}" to "Tag @${tag.code} requires an argument"
+            if (item.key == null) {
+                errorTracker.error(item.codePos, "tag:no_key:${tag.code}", "Tag @${tag.code} requires an argument")
+                return
             }
         } else {
             require(item.key == null) // Internal error.
@@ -155,7 +296,8 @@ class DocCommentBuilder(
         } else {
             val code = if (item.key == null) tag.code else "${tag.code}[${item.key}]"
             val msg = if (item.key == null) "@${tag.code}" else "@${tag.code} ${item.key}"
-            errorTracker.error("comment:tag:duplicate:$code", "Duplicate tag: $msg")
+            val errPos = item.keyPos ?: item.codePos
+            errorTracker.error(errPos, "comment:tag:duplicate:$code", "Duplicate tag: $msg")
         }
     }
 

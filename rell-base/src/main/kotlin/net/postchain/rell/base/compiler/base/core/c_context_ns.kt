@@ -23,6 +23,7 @@ import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.nounWithArticle
 import net.postchain.rell.base.utils.toImmList
 
 class C_NamespaceContext(
@@ -129,7 +130,7 @@ class C_CommonDefinitionBase(
     val defName: R_DefinitionName,
     private val mountName: R_MountName?,
     private val docFactory: C_DocSymbolFactory,
-    private val docCommentGetter: C_LateGetter<DocComment?>,
+    private val commentProvider: C_SymbolContext.CommentProvider,
 ) {
     val simpleName = defName.simpleName
     val appLevelName = defName.appLevelName
@@ -164,7 +165,7 @@ class C_CommonDefinitionBase(
         docDeclarationGetter: C_LateGetter<DocDeclaration>,
     ): C_IdeSymbolDef {
         val memberIdeId = ideId(defType, defName, memberIdeCat to memberName)
-        val docMemberComment = memberComment?.compile(docFactory)
+        val docMemberComment = memberComment?.compile(docFactory, memberDocKind)
         val docGetter = docDeclarationGetter.transform { docDec ->
             makeDocSymbol(memberDocKind, memberName, null, docMemberComment, docDec)
         }
@@ -194,6 +195,7 @@ class C_CommonDefinitionBase(
     }
 
     fun docGetter(docDeclarationGetter: C_LateGetter<DocDeclaration>): C_LateGetter<DocSymbol> {
+        val docCommentGetter = commentProvider.getter(defType.docKind)
         return docDeclarationGetter.transform { docDec ->
             val comment = docCommentGetter.get()
             makeDocSymbol(defType.docKind, null, mountName, comment, docDec)
@@ -419,7 +421,7 @@ sealed class C_GlobalNameRes(
             } else {
                 val actDecType = member.declarationType()
                 val code = "wrong_name:${expDecType.msg}:${actDecType.msg}:$qName"
-                val msg = "'$qName' is ${actDecType.article} ${actDecType.msg}, but ${expDecType.msg} required"
+                val msg = "'$qName' is ${actDecType.msg.nounWithArticle()}, but ${expDecType.msg} required"
                 code toCodeMsg msg
             }
             msgCtx.error(qName.pos, fullMsg.code, fullMsg.msg)

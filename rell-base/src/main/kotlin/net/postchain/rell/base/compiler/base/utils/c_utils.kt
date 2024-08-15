@@ -265,7 +265,7 @@ object C_Utils {
                 C_StringQualifiedName.of(rQualifiedName),
                 mountName,
                 docFactory,
-                docCommentGetter = C_LateGetter.const(null),
+                commentProvider = C_SymbolContext.CommentProvider.NULL,
             )
 
             val docDeclaration = DocDeclaration_Entity(DocModifiers.NONE, rQualifiedName.last)
@@ -339,7 +339,7 @@ object C_Utils {
             qName,
             mountName,
             C_DocSymbolFactory.NONE,
-            docCommentGetter = C_LateGetter.const(null),
+            commentProvider = C_SymbolContext.CommentProvider.NULL,
         )
 
         val docGetter = cDefBase.docGetter(C_LateGetter.const(DocDeclaration.NONE))
@@ -362,12 +362,12 @@ object C_Utils {
         qualifiedName: C_StringQualifiedName,
         mountName: R_MountName?,
         docFactory: C_DocSymbolFactory,
-        docCommentGetter: C_LateGetter<DocComment?>,
+        commentProvider: C_SymbolContext.CommentProvider,
     ): C_CommonDefinitionBase {
         val cDefName = createDefName(moduleKey, qualifiedName)
         val defName = cDefName.toRDefName()
         val defId = R_DefinitionId(defName.module, defName.qualifiedName)
-        return C_CommonDefinitionBase(defType, ideKind, defId, cDefName, defName, mountName, docFactory, docCommentGetter)
+        return C_CommonDefinitionBase(defType, ideKind, defId, cDefName, defName, mountName, docFactory, commentProvider)
     }
 
     private fun createDefName(module: R_ModuleKey, qualifiedName: C_StringQualifiedName): C_DefinitionName {
@@ -768,13 +768,11 @@ class C_LateInit<T>(val pass: C_CompilerPass, fallback: T) {
     companion object {
         private val NOVALUE: Any = Object()
 
-        fun inContext(): Boolean = C_LateInitContext.inContext()
-
         fun <T> context(executor: C_CompilerExecutor, code: () -> T): T {
             return C_LateInitContext.runInContext(executor, code)
         }
 
-        fun checkPass(minPass: C_CompilerPass?, maxPass: C_CompilerPass?) {
+        private fun checkPass(minPass: C_CompilerPass?, maxPass: C_CompilerPass?) {
             val ctx = C_LateInitContext.getContext()
             ctx.checkPass(minPass, maxPass)
         }

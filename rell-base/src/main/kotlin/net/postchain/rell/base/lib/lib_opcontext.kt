@@ -140,7 +140,7 @@ object Lib_OpContext {
             function("get_all_operations", result = "list<gtx_operation>", since = "0.10.4") {
                 comment("""
                     Gets all operations in this transaction.
-                    @returns a list of all operations within the current transaction.
+                    @return a list of all operations within the current transaction.
                 """)
                 validate(::checkCtx)
                 bodyContext { ctx ->

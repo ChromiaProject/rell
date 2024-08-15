@@ -6,7 +6,9 @@ package net.postchain.rell.base.compiler.parser
 
 import com.github.h0tk3y.betterParse.lexer.Token
 import com.github.h0tk3y.betterParse.lexer.TokenMatch
+import com.google.common.collect.ImmutableSortedMap
 import net.postchain.rell.base.compiler.ast.S_BasicPos
+import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
@@ -45,6 +47,8 @@ class RellTokenizer(tokensEx: List<RellToken>) {
     val tkKeywords: Map<String, RellToken>
     val tkDelims: List<RellToken>
 
+    private val maxDelimLen: Int
+
     private val tokenSet = tokensEx.map { it.token }.toImmSet()
 
     init {
@@ -79,6 +83,7 @@ class RellTokenizer(tokensEx: List<RellToken>) {
 
         tkKeywords = keywords.toMap()
         tkDelims = delims.values.toList().sortedBy { -it.token.pattern.length }
+        maxDelimLen = delims.keys.maxOf { it.length }
     }
 
     fun tokenize(filePath: C_ParserFilePath, input: String): RellTokenSequence {
@@ -118,8 +123,7 @@ class RellTokenizer(tokensEx: List<RellToken>) {
                 seq.tokenRec(tk, s)
             }
             isDelim(k) -> {
-                scanWhileTrue(seq, Companion::isDelim)
-                val s = seq.text(0, 0)
+                val s = seq.lookahead(maxDelimLen)
                 scanDelimiter(seq, s)
             }
             k == '\'' || k == '"' -> {
@@ -180,7 +184,12 @@ class RellTokenizer(tokensEx: List<RellToken>) {
             }
         }
 
-        val comment = if (isDoc) seq.text(0, 0) else null
+        val comment = if (!isDoc) null else {
+            val pos = seq.startPos()
+            val text = seq.text(0, 0)
+            S_Comment(pos, text)
+        }
+
         seq.setComment(comment)
     }
 
@@ -374,7 +383,9 @@ class RellTokenizer(tokensEx: List<RellToken>) {
         for (tkEx in tkDelims) {
             val tk = tkEx.token
             if (s.startsWith(tk.pattern)) {
-                seq.back(s.length - tk.pattern.length)
+                for (c in tk.pattern) {
+                    seq.next()
+                }
                 return seq.tokenRec(tkEx, tk.pattern)
             }
         }
@@ -564,6 +575,56 @@ class RellTokenizer(tokensEx: List<RellToken>) {
                 throw RellTokenizerDecodingException(pos, "lex:bad_hex:$p", "Invalid byte array literal: '$p'")
             }
         }
+
+        fun linePosMap(text: String, startPos: S_Pos): NavigableMap<Int, S_Pos> {
+            val rowColTracker = RowColTracker(startPos.line(), startPos.column())
+
+            val res = mutableMapOf<Int, S_Pos>()
+            res[0] = startPos
+
+            for (i in text.indices) {
+                rowColTracker.update(text[i])
+                if (rowColTracker.col == 1) {
+                    val index = i + 1
+                    val offset = startPos.offset() + index
+                    val pos = S_BasicPos(startPos.path(), startPos.idePath(), offset, rowColTracker.row, rowColTracker.col)
+                    res[index] = pos
+                }
+            }
+
+            return ImmutableSortedMap.copyOf(res)
+        }
+    }
+}
+
+private class RowColTracker(row: Int = 1, col: Int = 1) {
+    init {
+        require(row >= 1)
+        require(col >= 1)
+    }
+
+    private val tabSize = 4
+
+    private var row0 = row
+    private var col0 = col
+
+    val row: Int get() = row0
+    val col: Int get() = col0
+
+    fun update(k: Char) {
+        when (k) {
+            '\n' -> {
+                ++row0
+                col0 = 1
+            }
+            '\t' -> {
+                val step = tabSize - (col0 - 1) % tabSize
+                col0 += step
+            }
+            else -> {
+                ++col0
+            }
+        }
     }
 }
 
@@ -571,19 +632,16 @@ private class CharSeq(
     private val filePath: C_ParserFilePath,
     private val str: String,
 ) {
-    private val tabSize = 4
-
     private var len = str.length
-    private var pos = 0
-    private var row = 1
-    private var col = 1
     private var cur: Char? = null
+    private var pos = 0
+    private val rowColTracker = RowColTracker()
 
     private var startPos = 0
     private var startRow = 1
     private var startCol = 1
 
-    private var comment: String? = null
+    private var comment: S_Comment? = null
 
     val buffer = StringBuilder()
 
@@ -601,14 +659,14 @@ private class CharSeq(
 
     fun keepPos() {
         startPos = pos
-        startRow = row
-        startCol = col
+        startRow = rowColTracker.row
+        startCol = rowColTracker.col
     }
 
-    fun textPos() = S_BasicPos(filePath, pos, row, col)
+    fun textPos() = S_BasicPos(filePath, pos, rowColTracker.row, rowColTracker.col)
     fun text(startSkip: Int, endSkip: Int) = str.substring(startPos + startSkip, pos - endSkip)
 
-    fun setComment(comment: String?) {
+    fun setComment(comment: S_Comment?) {
         this.comment = comment
     }
 
@@ -624,28 +682,16 @@ private class CharSeq(
     fun next() {
         if (pos < len) {
             val k = str[pos]
-            if (k == '\n') {
-                ++row
-                col = 1
-            } else if (k == '\t') {
-                val step = tabSize - (col - 1) % tabSize
-                col += step
-            } else {
-                ++col
-            }
-            pos++
+            rowColTracker.update(k)
+            pos += 1
             update()
         }
     }
 
-    fun back(n: Int) {
-        // Assuming we never go back to a previous line, only within the same line.
-        require(n <= pos)
-        require(n < col)
-        pos -= n
-        col -= n
-        update()
+    fun lookahead(n: Int): String {
+        val end = (pos + n).coerceAtMost(len)
+        return str.substring(pos, end)
     }
 }
 
-private class TokenRec(val pos: S_Pos, val match: TokenMatch, val comment: String?)
+private class TokenRec(val pos: S_Pos, val match: TokenMatch, val comment: S_Comment?)

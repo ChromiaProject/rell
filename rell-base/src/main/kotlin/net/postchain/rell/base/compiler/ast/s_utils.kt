@@ -7,7 +7,6 @@ package net.postchain.rell.base.compiler.ast
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.utils.C_FeatureRestrictions
-import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.parser.RellTokenMatch
@@ -17,6 +16,7 @@ import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.doc.DocSourcePos
+import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.ide.IdeFilePath
 import java.util.*
 import java.util.function.Supplier
@@ -44,13 +44,21 @@ abstract class S_Pos: Comparable<S_Pos> {
 }
 
 class S_BasicPos(
-    private val file: C_ParserFilePath,
+    private val path: C_SourcePath,
+    private val idePath: IdeFilePath,
     private val offset: Int,
     private val row: Int,
     private val col: Int,
 ): S_Pos() {
-    override fun path() = file.sourcePath
-    override fun idePath() = file.idePath
+    constructor(
+        file: C_ParserFilePath,
+        offset: Int,
+        row: Int,
+        col: Int,
+    ): this(file.sourcePath, file.idePath, offset, row, col)
+
+    override fun path() = path
+    override fun idePath() = idePath
     override fun offset() = offset
     override fun line() = row
     override fun column() = col
@@ -60,11 +68,21 @@ class S_BasicPos(
                 && offset == other.offset
                 && row == other.row
                 && col == other.col
-                && file == other.file
+                && path == other.path
+                && idePath == other.idePath
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(offset, row, col, file)
+        return Objects.hash(offset, row, col, path, idePath)
+    }
+
+    companion object {
+        fun addColumn(pos: S_Pos, delta: Int): S_Pos {
+            require(delta >= 0)
+            return if (delta == 0) pos else {
+                S_BasicPos(pos.path(), pos.idePath(), pos.offset() + delta, pos.line(), pos.column() + delta)
+            }
+        }
     }
 }
 
@@ -218,29 +236,18 @@ class S_QualifiedName(parts: List<S_Name>): S_Node() {
 }
 
 class S_Comment(
-    private val tokenPos: S_Pos,
+    val pos: S_Pos,
     private val text: String,
 ) {
-    // Using token pos for now.
-    val pos = tokenPos
-
     init {
         require(text.startsWith("/**") && text.endsWith("*/") && text.length >= 5) { text }
     }
 
-    fun compile(docFactory: C_DocSymbolFactory): DocComment? {
-        val rawText = text.substring(3, text.length - 2).trim()
-        return docFactory.compileComment(tokenPos, rawText)
+    fun compile(docFactory: C_DocSymbolFactory, kind: DocSymbolKind): DocComment? {
+        val rawText = text.substring(3, text.length - 2)
+        val rawPos = S_BasicPos.addColumn(pos, 3)
+        return docFactory.compileComment(rawPos, rawText, kind)
     }
 
     override fun toString() = text
-}
-
-fun S_Comment?.compileGetter(docFactory: C_DocSymbolFactory): C_LateGetter<DocComment?> {
-    val docComment = this?.compile(docFactory)
-    return C_LateGetter.const(docComment)
-}
-
-fun S_Comment?.compileGetter(symCtx: C_SymbolContext): C_LateGetter<DocComment?> {
-    return compileGetter(symCtx.docSymbolFactory)
 }

@@ -18,7 +18,7 @@ object Lib_TryCall {
         function("try_call", "boolean", since = "0.13.0") {
             comment("""
                 Calls a function that doesn't return a value and handles exceptions gracefully.
-                @returns `true` if call succeeds, `false` otherwise.
+                @return `true` if call succeeds, `false` otherwise.
             """)
             param("fn", type = "() -> unit", exact = true, comment = "The function to be called.")
             bodyContext { ctx, f ->
@@ -29,7 +29,7 @@ object Lib_TryCall {
         function("try_call", result = "T?", since = "0.13.0") {
             comment("""
                 Calls a function and handles exceptions gracefully, returning null if an exception occurs.
-                @returns `T` if call succeeds, `null` otherwise.
+                @return `T` if call succeeds, `null` otherwise.
             """)
             generic("T")
             param("fn", type = "() -> T", comment = "The function to be called.")
@@ -41,7 +41,7 @@ object Lib_TryCall {
         function("try_call", result = "T", since = "0.13.0") {
             comment("""
                 Calls a function and handles exceptions gracefully, providing a fallback value if an exception occurs.
-                @returns `T` if call succeeds and the supplied default value otherwise.
+                @return `T` if call succeeds and the supplied default value otherwise.
             """)
             generic("T")
             param("fn", type = "() -> T", comment = "The function to be called.")

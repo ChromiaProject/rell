@@ -76,6 +76,7 @@ abstract class BaseRellTest(
     fun chkCompile(code: String, expected: String = "OK", warn: String?) = tst.chkCompile(code, expected, warn)
 
     fun chkWarn(vararg  expected: String) = tst.chkWarn(*expected)
+    fun chkMsg(vararg  expected: String) = tst.chkMsg(*expected)
     fun chkStack(vararg expected: String) = tst.chkStack(*expected)
 
     fun resetSqlBuffer() = tst.resetSqlBuffer()

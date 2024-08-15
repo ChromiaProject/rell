@@ -211,8 +211,7 @@ class Ld_FunctionParam(
 ) {
     fun finish(
         ctx: Ld_TypeFinishContext,
-        fullName: R_FullName,
-        lMemberHeader: L_MemberHeader,
+        hdr: Ld_MemberHeader.Finish,
         comment: DocComment?,
     ): L_FunctionParam {
         val mType = type.finish(ctx)
@@ -234,14 +233,13 @@ class Ld_FunctionParam(
 
         val docParam = L_TypeUtils.docFunctionParam(mParam)
 
-        val doc = Ld_DocSymbols.docSymbol(
-            kind = DocSymbolKind.PARAMETER,
+        val doc = hdr.docSymbol(
             symbolName = DocSymbolName.local(name.str),
             declaration = DocDeclaration_Parameter(docParam, lazy, implies, null),
             comment = comment,
         )
 
-        val restrictions = C_MemberRestrictions.makeLib0(fullName, C_DeclarationType.PARAMETER, lMemberHeader, null)
+        val restrictions = C_MemberRestrictions.makeLib0(hdr.fullName, C_DeclarationType.PARAMETER, hdr.lHeader, null)
 
         return L_FunctionParam(
             name = name,
@@ -261,15 +259,14 @@ class Ld_FunctionParam(
             funMemberHeader: L_MemberHeader,
         ): Pair<List<L_FunctionParam>, DocComment?> {
             val paramNames = params.map { it.name }
-            val paramFullNames = params.map { fullName.append(it.name) }
 
-            val paramMemberHeaders = params.mapIndexed { i, param ->
-                val paramFullName = paramFullNames[i]
-                param.memberHeader.finish(ctx.modCfg, paramFullName, requireSince = false)
+            val paramHeaders = params.map { param ->
+                val paramFullName = fullName.append(param.name)
+                param.memberHeader.finish(ctx.modCfg, paramFullName, DocSymbolKind.PARAMETER, requireSince = false)
             }
 
             val paramComments = params.withIndex().associateNotNullValues { (i, param) ->
-                param.name to paramMemberHeaders[i].docComment
+                param.name to paramHeaders[i].lHeader.docComment
             }
 
             val comments = DocFunctionParamComments.make(
@@ -281,10 +278,9 @@ class Ld_FunctionParam(
             )
 
             val lParams = params.mapIndexed { i, param ->
-                val paramFullName = paramFullNames[i]
-                val header = paramMemberHeaders[i]
+                val hdr = paramHeaders[i]
                 val comment = comments.paramComments[param.name]
-                param.finish(ctx, paramFullName, header, comment)
+                param.finish(ctx, hdr, comment)
             }.toImmList()
 
             return lParams to comments.functionComment

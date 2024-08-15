@@ -32,13 +32,13 @@ object Lib_Exists {
         function("exists", C_SysFn_Exists(false), since = "0.6.0") {
             comment("""
                 Checks if the value is null or empty.
-                @returns true if the value is not not or not empty.
+                @return true if the value is not not or not empty.
             """)
         }
         function("empty", C_SysFn_Exists(true), since = "0.8.0") {
             comment("""
                 Checks if the value is null or empty.
-                @returns true if the value is not or empty.
+                @return true if the value is not or empty.
             """)
         }
     }

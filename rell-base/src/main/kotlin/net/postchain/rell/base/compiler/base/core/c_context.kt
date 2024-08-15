@@ -22,7 +22,6 @@ import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.*
-import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
@@ -346,7 +345,7 @@ class C_MountContext(
         qualifiedName: C_StringQualifiedName,
         mountName: R_MountName?,
         extChain: C_ExternalChain?,
-        docCommentGetter: C_LateGetter<DocComment?>,
+        commentProvider: C_SymbolContext.CommentProvider,
     ): C_CommonDefinitionBase {
         val moduleKey = modCtx.rModuleKey.copy(externalChain = extChain?.name)
         val fullName = C_StringQualifiedName.of(stringNamespacePath + qualifiedName.parts)
@@ -357,7 +356,7 @@ class C_MountContext(
             fullName,
             mountName,
             symCtx.docSymbolFactory,
-            docCommentGetter,
+            commentProvider,
         )
     }
 
@@ -367,10 +366,10 @@ class C_MountContext(
         ideKind: IdeSymbolKind,
         mountName: R_MountName?,
         extChain: C_ExternalChain? = null,
-        docCommentGetter: C_LateGetter<DocComment?>,
+        commentProvider: C_SymbolContext.CommentProvider,
     ): C_UserDefinitionBase {
         val qualifiedName = C_StringQualifiedName.of(simpleName.str)
-        val base = defBaseCommon(defType, ideKind, qualifiedName, mountName, extChain, docCommentGetter)
+        val base = defBaseCommon(defType, ideKind, qualifiedName, mountName, extChain, commentProvider)
         return base.userBase(simpleName.pos)
     }
 
@@ -380,9 +379,9 @@ class C_MountContext(
         ideKind: IdeSymbolKind,
         mountName: R_MountName?,
         extChain: C_ExternalChain? = null,
-        docCommentGetter: C_LateGetter<DocComment?>,
+        commentProvider: C_SymbolContext.CommentProvider,
     ): C_UserDefinitionBase {
-        val defBase = defBase(nameHand.name, defType, ideKind, mountName, extChain, docCommentGetter)
+        val defBase = defBase(nameHand.name, defType, ideKind, mountName, extChain, commentProvider)
         nameHand.setIdeInfo(defBase.ideDefInfo)
         return defBase
     }

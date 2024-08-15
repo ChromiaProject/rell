@@ -8,21 +8,13 @@ import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_DefinitionName
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Name
-import net.postchain.rell.base.utils.ErrorTracker
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.immMapOf
 import net.postchain.rell.base.utils.toImmMap
 
 class DocException(val code: String, msg: String): RuntimeException(msg) {
     companion object {
-        val ERROR_TRACKER = ErrorTracker.throwing { code, msg -> DocException(code, msg) }
-
-        fun check(b: Boolean, codeMsgLazy: () -> Pair<String, String>) {
-            if (!b) {
-                val pair = codeMsgLazy()
-                throw DocException(pair.first, pair.second)
-            }
-        }
+        val ERROR_TRACKER = DocCommentErrorTracker.throwing { code, msg -> DocException(code, msg) }
     }
 }
 
@@ -61,7 +53,7 @@ class DocFunctionParamComments(
             funComment: DocComment?,
             paramNames: List<R_Name>,
             paramComments: Map<R_Name, DocComment>,
-            errorTracker: ErrorTracker,
+            errorTracker: DocCommentErrorTracker,
         ): DocFunctionParamComments {
             val resParamComments = getCombinedParamComments(funName, funComment, paramComments, paramNames, errorTracker)
             val resFunComment = getCombinedFunctionComment(funComment, resParamComments, errorTracker)
@@ -73,7 +65,7 @@ class DocFunctionParamComments(
             rawFunComment: DocComment?,
             rawParamComments: Map<R_Name, DocComment>,
             params: List<R_Name>,
-            errorTracker: ErrorTracker,
+            errorTracker: DocCommentErrorTracker,
         ): Map<R_Name, DocComment> {
             val resComments = mutableMapOf<R_Name, DocComment>()
 
@@ -87,13 +79,14 @@ class DocFunctionParamComments(
             }
 
             for (item in rawFunComment?.tags?.get(DocCommentTag.PARAM) ?: immListOf()) {
+                val errPos = item.keyPos ?: item.codePos
                 val rName = if (item.key == null) null else R_Name.ofOpt(item.key)
                 if (rName == null) {
                     val msg = "Invalid parameter name in comment: '${item.key}'"
-                    errorTracker.error("comment:param:invalid_name:[$funName]:${item.key}", msg)
+                    errorTracker.error(errPos, "comment:param:invalid_name:[$funName]:${item.key}", msg)
                 } else if (rName !in params) {
                     val msg = "Unknown parameter specified in comment: '$rName' ($funName)"
-                    errorTracker.error("comment:param:unknown:[$funName]:$rName", msg)
+                    errorTracker.error(errPos, "comment:param:unknown:[$funName]:$rName", msg)
                 }
             }
 
@@ -103,7 +96,7 @@ class DocFunctionParamComments(
         private fun getCombinedFunctionComment(
             rawFunComment: DocComment?,
             paramComments: Map<R_Name, DocComment>,
-            errorTracker: ErrorTracker,
+            errorTracker: DocCommentErrorTracker,
         ): DocComment? {
             if (rawFunComment == null && paramComments.isEmpty()) {
                 return null
@@ -123,7 +116,7 @@ class DocFunctionParamComments(
             }
 
             for ((param, comment) in paramComments) {
-                b.tag(DocCommentTag.PARAM, DocCommentItem(param.str, comment.description))
+                b.tag(DocCommentTag.PARAM, DocCommentItem(param.str, comment.description, DocCommentPos.NONE, null))
             }
 
             return b.build()

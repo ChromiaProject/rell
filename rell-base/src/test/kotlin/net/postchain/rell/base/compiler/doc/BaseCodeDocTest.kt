@@ -11,7 +11,7 @@ import net.postchain.rell.base.utils.doc.DocUtils
 import net.postchain.rell.base.utils.immListOf
 
 abstract class BaseCodeDocTest: BaseRellTest() {
-    private fun initTst() {
+    protected fun initTst() {
         tst.ide = true
         tst.ideDocSymbolsEnabled = true
         tst.moduleSelection(null, immListOf(R_ModuleName.EMPTY))

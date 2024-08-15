@@ -5,15 +5,13 @@
 package net.postchain.rell.base.compiler.base.core
 
 import com.google.common.collect.Multimap
+import net.postchain.rell.base.compiler.ast.S_BasicPos
 import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_Pos
-import net.postchain.rell.base.compiler.base.utils.C_IdeCompletionsContext
-import net.postchain.rell.base.compiler.base.utils.C_IdeCompletionsManager
-import net.postchain.rell.base.compiler.base.utils.C_MessageManager
-import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.base.compiler.base.utils.*
+import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.model.R_DefinitionName
 import net.postchain.rell.base.model.R_Name
-import net.postchain.rell.base.utils.ErrorTracker
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
@@ -32,6 +30,31 @@ class C_SymbolContext(
         comment: S_Comment?,
     ): DocSymbol {
         return docSymbolFactory.makeDocSymbol(kind, symbolName, declaration, mountName, comment)
+    }
+
+    fun commentProvider(getter: C_LateGetter<DocComment?>): CommentProvider = CommentProvider_Getter(getter)
+    fun commentProvider(comment: S_Comment?): CommentProvider = CommentProvider_SComment(docSymbolFactory, comment)
+
+    sealed class CommentProvider {
+        abstract fun getter(kind: DocSymbolKind): C_LateGetter<DocComment?>
+
+        companion object {
+            val NULL: CommentProvider = CommentProvider_Getter(C_LateGetter.const(null))
+        }
+    }
+
+    private class CommentProvider_SComment(
+        private val docSymFactory: C_DocSymbolFactory,
+        private val sComment: S_Comment?,
+    ): CommentProvider() {
+        override fun getter(kind: DocSymbolKind): C_LateGetter<DocComment?> {
+            val docComment = sComment?.compile(docSymFactory, kind)
+            return C_LateGetter.const(docComment)
+        }
+    }
+
+    private class CommentProvider_Getter(private val getter: C_LateGetter<DocComment?>): CommentProvider() {
+        override fun getter(kind: DocSymbolKind) = getter
     }
 }
 
@@ -53,16 +76,17 @@ sealed class C_DocSymbolFactory(
         mountName: String? = null,
         comment: S_Comment?,
     ): DocSymbol {
-        val docComment = comment?.compile(this)
+        val docComment = comment?.compile(this, kind)
         return makeDocSymbol(kind, symbolName, declaration, mountName, docComment)
     }
 
-    open fun compileComment(pos: S_Pos, text: String): DocComment? = null
+    open fun compileComment(pos: S_Pos, text: String, kind: DocSymbolKind): DocComment? = null
 
     open fun compileFunctionParamComments(
         pos: S_Pos,
         funName: R_DefinitionName,
         funComment: S_Comment?,
+        funKind: DocSymbolKind,
         paramNames: List<R_Name>,
         paramComments: Map<R_Name, S_Comment>,
     ): DocFunctionParamComments = DocFunctionParamComments.NULL
@@ -90,23 +114,12 @@ private object C_DocSymbolFactory_None: C_DocSymbolFactory(false) {
 }
 
 private class C_DocSymbolFactory_Normal(private val msgMgr: C_MessageManager): C_DocSymbolFactory(true) {
-    override fun compileComment(pos: S_Pos, text: String): DocComment {
-        val resText = tansformCommentText(text)
-        return DocCommentParser.parse(resText, errorTracker(pos))
-    }
-
-    private fun tansformCommentText(text: String): String {
-        val lines = text.trim().lines()
-        val resLines = lines.map { transformLine(it) }
-        return resLines.joinToString("\n")
-    }
-
-    private fun transformLine(line: String): String {
-        val res = line.trim()
-        return when {
-            res.startsWith("* ") -> res.substring(2)
-            res == "*" -> ""
-            else -> res
+    override fun compileComment(pos: S_Pos, text: String, kind: DocSymbolKind): DocComment {
+        val linePosMap = lazy { RellTokenizer.linePosMap(text, pos) }
+        return DocCommentParser.parse(text, kind, errorTracker(pos)) { ofs ->
+            val posEntry = linePosMap.value.floorEntry(ofs)
+            val errPos = if (posEntry == null) pos else S_BasicPos.addColumn(posEntry.value, ofs - posEntry.key)
+            DocCommentPos_SPos(errPos)
         }
     }
 
@@ -130,23 +143,28 @@ private class C_DocSymbolFactory_Normal(private val msgMgr: C_MessageManager): C
         pos: S_Pos,
         funName: R_DefinitionName,
         funComment: S_Comment?,
+        funKind: DocSymbolKind,
         paramNames: List<R_Name>,
-        paramComments: Map<R_Name, S_Comment>
+        paramComments: Map<R_Name, S_Comment>,
     ): DocFunctionParamComments {
-        val docFunComment = funComment?.compile(this)
+        val docFunComment = funComment?.compile(this, funKind)
         val docParamComments = paramComments.mapValuesNotNull {
-            it.value.compile(this)
+            it.value.compile(this, DocSymbolKind.PARAMETER)
         }
 
         val errTracker = errorTracker(funComment?.pos ?: pos)
         return DocFunctionParamComments.make(funName, docFunComment, paramNames, docParamComments, errTracker)
     }
 
-    private fun errorTracker(pos: S_Pos): ErrorTracker {
-        return ErrorTracker { code, msg ->
-            // TODO Specify actual error position within a comment, not the linked token position
-            msgMgr.warning(pos, code, msg)
+    private fun errorTracker(startPos: S_Pos): DocCommentErrorTracker {
+        return DocCommentErrorTracker { pos, code, msg ->
+            val errPos = (pos as? DocCommentPos_SPos)?.pos ?: startPos
+            msgMgr.warning(errPos, code, msg)
         }
+    }
+
+    private class DocCommentPos_SPos(val pos: S_Pos): DocCommentPos() {
+        override fun toString() = pos.toString()
     }
 }
 

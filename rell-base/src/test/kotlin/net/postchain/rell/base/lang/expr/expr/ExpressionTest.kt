@@ -557,6 +557,7 @@ class ExpressionTest: BaseRellTest() {
         def("function i(x: integer): integer = integer.from_gtv(x.to_gtv());")
         def("function t(x: text): integer = integer(x);")
 
+        @Suppress("LocalVariableName")
         val i63_1 = bigint(2, 63, -1)
 
         chkIntegerOver2("+", bigint(2, 63, -1), "1")

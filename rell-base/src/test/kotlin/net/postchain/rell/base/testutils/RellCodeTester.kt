@@ -265,8 +265,31 @@ class RellCodeTester(
     }
 
     fun chkWarn(vararg msgs: String) {
-        val actual = messages.filter { it.type == C_MessageType.WARNING }.map { it.code }.sorted()
+        val actual = messages
+            .filter { it.type == C_MessageType.WARNING }
+            .sortedBy { it.pos }
+            .sortedBy { it.code }
+            .map {
+                val list = mutableListOf<String>()
+                if (errMsgPos) list.add(it.pos.str())
+                list.add(it.code)
+                list.joinToString("|")
+            }
         val expected = msgs.toList()
+        assertEquals(expected, actual)
+    }
+
+    fun chkMsg(vararg exp: String) {
+        val actual = messages
+            .map {
+                val list = mutableListOf<String>()
+                if (errMsgPos) list.add(it.pos.str())
+                list.add(it.type.name)
+                list.add(it.code)
+                list.add(it.text)
+                list.joinToString("|")
+            }
+        val expected = exp.toList()
         assertEquals(expected, actual)
     }
 

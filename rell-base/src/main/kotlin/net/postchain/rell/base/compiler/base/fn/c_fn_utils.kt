@@ -90,6 +90,7 @@ object C_FunctionUtils {
             pos,
             defCtx.defName,
             comment,
+            defCtx.definitionType.docKind,
             paramNames,
             paramComments,
         )

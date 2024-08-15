@@ -8,9 +8,7 @@ import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.compiler.base.utils.C_DocUtils
 import net.postchain.rell.base.lmodel.L_FunctionFlags
 import net.postchain.rell.base.lmodel.L_FunctionHeader
-import net.postchain.rell.base.lmodel.L_MemberHeader
 import net.postchain.rell.base.lmodel.L_TypeUtils
-import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.doc.*
@@ -18,7 +16,7 @@ import net.postchain.rell.base.utils.toImmList
 
 object Ld_DocSymbols {
     fun function(
-        fullName: R_FullName,
+        hdr: Ld_MemberHeader.Finish,
         header: L_FunctionHeader,
         flags: L_FunctionFlags,
         deprecated: C_Deprecated?,
@@ -32,50 +30,23 @@ object Ld_DocSymbols {
 
         val docHeader = L_TypeUtils.docFunctionHeader(header.mHeader)
         val docParams = header.params.map { it.docSymbol.declaration }.toImmList()
-        val dec = DocDeclaration_Function(docModifiers, fullName.last, docHeader, docParams)
-
-        return docSymbol(
-            kind = DocSymbolKind.FUNCTION,
-            symbolName = DocSymbolName.global(fullName),
-            mountName = null,
-            declaration = dec,
-            comment = comment,
-        )
+        val dec = DocDeclaration_Function(docModifiers, hdr.simpleName, docHeader, docParams)
+        return hdr.docSymbol(declaration = dec, comment = comment)
     }
 
-    fun specialFunction(fullName: R_FullName, memberHeader: L_MemberHeader, isStatic: Boolean): DocSymbol {
-        return docSymbol(
-            kind = DocSymbolKind.FUNCTION,
-            symbolName = DocSymbolName.global(fullName),
-            mountName = null,
-            declaration = DocDeclaration_SpecialFunction(fullName.last, isStatic = isStatic),
-            comment = memberHeader.docComment,
-        )
+    fun specialFunction(hdr: Ld_MemberHeader.Finish, isStatic: Boolean): DocSymbol {
+        return hdr.docSymbol(DocDeclaration_SpecialFunction(hdr.simpleName, isStatic = isStatic))
     }
 
-    fun constant(fullName: R_FullName, memberHeader: L_MemberHeader, mType: M_Type, rValue: Rt_Value): DocSymbol {
+    fun constant(hdr: Ld_MemberHeader.Finish, mType: M_Type, rValue: Rt_Value): DocSymbol {
         val docType = L_TypeUtils.docType(mType)
         val docValue = C_DocUtils.docValue(rValue)
-        val dec = DocDeclaration_Constant(DocModifiers.NONE, fullName.last, docType, docValue)
-
-        return docSymbol(
-            kind = DocSymbolKind.CONSTANT,
-            symbolName = DocSymbolName.global(fullName),
-            mountName = null,
-            declaration = dec,
-            comment = memberHeader.docComment,
-        )
+        return hdr.docSymbol(DocDeclaration_Constant(DocModifiers.NONE, hdr.simpleName, docType, docValue))
     }
 
-    fun property(fullName: R_FullName, memberHeader: L_MemberHeader, mType: M_Type, pure: Boolean): DocSymbol {
+    fun property(hdr: Ld_MemberHeader.Finish, mType: M_Type, pure: Boolean): DocSymbol {
         val docType = L_TypeUtils.docType(mType)
-        return docSymbol(
-            kind = DocSymbolKind.PROPERTY,
-            symbolName = DocSymbolName.global(fullName),
-            mountName = null,
-            declaration = DocDeclaration_Property(fullName.last, docType, pure),
-            comment = memberHeader.docComment,
-        )
+        return hdr.docSymbol(DocDeclaration_Property(hdr.simpleName, docType, pure))
     }
 
     fun docSymbol(

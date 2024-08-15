@@ -18,34 +18,64 @@ class Ld_MemberHeader(
         return if (since == this.since && comment == this.comment) this else Ld_MemberHeader(since, comment)
     }
 
-    fun finish(modCfg: Ld_ModuleConfig, fullName: R_FullName, requireSince: Boolean = true): L_MemberHeader {
+    fun finish(
+        modCfg: Ld_ModuleConfig,
+        fullName: R_FullName,
+        docKind: DocSymbolKind,
+        requireSince: Boolean = true,
+    ): Finish {
         if (modCfg.requireSince && requireSince && since == null) {
             throw Ld_Exception("missing_since:$fullName", "Missing 'since' for '$fullName'")
         }
 
         val actualSince = if (modCfg.versionControl) since else null
-        val docComment = docComment()
-        return L_MemberHeader(actualSince, docComment)
+        val docComment = docComment(docKind)
+        val lHeader = L_MemberHeader(actualSince, docComment)
+        return Finish(docKind, fullName, lHeader)
     }
 
-    private fun docComment(): DocComment? {
+    private fun docComment(docKind: DocSymbolKind): DocComment? {
         return if (since == null && comment == null) null else {
-            val c = if (comment == null) DocComment.EMPTY else parseComment(comment)
+            val c = if (comment == null) DocComment.EMPTY else parseComment(comment, docKind)
             if (since == null) c else {
                 val b = DocCommentBuilder(DocException.ERROR_TRACKER)
                 b.description(c.description)
                 for ((tag, items) in c.tags) {
                     for (item in items) b.tag(tag, item)
                 }
-                b.tag(DocCommentTag.SINCE, DocCommentItem(null, since.str()))
+                b.tag(DocCommentTag.SINCE, DocCommentItem(null, since.str(), DocCommentPos.NONE, null))
                 b.build()
             }
         }
     }
 
-    private fun parseComment(text: String): DocComment {
-        val text2 = text.trimIndent()
-        return DocCommentParser.parse(text2)
+    private fun parseComment(text: String, docKind: DocSymbolKind): DocComment {
+        // Inserting a blank line, because 1st line must not have the "* " prefix.
+        val text2 = "\n" + text.replaceIndent("* ")
+        return DocCommentParser.parse(text2, docKind)
+    }
+
+    class Finish(
+        private val docKind: DocSymbolKind,
+        val fullName: R_FullName,
+        val lHeader: L_MemberHeader,
+    ) {
+        val simpleName = fullName.last
+
+        fun docSymbol(
+            declaration: DocDeclaration,
+            symbolName: DocSymbolName = DocSymbolName.global(fullName),
+            mountName: String? = null,
+            comment: DocComment? = lHeader.docComment,
+        ): DocSymbol {
+            return Ld_DocSymbols.docSymbol(
+                kind = docKind,
+                symbolName = symbolName,
+                mountName = mountName,
+                declaration = declaration,
+                comment = comment,
+            )
+        }
     }
 
     companion object {

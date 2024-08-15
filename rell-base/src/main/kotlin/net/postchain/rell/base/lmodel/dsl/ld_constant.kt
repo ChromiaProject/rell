@@ -13,7 +13,6 @@ import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.futures.FcFuture
 
 class Ld_Constant(
-    val memberHeader: Ld_MemberHeader,
     private val type: Ld_Type,
     private val value: Ld_ConstantValue,
 ) {
@@ -70,17 +69,14 @@ class Ld_ConstantDslImpl(
         return res
     }
 
-    fun build(block: Ld_ConstantDsl.() -> Ld_BodyResult): Ld_Constant {
+    fun build(block: Ld_ConstantDsl.() -> Ld_BodyResult): Ld_MemberDef<Ld_Constant> {
         val bodyTag = block(this)
         check(bodyTag === bodyRes)
 
         val memberHeader = memberBuilder.buildMemberHeader()
         val res = bodyRes!!
-        return Ld_Constant(
-            memberHeader,
-            type = type,
-            value = res.value,
-        )
+        val constant = Ld_Constant(type = type, value = res.value)
+        return Ld_MemberDef(memberHeader, constant)
     }
 
     private class Ld_BodyRes(val value: Ld_ConstantValue): Ld_BodyResult()

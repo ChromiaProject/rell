@@ -62,7 +62,6 @@ abstract class Ld_PropertyValue {
 }
 
 class Ld_NamespaceProperty(
-    val memberHeader: Ld_MemberHeader,
     private val type: Ld_Type,
     private val value: Ld_PropertyValue,
 ) {
@@ -75,7 +74,6 @@ class Ld_NamespaceProperty(
 
 class Ld_TypeProperty(
     val simpleName: R_Name,
-    val memberHeader: Ld_MemberHeader,
     private val type: Ld_Type,
     private val value: Ld_PropertyValue,
 ) {
@@ -124,16 +122,15 @@ class Ld_NamespacePropertyDslImpl(
         return res
     }
 
-    fun build(block: Ld_NamespacePropertyDsl.() -> Ld_BodyResult): Ld_NamespaceProperty {
+    fun build(block: Ld_NamespacePropertyDsl.() -> Ld_BodyResult): Ld_MemberDef<Ld_NamespaceProperty> {
         val bodyTag = block(this)
         check(bodyTag === buildRes)
 
         val res = buildRes!!
-        return Ld_NamespaceProperty(
-            memberHeader = memberBuilder.buildMemberHeader(),
-            type = type,
-            value = res.value,
-        )
+        val memberHeader = memberBuilder.buildMemberHeader()
+
+        val property = Ld_NamespaceProperty(type = type, value = res.value)
+        return Ld_MemberDef(memberHeader, property)
     }
 
     private class Ld_BodyRes(val value: Ld_PropertyValue): Ld_BodyResult()
@@ -164,17 +161,20 @@ class Ld_TypePropertyDslImpl(
         return res
     }
 
-    fun build(block: Ld_TypePropertyDsl.() -> Ld_BodyResult): Ld_TypeProperty {
+    fun build(block: Ld_TypePropertyDsl.() -> Ld_BodyResult): Ld_MemberDef<Ld_TypeProperty> {
         val bodyTag = block(this)
         check(bodyTag === bodyRes)
 
         val res = bodyRes!!
-        return Ld_TypeProperty(
+        val memberHeader = memberBuilder.buildMemberHeader()
+
+        val property = Ld_TypeProperty(
             simpleName,
-            memberHeader = memberBuilder.buildMemberHeader(),
             type = type,
             value = res.value,
         )
+
+        return Ld_MemberDef(memberHeader, property)
     }
 
     private class Ld_BodyRes(val value: Ld_PropertyValue): Ld_BodyResult()

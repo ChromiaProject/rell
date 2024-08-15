@@ -104,3 +104,8 @@ class Ld_MemberConflictChecker(initialNames: Map<R_Name, Ld_ConflictMemberKind>)
         return names.toImmMap()
     }
 }
+
+class Ld_MemberDef<T: Any>(
+    val header: Ld_MemberHeader,
+    val def: T,
+)

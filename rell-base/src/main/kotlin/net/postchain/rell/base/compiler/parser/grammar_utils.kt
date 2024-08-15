@@ -116,6 +116,4 @@ class RellToken(val name: String, val token: Token): Parser<RellTokenMatch> {
     }
 }
 
-class RellTokenMatch(val pos: S_Pos, val text: String, comment: String?) {
-    val comment = if (comment == null) null else S_Comment(pos, comment)
-}
+class RellTokenMatch(val pos: S_Pos, val text: String, val comment: S_Comment?)

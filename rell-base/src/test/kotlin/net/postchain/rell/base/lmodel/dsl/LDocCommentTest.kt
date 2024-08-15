@@ -37,13 +37,13 @@ class LDocCommentTest: BaseLTest() {
     }
 
     @Test fun testTags() {
-        chkComment("f", "description|param:x=x-param;y=y-param|returns:ret-value|since:0.10.5|see:other-1;other-2") {
+        chkComment("f", "description|param:x=x-param;y=y-param|return:ret-value|see:other-1;other-2|since:0.10.5") {
             function("f", result = "unit") {
                 comment("""
                     description
                     @see other-1
                     @param y y-param
-                    @returns ret-value
+                    @return ret-value
                     @param x x-param
                     @see other-2
                     @since 0.10.5
@@ -69,9 +69,9 @@ class LDocCommentTest: BaseLTest() {
                 type("data", comment = "hello\n@since 0.10.5\n@since 0.10.5")
             }
         }
-        chkErr("DOCE:comment:tag:duplicate:returns") {
+        chkErr("DOCE:comment:tag:duplicate:return") {
             makeModule("test") {
-                function("f", result = "any", comment = "hello\n@returns 123\n@returns 456") {
+                function("f", result = "any", comment = "hello\n@return 123\n@return 456") {
                     body { -> Rt_UnitValue }
                 }
             }
@@ -280,5 +280,28 @@ class LDocCommentTest: BaseLTest() {
         chkComment(mod, "data.g", expFunComment)
         chkComment(mod, "data.g.x", expParamComment1)
         chkComment(mod, "data.g.y", expParamComment2)
+    }
+
+    @Test fun testMultiline() {
+        chkComment("f", "Desc 1\n Desc 2\nDesc 3|return:Ret 1\n  Ret 2\nRet 3|see:See 1\nSee 2\n   See 3") {
+            function("f", result = "integer") {
+                comment("""
+                     Desc 1
+                      Desc 2
+                     Desc 3
+
+                     @return   Ret 1
+                       Ret 2
+                     Ret 3
+
+                     @see
+                     See 1
+                     See 2
+                        See 3
+
+                """)
+                body { -> Rt_UnitValue }
+            }
+        }
     }
 }

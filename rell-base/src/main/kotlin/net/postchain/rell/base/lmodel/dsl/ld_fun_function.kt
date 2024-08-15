@@ -63,7 +63,7 @@ class Ld_FunctionBuilder(
         resultType = Ld_Type.parse(type)
     }
 
-    fun build(bodyRes: Ld_BodyResult): Ld_Function {
+    fun build(bodyRes: Ld_BodyResult): Ld_MemberDef<Ld_Function> {
         val cf = buildCommon(bodyRes)
 
         val header = Ld_FunctionHeader(
@@ -72,13 +72,14 @@ class Ld_FunctionBuilder(
             params = cf.header.params,
         )
 
-        return Ld_Function(
-            memberHeader = cf.memberHeader,
+        val fn = Ld_Function(
             aliases = aliasesBuilder.build(),
             header = header,
             deprecated = cf.deprecated,
             body = cf.body,
         )
+
+        return Ld_MemberDef(cf.memberHeader, fn)
     }
 
     companion object {
@@ -89,7 +90,7 @@ class Ld_FunctionBuilder(
             pure: Boolean?,
             outerTypeParams: Set<R_Name>,
             block: Ld_FunctionDsl.() -> Ld_BodyResult,
-        ): Ld_Function {
+        ): Ld_MemberDef<Ld_Function> {
             val bodyBuilder = Ld_FunctionBodyBuilder(simpleName, pure)
             val funBuilder = Ld_FunctionBuilder(hdr, simpleName, outerTypeParams, bodyBuilder)
             val bodyDslBuilder = Ld_FunctionBodyDslImpl(bodyBuilder)
@@ -128,7 +129,6 @@ class Ld_FunctionHeader(
 }
 
 class Ld_Function(
-    private val memberHeader: Ld_MemberHeader,
     val aliases: List<Ld_Alias>,
     val deprecated: C_Deprecated?,
     private val header: Ld_FunctionHeader,
@@ -136,12 +136,15 @@ class Ld_Function(
 ) {
     class Finish(
         val lFunction: L_Function,
-        val memberHeader: L_MemberHeader,
         val comment: DocComment?,
     )
 
-    fun finish(ctx: Ld_TypeFinishContext, fullName: R_FullName, isStatic: Boolean): Finish {
-        val lMemberHeader = memberHeader.finish(ctx.modCfg, fullName)
+    fun finish(
+        ctx: Ld_TypeFinishContext,
+        fullName: R_FullName,
+        lMemberHeader: L_MemberHeader,
+        isStatic: Boolean,
+    ): Finish {
         val finHeader = header.finish(ctx, fullName, lMemberHeader)
         val lBody = body.finish(fullName.qualifiedName)
         val lFunction = L_Function(
@@ -150,6 +153,6 @@ class Ld_Function(
             body = lBody,
             flags = L_FunctionFlags(isPure = body.pure, isStatic = isStatic),
         )
-        return Finish(lFunction, lMemberHeader, finHeader.comment)
+        return Finish(lFunction, finHeader.comment)
     }
 }

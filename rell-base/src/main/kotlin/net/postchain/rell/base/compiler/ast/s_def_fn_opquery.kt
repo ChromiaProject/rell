@@ -61,7 +61,7 @@ class S_OperationDefinition(
             C_DefinitionType.OPERATION,
             IdeSymbolKind.DEF_OPERATION,
             mountName,
-            docCommentGetter = docCommentLate.getter,
+            commentProvider = ctx.symCtx.commentProvider(docCommentLate.getter),
         )
         val defCtx = cDefBase.defCtx(ctx)
         val defBase = cDefBase.rBase(defCtx.initFrameGetter)
@@ -186,7 +186,7 @@ class S_QueryDefinition(
             C_DefinitionType.QUERY,
             IdeSymbolKind.DEF_QUERY,
             mountName,
-            docCommentGetter = docCommentLate.getter,
+            commentProvider = ctx.symCtx.commentProvider(docCommentLate.getter),
         )
         val defCtx = cDefBase.defCtx(ctx)
         val rDefBase = cDefBase.rBase(defCtx.initFrameGetter)

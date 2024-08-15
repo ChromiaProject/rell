@@ -29,95 +29,91 @@ class Ld_TypeDefParent(private val typeName: Ld_FullName, private val args: List
     }
 }
 
-sealed class Ld_TypeDefMember {
-    abstract fun finish(ctx: Ld_TypeFinishContext, typeName: R_FullName): List<L_TypeDefMember>
+sealed class Ld_TypeDefMember(
+    private val docKind: DocSymbolKind,
+    private val optionalName: R_Name?,
+    private val memberHeader: Ld_MemberHeader,
+) {
+    protected abstract fun finish0(ctx: Ld_TypeFinishContext, hdr: Ld_MemberHeader.Finish): List<L_TypeDefMember>
+
+    fun finish(ctx: Ld_TypeFinishContext, typeName: R_FullName): List<L_TypeDefMember> {
+        val fullName = if (optionalName == null) typeName else typeName.append(optionalName)
+        val fHeader = memberHeader.finish(ctx.modCfg, fullName, docKind)
+        return finish0(ctx, fHeader)
+    }
 }
 
 private class Ld_TypeDefMember_Constructor(
+    memberHeader: Ld_MemberHeader,
     private val constructor: Ld_Constructor,
-): Ld_TypeDefMember() {
-    override fun finish(ctx: Ld_TypeFinishContext, typeName: R_FullName): List<L_TypeDefMember> {
-        val finish = constructor.finish(ctx, typeName)
-        val doc = makeDoc(typeName, finish.lConstructor, finish.comment)
-        val member = L_TypeDefMember_Constructor(typeName, finish.memberHeader, doc, finish.lConstructor)
+): Ld_TypeDefMember(DocSymbolKind.CONSTRUCTOR, null, memberHeader) {
+    override fun finish0(ctx: Ld_TypeFinishContext, hdr: Ld_MemberHeader.Finish): List<L_TypeDefMember> {
+        val typeName = hdr.fullName
+        val finish = constructor.finish(ctx, typeName, hdr.lHeader)
+
+        val doc = makeDoc(hdr, finish.lConstructor, finish.comment)
+        val member = L_TypeDefMember_Constructor(typeName, hdr.lHeader, doc, finish.lConstructor)
         return immListOf(member)
     }
 
-    private fun makeDoc(typeName: R_FullName, lConstructor: L_Constructor, comment: DocComment?): DocSymbol {
+    private fun makeDoc(hdr: Ld_MemberHeader.Finish, lConstructor: L_Constructor, comment: DocComment?): DocSymbol {
         val docDeclaration = DocDeclaration_TypeConstructor(
-            typeName.last,
+            hdr.simpleName,
             L_TypeUtils.docTypeParams(lConstructor.header.typeParams),
             lConstructor.header.params.map { it.docSymbol.declaration }.toImmList(),
             deprecated = lConstructor.deprecated,
             pure = lConstructor.pure,
         )
-
-        return Ld_DocSymbols.docSymbol(
-            kind = DocSymbolKind.CONSTRUCTOR,
-            symbolName = DocSymbolName.global(typeName),
-            declaration = docDeclaration,
-            comment = comment,
-        )
+        return hdr.docSymbol(declaration = docDeclaration, comment = comment)
     }
 }
 
 private class Ld_TypeDefMember_SpecialConstructor(
-    private val memberHeader: Ld_MemberHeader,
+    memberHeader: Ld_MemberHeader,
     private val fn: C_SpecialLibGlobalFunctionBody,
-): Ld_TypeDefMember() {
-    override fun finish(ctx: Ld_TypeFinishContext, typeName: R_FullName): List<L_TypeDefMember> {
-        val lMemberHeader = memberHeader.finish(ctx.modCfg, typeName)
-        val doc = makeDoc(typeName, lMemberHeader)
-        return immListOf(L_TypeDefMember_SpecialConstructor(typeName, lMemberHeader, doc, fn))
-    }
-
-    private fun makeDoc(typeName: R_FullName, lMemberHeader: L_MemberHeader): DocSymbol {
-        return Ld_DocSymbols.docSymbol(
-            kind = DocSymbolKind.CONSTRUCTOR,
-            symbolName = DocSymbolName.global(typeName),
-            declaration = DocDeclaration_TypeSpecialConstructor(),
-            comment = lMemberHeader.docComment,
-        )
+): Ld_TypeDefMember(DocSymbolKind.CONSTRUCTOR, null, memberHeader) {
+    override fun finish0(ctx: Ld_TypeFinishContext, hdr: Ld_MemberHeader.Finish): List<L_TypeDefMember> {
+        val doc = hdr.docSymbol(DocDeclaration_TypeSpecialConstructor())
+        return immListOf(L_TypeDefMember_SpecialConstructor(hdr.fullName, hdr.lHeader, doc, fn))
     }
 }
 
 private class Ld_TypeDefMember_Constant(
     private val simpleName: R_Name,
+    memberHeader: Ld_MemberHeader,
     private val constant: Ld_Constant,
-): Ld_TypeDefMember() {
-    override fun finish(ctx: Ld_TypeFinishContext, typeName: R_FullName): List<L_TypeDefMember> {
-        val fullName = typeName.append(simpleName)
+): Ld_TypeDefMember(DocSymbolKind.CONSTANT, simpleName, memberHeader) {
+    override fun finish0(ctx: Ld_TypeFinishContext, hdr: Ld_MemberHeader.Finish): List<L_TypeDefMember> {
         val lConstant = constant.finish(ctx, simpleName)
-        val lMemberHeader = constant.memberHeader.finish(ctx.modCfg, fullName)
-        val doc = Ld_DocSymbols.constant(fullName, lMemberHeader, lConstant.type, lConstant.value)
-        return immListOf(L_TypeDefMember_Constant(fullName, lMemberHeader, doc, lConstant))
+        val doc = Ld_DocSymbols.constant(hdr, lConstant.type, lConstant.value)
+        return immListOf(L_TypeDefMember_Constant(hdr.fullName, hdr.lHeader, doc, lConstant))
     }
 }
 
 private class Ld_TypeDefMember_Property(
+    memberHeader: Ld_MemberHeader,
     private val property: Ld_TypeProperty,
-): Ld_TypeDefMember() {
-    override fun finish(ctx: Ld_TypeFinishContext, typeName: R_FullName): List<L_TypeDefMember> {
-        val fullName = typeName.append(property.simpleName)
+): Ld_TypeDefMember(DocSymbolKind.PROPERTY, property.simpleName, memberHeader) {
+    override fun finish0(ctx: Ld_TypeFinishContext, hdr: Ld_MemberHeader.Finish): List<L_TypeDefMember> {
         val lProperty = property.finish(ctx)
-        val lMemberHeader = property.memberHeader.finish(ctx.modCfg, fullName)
-        val doc = Ld_DocSymbols.property(fullName, lMemberHeader, lProperty.type, lProperty.pure)
-        return immListOf(L_TypeDefMember_Property(fullName, lMemberHeader, doc, lProperty))
+        val doc = Ld_DocSymbols.property(hdr, lProperty.type, lProperty.pure)
+        return immListOf(L_TypeDefMember_Property(hdr.fullName, hdr.lHeader, doc, lProperty))
     }
 }
 
 private class Ld_TypeDefMember_Function(
-    private val simpleName: R_Name,
+    simpleName: R_Name,
+    memberHeader: Ld_MemberHeader,
     private val function: Ld_Function,
     private val isStatic: Boolean,
-): Ld_TypeDefMember() {
-    override fun finish(ctx: Ld_TypeFinishContext, typeName: R_FullName): List<L_TypeDefMember> {
-        val fullName = typeName.append(simpleName)
-        val finFunction = function.finish(ctx, fullName, isStatic)
+): Ld_TypeDefMember(DocSymbolKind.FUNCTION, simpleName, memberHeader) {
+    override fun finish0(ctx: Ld_TypeFinishContext, hdr: Ld_MemberHeader.Finish): List<L_TypeDefMember> {
+        val fullName = hdr.fullName
+        val finFunction = function.finish(ctx, fullName, hdr.lHeader, isStatic)
         val lFunction = finFunction.lFunction
 
         val docSymbol = Ld_DocSymbols.function(
-            fullName,
+            hdr,
             lFunction.header,
             lFunction.flags,
             function.deprecated,
@@ -126,7 +122,7 @@ private class Ld_TypeDefMember_Function(
 
         val member = L_TypeDefMember_Function(
             fullName,
-            finFunction.memberHeader,
+            hdr.lHeader,
             docSymbol,
             lFunction,
             deprecated = function.deprecated,
@@ -135,11 +131,11 @@ private class Ld_TypeDefMember_Function(
         val res = mutableListOf<L_TypeDefMember>(member)
         for (alias in function.aliases) {
             val aliasFullName = fullName.replaceLast(alias.simpleName)
-            val lMemberHeader = alias.memberHeader.finish(ctx.modCfg, aliasFullName)
-            val aliasDocSymbol = makeAliasDocSymbol(fullName, aliasFullName, lMemberHeader, alias, docSymbol)
+            val aliasHdr = alias.memberHeader.finish(ctx.modCfg, aliasFullName, DocSymbolKind.ALIAS)
+            val aliasDocSymbol = makeAliasDocSymbol(aliasHdr, fullName, alias, docSymbol)
             val aliasMember = L_TypeDefMember_Alias(
                 aliasFullName,
-                lMemberHeader,
+                aliasHdr.lHeader,
                 aliasDocSymbol,
                 member,
                 alias.deprecated,
@@ -151,58 +147,46 @@ private class Ld_TypeDefMember_Function(
     }
 
     private fun makeAliasDocSymbol(
-        fullName: R_FullName,
-        aliasFullName: R_FullName,
-        memberHeader: L_MemberHeader,
+        hdr: Ld_MemberHeader.Finish,
+        targetFullName: R_FullName,
         alias: Ld_Alias,
         targetDocSymbol: DocSymbol,
     ): DocSymbol {
         val docDec = DocDeclaration_Alias(
             C_DocUtils.docModifiers(alias.deprecated),
-            aliasFullName.last,
-            fullName,
+            alias.simpleName,
+            targetFullName,
             targetDocSymbol.declaration,
-            R_QualifiedName.of(fullName.last),
+            R_QualifiedName.of(targetFullName.last),
         )
-
-        return Ld_DocSymbols.docSymbol(
-            DocSymbolKind.ALIAS,
-            DocSymbolName.global(aliasFullName),
-            declaration = docDec,
-            comment = memberHeader.docComment,
-        )
+        return hdr.docSymbol(declaration = docDec)
     }
 }
 
 private class Ld_TypeDefMember_ValueSpecialFunction(
-    private val memberHeader: Ld_MemberHeader,
-    private val simpleName: R_Name,
+    simpleName: R_Name,
+    memberHeader: Ld_MemberHeader,
     private val fn: C_SpecialLibMemberFunctionBody,
-): Ld_TypeDefMember() {
-    override fun finish(ctx: Ld_TypeFinishContext, typeName: R_FullName): List<L_TypeDefMember> {
-        val fullName = typeName.append(simpleName)
-        val lMemberHeader = memberHeader.finish(ctx.modCfg, fullName)
-        val doc = Ld_DocSymbols.specialFunction(fullName, lMemberHeader, isStatic = false)
-        return immListOf(L_TypeDefMember_ValueSpecialFunction(fullName, lMemberHeader, doc, fn))
+): Ld_TypeDefMember(DocSymbolKind.FUNCTION, simpleName, memberHeader) {
+    override fun finish0(ctx: Ld_TypeFinishContext, hdr: Ld_MemberHeader.Finish): List<L_TypeDefMember> {
+        val doc = Ld_DocSymbols.specialFunction(hdr, isStatic = false)
+        return immListOf(L_TypeDefMember_ValueSpecialFunction(hdr.fullName, hdr.lHeader, doc, fn))
     }
 }
 
 private class Ld_TypeDefMember_StaticSpecialFunction(
-    private val memberHeader: Ld_MemberHeader,
-    private val simpleName: R_Name,
+    simpleName: R_Name,
+    memberHeader: Ld_MemberHeader,
     private val fn: C_SpecialLibGlobalFunctionBody,
-): Ld_TypeDefMember() {
-    override fun finish(ctx: Ld_TypeFinishContext, typeName: R_FullName): List<L_TypeDefMember> {
-        val fullName = typeName.append(simpleName)
-        val lMemberHeader = memberHeader.finish(ctx.modCfg, fullName)
-        val doc = Ld_DocSymbols.specialFunction(fullName, lMemberHeader, isStatic = true)
-        return immListOf(L_TypeDefMember_StaticSpecialFunction(fullName, lMemberHeader, doc, fn))
+): Ld_TypeDefMember(DocSymbolKind.FUNCTION, simpleName, memberHeader) {
+    override fun finish0(ctx: Ld_TypeFinishContext, hdr: Ld_MemberHeader.Finish): List<L_TypeDefMember> {
+        val doc = Ld_DocSymbols.specialFunction(hdr, isStatic = true)
+        return immListOf(L_TypeDefMember_StaticSpecialFunction(hdr.fullName, hdr.lHeader, doc, fn))
     }
 }
 
 class Ld_TypeDef(
     val simpleName: R_Name,
-    private val memberHeader: Ld_MemberHeader,
     private val flags: L_TypeDefFlags,
     private val typeParams: List<Ld_TypeParam>,
     private val parent: Ld_TypeDefParent?,
@@ -213,26 +197,25 @@ class Ld_TypeDef(
 ) {
     class Result(
         val typeDef: L_TypeDef,
-        val memberHeader: L_MemberHeader,
         val membersFuture: FcFuture<L_TypeDefMembers>,
     )
 
-    fun process(ctx: Ld_NamespaceContext, fullName: R_FullName): FcFuture<Result> {
+    fun process(ctx: Ld_NamespaceContext, hdr: Ld_MemberHeader.Finish): FcFuture<Result> {
         return ctx.fcExec.future()
-            .name("type $fullName")
-            .attachment(fullName)
+            .name("type ${hdr.fullName}")
+            .attachment(hdr.fullName)
             .after(ctx.finishCtxFuture)
             .compute { finCtx ->
-                finish(finCtx, fullName)
+                finish(finCtx, hdr)
             }
     }
 
-    private fun finish(ctx: Ld_NamespaceFinishContext, fullName: R_FullName): Result {
+    private fun finish(ctx: Ld_NamespaceFinishContext, hdr: Ld_MemberHeader.Finish): Result {
         val typeCtx = ctx.typeCtx
+        val fullName = hdr.fullName
+
         val lTypeParams = Ld_TypeParam.finishList(typeCtx, typeParams)
-
         val subTypeCtx = typeCtx.subCtx(typeParams = lTypeParams.map)
-
         val lParent = parent?.finish(subTypeCtx)
 
         val mParent = if (lParent == null) null else M_GenericTypeParent(lParent.typeDef.mGenericType, lParent.args)
@@ -245,8 +228,7 @@ class Ld_TypeDef(
             L_TypeDefMembers(lMembers)
         }
 
-        val lMemberHeader = memberHeader.finish(ctx.modCfg, fullName)
-        val docSym = makeDocSymbol(fullName, lMemberHeader, lTypeParams.list, lParent)
+        val docSym = makeDocSymbol(hdr, lTypeParams.list, lParent)
 
         val typeDef = L_TypeDef(
             fullName,
@@ -258,7 +240,7 @@ class Ld_TypeDef(
             docSymbol = docSym,
         )
 
-        return Result(typeDef, lMemberHeader, membersF)
+        return Result(typeDef, membersF)
     }
 
     private fun makeGenericType(
@@ -285,18 +267,12 @@ class Ld_TypeDef(
     }
 
     private fun makeDocSymbol(
-        fullName: R_FullName,
-        lMemberHeader: L_MemberHeader,
+        hdr: Ld_MemberHeader.Finish,
         mTypeParams: List<M_TypeParam>,
         lParent: L_TypeDefParent?,
     ): DocSymbol {
         val docTypeParams = L_TypeUtils.docTypeParams(mTypeParams)
-        return Ld_DocSymbols.docSymbol(
-            kind = DocSymbolKind.TYPE,
-            symbolName = DocSymbolName.global(fullName),
-            declaration = DocDeclaration_Type(fullName.last, docTypeParams, lParent, flags),
-            comment = lMemberHeader.docComment,
-        )
+        return hdr.docSymbol(DocDeclaration_Type(hdr.simpleName, docTypeParams, lParent, flags))
     }
 
     companion object {
@@ -306,7 +282,7 @@ class Ld_TypeDef(
             flags: L_TypeDefFlags,
             rType: R_Type?,
             block: Ld_TypeDefDsl.() -> Unit,
-        ): Ld_TypeDef {
+        ): Ld_MemberDef<Ld_TypeDef> {
             val builder = Ld_TypeDefBuilder(simpleName, flags = flags)
             builder.header(hdr)
 
@@ -323,14 +299,13 @@ class Ld_TypeDef(
 
 class Ld_NamespaceMember_Type(
     simpleName: R_Name,
+    memberHeader: Ld_MemberHeader,
     private val typeDef: Ld_TypeDef,
-): Ld_NamespaceMember(simpleName) {
-    override fun process(ctx: Ld_NamespaceContext): FcFuture<List<L_NamespaceMember>> {
-        val fullName = ctx.getFullName(simpleName)
-        val resultF = typeDef.process(ctx, fullName)
-
+): Ld_NamespaceMember(DocSymbolKind.TYPE, simpleName, memberHeader) {
+    override fun process0(ctx: Ld_NamespaceContext, hdr: Ld_MemberHeader.Finish): FcFuture<List<L_NamespaceMember>> {
+        val resultF = typeDef.process(ctx, hdr)
         return ctx.fcExec.future().after(resultF).compute { result ->
-            val member = L_NamespaceMember_Type(fullName, result.memberHeader, result.typeDef, null)
+            val member = L_NamespaceMember_Type(hdr.fullName, hdr.lHeader, result.typeDef, null)
             immListOf(member)
         }
     }
@@ -667,8 +642,8 @@ private class Ld_TypeDefBuilder(
 
         val memberHeader = Ld_MemberHeader.make(hdr, block)
         val ldType = Ld_Type.parse(type)
-        val constant = Ld_Constant(memberHeader, ldType, value)
-        members.add(Ld_TypeDefMember_Constant(rName, constant))
+        val constant = Ld_Constant(ldType, value)
+        members.add(Ld_TypeDefMember_Constant(rName, memberHeader, constant))
     }
 
     override fun constant(
@@ -682,8 +657,8 @@ private class Ld_TypeDefBuilder(
 
         val ldType = Ld_Type.parse(type)
         val dsl = Ld_ConstantDslImpl(hdr, ldType)
-        val constant = dsl.build(block)
-        members.add(Ld_TypeDefMember_Constant(rName, constant))
+        val def = dsl.build(block)
+        members.add(Ld_TypeDefMember_Constant(rName, def.header, def.def))
     }
 
     override fun property(
@@ -698,8 +673,8 @@ private class Ld_TypeDefBuilder(
 
         val ldType = Ld_Type.parse(type)
         val builder = Ld_TypePropertyDslImpl(hdr, rName, ldType, pure)
-        val property = builder.build(block)
-        members.add(Ld_TypeDefMember_Property(property))
+        val def = builder.build(block)
+        members.add(Ld_TypeDefMember_Property(def.header, def.def))
     }
 
     override fun property(
@@ -715,8 +690,8 @@ private class Ld_TypeDefBuilder(
         val memberHeader = Ld_MemberHeader.make(hdr, block)
         val ldType = Ld_Type.parse(type)
         val value = Ld_PropertyValue.typeProp { body }
-        val property = Ld_TypeProperty(rName, memberHeader, ldType, value)
-        members.add(Ld_TypeDefMember_Property(property))
+        val property = Ld_TypeProperty(rName, ldType, value)
+        members.add(Ld_TypeDefMember_Property(memberHeader, property))
     }
 
     override fun constructor(pure: Boolean?, hdr: Ld_MemberHeader, block: Ld_ConstructorDsl.() -> Ld_BodyResult) {
@@ -729,8 +704,8 @@ private class Ld_TypeDefBuilder(
 
         val bodyRes = block(dsl)
 
-        val constructor = conBuilder.build(bodyRes)
-        members.add(Ld_TypeDefMember_Constructor(constructor))
+        val def = conBuilder.build(bodyRes)
+        members.add(Ld_TypeDefMember_Constructor(def.header, def.def))
     }
 
     override fun constructor(fn: C_SpecialLibGlobalFunctionBody, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit) {
@@ -755,7 +730,7 @@ private class Ld_TypeDefBuilder(
     ) {
         val rName = R_Name.of(name)
 
-        val fn = Ld_FunctionBuilder.build(
+        val def = Ld_FunctionBuilder.build(
             hdr,
             simpleName = rName,
             result = result,
@@ -767,11 +742,11 @@ private class Ld_TypeDefBuilder(
         val conflictChecker = if (isStatic) staticConflictChecker else valueConflictChecker
         val kind = Ld_ConflictMemberKind.FUNCTION
         conflictChecker.addMember(rName, kind)
-        for (alias in fn.aliases) {
+        for (alias in def.def.aliases) {
             conflictChecker.addMember(alias.simpleName, kind)
         }
 
-        members.add(Ld_TypeDefMember_Function(rName, fn, isStatic = isStatic))
+        members.add(Ld_TypeDefMember_Function(rName, def.header, def.def, isStatic = isStatic))
     }
 
     override fun function(
@@ -783,7 +758,7 @@ private class Ld_TypeDefBuilder(
         val rName = R_Name.of(name)
         staticConflictChecker.addMember(rName, Ld_ConflictMemberKind.OTHER)
         val header = Ld_MemberHeader.make(hdr, block)
-        members.add(Ld_TypeDefMember_StaticSpecialFunction(header, rName, fn))
+        members.add(Ld_TypeDefMember_StaticSpecialFunction(rName, header, fn))
     }
 
     override fun function(
@@ -795,13 +770,14 @@ private class Ld_TypeDefBuilder(
         val rName = R_Name.of(name)
         valueConflictChecker.addMember(rName, Ld_ConflictMemberKind.OTHER)
         val memberHeader = Ld_MemberHeader.make(hdr, block)
-        members.add(Ld_TypeDefMember_ValueSpecialFunction(memberHeader, rName, fn))
+        members.add(Ld_TypeDefMember_ValueSpecialFunction(rName, memberHeader, fn))
     }
 
-    fun build(): Ld_TypeDef {
-        return Ld_TypeDef(
+    fun build(): Ld_MemberDef<Ld_TypeDef> {
+        val memberHeader = buildMemberHeader()
+
+        val typeDef = Ld_TypeDef(
             simpleName,
-            memberHeader = buildMemberHeader(),
             flags = flags,
             typeParams = typeParams.values.toImmList(),
             parent = parentType,
@@ -810,5 +786,7 @@ private class Ld_TypeDefBuilder(
             supertypeStrategy = supertypeStrategy ?: L_TypeDefSupertypeStrategy_None,
             members = members.toImmList(),
         )
+
+        return Ld_MemberDef(memberHeader, typeDef)
     }
 }

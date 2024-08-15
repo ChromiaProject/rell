@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.doc
 
+import net.postchain.rell.base.testutils.unwrap
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -19,10 +20,11 @@ class CodeDocCommentTest: BaseCodeDocTest() {
         chkSyntax("/**/", "n/a")
         chkSyntax("/***/", "")
         chkSyntax("/** */", "")
-        chkSyntax("/****/", "")
+        chkSyntax("/****/", "*")
+        chkSyntax("/*****/", "**")
         chkSyntax("/***123*/", "*123")
-        chkSyntax("/*** */", "")
-        chkSyntax("/*** 123 */", "123")
+        chkSyntax("/*** */", "*")
+        chkSyntax("/*** 123 */", "* 123")
     }
 
     @Test fun testIndent() {
@@ -31,8 +33,9 @@ class CodeDocCommentTest: BaseCodeDocTest() {
         chkSyntax("/**hello*/", "hello")
         chkSyntax("/**    hello    */", "hello")
 
-        chkSyntax("/*** hello*/", "hello")
-        chkSyntax("/**    * hello*/", "hello")
+        chkSyntax("/***hello*/", "*hello")
+        chkSyntax("/*** hello*/", "* hello")
+        chkSyntax("/**    * hello*/", "* hello")
         chkSyntax("/***hello*/", "*hello")
         chkSyntax("/**    *hello*/", "*hello")
 
@@ -50,7 +53,8 @@ class CodeDocCommentTest: BaseCodeDocTest() {
         chkSyntax("/**\n    * line1\n    *   line2\n    *     line3*/", "line1\n  line2\n    line3")
 
         chkSyntax("/**    line1\n* line2\n    *    line3   \n*/", "line1\nline2\n   line3")
-        chkSyntax("/***    line1\n* line2\n    *    line3   \n*/", "line1\nline2\n   line3")
+        chkSyntax("/***    line1\n* line2\n    *    line3   \n*/", "*    line1\nline2\n   line3")
+        chkSyntax("/**\n*    line1\n* line2\n    *    line3   \n*/", "line1\nline2\n   line3")
         chkSyntax("/**\n* line1\n   *line2\n   line3   \n   *    line4\n*/", "line1\n*line2\nline3\n   line4")
         chkSyntax("/**\n* line1\n*\n*   line2\n   *   \n* line3\n\n*   line4\n*/",
             "line1\n\n  line2\n\nline3\n\n  line4")
@@ -72,37 +76,136 @@ class CodeDocCommentTest: BaseCodeDocTest() {
     @Test fun testTags() {
         val c = """/**
             * Comment text.
+            * @author Bob
+            * @author Alice
             * @param x xValue
             * @param y yValue
-            * @returns ReturnValue
+            * @return ReturnValue
+            * @throws error-1 if foo
+            * @throws error-2 if bar
             * @since 123
             * @see SomethingElse
         */"""
-        chkComment("$c function f(x: integer, y: text) {}", ":f",
-            "Comment text.|param:x=xValue;y=yValue|returns:ReturnValue|since:123|see:SomethingElse")
+        chkComment("$c function f(x: integer, y: text) {}", ":f", """
+            Comment text.
+            |author:Bob;Alice
+            |param:x=xValue;y=yValue
+            |return:ReturnValue
+            |throws:error-1 if foo;error-2 if bar
+            |see:SomethingElse
+            |since:123
+        """.unwrap())
+        chkWarn()
+    }
+
+    @Test fun testTagDefsAuthor() {
+        tst.mainFile = "module.rell"
+        val c = "/**\n* foo\n* @author bar\n*/"
+
+        chkComment("$c module;", "", "foo|author:bar")
+        chkComment("$c namespace ns {}", ":ns", "foo|author:bar")
+        chkComment("$c val C = 123;", ":C", "foo|author:bar")
+        chkComment("$c enum color { red }", ":color", "foo|author:bar")
+        chkComment("enum color { $c red }", ":color.red", "foo", "comment:tag:not_allowed:ENUM_VALUE:author")
+        chkComment("$c entity data {}", ":data", "foo|author:bar")
+        chkComment("entity data { $c name; }", ":data.name", "foo", "comment:tag:not_allowed:ENTITY_ATTR:author")
+        chkComment("$c object data {}", ":data", "foo|author:bar")
+        chkComment("object data { $c name = ''; }", ":data.name", "foo", "comment:tag:not_allowed:OBJECT_ATTR:author")
+        chkComment("$c struct data {}", ":data", "foo|author:bar")
+        chkComment("struct data { $c name; }", ":data.name", "foo", "comment:tag:not_allowed:STRUCT_ATTR:author")
+        chkComment("$c function f(bar: text) {}", ":f", "foo|author:bar")
+        chkComment("$c operation op(bar: text) {}", ":op", "foo|author:bar")
+        chkComment("$c query q(bar: text) = 123;", ":q", "foo|author:bar")
+        chkComment("function f($c x: text) {}", ":f.x", "foo", "comment:tag:not_allowed:PARAMETER:author")
+        chkComment("function f() { $c val x = 123; }", ":f", "n/a", "comment:tag:not_allowed:VAR:author")
+    }
+
+    @Test fun testTagDefsParam() {
+        tst.mainFile = "module.rell"
+        val c = "/**\n* foo\n* @param bar rab\n*/"
+
+        chkComment("$c module;", "", "foo", "comment:tag:not_allowed:MODULE:param")
+        chkComment("$c namespace ns {}", ":ns", "foo", "comment:tag:not_allowed:NAMESPACE:param")
+        chkComment("$c val C = 123;", ":C", "foo", "comment:tag:not_allowed:CONSTANT:param")
+        chkComment("$c enum color { red }", ":color", "foo", "comment:tag:not_allowed:ENUM:param")
+        chkComment("enum color { $c red }", ":color.red", "foo", "comment:tag:not_allowed:ENUM_VALUE:param")
+        chkComment("$c entity data {}", ":data", "foo", "comment:tag:not_allowed:ENTITY:param")
+        chkComment("entity data { $c name; }", ":data.name", "foo", "comment:tag:not_allowed:ENTITY_ATTR:param")
+        chkComment("$c object data {}", ":data", "foo", "comment:tag:not_allowed:OBJECT:param")
+        chkComment("object data { $c name = ''; }", ":data.name", "foo", "comment:tag:not_allowed:OBJECT_ATTR:param")
+        chkComment("$c struct data {}", ":data", "foo", "comment:tag:not_allowed:STRUCT:param")
+        chkComment("struct data { $c name; }", ":data.name", "foo", "comment:tag:not_allowed:STRUCT_ATTR:param")
+        chkComment("$c function f(bar: text) {}", ":f", "foo|param:bar=rab")
+        chkComment("$c operation op(bar: text) {}", ":op", "foo|param:bar=rab")
+        chkComment("$c query q(bar: text) = 123;", ":q", "foo|param:bar=rab")
+        chkComment("function f($c x: text) {}", ":f.x", "foo", "comment:tag:not_allowed:PARAMETER:param")
+        chkComment("function f() { $c val x = 123; }", ":f", "n/a", "comment:tag:not_allowed:VAR:param")
+    }
+
+    @Test fun testTagDefsReturn() {
+        tst.mainFile = "module.rell"
+        val c = "/**\n* foo\n* @return bar\n*/"
+
+        chkComment("$c module;", "", "foo", "comment:tag:not_allowed:MODULE:return")
+        chkComment("$c namespace ns {}", ":ns", "foo", "comment:tag:not_allowed:NAMESPACE:return")
+        chkComment("$c val C = 123;", ":C", "foo", "comment:tag:not_allowed:CONSTANT:return")
+        chkComment("$c enum color { red }", ":color", "foo", "comment:tag:not_allowed:ENUM:return")
+        chkComment("enum color { $c red }", ":color.red", "foo", "comment:tag:not_allowed:ENUM_VALUE:return")
+        chkComment("$c entity data {}", ":data", "foo", "comment:tag:not_allowed:ENTITY:return")
+        chkComment("entity data { $c name; }", ":data.name", "foo", "comment:tag:not_allowed:ENTITY_ATTR:return")
+        chkComment("$c object data {}", ":data", "foo", "comment:tag:not_allowed:OBJECT:return")
+        chkComment("object data { $c name = ''; }", ":data.name", "foo", "comment:tag:not_allowed:OBJECT_ATTR:return")
+        chkComment("$c struct data {}", ":data", "foo", "comment:tag:not_allowed:STRUCT:return")
+        chkComment("struct data { $c name; }", ":data.name", "foo", "comment:tag:not_allowed:STRUCT_ATTR:return")
+        chkComment("$c function f(bar: text) {}", ":f", "foo|return:bar")
+        chkComment("$c operation op(bar: text) {}", ":op", "foo", "comment:tag:not_allowed:OPERATION:return")
+        chkComment("$c query q(bar: text) = 123;", ":q", "foo|return:bar")
+        chkComment("function f($c x: text) {}", ":f.x", "foo", "comment:tag:not_allowed:PARAMETER:return")
+        chkComment("function f() { $c val x = 123; }", ":f", "n/a", "comment:tag:not_allowed:VAR:return")
+    }
+
+    @Test fun testTagDefsThrows() {
+        tst.mainFile = "module.rell"
+        val c = "/**\n* foo\n* @throws bar\n*/"
+
+        chkComment("$c module;", "", "foo", "comment:tag:not_allowed:MODULE:throws")
+        chkComment("$c namespace ns {}", ":ns", "foo", "comment:tag:not_allowed:NAMESPACE:throws")
+        chkComment("$c val C = 123;", ":C", "foo", "comment:tag:not_allowed:CONSTANT:throws")
+        chkComment("$c enum color { red }", ":color", "foo", "comment:tag:not_allowed:ENUM:throws")
+        chkComment("enum color { $c red }", ":color.red", "foo", "comment:tag:not_allowed:ENUM_VALUE:throws")
+        chkComment("$c entity data {}", ":data", "foo", "comment:tag:not_allowed:ENTITY:throws")
+        chkComment("entity data { $c name; }", ":data.name", "foo", "comment:tag:not_allowed:ENTITY_ATTR:throws")
+        chkComment("$c object data {}", ":data", "foo", "comment:tag:not_allowed:OBJECT:throws")
+        chkComment("object data { $c name = ''; }", ":data.name", "foo", "comment:tag:not_allowed:OBJECT_ATTR:throws")
+        chkComment("$c struct data {}", ":data", "foo", "comment:tag:not_allowed:STRUCT:throws")
+        chkComment("struct data { $c name; }", ":data.name", "foo", "comment:tag:not_allowed:STRUCT_ATTR:throws")
+        chkComment("$c function f(bar: text) {}", ":f", "foo|throws:bar")
+        chkComment("$c operation op(bar: text) {}", ":op", "foo|throws:bar")
+        chkComment("$c query q(bar: text) = 123;", ":q", "foo|throws:bar")
+        chkComment("function f($c x: text) {}", ":f.x", "foo", "comment:tag:not_allowed:PARAMETER:throws")
+        chkComment("function f() { $c val x = 123; }", ":f", "n/a", "comment:tag:not_allowed:VAR:throws")
+    }
+
+    @Test fun testTagReturns() {
+        chkComment("/** foo\n* @return bar\n*/ function f() = 123;", ":f", "foo|return:bar")
+        chkComment("/** foo\n* @returns bar\n*/ function f() = 123;", ":f", "foo|return:bar",
+            "comment:tag:deprecated:returns")
     }
 
     @Test fun testCommentErrors() {
         // Make sure compilation errors work.
         chkComment("/** Foo */ val X: integer = Y;", ":X", "ct_err:unknown_name:Y")
-
-        chkComment("/**\n * 123\n * @since 456\n * @since 789\n*/ struct data {}", ":data", "123|since:456")
-        chkWarn("comment:tag:duplicate:since")
-
-        chkComment("/**\n * 123\n * @foo 456\n*/ struct data {}", ":data", "123|foo:456")
-        chkWarn("comment:tag:unknown:foo")
-
-        chkComment("/**\n * 123\n * @param 456 789\n*/ function f() {}", ":f", "123")
-        chkWarn("comment:param:invalid_name:[f]:456")
-
-        chkComment("/**\n * 123\n * @param y 456\n*/ function f(x: text) {}", ":f", "123")
-        chkWarn("comment:param:unknown:[f]:y")
-
-        chkComment("/**\n * 123\n * @param x 456\n * @param x 789\n*/ function f(x: text) {}", ":f", "123|param:x=456")
-        chkWarn("comment:tag:duplicate:param[x]")
-
-        chkComment("/**\n * 123\n * @param x 456\n * @param y 789\n*/ function f(z: text) {}", ":f", "123")
-        chkWarn("comment:param:unknown:[f]:x", "comment:param:unknown:[f]:y")
+        chkComment("/**\n * 123\n * @since 456\n * @since 789\n*/ struct data {}", ":data", "123|since:456",
+            "comment:tag:duplicate:since")
+        chkComment("/**\n * 123\n * @foo 456\n*/ struct data {}", ":data", "123|foo:456", "comment:tag:unknown:foo")
+        chkComment("/**\n * 123\n * @param 456 789\n*/ function f() {}", ":f", "123",
+            "comment:param:invalid_name:[f]:456")
+        chkComment("/**\n * 123\n * @param y 456\n*/ function f(x: text) {}", ":f", "123",
+            "comment:param:unknown:[f]:y")
+        chkComment("/**\n * 123\n * @param x 456\n * @param x 789\n*/ function f(x: text) {}", ":f", "123|param:x=456",
+            "comment:tag:duplicate:param[x]")
+        chkComment("/**\n * 123\n * @param x 456\n * @param y 789\n*/ function f(z: text) {}", ":f", "123",
+            "comment:param:unknown:[f]:x", "comment:param:unknown:[f]:y")
     }
 
     @Test fun testCommentBinding() {
@@ -395,6 +498,11 @@ class CodeDocCommentTest: BaseCodeDocTest() {
         chkComment(code, ":f.z", "ParamNo3")
     }
 
+    @Test fun testParameterTagError() {
+        val c = "/**\n* Header\n*\n* @param\n*/"
+        chkComment("$c function f() {}", ":f", "Header", "tag:no_key:param")
+    }
+
     @Test fun testAttributeParameterImplicitName() {
         def("namespace ns { struct foo {} }")
         chkCommentEx("struct data { ^ name; }", ":data.name")
@@ -476,6 +584,132 @@ class CodeDocCommentTest: BaseCodeDocTest() {
         chkComment("@external $c module; /** MyData */ @log entity data {}", "lib", "n/a")
     }
 
+    @Test fun testWarningPos() {
+        tst.errMsgPos = true
+        initTst()
+
+        var code = """
+            entity data {}
+
+            /**
+             * Header
+             *
+             * @param
+             * @param x    X1
+             * @param    x X2
+             * @param       y    Y
+             * @param 123 456
+             * @return Ret
+             * @return Ter
+             * @returns Rets
+             * @foo Bar
+             */
+            function f(x: integer) {}
+        """.trimIndent()
+        chkComment(code, ":f", "Header|param:x=X1|return:Ret|foo:Bar",
+            "main.rell(10:11)|comment:param:invalid_name:[f]:123",
+            "main.rell(9:17)|comment:param:unknown:[f]:y",
+            "main.rell(13:4)|comment:tag:deprecated:returns",
+            "main.rell(8:14)|comment:tag:duplicate:param[x]",
+            "main.rell(12:4)|comment:tag:duplicate:return",
+            "main.rell(13:4)|comment:tag:duplicate:return",
+            "main.rell(14:4)|comment:tag:unknown:foo",
+            "main.rell(6:4)|tag:no_key:param",
+        )
+
+        code = """
+            function f() {}
+
+            /**
+             * Header
+             *
+             * @return Ret
+             * @see Other
+             */
+            entity data {}
+        """.trimIndent()
+        chkComment(code, ":data", "Header|see:Other", "main.rell(6:4)|comment:tag:not_allowed:ENTITY:return")
+
+        code = """
+            function f() {}
+
+                /** @return Ret */
+            entity data {}
+        """.trimIndent()
+        chkComment(code, ":data", "", "main.rell(3:9)|comment:tag:not_allowed:ENTITY:return")
+    }
+
+    @Test fun testWarningMessage() {
+        initTst()
+        val c = "/**\n* @return foo\n*/"
+
+        chkCompile("$c entity data {}", "OK")
+        chkMsg("WARNING|comment:tag:not_allowed:ENTITY:return|Comment tag @return not allowed for an entity")
+
+        chkCompile("$c object data {}", "OK")
+        chkMsg("WARNING|comment:tag:not_allowed:OBJECT:return|Comment tag @return not allowed for an object")
+
+        chkCompile("$c struct data {}", "OK")
+        chkMsg("WARNING|comment:tag:not_allowed:STRUCT:return|Comment tag @return not allowed for a struct")
+
+        chkCompile("$c enum data {}", "OK")
+        chkMsg("WARNING|comment:tag:not_allowed:ENUM:return|Comment tag @return not allowed for an enum")
+
+        chkCompile("$c val data = 123;", "OK")
+        chkMsg("WARNING|comment:tag:not_allowed:CONSTANT:return|Comment tag @return not allowed for a constant")
+    }
+
+    @Test fun testMultiline() {
+        val code = """
+            /**
+             * Desc 1
+             *  Desc 2
+             * Desc 3
+             *
+             * @return   Ret 1
+             *   Ret 2
+             * Ret 3
+             *
+             * @see
+             * See 1
+             * See 2
+             *    See 3
+             *
+             */
+            function f() = 123;
+        """
+
+        chkComment(code, ":f", "Desc 1\n Desc 2\nDesc 3|return:Ret 1\n  Ret 2\nRet 3|see:See 1\nSee 2\n   See 3")
+    }
+
+    @Test fun testMultilineNoAsterisk() {
+        val code = """
+            /**
+             * Usage example:
+             *
+                ```
+                    if (f() == 123) {
+                        print(456);
+                    }
+                ```
+             *
+             * More info...
+             *
+             * @return Some value...
+                   123 if foo
+                      1230 if bar
+                      1231 if baz
+                   456 if oof
+             */
+            function f() = 123;
+        """
+
+        val exp =
+            "Usage example:\n\n```\n    if (f() == 123) {\n        print(456);\n    }\n```\n\nMore info..." +
+            "|return:Some value...\n123 if foo\n   1230 if bar\n   1231 if baz\n456 if oof"
+        chkComment(code, ":f", exp)
+    }
+
     private fun chkCommentEx(code: String, name: String, vararg otherNames: String) {
         val moreCode = "/** pre-comment */ val pre = 123; $code /** post-comment */ val post = 456;"
         chkComment(moreCode.replace("^", ""), name, "n/a")
@@ -488,10 +722,11 @@ class CodeDocCommentTest: BaseCodeDocTest() {
         }
     }
 
-    private fun chkComment(code: String, name: String, exp: String) {
+    private fun chkComment(code: String, name: String, exp: String, vararg warns: String) {
         val act = processDocDef(code, name) { def ->
             def.docSymbol.comment?.strCode() ?: "n/a"
         }
         assertEquals(exp, act)
+        chkWarn(*warns)
     }
 }

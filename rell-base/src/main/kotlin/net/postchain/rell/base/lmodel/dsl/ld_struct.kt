@@ -8,7 +8,6 @@ import net.postchain.rell.base.compiler.base.def.C_SysAttribute
 import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.utils.C_Utils
-import net.postchain.rell.base.lmodel.L_MemberHeader
 import net.postchain.rell.base.lmodel.L_Struct
 import net.postchain.rell.base.lmodel.L_StructAttribute
 import net.postchain.rell.base.lmodel.L_TypeUtils
@@ -20,7 +19,6 @@ import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.utils.doc.DocDeclaration_StructAttribute
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
-import net.postchain.rell.base.utils.doc.DocSymbolName
 import net.postchain.rell.base.utils.futures.FcFuture
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
@@ -48,9 +46,9 @@ class Ld_StructDslImpl(
         attributes[rName] = Ld_StructAttribute(memberHeader, rName, ldType, mutable = mutable)
     }
 
-    fun build(): Ld_Struct {
+    fun build(): Ld_MemberDef<Ld_Struct> {
         val memberHeader = memberBuilder.buildMemberHeader()
-        return Ld_Struct(memberHeader, attributes.values.toImmList())
+        return Ld_MemberDef(memberHeader, Ld_Struct(attributes.values.toImmList()))
     }
 }
 
@@ -63,24 +61,18 @@ class Ld_StructAttribute(
     fun finish(ctx: Ld_TypeFinishContext, outerFullName: R_FullName): L_StructAttribute {
         val mType = type.finish(ctx)
         val fullName = outerFullName.append(name)
-        val lMemberHeader = memberHeader.finish(ctx.modCfg, fullName, requireSince = false)
-        val doc = finishDoc(fullName, lMemberHeader, mType)
-        return L_StructAttribute(fullName, mType, mutable = mutable, header = lMemberHeader, docSymbol = doc)
+        val hdr = memberHeader.finish(ctx.modCfg, fullName, DocSymbolKind.STRUCT_ATTR, requireSince = false)
+        val doc = finishDoc(hdr, mType)
+        return L_StructAttribute(fullName, mType, mutable = mutable, header = hdr.lHeader, docSymbol = doc)
     }
 
-    private fun finishDoc(fullName: R_FullName, lMemberHeader: L_MemberHeader, mType: M_Type): DocSymbol {
+    private fun finishDoc(hdr: Ld_MemberHeader.Finish, mType: M_Type): DocSymbol {
         val docType = L_TypeUtils.docType(mType)
-        return Ld_DocSymbols.docSymbol(
-            kind = DocSymbolKind.STRUCT_ATTR,
-            symbolName = DocSymbolName.global(fullName),
-            declaration = DocDeclaration_StructAttribute(fullName.last, docType, mutable),
-            comment = lMemberHeader.docComment,
-        )
+        return hdr.docSymbol(DocDeclaration_StructAttribute(hdr.simpleName, docType, mutable))
     }
 }
 
 class Ld_Struct(
-    val memberHeader: Ld_MemberHeader,
     private val attributes: List<Ld_StructAttribute>,
 ) {
     fun process(ctx: Ld_NamespaceContext, fullName: R_FullName): FcFuture<L_Struct> {

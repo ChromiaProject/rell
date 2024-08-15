@@ -603,3 +603,14 @@ Safe access operator "?." allows to check multiple name chain parts at once:
 Note. This is a breaking change - it may break compilation of existing code, because types of some expressions in the
 code may change from nullable to not nullable. Applications deployed with older versions of Rell will not be affected
 (thanks to the backward compatibility mode).
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+33. Docs: New comment tags
+
+New tags:
+
+    @author <text>
+    @return <text>
+    @throws <text>
+
+New @return tag is to be used instead of the old @returns tag, which is now deprecated.

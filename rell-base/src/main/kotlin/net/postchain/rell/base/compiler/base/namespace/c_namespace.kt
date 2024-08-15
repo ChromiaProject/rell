@@ -51,23 +51,23 @@ class C_Deprecated(
     }
 }
 
-enum class C_DeclarationType(val msg: String, val article: String = "a") {
+enum class C_DeclarationType(val msg: String) {
     MODULE("module"),
     NAMESPACE("namespace"),
-    ALIAS("alias", "an"),
+    ALIAS("alias"),
     TYPE("type"),
-    ENTITY("entity", "an"),
+    ENTITY("entity"),
     STRUCT("struct"),
-    ENUM("enum", "an"),
-    OBJECT("object", "an"),
+    ENUM("enum"),
+    OBJECT("object"),
     FUNCTION("function"),
-    OPERATION("operation", "an"),
+    OPERATION("operation"),
     QUERY("query"),
-    IMPORT("import", "an"),
+    IMPORT("import"),
     CONSTANT("constant"),
     PROPERTY("property"),
     CONSTRUCTOR("constructor"),
-    ATTRIBUTE("attribute", "an"),
+    ATTRIBUTE("attribute"),
     PARAMETER("parameter"),
     ANNOTATION("annotation"),
     ;

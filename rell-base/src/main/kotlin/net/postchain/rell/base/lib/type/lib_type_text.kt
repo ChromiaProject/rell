@@ -113,7 +113,7 @@ object Lib_Type_Text {
                 alias("compareTo", C_MessageType.ERROR, since = SINCE0)
                 comment("""
                     Compares this text to another text.
-                    @returns the value 0 if equal, a negative number if less than `other`,
+                    @return the value 0 if equal, a negative number if less than `other`,
                     or a value greater than 0 if greater than `other`.
                 """)
                 param("other", type = "text", comment = "The text to compare to.")

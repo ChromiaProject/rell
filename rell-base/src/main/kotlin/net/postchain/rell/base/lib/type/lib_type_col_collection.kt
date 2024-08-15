@@ -72,7 +72,7 @@ object Lib_Type_Collection {
             function("add", "boolean", since = SINCE0) {
                 comment("""
                     Adds an element to the collection.
-                    @returns `true` if the element was added, and `false` if the collection does not allow duplicates
+                    @return `true` if the element was added, and `false` if the collection does not allow duplicates
                     and the element is already contained in the collection.
                 """)
                 param("value", "T", comment = "The element to add.")
@@ -85,7 +85,7 @@ object Lib_Type_Collection {
             function("add_all", "boolean", since = "0.9.0") {
                 comment("""
                     Adds all elements from another collection to this collection.
-                    @returns `true` if any of the specified elements was added to the collection,
+                    @return `true` if any of the specified elements was added to the collection,
                     `false` if the collection was not modified.
                 """)
                 alias("addAll", deprecated = C_MessageType.ERROR, since = SINCE0)
@@ -99,7 +99,7 @@ object Lib_Type_Collection {
             function("remove", "boolean", since = SINCE0) {
                 comment("""
                     Removes an element from the collection.
-                    @returns `true` if the element has been successfully removed;
+                    @return `true` if the element has been successfully removed;
                     `false` if it was not present in the collection.
                 """)
                 param("value", "T", comment = "The element to remove.")
@@ -112,7 +112,7 @@ object Lib_Type_Collection {
             function("remove_all", "boolean", since = "0.9.0") {
                 comment("""
                     Removes all elements from the collection that are present in another collection.
-                    @returns `true` if any of the specified elements was removed from the collection,
+                    @return `true` if any of the specified elements was removed from the collection,
                     `false` if the collection was not modified.
                 """)
                 alias("removeAll", deprecated = C_MessageType.ERROR, since = SINCE0)

@@ -110,7 +110,7 @@ private class C_FunctionCompilerBase(
             cName,
             mountName = null,
             extChain = null,
-            docCommentGetter = docCommentGetter,
+            commentProvider = mntCtx.symCtx.commentProvider(docCommentGetter),
         )
 
         return comBase.userBase(sFn.fnPos)

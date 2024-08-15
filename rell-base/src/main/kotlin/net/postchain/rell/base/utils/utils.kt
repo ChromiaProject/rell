@@ -113,19 +113,3 @@ fun <T> checkEquals(actual: T, expected: T) {
 fun <T> checkEquals(actual: T, expected: T, lazyMsg: () -> Any) {
     check(expected == actual) { "expected <$expected> actual <$actual>: ${lazyMsg()}" }
 }
-
-fun interface ErrorTracker {
-    fun error(code: String, msg: String)
-
-    private class ErrorTracker_Throwing(private val exFactory: (String, String) -> RuntimeException): ErrorTracker {
-        override fun error(code: String, msg: String) {
-            throw exFactory(code, msg)
-        }
-    }
-
-    companion object {
-        fun throwing(exFactory: (String, String) -> RuntimeException): ErrorTracker {
-            return ErrorTracker_Throwing(exFactory)
-        }
-    }
-}

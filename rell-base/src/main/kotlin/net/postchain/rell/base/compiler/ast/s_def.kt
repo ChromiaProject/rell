@@ -243,7 +243,7 @@ class S_EntityDefinition(
             IdeSymbolKind.DEF_ENTITY,
             mountName,
             extChain = extChain,
-            docCommentGetter = comment.compileGetter(ctx.symCtx),
+            commentProvider = ctx.symCtx.commentProvider(comment),
         )
 
         cDefBase.setDocDeclaration(DocDeclaration_Entity(docModifiers, cName.rName))
@@ -335,7 +335,7 @@ class S_EntityDefinition(
             IdeSymbolKind.DEF_ENTITY,
             mountName,
             extChain = extChain,
-            docCommentGetter = comment.compileGetter(ctx.symCtx),
+            commentProvider = ctx.symCtx.commentProvider(comment),
         )
 
         cDefBase.setDocDeclaration(DocDeclaration_Entity(docModifiers, cName.rName))
@@ -505,7 +505,7 @@ class S_ObjectDefinition(
             C_DefinitionType.OBJECT,
             IdeSymbolKind.DEF_OBJECT,
             mountName,
-            docCommentGetter = comment.compileGetter(ctx.symCtx),
+            commentProvider = ctx.symCtx.commentProvider(comment),
         )
 
         val defCtx = cDefBase.defCtx(ctx)
@@ -578,7 +578,7 @@ class S_StructDefinition(
             C_DefinitionType.STRUCT,
             IdeSymbolKind.DEF_STRUCT,
             mountName = null,
-            docCommentGetter = comment.compileGetter(ctx.symCtx),
+            commentProvider = ctx.symCtx.commentProvider(comment),
         )
         val defCtx = cDefBase.defCtx(ctx)
         val defBase = cDefBase.rBase(defCtx.initFrameGetter)
@@ -658,7 +658,7 @@ class S_EnumDefinition(
             fullName,
             mountName = null,
             ctx.docFactory,
-            docCommentGetter = comment.compileGetter(ctx.symCtx),
+            commentProvider = ctx.symCtx.commentProvider(comment),
         )
 
         val docDec = DocDeclaration_Enum(docModifiers, cName.rName)
@@ -827,7 +827,7 @@ class S_GlobalConstantDefinition(
             C_DefinitionType.CONSTANT,
             IdeSymbolKind.DEF_CONSTANT,
             mountName = null,
-            docCommentGetter = comment.compileGetter(ctx.symCtx),
+            commentProvider = ctx.symCtx.commentProvider(comment),
         )
         val defCtx = cDefBase.defCtx(ctx)
         val errorExpr = C_ExprUtils.errorVExpr(defCtx.initExprCtx, expr.startPos)
