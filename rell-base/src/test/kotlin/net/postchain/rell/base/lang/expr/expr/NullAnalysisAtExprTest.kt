@@ -151,7 +151,7 @@ class NullAnalysisAtExprTest: BaseRellTest() {
 
         chkVcNew()
 
-        tst.compatibilityVer(RellVersions.SINCE_NOW)
+        tst.compatibilityVer("0.14.0")
         chkVcNew()
 
         tst.compatibilityVer("0.13.14")

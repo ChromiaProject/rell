@@ -1,4 +1,4 @@
-#  Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+#  Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
 
 import re
 import pytest
@@ -23,9 +23,9 @@ def test__stair__stairf():
     check_command('rell.sh -d work/testproj/src stair stairf 10', '0\n 1\n  2\n   3\n    4\n     5\n      6\n       7\n        8\n         9\n45\n')
 
 def test__misc__ns_fun():
-    check_command('rell.sh -d work/testproj/src misc ns.fun', [
+    check_command('rell.sh -d work/testproj/src misc ns.f', [
         'Inside function fun!',
-        '<LOG:INFO>Rell - [misc:ns.fun(misc.rell:6)] Some logging',
+        '<LOG:INFO>Rell - [misc:ns.f(misc.rell:6)] Some logging',
     ])
 
 def test__mod__main():
