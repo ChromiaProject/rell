@@ -54,12 +54,12 @@ object Lib_RellHidden {
 
             function("external_chain", fnExternalChain, since = "0.13.2")
 
-            function("fake_assert", result = "unit", since = RellVersions.SINCE_NOW) {
+            function("fake_assert", result = "unit", since = "0.14.0") {
                 param("value", type = "boolean", implies = L_ParamImplication.TRUE)
                 body { _ -> Rt_UnitValue }
             }
 
-            function("get_nulled", C_SysFn_GetNulled, since = RellVersions.SINCE_NOW)
+            function("get_nulled", C_SysFn_GetNulled, since = "0.14.0")
         }
 
         function("_type_of", C_SysFn_TypeOf, since = "0.6.0")

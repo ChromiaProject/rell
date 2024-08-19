@@ -739,7 +739,7 @@ class S_AtExpr(
     companion object {
         private val JOIN_RESTRICTIONS = C_FeatureRestrictions.make("0.13.10", "at_expr_join", "Join syntax is")
 
-        val WHERE_VAR_STATES_SWITCH = C_FeatureSwitch(RellVersions.SINCE_NOW, false)
+        val WHERE_VAR_STATES_SWITCH = C_FeatureSwitch("0.14.0", false)
 
         fun findWhereContextAttrsByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): List<C_AtFromImplicitAttr> {
             return if (type == R_BooleanType) {

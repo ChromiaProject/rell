@@ -1,7 +1,7 @@
 module;
 
 namespace ns {
-    function fun() {
+    function f() {
         print('Inside function fun!');
         log('Some logging');
     }
