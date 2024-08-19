@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.misc
@@ -8,9 +8,9 @@ import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parseToEnd
 import com.github.h0tk3y.betterParse.grammar.parser
-import com.github.h0tk3y.betterParse.lexer.Tokenizer
+import com.github.h0tk3y.betterParse.lexer.literalToken
+import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.Parser
-import net.postchain.rell.base.utils.FixedDefaultTokenizer
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -36,18 +36,10 @@ class BetterParseExperimentalTest {
         assertEquals("tuple[(foo,num[123]),(bar,num[456]),(baz,num[789])]", TupleGrammar.parseToEnd("(foo=123,bar=456,baz=789,)"))
     }
 
-    @Test fun testExternalGrammarRules() {
-        assertEquals("() : unit", FunGrammar.parseToEnd("():unit"))
-        assertEquals("(list<integer>, map<text,decimal>) : set<text>",
-            FunGrammar.parseToEnd("(list<integer>,map<text,decimal>):set<text>"))
-    }
-
     private object TestGrammar: Grammar<String>() {
-        override val tokenizer: Tokenizer by lazy { FixedDefaultTokenizer(tokens) }
-
-        private val ID by token("[A-ZA-z][A-Za-z0-9]*")
-        private val AT by token("@")
-        private val SEMI by token(";")
+        private val ID by regexToken("[A-ZA-z][A-Za-z0-9]*")
+        private val AT by literalToken("@")
+        private val SEMI by literalToken(";")
 
         private val nameExpr by ( ID ) map { "name[${it.text}]" }
         private val selectExpr by ( ID * -AT ) map { id -> "select[${id.text}]" }
@@ -59,16 +51,14 @@ class BetterParseExperimentalTest {
     }
 
     private object TupleGrammar: Grammar<String>() {
-        override val tokenizer: Tokenizer by lazy { FixedDefaultTokenizer(tokens) }
-
-        private val ID by token("[A-ZA-z][A-Za-z0-9]*")
-        private val NUM by token("[0-9]+")
-        private val LPAR by token("\\(")
-        private val RPAR by token("\\)")
-        private val COMMA by token(",")
-        private val COLON by token(":")
-        private val EQ by token("=")
-        private val NE by token("!=")
+        private val ID by regexToken("[A-ZA-z][A-Za-z0-9]*")
+        private val NUM by regexToken("[0-9]+")
+        private val LPAR by literalToken("(")
+        private val RPAR by literalToken(")")
+        private val COMMA by literalToken(",")
+        private val COLON by literalToken(":")
+        private val EQ by literalToken("=")
+        private val NE by literalToken("!=")
 
         private val _expr by parser(this::expr)
 
@@ -104,40 +94,5 @@ class BetterParseExperimentalTest {
         private val expr: Parser<String> by binaryExpr
 
         override val rootParser by expr
-    }
-
-    private object TypeGrammar: Grammar<String>() {
-        override val tokenizer: Tokenizer by lazy { FixedDefaultTokenizer(tokens) }
-
-        private val ID by token("[A-ZA-z][A-Za-z0-9]*")
-        private val LT by token("<")
-        private val GT by token(">")
-        val COMMA by token(",")
-
-        private val nameType: Parser<String> by ID * optional(-LT * separatedTerms(parser(this::type), COMMA) * -GT) map {
-            (name, args) -> if (args == null) name.text else "${name.text}<${args.joinToString(",")}>"
-        }
-
-        val type: Parser<String> by nameType
-
-        override val rootParser by type
-    }
-
-    private object FunGrammar: Grammar<String>() {
-        override val tokenizer: Tokenizer by lazy { FixedDefaultTokenizer(TypeGrammar.tokens + tokens) }
-
-        private val LPAREN by token("\\(")
-        private val RPAREN by token("\\)")
-        private val COLON by token(":")
-
-        private val params by separatedTerms(TypeGrammar.type, TypeGrammar.COMMA, true) map {
-            it.joinToString(", ", "(", ")")
-        }
-
-        val funHeader: Parser<String> by -LPAREN * params * -RPAREN * -COLON * TypeGrammar.type map {
-            (params, res) -> "$params : $res"
-        }
-
-        override val rootParser by funHeader
     }
 }

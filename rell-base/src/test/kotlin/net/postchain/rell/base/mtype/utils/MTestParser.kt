@@ -5,6 +5,7 @@
 package net.postchain.rell.base.mtype.utils
 
 import com.github.h0tk3y.betterParse.combinators.*
+import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.parser.Parser
 import com.github.h0tk3y.betterParse.parser.parseToEnd
 import net.postchain.rell.base.mtype.*
@@ -73,8 +74,8 @@ data class MTestParsedType(val type: M_Type, val params: Set<M_TypeParam>)
 data class MTestParsedSet(val set: M_TypeSet, val params: Set<M_TypeParam>)
 
 private object MTestGrammar: M_TypeGrammar<MsType>() {
-    private val AT by token("@")
-    private val EQ by token("=")
+    private val AT by literalToken("@")
+    private val EQ by literalToken("=")
 
     override val name by NAME map {
         it.text

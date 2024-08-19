@@ -6,7 +6,6 @@ package net.postchain.rell.base.compiler.parser
 
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.parser
-import com.github.h0tk3y.betterParse.lexer.Token
 import com.github.h0tk3y.betterParse.parser.Parser
 import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.compiler.base.core.C_Name
@@ -918,15 +917,14 @@ object S_Grammar {
         return parser
     }
 
-    private fun relltok(s: String): RellToken {
-        val t = Token(null, s)
-        return RellToken(t.name ?: "", t)
-    }
+    private fun relltok(s: String) = RellTokenProp(s)
 
-    private operator fun RellToken.provideDelegate(thisRef: S_Grammar, property: KProperty<*>): RellToken {
-        val ex = if (token.name != null) this else RellToken(property.name, token)
-        rellTokens.add(ex)
-        return ex
+    private class RellTokenProp(private val pattern: String) {
+        operator fun provideDelegate(thisRef: S_Grammar, property: KProperty<*>): RellToken {
+            val ex = RellToken(property.name, pattern)
+            rellTokens.add(ex)
+            return ex
+        }
     }
 
     private operator fun <T> Parser<T>.getValue(thisRef: S_Grammar, property: KProperty<*>): Parser<T> = this

@@ -4,6 +4,8 @@
 
 package net.postchain.rell.base.compiler.base.utils
 
+import com.github.h0tk3y.betterParse.lexer.TokenMatchesSequence
+import com.github.h0tk3y.betterParse.lexer.TokenProducer
 import com.github.h0tk3y.betterParse.parser.*
 import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.compiler.base.core.*
@@ -12,7 +14,6 @@ import net.postchain.rell.base.compiler.base.def.C_SysAttribute
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.lib.C_LibUtils
 import net.postchain.rell.base.compiler.base.module.C_ModuleKey
-import net.postchain.rell.base.compiler.parser.RellTokenSequence
 import net.postchain.rell.base.compiler.parser.RellTokenizerException
 import net.postchain.rell.base.compiler.parser.S_Grammar
 import net.postchain.rell.base.compiler.vexpr.V_Expr
@@ -456,43 +457,44 @@ object C_Parser {
         // of an operation, it returns the position of the beginning of the operation.
         // Following workaround handles this by tracking the position of the farthest reached token (seems to work fine).
 
-        val tokenSeq =  S_Grammar.tokenizer.tokenize(filePath, sourceCode)
+        val tokenProd = S_Grammar.tokenizer.tokenProducer(filePath, sourceCode)
 
         return try {
-            val ast = parseToEnd(tokenSeq, parser)
+            val ast = parseToEnd(tokenProd, parser)
             C_SuccessParserResult(ast)
         } catch (e: RellTokenizerException) {
             val error = e.toCError()
             C_ErrorParserResult(error, e.eof)
         } catch (e: ParseException) {
-            val pos = tokenSeq.getEndPos()
+            val pos = tokenProd.getEndPos()
             val eof = pos.offset() >= sourceCode.length
             val error = C_Error.other(pos, "syntax", "Syntax error")
             C_ErrorParserResult(error, eof)
         }
     }
 
-    private fun <T> parseToEnd(tokens: RellTokenSequence, parser: Parser<T>): T {
-        val result = parser.tryParse(tokens)
+    private fun <T> parseToEnd(tokenProducer: TokenProducer, parser: Parser<T>): T {
+        val seq = TokenMatchesSequence(tokenProducer)
+        val result = parser.tryParse(seq, 0)
 
         return when (result) {
             is ErrorResult -> throw ParseException(result)
             is Parsed -> {
-                checkUnparsedRemainder(result)
+                checkUnparsedRemainder(seq, result)
                 result.value
             }
         }
     }
 
-    private fun checkUnparsedRemainder(result: Parsed<*>) {
-        var tail = result.remainder as RellTokenSequence
+    private fun checkUnparsedRemainder(seq: TokenMatchesSequence, result: Parsed<*>) {
+        var pos = result.nextPosition
         while (true) {
-            val next = tail.nextOrNull()
-            next ?: break
-            if (!next.match.type.ignored) {
-                throw throw ParseException(UnparsedRemainder(next.match))
+            val match = seq[pos]
+            match ?: break
+            if (!match.type.ignored) {
+                throw throw ParseException(UnparsedRemainder(match))
             }
-            tail = next.tail
+            ++pos
         }
     }
 }

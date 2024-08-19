@@ -9,6 +9,8 @@ import com.github.h0tk3y.betterParse.grammar.ParserReference
 import net.postchain.rell.base.compiler.parser.RellToken
 import net.postchain.rell.base.compiler.parser.S_Grammar
 import net.postchain.rell.base.utils.LateInit
+import net.postchain.rell.base.utils.capitalizeEx
+import net.postchain.rell.base.utils.toLowerCaseEx
 import org.apache.commons.collections4.MapUtils
 
 fun main() {
@@ -212,11 +214,11 @@ private object XtextNontermGen {
 
     private fun convertToken0(name: String): XtextExpr {
         val token = literalTokens[name]
-        return if (token != null) XtextExpr_Token(token.token.pattern) else XtextExpr_Symbol(name)
+        return if (token != null) XtextExpr_Token(token.pattern) else XtextExpr_Symbol(name)
     }
 
     private fun createTokenType(name: String): String {
-        val tail = if (name !in specialTokens) "" else name.toLowerCase().capitalize()
+        val tail = if (name !in specialTokens) "" else name.toLowerCaseEx().capitalizeEx()
         val type = nontermNameToXtext("token$tail")
         if (type !in actions) {
             val token = if (name in specialTokens) name else null
@@ -282,7 +284,7 @@ private object GramExprGen {
 }
 
 private fun nontermNameToXtext(name: String): String {
-    return "X_" + name.capitalize()
+    return "X_" + name.capitalizeEx()
 }
 
 private fun termNameToXtext(name: String): String {

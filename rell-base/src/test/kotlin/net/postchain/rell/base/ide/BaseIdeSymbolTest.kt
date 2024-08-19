@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.ide
 
-import com.github.h0tk3y.betterParse.lexer.Token
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_CompilationResult
 import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
@@ -13,10 +12,9 @@ import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
-import net.postchain.rell.base.compiler.parser.RellTokenMatch
-import net.postchain.rell.base.compiler.parser.RellTokenSequence
 import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.compiler.parser.S_Grammar
+import net.postchain.rell.base.compiler.parser.rellMatch
 import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.model.R_ModuleName
@@ -274,25 +272,14 @@ abstract class BaseIdeSymbolTest: BaseRellTest() {
             val syms = mutableMapOf<S_Pos, String>()
 
             val tokenizer = S_Grammar.tokenizer
-            val ts = tokenizer.tokenize(parserPath, code)
+            val tp = tokenizer.tokenProducer(parserPath, code)
 
-            for ((t, m) in ts.toList()) {
-                if (t.pattern == RellTokenizer.IDENTIFIER || t.pattern == "$") syms[m.pos] = m.text
+            while (true) {
+                val m = tp.nextToken()?.rellMatch ?: break
+                if (m.token.pattern == RellTokenizer.IDENTIFIER || m.token.pattern == "$") syms[m.pos] = m.text
             }
 
             return syms.toImmMap()
-        }
-
-        private fun RellTokenSequence.toList(): List<Pair<Token, RellTokenMatch>> {
-            var seq = this
-            val res = mutableListOf<Pair<Token, RellTokenMatch>>()
-            while (true) {
-                val next = seq.nextOrNull()
-                next ?: break
-                res.add(next.match.type to next.rellMatch)
-                seq = next.tail
-            }
-            return res.toList()
         }
 
         private fun ideInfoToStr(ideInfo: IdeSymbolInfo, syms: Map<S_Pos, String>): String {

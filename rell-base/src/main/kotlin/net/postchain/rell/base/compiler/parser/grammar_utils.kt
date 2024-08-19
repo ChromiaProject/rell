@@ -4,9 +4,7 @@
 
 package net.postchain.rell.base.compiler.parser
 
-import com.github.h0tk3y.betterParse.lexer.Token
-import com.github.h0tk3y.betterParse.lexer.TokenMatch
-import com.github.h0tk3y.betterParse.lexer.noneMatched
+import com.github.h0tk3y.betterParse.lexer.*
 import com.github.h0tk3y.betterParse.parser.*
 import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.model.expr.R_AtCardinality
@@ -81,39 +79,60 @@ class G_BaseExprTail_At(
     }
 }
 
-/**
- * A little hack to provide context information to tokens: Better Parse passes only `Sequence<TokenMatch>` to parsers,
- * and our tokens cast it to [RellTokenSequence] and get needed information (which is [RellTokenMatch]).
- *
- * This interface must not be used as a sequence - calling `iterator()` will fail.
- */
-interface RellTokenSequence: Sequence<TokenMatch> {
-    fun isValidToken(token: Token): Boolean
-    fun nextOrNull(): Next?
+class RellToken(
+    val name: String,
+    val pattern: String,
+): Parser<RellTokenMatch> {
+    val token: Token = LiteralToken(null, pattern)
 
-    /**
-     * The maximum reached position among this sequence and all derived sequences.
-     * Mutable, changes when [nextOrNull] is called.
-     */
-    fun getEndPos(): S_Pos
+    override fun tryParse(tokens: TokenMatchesSequence, fromPosition: Int): ParseResult<RellTokenMatch> {
+        val match = tokens[fromPosition]
+        match ?: return UnexpectedEof(token)
 
-    class Next(val match: TokenMatch, val rellMatch: RellTokenMatch, val tail: RellTokenSequence)
-}
+        val t = match.type
+        val rellInput = match.input as RellTokenInput
 
-class RellToken(val name: String, val token: Token): Parser<RellTokenMatch> {
-    override fun tryParse(tokens: Sequence<TokenMatch>): ParseResult<RellTokenMatch> {
-        val rellTokens = tokens as RellTokenSequence
-        val next = rellTokens.nextOrNull()
-        val t = next?.match?.type
         return when {
-            t == null -> UnexpectedEof(token)
-            t == noneMatched -> NoMatchingToken(next.match)
-            t == token -> Parsed(next.rellMatch, next.tail)
-            t.ignored -> this.tryParse(next.tail)
-            rellTokens.isValidToken(token) -> MismatchedToken(token, next.match)
-            else ->throw IllegalArgumentException("Token $this not in lexer tokens")
+            t == noneMatched -> NoMatchingToken(match)
+            t == token -> RellParsedValue(rellInput.tokenMatch, match.nextPosition)
+            t.ignored -> this.tryParse(tokens, match.nextPosition)
+            rellInput.isValidToken(token) -> MismatchedToken(token, match)
+            else -> throw IllegalArgumentException("Token $this not in lexer tokens")
         }
     }
 }
 
-class RellTokenMatch(val pos: S_Pos, val text: String, val comment: S_Comment?)
+class RellTokenMatch(
+    private val tokenIndex: Int,
+    val token: RellToken,
+    val pos: S_Pos,
+    val text: String,
+    val comment: S_Comment?,
+): Parsed<RellTokenMatch>() {
+    override val value get() = this
+    override val nextPosition get() = tokenIndex + 1
+}
+
+class RellParsedValue<out T>(override val value: T, override val nextPosition: Int): Parsed<T>()
+
+class RellTokenInput(
+    private val text: String,
+    val tokenMatch: RellTokenMatch,
+    private val validTokens: Set<Token>,
+): CharSequence {
+    override val length get() = text.length
+    override fun get(index: Int) = text[index]
+    override fun subSequence(startIndex: Int, endIndex: Int) = text.substring(startIndex, endIndex)
+    override fun toString() = text
+
+    fun isValidToken(token: Token) = token in validTokens
+}
+
+val TokenMatch.rellMatch: RellTokenMatch get() {
+    return (input as RellTokenInput).tokenMatch
+}
+
+interface RellTokenProducer: TokenProducer {
+    /** The maximum reached token position. */
+    fun getEndPos(): S_Pos
+}
