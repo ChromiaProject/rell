@@ -7,6 +7,7 @@ package net.postchain.rell.base.compiler.base.expr
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_BlockContext
 import net.postchain.rell.base.compiler.base.core.C_LoopUid
+import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.compiler.base.core.C_OwnerBlockContext
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.model.R_AtExprId
@@ -75,8 +76,8 @@ class C_ExprContext private constructor(
         }
     }
 
-    fun findWhereAttributesByName(name: R_Name) = blkCtx.lookupAtImplicitAttributesByName(name)
-    fun findWhereAttributesByType(type: R_Type) = blkCtx.lookupAtImplicitAttributesByType(type)
+    fun findWhereAttributesByName(name: C_Name) = blkCtx.lookupAtImplicitAttributesByName(this, name)
+    fun findWhereAttributesByType(pos: S_Pos, type: R_Type) = blkCtx.lookupAtImplicitAttributesByType(this, pos, type)
 
     companion object {
         fun createRoot(blkCtx: C_BlockContext) = C_ExprContext(

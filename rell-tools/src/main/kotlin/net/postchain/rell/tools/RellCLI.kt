@@ -100,6 +100,7 @@ private fun main0(args: RellInterpreterCliArgs) {
 
 private fun getCompilerOptions(extraOpts: List<ExtraOption>): C_CompilerOptions {
     val b = C_CompilerOptions.builder()
+        .compatibility(RellVersions.VERSION)
     extraOpts.forEach { it.toCompilerOption(b) }
     return b.build()
 }

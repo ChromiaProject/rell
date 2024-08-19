@@ -16,6 +16,7 @@ import net.postchain.rell.base.compiler.vexpr.V_SmartNullableExpr
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.utils.*
+import kotlin.math.max
 
 class C_LocalVarRef(
     val target: C_LocalVar,
@@ -62,7 +63,7 @@ class C_FrameContext private constructor(val fnCtx: C_FunctionContext, proto: C_
 
     fun adjustCallFrameSize(size: Int) {
         check(size >= 0)
-        callFrameSize = Math.max(callFrameSize, size)
+        callFrameSize = max(callFrameSize, size)
     }
 
     fun makeCallFrame(hasGuardBlock: Boolean): C_CallFrame {
@@ -145,7 +146,7 @@ class C_BlockScopeBuilder(
         for (entry in proto.localVars.values) {
             val offset = entry.localVar.offset
             check(offset >= startOffset)
-            resOfs = Math.max(resOfs, offset + 1)
+            resOfs = max(resOfs, offset + 1)
         }
         resOfs
     }
@@ -203,8 +204,7 @@ class C_BlockScopeBuilder(
                     it.key to value
                 }
                 .filter { it.second != null }
-                .map { it.first to it.second!! }
-                .toMap()
+                .associate { it.first to it.second!! }
         return C_BlockScope(variables)
     }
 }
@@ -221,9 +221,9 @@ sealed class C_BlockContext(val frameCtx: C_FrameContext, val blockUid: R_FrameB
     abstract fun lookupEntry(name: R_Name): C_BlockEntryResolution?
     abstract fun lookupLocalVar(name: R_Name): C_LocalVarRef?
     abstract fun lookupAtPlaceholder(): C_BlockEntryResolution?
-    abstract fun lookupAtMembers(name: R_Name): List<C_AtContextMember>
-    abstract fun lookupAtImplicitAttributesByName(name: R_Name): List<C_AtFromImplicitAttr>
-    abstract fun lookupAtImplicitAttributesByType(type: R_Type): List<C_AtFromImplicitAttr>
+    abstract fun lookupAtMembers(ctx: C_ExprContext, name: C_Name): List<C_AtContextMember>
+    abstract fun lookupAtImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): List<C_AtFromImplicitAttr>
+    abstract fun lookupAtImplicitAttributesByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): List<C_AtFromImplicitAttr>
 
     abstract fun addEntry(
         pos: S_Pos,
@@ -351,13 +351,13 @@ class C_OwnerBlockContext(
         }
     }
 
-    override fun lookupAtMembers(name: R_Name): List<C_AtContextMember> {
+    override fun lookupAtMembers(ctx: C_ExprContext, name: C_Name): List<C_AtContextMember> {
         var block = atFromBlock
 
         val mems = mutableListOf<C_AtContextMember>()
 
         while (block != null) {
-            val blockMems = block.from.findMembers(name)
+            val blockMems = block.from.findMembers(ctx, name)
             mems.addAll(blockMems.map { C_AtContextMember(it, block !== atFromBlock) })
 
             block = when (appCtx.globalCtx.compilerOptions.atAttrShadowing) {
@@ -370,14 +370,14 @@ class C_OwnerBlockContext(
         return mems.toImmList()
     }
 
-    override fun lookupAtImplicitAttributesByName(name: R_Name): List<C_AtFromImplicitAttr> {
+    override fun lookupAtImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): List<C_AtFromImplicitAttr> {
         // Not looking in outer contexts, because for implicit matching only the direct at-expr is considered.
-        return atFromBlock?.from?.findImplicitAttributesByName(name) ?: immListOf()
+        return atFromBlock?.from?.findImplicitAttributesByName(ctx, name) ?: immListOf()
     }
 
-    override fun lookupAtImplicitAttributesByType(type: R_Type): List<C_AtFromImplicitAttr> {
+    override fun lookupAtImplicitAttributesByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): List<C_AtFromImplicitAttr> {
         // Not looking in outer contexts, because for implicit matching only the direct at-expr is considered.
-        return atFromBlock?.from?.findImplicitAttributesByType(type) ?: immListOf()
+        return atFromBlock?.from?.findImplicitAttributesByType(ctx, pos, type) ?: immListOf()
     }
 
     override fun addEntry(

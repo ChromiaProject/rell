@@ -7,6 +7,7 @@ package net.postchain.rell.base.compiler.base.expr
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_BlockEntry_Var
 import net.postchain.rell.base.compiler.base.core.C_LocalVar
+import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_Constants
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
@@ -55,32 +56,32 @@ class C_AtFrom_Iterable(
     override fun getAllExprs() = immListOf(item.vExpr)
     override fun innerExprCtx() = innerExprCtx
 
-    override fun makeDefaultWhatFields(): List<V_DbAtWhatField> {
-        val vExpr = compilePlaceholderRef(innerExprCtx, pos)
-        val field = V_DbAtWhatField(outerExprCtx.appCtx, null, vExpr.type, vExpr, V_AtWhatFieldFlags.DEFAULT, null)
+    override fun makeDefaultWhatFields(ctx: C_ExprContext): List<V_DbAtWhatField> {
+        val vExpr = compilePlaceholderRef(ctx, pos)
+        val field = V_DbAtWhatField(ctx.appCtx, null, vExpr.type, vExpr, V_AtWhatFieldFlags.DEFAULT, null)
         return immListOf(field)
     }
 
-    override fun findMembers(name: R_Name): List<C_AtFromMember> {
-        val base = C_AtFromBase_Iterable()
-        val selfType = item.elemType
-        val members = innerExprCtx.typeMgr.getValueMembers(selfType, name)
+    override fun findMembers(ctx: C_ExprContext, name: C_Name): List<C_AtFromMember> {
+        val base = C_AtFromBase_Iterable(ctx, name.pos)
+        val selfType = base.vItemExpr.type
+        val members = ctx.typeMgr.getValueMembers(selfType, name.rName)
         return members.map { C_AtFromMember(base, selfType, it, false) }.toImmList()
     }
 
-    override fun findImplicitAttributesByName(name: R_Name): List<C_AtFromImplicitAttr> {
-        val base = C_AtFromBase_Iterable()
-        val selfType = item.elemType
-        val members = innerExprCtx.typeMgr.getAtImplicitAttrsByName(selfType, name)
+    override fun findImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): List<C_AtFromImplicitAttr> {
+        val base = C_AtFromBase_Iterable(ctx, name.pos)
+        val selfType = base.vItemExpr.type
+        val members = ctx.typeMgr.getAtImplicitAttrsByName(selfType, name.rName)
         return members
             .map { C_AtFromImplicitAttr(base, selfType, it) }
             .toImmList()
     }
 
-    override fun findImplicitAttributesByType(type: R_Type): List<C_AtFromImplicitAttr> {
-        val base = C_AtFromBase_Iterable()
-        val selfType = item.elemType
-        return innerExprCtx.typeMgr.getAtImplicitAttrsByType(selfType, type)
+    override fun findImplicitAttributesByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): List<C_AtFromImplicitAttr> {
+        val base = C_AtFromBase_Iterable(ctx, pos)
+        val selfType = base.vItemExpr.type
+        return ctx.typeMgr.getAtImplicitAttrsByType(selfType, type)
             .map { C_AtFromImplicitAttr(base, selfType, it) }
             .toImmList()
     }
@@ -117,13 +118,13 @@ class C_AtFrom_Iterable(
         return item
     }
 
-    private inner class C_AtFromBase_Iterable: C_AtFromBase() {
+    private inner class C_AtFromBase_Iterable(ctx: C_ExprContext, pos: S_Pos): C_AtFromBase() {
+        val vItemExpr = compilePlaceholderRef(ctx, pos)
+
         override fun nameMsg(): C_CodeMsg {
             return "${placeholderVar.metaName}:${item.elemType.name}" toCodeMsg placeholderVar.metaName
         }
 
-        override fun compile(ctx: C_ExprContext, pos: S_Pos): V_Expr {
-            return compilePlaceholderRef(ctx, pos)
-        }
+        override fun compile(ctx: C_ExprContext, pos: S_Pos) = vItemExpr
     }
 }

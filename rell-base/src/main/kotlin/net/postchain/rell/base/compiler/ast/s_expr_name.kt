@@ -156,7 +156,7 @@ class S_AttrExpr(pos: S_Pos, private val name: S_Name): S_Expr(pos) {
             val nameHand = name.compile(ctx)
             val cName = nameHand.name
 
-            val members = findMembers(ctx, hint, cName.rName)
+            val members = findMembers(ctx, hint, cName)
             if (members.isEmpty()) {
                 nameHand.setIdeInfo(C_IdeSymbolInfo.UNKNOWN)
                 throw C_Errors.errUnknownAttr(cName)
@@ -175,8 +175,8 @@ class S_AttrExpr(pos: S_Pos, private val name: S_Name): S_Expr(pos) {
             return attr.compile(ctx, nameHand)
         }
 
-        private fun findMembers(ctx: C_ExprContext, hint: C_ExprHint, name: R_Name): List<C_AtContextMember> {
-            val members = ctx.blkCtx.lookupAtMembers(name)
+        private fun findMembers(ctx: C_ExprContext, hint: C_ExprHint, name: C_Name): List<C_AtContextMember> {
+            val members = ctx.blkCtx.lookupAtMembers(ctx, name)
             return members
                 .filter { if (hint.callable) it.isCallable() else it.isValue() }
                 .ifEmpty { members }

@@ -92,34 +92,34 @@ class C_AtFrom_Entities(
     override fun getAllExprs() = items.flatMap { it.getExprs() }
     override fun innerExprCtx() = innerExprCtx
 
-    override fun makeDefaultWhatFields(): List<V_DbAtWhatField> {
+    override fun makeDefaultWhatFields(ctx: C_ExprContext): List<V_DbAtWhatField> {
         return items.map {
             val atEntity = it.atEntity
             val name = if (entities.size == 1) null else R_IdeName(atEntity.alias, C_IdeSymbolInfo.MEM_TUPLE_ATTR)
-            val vExpr = atEntity.toVExpr(innerExprCtx, atEntity.declPos, isOuter = it.isOuter(), isAmbiguous = false)
-            V_DbAtWhatField(outerExprCtx.appCtx, name, vExpr.type, vExpr, V_AtWhatFieldFlags.DEFAULT, null)
+            val vExpr = atEntity.toVExpr(ctx, atEntity.declPos, isOuter = it.isOuter(), isAmbiguous = false)
+            V_DbAtWhatField(ctx.appCtx, name, vExpr.type, vExpr, V_AtWhatFieldFlags.DEFAULT, null)
         }
     }
 
-    override fun findMembers(name: R_Name): List<C_AtFromMember> {
+    override fun findMembers(ctx: C_ExprContext, name: C_Name): List<C_AtFromMember> {
         return items.flatMap { item ->
             val isOuter = item.isOuter()
             val base = C_AtFromBase_Entity(item.atEntity, isOuter)
             val selfType = item.atEntity.rEntity.type
-            val members = innerExprCtx.typeMgr.getValueMembers(selfType, name)
+            val members = ctx.typeMgr.getValueMembers(selfType, name.rName)
             members.map { C_AtFromMember(base, selfType, it, isOuter) }
         }.toImmList()
     }
 
-    override fun findImplicitAttributesByName(name: R_Name): List<C_AtFromImplicitAttr> {
+    override fun findImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): List<C_AtFromImplicitAttr> {
         return findContextAttrs { rEntity ->
-            innerExprCtx.typeMgr.getAtImplicitAttrsByName(rEntity.type, name)
+            ctx.typeMgr.getAtImplicitAttrsByName(rEntity.type, name.rName)
         }
     }
 
-    override fun findImplicitAttributesByType(type: R_Type): List<C_AtFromImplicitAttr> {
+    override fun findImplicitAttributesByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): List<C_AtFromImplicitAttr> {
         return findContextAttrs { rEntity ->
-            innerExprCtx.typeMgr.getAtImplicitAttrsByType(rEntity.type, type)
+            ctx.typeMgr.getAtImplicitAttrsByType(rEntity.type, type)
         }
     }
 

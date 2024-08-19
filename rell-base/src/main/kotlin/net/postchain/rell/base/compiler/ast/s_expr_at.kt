@@ -191,7 +191,7 @@ sealed class S_AtExprWhat {
 
 class S_AtExprWhat_Default: S_AtExprWhat() {
     override fun compile(ctx: C_ExprContext, from: C_AtFrom, subValues: MutableList<V_Expr>): C_AtWhat {
-        val fields = from.makeDefaultWhatFields()
+        val fields = from.makeDefaultWhatFields(ctx)
         return C_AtWhat(fields, null)
     }
 }
@@ -500,7 +500,8 @@ class S_AtExprWhere(private val exprs: List<S_Expr>) {
         val attrName = vExpr.implicitAtWhereAttrName()
 
         return if (!dependsOnThisAtExpr && attrName != null) {
-            compileWhereExprName(ctx, idx, vExpr, attrName, type)
+            val cAttrName = C_Name.make(vExpr.pos, attrName)
+            compileWhereExprName(ctx, idx, vExpr, cAttrName, type)
         } else {
             compileWhereExprNoName(ctx, idx, vExpr, dependsOnThisAtExpr)
         }
@@ -518,7 +519,7 @@ class S_AtExprWhere(private val exprs: List<S_Expr>) {
             return C_ExprUtils.errorVExpr(ctx, vExpr.pos, R_BooleanType)
         }
 
-        val attrs = S_AtExpr.findWhereContextAttrsByType(ctx, type)
+        val attrs = S_AtExpr.findWhereContextAttrsByType(ctx, vExpr.pos, type)
         if (attrs.isEmpty()) {
             ctx.msgCtx.error(vExpr.pos, "at_where_type:$idx:${type.strCode()}",
                     "No attribute matches type of ${whereExprMsg(idx)} (${type.str()})")
@@ -533,7 +534,7 @@ class S_AtExprWhere(private val exprs: List<S_Expr>) {
         return C_ExprUtils.makeVBinaryExprEq(ctx, vExpr.pos, attrExpr, vExpr)
     }
 
-    private fun compileWhereExprName(ctx: C_ExprContext, idx: Int, vExpr: V_Expr, name: R_Name, type: R_Type): V_Expr {
+    private fun compileWhereExprName(ctx: C_ExprContext, idx: Int, vExpr: V_Expr, name: C_Name, type: R_Type): V_Expr {
         val entityAttrs = ctx.findWhereAttributesByName(name)
         if (entityAttrs.isEmpty() && type == R_BooleanType) {
             val msg = "No context attribute matches name '$name', but the expression is accepted" +
@@ -544,7 +545,7 @@ class S_AtExprWhere(private val exprs: List<S_Expr>) {
         }
 
         val entityAttr = ctx.msgCtx.consumeError {
-            matchWhereAttribute(ctx, idx, vExpr.pos, name, entityAttrs, type)
+            matchWhereAttribute(ctx, idx, vExpr.pos, name.rName, entityAttrs, type)
         }
         entityAttr ?: return C_ExprUtils.errorVExpr(ctx, vExpr.pos)
 
@@ -563,7 +564,7 @@ class S_AtExprWhere(private val exprs: List<S_Expr>) {
         val entityAttrsByType = if (entityAttrsByName.isNotEmpty()) {
             entityAttrsByName.filter { it.type == varType }
         } else {
-            S_AtExpr.findWhereContextAttrsByType(ctx, varType)
+            S_AtExpr.findWhereContextAttrsByType(ctx, exprPos, varType)
         }
 
         if (entityAttrsByType.isEmpty()) {
@@ -572,17 +573,17 @@ class S_AtExprWhere(private val exprs: List<S_Expr>) {
         } else if (entityAttrsByType.size > 1) {
             if (entityAttrsByName.isEmpty()) {
                 throw C_Errors.errMultipleAttrs(
-                        exprPos,
-                        entityAttrsByType,
-                        "at_where:var_manyattrs_type:$idx:$name:${varType.strCode()}",
-                        "Multiple attributes match expression type ${varType.str()}"
+                    exprPos,
+                    entityAttrsByType,
+                    "at_where:var_manyattrs_type:$idx:$name:${varType.strCode()}",
+                    "Multiple attributes match expression type ${varType.str()}",
                 )
             } else {
                 throw C_Errors.errMultipleAttrs(
-                        exprPos,
-                        entityAttrsByType,
-                        "at_where:var_manyattrs_nametype:$idx:$name:${varType.strCode()}",
-                        "Multiple attributes match name '$name' and type ${varType.str()}"
+                    exprPos,
+                    entityAttrsByType,
+                    "at_where:var_manyattrs_nametype:$idx:$name:${varType.strCode()}",
+                    "Multiple attributes match name '$name' and type ${varType.str()}",
                 )
             }
         }
@@ -740,11 +741,11 @@ class S_AtExpr(
 
         val WHERE_VAR_STATES_SWITCH = C_FeatureSwitch(RellVersions.SINCE_NOW, false)
 
-        fun findWhereContextAttrsByType(ctx: C_ExprContext, type: R_Type): List<C_AtFromImplicitAttr> {
+        fun findWhereContextAttrsByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): List<C_AtFromImplicitAttr> {
             return if (type == R_BooleanType) {
                 listOf()
             } else {
-                ctx.findWhereAttributesByType(type)
+                ctx.findWhereAttributesByType(pos, type)
             }
         }
 

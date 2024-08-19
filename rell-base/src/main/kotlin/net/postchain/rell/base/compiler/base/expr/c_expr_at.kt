@@ -86,10 +86,10 @@ abstract class C_AtFrom(
     abstract fun getAllExprs(): List<V_Expr>
 
     abstract fun innerExprCtx(): C_ExprContext
-    abstract fun makeDefaultWhatFields(): List<V_DbAtWhatField>
-    abstract fun findMembers(name: R_Name): List<C_AtFromMember>
-    abstract fun findImplicitAttributesByName(name: R_Name): List<C_AtFromImplicitAttr>
-    abstract fun findImplicitAttributesByType(type: R_Type): List<C_AtFromImplicitAttr>
+    abstract fun makeDefaultWhatFields(ctx: C_ExprContext): List<V_DbAtWhatField>
+    abstract fun findMembers(ctx: C_ExprContext, name: C_Name): List<C_AtFromMember>
+    abstract fun findImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): List<C_AtFromImplicitAttr>
+    abstract fun findImplicitAttributesByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): List<C_AtFromImplicitAttr>
 
     abstract fun compile(details: C_AtDetails): V_Expr
     abstract fun compileJoin(details: C_AtDetails, isOuter: Boolean): C_AtFromItem

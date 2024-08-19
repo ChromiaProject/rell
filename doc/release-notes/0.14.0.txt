@@ -577,7 +577,7 @@ Throws an error for invalid module names. If a module is not found it is ignored
 Return structure is a dictionary map<text, map<text, gtv>> where the key is module name and value module arguments.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-32. Null analysis of complex expressions
+32. Language: Null analysis of complex expressions
 
 In older versions, null analysis worked only for simple variable expressions:
 
@@ -605,7 +605,20 @@ code may change from nullable to not nullable. Applications deployed with older 
 (thanks to the backward compatibility mode).
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-33. Docs: New comment tags
+33. Language: Better null analysis in at-expressions
+
+Conditions in a where-part of an at-expression now affect nullability inference in the what-part:
+
+    struct data {
+        x: integer?;
+    }
+
+    ...
+
+    get_data() @* { .x != null } ( .x + 1 )     // compiler knows that ".x" in the what-part is not null
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+34. Docs: New comment tags
 
 New tags:
 
