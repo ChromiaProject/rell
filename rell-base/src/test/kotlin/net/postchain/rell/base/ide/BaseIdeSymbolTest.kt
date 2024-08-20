@@ -12,9 +12,9 @@ import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.base.compiler.parser.RellTokenInput
 import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.compiler.parser.S_Grammar
-import net.postchain.rell.base.compiler.parser.rellMatch
 import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.model.R_ModuleName
@@ -275,8 +275,10 @@ abstract class BaseIdeSymbolTest: BaseRellTest() {
             val tp = tokenizer.tokenProducer(parserPath, code)
 
             while (true) {
-                val m = tp.nextToken()?.rellMatch ?: break
-                if (m.token.pattern == RellTokenizer.IDENTIFIER || m.token.pattern == "$") syms[m.pos] = m.text
+                val tm = tp.nextToken() ?: break
+                val ti = tm.input as RellTokenInput
+                val m = ti.match
+                if (ti.token.pattern == RellTokenizer.IDENTIFIER || ti.token.pattern == "$") syms[m.pos] = m.text
             }
 
             return syms.toImmMap()

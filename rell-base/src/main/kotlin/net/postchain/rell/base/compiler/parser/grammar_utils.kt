@@ -94,7 +94,7 @@ class RellToken(
 
         return when {
             t == noneMatched -> NoMatchingToken(match)
-            t == token -> RellParsedValue(rellInput.tokenMatch, match.nextPosition)
+            t == token -> RellParsedValue(rellInput.match, match.nextPosition)
             t.ignored -> this.tryParse(tokens, match.nextPosition)
             rellInput.isValidToken(token) -> MismatchedToken(token, match)
             else -> throw IllegalArgumentException("Token $this not in lexer tokens")
@@ -103,21 +103,17 @@ class RellToken(
 }
 
 class RellTokenMatch(
-    private val tokenIndex: Int,
-    val token: RellToken,
     val pos: S_Pos,
     val text: String,
     val comment: S_Comment?,
-): Parsed<RellTokenMatch>() {
-    override val value get() = this
-    override val nextPosition get() = tokenIndex + 1
-}
+)
 
 class RellParsedValue<out T>(override val value: T, override val nextPosition: Int): Parsed<T>()
 
 class RellTokenInput(
     private val text: String,
-    val tokenMatch: RellTokenMatch,
+    val token: RellToken,
+    val match: RellTokenMatch,
     private val validTokens: Set<Token>,
 ): CharSequence {
     override val length get() = text.length
@@ -126,10 +122,6 @@ class RellTokenInput(
     override fun toString() = text
 
     fun isValidToken(token: Token) = token in validTokens
-}
-
-val TokenMatch.rellMatch: RellTokenMatch get() {
-    return (input as RellTokenInput).tokenMatch
 }
 
 interface RellTokenProducer: TokenProducer {

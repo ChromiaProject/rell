@@ -682,8 +682,8 @@ private class TokenRec(
     val comment: S_Comment?,
 ) {
     fun tokenMatch(index: Int, validTokens: Set<Token>): TokenMatch {
-        val rellMatch = RellTokenMatch(index, token, pos, text, comment)
-        val rellInput = RellTokenInput(input, rellMatch, validTokens)
+        val rellMatch = RellTokenMatch(pos, text, comment)
+        val rellInput = RellTokenInput(input, token, rellMatch, validTokens)
         return TokenMatch(token.token, index, rellInput, offset, length, row, col)
     }
 }
