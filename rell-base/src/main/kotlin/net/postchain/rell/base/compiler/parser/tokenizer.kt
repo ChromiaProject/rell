@@ -7,6 +7,7 @@ package net.postchain.rell.base.compiler.parser
 import com.github.h0tk3y.betterParse.lexer.Token
 import com.github.h0tk3y.betterParse.lexer.TokenMatch
 import net.postchain.rell.base.compiler.ast.S_BasicPos
+import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
@@ -43,7 +44,9 @@ class RellTokenizer(tokensEx: List<RellToken>) {
     val tkByteArray: RellToken
 
     val tkKeywords: Map<String, RellToken>
+
     val tkDelims: List<RellToken>
+    private val maxDelimLen: Int
 
     private val tokenSet = tokensEx.map { it.token }.toImmSet()
 
@@ -55,7 +58,7 @@ class RellTokenizer(tokensEx: List<RellToken>) {
         val delims = mutableMapOf<String, RellToken>()
 
         for (token in tokensEx) {
-            val p = token.token.pattern
+            val p = token.pattern
             if (isGeneralToken(p)) {
                 require(p !in generals) { "Duplicate token: '$p'" }
                 generals[p] = token
@@ -78,12 +81,12 @@ class RellTokenizer(tokensEx: List<RellToken>) {
         tkByteArray = generals.getValue(BYTEARRAY)
 
         tkKeywords = keywords.toMap()
-        tkDelims = delims.values.toList().sortedBy { -it.token.pattern.length }
+        tkDelims = delims.values.toList().sortedBy { -it.pattern.length }
+        maxDelimLen = delims.keys.maxOf { it.length }
     }
 
-    fun tokenize(filePath: C_ParserFilePath, input: String): RellTokenSequence {
-        val state = TokenizationState(filePath, input)
-        return TokenSequence(state)
+    fun tokenProducer(filePath: C_ParserFilePath, input: String): RellTokenProducer {
+        return RellTokenProducerImpl(filePath, input)
     }
 
     private fun scanToken(seq: CharSeq): TokenRec? {
@@ -108,7 +111,7 @@ class RellTokenizer(tokensEx: List<RellToken>) {
                 val s = scanByteArrayLiteral(seq)
                 val pos = seq.startPos()
                 val tk = seq.tokenRec(tkByteArray, s)
-                decodeByteArray(pos, tk.match.text) // Fail early - will throw an exception if the token is invalid.
+                decodeByteArray(pos, tk.text) // Fail early - will throw an exception if the token is invalid.
                 tk
             }
             R_Name.isNameStart(k) -> {
@@ -118,8 +121,7 @@ class RellTokenizer(tokensEx: List<RellToken>) {
                 seq.tokenRec(tk, s)
             }
             isDelim(k) -> {
-                scanWhileTrue(seq, Companion::isDelim)
-                val s = seq.text(0, 0)
+                val s = seq.lookahead(maxDelimLen)
                 scanDelimiter(seq, s)
             }
             k == '\'' || k == '"' -> {
@@ -260,7 +262,7 @@ class RellTokenizer(tokensEx: List<RellToken>) {
         val pos = seq.startPos()
         val s = seq.text(0, 0)
         val tk = seq.tokenRec(tkInteger, s)
-        decodeInteger(pos, tk.match.text) // Fail early - will throw an exception if the number is invalid.
+        decodeInteger(pos, tk.text) // Fail early - will throw an exception if the number is invalid.
         return tk
     }
 
@@ -268,7 +270,7 @@ class RellTokenizer(tokensEx: List<RellToken>) {
         val pos = seq.startPos()
         val s = seq.text(0, 0)
         val tk = seq.tokenRec(tkBigInteger, s)
-        decodeBigInteger(pos, tk.match.text) // Fail early - will throw an exception if the number is invalid.
+        decodeBigInteger(pos, tk.text) // Fail early - will throw an exception if the number is invalid.
         return tk
     }
 
@@ -276,7 +278,7 @@ class RellTokenizer(tokensEx: List<RellToken>) {
         val pos = seq.startPos()
         val s = seq.text(0, 0)
         val tk = seq.tokenRec(tkDecimal, s)
-        decodeDecimal(pos, tk.match.text) // Fail early - will throw an exception if the number is invalid.
+        decodeDecimal(pos, tk.text) // Fail early - will throw an exception if the number is invalid.
         return tk
     }
 
@@ -371,11 +373,12 @@ class RellTokenizer(tokensEx: List<RellToken>) {
     }
 
     private fun scanDelimiter(seq: CharSeq, s: String): TokenRec {
-        for (tkEx in tkDelims) {
-            val tk = tkEx.token
+        for (tk in tkDelims) {
             if (s.startsWith(tk.pattern)) {
-                seq.back(s.length - tk.pattern.length)
-                return seq.tokenRec(tkEx, tk.pattern)
+                for (c in tk.pattern) {
+                    seq.next()
+                }
+                return seq.tokenRec(tk, tk.pattern)
             }
         }
         throw seq.err("lex:delim:$s", "Syntax error")
@@ -389,54 +392,33 @@ class RellTokenizer(tokensEx: List<RellToken>) {
         }
     }
 
-    private inner class TokenizationState(
+    private inner class RellTokenProducerImpl(
         filePath: C_ParserFilePath,
         input: String,
-    ) {
+    ): RellTokenProducer {
         private val charSeq = CharSeq(filePath, input)
-        private val list = mutableListOf<TokenRec>()
         private var lastPos: S_Pos = S_BasicPos(filePath, 0, 1, 1)
+        private var tokenIndex = 0
+        private var end = false
 
-        fun readToken(index: Int): TokenRec? {
-            while (list.size <= index) {
-                val token = fetchToken()
-                token ?: break
-                list.add(token)
+        override fun getEndPos() = lastPos
+
+        override fun nextToken(): TokenMatch? {
+            if (end) {
+                return null
             }
-            return list.getOrNull(index)
+
+            val rec = scanToken(charSeq)
+            lastPos = rec?.pos ?: charSeq.textPos()
+            if (rec == null) {
+                end = true
+                return null
+            }
+
+            val match = rec.tokenMatch(tokenIndex, tokenSet)
+            ++tokenIndex
+            return match
         }
-
-        private fun fetchToken(): TokenRec? {
-            val t = scanToken(charSeq)
-            lastPos = t?.pos ?: charSeq.textPos()
-            return t
-        }
-
-        fun getEndPos() = lastPos
-    }
-
-    private inner class TokenSequence(
-        private val state: TokenizationState,
-        private val index: Int = 0,
-    ): RellTokenSequence {
-        override fun iterator(): Iterator<TokenMatch> {
-            throw UnsupportedOperationException()
-        }
-
-        override fun isValidToken(token: Token): Boolean {
-            return token in tokenSet
-        }
-
-        override fun nextOrNull(): RellTokenSequence.Next? {
-            val rec = state.readToken(index)
-            rec ?: return null
-
-            val rellMatch = RellTokenMatch(rec.pos, rec.match.text, rec.comment)
-            val tail = TokenSequence(state, index + 1)
-            return RellTokenSequence.Next(rec.match, rellMatch, tail)
-        }
-
-        override fun getEndPos() = state.getEndPos()
     }
 
     companion object {
@@ -613,9 +595,8 @@ private class CharSeq(
     }
 
     fun tokenRec(token: RellToken, text: String): TokenRec {
-        val pos = S_BasicPos(filePath, startPos, startRow, startCol)
-        val m = TokenMatch(token.token, text, startPos, startRow, startCol)
-        return TokenRec(pos, m, comment)
+        val sPos = S_BasicPos(filePath, startPos, startRow, startCol)
+        return TokenRec(sPos, token, str, text, startPos, pos - startPos, startRow, startCol, comment)
     }
 
     fun err(code: String, msg: String, eof: Boolean = false) = err(textPos(), code, msg, eof)
@@ -638,14 +619,27 @@ private class CharSeq(
         }
     }
 
-    fun back(n: Int) {
-        // Assuming we never go back to a previous line, only within the same line.
-        require(n <= pos)
-        require(n < col)
-        pos -= n
-        col -= n
-        update()
+    fun lookahead(n: Int): String {
+        val end = (pos + n).coerceAtMost(len)
+        return str.substring(pos, end)
     }
 }
 
-private class TokenRec(val pos: S_Pos, val match: TokenMatch, val comment: String?)
+private class TokenRec(
+    val pos: S_Pos,
+    val token: RellToken,
+    val input: String,
+    val text: String,
+    val offset: Int,
+    val length: Int,
+    val row: Int,
+    val col: Int,
+    val comment: String?,
+) {
+    fun tokenMatch(index: Int, validTokens: Set<Token>): TokenMatch {
+        val rellMatch = RellTokenMatch(pos, text, comment)
+        val rellParsed = RellTokenParsed(index, token, rellMatch)
+        val rellInput = RellTokenInput(input, rellMatch, rellParsed, validTokens)
+        return TokenMatch(token.token, index, rellInput, offset, length, row, col)
+    }
+}

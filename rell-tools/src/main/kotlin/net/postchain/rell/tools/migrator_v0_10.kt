@@ -106,12 +106,13 @@ private fun tokenize(text: String): List<TokenReplace> {
     val sourcePath = C_SourcePath.parse("?")
     val idePath = IdeSourcePathFilePath(sourcePath)
     val parserPath = C_ParserFilePath(sourcePath, idePath)
-    val seq = S_Grammar.tokenizer.tokenize(parserPath, text)
+    val prod = S_Grammar.tokenizer.tokenProducer(parserPath, text)
 
     val res = mutableListOf<TokenReplace>()
-    for (tk in seq) {
+    while (true) {
+        val tk = prod.nextToken() ?: break
         val dst = MIGRATION_MAP[tk.text]
-        if (dst != null) res.add(TokenReplace(tk.position, tk.text, dst))
+        if (dst != null) res.add(TokenReplace(tk.offset, tk.text, dst))
     }
 
     return res

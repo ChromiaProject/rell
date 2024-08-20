@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+  ~ Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
   -->
 
 <project
@@ -45,8 +45,8 @@
 
         <dependency>
             <groupId>com.github.h0tk3y.betterParse</groupId>
-            <artifactId>better-parse</artifactId>
-            <version>0.3.2</version>
+            <artifactId>better-parse-jvm</artifactId>
+            <version>0.4.4</version>
         </dependency>
 
         <dependency>

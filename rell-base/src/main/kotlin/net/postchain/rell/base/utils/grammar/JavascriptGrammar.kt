@@ -32,13 +32,13 @@ fun main() {
     println("            \"BYTE_ARRAY\": \"${tokenizer.tkByteArray.name}\",")
     println("        },")
     println("        \"keywords\": {")
-    for (t in tokenizer.tkKeywords.values.sortedBy { it.token.pattern }) {
-        println("            \"${t.token.pattern}\": \"${t.name}\",")
+    for (t in tokenizer.tkKeywords.values.sortedBy { it.pattern }) {
+        println("            \"${t.pattern}\": \"${t.name}\",")
     }
     println("        },")
     println("        \"delims\": {")
-    for (t in tokenizer.tkDelims.sortedBy { it.token.pattern }) {
-        println("            \"${t.token.pattern}\": \"${t.name}\",")
+    for (t in tokenizer.tkDelims.sortedBy { it.pattern }) {
+        println("            \"${t.pattern}\": \"${t.name}\",")
     }
     println("        },")
     println("    },")

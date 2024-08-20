@@ -32,7 +32,7 @@ fun String.toUpperCaseEx(): String {
 
 /** Non-deprecated version of [kotlin.String.toLowerCase]. */
 fun String.toLowerCaseEx(): String {
-    return uppercase(Locale.getDefault())
+    return lowercase(Locale.getDefault())
 }
 
 sealed class LazyString {
