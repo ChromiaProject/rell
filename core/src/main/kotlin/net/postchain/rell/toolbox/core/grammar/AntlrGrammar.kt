@@ -281,7 +281,7 @@ private object AntlrNontermGen {
 
     private fun convertToken0(name: String): AntlrExpr {
         val token = literalTokens[name]
-        return if (token != null) AntlrExpr_Token(token.token.pattern) else AntlrExpr_Symbol(name)
+        return if (token != null) AntlrExpr_Token(token.pattern) else AntlrExpr_Symbol(name)
     }
 
     private fun createTokenType(name: String): String {
