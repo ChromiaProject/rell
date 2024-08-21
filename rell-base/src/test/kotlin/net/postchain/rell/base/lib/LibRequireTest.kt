@@ -17,9 +17,19 @@ class LibRequireTest: BaseRellTest() {
 
         chkEx("{ require(true, ''+(1/0)); return 0; }", "int[0]")
         chkEx("{ require(false, ''+(1/0)); return 0; }", "rt_err:expr:/:div0:1")
+    }
 
+    @Test fun testRequireBooleanImplication() {
         chkEx("{ val x = _nullable_int(123); return _type_of(x); }", "text[integer?]")
         chkEx("{ val x = _nullable_int(123); require(x != null); return _type_of(x); }", "text[integer]")
+
+        tst.compatibilityVer("0.14.0")
+        chkEx("{ val x = _nullable_int(123); return _type_of(x); }", "text[integer?]")
+        chkEx("{ val x = _nullable_int(123); require(x != null); return _type_of(x); }", "text[integer]")
+
+        tst.compatibilityVer("0.13.15")
+        chkEx("{ val x = _nullable_int(123); return _type_of(x); }", "text[integer?]")
+        chkEx("{ val x = _nullable_int(123); require(x != null); return _type_of(x); }", "text[integer?]")
     }
 
     @Test fun testRequireNullable() {

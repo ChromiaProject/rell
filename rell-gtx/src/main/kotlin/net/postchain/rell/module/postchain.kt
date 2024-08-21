@@ -379,6 +379,7 @@ class RellPostchainModuleEnvironment(
     val dbInitLogLevel: Int = DEFAULT_DB_INIT_LOG_LEVEL,
     val hiddenLib: Boolean = false,
     val ideDocSymbolsEnabled: Boolean = false,
+    val useLatestRellVersion: Boolean = false,
     val sqlLog: Boolean = false,
     val fallbackModules: List<R_ModuleName> = immListOf(R_ModuleName.EMPTY),
     val precompiledApp: RellGtxModuleApp? = null,
@@ -566,10 +567,9 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
         }
 
         private fun getCompilerOptions(langVersion: R_LangVersion?): C_CompilerOptions {
-            val opts = if (langVersion == null) C_CompilerOptions.DEFAULT else {
-                C_CompilerOptions.forLangVersion(langVersion)
-            }
-            return opts.toBuilder()
+            val actualVersion = if (env.useLatestRellVersion) RellVersions.VERSION else langVersion
+            val baseOpts = actualVersion?.let { C_CompilerOptions.forLangVersion(it) } ?: C_CompilerOptions.DEFAULT
+            return baseOpts.toBuilder()
                 .hiddenLib(env.hiddenLib)
                 .ideDocSymbolsEnabled(env.ideDocSymbolsEnabled)
                 .build()

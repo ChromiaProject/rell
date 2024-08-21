@@ -26,6 +26,9 @@ import kotlin.test.assertEquals
 
 fun String.unwrap(sep: String = ""): String = this.trim().replace(Regex("\\n\\s*"), sep)
 
+fun <T> Boolean.iff(whenFalse: T, whenTrue: T): T = if (this) whenTrue else whenFalse
+inline fun <reified T> Boolean.iffArray(vararg whenTrue: T): Array<out T> = if (this) whenTrue else arrayOf()
+
 class T_App(
     val rApp: R_App,
     val messages: List<C_Message>,

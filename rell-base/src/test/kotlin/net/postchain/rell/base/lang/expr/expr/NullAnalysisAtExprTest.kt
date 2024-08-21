@@ -5,7 +5,7 @@
 package net.postchain.rell.base.lang.expr.expr
 
 import net.postchain.rell.base.testutils.BaseRellTest
-import net.postchain.rell.base.utils.RellVersions
+import net.postchain.rell.base.testutils.iff
 import org.junit.Test
 
 class NullAnalysisAtExprTest: BaseRellTest() {
@@ -146,38 +146,64 @@ class NullAnalysisAtExprTest: BaseRellTest() {
         chk("_type_of([foo_nz()] @* { $.x?? }.x)", "list<integer>")
     }
 
-    @Test fun testVersionControl() {
+    @Test fun testVersionControlWhatDefault() {
+        initFooBar()
+        chkVer("0.14.0") {
+            chk("_type_of([foo_z()] @* {})", "list<foo?>")
+            chk("_type_of([foo_z()] @* { $ != null })", it.iff("list<foo?>", "list<foo>"))
+            chk("_type_of([foo_z()] @* {} ($))", "list<foo?>")
+            chk("_type_of([foo_z()] @* { $ != null } ($))", it.iff("list<foo?>", "list<foo>"))
+        }
+    }
+
+    @Test fun testVersionControlWhatComplex() {
         initFooBar()
 
-        chkVcNew()
-
-        tst.compatibilityVer("0.14.0")
-        chkVcNew()
-
-        tst.compatibilityVer("0.13.14")
-        chkVcOld()
-
-        tst.compatibilityVer(null)
-        chkVcOld()
+        chkVer("0.14.0") {
+            val what = "_type_of($), _type_of($?.x), _type_of($?.y)"
+            chk("[foo_z()] @ {} ( $what )", "(foo?,integer?,integer?)")
+            chk("[foo_z()] @ { $ != null } ( $what )", it.iff("(foo?,integer?,integer?)", "(foo,integer?,integer?)"))
+            chk("[foo_z()] @ { $?.x != null } ( $what )", it.iff("(foo?,integer?,integer?)", "(foo,integer,integer?)"))
+            chk("[foo_z()] @ { $?.y != null } ( $what )", it.iff("(foo?,integer?,integer?)", "(foo,integer?,integer?)"))
+            chk("[foo_z()] @ { $ != null, $.x != null, $.y != null } ( $what )",
+                it.iff("ct_err:[expr_mem_null:foo?:x][expr_mem_null:foo?:y]", "(foo,integer,integer?)"))
+        }
     }
 
-    private fun chkVcNew() {
-        val what = "_type_of($), _type_of($?.x), _type_of($?.y)"
-        chk("[foo_z()] @ {} ( $what )", "(foo?,integer?,integer?)")
-        chk("[foo_z()] @ { $ != null } ( $what )", "(foo,integer?,integer?)")
-        chk("[foo_z()] @ { $?.x != null } ( $what )", "(foo,integer,integer?)")
-        chk("[foo_z()] @ { $?.y != null } ( $what )", "(foo,integer?,integer?)")
-        chk("[foo_z()] @ { $ != null, $.x != null, $.y != null } ( $what )", "(foo,integer,integer?)")
+    @Test fun testVersionControlWhatContextAttr() {
+        initFooBar()
+
+        chkVer("0.14.0") {
+            chk("_type_of([foo_nz()] @* {}.x)", "list<integer?>")
+            chk("_type_of([foo_nz()] @* { .x != null }.x)", it.iff("list<integer?>", "list<integer>"))
+            chk("_type_of([foo_nz()] @* { $.x != null }.x)", it.iff("list<integer?>", "list<integer>"))
+
+            chk("_type_of([foo_nz()] @* {} (.x))", "list<integer?>")
+            chk("_type_of([foo_nz()] @* { .x != null } (.x))", it.iff("list<integer?>", "list<integer>"))
+            chk("_type_of([foo_nz()] @* { $.x != null } (.x))", it.iff("list<integer?>", "list<integer>"))
+
+            chk("_type_of([foo_nz()] @* {} ($.x))", "list<integer?>")
+            chk("_type_of([foo_nz()] @* { .x != null } ($.x))", it.iff("list<integer?>", "list<integer>"))
+            chk("_type_of([foo_nz()] @* { $.x != null } ($.x))", it.iff("list<integer?>", "list<integer>"))
+        }
     }
 
-    private fun chkVcOld() {
-        val what = "_type_of($), _type_of($?.x), _type_of($?.y)"
-        chk("[foo_z()] @ {} ( $what )", "(foo?,integer?,integer?)")
-        chk("[foo_z()] @ { $ != null } ( $what )", "(foo?,integer?,integer?)")
-        chk("[foo_z()] @ { $?.x != null } ( $what )", "(foo?,integer?,integer?)")
-        chk("[foo_z()] @ { $?.y != null } ( $what )", "(foo?,integer?,integer?)")
-        chk("[foo_z()] @ { $ != null, $.x != null, $.y != null } ( $what )",
-            "ct_err:[expr_mem_null:foo?:x][expr_mem_null:foo?:y]")
+    @Test fun testVersionControlWhereContextAttr() {
+        initFooBar()
+        chkVer("0.14.0") {
+            chk("[foo_nz()] @* { .x > 0 } ( @sum 1 )", "ct_err:binop_operand_type:>:[integer?]:[integer]")
+            chk("[foo_nz()] @* { .x != null, .x > 0 } ( @sum 1 )",
+                it.iff("ct_err:binop_operand_type:>:[integer?]:[integer]", "[1]"))
+        }
+    }
+
+    @Test fun testVersionControlWhereImplicitAttr() {
+        initCol()
+        chkVer("0.14.0") {
+            chkEx("{ val x = 123; return f() @* { x }; }", "ct_err:at_where:var_noattrs:0:x:integer")
+            chkEx("{ val x = 123; return f() @* { $ != null, x }; }",
+                it.iff("ct_err:at_where:var_noattrs:1:x:integer", "[data{x=123,y=abc}]"))
+        }
     }
 
     private fun initFooBar() {

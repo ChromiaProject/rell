@@ -4,6 +4,8 @@
 
 package net.postchain.rell.base.testutils
 
+import net.postchain.rell.base.utils.RellVersions
+
 abstract class BaseTesterTest(useSql: Boolean): BaseContextTest(useSql) {
     protected abstract val tst: RellBaseTester
 
@@ -34,5 +36,21 @@ abstract class BaseTesterTest(useSql: Boolean): BaseContextTest(useSql) {
 
     fun chkVerRtExpr(expr: String, version: String, expOld: String, expNew: String) {
         tst.chkVerRt("query q() = $expr;", version, expOld, expNew)
+    }
+
+    @Suppress("SameParameterValue")
+    protected fun chkVer(ver: String, default: Boolean = false, block: (Boolean) -> Unit) {
+        tst.compatibilityVer(RellVersions.VERSION_STR)
+        block(true)
+
+        tst.compatibilityVer(ver)
+        block(true)
+
+        val prevVer = RellTestUtils.getPrevVersion(ver)
+        tst.compatibilityVer(prevVer)
+        block(false)
+
+        tst.compatibilityVer(null)
+        block(default)
     }
 }

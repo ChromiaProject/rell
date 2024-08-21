@@ -712,7 +712,7 @@ private abstract class C_NormalLibFuncCaseMatch<CallT: V_FunctionCall>(
 ): C_BaseLibFuncCaseMatch<CallT>(matchBase, matchParams) {
     private val lParams = matchParams.actualParams
 
-    protected fun makeVarStatesDelta(args: V_FunctionCallArgs): C_VarStatesDelta {
+    protected fun makeVarStatesDelta(ctx: C_ExprContext, args: V_FunctionCallArgs): C_VarStatesDelta {
         checkEquals(args.exprs.size, lParams.size)
 
         var res = C_VarStatesDelta.EMPTY
@@ -723,7 +723,7 @@ private abstract class C_NormalLibFuncCaseMatch<CallT: V_FunctionCall>(
                 res = res.and(arg.varStatesDelta.always)
 
                 if (param.implies != null) {
-                    val impDeltas = implicationVarStatesDelta(arg, param.implies)
+                    val impDeltas = implicationVarStatesDelta(ctx, arg, param.implies)
                     res = res.and(impDeltas)
                 }
             }
@@ -732,10 +732,20 @@ private abstract class C_NormalLibFuncCaseMatch<CallT: V_FunctionCall>(
         return res
     }
 
-    private fun implicationVarStatesDelta(arg: V_Expr, implies: L_ParamImplication): C_VarStatesDelta {
-        return when (implies) {
-            L_ParamImplication.TRUE -> arg.varStatesDelta.whenTrue
-            L_ParamImplication.NOT_NULL -> {
+    private fun implicationVarStatesDelta(
+        ctx: C_ExprContext,
+        arg: V_Expr,
+        implies: L_ParamImplication,
+    ): C_VarStatesDelta {
+        if (implies.since != null) {
+            if (!C_FeatureSwitch.isActive(implies.since, ctx.globalCtx.compilerOptions.compatibility)) {
+                return C_VarStatesDelta.EMPTY
+            }
+        }
+
+        return when (implies.kind) {
+            L_ParamImplication.Kind.TRUE -> arg.varStatesDelta.whenTrue
+            L_ParamImplication.Kind.NOT_NULL -> {
                 val varKey = arg.varKey()
                 if (varKey == null) C_VarStatesDelta.EMPTY else C_VarStatesDelta.nulled(varKey, C_VarNulled.NO)
             }
@@ -752,7 +762,7 @@ private class C_GlobalLibFuncCaseMatch(
 ): C_NormalLibFuncCaseMatch<V_GlobalFunctionCall>(matchBase, matchParams) {
     override fun compileCall(ctx: C_ExprContext, linkPos: S_Pos, args: V_FunctionCallArgs): V_GlobalFunctionCall {
         val callTarget = matchBase.makeCallTargetGlobal(ctx, linkPos, cFn)
-        val varStates = makeVarStatesDelta(args)
+        val varStates = makeVarStatesDelta(ctx, args)
         val vCall = V_CommonFunctionCall_Full(linkPos, linkPos, resType, callTarget, args, varStates)
         val vExpr: V_Expr = V_FunctionCallExpr(ctx, linkPos, null, vCall, false)
         return V_GlobalFunctionCall(vExpr, ideInfo, argIdeInfos)
@@ -768,7 +778,7 @@ private class C_MemberLibFuncCaseMatch(
 ): C_NormalLibFuncCaseMatch<V_MemberFunctionCall>(matchBase, matchParams) {
     override fun compileCall(ctx: C_ExprContext, linkPos: S_Pos, args: V_FunctionCallArgs): V_MemberFunctionCall {
         val callTarget = matchBase.makeCallTargetMember(ctx, linkPos, cFn)
-        val varStates = makeVarStatesDelta(args)
+        val varStates = makeVarStatesDelta(ctx, args)
         val vCall = V_CommonFunctionCall_Full(linkPos, linkPos, resType, callTarget, args, varStates)
         return V_MemberFunctionCall_CommonCall(ctx, ideInfo, argIdeInfos, vCall, resType)
     }

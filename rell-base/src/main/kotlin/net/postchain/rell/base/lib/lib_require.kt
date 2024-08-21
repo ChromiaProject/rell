@@ -18,7 +18,7 @@ object Lib_Require {
     val NAMESPACE = Ld_NamespaceDsl.make {
         function("require", "unit", pure = true, since = "0.6.0") {
             comment("Checks a boolean condition and throws an exception if false.")
-            param("value", "boolean", implies = L_ParamImplication.TRUE) {
+            param("value", "boolean", implies = L_ParamImplication.TRUE.since("0.14.0")) {
                 comment("The boolean condition to be checked.")
             }
             param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {

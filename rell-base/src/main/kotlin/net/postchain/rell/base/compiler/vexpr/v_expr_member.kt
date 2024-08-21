@@ -12,6 +12,7 @@ import net.postchain.rell.base.compiler.base.core.C_NameHandle
 import net.postchain.rell.base.compiler.base.core.C_TypeHint
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.C_Errors
+import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.model.R_Name
@@ -95,7 +96,7 @@ class V_ValueMemberExpr private constructor(
 
     override fun varKey(): C_VarStateKey? {
         val item = member.varPathItem()
-        return varKey(base, item)
+        return varKey(exprCtx, base, item)
     }
 
     override fun globalConstantRestriction() = member.globalConstantRestriction()
@@ -167,6 +168,8 @@ class V_ValueMemberExpr private constructor(
     }
 
     companion object {
+        private val MEMER_VAR_KEY_SWITCH = C_FeatureSwitch("0.14.0", false)
+
         fun make(
             exprCtx: C_ExprContext,
             base: V_Expr,
@@ -183,7 +186,11 @@ class V_ValueMemberExpr private constructor(
             return V_SmartNullableExpr.wrap(exprCtx, vExpr, smartKind, forceNotNull = forceNotNull)
         }
 
-        fun varKey(base: V_Expr, item: C_VarPathItem?): C_VarStateKey? {
+        fun varKey(ctx: C_ExprContext, base: V_Expr, item: C_VarPathItem?): C_VarStateKey? {
+            if (!MEMER_VAR_KEY_SWITCH.isActive(ctx)) {
+                return null
+            }
+
             val baseKey = base.varKey()
             return when {
                 baseKey == null -> null

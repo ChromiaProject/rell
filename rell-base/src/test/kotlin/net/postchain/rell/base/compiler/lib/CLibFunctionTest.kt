@@ -239,6 +239,24 @@ class CLibFunctionTest: BaseCLibTest() {
         chkEx("{ val t = _nullable_int(-123); ''.g(t); return abs(t); }", "int[123]")
     }
 
+    @Test fun testFunctionParamImpliesSince() {
+        tst.extraMod = makeModule {
+            function("f", result = "unit") {
+                param("a", type = "integer?", implies = L_ParamImplication.NOT_NULL.since("0.14.0"))
+                body { _ -> Rt_UnitValue }
+            }
+        }
+
+        chkEx("{ val t = _nullable_int(-123); return _type_of(t); }", "text[integer?]")
+        chkEx("{ val t = _nullable_int(-123); f(t); return _type_of(t); }", "text[integer]")
+
+        tst.compatibilityVer("0.14.0")
+        chkEx("{ val t = _nullable_int(-123); f(t); return _type_of(t); }", "text[integer]")
+
+        tst.compatibilityVer("0.13.15")
+        chkEx("{ val t = _nullable_int(-123); f(t); return _type_of(t); }", "text[integer?]")
+    }
+
     @Test fun testTypeFunctionMetaBody() {
         tst.typeCheck = false
 

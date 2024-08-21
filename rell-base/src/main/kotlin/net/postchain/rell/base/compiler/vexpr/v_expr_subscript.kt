@@ -138,5 +138,5 @@ class V_TupleSubscriptExpr(
         return R_MemberExpr(rBase, calculator, false)
     }
 
-    override fun varKey() = V_ValueMemberExpr.varKey(baseExpr, varPathItem)
+    override fun varKey() = V_ValueMemberExpr.varKey(exprCtx, baseExpr, varPathItem)
 }

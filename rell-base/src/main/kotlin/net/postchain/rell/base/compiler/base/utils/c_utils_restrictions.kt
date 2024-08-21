@@ -19,13 +19,16 @@ class C_FeatureSwitch(
 ) {
     constructor(version: String, default: Boolean = true): this(R_LangVersion.of(version), default)
 
-    fun isActive(version: R_LangVersion?): Boolean {
-        return if (version != null) version >= since else default
-    }
-
+    fun isActive(version: R_LangVersion?) = isActive(since, version, default)
     fun isActive(compilerOptions: C_CompilerOptions) = isActive(compilerOptions.compatibility)
     fun isActive(globalCtx: C_GlobalContext) = isActive(globalCtx.compilerOptions)
     fun isActive(exprCtx: C_ExprContext) = isActive(exprCtx.globalCtx)
+
+    companion object {
+        fun isActive(since: R_LangVersion, version: R_LangVersion?, default: Boolean = true): Boolean {
+            return if (version != null) version >= since else default
+        }
+    }
 }
 
 class C_FeatureRestrictions(

@@ -5,6 +5,7 @@
 package net.postchain.rell.base.lang.expr.expr
 
 import net.postchain.rell.base.testutils.BaseRellTest
+import net.postchain.rell.base.testutils.iff
 import org.junit.Test
 
 class NullPropagationTest: BaseRellTest() {
@@ -307,8 +308,12 @@ class NullPropagationTest: BaseRellTest() {
         chkEx("{ var x = _nullable(true); while (x!!){ x = _nullable(true); return _type_of(x); } return ''; }", "boolean?")
         chkEx("{ var x = _nullable(false); while (x!!){} return _type_of(x); }", "boolean")
         chkEx("{ var x = _nullable(true); while (x!!){ x = _nullable(false); } return _type_of(x); }", "boolean?")
-        chkEx("{ var x = _nullable(false); while (x!!){ x = true; } return _type_of(x); }", "boolean")
         chkEx("{ val x = _nullable_int(null); while (x != null) {} return _type_of(x); }", "integer?")
+
+        chkVer("0.14.0", true) {
+            chkEx("{ var x = _nullable(false); while (x!!){ x = true; } return _type_of(x); }",
+                it.iff("boolean?", "boolean"))
+        }
     }
 
     @Test fun testStmtFor() {

@@ -14,6 +14,8 @@ import net.postchain.rell.base.model.Rt_StructValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.LibModuleTester
+import net.postchain.rell.base.testutils.iff
+import net.postchain.rell.base.testutils.iffArray
 import net.postchain.rell.base.utils.RellVersions
 import org.junit.Test
 
@@ -549,6 +551,48 @@ class NullAnalysisPathTest: BaseRellTest() {
         return { rType ->
             val rStructType = (rType as R_NullableType).valueType as R_StructType
             Rt_StructValue(rStructType, mutableListOf(Rt_IntValue.get(123), Rt_IntValue.get(456)))
+        }
+    }
+
+    @Test fun testVersionControlStructAttr() {
+        initFooBar()
+
+        chkVer("0.14.0") {
+            chkEx("{ val f = foo_z(); return _type_of(f); }", "foo?")
+            chkEx("{ val f = foo_z(); f!!; return _type_of(f); }", "foo")
+
+            chkEx("{ val f = foo_nz(); return _type_of(f.x); }", "integer?")
+            chkEx("{ val f = foo_nz(); f.x!!; return _type_of(f.x); }", it.iff("integer?", "integer"))
+            chkEx("{ val f = foo_nz(); f.x!!; return abs(f.x); }",
+                it.iff("ct_err:expr_call_badargs:[abs]:[integer?]", "123"))
+
+            chkEx("{ val f = foo_nz(); return _type_of(f.y); }", "integer?")
+            chkEx("{ val f = foo_nz(); f.y!!; return _type_of(f.y); }", "integer?")
+            chkEx("{ val f = foo_nz(); f.y!!; return abs(f.y); }", "ct_err:expr_call_badargs:[abs]:[integer?]")
+
+            chkEx("{ val f = foo_nz(); f.x!!; return f.x!!; }", "123")
+            chkWarn(*it.iffArray("expr:smartnull:expr:never:[f.x]"))
+        }
+    }
+
+    @Test fun testVersionControlSafeAccess() {
+        initFooBar()
+
+        chkVer("0.14.0") {
+            chkEx("{ val f = foo_z(); return _type_of(f); }", "foo?")
+            chkEx("{ val f = foo_z(); f?.x!!; return _type_of(f); }", it.iff("foo?", "foo"))
+
+            chkEx("{ val f = foo_z(); f?.x!!; return f!!; }",
+                "foo{x=123,y=456,bar=bar{r=321,s=654},mbar=bar{r=321,s=654}}")
+            chkWarn(*it.iffArray("expr:smartnull:var:never:[f]"))
+        }
+    }
+
+    @Test fun testVersionControlTupleAttr() {
+        initFooBar()
+        chkVer("0.14.0") {
+            chkEx("{ val t = (foo_z(), 0); return _type_of(t[0]); }", "foo?")
+            chkEx("{ val t = (foo_z(), 0); t[0]!!; return _type_of(t[0]); }", it.iff("foo?", "foo"))
         }
     }
 

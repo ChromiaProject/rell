@@ -12,10 +12,7 @@ import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
 import net.postchain.rell.base.compiler.base.lib.C_SpecialLibMemberFunctionBody
 import net.postchain.rell.base.compiler.base.lib.C_SysFunction
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
-import net.postchain.rell.base.model.R_FullName
-import net.postchain.rell.base.model.R_Name
-import net.postchain.rell.base.model.R_QualifiedName
-import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.mtype.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDefinition
@@ -28,9 +25,22 @@ enum class L_ParamArity(val mArity: M_ParamArity) {
     ONE_MANY(M_ParamArity.ONE_MANY),
 }
 
-enum class L_ParamImplication {
-    TRUE,
-    NOT_NULL,
+class L_ParamImplication private constructor(val kind: Kind, val since: R_LangVersion?) {
+    fun since(version: String): L_ParamImplication {
+        require(since == null)
+        val rVersion = R_LangVersion.of(version)
+        return L_ParamImplication(kind, rVersion)
+    }
+
+    enum class Kind {
+        TRUE,
+        NOT_NULL,
+    }
+
+    companion object {
+        val TRUE = L_ParamImplication(Kind.TRUE, null)
+        val NOT_NULL = L_ParamImplication(Kind.NOT_NULL, null)
+    }
 }
 
 class L_FunctionParam(

@@ -7,10 +7,7 @@ package net.postchain.rell.base.compiler.ast
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.C_LocalAttrHeaderIdeData
 import net.postchain.rell.base.compiler.base.expr.*
-import net.postchain.rell.base.compiler.base.utils.C_Error
-import net.postchain.rell.base.compiler.base.utils.C_LateInit
-import net.postchain.rell.base.compiler.base.utils.C_Utils
-import net.postchain.rell.base.compiler.base.utils.toCodeMsg
+import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.lib.type.R_UnitType
@@ -403,6 +400,7 @@ class C_LoopStatement(
     val condCtx: C_StmtContext,
     val condExpr: R_Expr,
     val condVarStatesDelta: C_ExprVarStatesDelta,
+    val modifiedVars: List<C_LocalVar>,
 )
 
 class S_WhileStatement(pos: S_Pos, val expr: S_Expr, val stmt: S_Statement): S_Statement(pos) {
@@ -430,7 +428,13 @@ class S_WhileStatement(pos: S_Pos, val expr: S_Expr, val stmt: S_Statement): S_S
         val cBlock = loopBlkCtx.buildBlock()
         val rStmt = R_WhileStatement(rExpr, rBodyStmt, cBlock.rBlock)
 
-        val varStates = calcResVarStatesDelta(condState, cBodyStmt)
+        var varStates = calcResVarStatesDelta(condState, cBodyStmt)
+        if (!MODIFIED_VAR_COMPATIBILITY_SWITCH.isActive(ctx.globalCtx)) {
+            for (modVar in loop.modifiedVars) {
+                varStates = varStates.changed(modVar.varKey, C_VarChanged.MAYBE, C_VarNulled.YES)
+            }
+        }
+
         return C_Statement(rStmt, false, varStates)
     }
 
@@ -442,6 +446,8 @@ class S_WhileStatement(pos: S_Pos, val expr: S_Expr, val stmt: S_Statement): S_S
     override fun returnsValue() = stmt.returnsValue()
 
     companion object {
+        private val MODIFIED_VAR_COMPATIBILITY_SWITCH = C_FeatureSwitch("0.14.0")
+
         fun compileLoop(ctx: C_StmtContext, stmt: S_Statement, expr: S_Expr): C_LoopStatement? {
             val modifiedVars = getModifiedVars(stmt, ctx)
             val condCtx = ctx.updateVarStates(calcUpdatedVarStatesDelta(modifiedVars))
@@ -453,7 +459,7 @@ class S_WhileStatement(pos: S_Pos, val expr: S_Expr, val stmt: S_Statement): S_S
 
             val vCondExpr = condExpr.vExpr()
             val rExpr = vCondExpr.toRExpr()
-            return C_LoopStatement(condCtx, rExpr, vCondExpr.varStatesDelta)
+            return C_LoopStatement(condCtx, rExpr, vCondExpr.varStatesDelta, modifiedVars)
         }
 
         private fun getModifiedVars(stmt: S_Statement, ctx: C_StmtContext): List<C_LocalVar> {

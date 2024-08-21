@@ -23,7 +23,9 @@ import kotlin.math.min
 private const val LINES_BEFORE = 20
 private const val LINES_AFTER = 0
 
+private const val LAST_HEIGHT = false
 private const val SAVE_SYMBOLS = false
+private const val USE_CURRENT_RELL_VERSION = false
 
 fun main(args: Array<String>) {
     val dataDir = if (args.isNotEmpty()) File(args[0]) else File(System.getProperty("user.home"), "rell-blockchains")
@@ -174,7 +176,7 @@ private class App(private val dataDir: File) {
     }
 
     private fun processBlockchain(dir: File) {
-        val confFiles = dir.listFiles().orEmpty().mapNotNull { file ->
+        var confFiles = dir.listFiles().orEmpty().mapNotNull { file ->
             val name = file.name
             if (!file.isFile || !name.endsWith(".xml")) null else {
                 check(name.endsWith(".conf.xml")) { file }
@@ -183,7 +185,12 @@ private class App(private val dataDir: File) {
             }
         }
 
-        for (cf in confFiles.sortedBy { it.height }) {
+        confFiles = confFiles.sortedBy { it.height }
+        if (LAST_HEIGHT) {
+            confFiles = confFiles.takeLast(1)
+        }
+
+        for (cf in confFiles) {
             processConfig(cf.file)
         }
     }
@@ -216,6 +223,7 @@ private class App(private val dataDir: File) {
             copyOutputToPrinter = true,
             logCompilerMessages = false,
             ideDocSymbolsEnabled = true,
+            useLatestRellVersion = USE_CURRENT_RELL_VERSION,
         )
 
         val (cRes, sourceDir) = RellPostchainModuleFactory.compileApp(gtv, env)

@@ -395,7 +395,7 @@ class DocDeclaration_Parameter(
 
         if (implies != null) {
             b.raw("@implies(")
-            b.raw(implies.name)
+            b.raw(implies.kind.name)
             b.raw(") ")
         }
 
@@ -411,10 +411,8 @@ class DocDeclaration_Parameter(
         }
         if (arity != null) b.keyword(arity).raw(" ")
 
-        if (param.name != null) {
-            b.raw(param.name)
-            b.sep(": ")
-        }
+        b.raw(param.name)
+        b.sep(": ")
 
         param.type.genCode(b)
 
