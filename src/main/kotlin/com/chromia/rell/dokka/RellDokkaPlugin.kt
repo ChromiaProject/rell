@@ -2,7 +2,7 @@ package com.chromia.rell.dokka
 
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.doc.AliasDocTagProvider
-import com.chromia.rell.dokka.moduledocs.RellModuleAndPackageDocumentationTransformer
+import com.chromia.rell.dokka.moduledocs.rellModuleAndPackageDocumentationTransformer
 import com.chromia.rell.dokka.navigation.RellNavigationPageInstaller
 import com.chromia.rell.dokka.renderers.html.ChromiaAssetsInstaller
 import com.chromia.rell.dokka.renderers.html.RellHtmlRenderer
@@ -90,7 +90,7 @@ class RellDokkaPlugin : DokkaPlugin() {
 
     val rellModuleAndPackageDocumentation by extending {
         with (plugin<DokkaBase>()) {
-            preMergeDocumentableTransformer providing ::RellModuleAndPackageDocumentationTransformer override modulesAndPackagesDocumentation
+            preMergeDocumentableTransformer providing ::rellModuleAndPackageDocumentationTransformer override modulesAndPackagesDocumentation
         }
     }
 
