@@ -27,6 +27,6 @@ internal fun ModuleAndPackageDocumentationParsingContext.parse(
 internal fun ModuleAndPackageDocumentationParsingContext(
         logger: DokkaLogger,
         sourceSet: DokkaConfiguration.DokkaSourceSet? = null
-) = ModuleAndPackageDocumentationParsingContext { fragment, sourceLocation ->
+) = ModuleAndPackageDocumentationParsingContext { _, sourceLocation ->
     RellMarkdownParser(sourceLocation)
 }

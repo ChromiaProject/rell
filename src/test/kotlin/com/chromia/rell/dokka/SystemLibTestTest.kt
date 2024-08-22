@@ -149,7 +149,7 @@ class SystemLibTestTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogge
                 val sysLibDefs = Lib_Rell.MODULE.lModule.namespace.getAllDefs()
                 val testLibDefs = Lib_RellTest.MODULE.lModule.namespace.getAllDefs()
                 val documentablesInTypes = module.packages.flatMap {
-                    it.classlikes.filterIsInstance<DClass>().flatMap { c -> c.children.map { c -> c.dri } }
+                    it.classlikes.filterIsInstance<DClass>().flatMap { cls -> cls.children.map { child -> child.dri } }
                 }
                 val expectedTypeDefs = (sysLibDefs + testLibDefs).filterIsInstance<L_NamespaceMember_Type>()
                         .flatMap { it.typeDef.allMembers.all.map { t -> DRI.from(t, DRI.from(it)) } }

@@ -9,7 +9,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.file
 import java.io.File
-import java.net.URL
+import java.net.URI
 import java.util.Calendar
 
 class DokkaCommand : CliktCommand() {
@@ -39,7 +39,7 @@ class DokkaCommand : CliktCommand() {
             val remoteUrlWithSuffix = it.substringAfter('=')
             val remoteUrl = remoteUrlWithSuffix.substringBefore("#")
             val remoteLineSuffix = remoteUrlWithSuffix.substringAfterLast('#', "")
-            builder.addSourceLink(localDirectory, URL(remoteUrl), if (remoteLineSuffix.isNotEmpty()) "#$remoteLineSuffix" else null)
+            builder.addSourceLink(localDirectory, URI(remoteUrl), if (remoteLineSuffix.isNotEmpty()) "#$remoteLineSuffix" else null)
         }
         RellDokkaGenerator(builder).generate()
     }

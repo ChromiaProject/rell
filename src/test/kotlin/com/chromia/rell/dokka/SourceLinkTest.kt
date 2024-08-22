@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import signatures.renderedContent
 import utils.TestOutputWriterPlugin
-import java.net.URL
+import java.net.URI
 
 class SourceLinkTest : SingleFileRellDokkaPluginTest() {
 
@@ -22,7 +22,7 @@ class SourceLinkTest : SingleFileRellDokkaPluginTest() {
         """.trimIndent(), listOf(writerPlugin), configurationBuilder = {
             addSourceLink(
                     localDirectory = "src",
-                    remoteUrl = URL("https://gitlab.com/chromaway/core-tools/rell-dokka-plugin/src"),
+                    remoteUrl = URI("https://gitlab.com/chromaway/core-tools/rell-dokka-plugin/src").toURL(),
                     remoteLineSuffix = "#L"
             )
         }) {

@@ -65,7 +65,7 @@ fun M_Type.toBound(presentableName: String? = null): Bound {
         is M_Type_Function -> {
             FunctionalTypeConstructor(
                     dri = toDRI(),
-                    projections = paramTypes.mapIndexed { index, type -> type.toBound() } + resultType.toBound(),
+                    projections = paramTypes.mapIndexed { _, type -> type.toBound() } + resultType.toBound(),
             )
         }
 

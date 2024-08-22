@@ -7,6 +7,7 @@ import org.jetbrains.dokka.PluginConfigurationImpl
 import org.jetbrains.dokka.SourceLinkDefinitionImpl
 import org.jetbrains.dokka.base.DokkaBase
 import java.io.File
+import java.net.URI
 import java.net.URL
 
 class RellDokkaPluginConfigurationBuilder private constructor(
@@ -44,6 +45,10 @@ class RellDokkaPluginConfigurationBuilder private constructor(
 
     fun footerMessage(footerMessage: String) = apply {
         this.footerMessage = footerMessage
+    }
+
+    fun addSourceLink(localDirectory: String, remoteUrl: URI, remoteLineSuffix: String?) = apply {
+        this.sourceLinks.add(SourceLinkDefinitionImpl(localDirectory, remoteUrl.toURL(), remoteLineSuffix))
     }
 
     fun addSourceLink(localDirectory: String, remoteUrl: URL, remoteLineSuffix: String?) = apply {
