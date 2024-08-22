@@ -9,7 +9,7 @@ class IndexPersisterThreadFactory : ThreadFactory {
     override fun newThread(runnable: Runnable): Thread {
         val thread = defaultFactory.newThread(runnable)
         thread.isDaemon = true
-        thread.name = "Index-Cache-Persister-${thread.id}"
+        thread.name = "Index-Cache-Persister-${thread.threadId()}"
         return thread
     }
 }

@@ -41,7 +41,7 @@ class RequestManagerThreadFactory : ThreadFactory {
     override fun newThread(runnable: Runnable): Thread {
         val thread = defaultFactory.newThread(runnable)
         thread.isDaemon = true
-        thread.name = "RequestManager-Queue-${thread.id}"
+        thread.name = "RequestManager-Queue-${thread.threadId()}"
         return thread
     }
 }
