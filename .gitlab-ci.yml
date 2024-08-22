@@ -1,4 +1,4 @@
-image: gradle:8.7-jdk17-alpine
+image: gradle:8.7-jdk21-alpine
 include:
   - project: chromaway/core-infra/gitlab-automation
     ref: 1.1.9

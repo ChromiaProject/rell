@@ -48,7 +48,7 @@ internal class KotlinCodeGeneratorTest {
                     }.joinToString(":")
                 noStdlib = true
                 noReflect = true
-                jvmTarget = "17"
+                jvmTarget = "21"
             }
             val exitCode: ExitCode = execImpl(
                 PrintingMessageCollector(
