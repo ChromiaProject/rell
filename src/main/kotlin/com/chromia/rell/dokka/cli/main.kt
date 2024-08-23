@@ -22,6 +22,7 @@ class DokkaCommand : CliktCommand() {
     private val system by option(help = "Generate system library docs", hidden = true).flag()
     private val includes by option(help = "Include documentation files").file().split(",").default(listOf())
     private val sourceLink by option(help = "link to a web site for browsing the source code in format <path>=<url>[#lineSuffix]")
+    private val filteredModules by option(help = "list of modules to filter").split(",").default(listOf())
 
     override fun run() {
         val builder = if (system) RellDokkaPluginConfigurationBuilder.SYSTEM else RellDokkaPluginConfigurationBuilder(
@@ -34,6 +35,7 @@ class DokkaCommand : CliktCommand() {
                 .customAssets(assets)
                 .footerMessage("© ${Calendar.getInstance().get(Calendar.YEAR)} Chromia")
                 .includes(includes)
+                .filteredModules(filteredModules)
         sourceLink?.let {
             val localDirectory = it.substringBefore('=', "")
             val remoteUrlWithSuffix = it.substringAfter('=')
@@ -45,4 +47,11 @@ class DokkaCommand : CliktCommand() {
     }
 }
 
-fun main(argv: Array<String>) = DokkaCommand().main(argv)
+fun main(argv: Array<String>) {
+    //"--source-link='test/src=https://bitbucket.org/chromawallet/ft3-lib/src/development/#L'"
+    val argv2  = arrayOf("--modules=main", "--source=doc-test/src", "--target=page_out", "--filtered-modules=lib.ft4")
+    argv2.map {
+        println(it)
+    }
+    DokkaCommand().main(argv2)
+}

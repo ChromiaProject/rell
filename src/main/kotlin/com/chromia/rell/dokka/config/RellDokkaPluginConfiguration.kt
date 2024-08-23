@@ -13,6 +13,7 @@ data class RellDokkaPluginConfiguration(
         val name: String,
         val modules: List<String>?,
         val system: Boolean = false,
+        val filteredModules: List<String> = listOf()
 ) : ConfigurableBlock {
     fun toPluginConfig() = PluginConfigurationImpl(
             RellDokkaPlugin::class.qualifiedName!!,

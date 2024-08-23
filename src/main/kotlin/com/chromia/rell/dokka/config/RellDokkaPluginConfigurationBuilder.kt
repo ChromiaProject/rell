@@ -22,6 +22,7 @@ class RellDokkaPluginConfigurationBuilder private constructor(
     private var footerMessage: String = ""
     private var includes: List<File> = listOf()
     private val sourceLinks: MutableSet<SourceLinkDefinitionImpl> = mutableSetOf()
+    private var filteredModules: List<String> = listOf()
 
     constructor(title: String, modules: List<String>?, projectRoot: File): this(false, title, modules, projectRoot)
 
@@ -30,6 +31,8 @@ class RellDokkaPluginConfigurationBuilder private constructor(
     }
 
     fun includes(includes: List<File>) = apply { this.includes = includes }
+
+    fun filteredModules(filteredModules: List<String>) = apply { this.filteredModules = filteredModules }
 
     fun targetFolder(targetFolder: File) = apply {
         this.targetFolder = targetFolder
@@ -59,7 +62,7 @@ class RellDokkaPluginConfigurationBuilder private constructor(
         if (system) {
             return RellDokkaPluginConfiguration.SYSTEM_CONFIG
         }
-        return RellDokkaPluginConfiguration(title, modules)
+        return RellDokkaPluginConfiguration(title, modules = modules, filteredModules = filteredModules)
     }
 
     private fun configureDokkaBasePlugin() =

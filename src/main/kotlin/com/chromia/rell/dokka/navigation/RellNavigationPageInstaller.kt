@@ -40,14 +40,20 @@ val canonicalAlphabeticalOrder: Comparator<in String> = String.CASE_INSENSITIVE_
  */
 class RellNavigationPageInstaller(private val context: DokkaContext): NavigationDataProvider(), PageTransformer {
 
-    override fun invoke(input: RootPageNode): RootPageNode =
-            input.modified(
-                    children = input.children + NavigationPage(
-                            root = navigableChildren(input),
-                            moduleName = context.configuration.moduleName,
-                            context = context
-                    )
-            )
+    //here we can filter out pages
+    override fun invoke(input: RootPageNode): RootPageNode {
+        val x =  input.modified(
+                children = input.children
+                        + NavigationPage(
+                        root = navigableChildren(input),
+                        moduleName = context.configuration.moduleName,
+                        context = context
+                )
+        )
+        //x.children.first().children.filter { !it.name.contains(Regex("lib.ft4")) }
+
+        return x
+    }
 }
 
 /*
@@ -71,7 +77,7 @@ public abstract class NavigationDataProvider {
                     sourceSets = page.sourceSets(),
                     icon = chooseNavigationIcon(page),
                     styles = chooseStyles(page),
-                    children = page.navigableChildren()
+                    children = page.navigableChildren().filter { !filterModules?.any { filtered -> it.name.contains(filtered) }!! } //HÄR ÄR DETTTTT SOM FIXAR
             )
 
     /**
@@ -146,21 +152,33 @@ public abstract class NavigationDataProvider {
 
     private fun ContentPage.navigableChildren() = when (this) {
         is ClasslikePage -> {
-            this.navigableChildren()
+            //if (!this.name.contains("lib.ft4")) {
+                this.navigableChildren()
+//            }else {
+//                listOf()
+//            }
         }
 
         is ModulePage -> {
+            //if (!this.name.contains("lib.ft4")) {
             children
                     .filterIsInstance<ContentPage>()
                     .map(::visit)
                     .sortedWith(navigationModuleNodeOrder)
+//        }else {
+//                listOf()
+//            }
         }
 
         else -> {
-            children
-                    .filterIsInstance<ContentPage>()
-                    .map(::visit)
-                    .sortedWith(navigationNodeOrder)
+            //if (!this.name.contains("lib.ft4")) {
+                children
+                        .filterIsInstance<ContentPage>()
+                        .map(::visit)
+                        .sortedWith(navigationNodeOrder)
+//            }else {
+//                listOf()
+//            }
         }
     }
 

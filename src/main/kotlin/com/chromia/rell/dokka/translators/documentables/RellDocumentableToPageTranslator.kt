@@ -29,6 +29,6 @@ class RellDocumentableToPageTranslator(context: DokkaContext) : DocumentableToPa
     private val logger = context.logger
 
     override fun invoke(module: DModule): ModulePageNode =
-            RellPageCreator(rellConfig, configuration, commentsToContentConverter, signatureProvider, logger, customTagContentProviders)
+            RellPageCreator(rellConfig, rellConfig?.filteredModules, configuration, commentsToContentConverter, signatureProvider, logger, customTagContentProviders)
                     .pageForModule(module)
 }
