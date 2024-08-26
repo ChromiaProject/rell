@@ -1,3 +1,4 @@
+import io.gitlab.arturbosch.detekt.Detekt
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
@@ -6,6 +7,8 @@ plugins {
     id("maven-publish")
     id("jacoco")
     id("org.jetbrains.dokka")
+    id("io.gitlab.arturbosch.detekt")
+    id("se.bjurr.violations.violations-gradle-plugin")
 }
 
 version = rootProject.version
@@ -36,6 +39,10 @@ repositories {
     maven {
         name = "Chromia Build Tools Registry"
         url = uri("https://gitlab.com/api/v4/projects/39844192/packages/maven")
+    }
+    maven {
+        name = "Detekt Gitlab Plugin Registry"
+        url = uri("https://gitlab.com/api/v4/projects/25796063/packages/maven")
     }
 }
 
@@ -68,6 +75,9 @@ dependencies {
     // Use the Kotlin JDK 8 standard library.
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation(catalog.findLibrary("oshai").get())
+
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.6")
+    detektPlugins("com.gitlab.cromefire:detekt-gitlab-report:0.3.3")
 }
 
 kotlin {
@@ -102,4 +112,24 @@ tasks.withType<JacocoReport> {
 }
 tasks.test {
     useJUnitPlatform()
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    config.setFrom(file("../detekt.yml"))
+    basePath = rootDir.toString()
+    source.setFrom(files(rootDir.resolve("core/src"), rootDir.resolve("language-server/src")))
+}
+
+tasks {
+    withType<Detekt> {
+        reports {
+            custom {
+                reportId = "DetektGitlabReport"
+                // This tells detekt, where it should write the report to,
+                // you have to specify this file in the gitlab pipeline config.
+                outputLocation.set(file("${rootDir.path}/build/reports/detekt/code-climate.json"))
+            }
+        }
+    }
 }
