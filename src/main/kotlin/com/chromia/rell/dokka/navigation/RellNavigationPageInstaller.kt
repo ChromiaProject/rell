@@ -41,19 +41,14 @@ val canonicalAlphabeticalOrder: Comparator<in String> = String.CASE_INSENSITIVE_
 class RellNavigationPageInstaller(private val context: DokkaContext, filterModules: List<String>?) : NavigationDataProvider(filterModules), PageTransformer {
 
     //here we can filter out pages
-    override fun invoke(input: RootPageNode): RootPageNode {
-        val x = input.modified(
-                children = input.children
-                        + NavigationPage(
-                        root = navigableChildren(input),
-                        moduleName = context.configuration.moduleName,
-                        context = context
-                )
-        )
-        //x.children.first().children.filter { !it.name.contains(Regex("lib.ft4")) }
-
-        return x
-    }
+    override fun invoke(input: RootPageNode): RootPageNode = input.modified(
+            children = input.children
+                    + NavigationPage(
+                    root = navigableChildren(input),
+                    moduleName = context.configuration.moduleName,
+                    context = context
+            )
+    )
 }
 
 /*
@@ -77,7 +72,7 @@ public abstract class NavigationDataProvider(private val filterModules: List<Str
                     sourceSets = page.sourceSets(),
                     icon = chooseNavigationIcon(page),
                     styles = chooseStyles(page),
-                    children = page.navigableChildren().filter { !filterModules?.any { filtered -> it.name.contains(filtered) }!! } //HÄR ÄR DETTTTT SOM FIXAR
+                    children = page.navigableChildren().filter { !filterModules?.any { filtered -> it.name.contains(filtered) }!! }
             )
 
     /**

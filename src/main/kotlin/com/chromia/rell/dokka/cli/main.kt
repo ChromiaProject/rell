@@ -47,6 +47,4 @@ class DokkaCommand : CliktCommand() {
     }
 }
 
-fun main(argv: Array<String>) {
-    DokkaCommand().main(argv)
-}
+fun main(argv: Array<String>) = DokkaCommand().main(argv)
