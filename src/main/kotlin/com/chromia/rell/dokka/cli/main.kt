@@ -48,10 +48,5 @@ class DokkaCommand : CliktCommand() {
 }
 
 fun main(argv: Array<String>) {
-    //"--source-link='test/src=https://bitbucket.org/chromawallet/ft3-lib/src/development/#L'"
-    val argv2  = arrayOf("--modules=main", "--source=doc-test/src", "--target=page_out", "--filtered-modules=lib.ft4")
-    argv2.map {
-        println(it)
-    }
-    DokkaCommand().main(argv2)
+    DokkaCommand().main(argv)
 }

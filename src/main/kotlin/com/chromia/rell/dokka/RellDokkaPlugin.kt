@@ -84,7 +84,8 @@ class RellDokkaPlugin : DokkaPlugin() {
     // Copied implementations with minor tweaks to remove kotlin dependency
     val rellNavigationPageInstaller by extending {
         with (plugin<DokkaBase>()) {
-            htmlPreprocessors providing ::RellNavigationPageInstaller override navigationPageInstaller
+            htmlPreprocessors providing {context ->
+                RellNavigationPageInstaller(context, config(context)?.filteredModules) } override navigationPageInstaller
         }
     }
 
