@@ -48,6 +48,9 @@ build-and-test:
     - .setup
     - .visualise-test-coverage
   script: ./gradlew check --info
+  artifacts:
+    reports:
+      codequality: ["build/reports/detekt/code-climate.json"]
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: pull-push

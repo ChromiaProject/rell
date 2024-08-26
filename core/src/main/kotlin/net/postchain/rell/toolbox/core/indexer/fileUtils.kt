@@ -3,6 +3,7 @@ package net.postchain.rell.toolbox.core.indexer
 import java.io.File
 import java.net.URI
 import java.security.MessageDigest
+
 fun findRellFilesInWorkspace(file: File, uris: MutableList<URI>) {
 
     if (file.isDirectory()) {
