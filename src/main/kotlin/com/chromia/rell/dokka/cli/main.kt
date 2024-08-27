@@ -22,7 +22,7 @@ class DokkaCommand : CliktCommand() {
     private val system by option(help = "Generate system library docs", hidden = true).flag()
     private val includes by option(help = "Include documentation files").file().split(",").default(listOf())
     private val sourceLink by option(help = "link to a web site for browsing the source code in format <path>=<url>[#lineSuffix]")
-    private val filteredModules by option(help = "list of modules to filter").split(",").default(listOf())
+    private val filteredModules by option(help = "list of modules to filter out from navigation page").split(",").default(listOf())
 
     override fun run() {
         val builder = if (system) RellDokkaPluginConfigurationBuilder.SYSTEM else RellDokkaPluginConfigurationBuilder(
