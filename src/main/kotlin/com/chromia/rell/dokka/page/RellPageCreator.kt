@@ -51,7 +51,6 @@ import org.jetbrains.dokka.utilities.DokkaLogger
 @OptIn(InternalDokkaApi::class)
 class RellPageCreator(
         private val rellDokkaPluginConfiguration: RellDokkaPluginConfiguration?,
-        private val filterModules: List<String>? = listOf(),
         configuration: DokkaBaseConfiguration?,
         commentsToContentConverter: CommentsToContentConverter,
         signatureProvider: SignatureProvider,
@@ -92,18 +91,21 @@ class RellPageCreator(
                     headers = listOf(
                             headers("Name")
                     )
-            ) {
+            ) { dPackage ->
 
-                if (!filterModules?.any { filtered -> it.name.contains(filtered) }!!) {
+                if (
+                        rellDokkaPluginConfiguration != null
+                        && (!rellDokkaPluginConfiguration.filteredModules.any { filtered -> dPackage.name.contains(filtered) })
+                        ) {
 
-                    val documentations = it.sourceSets.map { platform ->
-                        it.descriptions[platform]?.also { it.root }
+                    val documentations = dPackage.sourceSets.map { platform ->
+                        dPackage.descriptions[platform]?.also { it.root }
                     }
                     val haveSameContent =
                             documentations.all { it?.root == documentations.firstOrNull()?.root && it?.root != null }
 
-                    link(it.name, it.dri)
-                    if (it.sourceSets.size == 1 || (documentations.isNotEmpty() && haveSameContent)) {
+                    link(dPackage.name, dPackage.dri)
+                    if (dPackage.sourceSets.size == 1 || (documentations.isNotEmpty() && haveSameContent)) {
                         documentations.first()?.let { firstParagraphComment(kind = ContentKind.Comment, content = it.root) }
                     }
                 }
