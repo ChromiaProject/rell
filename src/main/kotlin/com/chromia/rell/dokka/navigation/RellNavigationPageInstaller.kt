@@ -40,7 +40,6 @@ val canonicalAlphabeticalOrder: Comparator<in String> = String.CASE_INSENSITIVE_
  */
 class RellNavigationPageInstaller(private val context: DokkaContext, filterModules: List<String>?) : NavigationDataProvider(filterModules), PageTransformer {
 
-    //here we can filter out pages
     override fun invoke(input: RootPageNode): RootPageNode = input.modified(
             children = input.children
                     + NavigationPage(
