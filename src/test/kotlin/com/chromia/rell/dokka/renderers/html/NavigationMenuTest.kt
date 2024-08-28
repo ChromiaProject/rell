@@ -32,8 +32,33 @@ internal class NavigationMenuTest : SingleFileRellDokkaPluginTest() {
                         text = "function#0()",
                         address = "test-dapp/main/function%230.html",
                 )
-                val anonymousFunction = searchRecords.find {
-                    record -> record.description?.contains("main.function#0") == true
+                val anonymousFunction = searchRecords.find { record ->
+                    record.description?.contains("main.function#0") == true
+                }
+                assertThat(anonymousFunction?.location).isEqualTo("test-dapp/main/function%230.html")
+            }
+        }
+    }
+
+    @Test
+    fun `filter out modules from navigation but files exist still`() {
+        val writerPlugin = TestOutputWriterPlugin(failOnOverwrite = false)
+        singleFileTestInline("""
+            @extendable function foo() {}
+            @extend(foo) function () {}
+        """.trimIndent(), listOf(writerPlugin), listOf("main")) {
+            renderingStage = { _, _ ->
+                val searchRecords = writerPlugin.writer.pagesJson()
+                val content = writerPlugin.writer.navigationHtml().select("div.sideMenuPart")
+                assertThat(content.size).isEqualTo(1)
+
+                content.last()!!.assertNavigationLink(
+                        id = "test-dapp-nav-submenu",
+                        text = "test-dapp",
+                        address = "index.html",
+                )
+                val anonymousFunction = searchRecords.find { record ->
+                    record.description?.contains("main.function#0") == true
                 }
                 assertThat(anonymousFunction?.location).isEqualTo("test-dapp/main/function%230.html")
             }

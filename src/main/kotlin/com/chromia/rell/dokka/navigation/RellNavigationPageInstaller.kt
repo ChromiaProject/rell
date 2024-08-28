@@ -38,16 +38,16 @@ val canonicalAlphabeticalOrder: Comparator<in String> = String.CASE_INSENSITIVE_
  * Copied from https://github.com/Kotlin/dokka/blob/1.9.10/plugins/base/src/main/kotlin/renderers/html/htmlPreprocessors.kt#L18
  * This is due to an internal dependency on InternalKotlinAnalysisPlugin found in [NavigationDataProvider]
  */
-class RellNavigationPageInstaller(private val context: DokkaContext): NavigationDataProvider(), PageTransformer {
+class RellNavigationPageInstaller(private val context: DokkaContext, filterModules: List<String>?) : NavigationDataProvider(filterModules), PageTransformer {
 
-    override fun invoke(input: RootPageNode): RootPageNode =
-            input.modified(
-                    children = input.children + NavigationPage(
-                            root = navigableChildren(input),
-                            moduleName = context.configuration.moduleName,
-                            context = context
-                    )
+    override fun invoke(input: RootPageNode): RootPageNode = input.modified(
+            children = input.children
+                    + NavigationPage(
+                    root = navigableChildren(input),
+                    moduleName = context.configuration.moduleName,
+                    context = context
             )
+    )
 }
 
 /*
@@ -55,7 +55,7 @@ class RellNavigationPageInstaller(private val context: DokkaContext): Navigation
  * Copied from https://github.com/Kotlin/dokka/blob/1.9.10/plugins/base/src/main/kotlin/renderers/html/NavigationDataProvider.kt
  * This is due to an internal dependency of InternalKotlinAnalysisPlugin which is removed here
  */
-public abstract class NavigationDataProvider {
+public abstract class NavigationDataProvider(private val filterModules: List<String>? = listOf()) {
     // Always false (previously dependent on InternalKotlinAnalysisPlugin
     private fun Documentable.hasAnyJavaSources(): Boolean {
         return false
@@ -71,7 +71,7 @@ public abstract class NavigationDataProvider {
                     sourceSets = page.sourceSets(),
                     icon = chooseNavigationIcon(page),
                     styles = chooseStyles(page),
-                    children = page.navigableChildren()
+                    children = page.navigableChildren().filter { !filterModules?.any { filtered -> it.name.contains(filtered) }!! }
             )
 
     /**
@@ -97,26 +97,30 @@ public abstract class NavigationDataProvider {
                         documentable.isAbstract() -> {
                             if (isJava) NavigationNodeIcon.ABSTRACT_CLASS else NavigationNodeIcon.ABSTRACT_CLASS_KT
                         }
+
                         else -> if (isJava) NavigationNodeIcon.CLASS else NavigationNodeIcon.CLASS_KT
                     }
+
                     is DFunction -> NavigationNodeIcon.FUNCTION
                     is DProperty -> {
                         val isVar = documentable.extra[IsVar] != null
                         if (isVar) NavigationNodeIcon.VAR else NavigationNodeIcon.VAL
                     }
+
                     is DInterface -> if (isJava) NavigationNodeIcon.INTERFACE else NavigationNodeIcon.INTERFACE_KT
                     is DEnum,
                     is DEnumEntry -> if (isJava) NavigationNodeIcon.ENUM_CLASS else NavigationNodeIcon.ENUM_CLASS_KT
+
                     is DAnnotation -> {
                         if (isJava) NavigationNodeIcon.ANNOTATION_CLASS else NavigationNodeIcon.ANNOTATION_CLASS_KT
                     }
+
                     is DObject -> NavigationNodeIcon.OBJECT
                     else -> null
                 }
             } else {
                 null
             }
-
 
 
     private fun DClass.isAbstract() =
@@ -146,7 +150,9 @@ public abstract class NavigationDataProvider {
 
     private fun ContentPage.navigableChildren() = when (this) {
         is ClasslikePage -> {
+
             this.navigableChildren()
+
         }
 
         is ModulePage -> {

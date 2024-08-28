@@ -12,16 +12,17 @@ import java.io.File
 const val TEST_DAPP_NAME = "test-dapp"
 
 abstract class SingleFileRellDokkaPluginTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogger(LoggingLevel.WARN))) {
-    private fun buildConfiguration(configurationBuilder: RellDokkaPluginConfigurationBuilder.() -> Unit) =
+    private fun buildConfiguration(configurationBuilder: RellDokkaPluginConfigurationBuilder.() -> Unit, filteredModules: List<String>) =
             RellDokkaPluginConfigurationBuilder(TEST_DAPP_NAME, listOf("main"), File("src/"))
                     .apply(configurationBuilder)
+                    .filteredModules(filteredModules)
                     .build()
 
-    protected fun singleFileTestInline(content: String, pluginOverrides: List<DokkaPlugin> = listOf(), configurationBuilder: RellDokkaPluginConfigurationBuilder.() -> Unit = {}, block: BaseTestBuilder.() -> Unit) {
+    protected fun singleFileTestInline(content: String, pluginOverrides: List<DokkaPlugin> = listOf(), filteredModules: List<String> = listOf(), configurationBuilder: RellDokkaPluginConfigurationBuilder.() -> Unit = {}, block: BaseTestBuilder.() -> Unit) {
         testInline("""
             |/src/main.rell
             |module;
             |$content
-        """.trimIndent(), buildConfiguration(configurationBuilder), cleanupOutput = false, pluginOverrides = pluginOverrides, block = block)
+        """.trimIndent(), buildConfiguration(configurationBuilder, filteredModules), cleanupOutput = false, pluginOverrides = pluginOverrides, block = block)
     }
 }

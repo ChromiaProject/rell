@@ -91,16 +91,23 @@ class RellPageCreator(
                     headers = listOf(
                             headers("Name")
                     )
-            ) {
-                val documentations = it.sourceSets.map { platform ->
-                    it.descriptions[platform]?.also { it.root }
-                }
-                val haveSameContent =
-                        documentations.all { it?.root == documentations.firstOrNull()?.root && it?.root != null }
+            ) { dPackage ->
 
-                link(it.name, it.dri)
-                if (it.sourceSets.size == 1 || (documentations.isNotEmpty() && haveSameContent)) {
-                    documentations.first()?.let { firstParagraphComment(kind = ContentKind.Comment, content = it.root) }
+                if (
+                        rellDokkaPluginConfiguration != null
+                        && (!rellDokkaPluginConfiguration.filteredModules.any { filtered -> dPackage.name.contains(filtered) })
+                        ) {
+
+                    val documentations = dPackage.sourceSets.map { platform ->
+                        dPackage.descriptions[platform]?.also { it.root }
+                    }
+                    val haveSameContent =
+                            documentations.all { it?.root == documentations.firstOrNull()?.root && it?.root != null }
+
+                    link(dPackage.name, dPackage.dri)
+                    if (dPackage.sourceSets.size == 1 || (documentations.isNotEmpty() && haveSameContent)) {
+                        documentations.first()?.let { firstParagraphComment(kind = ContentKind.Comment, content = it.root) }
+                    }
                 }
             }
         }
@@ -458,7 +465,6 @@ class RellPageCreator(
             ).thenBy(NameAndIsExtension::isExtension)
         }
     }
-
 
 
 }
