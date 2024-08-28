@@ -10,6 +10,7 @@ import java.net.URI
 import net.postchain.rell.base.compiler.base.utils.C_Message
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -27,7 +28,7 @@ class RellResourceBuildModuleInfoTest {
     //TODO make it so a compiler can take in one file without ws defined
     @Test
     fun `compiler finds errors in from imported file`() {
-        val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser())
+        val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
         val rellCompilerUtils = RellCompilerUtils()
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
 
@@ -76,7 +77,7 @@ class RellResourceBuildModuleInfoTest {
         val rellCompilerUtils = RellCompilerUtils()
         val compilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceError.toURI())
 
-        val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser())
+        val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
         val parsingResult = rellDesc.buildParseTree(fileContent)
         val parseTree = parsingResult.parseTree
         val sRellFile = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePath, parseTree, parsingResult.parser.tokenStream).first

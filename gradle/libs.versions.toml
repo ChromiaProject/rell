@@ -1,5 +1,5 @@
 [versions]
-rell = "0.13.15"
+rell = "0.14.1"
 testcontainers = "1.18.3"
 lsp4j = "0.21.1"
 koin = "3.5.0"

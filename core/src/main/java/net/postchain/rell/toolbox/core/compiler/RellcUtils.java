@@ -7,6 +7,8 @@ import com.github.h0tk3y.betterParse.utils.Tuple4;
 import com.github.h0tk3y.betterParse.utils.Tuple5;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import net.postchain.rell.base.compiler.ast.S_BasicPos;
+import net.postchain.rell.base.compiler.ast.S_Comment;
 import net.postchain.rell.base.compiler.parser.RellTokenMatch;
 import net.postchain.rell.lsp.grammar.AntlrActionEx;
 import net.postchain.rell.lsp.grammar.AntlrGrammarGenerator;
@@ -38,10 +40,16 @@ final class RellcUtils {
         return token0(obj, obj.getText(), ctx.getTokenStream());
     }
 
-    static String getRellDocComment(ParserRuleContext obj, TokenStream tokenStream) {
+    private static S_Comment getRellDocComment(ParserRuleContext obj, TokenStream tokenStream) {
         RellCommonTokenStream rellCommonTokenStream = ((RellCommonTokenStream) tokenStream);
         Token token = rellCommonTokenStream.getPreviousRellDocCommentToken(obj.start.getTokenIndex());
-        return token != null ? token.getText() : null;
+        if (token == null) {
+            return null;
+        }
+
+        var path = RellcFilePathHolder.INSTANCE.getCurrentFile();
+        var pos = new S_BasicPos(path.getCPath(), path.getIdePath(), token.getStartIndex(), token.getLine(), token.getCharPositionInLine() + 1);
+        return new S_Comment(pos, token.getText());
     }
 
     static Object tokenString(AntlrToRellContext ctx, ParserRuleContext obj) {
@@ -81,7 +89,9 @@ final class RellcUtils {
 
         var pos = new AntlrPos(obj, path.getCPath(), path.getIdePath());
 
-        return new RellTokenMatch(pos, text, getRellDocComment(obj, tokenStream));
+        var comment = getRellDocComment(obj, tokenStream);
+
+        return new RellTokenMatch(pos, text, comment);
     }
 
     static Object processList(AntlrToRellContext ctx, List<? extends ParserRuleContext> values) {

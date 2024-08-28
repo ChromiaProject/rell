@@ -12,6 +12,7 @@ import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import org.junit.jupiter.api.Test
 import java.io.File
+import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 
 
 class FormattingStyleLinterTest {
@@ -121,7 +122,7 @@ class FormattingStyleLinterTest {
         val formattingStyleLinter = FormattingStyleLinter()
         val fileName = "formatter.rell"
         val fileUri = javaClass.getResource("/linter/$fileName")!!.toURI()
-        val resourceFactory = RellResourceFactory(fileUri, AntlrRellParser())
+        val resourceFactory = RellResourceFactory(fileUri, AntlrRellParser(), ChromiaModelProvider(null))
         val resource = resourceFactory.buildRellResource(fileUri, mutableMapOf())
         val fileContent = File(fileUri).readText()
 

@@ -10,21 +10,25 @@ import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeCompilationResult
 import net.postchain.rell.base.utils.ide.IdeDirApi
+import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.core.compiler.RellcAPI
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import net.postchain.rell.toolbox.core.parser.RellCommonTokenStream
 import net.postchain.rell.toolbox.core.parser.RellParser
 import net.postchain.rell.toolbox.core.parser.SyntaxErrorCollector
-import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.TokenStream
 
 
-class RellResourceFactory(private val workspaceUri: URI, private val parser: AntlrRellParser) {
+class RellResourceFactory(
+    private val workspaceUri: URI,
+    private val parser: AntlrRellParser,
+    private val chromiaModelProvider: ChromiaModelProvider
+) {
     val rellCompilerUtils = RellCompilerUtils()
-
     fun buildFileMap(sources: Map<URI, String>): ConcurrentHashMap<C_SourcePath, C_SourceFile> {
         val fileMap = ConcurrentHashMap<C_SourcePath, C_SourceFile>()
         sources.forEach { (fileUri, fileContent) ->
@@ -57,7 +61,11 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
     ): Resource {
         val rellCompilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
         val parseResult = this.buildParseTree(fileContent)
-        val ast = buildRellAstWithCompilerErrors(rellCompilerSourcePath, parseResult.parseTree, parseResult.parser.tokenStream)
+        val ast = buildRellAstWithCompilerErrors(
+            rellCompilerSourcePath,
+            parseResult.parseTree,
+            parseResult.parser.tokenStream
+        )
         val compilationResult = compileResult(rellCompilerSourcePath, ast.first, fileMap)
         val symbolInfo = compilationResult?.symbolInfos ?: mapOf()
         val locationInfo = createLocationInfo(symbolInfo)
@@ -103,7 +111,9 @@ class RellResourceFactory(private val workspaceUri: URI, private val parser: Ant
         val moduleName = IdeApi.getModuleName(compilerSrcPath, ast)
             ?: throw Exception("Can not find the moduleName for $compilerSrcPath")
 
+        val rellLanguageVersion = chromiaModelProvider.getRellLanguageVersion()
         val options = C_CompilerOptions.builder()
+            .compatibility(R_LangVersion.of(rellLanguageVersion))
             .symbolInfoFile(compilerSrcPath)
             .ideDocSymbolsEnabled(true)
             .ide(true)

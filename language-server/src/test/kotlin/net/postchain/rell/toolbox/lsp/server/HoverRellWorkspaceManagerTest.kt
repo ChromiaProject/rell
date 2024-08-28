@@ -88,7 +88,7 @@ internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         assertThat(hoverDocs.value).contains("*See also:* other_function")
         assertThat(hoverDocs.value).contains("*@param* `first` - This is the first parameter")
         assertThat(hoverDocs.value).contains("*@param* `second` - This is the second parameter")
-        assertThat(hoverDocs.value).contains("*@returns* - This is the return value")
+        assertThat(hoverDocs.value).contains("*@return* - This is the return value")
     }
 
     @Test

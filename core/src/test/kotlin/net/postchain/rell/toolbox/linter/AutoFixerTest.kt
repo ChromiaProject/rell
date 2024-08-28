@@ -5,6 +5,7 @@ import assertk.assertions.isEqualTo
 import java.net.URI
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.core.indexer.RellResourceFactory
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import net.postchain.rell.toolbox.formatter.FormatterOptions
@@ -15,7 +16,7 @@ class AutoFixerTest {
     private val rellLinter = RellLinter()
     private val formattingStyleLinter = FormattingStyleLinter()
     private val resourceFactory =
-        RellResourceFactory(javaClass.getResource("/linter/auto-fixer/")!!.toURI(), AntlrRellParser())
+        RellResourceFactory(javaClass.getResource("/linter/auto-fixer/")!!.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
 
     @Test
     fun `should fix all formatting issues`() {

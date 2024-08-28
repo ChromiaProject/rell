@@ -12,13 +12,14 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.net.URI
+import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 
 @Suppress("JAVA_CLASS_ON_COMPANION")
 class RellResourceBuildRellAstTest {
     @Test
     fun `buildRellAst returns S_RellFile with no errors`() {
         val (rellCSrcPath, parseTree, parser) = getSrcPathAndParseTree(rellFilesCorrect, "objects.rell", workspaceCorrect)
-        val rellResDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser())
+        val rellResDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
 
         val (ast, errors) = rellResDesc.buildRellAstWithCompilerErrors(rellCSrcPath, parseTree, parser.tokenStream)
         assertThat(ast.definitionsField.size).isEqualTo(1)
@@ -28,7 +29,7 @@ class RellResourceBuildRellAstTest {
     @Test
     fun `buildRellAst can build S_RellFile with no errors on syntax incorrect file`() {
         val (rellCSrcPath, parseTree, parser) = getSrcPathAndParseTree(rellFilesErrors, "syntax_error.rell", workspaceError)
-        val rellResDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser())
+        val rellResDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
 
         val (ast, errors) = rellResDesc.buildRellAstWithCompilerErrors(rellCSrcPath, parseTree, parser.tokenStream)
         assertThat(ast.definitionsField.size).isEqualTo(3)
@@ -38,7 +39,7 @@ class RellResourceBuildRellAstTest {
     @Test
     fun `buildRellAst can build S_RellFile with no errors from a semantic incorrect file`() {
         val (rellCSrcPath, parseTree, parser) = getSrcPathAndParseTree(rellFilesErrors, "semantic_error.rell", workspaceError)
-        val rellResDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser())
+        val rellResDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
 
         val (ast, errors) = rellResDesc.buildRellAstWithCompilerErrors(rellCSrcPath, parseTree,parser.tokenStream)
         assertThat(ast.definitionsField.size).isEqualTo(4)
@@ -48,7 +49,7 @@ class RellResourceBuildRellAstTest {
     private fun getSrcPathAndParseTree(workspaceFiles: MutableList<URI>, fileName: String, workspace: File):
             Triple<C_SourcePath, RellParser.RuleX_RootParserContext, RellParser> {
         val fileUri = workspaceFiles.find { it.toString().endsWith("/$fileName") }!!
-        val rellResDesc = RellResourceFactory(workspace.toURI(), AntlrRellParser())
+        val rellResDesc = RellResourceFactory(workspace.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
         val rellCSrcPath = rellResDesc.rellCompilerUtils.createCompilerSourcePath(fileUri, workspace.toURI())
         val errorListener = SyntaxErrorCollector()
         val parser = parser.parserFor(File(fileUri.path).readText(), errorListeners = listOf(errorListener))
