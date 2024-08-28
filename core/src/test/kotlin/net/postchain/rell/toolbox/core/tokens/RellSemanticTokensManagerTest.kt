@@ -19,6 +19,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.io.File
 import java.util.stream.Stream
 import kotlin.io.path.createDirectory
+import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 
 class RellSemanticTokensManagerTest {
 
@@ -40,7 +41,7 @@ class RellSemanticTokensManagerTest {
             )
         }
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
-        val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser())
+        val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
         val resource = resourceFactory.buildRellResource(rellFile.toURI(), fileMap)
 
         val tokens = RellSemanticTokensManager().getSemanticTokens(resource)
@@ -77,7 +78,7 @@ class RellSemanticTokensManagerTest {
             )
         }
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
-        val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser())
+        val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
         val resource = resourceFactory.buildRellResource(rellFile.toURI(), fileMap)
 
         val mappingTypes = listOf(
@@ -125,7 +126,7 @@ class RellSemanticTokensManagerTest {
             )
         }
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
-        val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser())
+        val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
         val resource = resourceFactory.buildRellResource(rellFile.toURI(), fileMap)
 
         val mappingTypes = listOf(
@@ -162,7 +163,7 @@ class RellSemanticTokensManagerTest {
             )
         }
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
-        val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser())
+        val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
         val resource = resourceFactory.buildRellResource(rellFile.toURI(), fileMap)
 
         val mappingTypes = listOf(
@@ -196,7 +197,7 @@ class RellSemanticTokensManagerTest {
             """.trimIndent()
             )
         }
-        val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser())
+        val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
         val resource = resourceFactory.buildRellResource(rellFile.toURI(), fileMap)
 

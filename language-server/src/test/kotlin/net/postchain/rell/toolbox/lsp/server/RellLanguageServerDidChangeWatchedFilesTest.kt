@@ -124,7 +124,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
                 """
                 module;
                 /**
-                * @return wrong doc tag (should be returns)
+                * @returned wrong doc tag (should be return)
                 */
                 function Foo() {
                     val x = 123;
@@ -156,11 +156,11 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         assertThat(diagnostics.keys).containsOnly(rellFileUri.toString())
         assertThat(diagnostics[rellFileUri.toString()]!!).containsOnly(
             Diagnostic(
-                Range(Position(4, 0), Position(4, 0)),
-                "Invalid comment tag: @return",
+                Range(Position(2, 2), Position(2, 2)),
+                "Invalid comment tag: @returned",
                 DiagnosticSeverity.Warning,
                 null,
-                "comment:tag:unknown:return"
+                "comment:tag:unknown:returned"
             ),
         )
     }
@@ -311,6 +311,65 @@ class RellLanguageServerDidChangeWatchedFilesTest {
                 assertThat(issues.size).isEqualTo(0)
             }
         }
+    }
+
+    @Test
+    fun `didChangeWatched chromia yml rell compile version updated`() {
+        val fileContent = """
+         module;
+            
+         entity foo {
+            name;
+            bool: boolean;
+         }
+                
+         function bar() {
+            val abc = foo @? { .name == "hello" };
+            require(exists(abc), "abc is real");
+            require(abc?.bool, "b");
+         }
+        """.trimIndent()
+
+        val rellFile = File(srcDir, "main.rell").apply {
+            parentFile.mkdirs()
+            writeText(fileContent)
+        }.toURI()
+
+
+        val configContent = """
+                blockchains:
+                  rellDappWithLib:
+                    module: main
+                
+                compile:
+                  rellVersion: 0.13.4
+            """.trimIndent()
+        val chromiaConfigFile = File(tempDir, "chromia.yml").apply {
+            writeText(configContent)
+        }
+
+        clientServerLauncher.initializeServer(tempDir.toURI())
+        val indexer = workspaceManager.indexers[srcDir.toURI()]!!
+
+        chromiaConfigFile.writeText(configContent.replace("0.13.4", "0.14.1"))
+
+        val fileEvent = FileEvent(chromiaConfigFile.toURI().toString(), FileChangeType.Changed)
+        val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEvent))
+        server.didChangeWatchedFiles(didChangeParams)
+        await().until { testClient.diagnostics.isNotEmpty() }
+
+        val diagnostics = testClient.diagnostics
+        assertThat(indexer.fileUriResourceMap.keys).containsOnly(rellFile)
+        assertThat(diagnostics.keys).containsOnly(rellFile.toString())
+        assertThat(diagnostics[rellFile.toString()]!!).containsOnly(
+            Diagnostic(
+                Range(Position(10, 11), Position(10, 11)),
+                "Variable 'abc' cannot be null at this location",
+                DiagnosticSeverity.Warning,
+                null,
+                "expr:smartnull:var:never:[abc]"
+            ),
+        )
     }
 
     // TODO: Add test to make sure we aren't creating redundant single file indexers when renaming or adding new files

@@ -161,7 +161,7 @@ class RellWorkspaceManager(
         return null
     }
 
-    private fun reportDiagnostics(indexer: WorkspaceIndexer, fileUris: List<URI> = listOf()) {
+    fun reportDiagnostics(indexer: WorkspaceIndexer, fileUris: List<URI> = listOf()) {
         var issues = indexer.getAllIssues()
         if (fileUris.isNotEmpty()) {
             issues = issues.filter { (uri, _) -> fileUris.contains(uri) }

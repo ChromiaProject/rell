@@ -21,7 +21,7 @@ fun formatDocSymbol(docSymbol: DocSymbol?): String {
                     appendLine("\n*@param* `${it.key}` - ${it.text}")
                 }
             }
-            mappedTags[DocCommentTag.RETURNS.code]?.let { tag -> appendLine("\n*@returns* - ${tag.first().text}") }
+            mappedTags[DocCommentTag.RETURN.code]?.let { tag -> appendLine("\n*@return* - ${tag.first().text}") }
         }
     }
 }

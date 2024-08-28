@@ -7,6 +7,7 @@ import assertk.assertions.extracting
 import assertk.assertions.isEqualTo
 import java.io.File
 import java.net.URI
+import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -62,7 +63,7 @@ class RellResourceBuildParseTreeTest {
         private val classLoader = javaClass.getClassLoader()
         private val workspaceError = File(classLoader.getResource("rellDappWithErrors").file).absoluteFile
         private val workspaceCorrect = File(RellResourceBuildModuleInfoTest.classLoader.getResource("rellDapp").file)
-        val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser())
+        val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
 
         @JvmStatic
         @BeforeAll

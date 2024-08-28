@@ -272,4 +272,101 @@ class WorkspaceIndexerTest {
             assertThat(it.code).startsWith("linter")
         }
     }
+
+    @Test
+    fun `Rell Version default gives no smart null check error`(@TempDir dir: File) {
+        val srcDir = File(dir, "src")
+        srcDir.mkdirs()
+
+        val fileContent = """
+         module;
+            
+         entity foo {
+            name;
+            bool: boolean;
+         }
+                
+         function bar() {
+            val abc = foo @? { .name == "hello" };
+            require(exists(abc), "abc is real");
+            require(abc?.bool, "b");
+         }
+        """.trimIndent()
+
+        val main = File(srcDir, "main.rell").apply {
+            parentFile.mkdirs()
+            writeText(fileContent)
+        }.toURI()
+
+        val workspaceIndexer =
+            WorkspaceIndexer(
+                dir.toURI(),
+                rellLinter,
+                linterOptions,
+                formattingStyleLinter,
+                formatterOptions,
+                dir.toURI()
+            )
+        workspaceIndexer.initialFileIndexBuild()
+
+        val allIssues = workspaceIndexer.getAllIssues()
+        assertThat(allIssues.keys).containsOnly(main)
+        assertThat(allIssues[main]!!.size).isEqualTo(0)
+    }
+
+    @Test
+    fun `Rell Version 0-14-1 gives smart null check error`(@TempDir dir: File) {
+        val srcDir = File(dir, "src")
+        srcDir.mkdirs()
+
+        val fileContent = """
+         module;
+            
+         entity foo {
+            name;
+            bool: boolean;
+         }
+                
+         function bar() {
+            val abc = foo @? { .name == "hello" };
+            require(exists(abc), "abc is real");
+            require(abc?.bool, "b");
+         }
+        """.trimIndent()
+
+        val main = File(srcDir, "main.rell").apply {
+            parentFile.mkdirs()
+            writeText(fileContent)
+        }.toURI()
+
+        File(dir, "chromia.yml").apply {
+            writeText(
+                """
+                blockchains:
+                  rellDappWithLib:
+                    module: main
+                
+                compile:
+                  rellVersion: 0.14.1
+            """.trimIndent()
+            )
+        }
+
+
+        val workspaceIndexer =
+            WorkspaceIndexer(
+                dir.toURI(),
+                rellLinter,
+                linterOptions,
+                formattingStyleLinter,
+                formatterOptions,
+                dir.toURI()
+            )
+        workspaceIndexer.initialFileIndexBuild()
+
+        val allIssues = workspaceIndexer.getAllIssues()
+        assertThat(allIssues.keys).containsOnly(main)
+        assertThat(allIssues[main]!!.size).isEqualTo(1)
+        assertThat(allIssues[main]!!.first().code).isEqualTo("expr:smartnull:var:never:[abc]")
+    }
 }

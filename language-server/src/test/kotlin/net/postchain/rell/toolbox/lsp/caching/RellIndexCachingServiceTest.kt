@@ -32,6 +32,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
+import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 
 class SourceFile(val filePath: String, val fileContent: String)
 
@@ -168,7 +169,7 @@ class RellIndexCachingServiceTest {
     }
 
     private fun createDummyWorkspaceIndexer(workspaceFolderUri: URI, sourceFiles: List<SourceFile>): WorkspaceIndexer {
-        val resourceFactory = RellResourceFactory(workspaceFolderUri, AntlrRellParser())
+        val resourceFactory = RellResourceFactory(workspaceFolderUri, AntlrRellParser(), ChromiaModelProvider(null))
         val indexer =
             WorkspaceIndexer(workspaceFolderUri, rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()

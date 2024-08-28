@@ -227,7 +227,7 @@ class RellLanguageServer(
                 if (indexer != null && indexer.isConfigFile(uri)) {
                     requestManager.runWrite {
                         indexer.updateConfig(uri)
-                        workspaceManager.runLinter()
+                        workspaceManager.reportDiagnostics(indexer)
                     }
                 } else {
                     if (change.type == FileChangeType.Deleted) {

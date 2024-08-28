@@ -15,7 +15,7 @@ dependencies {
     implementation(libs.oshai)
     implementation(libs.slf4j)
     implementation("io.github.java-diff-utils:java-diff-utils:4.12")
-    implementation("com.chromia.cli:chromia-build-tools:0.20.6") {
+    implementation("com.chromia.cli:chromia-build-tools:0.20.11") {
         exclude(group = "com.chromia.rell.dokka")
         exclude(group = "net.postchain", module = "postchain-base")
         exclude(group = "net.postchain", module = "postchain-admin-service")

@@ -10,6 +10,7 @@ import net.postchain.rell.toolbox.core.indexer.findRellFilesInWorkspace
 import net.postchain.rell.toolbox.core.parser.AntlrRellParser
 import java.io.File
 import java.net.URI
+import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 
 class TestUtil {
     fun createTestResource(fileSuffix: String, resourceFolders: String): Resource {
@@ -22,7 +23,7 @@ class TestUtil {
         )
 
         val fileUri = rellFilesErrors.find { it.toString().endsWith(fileSuffix) }!!
-        val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser())
+        val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
         return rellDesc.buildRellResource(fileUri, fileMap)
     }

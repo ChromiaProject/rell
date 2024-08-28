@@ -1,5 +1,6 @@
 package net.postchain.rell.toolbox.core.indexer
 
+import com.chromia.cli.model.ChromiaModel
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.IOException
@@ -26,28 +27,50 @@ class WorkspaceIndexer(
     val projectRootUri: URI? = null
 ) {
     private val logger = KotlinLogging.logger {}
-    private val resourceFactory = RellResourceFactory(workspaceUri, AntlrRellParser())
+    private val chromiaModelProvider = ChromiaModelProvider(projectRootUri)
+    private var ignoreReportingUris: Set<URI> =
+        chromiaModelProvider.resolveIgnoreReportingUris(workspaceUri)
+    private val resourceFactory = RellResourceFactory(workspaceUri, AntlrRellParser(), chromiaModelProvider)
     private val rellCompilerUtils = RellCompilerUtils()
     var fileUriResourceMap = ConcurrentHashMap<URI, Resource>()
     private var fileMap: ConcurrentHashMap<C_SourcePath, C_SourceFile> = ConcurrentHashMap()
-    private val chromiaModelProvider = ChromiaModelProvider()
-    private var ignoreReportingUris: Set<URI> =
-        chromiaModelProvider.resolveIgnoreReportingUris(projectRootUri, workspaceUri)
 
     fun updateConfig(fileUri: URI) {
         val configFile = File(fileUri)
         if (isLinterConfig(fileUri)) {
             linterOptions.updateOptionsFromFile(configFile)
+            runLinter()
         }
         if (isFormatterConfig(fileUri)) {
             formatterOptions.updateOptionsFromFile(configFile)
+            runLinter()
         }
         if (isChromiaModelFile(fileUri)) {
-            ignoreReportingUris = chromiaModelProvider.resolveIgnoreReportingUris(projectRootUri, workspaceUri)
+            val newModel = chromiaModelProvider.loadChromiaModel()
+            val oldModel = chromiaModelProvider.getChromiaModel()
+            chromiaModelProvider.updateChromiaModel(projectRootUri, newModel)
+            val oldIgnoreReportingUris = ignoreReportingUris
+            ignoreReportingUris = chromiaModelProvider.resolveIgnoreReportingUris(workspaceUri)
+
+            if (shouldReindex(newModel, oldModel)) {
+                initialFileIndexBuild(reindex = true)
+            } else {
+                if (shouldRunLinter(ignoreReportingUris, oldIgnoreReportingUris)) {
+                    runLinter()
+                }
+            }
         }
     }
 
-    fun initialFileIndexBuild(cachedIndexer: WorkspaceIndexer? = null) {
+    private fun shouldRunLinter(newIgnoreReportingUris: Set<URI>, oldIgnoreReportingUris: Set<URI>): Boolean {
+        return oldIgnoreReportingUris != newIgnoreReportingUris
+    }
+
+    private fun shouldReindex(newModel: ChromiaModel?, oldModel: ChromiaModel?): Boolean {
+        return oldModel?.compile?.rellVersion != newModel?.compile?.rellVersion
+    }
+
+    fun initialFileIndexBuild(cachedIndexer: WorkspaceIndexer? = null, reindex: Boolean = false) {
         val rellUris = addRellFilesUri()
         val sources = readAllSource(rellUris)
         fileMap = resourceFactory.buildFileMap(sources)
@@ -57,7 +80,7 @@ class WorkspaceIndexer(
 
         for (source in sources) {
             val (fileUri, fileContent) = source
-            if (fileUriResourceMap.containsKey(fileUri)) {
+            if (fileUriResourceMap.containsKey(fileUri) && !reindex) {
                 continue
             }
             val resource = resourceFactory.buildRellResource(fileUri, fileContent, fileMap)
@@ -73,7 +96,7 @@ class WorkspaceIndexer(
 
         for (source in sources) {
             val (fileUri, fileContent) = source
-            if (alreadyLintedFiles.contains(fileUri)) {
+            if (alreadyLintedFiles.contains(fileUri) && !reindex) {
                 continue
             }
             fileUriResourceMap[fileUri]?.let {
