@@ -5,6 +5,7 @@ import net.postchain.rell.base.model.R_QualifiedName
 import org.jetbrains.dokka.InternalDokkaApi
 import org.jetbrains.dokka.analysis.markdown.jb.MarkdownParser
 import org.jetbrains.dokka.model.doc.See
+import org.jetbrains.dokka.model.doc.Throws
 
 @OptIn(InternalDokkaApi::class)
 class RellMarkdownParser(sourceLocation: String? = null) : MarkdownParser(
@@ -23,6 +24,17 @@ class RellMarkdownParser(sourceLocation: String? = null) : MarkdownParser(
             root = this.parseStringToDocNode(content.substringAfter(' ')),
             name = referencedName,
             address = null
+        )
+    }
+
+    fun parseStringToThrowTag(content: String): Throws {
+        val exceptionName = content.substringBefore(' ')
+        val description = content.substringAfter(' ').takeIf { it != exceptionName } ?: ""
+
+        return Throws(
+            this.parseStringToDocNode(description),
+            exceptionName,
+            null
         )
     }
 }
