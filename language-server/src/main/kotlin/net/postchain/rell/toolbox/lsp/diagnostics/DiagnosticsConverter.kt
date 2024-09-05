@@ -1,7 +1,7 @@
 package net.postchain.rell.toolbox.lsp.diagnostics
 
-import net.postchain.rell.toolbox.core.indexer.RellIssue
-import net.postchain.rell.toolbox.core.indexer.RellIssueSeverity
+import net.postchain.rell.toolbox.indexer.RellIssue
+import net.postchain.rell.toolbox.indexer.RellIssueSeverity
 import org.eclipse.lsp4j.Diagnostic
 import org.eclipse.lsp4j.DiagnosticSeverity
 import org.eclipse.lsp4j.Position

@@ -6,10 +6,10 @@ import java.util.concurrent.ConcurrentHashMap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
-import net.postchain.rell.toolbox.core.indexer.Resource
-import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
-import net.postchain.rell.toolbox.core.indexer.calculateChecksum
-import net.postchain.rell.toolbox.core.indexer.createLocationInfo
+import net.postchain.rell.toolbox.indexer.Resource
+import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.indexer.calculateChecksum
+import net.postchain.rell.toolbox.indexer.createLocationInfo
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver

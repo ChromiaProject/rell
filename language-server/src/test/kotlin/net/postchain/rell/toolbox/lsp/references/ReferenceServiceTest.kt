@@ -3,7 +3,7 @@ package net.postchain.rell.toolbox.lsp.references
 import assertk.assertThat
 import assertk.assertions.containsAll
 import assertk.assertions.hasSize
-import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions

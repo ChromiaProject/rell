@@ -9,10 +9,10 @@ import net.postchain.rell.base.utils.ide.IdeModuleSymbolLink
 import net.postchain.rell.base.utils.ide.IdeSymbolGlobalId
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import net.postchain.rell.toolbox.core.compiler.AntlrPos
-import net.postchain.rell.toolbox.core.indexer.IdeSymbolInfoWithInterval
-import net.postchain.rell.toolbox.core.indexer.Resource
-import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.transformer.AntlrPos
+import net.postchain.rell.toolbox.indexer.IdeSymbolInfoWithInterval
+import net.postchain.rell.toolbox.indexer.Resource
+import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.editing.Document
 import org.antlr.v4.runtime.misc.Interval
 import org.eclipse.lsp4j.DocumentSymbol

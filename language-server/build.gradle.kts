@@ -9,12 +9,13 @@ dependencies {
     implementation(libs.bundles.lsp4j)
     implementation(libs.bundles.logging)
     implementation(libs.bundles.koin)
-    implementation(project(":core"))
+    implementation(project(":ast"))
+    implementation(project(":common"))
+    implementation(project(":indexer"))
+    implementation(project(":code-quality"))
     implementation(libs.bundles.rell)
 
-    implementation("org.furyio:fury-core:0.4.1")
-    implementation(libs.ec4j)
-    implementation("io.github.java-diff-utils:java-diff-utils:4.12")
+    implementation(libs.fury.core)
 
     testImplementation(libs.bundles.testcontainers)
     testImplementation(libs.bundles.testing)

@@ -80,11 +80,15 @@ pages:
   stage: release
   script:
     - ./gradlew dokkaHtml
-    - mkdir -p public/core
-    - mkdir -p public/formatter
+    - mkdir -p public/ast
+    - mkdir -p public/code-quality
+    - mkdir -p public/common
+    - mkdir -p public/indexer
     - mkdir -p public/language-server
-    - mv core/build/dokka/html public/core
-    - mv formatter/build/dokka/html public/formatter
+    - mv ast/build/dokka/html public/ast
+    - mv code-quality/build/dokka/html public/code-quality
+    - mv common/build/dokka/html public/common
+    - mv indexer/build/dokka/html public/indexer
     - mv language-server/build/dokka/html public/language-server
   artifacts:
       paths:

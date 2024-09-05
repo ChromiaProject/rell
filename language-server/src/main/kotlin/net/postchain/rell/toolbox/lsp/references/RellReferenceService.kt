@@ -1,8 +1,8 @@
 package net.postchain.rell.toolbox.lsp.references
 
 import java.net.URI
-import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
-import net.postchain.rell.toolbox.core.references.ReferenceIndexer
+import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.indexer.references.ReferenceIndexer
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import net.postchain.rell.toolbox.util.toLspLocation

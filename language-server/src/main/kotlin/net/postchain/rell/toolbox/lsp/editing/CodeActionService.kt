@@ -1,10 +1,10 @@
 package net.postchain.rell.toolbox.lsp.editing
 
 import java.net.URI
-import net.postchain.rell.toolbox.core.indexer.Resource
-import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
-import net.postchain.rell.toolbox.linter.FormatterIssue
-import net.postchain.rell.toolbox.linter.issues.LinterIssue
+import net.postchain.rell.toolbox.indexer.Resource
+import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.formatter.FormatterIssue
+import net.postchain.rell.toolbox.linter.LinterIssue
 import org.eclipse.lsp4j.CodeAction
 import org.eclipse.lsp4j.Command
 import org.eclipse.lsp4j.Position

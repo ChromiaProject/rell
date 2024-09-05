@@ -1,3 +1,4 @@
+
 import io.gitlab.arturbosch.detekt.Detekt
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
@@ -75,6 +76,7 @@ dependencies {
     // Use the Kotlin JDK 8 standard library.
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation(catalog.findLibrary("oshai").get())
+    implementation(catalog.findLibrary("slf4j").get())
 
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.6")
     detektPlugins("com.gitlab.cromefire:detekt-gitlab-report:0.3.3")
@@ -104,7 +106,7 @@ tasks.withType<JacocoReport> {
             fileTree(it).apply {
                 exclude("**/core/RellVersionInfo.*")
                 exclude("**/core/RellAbout.*")
-                exclude("net/postchain/rell/toolbox/core/parser/**")
+                exclude("net/postchain/rell/toolbox/parser/**")
                 exclude("net/postchain/rell/lsp/grammar/**")
             }
         }))

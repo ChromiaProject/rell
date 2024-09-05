@@ -13,9 +13,9 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
-import net.postchain.rell.toolbox.core.indexer.RellResourceFactory
-import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
-import net.postchain.rell.toolbox.core.parser.AntlrRellParser
+import net.postchain.rell.toolbox.indexer.RellResourceFactory
+import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.parser.AntlrRellParser
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions

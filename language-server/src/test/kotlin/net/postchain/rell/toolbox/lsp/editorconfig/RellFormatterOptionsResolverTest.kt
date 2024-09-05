@@ -6,7 +6,7 @@ import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import io.mockk.every
 import io.mockk.mockk
-import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
