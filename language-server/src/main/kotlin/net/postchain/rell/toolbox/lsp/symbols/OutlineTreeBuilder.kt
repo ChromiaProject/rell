@@ -5,7 +5,7 @@ import net.postchain.rell.base.compiler.ast.S_Node
 import net.postchain.rell.base.utils.ide.IdeOutlineNodeType
 import net.postchain.rell.base.utils.ide.IdeOutlineTreeBuilder
 import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.toolbox.core.compiler.AntlrRellNodeAttachment
+import net.postchain.rell.toolbox.transformer.AntlrRellNodeAttachment
 import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range

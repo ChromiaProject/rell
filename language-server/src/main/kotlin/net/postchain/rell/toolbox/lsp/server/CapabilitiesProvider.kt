@@ -1,6 +1,6 @@
 package net.postchain.rell.toolbox.lsp.server
 
-import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
+import net.postchain.rell.toolbox.lsp.tokens.RellSemanticTokensManager
 import org.eclipse.lsp4j.CodeActionKind
 import org.eclipse.lsp4j.CodeActionOptions
 import org.eclipse.lsp4j.InitializeParams

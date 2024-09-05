@@ -7,8 +7,8 @@ import java.net.URI
 import java.util.concurrent.CompletableFuture
 import net.postchain.rell.toolbox.core.RellAbout
 import net.postchain.rell.toolbox.core.RellVersionInfo
-import net.postchain.rell.toolbox.core.indexer.RellIssue
-import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
+import net.postchain.rell.toolbox.indexer.RellIssue
+import net.postchain.rell.toolbox.lsp.tokens.RellSemanticTokensManager
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsConverter
 import net.postchain.rell.toolbox.lsp.editing.CodeActionTitles

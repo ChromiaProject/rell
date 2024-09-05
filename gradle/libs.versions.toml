@@ -12,13 +12,22 @@ log4j = "2.20.0"
 slf4j = "1.7.36"
 mockk = "1.13.8"
 ec4j = "0.3.0"
+java-diff-utils = "4.12"
+chromia-build-tools = "0.20.11"
+fury-core = "0.4.1"
 
 [libraries]
 rell-base = { module = "net.postchain.rell:rell-base", version.ref = "rell" }
 rell-api-base = { module = "net.postchain.rell:rell-api-base", version.ref = "rell" }
 rell-tools = { module = "net.postchain.rell:rell-tools", version.ref = "rell" }
 
+chromia-build-tools = { module = "com.chromia.cli:chromia-build-tools", version.ref = "chromia-build-tools" }
+
 ec4j = { module = "org.ec4j.core:ec4j-core", version.ref = "ec4j" }
+
+java-diff-utils = { module = "io.github.java-diff-utils:java-diff-utils", version.ref = "java-diff-utils" }
+
+fury-core = { module = "org.furyio:fury-core", version.ref = "fury-core" }
 
 lsp4j = { module = "org.eclipse.lsp4j:org.eclipse.lsp4j", version.ref = "lsp4j" }
 lsp4j-debug = { module = "org.eclipse.lsp4j:org.eclipse.lsp4j.debug", version.ref = "lsp4j" }

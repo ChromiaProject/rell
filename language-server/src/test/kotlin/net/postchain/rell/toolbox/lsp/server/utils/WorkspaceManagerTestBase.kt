@@ -1,6 +1,6 @@
 package net.postchain.rell.toolbox.lsp.server.utils
 
-import net.postchain.rell.toolbox.core.indexer.RellIssue
+import net.postchain.rell.toolbox.indexer.RellIssue
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions

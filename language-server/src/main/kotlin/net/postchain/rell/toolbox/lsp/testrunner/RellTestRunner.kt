@@ -1,7 +1,7 @@
 package net.postchain.rell.toolbox.lsp.testrunner
 
 import java.net.URI
-import net.postchain.rell.toolbox.core.indexer.Resource
+import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
 import net.postchain.rell.toolbox.lsp.symbols.NodeInfo
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService

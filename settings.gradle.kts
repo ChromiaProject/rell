@@ -7,5 +7,8 @@ pluginManagement {
 
 rootProject.name = "rell-toolbox"
 
-include("core")
+include("common")
 include("language-server")
+include("code-quality")
+include("indexer")
+include("ast")

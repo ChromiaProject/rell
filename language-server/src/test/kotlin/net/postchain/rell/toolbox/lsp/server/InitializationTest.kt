@@ -10,7 +10,7 @@ import java.net.Socket
 import java.net.SocketTimeoutException
 import java.net.URI
 import java.nio.file.Path
-import net.postchain.rell.toolbox.core.indexer.findRellFilesInWorkspace
+import net.postchain.rell.toolbox.indexer.findRellFilesInWorkspace
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.InitializedParams

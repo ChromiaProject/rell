@@ -1,6 +1,6 @@
 package net.postchain.rell.toolbox.lsp.server
 
-import net.postchain.rell.toolbox.core.tokens.RellSemanticTokensManager
+import net.postchain.rell.toolbox.lsp.tokens.RellSemanticTokensManager
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService

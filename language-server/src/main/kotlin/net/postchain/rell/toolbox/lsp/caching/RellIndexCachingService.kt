@@ -1,8 +1,8 @@
 package net.postchain.rell.toolbox.lsp.caching
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
-import net.postchain.rell.toolbox.core.indexer.sha256
+import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.indexer.sha256
 import java.io.File
 import java.net.URI
 import java.nio.file.Files
