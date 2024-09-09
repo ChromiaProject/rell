@@ -1,8 +1,9 @@
 package net.postchain.rell.toolbox.lsp.launcher
 
 import assertk.assertThat
-import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
+import net.postchain.rell.toolbox.lsp.TestClient
+import net.postchain.rell.toolbox.lsp.TestServerModule
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.launch.LSPLauncher
 import org.eclipse.lsp4j.services.LanguageServer
@@ -10,14 +11,10 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.koin.core.parameter.parametersOf
-import util.TestClient
-import util.TestServerModule
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
-import kotlin.test.assertEquals
-
 
 class StdioServerLauncherTest {
     private val serverModule = TestServerModule()

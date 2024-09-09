@@ -6,8 +6,8 @@ import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import io.mockk.every
 import io.mockk.mockk
-import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
@@ -50,7 +50,7 @@ class RellFormatterOptionsResolverTest {
         val deprecatedOptions = """
                     [*.rell]
                     tab_size = 17
-                """.trimIndent()
+        """.trimIndent()
         createRellFormatFile(tempDir, FormatterOptions.PREFERRED_RELL_FORMAT_FILE_NAME)
         createRellFormatFile(tempDir, FormatterOptions.DEPRECATED_RELL_FORMAT_FILE_NAME, deprecatedOptions)
         val resolver = createRellFormatterOptionsResolver(tempDir)
@@ -102,7 +102,6 @@ class RellFormatterOptionsResolverTest {
         val resolver = RellFormatterOptionsResolver()
         return resolver
     }
-
 
     private fun createRellFormatFile(
         tempDir: File,

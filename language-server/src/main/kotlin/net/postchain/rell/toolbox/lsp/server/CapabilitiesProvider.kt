@@ -13,7 +13,6 @@ import org.eclipse.lsp4j.WorkspaceFoldersOptions
 import org.eclipse.lsp4j.WorkspaceServerCapabilities
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 
-
 class CapabilitiesProvider {
 
     fun createServerCapabilities(params: InitializeParams): ServerCapabilities {
@@ -35,7 +34,7 @@ class CapabilitiesProvider {
 
             setDocumentFormattingProvider(true)
             setDocumentRangeFormattingProvider(true)
-            //setCodeActionProvider(true)
+            // setCodeActionProvider(true)
             setCodeActionProvider(
                 CodeActionOptions(
                     listOf(

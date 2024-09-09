@@ -1,9 +1,8 @@
 package net.postchain.rell.toolbox.formatter
 
-import java.io.File
-import net.postchain.rell.toolbox.core.editorconfig.EditorConfigParser
+import net.postchain.rell.toolbox.editorconfig.EditorConfigParser
 import org.ec4j.core.model.EditorConfig
-
+import java.io.File
 
 data class FormatterOptions(
     var maxLineWidth: Int = 120,
@@ -53,4 +52,3 @@ enum class NewLineStyle(val newLineString: String) {
     LF("\n"),
     CRLF("\r\n"),
 }
-

@@ -1,19 +1,19 @@
 package net.postchain.rell.toolbox.linter.rules
 
-import net.postchain.rell.toolbox.core.Position
-import net.postchain.rell.toolbox.core.Range
+import net.postchain.rell.toolbox.common.Position
+import net.postchain.rell.toolbox.common.Range
 import net.postchain.rell.toolbox.indexer.Resource
-import net.postchain.rell.toolbox.parser.RellBaseVisitor
-import net.postchain.rell.toolbox.parser.RellParser
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_CommaSeparated_29Context
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_IncrementStmtContext
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_SimpleVarDeclaratorContext
 import net.postchain.rell.toolbox.indexer.references.ReferenceIndexer
 import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.NameNodesFinder
 import net.postchain.rell.toolbox.linter.isUnderscore
 import net.postchain.rell.toolbox.linter.issues.ConstantDetectionIssue
+import net.postchain.rell.toolbox.parser.RellBaseVisitor
+import net.postchain.rell.toolbox.parser.RellParser
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_CommaSeparated_29Context
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_IncrementStmtContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_SimpleVarDeclaratorContext
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.misc.Interval
 
@@ -143,7 +143,6 @@ class ConstantDetectionRuleContext(
     val parserRuleContext: ParserRuleContext,
     val isTupleDeclarator: Boolean
 )
-
 
 class SimpleVarDeclaratorCollector : RellBaseVisitor<Unit>() {
     val declarations = mutableListOf<RuleX_SimpleVarDeclaratorContext>()

@@ -1,6 +1,5 @@
 package net.postchain.rell.toolbox.lsp.testrunner
 
-import java.net.URI
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
 import net.postchain.rell.toolbox.lsp.symbols.NodeInfo
@@ -9,9 +8,9 @@ import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolKind
+import java.net.URI
 
-
-class RellTestRunner(val workspaceManager: RellWorkspaceManager, val symbolService: RellSymbolService) {
+class RellTestRunner(val workspaceManager: RellWorkspaceManager, private val symbolService: RellSymbolService) {
 
     fun getTestFiles(workspaceUri: URI): List<RellTestFile> {
         val srcDir = workspaceManager.findSourceDirURI(workspaceUri)
@@ -59,7 +58,7 @@ class RellTestRunner(val workspaceManager: RellWorkspaceManager, val symbolServi
 
     private fun isTestCase(testTreeNode: DocumentSymbol): Boolean {
         return testTreeNode.kind == SymbolKind.Function &&
-                (testTreeNode.name == "test" || testTreeNode.name.startsWith("test_"))
+            (testTreeNode.name == "test" || testTreeNode.name.startsWith("test_"))
     }
 }
 

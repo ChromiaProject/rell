@@ -7,8 +7,8 @@ import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
-import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
@@ -35,7 +35,7 @@ class RellSymbolServiceTest {
                 function main() {
                     return "main";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -57,7 +57,7 @@ class RellSymbolServiceTest {
                 function main() {
                     return "main";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
         val document = Document(rellFile.toURI(), 1, rellFile.readText())
@@ -102,7 +102,7 @@ class RellSymbolServiceTest {
                     }
                   }
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
         val rellFileUri = rellFile.toURI()

@@ -1,9 +1,7 @@
 package net.postchain.rell.toolbox.lsp.server.utils
 
 import net.postchain.rell.toolbox.indexer.RellIssue
-import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
-import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer
@@ -28,8 +26,6 @@ open class WorkspaceManagerTestBase {
 
     protected val rellLinter = RellLinter()
     protected val formattingStyleLinter = FormattingStyleLinter()
-    protected val formatterOptions = FormatterOptions()
-    protected val linterOptions = LinterOptions()
 
     @BeforeEach
     fun setup(@TempDir tempWorkspace: File) {

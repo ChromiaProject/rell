@@ -4,31 +4,7 @@ import com.google.common.collect.ImmutableList
 import net.postchain.rell.base.compiler.ast.S_Node
 import net.postchain.rell.base.compiler.base.utils.C_Error
 import org.antlr.v4.runtime.ParserRuleContext
-import java.util.function.Supplier
 import org.antlr.v4.runtime.TokenStream
-
-class AntlrAttachmentProvider : Supplier<Any?> {
-    var node: ParserRuleContext? = null
-    var attachment: AntlrRellNodeAttachment? = null
-
-    override fun get(): Any? {
-        if (attachment != null) {
-            return attachment
-        } else if (node == null) {
-            return null
-        }
-        attachment = createAttachment(node)
-        node = null
-        return attachment
-    }
-
-    companion object {
-        private fun createAttachment(node: ParserRuleContext?): AntlrRellNodeAttachment? {
-            if (node == null) return null
-            return AntlrRellNodeAttachment(node)
-        }
-    }
-}
 
 class AntlrToRellContext(val tokenStream: TokenStream) {
 

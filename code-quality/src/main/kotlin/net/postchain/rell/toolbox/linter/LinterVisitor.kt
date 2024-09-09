@@ -1,19 +1,18 @@
 package net.postchain.rell.toolbox.linter
 
 import net.postchain.rell.toolbox.indexer.Resource
-import net.postchain.rell.toolbox.parser.RellBaseVisitor
 import net.postchain.rell.toolbox.linter.rules.ConstantDetectionRule
 import net.postchain.rell.toolbox.linter.rules.ImportFromNonModuleRule
 import net.postchain.rell.toolbox.linter.rules.NamingConventionRule
 import net.postchain.rell.toolbox.linter.rules.SpecificQuotesRule
 import net.postchain.rell.toolbox.linter.rules.UnusedVariableRule
+import net.postchain.rell.toolbox.parser.RellBaseVisitor
 import org.antlr.v4.runtime.tree.RuleNode
-
 
 class LinterVisitor(
     val config: LinterOptions,
     val resource: Resource,
-    val linterContext: LinterContext
+    linterContext: LinterContext
 ) : RellBaseVisitor<Unit>() {
 
     private val rules = listOf(
@@ -42,7 +41,7 @@ class LinterVisitor(
         try {
             clazz.getDeclaredMethod(methodName, *parameterTypes)
             return true
-        } catch (e: NoSuchMethodException) {
+        } catch (@Suppress("SwallowedException") e: NoSuchMethodException) {
             // Method not found, so it's not overridden.
             return false
         }

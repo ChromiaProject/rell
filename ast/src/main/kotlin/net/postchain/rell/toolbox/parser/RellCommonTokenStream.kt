@@ -1,6 +1,5 @@
 package net.postchain.rell.toolbox.parser
 
-import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.Token
 
 class RellCommonTokenStream(lexer: RellLexer) : AbstractRellCommonTokenStream(lexer) {
@@ -29,6 +28,10 @@ class RellCommonTokenStream(lexer: RellLexer) : AbstractRellCommonTokenStream(le
             return false
         }
         val text = token.text
-        return text.startsWith("/**") && text.endsWith("*/") && text.length >= 5
+        return text.startsWith("/**") && text.endsWith("*/") && text.length >= MINIMUM_DOC_COMMENT_LENGTH
+    }
+
+    companion object {
+        private const val MINIMUM_DOC_COMMENT_LENGTH = 5
     }
 }

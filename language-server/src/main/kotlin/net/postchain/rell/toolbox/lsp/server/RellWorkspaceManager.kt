@@ -1,23 +1,14 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.File
-import java.net.URI
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.io.path.toPath
-import kotlin.time.Duration.Companion.minutes
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
+import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.indexer.RellIssue
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.indexer.findRellFilesInWorkspace
-import net.postchain.rell.toolbox.parser.RellBaseVisitor
-import net.postchain.rell.toolbox.parser.RellParser
-import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
@@ -29,6 +20,8 @@ import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.hover.formatDocSymbol
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
+import net.postchain.rell.toolbox.parser.RellBaseVisitor
+import net.postchain.rell.toolbox.parser.RellParser
 import org.eclipse.lsp4j.CodeAction
 import org.eclipse.lsp4j.Command
 import org.eclipse.lsp4j.DocumentSymbol
@@ -47,6 +40,13 @@ import org.eclipse.lsp4j.WorkspaceEdit
 import org.eclipse.lsp4j.WorkspaceFolder
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.jsonrpc.messages.Either3
+import java.io.File
+import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.io.path.toPath
+import kotlin.time.Duration.Companion.minutes
 
 val TYPE_DEFINITIONS =
     setOf(IdeSymbolKind.DEF_ENTITY, IdeSymbolKind.DEF_STRUCT, IdeSymbolKind.DEF_ENUM, IdeSymbolKind.DEF_TYPE)
@@ -91,13 +91,6 @@ class RellWorkspaceManager(
             indexCachingService.persistOnDiskPeriodically(indexers.values, 1.minutes)
         }
         indexCachingService.cleanupOldCaches()
-    }
-
-    fun runLinter() {
-        indexers.values.forEach { indexer ->
-            indexer.runLinter()
-            reportDiagnostics(indexer)
-        }
     }
 
     private fun doIndex(workspaceFolderUri: URI): WorkspaceIndexer {
@@ -150,7 +143,7 @@ class RellWorkspaceManager(
         val path = Paths.get(uri)
         var depth = 0
         var currentPath = path
-        while (currentPath.parent != null && depth < 5) {
+        while (currentPath.parent != null && depth < MAX_DEPTH) {
             depth++
             val srcDirectory = currentPath.resolveSibling("src")
             if (Files.exists(srcDirectory) && Files.isDirectory(srcDirectory)) {
@@ -195,7 +188,7 @@ class RellWorkspaceManager(
         reportDiagnostics(indexer, listOf(fileUri))
     }
 
-    //TODO: Revisit how we get the indexer. Would this approach work if the have two indexer active where one
+    // TODO: Revisit how we get the indexer. Would this approach work if the have two indexer active where one
     // is indexed from from a child folder from the other indexer.
     fun getIndexerFor(fileUri: URI): WorkspaceIndexer = getIndexerForOrNull(fileUri) ?: doSingleFileIndex(fileUri)
 
@@ -247,8 +240,7 @@ class RellWorkspaceManager(
         openDocuments.remove(fileUri)
     }
 
-
-    fun didChangeTextDocumentContent(fileUri: URI, version: Int, contentChanges: List<TextDocumentContentChangeEvent>) {
+    fun didChangeTextDocumentContent(fileUri: URI, contentChanges: List<TextDocumentContentChangeEvent>) {
         val document = openDocuments[fileUri]
         if (document == null) {
             logger.error { "The document $fileUri has not been opened." }
@@ -304,7 +296,7 @@ class RellWorkspaceManager(
             findRellFilesInWorkspace(File(uri), dirtyFiles)
         }
 
-        //Need to do two passes of the files to guarantee that imports and modules are resolved correctly
+        // Need to do two passes of the files to guarantee that imports and modules are resolved correctly
         dirtyFiles.addAll(dirtyFiles)
         didChangeFiles(dirtyFiles, deletedFiles, true)
     }
@@ -326,7 +318,6 @@ class RellWorkspaceManager(
         val indexer = getIndexerFor(fileUri)
         return indexer.getResource(fileUri)
     }
-
 
     fun getDefinitionLocations(
         fileUri: URI,
@@ -368,8 +359,11 @@ class RellWorkspaceManager(
         val result: MutableList<Location> = mutableListOf()
         if (includeDefinition && position != null) {
             val locationIdeSymbolInfoPair = getDefinitionLocationsAndSymbolInfo(fileUri, position)
-            if (locationIdeSymbolInfoPair != null && locationIdeSymbolInfoPair.second.kind != IdeSymbolKind.DEF_IMPORT_MODULE)
+            if (locationIdeSymbolInfoPair != null &&
+                locationIdeSymbolInfoPair.second.kind != IdeSymbolKind.DEF_IMPORT_MODULE
+            ) {
                 result.add(locationIdeSymbolInfoPair.first)
+            }
         }
 
         result.addAll(rellReferenceService.getReferenceLocations(fileUri, document, indexer, position))
@@ -498,7 +492,6 @@ class RellWorkspaceManager(
         }
     }
 
-
     private fun IdeSymbolInfo.isTypeDefinition(): Boolean =
         this.kind in TYPE_DEFINITIONS && this.defId != null && this.link != null
 
@@ -516,7 +509,6 @@ class RellWorkspaceManager(
 
     private fun IdeSymbolInfo.containsAttribute(name: String): Boolean =
         this.defId?.encode()?.contains("attr[$name]") == true
-
 
     private fun IdeSymbolInfo.isLocalParam(): Boolean = this.kind == IdeSymbolKind.LOC_PARAMETER
 
@@ -546,19 +538,23 @@ class RellWorkspaceManager(
             var result: FullNameWithRange? = null
             override fun visitRuleX_AnonAttrHeader(ctx: RellParser.RuleX_AnonAttrHeaderContext) {
                 val startPos = ctx.start.line
-                if (startPos == location.range.start.line + 1 && ctx.stop.charPositionInLine == location.range.start.character) {
+                if (startPos == location.range.start.line + 1 &&
+                    ctx.stop.charPositionInLine == location.range.start.character
+                ) {
+                    val range = Range(
+                        Position(
+                            ctx.ruleX_QualifiedNameNode().start.line - 1,
+                            ctx.ruleX_QualifiedNameNode().start.charPositionInLine
+                        ),
+                        Position(
+                            ctx.ruleX_QualifiedNameNode().stop.line - 1,
+                            ctx.ruleX_QualifiedNameNode().stop.charPositionInLine +
+                                ctx.ruleX_QualifiedNameNode().stop.text.length
+                        )
+                    )
                     result = FullNameWithRange(
                         ctx.ruleX_QualifiedNameNode().ruleX_NameNode().map { it.text },
-                        Range(
-                            Position(
-                                ctx.ruleX_QualifiedNameNode().start.line - 1,
-                                ctx.ruleX_QualifiedNameNode().start.charPositionInLine
-                            ),
-                            Position(
-                                ctx.ruleX_QualifiedNameNode().stop.line - 1,
-                                ctx.ruleX_QualifiedNameNode().stop.charPositionInLine + ctx.ruleX_QualifiedNameNode().stop.text.length
-                            )
-                        )
+                        range
                     )
                 }
             }
@@ -576,5 +572,6 @@ class RellWorkspaceManager(
 
     companion object {
         private val logger = KotlinLogging.logger {}
+        private const val MAX_DEPTH = 5
     }
 }

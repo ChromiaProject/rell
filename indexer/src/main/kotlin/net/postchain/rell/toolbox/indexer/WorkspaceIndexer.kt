@@ -2,21 +2,20 @@ package net.postchain.rell.toolbox.indexer
 
 import com.chromia.cli.model.ChromiaModel
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.File
-import java.io.IOException
-import java.net.URI
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.io.path.toPath
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
-import net.postchain.rell.toolbox.parser.AntlrRellParser
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.linter.AbstractFormattingStyleLinter
 import net.postchain.rell.toolbox.linter.AbstractRellLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.parser.AntlrRellParser
+import java.io.File
+import java.net.URI
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.io.path.toPath
 
 class WorkspaceIndexer(
     val workspaceUri: URI,
@@ -136,7 +135,7 @@ class WorkspaceIndexer(
         for (fileUri in rellUris) {
             val fileContent = try {
                 File(fileUri).readText()
-            } catch (e: IOException) {
+            } catch (@Suppress("SwallowedException") e: Exception) {
                 logger.warn { "Could not read file $fileUri" }
                 continue
             }
@@ -171,18 +170,18 @@ class WorkspaceIndexer(
     }
 
     private fun getSyntaxErrors(resource: Resource): List<RellIssue> {
-        return resource.syntaxErrors.map(RellIssue.Companion::fromSyntaxError)
+        return resource.syntaxErrors.map(RellIssue::fromSyntaxError)
     }
 
     private fun getSemanticErrors(resource: Resource): List<RellIssue> {
-        return resource.fileSpecificSemanticErrors.map(RellIssue.Companion::fromCMessage)
+        return resource.fileSpecificSemanticErrors.map(RellIssue::fromCMessage)
     }
 
     private fun getLinterIssues(resource: Resource): List<RellIssue> {
         return if (shouldIgnoreReportingIssue(resource)) {
             emptyList()
         } else {
-            resource.linterIssues.map(RellIssue.Companion::fromLinterIssue)
+            resource.linterIssues.map(RellIssue::fromLinterIssue)
         }
     }
 
@@ -190,7 +189,7 @@ class WorkspaceIndexer(
         return if (shouldIgnoreReportingIssue(resource)) {
             emptyList()
         } else {
-            resource.formatterIssues.map(RellIssue.Companion::fromFormatterIssue)
+            resource.formatterIssues.map(RellIssue::fromFormatterIssue)
         }
     }
 
@@ -198,7 +197,7 @@ class WorkspaceIndexer(
         return ignoreReportingUris.any { resource.fileUri.path.startsWith(it.path) }
     }
 
-    //Change in source code
+    // Change in source code
     fun updateFileUriResourceMap(fileUri: URI) {
         if (!File(fileUri).exists()) {
             removeFileUriResourceMap(fileUri)
@@ -228,7 +227,7 @@ class WorkspaceIndexer(
         }
     }
 
-    //Rename and Move file
+    // Rename and Move file
     fun updateFileUriResourceMap(oldFileUri: URI, newFileUri: URI) {
         val resource = fileUriResourceMap[oldFileUri]
         if (resource != null) {
@@ -268,7 +267,6 @@ class WorkspaceIndexer(
             }
         }
         return filesToUpdate.toSet()
-
     }
 
     private fun calculateImplicitImports(resourceMap: Map<URI, Resource>): Map<R_ModuleName, Collection<R_ModuleName>> {
@@ -326,7 +324,7 @@ class WorkspaceIndexer(
 
     private fun isChromiaModelFile(uri: URI): Boolean {
         return uri.toPath().fileName.toString() == ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME &&
-                isInProjectRoot(uri)
+            isInProjectRoot(uri)
     }
 
     private fun isInProjectRoot(uri: URI): Boolean {

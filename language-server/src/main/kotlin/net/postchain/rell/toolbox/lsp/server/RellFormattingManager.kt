@@ -1,8 +1,8 @@
 package net.postchain.rell.toolbox.lsp.server
 
+import net.postchain.rell.toolbox.common.TextReplacement
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.formatter.RellFormatter
-import net.postchain.rell.toolbox.core.TextReplacement
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import org.eclipse.lsp4j.FormattingOptions
@@ -10,7 +10,6 @@ import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.TextEdit
 import java.io.File
 import java.net.URI
-
 
 class RellFormattingManager(
     private val workspaceManager: RellWorkspaceManager,

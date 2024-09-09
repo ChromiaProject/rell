@@ -1,7 +1,6 @@
 package net.postchain.rell.toolbox.lsp.editing
 
 import assertk.assertThat
-import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
@@ -12,12 +11,17 @@ import java.net.URI
 
 internal class DocumentTest {
 
-    private val document = Document(URI(""), 0, """
+    private val document = Document(
+        URI(""),
+        0,
+        """
             Holabaloo
             this iS my second line.
         
             foUrth linE
-        """.trimIndent())
+        """.trimIndent()
+    )
+
     @Test
     fun `Get position of capital letters in a document`() {
         assertThrows<IndexOutOfBoundsException> { document.getPosition(-1) }
@@ -30,7 +34,7 @@ internal class DocumentTest {
 
     @Test
     fun `Get offset of a Position`() {
-        assertThrows<IndexOutOfBoundsException> { document.getOffSet(Position(0,-1)) }
+        assertThrows<IndexOutOfBoundsException> { document.getOffSet(Position(0, -1)) }
         assertThrows<IndexOutOfBoundsException> { document.getOffSet(Position(3, 12)) }
         assertThat(document.getOffSet(Position(0, 0))).isEqualTo(0)
         assertThat(document.getOffSet(Position(1, 6))).isEqualTo(16)
@@ -55,7 +59,9 @@ internal class DocumentTest {
 
     @Test
     fun `Content is replaced`() {
-        val updatedDocument = document.applyTextDocumentChanges(listOf(TextDocumentContentChangeEvent(null, "New content")))
+        val updatedDocument = document.applyTextDocumentChanges(
+            listOf(TextDocumentContentChangeEvent(null, "New content"))
+        )
         assertThat(updatedDocument.fileUri).isEqualTo(document.fileUri)
         assertThat(updatedDocument.version).isEqualTo(1)
         assertThat(updatedDocument.content).isEqualTo("New content")

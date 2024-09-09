@@ -1,16 +1,16 @@
 package net.postchain.rell.toolbox.linter
 
 import com.github.difflib.patch.Chunk
-import net.postchain.rell.toolbox.core.Position
-import net.postchain.rell.toolbox.core.Range
-import net.postchain.rell.toolbox.core.TextEdit
-import net.postchain.rell.toolbox.indexer.Resource
-import net.postchain.rell.toolbox.core.offsetToPosition
+import net.postchain.rell.toolbox.common.Position
+import net.postchain.rell.toolbox.common.Range
+import net.postchain.rell.toolbox.common.TextEdit
+import net.postchain.rell.toolbox.common.offsetToPosition
 import net.postchain.rell.toolbox.formatter.DeltaType
 import net.postchain.rell.toolbox.formatter.Diff
 import net.postchain.rell.toolbox.formatter.FormatterIssue
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.formatter.RellFormatter
+import net.postchain.rell.toolbox.indexer.Resource
 
 class FormattingStyleLinter : AbstractFormattingStyleLinter() {
 
@@ -41,7 +41,9 @@ class FormattingStyleLinter : AbstractFormattingStyleLinter() {
                     val position = offsetToPosition(fileContent, delta.source.position)
                     formatterIssues.add(
                         FormatterIssue(
-                            "Insert: `${getFormatterMessage(delta.target)}` at line ${position.line + 1}, column ${position.character + 1}",
+                            "Insert: `${getFormatterMessage(
+                                delta.target
+                            )}` at line ${position.line + 1}, column ${position.character + 1}",
                             DeltaType.INSERT,
                             position.line + 1,
                             position.character,
@@ -54,7 +56,9 @@ class FormattingStyleLinter : AbstractFormattingStyleLinter() {
                     val position = offsetToPosition(fileContent, delta.source.position)
                     formatterIssues.add(
                         FormatterIssue(
-                            "Delete: `${getFormatterMessage(delta.source)}` from line ${position.line + 1}, column ${position.character + 1}",
+                            "Delete: `${getFormatterMessage(
+                                delta.source
+                            )}` from line ${position.line + 1}, column ${position.character + 1}",
                             DeltaType.DELETE,
                             position.line + 1,
                             position.character,
@@ -67,7 +71,11 @@ class FormattingStyleLinter : AbstractFormattingStyleLinter() {
                     val position = offsetToPosition(fileContent, delta.source.position)
                     formatterIssues.add(
                         FormatterIssue(
-                            "Change: `${getFormatterMessage(delta.source)}` to '${getFormatterMessage(delta.target)}' at line ${position.line + 1}, column ${position.character + 1}",
+                            "Change: `${getFormatterMessage(
+                                delta.source
+                            )}` to '${getFormatterMessage(
+                                delta.target
+                            )}' at line ${position.line + 1}, column ${position.character + 1}",
                             DeltaType.CHANGE,
                             position.line + 1,
                             position.character,
@@ -80,7 +88,7 @@ class FormattingStyleLinter : AbstractFormattingStyleLinter() {
                     // Ignore
                 }
 
-                else -> throw IllegalStateException("Unsupported delta type: ${delta.type}")
+                else -> error("Unsupported delta type: ${delta.type}")
             }
         }
 

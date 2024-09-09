@@ -6,12 +6,12 @@ import net.postchain.rell.base.utils.ide.IdeLocalSymbolLink
 import net.postchain.rell.base.utils.ide.IdeModuleSymbolLink
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
-import net.postchain.rell.toolbox.core.Location
-import net.postchain.rell.toolbox.core.Position
-import net.postchain.rell.toolbox.core.Range
-import net.postchain.rell.toolbox.transformer.AntlrPos
+import net.postchain.rell.toolbox.common.Location
+import net.postchain.rell.toolbox.common.Position
+import net.postchain.rell.toolbox.common.Range
 import net.postchain.rell.toolbox.indexer.IdeSymbolInfoWithInterval
 import net.postchain.rell.toolbox.indexer.Resource
+import net.postchain.rell.toolbox.transformer.AntlrPos
 import org.antlr.v4.runtime.misc.Interval
 import java.io.File
 import java.net.URI

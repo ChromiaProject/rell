@@ -8,7 +8,7 @@ import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
 import net.postchain.rell.base.utils.ide.IdeCompilationResult
 import net.postchain.rell.base.utils.ide.IdeDirApi
-import net.postchain.rell.toolbox.compiler.RellcFilePath
+import net.postchain.rell.toolbox.compiler.RellCompilerFilePath
 import java.io.File
 import java.net.URI
 
@@ -21,16 +21,13 @@ class RellCompilerUtils {
         }
 
         val compilerSourcePath = IdeDirApi.parseSourcePath(relativePath)
-        if (compilerSourcePath != null) {
-            return compilerSourcePath
-        } else {
-            throw Exception("Could not create source path for file: $uri")
-        }
+        check(compilerSourcePath != null) { "Could not create source path for file: $uri" }
+        return compilerSourcePath
     }
 
-    fun createRellCompilerFilePath(compilerSourcePath: C_SourcePath): RellcFilePath {
+    fun createRellCompilerFilePath(compilerSourcePath: C_SourcePath): RellCompilerFilePath {
         val idePath = IdeSourcePathFilePath(compilerSourcePath)
-        return RellcFilePath(compilerSourcePath, idePath)
+        return RellCompilerFilePath(compilerSourcePath, idePath)
     }
 
     fun createInvalidFileCompilationResult(compilerSrcPath: C_SourcePath): IdeCompilationResult {

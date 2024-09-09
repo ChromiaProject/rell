@@ -1,6 +1,5 @@
 package net.postchain.rell.toolbox.indexer
 
-import java.net.URI
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.utils.C_Message
@@ -8,12 +7,13 @@ import net.postchain.rell.base.utils.ide.IdeModuleInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import net.postchain.rell.toolbox.parser.SyntaxError
 import net.postchain.rell.toolbox.formatter.FormatterIssue
 import net.postchain.rell.toolbox.linter.LinterIssue
 import net.postchain.rell.toolbox.parser.AbstractRellCommonTokenStream
+import net.postchain.rell.toolbox.parser.SyntaxError
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.misc.Interval
+import java.net.URI
 
 data class Resource(
     val parseTree: ParserRuleContext,

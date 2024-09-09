@@ -1,15 +1,14 @@
 package net.postchain.rell.toolbox.lsp.hover
 
 import net.postchain.rell.base.utils.doc.DocCodeTokenVisitor
-import net.postchain.rell.toolbox.core.annotaions.ExcludeFromJacocoGeneratedReport
+import net.postchain.rell.toolbox.jacoco.annotations.ExcludeFromJacocoGeneratedReport
 
 /**
  * Naively removes some keywords and reformats optional parameters using bracket notation.
  */
-
-//TODO Decide whether to extend or remove
+// TODO Decide whether to extend or remove
 @ExcludeFromJacocoGeneratedReport
-class SanitizedDocDeclarationVisitor(val sb: StringBuilder): DocCodeTokenVisitor {
+class SanitizedDocDeclarationVisitor(val sb: StringBuilder) : DocCodeTokenVisitor {
     var isOptional = false
     var hasStarted = false
 
@@ -39,6 +38,5 @@ class SanitizedDocDeclarationVisitor(val sb: StringBuilder): DocCodeTokenVisitor
         if (s != "\n") sb.append(s)
     }
 
-    override fun tab() {
-    }
+    override fun tab() = Unit
 }

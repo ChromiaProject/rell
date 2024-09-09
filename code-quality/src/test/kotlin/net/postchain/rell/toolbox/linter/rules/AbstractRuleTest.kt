@@ -1,18 +1,23 @@
 package net.postchain.rell.toolbox.linter.rules
 
-import java.net.URI
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
-import net.postchain.rell.toolbox.parser.AntlrRellParser
 import net.postchain.rell.toolbox.indexer.RellResourceFactory
 import net.postchain.rell.toolbox.linter.LinterIssue
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
+import net.postchain.rell.toolbox.parser.AntlrRellParser
+import java.net.URI
 
 open class AbstractRuleTest {
     private val rellLinter = RellLinter()
-    private val resourceFactory = RellResourceFactory(javaClass.getResource("/linter/")!!.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
+    private val resourceFactory = RellResourceFactory(
+        javaClass.getResource("/linter/")!!.toURI(),
+        AntlrRellParser(),
+        ChromiaModelProvider(null)
+    )
+
     protected fun lint(
         fileName: String,
         config: LinterOptions,

@@ -1,17 +1,17 @@
 package net.postchain.rell.toolbox.lsp.editing
 
-import java.net.URI
-import net.postchain.rell.toolbox.core.offsetToPosition
-import net.postchain.rell.toolbox.core.positionToOffset
+import net.postchain.rell.toolbox.common.offsetToPosition
+import net.postchain.rell.toolbox.common.positionToOffset
 import net.postchain.rell.toolbox.util.toLspPosition
 import org.antlr.v4.runtime.misc.Interval
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
+import java.net.URI
 
 class Document(val fileUri: URI, val version: Int, val content: String) {
 
     fun getOffSet(position: Position): Int =
-        positionToOffset(content, net.postchain.rell.toolbox.core.Position(position.line, position.character))
+        positionToOffset(content, net.postchain.rell.toolbox.common.Position(position.line, position.character))
 
     fun getPosition(offset: Int): Position = offsetToPosition(content, offset).toLspPosition()
 
@@ -32,8 +32,10 @@ class Document(val fileUri: URI, val version: Int, val content: String) {
             } else {
                 val start = currentDocument.getOffSet(change.range.start)
                 val end = currentDocument.getOffSet(change.range.end)
-                (currentDocument.content.substring(0, start) + change.text
-                        + currentDocument.content.substring(end))
+                (
+                    currentDocument.content.substring(0, start) + change.text +
+                        currentDocument.content.substring(end)
+                    )
             }
             currentDocument = Document(fileUri, newVersion, newContent)
         }
@@ -41,5 +43,4 @@ class Document(val fileUri: URI, val version: Int, val content: String) {
     }
 
     fun getTextIn(interval: Interval): String = content.substring(interval.a, interval.b + 1)
-
 }

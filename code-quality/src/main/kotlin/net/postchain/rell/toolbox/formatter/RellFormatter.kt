@@ -1,7 +1,7 @@
 package net.postchain.rell.toolbox.formatter
 
-import net.postchain.rell.toolbox.core.TextReplacement
-import net.postchain.rell.toolbox.core.applyTextReplacements
+import net.postchain.rell.toolbox.common.TextReplacement
+import net.postchain.rell.toolbox.common.applyTextReplacements
 import net.postchain.rell.toolbox.parser.RellCommonTokenStream
 import net.postchain.rell.toolbox.parser.RellLexer
 import net.postchain.rell.toolbox.parser.RellParser
@@ -329,7 +329,6 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             }
         }
 
-
         val elseKeyword = tokenFor(xIfExpr, "else")
         if (elseKeyword != null) {
             if (elseKeyword.symbol.line != conditionalElseExpr.start.line) {
@@ -640,11 +639,11 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
     }
 
     fun format(xUpdateTargetAt: RuleX_UpdateTargetAtContext, doc: FormattableDocument) {
-        //doc.append(xUpdateTargetAt.ruleX_AtExprFrom()) { it.oneSpace() }
+        // doc.append(xUpdateTargetAt.ruleX_AtExprFrom()) { it.oneSpace() }
         doc.append(xUpdateTargetAt.ruleX_UpdateFrom()) { it.oneSpace() }
         doc.append(xUpdateTargetAt.ruleX_AtExprAt()) { it.oneSpace() }
 
-        //TODO: Format atExprWhere should work, duplication of code
+        // TODO: Format atExprWhere should work, duplication of code
         val atExprWhere = xUpdateTargetAt.ruleX_AtExprWhere()
         formatBracePairWithSpace(atExprWhere, doc, BracePairTypes.CURLY)
         val (expressionRef, trailingComma) = atExprWhere.getExpressionRefWithTrailingComma()
@@ -887,7 +886,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
                     val formatMethod =
                         javaClass.getDeclaredMethod("format", child.javaClass, FormattableDocument::class.java)
                     formatMethod.invoke(this, child, doc)
-                } catch (e: NoSuchMethodException) {
+                } catch (@Suppress("SwallowedException") e: NoSuchMethodException) {
                     format(child, doc)
                 }
             }

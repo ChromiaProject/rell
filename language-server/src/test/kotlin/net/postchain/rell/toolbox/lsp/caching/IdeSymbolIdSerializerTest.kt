@@ -14,10 +14,14 @@ class IdeSymbolIdSerializerTest {
     @Test
     fun `IdeSymbolId instance is serialized correctly`() {
         val fury = RellIndexSerializer.getFury()
-        val ideSymbolId = IdeSymbolId(IdeSymbolCategory.FUNCTION, "dummyFunction", listOf(
-            Pair(IdeSymbolCategory.PARAMETER, R_Name.of("dummyParameter")),
-            Pair(IdeSymbolCategory.ATTRIBUTE, R_Name.of("dummyAttribute"))
-        ))
+        val ideSymbolId = IdeSymbolId(
+            IdeSymbolCategory.FUNCTION,
+            "dummyFunction",
+            listOf(
+                Pair(IdeSymbolCategory.PARAMETER, R_Name.of("dummyParameter")),
+                Pair(IdeSymbolCategory.ATTRIBUTE, R_Name.of("dummyAttribute"))
+            )
+        )
 
         val symIdAsBytes = fury.serialize(ideSymbolId)
 

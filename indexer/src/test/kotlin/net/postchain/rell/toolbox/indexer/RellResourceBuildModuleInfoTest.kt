@@ -5,8 +5,6 @@ import assertk.assertions.containsAll
 import assertk.assertions.extracting
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
-import java.io.File
-import java.net.URI
 import net.postchain.rell.base.compiler.base.utils.C_Message
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
@@ -14,7 +12,8 @@ import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.parser.AntlrRellParser
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-
+import java.io.File
+import java.net.URI
 
 @Suppress("JAVA_CLASS_ON_COMPANION")
 class RellResourceBuildModuleInfoTest {
@@ -25,7 +24,7 @@ class RellResourceBuildModuleInfoTest {
         }
     }
 
-    //TODO make it so a compiler can take in one file without ws defined
+    // TODO make it so a compiler can take in one file without ws defined
     @Test
     fun `compiler finds errors in from imported file`() {
         val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
@@ -47,8 +46,16 @@ class RellResourceBuildModuleInfoTest {
         val compilerSourcePathSemanticError =
             rellCompilerUtils.createCompilerSourcePath(fileUriSemanticError, workspaceError.toURI())
 
-        val sRellFileImport = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePathImport, parseTreeImport, importParseResult.parser.tokenStream).first
-        val sRellFileSemanticError = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePathSemanticError, parseTreeSematicError, importParseResult.parser.tokenStream).first
+        val sRellFileImport = rellDesc.buildRellAstWithCompilerErrors(
+            compilerSourcePathImport,
+            parseTreeImport,
+            importParseResult.parser.tokenStream
+        ).first
+        val sRellFileSemanticError = rellDesc.buildRellAstWithCompilerErrors(
+            compilerSourcePathSemanticError,
+            parseTreeSematicError,
+            importParseResult.parser.tokenStream
+        ).first
 
         val rellCompileResultSemanticError = rellDesc.compileResult(
             compilerSourcePathSemanticError,
@@ -69,7 +76,7 @@ class RellResourceBuildModuleInfoTest {
         assertThat(errorMessages).isEmpty()
     }
 
-    //TODO make it so a compiler can take in one file without ws defined
+    // TODO make it so a compiler can take in one file without ws defined
     @Test
     fun `compiler finds single errors in single rell file`() {
         val fileUri = rellFilesErrors.find { it.toString().endsWith("/semantic_error.rell") }!!
@@ -80,7 +87,11 @@ class RellResourceBuildModuleInfoTest {
         val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
         val parsingResult = rellDesc.buildParseTree(fileContent)
         val parseTree = parsingResult.parseTree
-        val sRellFile = rellDesc.buildRellAstWithCompilerErrors(compilerSourcePath, parseTree, parsingResult.parser.tokenStream).first
+        val sRellFile = rellDesc.buildRellAstWithCompilerErrors(
+            compilerSourcePath,
+            parseTree,
+            parsingResult.parser.tokenStream
+        ).first
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
 
         val rellCompileResult = rellDesc.compileResult(
@@ -99,15 +110,14 @@ class RellResourceBuildModuleInfoTest {
         )
     }
 
-    //TODO: Redo tests to be specific to the method of RellResourceFactory class
+    // TODO: Redo tests to be specific to the method of RellResourceFactory class
 
     companion object {
         var rellFilesErrors: MutableList<URI> = mutableListOf()
-        var rellFilesCorrect: MutableList<URI> = mutableListOf()
-        val classLoader = javaClass.getClassLoader()
-        val workspaceError = File(classLoader.getResource("rellDappWithErrors").file)
-        val workspaceCorrect = File(classLoader.getResource("rellDapp").file)
-
+        private var rellFilesCorrect: MutableList<URI> = mutableListOf()
+        val classLoader: ClassLoader = javaClass.getClassLoader()
+        val workspaceError = File(classLoader.getResource("rellDappWithErrors")!!.file)
+        private val workspaceCorrect = File(classLoader.getResource("rellDapp")!!.file)
 
         @JvmStatic
         @BeforeAll

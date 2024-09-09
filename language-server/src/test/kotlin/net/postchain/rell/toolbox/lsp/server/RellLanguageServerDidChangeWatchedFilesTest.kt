@@ -5,8 +5,9 @@ import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
-import java.io.File
-import kotlin.io.path.createDirectory
+import net.postchain.rell.toolbox.lsp.TestClient
+import net.postchain.rell.toolbox.lsp.TestClientServerLauncher
+import net.postchain.rell.toolbox.lsp.TestServerModule
 import org.eclipse.lsp4j.Diagnostic
 import org.eclipse.lsp4j.DiagnosticSeverity
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams
@@ -19,9 +20,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.testcontainers.shaded.org.awaitility.Awaitility.await
-import util.TestClient
-import util.TestClientServerLauncher
-import util.TestServerModule
+import java.io.File
+import kotlin.io.path.createDirectory
 
 class RellLanguageServerDidChangeWatchedFilesTest {
     private lateinit var clientServerLauncher: TestClientServerLauncher
@@ -61,7 +61,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
                 """
                 module;
                 val a = "a";
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
 
@@ -84,7 +84,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
                 function foo() {
                     val x = 123;
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
         clientServerLauncher.initializeServer(tempDir.toURI())
@@ -94,7 +94,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
                 """
                 [*.rell]
                 rule_unused_variable=true
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
 
@@ -129,7 +129,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
                 function Foo() {
                     val x = 123;
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
         clientServerLauncher.initializeServer(srcDir.toURI())
@@ -139,7 +139,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
                 """
                 [*.rell]
                 rule_naming_convention=true
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
 
@@ -172,7 +172,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
                 """
                 module;
                 import new_file.*;
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
         clientServerLauncher.initializeServer(srcDir.toURI())
@@ -182,7 +182,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
             writeText(
                 """
                 module;
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
 
@@ -201,7 +201,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
             writeText(
                 """
                 module;
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
         clientServerLauncher.initializeServer(srcDir.toURI())
@@ -223,7 +223,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
             writeText(
                 """
                 module;
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
         clientServerLauncher.initializeServer(srcDir.toURI())
@@ -244,7 +244,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
             writeText(
                 """
                 module;
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
 
@@ -256,7 +256,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
             writeText(
                 """
                 module;
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
 
@@ -306,7 +306,6 @@ class RellLanguageServerDidChangeWatchedFilesTest {
             if (uri.toString().endsWith("main.rell")) {
                 assertThat(issues.size).isEqualTo(1)
                 assertThat(issues.first().message).isEqualTo("Module 'submodule' not found")
-
             } else {
                 assertThat(issues.size).isEqualTo(0)
             }
@@ -335,7 +334,6 @@ class RellLanguageServerDidChangeWatchedFilesTest {
             writeText(fileContent)
         }.toURI()
 
-
         val configContent = """
                 blockchains:
                   rellDappWithLib:
@@ -343,7 +341,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
                 
                 compile:
                   rellVersion: 0.13.4
-            """.trimIndent()
+        """.trimIndent()
         val chromiaConfigFile = File(tempDir, "chromia.yml").apply {
             writeText(configContent)
         }

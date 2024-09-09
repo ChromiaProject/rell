@@ -5,13 +5,12 @@ import assertk.assertions.containsAll
 import assertk.assertions.containsExactly
 import assertk.assertions.extracting
 import assertk.assertions.isEqualTo
-import java.io.File
-import java.net.URI
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.parser.AntlrRellParser
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-
+import java.io.File
+import java.net.URI
 
 @Suppress("JAVA_CLASS_ON_COMPANION")
 class RellResourceBuildParseTreeTest {
@@ -34,6 +33,7 @@ class RellResourceBuildParseTreeTest {
     }
 
     @Test
+    @Suppress("MaxLineLength")
     fun `ParseTree finds multiple errors in single rell file`() {
         val parseTreeWithErrors = rellDesc.buildParseTree(getFileContent("multiple_syntax_error.rell"))
         assertThat(parseTreeWithErrors.syntaxErrors).extracting { it.message }.containsAll(
@@ -48,7 +48,6 @@ class RellResourceBuildParseTreeTest {
     fun `ParseTree finds no error in semantic error file`() {
         val parseTreeWithErrors = rellDesc.buildParseTree(getFileContent("/semantic_error.rell"))
         assertThat(parseTreeWithErrors.syntaxErrors.size).isEqualTo(0)
-
     }
 
     @Test
@@ -61,8 +60,8 @@ class RellResourceBuildParseTreeTest {
         var rellFilesError: MutableList<URI> = mutableListOf()
         private var rellFilesCorrect: MutableList<URI> = mutableListOf()
         private val classLoader = javaClass.getClassLoader()
-        private val workspaceError = File(classLoader.getResource("rellDappWithErrors").file).absoluteFile
-        private val workspaceCorrect = File(RellResourceBuildModuleInfoTest.classLoader.getResource("rellDapp").file)
+        private val workspaceError = File(classLoader.getResource("rellDappWithErrors")!!.file).absoluteFile
+        private val workspaceCorrect = File(RellResourceBuildModuleInfoTest.classLoader.getResource("rellDapp")!!.file)
         val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
 
         @JvmStatic

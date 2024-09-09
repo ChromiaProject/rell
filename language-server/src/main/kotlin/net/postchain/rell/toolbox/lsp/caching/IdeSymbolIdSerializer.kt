@@ -7,7 +7,6 @@ import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 
-
 class IdeSymbolIdSerializer(fury: Fury?) : Serializer<IdeSymbolId>(fury, IdeSymbolId::class.java) {
     private val regex = Regex("""(\w+)\[([^]]+)]""")
     private val ideSymbolCategoryMap = IdeSymbolCategory.entries.associateBy { it.code }

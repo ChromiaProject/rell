@@ -6,14 +6,14 @@ import assertk.assertions.isTrue
 import io.mockk.every
 import io.mockk.mockk
 import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.linter.AbstractFormattingStyleLinter
+import net.postchain.rell.toolbox.linter.AbstractRellLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.io.path.createDirectory
-import net.postchain.rell.toolbox.linter.AbstractFormattingStyleLinter
-import net.postchain.rell.toolbox.linter.AbstractRellLinter
 
 class WorkspaceIndexerAffectedFilesTest {
     @TempDir
@@ -22,7 +22,7 @@ class WorkspaceIndexerAffectedFilesTest {
     private lateinit var importFileDepth1: File
     private lateinit var implicitlyImporting: File
 
-    private val rellLinter =  mockk<AbstractRellLinter>()
+    private val rellLinter = mockk<AbstractRellLinter>()
     private val formattingStyleLinter = mockk<AbstractFormattingStyleLinter>()
     private val formatterOptions = FormatterOptions()
     private val linterOptions = LinterOptions()
@@ -37,7 +37,7 @@ class WorkspaceIndexerAffectedFilesTest {
                 """
                 module;
                 import ^.imported_module.*;
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -45,7 +45,7 @@ class WorkspaceIndexerAffectedFilesTest {
             writeText(
                 """
                 module;
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -56,7 +56,7 @@ class WorkspaceIndexerAffectedFilesTest {
                 """
                 module;
                 import ^.imported_module.*;
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -64,7 +64,7 @@ class WorkspaceIndexerAffectedFilesTest {
             writeText(
                 """
                 fun no_imports_inside_file() {}
-            """.trimIndent()
+                """.trimIndent()
             )
         }
     }

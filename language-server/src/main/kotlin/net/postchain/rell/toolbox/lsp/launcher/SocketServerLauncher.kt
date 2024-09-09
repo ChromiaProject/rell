@@ -8,19 +8,16 @@ import java.net.InetAddress
 import java.net.ServerSocket
 
 class SocketServerLauncher(languageServer: RellLanguageServer) : AbstractServerLauncher(languageServer) {
-    private val logger = KotlinLogging.logger {}
-    private val lspPort = 5008
 
     override fun launch(args: Array<String>) {
         try {
-            logger.info { "Starting Rell Language Server on port: $lspPort..." }
+            logger.info { "Starting Rell Language Server on port: $LSP_PORT..." }
             val validate: Boolean = shouldValidate(args)
             val trace: PrintWriter? = setTracePrintWriter(args)
 
-            val maxQueueLengthOfIncommingConnections = 50
             ServerSocket(
-                lspPort,
-                maxQueueLengthOfIncommingConnections,
+                LSP_PORT,
+                MAX_QUEUE_LENGTH_OF_INCOMING_CONNECTIONS,
                 InetAddress.getLoopbackAddress()
             ).use { socket ->
                 val client = socket.accept()
@@ -35,7 +32,6 @@ class SocketServerLauncher(languageServer: RellLanguageServer) : AbstractServerL
                 launcher.startListening()
                 logger.info { "Rell Language Server started." }
             }
-
         } catch (e: Exception) {
             logger.error { "Exception while running language server: ${e.message}" }
         }
@@ -44,4 +40,9 @@ class SocketServerLauncher(languageServer: RellLanguageServer) : AbstractServerL
     override fun setTracePrintWriter(args: Array<String>): PrintWriter? =
         if (args.contains(trace)) PrintWriter(System.out) else null
 
+    companion object {
+        private val logger = KotlinLogging.logger {}
+        private const val LSP_PORT = 5008
+        private const val MAX_QUEUE_LENGTH_OF_INCOMING_CONNECTIONS = 50
+    }
 }

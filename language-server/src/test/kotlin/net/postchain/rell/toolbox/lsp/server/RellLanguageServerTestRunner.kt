@@ -3,13 +3,13 @@ package net.postchain.rell.toolbox.lsp.server
 import assertk.assertThat
 import assertk.assertions.containsOnly
 import assertk.assertions.extracting
+import net.postchain.rell.toolbox.lsp.TestClient
+import net.postchain.rell.toolbox.lsp.TestClientServerLauncher
+import net.postchain.rell.toolbox.lsp.TestServerModule
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import util.TestClient
-import util.TestClientServerLauncher
-import util.TestServerModule
 import java.io.File
 import kotlin.io.path.createDirectory
 
@@ -35,7 +35,7 @@ class RellLanguageServerTestRunner {
                 function test_1() { return 1; }
                 function not_test() { return 1; }
                 function test_2() { return 1; }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
         val koinApp = serverModule.startKoin()

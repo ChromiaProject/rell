@@ -1,6 +1,6 @@
 package net.postchain.rell.toolbox.lsp
 
-import net.postchain.rell.toolbox.core.annotaions.ExcludeFromJacocoGeneratedReport
+import net.postchain.rell.toolbox.jacoco.annotations.ExcludeFromJacocoGeneratedReport
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.server.LauncherType
 import net.postchain.rell.toolbox.lsp.server.serverModule

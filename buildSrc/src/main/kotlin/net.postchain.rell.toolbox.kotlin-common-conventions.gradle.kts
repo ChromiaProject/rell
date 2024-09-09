@@ -102,14 +102,18 @@ tasks {
 tasks.withType<JacocoReport> {
     dependsOn(tasks.test)
     afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.map {
-            fileTree(it).apply {
-                exclude("**/core/RellVersionInfo.*")
-                exclude("**/core/RellAbout.*")
-                exclude("net/postchain/rell/toolbox/parser/**")
-                exclude("net/postchain/rell/lsp/grammar/**")
-            }
-        }))
+        classDirectories.setFrom(
+            files(
+                classDirectories.files.map {
+                    fileTree(it).apply {
+                        exclude("**/core/RellVersionInfo.*")
+                        exclude("**/core/RellAbout.*")
+                        exclude("net/postchain/rell/toolbox/parser/**")
+                        exclude("net/postchain/rell/lsp/grammar/**")
+                    }
+                }
+            )
+        )
     }
 }
 tasks.test {
@@ -120,7 +124,15 @@ detekt {
     buildUponDefaultConfig = true
     config.setFrom(file("../detekt.yml"))
     basePath = rootDir.toString()
-    source.setFrom(files(rootDir.resolve("core/src"), rootDir.resolve("language-server/src")))
+    source.setFrom(
+        files(
+            rootDir.resolve("common/src"),
+            rootDir.resolve("language-server/src"),
+            rootDir.resolve("indexer/src"),
+            rootDir.resolve("ast/src"),
+            rootDir.resolve("code-quality/src"),
+        )
+    )
 }
 
 tasks {

@@ -1,8 +1,8 @@
 package net.postchain.rell.toolbox.lsp.caching
 
-import java.net.URI
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.linter.LinterOptions
+import java.net.URI
 
 class SerializableWorkspaceIndexer(
     val workspaceUri: URI,

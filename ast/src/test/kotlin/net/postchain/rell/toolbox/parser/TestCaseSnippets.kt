@@ -1,12 +1,11 @@
 package net.postchain.rell.toolbox.parser
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import java.io.File
 import net.postchain.rell.base.utils.ide.IdeCodeSnippet
-
+import java.io.File
 
 object TestCaseSnippets {
-    private val testDataPath = "test-cases"
+    private const val TEST_DATA_PATH = "test-cases"
 
     fun getTestCases(): List<IdeCodeSnippet> {
         val mapper = jacksonObjectMapper()
@@ -19,7 +18,7 @@ object TestCaseSnippets {
     }
 
     private fun getTestCaseFiles(): List<File> {
-        val testCasesFolder = File(RellParserTest::class.java.classLoader.getResource(testDataPath)!!.file)
+        val testCasesFolder = File(RellParserTest::class.java.classLoader.getResource(TEST_DATA_PATH)!!.file)
         return testCasesFolder.walk().filter { it.isFile && it.extension == "json" }.toList()
     }
 }

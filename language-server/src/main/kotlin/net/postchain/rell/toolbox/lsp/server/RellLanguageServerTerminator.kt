@@ -4,8 +4,8 @@ import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import kotlin.system.exitProcess
 
 class RellLanguageServerTerminator(
-    val requestManager: RellRequestManager,
-    val indexCachingService: RellIndexCachingService
+    private val requestManager: RellRequestManager,
+    private val indexCachingService: RellIndexCachingService
 ) {
 
     private var hasBeenShutdown = false

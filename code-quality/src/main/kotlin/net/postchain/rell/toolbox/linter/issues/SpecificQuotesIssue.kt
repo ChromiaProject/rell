@@ -5,7 +5,7 @@ import net.postchain.rell.toolbox.linter.LinterIssue
 import net.postchain.rell.toolbox.linter.Quote
 import org.antlr.v4.runtime.ParserRuleContext
 
-class SpecificQuotesIssue(ctx: ParserRuleContext, ruleId: String, message: String, val quote: Quote) :
+class SpecificQuotesIssue(ctx: ParserRuleContext, ruleId: String, message: String, private val quote: Quote) :
     LinterIssue(ctx, ruleId, message) {
     override fun fix(): LinterFix {
         val string = ctx.start.text

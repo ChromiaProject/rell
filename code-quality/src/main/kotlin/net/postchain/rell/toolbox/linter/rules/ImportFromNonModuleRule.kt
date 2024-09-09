@@ -1,11 +1,11 @@
 package net.postchain.rell.toolbox.linter.rules
 
-import java.nio.file.Paths
 import net.postchain.rell.toolbox.indexer.Resource
-import net.postchain.rell.toolbox.parser.RellParser
 import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.issues.ImportFromNonModuleIssue
+import net.postchain.rell.toolbox.parser.RellParser
+import java.nio.file.Paths
 
 class ImportFromNonModuleRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {

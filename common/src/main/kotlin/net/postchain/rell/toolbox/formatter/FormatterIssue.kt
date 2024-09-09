@@ -1,6 +1,6 @@
 package net.postchain.rell.toolbox.formatter
 
-import net.postchain.rell.toolbox.core.TextEdit
+import net.postchain.rell.toolbox.common.TextEdit
 
 data class FormatterIssue(
     val message: String,
