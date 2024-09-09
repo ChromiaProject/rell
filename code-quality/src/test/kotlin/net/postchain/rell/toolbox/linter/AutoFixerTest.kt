@@ -2,21 +2,25 @@ package net.postchain.rell.toolbox.linter
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import java.net.URI
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
+import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.indexer.RellResourceFactory
 import net.postchain.rell.toolbox.parser.AntlrRellParser
-import net.postchain.rell.toolbox.formatter.FormatterOptions
 import org.junit.jupiter.api.Test
+import java.net.URI
 
 class AutoFixerTest {
     private val autoFixer = AutoFixer()
     private val rellLinter = RellLinter()
     private val formattingStyleLinter = FormattingStyleLinter()
     private val resourceFactory =
-        RellResourceFactory(javaClass.getResource("/linter/auto-fixer/")!!.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
+        RellResourceFactory(
+            javaClass.getResource("/linter/auto-fixer/")!!.toURI(),
+            AntlrRellParser(),
+            ChromiaModelProvider(null)
+        )
 
     @Test
     fun `should fix all formatting issues`() {

@@ -1,9 +1,9 @@
 package net.postchain.rell.toolbox.formatter
 
-import net.postchain.rell.toolbox.core.TextReplacement
+import net.postchain.rell.toolbox.common.TextReplacement
 import net.postchain.rell.toolbox.parser.RellCommonTokenStream
-import net.postchain.rell.toolbox.parser.RellLexer
 import net.postchain.rell.toolbox.parser.RellCustomTokenChannels
+import net.postchain.rell.toolbox.parser.RellLexer
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.misc.Interval
@@ -29,7 +29,6 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
         hiddenRegionChangeAppendModifier(change, appendAfterNode.symbol)
         changes.add(change)
     }
-
 
     override fun prepend(prependBeforeNode: ParserRuleContext?, changeModifier: (Changes) -> Unit) {
         if (prependBeforeNode == null) return
@@ -77,9 +76,11 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
             hiddenRegionChangePrependModifier(prependChange, token)
             changes.add(prependChange)
 
-            changes.add(Changes(token.stopIndex + 1, token.stopIndex + 1, formatterOptions).apply {
+            val appendChange = Changes(token.stopIndex + 1, token.stopIndex + 1, formatterOptions).apply {
                 setNewLines(1, 1, 1)
-            })
+            }
+            hiddenRegionChangeAppendModifier(appendChange, token)
+            changes.add(appendChange)
         }
     }
 
@@ -161,7 +162,7 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
             }
         }
 
-        //Resolves what indentation level to use changes with indentations
+        // Resolves what indentation level to use changes with indentations
         for (resolvedChange in resolvedChanges) {
             val interval = Interval.of(resolvedChange.startOffset, resolvedChange.stopOffset)
             val indentCount = countIndents(interval, blockIndents)
@@ -171,9 +172,8 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
                 if (lastNewLineIndex >= 0 && resolvedChange.newLineCount != null) {
                     val replacement = replacementText.substring(lastNewLineIndex + 1, replacementText.length)
                     replacementText =
-                        formatterOptions.newLineString.repeat(resolvedChange.newLineCount!!) + replacement + getIndentText(
-                            indentCount
-                        )
+                        formatterOptions.newLineString.repeat(resolvedChange.newLineCount!!) +
+                        replacement + getIndentText(indentCount)
                     resolvedChange.setTextChanges(replacementText)
                 }
             }
@@ -238,7 +238,7 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
             if (diffLines >= 2 && prevCommentRegion.type == RellLexer.RULE_SL_COMMENT) {
                 newLines = 2
             }
-            
+
             val change =
                 Changes(prevCommentRegion.stopIndex + 1, prevCommentRegion.stopIndex + 1, formatterOptions)
             change.setNewLines(newLines)

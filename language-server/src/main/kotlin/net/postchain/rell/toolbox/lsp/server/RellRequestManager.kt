@@ -1,11 +1,9 @@
 package net.postchain.rell.toolbox.lsp.server
 
-
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
-
 
 @Suppress("UNUSED_PARAMETER")
 class RellRequestManager {

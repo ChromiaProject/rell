@@ -13,7 +13,9 @@ class ChromiaModelProvider(private val workspaceRootUri: URI?) {
         try {
             val model = getChromiaModel() ?: return emptySet()
             return model.libs.keys.map { libName -> sourceDirUri.resolve("lib/$libName/") }.toSet()
-        } catch (e: Exception) {
+        } catch (@Suppress("SwallowedException") e: Exception) {
+            // Chromia model file might have syntax errors causing exception.
+            // In this case, we set resolve ignore reporting URIs to empty set.
             return emptySet()
         }
     }
@@ -33,7 +35,7 @@ class ChromiaModelProvider(private val workspaceRootUri: URI?) {
         val chromiaModelFile = findChromiaModelFile(workspaceRootUri) ?: return null
         return try {
             parseModel(chromiaModelFile)
-        } catch (e: Exception) {
+        } catch (@Suppress("SwallowedException") e: Exception) {
             null
         }
     }

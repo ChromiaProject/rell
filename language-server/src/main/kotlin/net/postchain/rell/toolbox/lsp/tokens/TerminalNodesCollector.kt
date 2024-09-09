@@ -5,7 +5,7 @@ import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import org.antlr.v4.runtime.tree.TerminalNode
 
-class TerminalNodesCollector(val tree: ParseTree?) : RellBaseListener() {
+class TerminalNodesCollector(private val tree: ParseTree?) : RellBaseListener() {
     private val terminalNodes = mutableListOf<TerminalNode>()
     override fun visitTerminal(node: TerminalNode) {
         terminalNodes.add(node)

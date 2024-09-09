@@ -9,7 +9,10 @@ import assertk.assertions.isNotEmpty
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
-import net.postchain.rell.toolbox.core.RellVersionInfo
+import net.postchain.rell.toolbox.common.RellVersionInfo
+import net.postchain.rell.toolbox.lsp.TestClient
+import net.postchain.rell.toolbox.lsp.TestClientServerLauncher
+import net.postchain.rell.toolbox.lsp.TestServerModule
 import org.eclipse.lsp4j.DefinitionParams
 import org.eclipse.lsp4j.DidChangeTextDocumentParams
 import org.eclipse.lsp4j.DidCloseTextDocumentParams
@@ -33,9 +36,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.testcontainers.shaded.org.awaitility.Awaitility.await
-import util.TestClient
-import util.TestClientServerLauncher
-import util.TestServerModule
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -107,7 +107,7 @@ class RellLanguageServerTest {
                 """
                 module;
                 function foo() {}
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -131,7 +131,7 @@ class RellLanguageServerTest {
                 entity bar {
                     name;
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -158,7 +158,7 @@ class RellLanguageServerTest {
                 entity bar {
                     name;
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -190,7 +190,7 @@ class RellLanguageServerTest {
                 entity bar {
                     name;
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -309,7 +309,7 @@ class RellLanguageServerTest {
             writeText(
                 """
                 module;
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -423,7 +423,7 @@ class RellLanguageServerTest {
                 module;
                 function foo {}
                 function bar() {}
-            """.trimIndent()
+                """.trimIndent()
             )
         }
     }

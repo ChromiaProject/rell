@@ -10,14 +10,14 @@ class RellFormatterTest {
 
     @Test
     fun `Format whole test suite`() {
-        val testFolderUri = javaClass.classLoader.getResource("formatting-test-suite").toURI()
+        val testFolderUri = javaClass.classLoader.getResource("formatting-test-suite")?.toURI()!!
 
         val files =
             File(testFolderUri).walkTopDown().filter { it.isFile && it.name.endsWith(".rell") }
                 .map { it.path to it.readText() }.toMap()
 
         val formatterOptions = FormatterOptions()
-        //TODO: Should reformat all formatted files to use tabs
+        // TODO: Should reformat all formatted files to use tabs
         formatterOptions.insertSpaces = true
         var i = 1
         val nrOfTestCases = files.size / 2
@@ -27,7 +27,7 @@ class RellFormatterTest {
                 val formattedText = RellFormatter.formatString(it.value, formatterOptions)
                 val expectedText = files[it.key.replace(".rell", "_formatted.rell")]
                 assertThat(formattedText).isEqualTo(expectedText)
-                println("Completed Test Cases: ${i} / $nrOfTestCases")
+                println("Completed Test Cases: $i / $nrOfTestCases")
                 i++
             }
         }

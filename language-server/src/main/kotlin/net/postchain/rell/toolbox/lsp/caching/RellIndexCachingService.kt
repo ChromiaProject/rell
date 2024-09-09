@@ -24,12 +24,11 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
         return try {
             val indexAsBytes = cacheFile.readBytes()
             indexSerializer.deserializeAsWorkspaceIndexer(indexAsBytes)
-
-        } catch (e: Throwable) {
+        } catch (e: Exception) {
             logger.error(e) { "Failed to deserialize index cache file: $cacheFile" }
             try {
                 cacheFile.delete()
-            } catch (e: Throwable) {
+            } catch (e: Exception) {
                 logger.error(e) { "Failed to delete cache file: $cacheFile" }
             }
             null
@@ -53,7 +52,7 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
                 val cacheFile = getCacheFile(indexer.workspaceUri)
                 val indexAsBytes = indexSerializer.serializeAsBytes(indexer)
                 cacheFile.writeBytes(indexAsBytes)
-            } catch (e: Throwable) {
+            } catch (e: Exception) {
                 logger.error { "Failed to persist workspace index: ${indexer.workspaceUri} ${e.message}" }
             }
         }
@@ -72,19 +71,21 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
     fun cleanupOldCaches(timeToLive: Duration = CACHE_FILE_TTL) {
         val cacheFolder = getCacheFolder()
         val cacheFiles = cacheFolder.listFiles()
-        if (cacheFiles != null) {
-            for (cacheFile in cacheFiles) {
-                if (cacheFile.extension == "cache") {
-                    val lastModified = cacheFile.lastModified()
-                    val now = System.currentTimeMillis()
-                    val age = now - lastModified
-                    if (age > timeToLive.inWholeMilliseconds) {
-                        try {
-                            cacheFile.delete()
-                        } catch (e: Throwable) {
-                            logger.error(e) { "Failed to delete cache file: $cacheFile" }
-                        }
-                    }
+        cacheFiles?.forEach { cacheFile ->
+            deleteOldCacheFile(cacheFile, timeToLive)
+        }
+    }
+
+    private fun deleteOldCacheFile(cacheFile: File, timeToLive: Duration) {
+        if (cacheFile.extension == "cache") {
+            val lastModified = cacheFile.lastModified()
+            val now = System.currentTimeMillis()
+            val age = now - lastModified
+            if (age > timeToLive.inWholeMilliseconds) {
+                try {
+                    cacheFile.delete()
+                } catch (e: Exception) {
+                    logger.error(e) { "Failed to delete cache file: $cacheFile" }
                 }
             }
         }
@@ -102,7 +103,7 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
     fun invalidateCaches(): Boolean {
         return try {
             getCacheFolder().deleteRecursively()
-        } catch (e: Throwable) {
+        } catch (e: Exception) {
             logger.error { "Failed to invalidate caches: ${e.message}" }
             false
         }

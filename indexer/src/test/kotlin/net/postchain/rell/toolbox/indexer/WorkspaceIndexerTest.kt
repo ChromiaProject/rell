@@ -7,9 +7,9 @@ import assertk.assertions.isNotEmpty
 import assertk.assertions.startsWith
 import io.mockk.every
 import io.mockk.mockk
-import net.postchain.rell.toolbox.core.Position
-import net.postchain.rell.toolbox.core.Range
-import net.postchain.rell.toolbox.core.TextEdit
+import net.postchain.rell.toolbox.common.Position
+import net.postchain.rell.toolbox.common.Range
+import net.postchain.rell.toolbox.common.TextEdit
 import net.postchain.rell.toolbox.formatter.DeltaType
 import net.postchain.rell.toolbox.formatter.FormatterIssue
 import net.postchain.rell.toolbox.formatter.FormatterOptions
@@ -28,7 +28,6 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.createDirectory
-
 
 class WorkspaceIndexerTest {
     private val rellLinter = mockk<AbstractRellLinter>()
@@ -90,7 +89,9 @@ class WorkspaceIndexerTest {
     }
 
     @Test
-    fun `initialFileIndexBuild builds index mapper of files in workspace imports file with error and same name`(@TempDir dir: File) {
+    fun `initialFileIndexBuild builds index mapper of files in workspace imports file with error and same name`(
+        @TempDir dir: File
+    ) {
         val childDir = File(dir, "directory").toPath().createDirectory()
         File(childDir.toFile(), "main.rell").apply {
             writeText(
@@ -101,7 +102,7 @@ class WorkspaceIndexerTest {
                 function d() {
                     create f(name = "");
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
         File(dir, "main.rell").apply {
@@ -111,7 +112,7 @@ class WorkspaceIndexerTest {
                 function a() {
                     create b(name = "");
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -128,7 +129,6 @@ class WorkspaceIndexerTest {
 
     @Test
     fun `initialFileIndexBuild builds index mapper of files in workspace imports file with error`(@TempDir dir: File) {
-
         File(dir, "main.rell").apply {
             writeText(
                 """
@@ -138,7 +138,7 @@ class WorkspaceIndexerTest {
                 function d() {
                     create f(name = "");
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
         File(dir, "importer.rell").apply {
@@ -148,7 +148,7 @@ class WorkspaceIndexerTest {
                 function a() {
                     create b(name = "");
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -181,16 +181,18 @@ class WorkspaceIndexerTest {
         val linterOptions = LinterOptions(enabled = true, ruleNamingConvention = true, ruleFormatter = true)
         val formatterOptions = FormatterOptions(tabSize = 0)
 
-        every { formattingStyleLinter.enhanceWithFormatterIssues(linterOptions, formatterOptions, any(), any()) } answers {
+        every {
+            formattingStyleLinter.enhanceWithFormatterIssues(linterOptions, formatterOptions, any(), any())
+        } answers {
             val resource = thirdArg<Resource>()
             resource.formatterIssues = listOf(
-                FormatterIssue("foo", DeltaType.CHANGE, 2, 2, TextEdit(Range(Position(1,1), Position(2,2)), ""))
+                FormatterIssue("foo", DeltaType.CHANGE, 2, 2, TextEdit(Range(Position(1, 1), Position(2, 2)), ""))
             )
         }
         every { rellLinter.enhanceWithLintIssues(linterOptions, any()) } answers {
             val resource = secondArg<Resource>()
             val context = ParserRuleContext()
-            context.start = CommonToken(Pair(null, null), 1, 1,1, 1)
+            context.start = CommonToken(Pair(null, null), 1, 1, 1, 1)
             resource.linterIssues = listOf(
                 TestLinterIssue(context, "", "")
             )
@@ -237,7 +239,7 @@ class WorkspaceIndexerTest {
                   $externalLibName:
                     registry: a.registry.abc
                     path: a/path/to/registry
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -282,7 +284,6 @@ class WorkspaceIndexerTest {
             parentFile.mkdirs()
             writeText(fileContent)
         }.toURI()
-
 
         val linterOptions = LinterOptions(enabled = true, ruleNamingConvention = true, ruleFormatter = true)
         val formatterOptions = FormatterOptions(tabSize = 0)
@@ -380,10 +381,9 @@ class WorkspaceIndexerTest {
                 
                 compile:
                   rellVersion: 0.14.1
-            """.trimIndent()
+                """.trimIndent()
             )
         }
-
 
         val workspaceIndexer =
             WorkspaceIndexer(

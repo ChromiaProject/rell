@@ -4,19 +4,20 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
-import java.io.File
 import net.postchain.rell.toolbox.lsp.server.utils.WorkspaceManagerTestBase
 import org.eclipse.lsp4j.HoverParams
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.TextDocumentIdentifier
 import org.junit.jupiter.api.Test
+import java.io.File
 
 internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
 
     @Test
     fun `Hover information is never null`() {
         val testFile = createFile(
-            sourceDir, "my_rell_module.rell",
+            sourceDir,
+            "my_rell_module.rell",
             """
                 module;
                 val my_string = "HOVER_THIS";
@@ -34,7 +35,8 @@ internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
     @Test
     fun `Hover on system lib gives information`() {
         val testFile = createFile(
-            sourceDir, "my_rell_module.rell",
+            sourceDir,
+            "my_rell_module.rell",
             """
                 module;
                 function foo() {
@@ -54,7 +56,8 @@ internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
     @Test
     fun `Hover on user function gives signature and Rell Docs`() {
         val testFile = createFile(
-            sourceDir, "my_rell_module.rell",
+            sourceDir,
+            "my_rell_module.rell",
             """
                 module;
                 
@@ -77,12 +80,14 @@ internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         val hoverDocs = hoverOn("my_function", testFile)
 
         assertThat(hoverDocs.kind).isEqualTo("markdown")
-        assertThat(hoverDocs.value).contains("""
+        assertThat(hoverDocs.value).contains(
+            """
             function my_function(
             	first: integer,
             	second: integer
             ): integer
-        """.trimIndent())
+            """.trimIndent()
+        )
         assertThat(hoverDocs.value).contains("This doc comment is accessible")
         assertThat(hoverDocs.value).contains("*since:* 1.0.0")
         assertThat(hoverDocs.value).contains("*See also:* other_function")
@@ -94,7 +99,8 @@ internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
     @Test
     fun `Hover on non-rell file should not fail`() {
         val testFile = createFile(
-            sourceDir, ".gitignore",
+            sourceDir,
+            ".gitignore",
             """
                 build
                 .DS_Store

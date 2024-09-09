@@ -36,7 +36,8 @@ class RellFormatterOptionsResolver {
         return when {
             inCurrentFolder.exists() && inCurrentFolder.isFile -> inCurrentFolder
             inParentFolder != null && inParentFolder.exists() && inParentFolder.isFile -> inParentFolder
-            inGrandparentFolder != null && inGrandparentFolder.exists() && inGrandparentFolder.isFile -> inGrandparentFolder
+            inGrandparentFolder != null &&
+                inGrandparentFolder.exists() && inGrandparentFolder.isFile -> inGrandparentFolder
             else -> null
         }
     }

@@ -5,15 +5,10 @@ import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.utils.ide.IdeFilePath
 
-
-class AstSourceFile private constructor(ast: S_RellFile, ideFilePath: IdeFilePath) : C_SourceFile() {
-    private val ast: S_RellFile
+class AstSourceFile private constructor(
+    private val ast: S_RellFile,
     private val ideFilePath: IdeFilePath
-
-    init {
-        this.ast = ast
-        this.ideFilePath = ideFilePath
-    }
+) : C_SourceFile() {
 
     override fun idePath(): IdeFilePath {
         return ideFilePath

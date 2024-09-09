@@ -33,12 +33,12 @@ class RellTestRunnerTest : WorkspaceManagerTestBase() {
                 createRellTestFile(
                     firstTestFile,
                     "directory.first_test_file",
-                    createRellTestCase("test_1", 0, 14, 0, 44, firstTestFile)
+                    createRellTestCase("test_1", Position(0, 14), Position(0, 44), firstTestFile)
                 ),
                 createRellTestFile(
                     secondTestFile,
                     "second_test_file",
-                    createRellTestCase("test_2", 0, 14, 0, 44, secondTestFile)
+                    createRellTestCase("test_2", Position(0, 14), Position(0, 44), secondTestFile)
                 ),
             )
         }
@@ -56,7 +56,7 @@ class RellTestRunnerTest : WorkspaceManagerTestBase() {
                 function not_test() { return 1; }
                 function test() { return 1; }
                 function test_3() { return 1; }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -65,10 +65,10 @@ class RellTestRunnerTest : WorkspaceManagerTestBase() {
 
         testRunner.getTestCases(testFile.toURI()).let { testCases ->
             assertThat(testCases).containsOnly(
-                createRellTestCase("test_1", 1, 0, 1, 30, testFile),
-                createRellTestCase("test_2", 2, 0, 2, 30, testFile),
-                createRellTestCase("test", 4, 0, 4, 28, testFile),
-                createRellTestCase("test_3", 5, 0, 5, 30, testFile),
+                createRellTestCase("test_1", Position(1, 0), Position(1, 30), testFile),
+                createRellTestCase("test_2", Position(2, 0), Position(2, 30), testFile),
+                createRellTestCase("test", Position(4, 0), Position(4, 28), testFile),
+                createRellTestCase("test_3", Position(5, 0), Position(5, 30), testFile),
             )
         }
     }
@@ -79,15 +79,13 @@ class RellTestRunnerTest : WorkspaceManagerTestBase() {
 
     private fun createRellTestCase(
         name: String,
-        startLine: Int,
-        startColumn: Int,
-        endLine: Int,
-        endColumn: Int,
+        startPosition: Position,
+        endPosition: Position,
         file: File
     ): RellTestCase {
         return RellTestCase(
             name,
-            Range(Position(startLine, startColumn), Position(endLine, endColumn)),
+            Range(startPosition, endPosition),
             file.toURI().toString()
         )
     }

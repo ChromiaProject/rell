@@ -13,15 +13,16 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
+import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.indexer.RellResourceFactory
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
-import net.postchain.rell.toolbox.parser.AntlrRellParser
-import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
+import net.postchain.rell.toolbox.parser.AntlrRellParser
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -32,17 +33,16 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
-import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 
 class SourceFile(val filePath: String, val fileContent: String)
 
 class RellIndexCachingServiceTest {
 
-    lateinit var indexSerializer: RellIndexSerializer
-    lateinit var cachingService: RellIndexCachingService
-    lateinit var workspaceFolderUri: URI
-    lateinit var dummyWorkspaceIndexer: WorkspaceIndexer
-    lateinit var cacheFile: File
+    private lateinit var indexSerializer: RellIndexSerializer
+    private lateinit var cachingService: RellIndexCachingService
+    private lateinit var workspaceFolderUri: URI
+    private lateinit var dummyWorkspaceIndexer: WorkspaceIndexer
+    private lateinit var cacheFile: File
 
     private val rellLinter = RellLinter()
     private val formattingStyleLinter = FormattingStyleLinter()

@@ -2,14 +2,13 @@ package net.postchain.rell.toolbox.lsp.tokens
 
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
-
 enum class RellTokenModifier(
     val modifierStringId: String
 ) {
     READONLY("readonly"),
     MODIFICATION("modification"),
 
-    //Rell keyword modifiers
+    // Rell keyword modifiers
     DEFAULT("rell-default"),
     MODULE("rell-module"),
     ANNOTATION("rell-annotation"),
@@ -35,9 +34,8 @@ enum class RellTokenModifier(
     NAMED_ARGUMENT("rell-named_argument"),
     LOCAL_VAL("rell-local_val"),
     LOCAL_VAR("rell-local_var"),
-    AT_ALIAS("rell-at_alias");
+    AT_ALIAS("rell-at_alias")
 }
-
 
 enum class RellTokenType(
     val tokenStringId: String,
@@ -136,4 +134,3 @@ fun tokenFromIdeKind(kind: IdeSymbolKind): RellTokenType {
         IdeSymbolKind.MEM_SYS_PROPERTY_PURE -> RellTokenType.DEFAULT
     }
 }
-

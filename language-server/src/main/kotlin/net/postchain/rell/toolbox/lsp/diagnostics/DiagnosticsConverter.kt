@@ -7,7 +7,7 @@ import org.eclipse.lsp4j.DiagnosticSeverity
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.jsonrpc.messages.Either
-
+import kotlin.math.max
 
 object DiagnosticsConverter {
 
@@ -26,8 +26,8 @@ object DiagnosticsConverter {
 
     private fun extractRange(issue: RellIssue): Range {
         // line and column numbers in LSP are 0-based
-        val start = Position(Math.max(0, issue.line - 1), Math.max(0, issue.column - 1))
-        val end = Position(Math.max(0, issue.line - 1), Math.max(0, issue.column - 1))
+        val start = Position(max(0, issue.line - 1), max(0, issue.column - 1))
+        val end = Position(max(0, issue.line - 1), max(0, issue.column - 1))
         return Range(start, end)
     }
 

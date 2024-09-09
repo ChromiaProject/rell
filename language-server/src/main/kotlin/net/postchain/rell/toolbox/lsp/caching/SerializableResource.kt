@@ -1,17 +1,17 @@
 package net.postchain.rell.toolbox.lsp.caching
 
-import java.net.URI
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.utils.C_Message
 import net.postchain.rell.base.utils.ide.IdeModuleInfo
-import net.postchain.rell.toolbox.parser.SyntaxError
 import net.postchain.rell.toolbox.formatter.FormatterIssue
 import net.postchain.rell.toolbox.linter.LinterIssue
 import net.postchain.rell.toolbox.parser.AbstractRellCommonTokenStream
+import net.postchain.rell.toolbox.parser.SyntaxError
 import org.antlr.v4.runtime.ParserRuleContext
+import java.net.URI
 
-class SerializableResource(
+data class SerializableResource(
     val parseTree: ParserRuleContext,
     val moduleInfo: IdeModuleInfo?,
     val fileUri: URI,

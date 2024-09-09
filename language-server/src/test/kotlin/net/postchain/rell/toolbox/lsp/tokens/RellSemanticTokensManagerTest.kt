@@ -9,6 +9,7 @@ import assertk.assertions.isEqualTo
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
+import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.indexer.RellResourceFactory
 import net.postchain.rell.toolbox.parser.AntlrRellParser
 import org.junit.jupiter.api.Test
@@ -19,7 +20,6 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.io.File
 import java.util.stream.Stream
 import kotlin.io.path.createDirectory
-import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 
 class RellSemanticTokensManagerTest {
 
@@ -37,7 +37,7 @@ class RellSemanticTokensManagerTest {
                 function foo() {
                     return "foo";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
@@ -74,7 +74,7 @@ class RellSemanticTokensManagerTest {
                 object foo { n: integer = 123;}
                 entity e {name;}
                 struct str { x: integer; }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
@@ -91,7 +91,7 @@ class RellSemanticTokensManagerTest {
             RellTokenType.STRUCT,
             RellTokenType.STRUCT_ATTR_VAL,
         )
-        val tokenTypes = RellSemanticTokensManager().getSemanticTokens(resource).map {it.tokenType}.distinct()
+        val tokenTypes = RellSemanticTokensManager().getSemanticTokens(resource).map { it.tokenType }.distinct()
         tokenTypes.forEach {
             assertThat(mappingTypes).contains(it)
         }
@@ -122,7 +122,7 @@ class RellSemanticTokensManagerTest {
                     var local_var = abs(11);
                     val local_val = "";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
@@ -137,7 +137,7 @@ class RellSemanticTokensManagerTest {
             RellTokenType.LOCAL_VAR,
             RellTokenType.LOCAL_VAL,
         )
-        val tokenTypes = RellSemanticTokensManager().getSemanticTokens(resource).map {it.tokenType}.distinct()
+        val tokenTypes = RellSemanticTokensManager().getSemanticTokens(resource).map { it.tokenType }.distinct()
 
         tokenTypes.forEach {
             assertThat(mappingTypes).contains(it)
@@ -159,7 +159,7 @@ class RellSemanticTokensManagerTest {
                 @extendable function f() = [1];
                 @extend(lib.f) function h() = [2]; 
                 function fun() {}
-            """.trimIndent()
+                """.trimIndent()
             )
         }
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
@@ -174,7 +174,7 @@ class RellSemanticTokensManagerTest {
             RellTokenType.OPERATION,
             RellTokenType.QUERY
         )
-        val tokenTypes = RellSemanticTokensManager().getSemanticTokens(resource).map {it.tokenType}.distinct()
+        val tokenTypes = RellSemanticTokensManager().getSemanticTokens(resource).map { it.tokenType }.distinct()
         tokenTypes.forEach {
             assertThat(mappingTypes).contains(it)
         }
@@ -194,7 +194,7 @@ class RellSemanticTokensManagerTest {
                 function foo() {
                     return "foo";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
         val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
@@ -253,4 +253,3 @@ class RellSemanticTokensManagerTest {
         }
     }
 }
-

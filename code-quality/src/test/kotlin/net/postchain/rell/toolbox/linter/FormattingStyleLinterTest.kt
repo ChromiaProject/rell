@@ -4,18 +4,17 @@ import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
-import net.postchain.rell.toolbox.core.Position
-import net.postchain.rell.toolbox.core.Range
-import net.postchain.rell.toolbox.core.TextEdit
-import net.postchain.rell.toolbox.indexer.RellResourceFactory
-import net.postchain.rell.toolbox.parser.AntlrRellParser
-import net.postchain.rell.toolbox.formatter.FormatterOptions
-import org.junit.jupiter.api.Test
-import java.io.File
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
+import net.postchain.rell.toolbox.common.Position
+import net.postchain.rell.toolbox.common.Range
+import net.postchain.rell.toolbox.common.TextEdit
 import net.postchain.rell.toolbox.formatter.DeltaType
 import net.postchain.rell.toolbox.formatter.FormatterIssue
-
+import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.indexer.RellResourceFactory
+import net.postchain.rell.toolbox.parser.AntlrRellParser
+import org.junit.jupiter.api.Test
+import java.io.File
 
 class FormattingStyleLinterTest {
 

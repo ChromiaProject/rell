@@ -1,13 +1,8 @@
 package net.postchain.rell.toolbox.formatter
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-
-enum class ChangePriority(val priority: Int) {
-    HIGH(1),
-    DEFAULT(0),
-    LOW(-1),
-    SUPER_HIGH(2)
-}
+import kotlin.math.max
+import kotlin.math.min
 
 class Changes(
     var startOffset: Int,
@@ -43,7 +38,7 @@ class Changes(
         setSpaces(" ")
     }
 
-    fun setSpaces(spaces: String) {
+    private fun setSpaces(spaces: String) {
         space = spaces
     }
 
@@ -94,7 +89,7 @@ class Changes(
         return textChange
     }
 
-    fun calculateNewLines(): Int? {
+    private fun calculateNewLines(): Int? {
         val hiddenRegionNewLines = previousHiddenText?.count { it == '\n' } ?: return newLineDefault
 
         return if (newLineMax != null && hiddenRegionNewLines >= newLineMax!!) {
@@ -116,7 +111,7 @@ class Changes(
             }
             logger.warn {
                 "Conflicting values for '$propertyname': '$first' and '$second'. " +
-                        "Offset region of conflict: $startOffset - $stopOffset."
+                    "Offset region of conflict: $startOffset - $stopOffset."
             }
             return null
         }
@@ -131,14 +126,14 @@ class Changes(
         newLineMax = merge(newLineMax, other.newLineMax, strategy, "newLineMax")
         priority = merge(priority, other.priority, strategy, "priority") ?: ChangePriority.DEFAULT
 
-        if (indentationIncrease != null && other.indentationIncrease != null) {
-            indentationIncrease = indentationIncrease!! + other.indentationIncrease!!
+        indentationIncrease = if (indentationIncrease != null && other.indentationIncrease != null) {
+            indentationIncrease!! + other.indentationIncrease!!
         } else {
-            indentationIncrease = if (indentationIncrease != null) indentationIncrease else other.indentationIncrease
+            if (indentationIncrease != null) indentationIncrease else other.indentationIncrease
         }
 
-        startOffset = Math.min(startOffset, other.startOffset)
-        stopOffset = Math.max(stopOffset, other.stopOffset)
+        startOffset = min(startOffset, other.startOffset)
+        stopOffset = max(stopOffset, other.stopOffset)
     }
 
     fun newLine() {

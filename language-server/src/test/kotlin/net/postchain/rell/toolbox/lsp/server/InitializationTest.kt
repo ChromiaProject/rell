@@ -4,13 +4,9 @@ import assertk.assertThat
 import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.containsOnly
 import assertk.assertions.hasSize
-import java.io.File
-import java.io.IOException
-import java.net.Socket
-import java.net.SocketTimeoutException
-import java.net.URI
-import java.nio.file.Path
 import net.postchain.rell.toolbox.indexer.findRellFilesInWorkspace
+import net.postchain.rell.toolbox.lsp.TestClient
+import net.postchain.rell.toolbox.lsp.TestServerModule
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.InitializedParams
@@ -24,8 +20,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.koin.core.qualifier.named
 import org.testcontainers.shaded.org.awaitility.Awaitility.await
-import util.TestClient
-import util.TestServerModule
+import java.io.File
+import java.io.IOException
+import java.net.Socket
+import java.net.SocketTimeoutException
+import java.net.URI
+import java.nio.file.Path
 
 @Suppress("JAVA_CLASS_ON_COMPANION")
 class InitializationTest {
@@ -75,7 +75,9 @@ class InitializationTest {
     }
 
     @Test
-    fun `Workspace folder is used as workspace uri with trailing slash when source dir is not found`(@TempDir dir: Path) {
+    fun `Workspace folder is used as workspace uri with trailing slash when source dir is not found`(
+        @TempDir dir: Path
+    ) {
         val pathAsString = dir.toUri().toString().removeSuffix("/")
         val initParams = InitializeParams()
         initParams.workspaceFolders = listOf(WorkspaceFolder(pathAsString))
@@ -98,7 +100,7 @@ class InitializationTest {
         }
         return try {
             Socket("127.0.0.1", 5008)
-        } catch (e: IOException) {
+        } catch (@Suppress("SwallowedException") e: IOException) {
             Thread.sleep(500)
             connectToServer(attempt + 1)
         }
@@ -107,7 +109,7 @@ class InitializationTest {
     companion object {
         private var testWorkspaceFileURIs: MutableList<URI> = mutableListOf()
         private val classLoader = javaClass.getClassLoader()
-        val testWorkspaceFolder = File(classLoader.getResource("rellDappWithErrors").file)
+        val testWorkspaceFolder = File(classLoader.getResource("rellDappWithErrors")!!.file)
 
         @JvmStatic
         @BeforeAll

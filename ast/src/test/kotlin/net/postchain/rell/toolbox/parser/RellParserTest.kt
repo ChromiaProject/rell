@@ -5,7 +5,6 @@ import assertk.assertions.containsExactly
 import assertk.assertions.isEqualTo
 import assertk.assertions.isGreaterThan
 import assertk.assertions.isGreaterThanOrEqualTo
-import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_Parser
@@ -17,12 +16,11 @@ import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeCodeSnippet
 import net.postchain.rell.base.utils.ide.IdeDirApi
-import net.postchain.rell.toolbox.compiler.RellcAPI.validateSimple
 import net.postchain.rell.toolbox.compiler.AstSourceFile
+import net.postchain.rell.toolbox.compiler.RellCompilerApi.validateSimple
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.junit.jupiter.api.Test
-
 
 class RellParserTest {
 
@@ -71,7 +69,7 @@ class RellParserTest {
                         file.key,
                         parser,
                     )
-                } catch (error: C_CommonError) {
+                } catch (@Suppress("SwallowedException") error: C_CommonError) {
                     // We are skipping cases with syntax errors, as compiler parser isn't recovering from them,
                     // Thus AST cannot be constructed for later comparison with ANTLR AST
                     continue
@@ -87,7 +85,7 @@ class RellParserTest {
             val expectedComments = testCaseSnippet.comments
             val actualComments = try {
                 getUserDocComments(parsingArtifacts, testCaseSnippet.options)
-            } catch (e: Exception) {
+            } catch (@Suppress("SwallowedException") e: Exception) {
                 // Ignore cases with compilation issues
                 null
             }
@@ -113,7 +111,10 @@ class RellParserTest {
         return ParsingArtifacts(sourcePath, idePath, transformedAst)
     }
 
-    private fun getUserDocComments(parsingArtifacts: List<ParsingArtifacts>, options: C_CompilerOptions): Map<String, String> {
+    private fun getUserDocComments(
+        parsingArtifacts: List<ParsingArtifacts>,
+        options: C_CompilerOptions
+    ): Map<String, String> {
         val fileMap = mutableMapOf<C_SourcePath, C_SourceFile>()
         val modules = mutableListOf<R_ModuleName>()
         parsingArtifacts.forEach { (sourcePath, idePath, transformedAst) ->
@@ -149,9 +150,3 @@ class RellParserTest {
         return parser.numberOfSyntaxErrors
     }
 }
-
-data class ParsingArtifacts(
-    val sourcePath: C_SourcePath,
-    val idePath: IdeSourcePathFilePath,
-    val transformedAst: S_RellFile,
-)

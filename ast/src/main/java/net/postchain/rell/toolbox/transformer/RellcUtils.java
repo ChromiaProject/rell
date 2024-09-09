@@ -12,7 +12,7 @@ import net.postchain.rell.base.compiler.ast.S_Comment;
 import net.postchain.rell.base.compiler.parser.RellTokenMatch;
 import net.postchain.rell.lsp.grammar.AntlrActionEx;
 import net.postchain.rell.lsp.grammar.AntlrGrammarGenerator;
-import net.postchain.rell.toolbox.compiler.RellcFilePathHolder;
+import net.postchain.rell.toolbox.compiler.RellCompilerFilePathHolder;
 import net.postchain.rell.toolbox.parser.RellCommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -48,7 +48,7 @@ final class RellcUtils {
             return null;
         }
 
-        var path = RellcFilePathHolder.INSTANCE.getCurrentFile();
+        var path = RellCompilerFilePathHolder.INSTANCE.getCurrentFile();
         var pos = new S_BasicPos(path.getCPath(), path.getIdePath(), token.getStartIndex(), token.getLine(), token.getCharPositionInLine() + 1);
         return new S_Comment(pos, token.getText());
     }
@@ -86,7 +86,7 @@ final class RellcUtils {
         Objects.requireNonNull(obj);
         Objects.requireNonNull(text);
 
-        var path = RellcFilePathHolder.INSTANCE.getCurrentFile();
+        var path = RellCompilerFilePathHolder.INSTANCE.getCurrentFile();
 
         var pos = new AntlrPos(obj, path.getCPath(), path.getIdePath());
 

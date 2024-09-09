@@ -2,19 +2,16 @@ package net.postchain.rell.toolbox.lsp.server
 
 import com.google.gson.JsonObject
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.File
-import java.net.URI
-import java.util.concurrent.CompletableFuture
-import net.postchain.rell.toolbox.core.RellAbout
-import net.postchain.rell.toolbox.core.RellVersionInfo
+import net.postchain.rell.toolbox.common.RellAbout
+import net.postchain.rell.toolbox.common.RellVersionInfo
 import net.postchain.rell.toolbox.indexer.RellIssue
-import net.postchain.rell.toolbox.lsp.tokens.RellSemanticTokensManager
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsConverter
 import net.postchain.rell.toolbox.lsp.editing.CodeActionTitles
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestCase
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestFile
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestRunner
+import net.postchain.rell.toolbox.lsp.tokens.RellSemanticTokensManager
 import net.postchain.rell.toolbox.util.getCurrentLogFileName
 import org.eclipse.lsp4j.CodeAction
 import org.eclipse.lsp4j.CodeActionParams
@@ -62,7 +59,9 @@ import org.eclipse.lsp4j.services.LanguageClientAware
 import org.eclipse.lsp4j.services.LanguageServer
 import org.eclipse.lsp4j.services.TextDocumentService
 import org.eclipse.lsp4j.services.WorkspaceService
-
+import java.io.File
+import java.net.URI
+import java.util.concurrent.CompletableFuture
 
 class RellLanguageServer(
     private val workspaceManager: RellWorkspaceManager,
@@ -82,9 +81,8 @@ class RellLanguageServer(
     val initialized = CompletableFuture<InitializedParams>()
 
     override fun initialize(params: InitializeParams): CompletableFuture<InitializeResult> {
-        if (this::initializeParams.isInitialized) {
-            throw IllegalStateException("Rell language server has already been initialized.")
-        }
+        check(!this::initializeParams.isInitialized) { "Rell language server has already been initialized." }
+
         initializeParams = params
         val workspaceFolders = params.workspaceFolders ?: listOf()
         val result = InitializeResult()
@@ -180,7 +178,8 @@ class RellLanguageServer(
         val uri = parseFileUri(textDocument.uri) ?: return
         if (uri.isRellFile()) {
             workspaceManager.didChangeTextDocumentContent(
-                uri, textDocument.version, params.contentChanges
+                uri,
+                params.contentChanges
             )
         }
     }
@@ -261,7 +260,8 @@ class RellLanguageServer(
         }
     }
 
-    override fun definition(params: DefinitionParams): CompletableFuture<Either<MutableList<out Location>, MutableList<out LocationLink>>?> {
+    override fun definition(params: DefinitionParams):
+        CompletableFuture<Either<MutableList<out Location>, MutableList<out LocationLink>>?> {
         val fileUri = parseFileUri(params.textDocument.uri)
             ?: return CompletableFuture.completedFuture(Either.forLeft(mutableListOf()))
 
@@ -274,7 +274,8 @@ class RellLanguageServer(
         }
     }
 
-    override fun documentSymbol(params: DocumentSymbolParams): CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>?> {
+    override fun documentSymbol(params: DocumentSymbolParams):
+        CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>?> {
         val fileUri = parseFileUri(params.textDocument.uri) ?: return CompletableFuture.completedFuture(listOf())
         return requestManager.runRead {
             if (fileUri.isRellFile()) {
@@ -338,7 +339,8 @@ class RellLanguageServer(
         }
     }
 
-    override fun prepareRename(params: PrepareRenameParams): CompletableFuture<Either3<Range, PrepareRenameResult, PrepareRenameDefaultBehavior>> {
+    override fun prepareRename(params: PrepareRenameParams):
+        CompletableFuture<Either3<Range, PrepareRenameResult, PrepareRenameDefaultBehavior>> {
         val fileUri = parseFileUri(params.textDocument.uri)
             ?: return CompletableFuture.completedFuture(Either3.forThird(PrepareRenameDefaultBehavior(true)))
         val position = params.position

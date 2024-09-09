@@ -1,0 +1,28 @@
+
+/**
+ * Allows a caller to hook into outgoing tokens and apply custom logic that has to be executed before.
+ *
+ * @param token to apply the transfer to
+ * @param account to apply the transfer to
+ */
+@extendable
+function before_init_transfer(token, ft4.accounts.account);
+
+/**
+ * Allows a caller to hook into outgoing tokens and apply custom logic that has to be executed after.
+ *
+ * @param token to apply the transfer to
+ * @param account to apply the transfer to
+ */
+@extendable
+function after_init_transfer(token, ft4.accounts.account);
+
+/**
+ * Allows a caller to hook into incoming tokens and apply custom logic for its own storage needs
+ *
+ * @param token to apply the transfer to
+ * @param modules the modules that the token has
+ * @param properties the metadata for the transfer
+ */
+@extendable
+function after_apply_transfer(token, modules: set<name>, properties: map<text, gtv>) {}

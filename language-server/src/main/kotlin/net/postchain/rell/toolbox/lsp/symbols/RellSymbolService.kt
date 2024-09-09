@@ -9,11 +9,11 @@ import net.postchain.rell.base.utils.ide.IdeModuleSymbolLink
 import net.postchain.rell.base.utils.ide.IdeSymbolGlobalId
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import net.postchain.rell.toolbox.transformer.AntlrPos
 import net.postchain.rell.toolbox.indexer.IdeSymbolInfoWithInterval
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.editing.Document
+import net.postchain.rell.toolbox.transformer.AntlrPos
 import org.antlr.v4.runtime.misc.Interval
 import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.Location
@@ -43,8 +43,13 @@ class RellSymbolService {
         }
     }
 
-    fun getSymbolInfoWithInterval(document: Document, indexer: WorkspaceIndexer, position: Position): IdeSymbolInfoWithInterval? =
-        indexer.getResource(document.fileUri)?.let { getSymbolForDocument(document, it, position) }
+    fun getSymbolInfoWithInterval(
+        document: Document,
+        indexer: WorkspaceIndexer,
+        position: Position
+    ): IdeSymbolInfoWithInterval? {
+        return indexer.getResource(document.fileUri)?.let { getSymbolForDocument(document, it, position) }
+    }
 
     fun getSymbolLocationsWithSymbol(
         document: Document,
@@ -92,7 +97,9 @@ class RellSymbolService {
     }
 
     private fun getGlobalLink(
-        globalId: IdeSymbolGlobalId, workspaceUri: URI, indexer: WorkspaceIndexer
+        globalId: IdeSymbolGlobalId,
+        workspaceUri: URI,
+        indexer: WorkspaceIndexer
     ): MutableList<Location> {
         val targetFile = globalId.file
         val symId = globalId.symId
@@ -109,7 +116,6 @@ class RellSymbolService {
         return mutableListOf(Location(targetFileUri.toString(), Range(startPosition, endPosition)))
     }
 
-
     private fun getModuleLink(moduleFile: IdeFilePath, workspaceUri: URI): MutableList<Location> {
         var uri = URI(moduleFile.toString())
         uri = URI(workspaceUri.toString() + uri.toString())
@@ -122,19 +128,21 @@ class RellSymbolService {
         )?.interval ?: return mutableListOf()
 
         val startPos = document.getPosition(nodePositionInterval.a)
-        val endPos = document.getPosition(nodePositionInterval.b + 1) //column starts at value 1
+        val endPos = document.getPosition(nodePositionInterval.b + 1) // column starts at value 1
 
         return mutableListOf(Location(document.fileUri.toString(), Range(startPos, endPos)))
     }
 
     fun getSymbolForDocument(
-        document: Document, resource: Resource, position: Position
+        document: Document,
+        resource: Resource,
+        position: Position
     ): IdeSymbolInfoWithInterval? {
         val offset = document.getOffSet(position)
         return resource.locationInfo[Interval.of(offset - 1, offset)]
     }
 
-    //TODO maybe move out to utils if needed elsewhere
+    // TODO maybe move out to utils if needed elsewhere
     private fun formatWorkspaceUri(workspaceUri: URI): URI {
         return if (workspaceUri.toString().endsWith("/")) {
             workspaceUri
@@ -144,7 +152,9 @@ class RellSymbolService {
     }
 
     fun getDocumentSymbols(
-        fileUri: URI, document: Document, resource: Resource
+        fileUri: URI,
+        document: Document,
+        resource: Resource
     ): List<Either<SymbolInformation, DocumentSymbol>> {
         if (document.content.isEmpty()) {
             return listOf()
@@ -157,11 +167,12 @@ class RellSymbolService {
     fun getDocumentSymbolsWithRoot(rootNodeInfo: NodeInfo, resource: Resource): DocumentSymbol {
         val outlineTreeBuilder = OutlineTreeBuilder(rootNodeInfo, null)
         IdeApi.buildOutlineTree(outlineTreeBuilder, resource.ast)
-        return outlineTreeBuilder.build(null).toDocumentSymbol()
+        return outlineTreeBuilder.build().toDocumentSymbol()
     }
 
     private fun createFileNodeInfo(
-        fileUri: URI, document: Document
+        fileUri: URI,
+        document: Document
     ): NodeInfo {
         val fileName = lastSegment(fileUri)
         val range = Range(document.getPosition(0), document.getPosition(document.content.length - 1))
@@ -172,8 +183,6 @@ class RellSymbolService {
         val path = uri.getPath()
         return path.substring(path.lastIndexOf('/') + 1)
     }
-
-
 
     companion object {
         val NON_RENAMEABLE_SYMBOLS = setOf(

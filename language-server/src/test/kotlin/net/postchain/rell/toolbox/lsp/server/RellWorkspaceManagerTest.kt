@@ -36,7 +36,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return "main";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
         File(workspace, "excluded.rell").apply {
@@ -46,7 +46,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function excluded() {
                     return "excluded";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
         File(sourceDir, "not_a_rell_file.json").apply {
@@ -73,7 +73,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return "main";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
         File(sourceDir, "import_file.rell").apply {
@@ -83,7 +83,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function foo() {
                     return "foo";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -108,7 +108,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return "main";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
         File(childDirs, "import_file.rell").apply {
@@ -118,7 +118,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function foo() {
                     return "foo";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -141,7 +141,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return "main";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
         val childFile = File(childDirs, "import_file.rell").apply {
@@ -151,7 +151,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function foo() {
                     return "foo";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -177,7 +177,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return "main";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -198,7 +198,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return "main";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
         initializeWorkspace()
@@ -221,7 +221,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return "main";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
 
@@ -248,7 +248,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return "main";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -263,7 +263,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return "new file";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
         val indexer = workspaceManager.getIndexerFor(newRellFileUri)
@@ -280,7 +280,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return "main";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
         initializeWorkspace()
@@ -298,7 +298,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return "main";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
         workspaceManager.initialize(listOf(), ::populateDiagnostics)
@@ -317,7 +317,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return "main";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
         initializeWorkspace()
@@ -335,7 +335,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return "main";
                 }
-            """.trimIndent()
+        """.trimIndent()
         val rellFile = File(sourceDir, "rell_file.rell").apply {
             writeText(rellFileContent)
         }
@@ -348,14 +348,14 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 text = "gibberish "
             }
         )
-        workspaceManager.didChangeTextDocumentContent(rellFile.toURI(), 2, updateEvents)
+        workspaceManager.didChangeTextDocumentContent(rellFile.toURI(), updateEvents)
 
         val rellFileUri = rellFile.toURI()
         val expectedRellFileContent = """
                 gibberish function main() {
                     return "main";
                 }
-            """.trimIndent()
+        """.trimIndent()
 
         assertThat(workspaceManager.openDocuments.keys).containsOnly(rellFileUri)
         assertThat(workspaceManager.openDocuments[rellFileUri]!!.content).isEqualTo(expectedRellFileContent)
@@ -370,7 +370,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return "rename file";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
         val beforeRenameFileUri = renameFile.toURI()
@@ -381,7 +381,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return "delete file";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
         initializeWorkspace()
@@ -397,7 +397,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return "new file";
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
 
@@ -419,7 +419,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function some_function() {
                     return "main";
                 }
-            """.trimIndent()
+        """.trimIndent()
         val rellFile = File(sourceDir, "rell_file.rell").apply {
             writeText(rellFileContent)
         }
@@ -432,7 +432,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return some_function();
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
         initializeWorkspace()
@@ -459,7 +459,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                     function main() {
                         return some_function();
                     }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -470,7 +470,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                     function some_function() {
                         return "main";
                     }
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
 
@@ -492,7 +492,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                     val a_long_val_name = 2;
                     val b = a_long_val_name;
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -502,7 +502,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         val candidate = workspaceManager.getDefinitionLocations(
             localLinkFile.toURI(),
             Position(3, 20)
-        ) //TODO: Believe we are off with one line here
+        ) // TODO: Believe we are off with one line here
 
         assertThat(candidate.left!![0].uri.contains(localLinkFile.toString())).isTrue()
         assertThat(candidate.left!![0].range.start).isEqualTo(Position(2, 8))
@@ -519,10 +519,9 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                     val a_long_val_name = 2;
                     val b = a_long_val_name;
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
-
 
         initializeWorkspace()
         workspaceManager.didOpen(localLinkFile.toURI(), 1, localLinkFile.readText())
@@ -548,10 +547,9 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                     val a_long_val_name = 2;
                     val b = a_long_val_name;
                 }
-            """.trimIndent()
+                """.trimIndent()
             )
         }
-
 
         val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
         workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
@@ -574,7 +572,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 function main() {
                     return some_function();
                 }
-            """.trimIndent()
+        """.trimIndent()
         val importerFileUri = File(sourceDir, "rell_file.rell").apply {
             writeText(rellFileContent)
         }.toURI()
@@ -586,7 +584,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
             function some_function() {
                 return "main";
             }
-            """.trimIndent()
+                """.trimIndent()
             )
         }.toURI()
         initializeWorkspace()
@@ -633,7 +631,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
             }
             
             function q() = my_entity @* { .another_entity.another_property == "test" };
-            """.trimIndent()
+        """.trimIndent()
         val rellFile = File(sourceDir, "rell_file.rell").apply {
             writeText(rellFileContent)
         }
@@ -660,7 +658,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
             }
             
             function q() = my_entity @* { .another_entity.another_property == "test" };
-            """.trimIndent()
+        """.trimIndent()
         val rellFile = File(sourceDir, "rell_file.rell").apply {
             writeText(rellFileContent)
         }
@@ -687,7 +685,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
             }
             
             function q() = my_entity @* { .ref_property.another_property == "test" };
-            """.trimIndent()
+        """.trimIndent()
         val rellFile = File(sourceDir, "rell_file.rell").apply {
             writeText(rellFileContent)
         }

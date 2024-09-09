@@ -2,12 +2,12 @@ package net.postchain.rell.toolbox.linter.rules
 
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.indexer.Resource
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_CommaSeparated_11Context
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_ConstantDefContext
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_NameNodeContext
 import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.issues.NamingConventionIssue
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_CommaSeparated_11Context
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_ConstantDefContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_NameNodeContext
 import org.antlr.v4.runtime.misc.Interval
 
 class NamingConventionRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
@@ -44,8 +44,8 @@ class NamingConventionRule(config: LinterOptions, resource: Resource, linterCont
         val symbolInterval = Interval.of(ctx.start.startIndex, ctx.stop.stopIndex)
         val symbolInfo = resource.locationInfo[symbolInterval]
         return ctx.parent is RuleX_ConstantDefContext ||
-                ctx.parent is RuleX_CommaSeparated_11Context ||
-                symbolInfo?.ideSymbolInfo?.kind == IdeSymbolKind.MEM_ENUM_VALUE ||
-                symbolInfo?.ideSymbolInfo?.kind == IdeSymbolKind.DEF_CONSTANT
+            ctx.parent is RuleX_CommaSeparated_11Context ||
+            symbolInfo?.ideSymbolInfo?.kind == IdeSymbolKind.MEM_ENUM_VALUE ||
+            symbolInfo?.ideSymbolInfo?.kind == IdeSymbolKind.DEF_CONSTANT
     }
 }

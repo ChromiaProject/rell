@@ -9,8 +9,8 @@ import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
 import net.postchain.rell.base.utils.ide.IdeDirApi.mapDir
 import net.postchain.rell.base.utils.ide.IdeDirApi.parseSourcePath
 import net.postchain.rell.base.utils.ide.IdeFilePath
-import net.postchain.rell.toolbox.compiler.RellcAPI
-import net.postchain.rell.toolbox.compiler.RellcFilePath
+import net.postchain.rell.toolbox.compiler.RellCompilerApi
+import net.postchain.rell.toolbox.compiler.RellCompilerFilePath
 
 object TestSourceDir {
     fun create(parser: AntlrRellParser, files: Map<String, String>): C_SourceDir {
@@ -25,7 +25,11 @@ object TestSourceDir {
     }
 }
 
-class TestSourceFile(private val parser: AntlrRellParser, private val path: C_SourcePath, val text: String) : C_SourceFile() {
+class TestSourceFile(
+    private val parser: AntlrRellParser,
+    private val path: C_SourcePath,
+    val text: String
+) : C_SourceFile() {
 
     private val idePath: IdeFilePath
 
@@ -45,8 +49,8 @@ class TestSourceFile(private val parser: AntlrRellParser, private val path: C_So
         if (errors.isNotEmpty()) {
             throw C_CommonError("syntax", errors.joinToString("\n"))
         }
-        val rcPath = RellcFilePath(path, idePath)
-        val pair = RellcAPI.antlrToRellAst(rcPath, root, parser.tokenStream)
+        val rcPath = RellCompilerFilePath(path, idePath)
+        val pair = RellCompilerApi.antlrToRellAst(rcPath, root, parser.tokenStream)
         return pair.first
     }
 

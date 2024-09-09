@@ -1,8 +1,8 @@
 package net.postchain.rell.toolbox.linter
 
-import java.io.File
-import net.postchain.rell.toolbox.core.editorconfig.EditorConfigParser
+import net.postchain.rell.toolbox.editorconfig.EditorConfigParser
 import org.ec4j.core.model.Property
+import java.io.File
 
 data class LinterOptions(
     var enabled: Boolean = false,

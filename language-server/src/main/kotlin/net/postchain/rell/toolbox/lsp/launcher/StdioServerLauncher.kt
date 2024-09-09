@@ -12,7 +12,6 @@ import java.io.OutputStream
 import java.io.PrintStream
 import java.io.PrintWriter
 
-
 class StdioServerLauncher(
     private val serverInputStream: InputStream,
     private val serverOutputStream: OutputStream,
@@ -36,7 +35,7 @@ class StdioServerLauncher(
             languageServer.connect(launcher.remoteProxy)
             launcher.startListening()
             logger.info { "Rell Language Server started." }
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             logger.error { "Exception while running Rell Language Server: ${e.message}" }
         }
     }
@@ -47,7 +46,9 @@ class StdioServerLauncher(
         val currentLogFileName = getCurrentLogFileName()
         return if (args.contains(trace) && currentLogFileName.isNotEmpty()) {
             PrintWriter(FileOutputStream(currentLogFileName, true), true)
-        } else null
+        } else {
+            null
+        }
     }
 
     // We redirect the standard input and output streams, so that we do not get any interference from these

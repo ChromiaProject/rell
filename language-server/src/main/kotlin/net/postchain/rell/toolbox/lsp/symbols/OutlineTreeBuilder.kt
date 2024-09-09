@@ -11,14 +11,17 @@ import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolKind
 
-class OutlineTreeBuilder(val nodeInfo: NodeInfo, val type: IdeOutlineNodeType?) : IdeOutlineTreeBuilder {
+class OutlineTreeBuilder(
+    private val nodeInfo: NodeInfo,
+    private val type: IdeOutlineNodeType?,
+) : IdeOutlineTreeBuilder {
     private val children = mutableListOf<OutlineTreeBuilder>()
 
-    fun build(parent: OutlineNode?): OutlineNode {
-        return OutlineNode(this, nodeInfo, parent)
+    fun build(): OutlineNode {
+        return OutlineNode(this, nodeInfo)
     }
 
-    fun buildChildren(parent: OutlineNode?): List<OutlineNode> {
+    fun buildChildren(): List<OutlineNode> {
         val attributes = children.filter { b: OutlineTreeBuilder -> b.type == IdeOutlineNodeType.ATTRIBUTE }
             .map { b: OutlineTreeBuilder -> b.nodeInfo.text }.toSet()
 
@@ -27,13 +30,13 @@ class OutlineTreeBuilder(val nodeInfo: NodeInfo, val type: IdeOutlineNodeType?) 
             if (child.type == IdeOutlineNodeType.KEY_INDEX && attributes.contains(child.nodeInfo.text)) {
                 continue
             }
-            val node = child.build(parent)
+            val node = child.build()
             result.add(node)
         }
         return result
     }
 
-    fun node(newNodeInfo: NodeInfo, type: IdeOutlineNodeType): OutlineTreeBuilder {
+    private fun node(newNodeInfo: NodeInfo, type: IdeOutlineNodeType): OutlineTreeBuilder {
         val subB = OutlineTreeBuilder(newNodeInfo, type)
         children.add(subB)
         return subB
@@ -98,13 +101,10 @@ class OutlineTreeBuilder(val nodeInfo: NodeInfo, val type: IdeOutlineNodeType?) 
 class NodeInfo(val text: String, val nameRegion: Range?, val fullRegion: Range?, val symbolKind: SymbolKind)
 
 class OutlineNode(
-    val builder: OutlineTreeBuilder, val info: NodeInfo, val parent: OutlineNode?
+    builder: OutlineTreeBuilder,
+    private val info: NodeInfo,
 ) {
-    val children = builder.buildChildren(this).toImmList()
-
-    fun hasChildren(): Boolean {
-        return children.isNotEmpty()
-    }
+    private val children = builder.buildChildren().toImmList()
 
     fun toDocumentSymbol(): DocumentSymbol {
         return DocumentSymbol(

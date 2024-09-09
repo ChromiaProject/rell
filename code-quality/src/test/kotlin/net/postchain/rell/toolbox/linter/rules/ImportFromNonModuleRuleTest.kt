@@ -25,7 +25,8 @@ class ImportFromNonModuleRuleTest : AbstractRuleTest() {
     @Test
     fun `should find imports in non-modules`() {
         val result = lint(
-            "non_module.rell", LinterOptions(enabled = true, ruleImportFromNonModule = true),
+            "non_module.rell",
+            LinterOptions(enabled = true, ruleImportFromNonModule = true),
             listOf(
                 "bogus.rell",
                 "ok.rell"
@@ -33,7 +34,10 @@ class ImportFromNonModuleRuleTest : AbstractRuleTest() {
         )
         assertThat(result).hasSize(1)
         assertThat(result[0]).matches(
-            1, 1, ImportFromNonModuleRule.RULE_ID, "Move import to 'module.rell'"
+            1,
+            1,
+            ImportFromNonModuleRule.RULE_ID,
+            "Move import to 'module.rell'"
         )
     }
 

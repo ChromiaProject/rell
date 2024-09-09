@@ -1,17 +1,60 @@
 package net.postchain.rell.toolbox.formatter
 
+import net.postchain.rell.toolbox.parser.RellCustomTokenChannels
 import net.postchain.rell.toolbox.parser.RellLexer
 import net.postchain.rell.toolbox.parser.RellParser
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_AnnotatedDefContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_AnnotationArgContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_AnnotationArgsContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_AtExprFromContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_AtExprFromItemContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_AtExprWhatComplexContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_AtExprWhatComplexItemContext
 import net.postchain.rell.toolbox.parser.RellParser.RuleX_AtExprWhereContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_BaseAttributeDefinitionContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_BaseExprContext
 import net.postchain.rell.toolbox.parser.RellParser.RuleX_BaseExprHeadContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_BaseExprTailAtContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_BaseExprTailCallContext
 import net.postchain.rell.toolbox.parser.RellParser.RuleX_BaseExprTailContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_BaseExprTailMemberContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_BinaryExprOperandContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_CallArgContext
 import net.postchain.rell.toolbox.parser.RellParser.RuleX_CallArgsContext
-import net.postchain.rell.toolbox.parser.RellCustomTokenChannels
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_CommaSeparated_10Context
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_CommaSeparated_22Context
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_CommaSeparated_24Context
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_CommaSeparated_30Context
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_CommaSeparated_3Context
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_CreateExprArgContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_CreateExprContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_EntityAnnotationsContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_EnumDefContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_EnumValueContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_ExpressionRefContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_FormalParameterContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_FormalParametersContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_GenericTypeContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_KeyIndexClauseContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_ListLiteralExprContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_MapLiteralExprEntryContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_NameContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_NonEmptyMapLiteralExprContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_TupleExprContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_TupleExprFieldContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_TupleVarDeclaratorContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_TypeRefContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_UnaryExprContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_UpdateStmtContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_UpdateWhatExprContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_VarDeclaratorContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_tkCOMMAContext
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.tree.TerminalNode
 
+@Suppress("TooManyFunctions")
 abstract class RellAbstractFormatter(
     val parser: RellParser,
     private val source: String,
@@ -24,7 +67,7 @@ abstract class RellAbstractFormatter(
         doc: FormattableDocument
     ) {
         when (currentExpr) {
-            is RellParser.RuleX_BaseExprTailMemberContext -> {
+            is RuleX_BaseExprTailMemberContext -> {
                 doc.prepend(currentExpr.ruleX_Name()) { p -> p.noSpace() }
                 doc.append(currentExpr) { p -> p.noSpace() }
                 doc.prepend(currentExpr) { p -> p.newLine() }
@@ -67,10 +110,10 @@ abstract class RellAbstractFormatter(
     }
 
     fun formatExprTailSingleline(xBaseExprTail: ParserRuleContext, doc: FormattableDocument) {
-        if (xBaseExprTail is RellParser.RuleX_BaseExprTailMemberContext) {
+        if (xBaseExprTail is RuleX_BaseExprTailMemberContext) {
             doc.prepend(xBaseExprTail) { p -> p.noSpace() }
             doc.append(xBaseExprTail) { p -> p.noSpace() }
-        } else if (xBaseExprTail is RellParser.RuleX_BaseExprTailCallContext) {
+        } else if (xBaseExprTail is RuleX_BaseExprTailCallContext) {
             doc.append(xBaseExprTail) { p -> p.noSpace() }
             val callArgs = xBaseExprTail.ruleX_CallArgs()
             formatBracePairWithoutSpace(callArgs, doc, BracePairTypes.PARENTHESES)
@@ -93,8 +136,8 @@ abstract class RellAbstractFormatter(
     }
 
     fun formatMultiLineStmts(
-        xUnaryExpr: RellParser.RuleX_UnaryExprContext,
-        stmts: List<RellParser.RuleX_BinaryExprOperandContext>,
+        xUnaryExpr: RuleX_UnaryExprContext,
+        stmts: List<RuleX_BinaryExprOperandContext>,
         doc: FormattableDocument
     ) {
         doc.prepend(xUnaryExpr) { p -> p.newLine() }
@@ -103,7 +146,7 @@ abstract class RellAbstractFormatter(
         stmts.forEachIndexed { index, expr ->
             doc.surround(expr.ruleX_BinaryOperator()) { p -> p.oneSpace() }
             val isLogicalOperator = expr.ruleX_BinaryOperator().ruleX_BinaryOperator_14() != null ||
-                    expr.ruleX_BinaryOperator().ruleX_BinaryOperator_13() != null
+                expr.ruleX_BinaryOperator().ruleX_BinaryOperator_13() != null
             if (isLogicalOperator) {
                 doc.surround(expr.ruleX_BinaryOperator()) { p ->
                     p.newLine()
@@ -144,17 +187,17 @@ abstract class RellAbstractFormatter(
         return getLineLength(methodDef) > formatterOptions.maxLineWidth || isLineSeperated
     }
 
-    fun exceedsMaxLineWidth(node: ParserRuleContext): Boolean {
+    private fun exceedsMaxLineWidth(node: ParserRuleContext): Boolean {
         return getLineLength(node) > formatterOptions.maxLineWidth
     }
 
-    fun getLineLength(node: ParserRuleContext): Int {
+    private fun getLineLength(node: ParserRuleContext): Int {
         val lineStartOffset = node.start.startIndex - node.start.charPositionInLine
         val lineEndOffset = source.indexOf('\n', node.start.startIndex)
         return if (lineEndOffset != -1) lineEndOffset - lineStartOffset else node.text.length
     }
 
-    fun getLineLength(node: Token): Int {
+    private fun getLineLength(node: Token): Int {
         val lineStartOffset = node.startIndex - node.charPositionInLine
         val lineEndOffset = source.indexOf('\n', node.startIndex)
         return if (lineEndOffset != -1) lineEndOffset - lineStartOffset else node.text.length
@@ -187,7 +230,7 @@ abstract class RellAbstractFormatter(
         return formatAsMultiLine(callArg) || callArgs.start.line != callArgs.stop.line
     }
 
-    fun formatParametersType(params: List<RellParser.RuleX_FormalParameterContext>?, doc: FormattableDocument) {
+    fun formatParametersType(params: List<RuleX_FormalParameterContext>?, doc: FormattableDocument) {
         if (params.isNullOrEmpty()) {
             return
         }
@@ -203,7 +246,7 @@ abstract class RellAbstractFormatter(
         formatArguments(args, doc, null, indent)
     }
 
-    fun formatArguments(
+    private fun formatArguments(
         args: List<ParserRuleContext>,
         doc: FormattableDocument,
         length: Int?,
@@ -256,12 +299,10 @@ abstract class RellAbstractFormatter(
                     p.highPriority()
                 }
             }
-
-
         }
     }
 
-    //Handle internal block indents for expression tail
+    // Handle internal block indents for expression tail
     fun indentExpressionTail(
         exprHead: RuleX_BaseExprHeadContext,
         exprTailList: List<RuleX_BaseExprTailContext>,
@@ -271,18 +312,15 @@ abstract class RellAbstractFormatter(
         if (shouldLineSeparateTail && exprTailList.first().ruleX_BaseExprTailAt() == null) {
             if (tailOnlyConsistOfOneTailCall(exprTailList)) {
                 doc.interiorIndentRange(exprHead, exprTailList.last())
-
             } else if (tailHasMemberAndEndsWithTailCall(exprTailList)) {
                 if (exprHead.stop.line != exprTailList.last().start.line || exceedsMaxLineWidth(exprTailList.last())) {
                     doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
                 }
-
             } else if (tailEndsWithAtExpression(exprTailList)) {
                 indentTailAtExpression(exprTailList.last().ruleX_BaseExprTailAt(), doc)
                 if (shouldIndentBeforeAt(exprTailList, exprHead) || exceedsMaxLineWidth(exprTailList.last())) {
                     doc.prepend(exprTailList[exprTailList.lastIndex - 1]) { it.indent() }
                 }
-
             } else {
                 doc.interiorIndentRangeIncludeLast(exprHead, exprTailList.last())
             }
@@ -308,11 +346,14 @@ abstract class RellAbstractFormatter(
         return when (exprTailList.size) {
             1 -> false
             2 -> exprHead.stop.line != exprTailList.first().start.line
-            else -> exprTailList[exprTailList.lastIndex - 2].stop.line != exprTailList[exprTailList.lastIndex - 1].start.line
+            else -> {
+                val lastIndex = exprTailList.lastIndex
+                exprTailList[lastIndex - 2].stop.line != exprTailList[lastIndex - 1].start.line
+            }
         }
     }
 
-    private fun indentTailAtExpression(tailAt: RellParser.RuleX_BaseExprTailAtContext, doc: FormattableDocument) {
+    private fun indentTailAtExpression(tailAt: RuleX_BaseExprTailAtContext, doc: FormattableDocument) {
         val whereExpr = tailAt.ruleX_AtExprWhere()
         val (expressionRef, trailingComma) = whereExpr.getExpressionRefWithTrailingComma()
         formatTrailingComma(trailingComma, doc)
@@ -335,7 +376,7 @@ abstract class RellAbstractFormatter(
     }
 
     fun formatOpeningClosingLines(
-        definitions: List<RellParser.RuleX_AnnotatedDefContext>,
+        definitions: List<RuleX_AnnotatedDefContext>,
         doc: FormattableDocument
     ) {
         if (definitions.isNotEmpty()) {
@@ -343,7 +384,7 @@ abstract class RellAbstractFormatter(
 
             val fileStartsWithComment = previousHiddenRegionList(firstDef.start).any {
                 it.type == RellLexer.RULE_ML_COMMENT ||
-                        it.type == RellLexer.RULE_SL_COMMENT
+                    it.type == RellLexer.RULE_SL_COMMENT
             }
             val newLines = if (fileStartsWithComment) 1 else 0
 
@@ -421,7 +462,6 @@ abstract class RellAbstractFormatter(
         return expressions
     }
 
-
     fun formatSemicolon(node: ParserRuleContext, doc: FormattableDocument) {
         val semiColon = tokenFor(node, ";")
         if (semiColon != null) {
@@ -451,7 +491,7 @@ abstract class RellAbstractFormatter(
     }
 
     fun formatTrailingComma(
-        trailingComma: RellParser.RuleX_tkCOMMAContext?,
+        trailingComma: RuleX_tkCOMMAContext?,
         doc: FormattableDocument,
         newLine: Boolean = false
     ) {
@@ -519,106 +559,121 @@ abstract class RellAbstractFormatter(
             ?.lastOrNull()
     }
 
-    fun previousHiddenRegionList(token: Token): List<Token> {
+    private fun previousHiddenRegionList(token: Token): List<Token> {
         val commonTokenStream = parser.tokenStream as CommonTokenStream
         return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellLexer.HIDDEN) ?: listOf()
     }
 
-    internal fun RuleX_CallArgsContext.getCallArgWithTrailingComma(): Pair<List<RellParser.RuleX_CallArgContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RuleX_CallArgsContext.getCallArgWithTrailingComma():
+        Pair<List<RuleX_CallArgContext>?, RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_CommaSeparated_28()?.ruleX_CommaSeparated_27()
         return Pair(commaSeparated?.ruleX_CallArg(), commaSeparated?.ruleX_tkCOMMA())
     }
 
-    internal fun RuleX_AtExprWhereContext.getExpressionRefWithTrailingComma(): Pair<List<RellParser.RuleX_ExpressionRefContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RuleX_AtExprWhereContext.getExpressionRefWithTrailingComma():
+        Pair<List<RuleX_ExpressionRefContext>?, RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_CommaSeparated_20()?.ruleX_CommaSeparated_19()
         return Pair(commaSeparated?.ruleX_ExpressionRef(), commaSeparated?.ruleX_tkCOMMA())
     }
 
-    internal fun RellParser.RuleX_FormalParametersContext.getFormalParameterWithTrailingComma(): Pair<List<RellParser.RuleX_FormalParameterContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RuleX_FormalParametersContext.getFormalParameterWithTrailingComma():
+        Pair<List<RuleX_FormalParameterContext>?, RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_CommaSeparated_36()?.ruleX_CommaSeparated_35()
         return Pair(commaSeparated?.ruleX_FormalParameter(), commaSeparated?.ruleX_tkCOMMA())
     }
 
-    internal fun RellParser.RuleX_EnumDefContext.getXNamesWithTrailingComma(): Pair<List<RellParser.RuleX_EnumValueContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RuleX_EnumDefContext.getXNamesWithTrailingComma():
+        Pair<List<RuleX_EnumValueContext>?, RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_CommaSeparated_12()?.ruleX_CommaSeparated_11()
         return Pair(commaSeparated?.ruleX_EnumValue(), commaSeparated?.ruleX_tkCOMMA())
     }
 
-    internal fun RellParser.RuleX_KeyIndexClauseContext.getAttributeDefsWithTrailingComma(): Pair<List<RellParser.RuleX_BaseAttributeDefinitionContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RuleX_KeyIndexClauseContext.getAttributeDefsWithTrailingComma():
+        Pair<List<RuleX_BaseAttributeDefinitionContext>?, RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_CommaSeparated_8()
         return Pair(commaSeparated?.ruleX_BaseAttributeDefinition(), commaSeparated?.ruleX_tkCOMMA())
     }
 
-    internal fun RellParser.RuleX_AnnotationArgsContext.getAnnotationArgWithTrailingComma(): Pair<List<RellParser.RuleX_AnnotationArgContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RuleX_AnnotationArgsContext.getAnnotationArgWithTrailingComma():
+        Pair<List<RuleX_AnnotationArgContext>?, RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_CommaSeparated_7()?.ruleX_CommaSeparated_6()
         return Pair(commaSeparated?.ruleX_AnnotationArg(), commaSeparated?.ruleX_tkCOMMA())
     }
 
-    internal fun RellParser.RuleX_CreateExprContext.getCreateExprArgWithTrailingComma(): Pair<List<RellParser.RuleX_CreateExprArgContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RuleX_CreateExprContext.getCreateExprArgWithTrailingComma():
+        Pair<List<RuleX_CreateExprArgContext>?, RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_CreateExprArgs()?.ruleX_CommaSeparated_26()?.ruleX_CommaSeparated_25()
         return Pair(commaSeparated?.ruleX_CreateExprArg(), commaSeparated?.ruleX_tkCOMMA())
     }
 
-    internal fun RellParser.RuleX_UpdateStmtContext.getUpdateWhatExprWithTrailingComma(): Pair<List<RellParser.RuleX_UpdateWhatExprContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RuleX_UpdateStmtContext.getUpdateWhatExprWithTrailingComma():
+        Pair<List<RuleX_UpdateWhatExprContext>?, RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_UpdateWhat()?.ruleX_CommaSeparated_34()?.ruleX_CommaSeparated_33()
         return Pair(commaSeparated?.ruleX_UpdateWhatExpr(), commaSeparated?.ruleX_tkCOMMA())
     }
 
-    internal fun RellParser.RuleX_AtExprFromContext.getAtExprFromItemWithTrailingComma(): Pair<List<RellParser.RuleX_AtExprFromItemContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RuleX_AtExprFromContext.getAtExprFromItemWithTrailingComma():
+        Pair<List<RuleX_AtExprFromItemContext>?, RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_CommaSeparated_16()?.ruleX_CommaSeparated_15()
         return Pair(commaSeparated?.ruleX_AtExprFromItem(), commaSeparated?.ruleX_tkCOMMA())
     }
 
-    internal fun RellParser.RuleX_AtExprWhatComplexContext.getAtExprWhatComplexItemWithTrailingComma(): Pair<List<RellParser.RuleX_AtExprWhatComplexItemContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RuleX_AtExprWhatComplexContext.getAtExprWhatComplexItemWithTrailingComma():
+        Pair<List<RuleX_AtExprWhatComplexItemContext>?, RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_CommaSeparated_18()?.ruleX_CommaSeparated_17()
         return Pair(commaSeparated?.ruleX_AtExprWhatComplexItem(), commaSeparated?.ruleX_tkCOMMA())
-
     }
 
-    internal fun RellParser.RuleX_AtExprWhatComplexItemContext.getBaseExpr(): RellParser.RuleX_BaseExprContext? =
+    internal fun RuleX_AtExprWhatComplexItemContext.getBaseExpr(): RuleX_BaseExprContext? =
         ruleX_ExpressionRef()?.ruleX_Expression()?.ruleX_UnaryExpr()?.ruleX_OperandExpr()?.ruleX_BaseExpr()
 
-    internal fun RellParser.RuleX_TupleVarDeclaratorContext.getTupleVarContext(): RellParser.RuleX_CommaSeparated_30Context =
+    internal fun RuleX_TupleVarDeclaratorContext.getTupleVarContext(): RuleX_CommaSeparated_30Context =
         ruleX_CommaSeparated_30()
 
-    internal fun RellParser.RuleX_TupleVarDeclaratorContext.getVarDeclaratorWithTrailingComma(): Pair<List<RellParser.RuleX_VarDeclaratorContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RuleX_TupleVarDeclaratorContext.getVarDeclaratorWithTrailingComma():
+        Pair<List<RuleX_VarDeclaratorContext>?, RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_CommaSeparated_30()?.ruleX_CommaSeparated_29()
         return Pair(commaSeparated?.ruleX_VarDeclarator(), commaSeparated?.ruleX_tkCOMMA())
     }
 
-    internal fun RellParser.RuleX_NonEmptyMapLiteralExprContext.getMapExprContext(): RellParser.RuleX_CommaSeparated_24Context =
+    internal fun RuleX_NonEmptyMapLiteralExprContext.getMapExprContext(): RuleX_CommaSeparated_24Context =
         ruleX_CommaSeparated_24()
 
-    internal fun RellParser.RuleX_NonEmptyMapLiteralExprContext.getMapExprEntryWithTrailingComma(): Pair<List<RellParser.RuleX_MapLiteralExprEntryContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RuleX_NonEmptyMapLiteralExprContext.getMapExprEntryWithTrailingComma():
+        Pair<List<RuleX_MapLiteralExprEntryContext>?, RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_CommaSeparated_24()?.ruleX_CommaSeparated_23()
         return Pair(commaSeparated?.ruleX_MapLiteralExprEntry(), commaSeparated?.ruleX_tkCOMMA())
     }
 
-    internal fun RellParser.RuleX_GenericTypeContext.getGenericTypeContext(): RellParser.RuleX_CommaSeparated_3Context =
+    internal fun RuleX_GenericTypeContext.getGenericTypeContext(): RuleX_CommaSeparated_3Context =
         ruleX_CommaSeparated_3()
 
-    internal fun RellParser.RuleX_GenericTypeContext.getTypeRefWithTrailingComma(): Pair<List<RellParser.RuleX_TypeRefContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RuleX_GenericTypeContext.getTypeRefWithTrailingComma():
+        Pair<List<RuleX_TypeRefContext>?, RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_CommaSeparated_3()?.ruleX_CommaSeparated_2()
         return Pair(commaSeparated?.ruleX_TypeRef(), commaSeparated?.ruleX_tkCOMMA())
     }
 
-    internal fun RellParser.RuleX_ListLiteralExprContext.getListLiteralExprContext(): RellParser.RuleX_CommaSeparated_22Context =
+    internal fun RuleX_ListLiteralExprContext.getListLiteralExprContext(): RuleX_CommaSeparated_22Context =
         ruleX_CommaSeparated_22()
 
-    internal fun RellParser.RuleX_ListLiteralExprContext.getExpressionRefWithTrailingComma(): Pair<List<RellParser.RuleX_ExpressionRefContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RuleX_ListLiteralExprContext.getExpressionRefWithTrailingComma():
+        Pair<List<RuleX_ExpressionRefContext>?, RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_CommaSeparated_22()?.ruleX_CommaSeparated_21()
         return Pair(commaSeparated?.ruleX_ExpressionRef(), commaSeparated?.ruleX_tkCOMMA())
     }
 
-    internal fun RellParser.RuleX_EntityAnnotationsContext.getEntityAnnotationContext(): RellParser.RuleX_CommaSeparated_10Context =
-        ruleX_CommaSeparated_10()
+    internal fun RuleX_EntityAnnotationsContext.getEntityAnnotationContext():
+        RuleX_CommaSeparated_10Context = ruleX_CommaSeparated_10()
 
-    internal fun RellParser.RuleX_EntityAnnotationsContext.getXNamesWithTrailingComma(): Pair<List<RellParser.RuleX_NameContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RuleX_EntityAnnotationsContext.getXNamesWithTrailingComma():
+        Pair<List<RuleX_NameContext>?, RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_CommaSeparated_10()?.ruleX_CommaSeparated_9()
         return Pair(commaSeparated?.ruleX_Name(), commaSeparated?.ruleX_tkCOMMA())
     }
 
-    internal fun RellParser.RuleX_TupleExprContext.getXNamesWithTrailingComma(): Pair<List<RellParser.RuleX_TupleExprFieldContext>?, RellParser.RuleX_tkCOMMAContext?> {
+    internal fun RuleX_TupleExprContext.getXNamesWithTrailingComma():
+        Pair<List<RuleX_TupleExprFieldContext>?, RuleX_tkCOMMAContext?> {
         val commaSeparated = ruleX_CommaSeparated_14()?.ruleX_CommaSeparated_13()
         return Pair(commaSeparated?.ruleX_TupleExprField(), commaSeparated?.ruleX_tkCOMMA())
     }

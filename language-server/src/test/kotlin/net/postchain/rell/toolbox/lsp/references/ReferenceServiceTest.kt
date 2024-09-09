@@ -3,8 +3,8 @@ package net.postchain.rell.toolbox.lsp.references
 import assertk.assertThat
 import assertk.assertions.containsAll
 import assertk.assertions.hasSize
-import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
@@ -182,12 +182,18 @@ class ReferenceServiceTest {
 
     companion object {
         private val classLoader = javaClass.getClassLoader()
-        val workspaceFile = File(classLoader.getResource("rellReferences").file)
+        val workspaceFile = File(classLoader.getResource("rellReferences")!!.file)
         private val rellLinter = RellLinter()
         private val formattingStyleLinter = FormattingStyleLinter()
         private val formatterOptions = FormatterOptions()
         private val linterOptions = LinterOptions()
-        val indexer = WorkspaceIndexer(workspaceFile.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
+        val indexer = WorkspaceIndexer(
+            workspaceFile.toURI(),
+            rellLinter,
+            linterOptions,
+            formattingStyleLinter,
+            formatterOptions
+        )
 
         @JvmStatic
         @BeforeAll

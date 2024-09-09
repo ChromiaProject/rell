@@ -1,11 +1,11 @@
 package net.postchain.rell.toolbox.linter
 
-import net.postchain.rell.toolbox.core.Position
-import net.postchain.rell.toolbox.core.TextReplacement
-import net.postchain.rell.toolbox.core.applyTextReplacements
-import net.postchain.rell.toolbox.indexer.Resource
-import net.postchain.rell.toolbox.core.positionToOffset
+import net.postchain.rell.toolbox.common.Position
+import net.postchain.rell.toolbox.common.TextReplacement
+import net.postchain.rell.toolbox.common.applyTextReplacements
+import net.postchain.rell.toolbox.common.positionToOffset
 import net.postchain.rell.toolbox.formatter.FormatterIssue
+import net.postchain.rell.toolbox.indexer.Resource
 
 class AutoFixer {
     fun fix(resource: Resource, sourceText: String): String {
@@ -17,13 +17,13 @@ class AutoFixer {
     }
 
     private fun getLinterReplacements(linterIssues: List<LinterIssue>, sourceText: String): List<TextReplacement> {
-        return linterIssues.map {
+        return linterIssues.mapNotNull {
             it.fix()?.let { fix ->
                 val startOffset = positionToOffset(sourceText, Position(fix.line, fix.charPositionInLine))
                 val endOffset = positionToOffset(sourceText, Position(fix.line, fix.charPositionInLine + fix.length))
                 TextReplacement(startOffset, endOffset, fix.newText)
             }
-        }.filterNotNull()
+        }
     }
 
     private fun getFormatterReplacements(

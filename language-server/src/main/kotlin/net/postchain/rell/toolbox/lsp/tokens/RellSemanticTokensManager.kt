@@ -1,6 +1,5 @@
 package net.postchain.rell.toolbox.lsp.tokens
 
-
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.toolbox.indexer.NodeInterval
 import net.postchain.rell.toolbox.indexer.Resource
@@ -54,9 +53,9 @@ class RellSemanticTokensManager {
         return tokensRelative.flatMap { it.toImmList() }
     }
 
-    //A token can have multiple modifiers, each combination of modifiers needs to be encoded
-    //as a single integer to follow the Language Server Protocol
-    //https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_semanticTokens
+    // A token can have multiple modifiers, each combination of modifiers needs to be encoded
+    // as a single integer to follow the Language Server Protocol
+    // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_semanticTokens
     private fun getModifierId(tokensModifiers: List<RellTokenModifier>): Int {
         if (tokensModifiers.isEmpty()) return 0
         var bitmask = 0
@@ -68,7 +67,6 @@ class RellSemanticTokensManager {
         }
         return bitmask
     }
-
 
     companion object {
         val semanticTokens: List<String>
@@ -90,4 +88,3 @@ class RellSemanticTokensManager {
             }
     }
 }
-

@@ -7,6 +7,8 @@ import assertk.assertions.isNull
 import io.mockk.every
 import io.mockk.mockk
 import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.linter.AbstractFormattingStyleLinter
+import net.postchain.rell.toolbox.linter.AbstractRellLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -18,8 +20,6 @@ import java.nio.file.StandardOpenOption
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectory
 import kotlin.test.assertNotNull
-import net.postchain.rell.toolbox.linter.AbstractFormattingStyleLinter
-import net.postchain.rell.toolbox.linter.AbstractRellLinter
 
 class WorkspaceIndexerUpdateIndexTest {
     @TempDir
@@ -49,7 +49,8 @@ class WorkspaceIndexerUpdateIndexTest {
 
     @Test
     fun `updateFileUriResourceMap updates resource of existing uri`() {
-        val workspaceIndexer = WorkspaceIndexer(tempDir.toUri(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
+        val workspaceIndexer =
+            WorkspaceIndexer(tempDir.toUri(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         workspaceIndexer.initialFileIndexBuild()
 
         val prevUriResourceMap = workspaceIndexer.fileUriResourceMap.toMap()
@@ -70,7 +71,8 @@ class WorkspaceIndexerUpdateIndexTest {
 
     @Test
     fun `updateFileUriResourceMap updates uri of existing resource`() {
-        val workspaceIndexer = WorkspaceIndexer(tempDir.toUri(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
+        val workspaceIndexer =
+            WorkspaceIndexer(tempDir.toUri(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         workspaceIndexer.initialFileIndexBuild()
         val prevUriResourceMap = workspaceIndexer.fileUriResourceMap.toMap()
 

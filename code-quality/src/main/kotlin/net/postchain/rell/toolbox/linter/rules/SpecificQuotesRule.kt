@@ -1,19 +1,15 @@
 package net.postchain.rell.toolbox.linter.rules
 
 import net.postchain.rell.toolbox.indexer.Resource
-import net.postchain.rell.toolbox.parser.RellParser
 import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.issues.SpecificQuotesIssue
+import net.postchain.rell.toolbox.parser.RellParser
 
 class SpecificQuotesRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
-    net.postchain.rell.toolbox.linter.rules.LinterRule(config, resource, linterContext) {
+    LinterRule(config, resource, linterContext) {
 
-    companion object {
-        const val RULE_ID = "rule_quote_format"
-    }
-
-    override val ruleId = net.postchain.rell.toolbox.linter.rules.SpecificQuotesRule.Companion.RULE_ID
+    override val ruleId = RULE_ID
 
     override fun visitRuleX_StringExpr(ctx: RellParser.RuleX_StringExprContext) {
         if (!config.enabled || config.ruleQuoteFormat == null || hasIgnoreCommentOnTop(ctx.start)) {
@@ -25,5 +21,9 @@ class SpecificQuotesRule(config: LinterOptions, resource: Resource, linterContex
         if (!string.startsWith(literal) && !string.endsWith(literal) && !hasIgnoreCommentOnTop(ctx.start)) {
             report(SpecificQuotesIssue(ctx, ruleId, "Use ${quote.name.lowercase()} quotes for $string", quote))
         }
+    }
+
+    companion object {
+        const val RULE_ID = "rule_quote_format"
     }
 }

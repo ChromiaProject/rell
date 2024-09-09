@@ -2,7 +2,6 @@ package net.postchain.rell.toolbox.lsp.caching
 
 import io.fury.Fury
 import io.fury.config.Language
-import java.util.concurrent.ConcurrentHashMap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
@@ -14,6 +13,7 @@ import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
+import java.util.concurrent.ConcurrentHashMap
 
 class RellIndexSerializer(
     private val rellLinter: RellLinter,
@@ -76,7 +76,9 @@ class RellIndexSerializer(
         }
     }
 
-    private fun fromSerializableWorkspaceIndexer(serializableWorkspaceIndexer: SerializableWorkspaceIndexer): WorkspaceIndexer {
+    private fun fromSerializableWorkspaceIndexer(
+        serializableWorkspaceIndexer: SerializableWorkspaceIndexer
+    ): WorkspaceIndexer {
         val indexer =
             WorkspaceIndexer(
                 serializableWorkspaceIndexer.workspaceUri,
@@ -116,7 +118,9 @@ class RellIndexSerializer(
             resource.fileUri to resource
         }
 
-    private fun fromSerializableSymbolInfos(symbolInfos: Map<S_Pos, SerializableSymbolInfo>): Map<S_Pos, IdeSymbolInfo> {
+    private fun fromSerializableSymbolInfos(
+        symbolInfos: Map<S_Pos, SerializableSymbolInfo>
+    ): Map<S_Pos, IdeSymbolInfo> {
         return symbolInfos.mapValues {
             IdeSymbolInfo.make(
                 kind = it.value.kind,

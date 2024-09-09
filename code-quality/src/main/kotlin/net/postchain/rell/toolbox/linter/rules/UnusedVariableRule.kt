@@ -1,12 +1,12 @@
 package net.postchain.rell.toolbox.linter.rules
 
 import net.postchain.rell.toolbox.indexer.Resource
-import net.postchain.rell.toolbox.parser.RellParser
 import net.postchain.rell.toolbox.indexer.references.ReferenceIndexer
 import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.NameNodesFinder
 import net.postchain.rell.toolbox.linter.isUnderscore
+import net.postchain.rell.toolbox.parser.RellParser
 import org.antlr.v4.runtime.misc.Interval
 
 class UnusedVariableRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :

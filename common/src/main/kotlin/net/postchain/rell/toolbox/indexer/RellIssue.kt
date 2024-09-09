@@ -2,9 +2,9 @@ package net.postchain.rell.toolbox.indexer
 
 import net.postchain.rell.base.compiler.base.utils.C_Message
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
-import net.postchain.rell.toolbox.parser.SyntaxError
 import net.postchain.rell.toolbox.formatter.FormatterIssue
 import net.postchain.rell.toolbox.linter.LinterIssue
+import net.postchain.rell.toolbox.parser.SyntaxError
 
 enum class RellIssueSeverity {
     WARNING,

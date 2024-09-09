@@ -2,6 +2,8 @@ package net.postchain.rell.toolbox.lsp.launcher
 
 import assertk.assertThat
 import assertk.assertions.isNotNull
+import net.postchain.rell.toolbox.lsp.TestClient
+import net.postchain.rell.toolbox.lsp.TestServerModule
 import net.postchain.rell.toolbox.lsp.server.LauncherType
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.launch.LSPLauncher
@@ -10,13 +12,9 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.koin.core.qualifier.named
-import util.TestClient
-import util.TestServerModule
 import java.io.IOException
 import java.net.Socket
 import java.net.SocketTimeoutException
-import kotlin.test.assertEquals
-
 
 class SocketServerLauncherTest {
     private lateinit var thread: Thread
@@ -59,7 +57,7 @@ class SocketServerLauncherTest {
         }
         return try {
             Socket("127.0.0.1", 5008)
-        } catch (e: IOException) {
+        } catch (@Suppress("SwallowedException") e: IOException) {
             Thread.sleep(500)
             connectToServer(attempt + 1)
         }
