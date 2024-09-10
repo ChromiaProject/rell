@@ -1,0 +1,10 @@
+module;
+
+entity foo {
+    x: integer;
+}
+
+query get_all_parcel_templates()
+    = foo @* { } (
+    x = .x
+);
