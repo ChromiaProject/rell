@@ -683,9 +683,13 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
 
     fun format(xAtExprWhatCmplx: RuleX_AtExprWhatComplexContext, doc: FormattableDocument) {
         doc.prepend(xAtExprWhatCmplx) { it.oneSpace() }
-        formatBracePairWithSpace(xAtExprWhatCmplx, doc, BracePairTypes.PARENTHESES)
+
         val formatAsMulti = lineSeparateArguments(xAtExprWhatCmplx, BracePairTypes.PARENTHESES)
         val (items, trailingComma) = xAtExprWhatCmplx.getAtExprWhatComplexItemWithTrailingComma()
+
+        if (!formatAsMulti) {
+            formatBracePairWithSpace(xAtExprWhatCmplx, doc, BracePairTypes.PARENTHESES)
+        }
         formatTrailingComma(trailingComma, doc, formatAsMulti)
         formatArguments(items, doc, formatAsMultiLine = formatAsMulti)
 
