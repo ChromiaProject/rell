@@ -1,20 +1,12 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
-import assertk.assertions.containsExactlyInAnyOrder
-import assertk.assertions.containsOnly
-import assertk.assertions.isEmpty
-import assertk.assertions.isEqualTo
+import assertk.assertions.*
 import net.postchain.rell.toolbox.lsp.TestClient
 import net.postchain.rell.toolbox.lsp.TestClientServerLauncher
 import net.postchain.rell.toolbox.lsp.TestServerModule
-import org.eclipse.lsp4j.Diagnostic
-import org.eclipse.lsp4j.DiagnosticSeverity
-import org.eclipse.lsp4j.DidChangeWatchedFilesParams
-import org.eclipse.lsp4j.FileChangeType
-import org.eclipse.lsp4j.FileEvent
-import org.eclipse.lsp4j.Position
-import org.eclipse.lsp4j.Range
+import org.eclipse.lsp4j.*
+import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -357,6 +349,20 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         await().until { testClient.diagnostics.isNotEmpty() }
 
         val diagnostics = testClient.diagnostics
+
+        val token = "rell-indexing"
+        await().until { testClient.progressNotifications.size == 2 }
+        assertThat(testClient.progressNotifications).containsExactly(
+            ProgressParams(
+                Either.forLeft(token),
+                Either.forLeft(WorkDoneProgressBegin().apply { title = token })
+            ),
+            ProgressParams(
+                Either.forLeft(token),
+                Either.forLeft(WorkDoneProgressEnd())
+            )
+        )
+
         assertThat(indexer.fileUriResourceMap.keys).containsOnly(rellFile)
         assertThat(diagnostics.keys).containsOnly(rellFile.toString())
         assertThat(diagnostics[rellFile.toString()]!!).containsOnly(

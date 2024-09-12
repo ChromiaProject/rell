@@ -1,16 +1,14 @@
 package net.postchain.rell.toolbox.lsp
 
-import org.eclipse.lsp4j.Diagnostic
-import org.eclipse.lsp4j.MessageActionItem
-import org.eclipse.lsp4j.MessageParams
-import org.eclipse.lsp4j.PublishDiagnosticsParams
-import org.eclipse.lsp4j.ShowMessageRequestParams
+import net.postchain.rell.toolbox.lsp.tokens.Token
+import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.services.LanguageClient
 import java.util.concurrent.CompletableFuture
 
 open class TestClient : LanguageClient {
 
     val diagnostics = mutableMapOf<String, List<Diagnostic>>()
+    val progressNotifications = mutableListOf<ProgressParams>()
 
     fun clearDiagnostics() {
         diagnostics.clear()
@@ -38,5 +36,9 @@ open class TestClient : LanguageClient {
 
     override fun refreshSemanticTokens(): CompletableFuture<Void>? {
         return CompletableFuture<Void>()
+    }
+
+    override fun notifyProgress(params: ProgressParams) {
+        progressNotifications.add(params)
     }
 }
