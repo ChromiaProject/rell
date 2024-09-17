@@ -26,7 +26,8 @@ class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
     PostchainQuery::class,
     "query",
     queryDef.params(),
-    queryDef.type()
+    queryDef.type(),
+    queryDef.docSymbol,
 ), Query {
 
     override fun formatGtvParameters(): String {
@@ -80,7 +81,8 @@ class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
         if (returnType !is R_TupleType || !returnType.name.contains(":")) return "" // Non-tuples and unnamed tuples
         val resultObject = DataClassSection(
                 CamelCaseClassName("", buildResultType(), mountName.toString().replace(".", "_").uppercase(Locale.getDefault()), className.module),
-                returnType.fields.associateBy({ it.name!!.str }, { it.type })
+                returnType.fields.associateBy({ it.name!!.str }, { it.type }),
+                docSymbol
         )
         return "\n${resultObject.format()}"
     }

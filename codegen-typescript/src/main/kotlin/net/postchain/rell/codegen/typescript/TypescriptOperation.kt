@@ -11,6 +11,7 @@ class TypescriptOperation(op: R_OperationDefinition) : TypescriptFunction(
     CamelCaseClassName.fromRellOperation(op),
     op.mountName,
     op.params(),
+    op.docSymbol,
     false,
     null
 ), Operation {

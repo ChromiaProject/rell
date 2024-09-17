@@ -1,0 +1,62 @@
+module;
+
+/**
+* Some entity docs
+* @see something else
+* @since 1.0.0
+* @author some_author
+*/
+entity doc_entity { a: boolean; }
+entity not_doc_entity { a: boolean; }
+
+/**
+* Some enum docs
+* @see something else
+* @since 1.0.0
+* @author some_author
+*/
+enum doc_enum {a, b}
+enum not_doc_enum {a, b}
+
+/**
+* Some operation docs
+* @see something else
+* @param int_param Some integer
+* @throws SomethingScary boo
+* @since 1.0.0
+* @param not_existing_param Some text
+*/
+operation doc_operation(int_param: integer) {}
+operation not_doc_operation(int_param: integer) {}
+/**
+ * Missing tags
+ */
+operation missing_tags_doc_operation(int_param: integer) {}
+
+
+/**
+* Some query docs
+* another line
+*
+* @see something else
+* @param t Some text
+* @throws SomethingScary boo
+* @since 1.0.0
+* @return Some integer
+*/
+query doc_query(t: text?) = 1;
+query not_doc_query(t: text?) = 1;
+/**
+ * Some description without param or return
+ */
+query missing_tags_doc_query(t: text?) = 1;
+
+
+/**
+* Some struct docs
+* @since 1.0.0
+* @see something else
+* @author some_author
+*/
+struct doc_struct { a: json; }
+struct not_doc_struct { a: json; }

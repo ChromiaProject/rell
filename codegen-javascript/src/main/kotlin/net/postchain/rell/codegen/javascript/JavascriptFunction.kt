@@ -12,6 +12,7 @@ import net.postchain.rell.base.lib.type.R_RowidType
 import net.postchain.rell.base.lib.type.R_SetType
 import net.postchain.rell.base.lib.type.R_TextType
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
@@ -20,6 +21,7 @@ abstract class JavascriptFunction(
         protected val className: ClassName,
         protected val mountName: R_MountName,
         protected val params: List<R_FunctionParam>,
+        override val docSymbol: DocSymbol,
         private val async: Boolean,
         private val querySuffix: String = "",
 ) : DocumentSection {
@@ -29,7 +31,9 @@ abstract class JavascriptFunction(
 
     final override fun format(): String {
         val functionName = className.className.snakeToLowerCamelCase()
-        return """|export ${asyncAnnotation()}function $functionName$querySuffix(${formatInputParameters()}) {
+        return """
+        |${JavascriptDocGenerator.formatDoc(docSymbol, wrapInDocComments = true, params, formatReturnType())}
+        |export ${asyncAnnotation()}function $functionName$querySuffix(${formatInputParameters()}) {
         |${formatTypechecks()}${"\t"}${formatBody()}
         |}""".trimMargin()
     }
@@ -92,5 +96,5 @@ abstract class JavascriptFunction(
     }
 
     abstract fun formatBody(): String
-
+    abstract fun formatReturnType(): String
 }

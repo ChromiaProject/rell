@@ -15,6 +15,7 @@ open class SingleFileRellApp(private val fileName: String) {
         val conf = RellApiCompile.Config.Builder()
                 .moduleArgsMissingError(false)
                 .mountConflictError(false)
+                .docSymbolsEnabled(true)
                 .build()
         val source = File(this::class.java.getResource("/$fileName.rell")!!.toURI()).parentFile
         app = RellApiCompile.compileApp(conf, source, listOf(fileName))

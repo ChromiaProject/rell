@@ -13,6 +13,7 @@ import net.postchain.gtv.mapper.Nullable
 import net.postchain.rell.base.model.R_FunctionParam
 import net.postchain.rell.base.model.R_MountName
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.kotlin.util.attributeToGtv
@@ -32,7 +33,8 @@ abstract class ExtensionMethodSection(
         private val extendedClass: KClass<*>,
         private val extendenMethod: String,
         protected val params: List<R_FunctionParam>,
-        private val returnType: R_Type?
+        private val returnType: R_Type?,
+        override val docSymbol: DocSymbol,
 ) : DocumentSection {
     override val moduleName: String
         get() = className.module
@@ -69,6 +71,7 @@ abstract class ExtensionMethodSection(
         |const val ${className.constantName} = "$mountName"
         |/**
         | * $kind ${className.rellName} 
+        |${KotlinDocGenerator.formatDoc(docSymbol, padding = " * ")}
         | */
         |${GeneratedAnnotation.createAnnotation(className.rellName)}
         |fun ${extendedClass.simpleName}.${className.className}(${formatInputParameters()}) = 

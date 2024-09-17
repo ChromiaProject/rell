@@ -3,16 +3,18 @@ package net.postchain.rell.codegen.typescript
 import net.postchain.rell.base.model.R_MountName
 import net.postchain.rell.base.model.R_FunctionParam
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.section.DocumentSection
-import net.postchain.rell.codegen.typescript.util.rTypeToString
+import net.postchain.rell.codegen.util.rTypeToJsTypeString
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 
 abstract class TypescriptFunction(
         protected val className: ClassName,
         protected val mountName: R_MountName,
         protected val params: List<R_FunctionParam>,
+        override val docSymbol: DocSymbol,
         private val async: Boolean,
         protected val returnType: R_Type?,
         private val querySuffix: String = "",
@@ -30,6 +32,7 @@ abstract class TypescriptFunction(
     final override fun format(): String {
         val returnTypeString = "${returnStructure(returnType)}\n"
         val functionString = """
+        |${TypescriptDocGenerator.formatDoc(docSymbol, wrapInDocComments = true, params, formatReturnType())}
         |export ${asyncAnnotation()}function ${className.className.snakeToLowerCamelCase()}$querySuffix(${formatInputParameters()}): ${formatReturnType()} {
         |${"\t"}${formatReturnObject()}
         |}
@@ -44,7 +47,7 @@ abstract class TypescriptFunction(
 
     private fun formatInputParameters(): String {
         if (params.isEmpty()) return ""
-        return params.joinToString(",\n\t") { "${it.name.str.snakeToLowerCamelCase()}: ${rTypeToString(it.type, true)}" }
+        return params.joinToString(",\n\t") { "${it.name.str.snakeToLowerCamelCase()}: ${rTypeToJsTypeString(it.type, true)}" }
     }
 
     private fun formatReturnObject(): String = buildString {

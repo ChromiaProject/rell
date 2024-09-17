@@ -11,6 +11,7 @@ class KotlinEnumeration(val className: ClassName, enum: R_EnumDefinition) : Enum
     private val name = className.rellName
     override val moduleName = className.module
     private val enumValues = enum.values()
+    override val docSymbol = enum.docSymbol
 
     override val imports = listOf(
         "import javax.annotation.processing.Generated",
@@ -19,8 +20,9 @@ class KotlinEnumeration(val className: ClassName, enum: R_EnumDefinition) : Enum
     )
 
     override fun format() = """
-        |/*
+        |/**
         |* Enum $name
+        |${KotlinDocGenerator.formatDoc(docSymbol)}
         |*/
         |${GeneratedAnnotation.createAnnotation(name)}
         |enum class ${className.className}: ToGtv {

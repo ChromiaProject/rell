@@ -26,6 +26,7 @@ class CodeGenerator(private val factory: DocumentFactory, private val config: Co
         val conf = RellApiCompile.Config.Builder()
                 .moduleArgsMissingError(false)
                 .mountConflictError(false)
+                .docSymbolsEnabled(true)
                 .build()
         val app = RellApiCompile.compileApp(conf, source, modules)
         return createSections(app)

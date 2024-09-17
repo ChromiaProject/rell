@@ -9,6 +9,7 @@ import net.postchain.gtv.mapper.Name
 import net.postchain.gtv.mapper.Nullable
 import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.kotlin.util.rTypeToString
@@ -21,7 +22,8 @@ import javax.annotation.processing.Generated
 
 open class DataClassSection(
     protected val className: ClassName,
-    attributes: Map<String, R_Type>
+    attributes: Map<String, R_Type>,
+    override val docSymbol: DocSymbol,
 ) : DocumentSection {
     override val moduleName: String
         get() = className.module
