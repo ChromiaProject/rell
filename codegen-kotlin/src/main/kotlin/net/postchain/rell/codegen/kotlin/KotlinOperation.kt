@@ -13,7 +13,8 @@ class KotlinOperation(op: R_OperationDefinition) : ExtensionMethodSection(
     TransactionBuilder::class,
     "addOperation",
     op.params(),
-    null
+    null,
+    op.docSymbol,
 ), Operation {
 
     override fun formatGtvParameters(): String {

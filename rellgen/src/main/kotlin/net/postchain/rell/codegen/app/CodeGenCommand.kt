@@ -47,7 +47,7 @@ class CodeGenCommand : CliktCommand("Generates files based on rell sources") {
 
     private val moduleName by option("--module", help = "Module name").split(",")
 
-    private val language by option(help = "Langage to generate for").groupSwitch(
+    private val language by option(help = "Language to generate for").groupSwitch(
             "--kotlin" to KotlinOptionGroup(),
             "--mermaid" to MermaidOption(),
             "--typescript" to TypescriptOption(),

@@ -9,6 +9,7 @@ class JavascriptQuery(queryDef: R_QueryDefinition) : JavascriptFunction(
         CamelCaseClassName.fromRellQuery(queryDef),
         queryDef.mountName,
         queryDef.params(),
+        queryDef.docSymbol,
         false,
     "QueryObject"
 ), Query {
@@ -17,6 +18,7 @@ class JavascriptQuery(queryDef: R_QueryDefinition) : JavascriptFunction(
         get() = className.module
 
     override fun formatBody() = "return { name: \"$mountName\", args: ${formatQueryParameters()} };"
+    override fun formatReturnType() = "QueryObject"
 
     private fun formatQueryParameters(): String {
         if (params.isEmpty()) return "undefined"

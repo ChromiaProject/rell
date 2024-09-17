@@ -5,4 +5,4 @@ import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.section.Entity
 
 class TypescriptEntity(className: ClassName, entity: R_EntityDefinition) :
-        DataTypeSection(className, entity.attributes.values.associateBy({ it.name }, { it.type })), Entity
+        DataTypeSection(className, entity.attributes.values.associateBy({ it.name }, { it.type }), entity.docSymbol), Entity

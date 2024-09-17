@@ -1,5 +1,6 @@
 package net.postchain.rell.codegen.javascript
 
+import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Builtin
 import net.postchain.rell.codegen.util.BuiltinType
@@ -43,6 +44,7 @@ abstract class TypeAssertion(val functionName: String, private val jsType: Strin
     override val moduleName = ""
     override val imports: List<String>
         get() = listOf("")
+    override val docSymbol = DocSymbol.NONE
 
     val className = CamelCaseClassName("", functionName, functionName.uppercase(Locale.getDefault()), "")
 

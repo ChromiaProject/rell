@@ -7,12 +7,14 @@ import net.postchain.rell.codegen.section.Struct
 
 class KotlinStruct(className: ClassName, struct: R_StructDefinition) : DataClassSection(
     className,
-    struct.struct.attributes.values.associateBy( { it.name }, { it.type })
+    struct.struct.attributes.values.associateBy( { it.name }, { it.type }),
+    struct.docSymbol,
 ), Struct {
     override fun format(): String {
         return """
-            |/*
+            |/**
             |* Struct ${className.rellName} 
+            |${KotlinDocGenerator.formatDoc(docSymbol)}
             |*/
             |${super.format()}
         """.trimMargin()

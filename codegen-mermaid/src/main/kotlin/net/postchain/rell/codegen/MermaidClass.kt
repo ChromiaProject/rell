@@ -11,6 +11,7 @@ class MermaidClass(private val rellEntity: R_EntityDefinition) : Entity {
         get() = rellEntity.moduleLevelName
     override val imports: List<String>
         get() = listOf()
+    override val docSymbol = rellEntity.docSymbol
 
     private val attributes = rellEntity.attributes.values.associateBy( { it.name }, { it.type })
     override val deps = DependencyFinder.findDependencies(attributes.values)

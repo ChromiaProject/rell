@@ -12,6 +12,7 @@ class MermaidEntityReference(private val rellEntity: R_EntityDefinition) : Entit
         get() = rellEntity.moduleLevelName
     override val imports: List<String>
         get() = listOf()
+    override val docSymbol = rellEntity.docSymbol
 
     private val entityName = nameFromType(rellEntity.type)
     private val attributes = rellEntity.attributes.values.map { AttributeProps.fromAttribue(it, rellEntity.keys) }
