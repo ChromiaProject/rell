@@ -4,6 +4,7 @@ import com.google.gson.JsonObject
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.toolbox.common.RellAbout
 import net.postchain.rell.toolbox.common.RellVersionInfo
+import net.postchain.rell.toolbox.indexer.IndexingState
 import net.postchain.rell.toolbox.indexer.RellIssue
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsConverter
@@ -40,6 +41,7 @@ import org.eclipse.lsp4j.MessageType
 import org.eclipse.lsp4j.PrepareRenameDefaultBehavior
 import org.eclipse.lsp4j.PrepareRenameParams
 import org.eclipse.lsp4j.PrepareRenameResult
+import org.eclipse.lsp4j.ProgressParams
 import org.eclipse.lsp4j.PublishDiagnosticsParams
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.ReferenceParams
@@ -50,6 +52,8 @@ import org.eclipse.lsp4j.SetTraceParams
 import org.eclipse.lsp4j.SymbolInformation
 import org.eclipse.lsp4j.TextEdit
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier
+import org.eclipse.lsp4j.WorkDoneProgressBegin
+import org.eclipse.lsp4j.WorkDoneProgressEnd
 import org.eclipse.lsp4j.WorkspaceEdit
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.jsonrpc.messages.Either3
@@ -225,7 +229,7 @@ class RellLanguageServer(
                 val indexer = workspaceManager.getIndexerForConfigFile(uri)
                 if (indexer != null && indexer.isConfigFile(uri)) {
                     requestManager.runWrite {
-                        indexer.updateConfig(uri)
+                        indexer.updateConfig(uri, ::handleIndexingState)
                         workspaceManager.reportDiagnostics(indexer)
                     }
                 } else {
@@ -388,5 +392,21 @@ class RellLanguageServer(
     override fun codeAction(params: CodeActionParams): CompletableFuture<List<Either<Command, CodeAction>>> {
         val fileUri = parseFileUri(params.textDocument.uri) ?: return CompletableFuture.completedFuture(listOf())
         return CompletableFuture.completedFuture(workspaceManager.getCodeActions(fileUri, params.range))
+    }
+
+    private fun handleIndexingState(state: IndexingState) {
+        val token = "rell-indexing"
+
+        if (state == IndexingState.BEGIN) {
+            val startIndexingProgress = ProgressParams(
+                Either.forLeft(token),
+                Either.forLeft(WorkDoneProgressBegin().apply { title = token })
+            )
+            languageClient.notifyProgress(startIndexingProgress)
+        }
+        if (state == IndexingState.END) {
+            val endIndexingProgress = ProgressParams(Either.forLeft(token), Either.forLeft(WorkDoneProgressEnd()))
+            languageClient.notifyProgress(endIndexingProgress)
+        }
     }
 }

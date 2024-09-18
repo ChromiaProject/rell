@@ -34,7 +34,7 @@ class WorkspaceIndexer(
     var fileUriResourceMap = ConcurrentHashMap<URI, Resource>()
     private var fileMap: ConcurrentHashMap<C_SourcePath, C_SourceFile> = ConcurrentHashMap()
 
-    fun updateConfig(fileUri: URI) {
+    fun updateConfig(fileUri: URI, indexingStateNotifier: (state: IndexingState) -> Unit) {
         val configFile = File(fileUri)
         if (isLinterConfig(fileUri)) {
             linterOptions.updateOptionsFromFile(configFile)
@@ -52,7 +52,9 @@ class WorkspaceIndexer(
             ignoreReportingUris = chromiaModelProvider.resolveIgnoreReportingUris(workspaceUri)
 
             if (shouldReindex(newModel, oldModel)) {
+                indexingStateNotifier(IndexingState.BEGIN)
                 initialFileIndexBuild(reindex = true)
+                indexingStateNotifier(IndexingState.END)
             } else {
                 if (shouldRunLinter(ignoreReportingUris, oldIgnoreReportingUris)) {
                     runLinter()
