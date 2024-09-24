@@ -8,3 +8,10 @@ query get_all_parcel_templates()
     = foo @* { } (
     x = .x
 );
+
+query my_query(some_filter_param: text, some_other_filter_param: integer) = some_entity @* {
+    .some_property == some_filter_param,
+    .some_other_property == some_other_filter_param
+} (
+    .some_other_property
+);

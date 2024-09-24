@@ -674,24 +674,27 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
     }
 
     fun format(xAtExprWhere: RuleX_AtExprWhereContext, doc: FormattableDocument) {
-        formatBracePairWithSpace(xAtExprWhere, doc, BracePairTypes.CURLY)
         val (expressionRef, trailingComma) = xAtExprWhere.getExpressionRefWithTrailingComma()
-        val lineSeparate = lineSeparateArguments(xAtExprWhere, BracePairTypes.CURLY)
-        formatTrailingComma(trailingComma, doc, lineSeparate)
-        formatArguments(expressionRef, doc, formatAsMultiLine = lineSeparate)
+        val formatAsMultiLine = lineSeparateArguments(xAtExprWhere, BracePairTypes.CURLY)
+
+        if (!formatAsMultiLine || expressionRef.isNullOrEmpty()) {
+            formatBracePairWithSpace(xAtExprWhere, doc, BracePairTypes.CURLY)
+        }
+        formatTrailingComma(trailingComma, doc, formatAsMultiLine)
+        formatArguments(expressionRef, doc, formatAsMultiLine = formatAsMultiLine)
     }
 
     fun format(xAtExprWhatCmplx: RuleX_AtExprWhatComplexContext, doc: FormattableDocument) {
         doc.prepend(xAtExprWhatCmplx) { it.oneSpace() }
 
-        val formatAsMulti = lineSeparateArguments(xAtExprWhatCmplx, BracePairTypes.PARENTHESES)
+        val formatAsMultiLine = lineSeparateArguments(xAtExprWhatCmplx, BracePairTypes.PARENTHESES)
         val (items, trailingComma) = xAtExprWhatCmplx.getAtExprWhatComplexItemWithTrailingComma()
 
-        if (!formatAsMulti) {
+        if (!formatAsMultiLine) {
             formatBracePairWithSpace(xAtExprWhatCmplx, doc, BracePairTypes.PARENTHESES)
         }
-        formatTrailingComma(trailingComma, doc, formatAsMulti)
-        formatArguments(items, doc, formatAsMultiLine = formatAsMulti)
+        formatTrailingComma(trailingComma, doc, formatAsMultiLine)
+        formatArguments(items, doc, formatAsMultiLine = formatAsMultiLine)
 
         items?.forEach { item ->
             val baseExpr = item.getBaseExpr()
