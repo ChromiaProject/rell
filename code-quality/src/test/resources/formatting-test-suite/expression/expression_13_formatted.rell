@@ -45,10 +45,21 @@ function trailingComma() {
     create user1 ( first_name = "name", salary = 1, );
     create user1 (
         first_name = "name",
+        salary = 1
+    );
+    create user1 (
+        first_name = "name",
         salary = 1,
     );
 
     update user1 @? { .first_name == "Chromia", .salary == 0, } ( salary = 100, );
+    update user1 @? {
+        .first_name == "Chromia",
+        .salary == 0
+    } (
+        salary = 100
+    );
+
     update user1 @? {
         .first_name == "Chromia",
         .salary == 0,
@@ -57,6 +68,12 @@ function trailingComma() {
     );
 
     delete user4 @? { .first_name == "Chromia", .last_name == "last", .salary == 1, .age == 100, };
+    delete user4 @? {
+        .first_name == "Chromia",
+        .last_name == "last",
+        .salary == 1,
+        .age == 100
+    };
     delete user4 @? {
         .first_name == "Chromia",
         .last_name == "last",
