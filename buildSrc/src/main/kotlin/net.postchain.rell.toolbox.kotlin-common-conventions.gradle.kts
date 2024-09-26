@@ -1,6 +1,9 @@
 
 import io.gitlab.arturbosch.detekt.Detekt
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.apache.tools.ant.DirectoryScanner
+
+DirectoryScanner.removeDefaultExclude("**/.gitignore")
 
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.

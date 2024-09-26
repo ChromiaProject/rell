@@ -18,6 +18,7 @@ import net.postchain.rell.toolbox.lsp.server.RellLanguageServerTerminator
 import net.postchain.rell.toolbox.lsp.server.RellRequestManager
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
+import net.postchain.rell.toolbox.lsp.template.NewProjectTemplateService
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestRunner
 import net.postchain.rell.toolbox.lsp.tokens.RellSemanticTokensManager
 import org.koin.core.KoinApplication
@@ -44,6 +45,7 @@ class TestServerModule {
 
     private val serverModule = module {
         single { RellSymbolService() }
+        single { NewProjectTemplateService() }
         single { RellLinter() }
         single { FormattingStyleLinter() }
         singleOf(::RellIndexCachingService)

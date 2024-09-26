@@ -1,6 +1,6 @@
 plugins {
     id("net.postchain.rell.toolbox.kotlin-common-conventions")
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.2"
     application
     id("jacoco-report-aggregation")
 }
@@ -16,6 +16,17 @@ dependencies {
     implementation(libs.bundles.rell)
 
     implementation(libs.fury.core)
+
+    implementation(libs.chromia.build.tools) {
+        exclude(group = "com.chromia.rell.dokka")
+        exclude(group = "net.postchain", module = "postchain-base")
+        exclude(group = "net.postchain", module = "postchain-admin-service")
+        exclude(group = "net.postchain", module = "postchain-gtv")
+        exclude(group = "net.postchain", module = "chromia-client")
+        exclude(group = "net.postchain.client", module = "postchain-client")
+        exclude(group = "net.postchain.rell", module = "codegen")
+        exclude(group = "org.eclipse.jgit")
+    }
 
     testImplementation(libs.bundles.testcontainers)
     testImplementation(libs.bundles.testing)

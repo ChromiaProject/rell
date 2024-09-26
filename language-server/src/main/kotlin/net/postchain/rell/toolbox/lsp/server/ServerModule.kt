@@ -11,6 +11,7 @@ import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
+import net.postchain.rell.toolbox.lsp.template.NewProjectTemplateService
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestRunner
 import net.postchain.rell.toolbox.lsp.tokens.RellSemanticTokensManager
 import org.koin.core.module.dsl.singleOf
@@ -20,6 +21,7 @@ import org.koin.dsl.module
 
 val serverModule = module {
     single { RellSymbolService() }
+    single { NewProjectTemplateService() }
     single { RellLinter() }
     single { FormattingStyleLinter() }
     singleOf(::RellIndexCachingService)

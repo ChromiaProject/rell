@@ -1,3 +1,7 @@
+import org.apache.tools.ant.DirectoryScanner
+
+DirectoryScanner.removeDefaultExclude("**/.gitignore")
+
 pluginManagement {
     repositories {
         mavenCentral()
