@@ -13,7 +13,7 @@ slf4j = "1.7.36"
 mockk = "1.13.8"
 ec4j = "0.3.0"
 java-diff-utils = "4.12"
-chromia-build-tools = "0.20.11"
+chromia-build-tools = "0.20.14"
 fury-core = "0.4.1"
 
 [libraries]

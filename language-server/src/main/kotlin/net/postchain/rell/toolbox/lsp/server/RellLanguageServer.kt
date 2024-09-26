@@ -66,6 +66,9 @@ import org.eclipse.lsp4j.services.WorkspaceService
 import java.io.File
 import java.net.URI
 import java.util.concurrent.CompletableFuture
+import net.postchain.rell.toolbox.lsp.template.CreateNewProjectParams
+import net.postchain.rell.toolbox.lsp.template.NewProjectTemplate
+import net.postchain.rell.toolbox.lsp.template.NewProjectTemplateService
 
 class RellLanguageServer(
     private val workspaceManager: RellWorkspaceManager,
@@ -76,6 +79,7 @@ class RellLanguageServer(
     private val formattingManager: RellFormattingManager,
     private val indexCachingService: RellIndexCachingService,
     private val testRunner: RellTestRunner,
+    private val newProjectTemplateService: NewProjectTemplateService,
 ) : LanguageServer, LanguageClientAware, TextDocumentService, WorkspaceService {
 
     private val logger = KotlinLogging.logger {}
@@ -146,6 +150,19 @@ class RellLanguageServer(
         return requestManager.runRead {
             indexCachingService.getCacheFolder().toString()
         }
+    }
+
+    @JsonRequest(useSegment = false, value = "rell/newProjectTemplates")
+    fun listNewProjectTemplates(): CompletableFuture<List<NewProjectTemplate>> {
+        return CompletableFuture.completedFuture(newProjectTemplateService.getAvailableTemplates())
+    }
+
+    @JsonRequest(useSegment = false, value = "rell/createNewProject")
+    fun createNewProject(params: CreateNewProjectParams): CompletableFuture<String> {
+        val targetDir = File(parseFileUri(params.targetDirUri) ?: return CompletableFuture.completedFuture(null))
+        val projectDir =
+            newProjectTemplateService.createNewProjectTemplate(params.template, params.projectName, targetDir)
+        return CompletableFuture.completedFuture(projectDir.absolutePath)
     }
 
     override fun shutdown(): CompletableFuture<Any> {
@@ -265,7 +282,7 @@ class RellLanguageServer(
     }
 
     override fun definition(params: DefinitionParams):
-        CompletableFuture<Either<MutableList<out Location>, MutableList<out LocationLink>>?> {
+            CompletableFuture<Either<MutableList<out Location>, MutableList<out LocationLink>>?> {
         val fileUri = parseFileUri(params.textDocument.uri)
             ?: return CompletableFuture.completedFuture(Either.forLeft(mutableListOf()))
 
@@ -279,7 +296,7 @@ class RellLanguageServer(
     }
 
     override fun documentSymbol(params: DocumentSymbolParams):
-        CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>?> {
+            CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>?> {
         val fileUri = parseFileUri(params.textDocument.uri) ?: return CompletableFuture.completedFuture(listOf())
         return requestManager.runRead {
             if (fileUri.isRellFile()) {
@@ -344,7 +361,7 @@ class RellLanguageServer(
     }
 
     override fun prepareRename(params: PrepareRenameParams):
-        CompletableFuture<Either3<Range, PrepareRenameResult, PrepareRenameDefaultBehavior>> {
+            CompletableFuture<Either3<Range, PrepareRenameResult, PrepareRenameDefaultBehavior>> {
         val fileUri = parseFileUri(params.textDocument.uri)
             ?: return CompletableFuture.completedFuture(Either3.forThird(PrepareRenameDefaultBehavior(true)))
         val position = params.position
