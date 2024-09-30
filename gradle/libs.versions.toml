@@ -15,6 +15,7 @@ ec4j = "0.3.0"
 java-diff-utils = "4.12"
 chromia-build-tools = "0.20.14"
 fury-core = "0.4.1"
+system-stubs-jupiter = "2.1.7"
 
 [libraries]
 rell-base = { module = "net.postchain.rell:rell-base", version.ref = "rell" }
@@ -52,7 +53,7 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 #Testing
 testcontainers-base = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
 testcintainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
-
+system-stubs-jupiter = { module = "uk.org.webcompere:system-stubs-jupiter", version.ref = "system-stubs-jupiter" }
 
 #logging
 oshai = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "oshai" }
@@ -67,4 +68,4 @@ rell = ["rell-base"] # "rell-api-base", "rell-tools"
 lsp4j = ["lsp4j", "lsp4j-debug", "lsp4j-websocket"]
 koin = ["koin-core", "koin-logger"]
 jackson = ["jackson", "jackson-yml", "jackson-kotlin"]
-testing = ["kotlin-test-junit", "assertk", "mockk", "kotlin-test-junit-parameter"]
+testing = ["kotlin-test-junit", "assertk", "mockk", "kotlin-test-junit-parameter", "system-stubs-jupiter"]

@@ -6,6 +6,7 @@ plugins {
 dependencies {
     implementation(libs.antlr)
     implementation(libs.ec4j)
+    implementation(libs.system.stubs.jupiter)
     implementation(libs.bundles.rell)
 
     implementation(libs.chromia.build.tools) {
