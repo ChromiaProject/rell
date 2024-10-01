@@ -2,6 +2,7 @@ package net.postchain.rell.toolbox.chromia
 
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.parseModel
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.net.URI
 
@@ -36,6 +37,7 @@ class ChromiaModelProvider(private val workspaceRootUri: URI?) {
         return try {
             parseModel(chromiaModelFile)
         } catch (@Suppress("SwallowedException") e: Exception) {
+            logger.error(e) { "Failed to parse Chromia model file: $chromiaModelFile" }
             null
         }
     }
@@ -60,6 +62,8 @@ class ChromiaModelProvider(private val workspaceRootUri: URI?) {
     }
 
     companion object {
+        private val logger = KotlinLogging.logger {}
+
         const val DEFAULT_CHROMIA_MODEL_FILENAME = "chromia.yml"
         const val DEFAULT_CHROMIA_MODEL_RELL_VERSION = "0.13.14"
     }

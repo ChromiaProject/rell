@@ -4,102 +4,85 @@ import assertk.assertThat
 import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import com.chromia.cli.model.RellLibraryModel
+import net.postchain.rell.toolbox.testing.testData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 class ChromiaModelProviderTest {
+    private val externalLibName = "external"
+    private val externalLibModulePath = "lib/$externalLibName/module.rell"
+    private val internalLibModulePath = "lib/internal/module.rell"
 
     @Test
     fun `resolveIgnoreReportingUris should return set of path to external libraries`(@TempDir dir: File) {
-        val srcDir = File(dir, "src")
-        srcDir.mkdirs()
-
-        val externalLibName = "external"
-
-        File(srcDir, "lib/internal/module.rell").apply {
-            parentFile.mkdirs()
-        }.toURI()
-
-        val externalLib = File(srcDir, "lib/$externalLibName/module.rell").apply {
-            parentFile.mkdirs()
+        val testDataBuilder = testData(dir) {
+            emptyModule(internalLibModulePath)
+            emptyModule(externalLibModulePath)
+            config {
+                blockchains(
+                    """
+                    blockchains:
+                        rellDappWithLib:
+                            module: main
+                    """.trimIndent()
+                )
+                addLib(externalLibName, RellLibraryModel("a.registry.abc", null, "a/path/to/registry", false, null))
+            }
         }
 
-        File(dir, "chromia.yml").apply {
-            writeText(
-                """
-                blockchains:
-                  rellDappWithLib:
-                    module: main
-
-                libs:
-                  $externalLibName:
-                    registry: a.registry.abc
-                    path: a/path/to/registry
-                """.trimIndent()
-            )
-        }
-
-        val ignoreReportingUris = ChromiaModelProvider(dir.toURI()).resolveIgnoreReportingUris(srcDir.toURI())
-        assertThat(ignoreReportingUris).containsOnly(externalLib.parentFile.toURI())
+        val ignoreReportingUris = ChromiaModelProvider(
+            dir.toURI()
+        ).resolveIgnoreReportingUris(testDataBuilder.sourceFolderURI)
+        assertThat(ignoreReportingUris).containsOnly(
+            testDataBuilder.sourceFolder.resolve(externalLibModulePath).parentFile.toURI()
+        )
     }
 
     @Test
     fun `resolveIgnoreReportingUris should return empty set when no libs defined in chromia yml`(@TempDir dir: File) {
-        val srcDir = File(dir, "src")
-        srcDir.mkdirs()
-
-        val externalLibName = "external"
-
-        File(srcDir, "lib/internal/module.rell").apply {
-            parentFile.mkdirs()
-        }.toURI()
-
-        File(srcDir, "lib/$externalLibName/module.rell").apply {
-            parentFile.mkdirs()
+        val testDataBuilder = testData(dir) {
+            emptyModule(internalLibModulePath)
+            emptyModule(externalLibModulePath)
+            config {
+                blockchains(
+                    """
+                    blockchains:
+                        rellDappWithLib:
+                            module: main
+                    """.trimIndent()
+                )
+            }
         }
 
-        File(dir, "chromia.yml").apply {
-            writeText(
-                """
-                blockchains:
-                  rellDappWithLib:
-                    module: main
-                """.trimIndent()
-            )
-        }
-
-        val ignoreReportingUris = ChromiaModelProvider(dir.toURI()).resolveIgnoreReportingUris(srcDir.toURI())
+        val ignoreReportingUris = ChromiaModelProvider(
+            dir.toURI()
+        ).resolveIgnoreReportingUris(testDataBuilder.sourceFolderURI)
         assertThat(ignoreReportingUris).isEmpty()
     }
 
     @Test
     fun `resolveIgnoreReportingUris should return empty set when chromia yml format is faulty`(@TempDir dir: File) {
-        val srcDir = File(dir, "src")
-        srcDir.mkdirs()
-
-        val externalLibName = "external"
-
-        File(srcDir, "lib/internal/module.rell").apply {
-            parentFile.mkdirs()
-        }.toURI()
-
-        File(srcDir, "lib/$externalLibName/module.rell").apply {
-            parentFile.mkdirs()
+        val testDataBuilder = testData(dir) {
+            emptyModule(internalLibModulePath)
+            emptyModule(externalLibModulePath)
+            config {
+                blockchains(
+                    """
+                    libs:
+                      $externalLibName:
+                        registry: a.registry.abc
+                        path: a/path/to/registry
+                    """.trimIndent()
+                )
+                addLib(externalLibName, RellLibraryModel("a.registry.abc", null, "a/path/to/registry", false, null))
+            }
         }
 
-        File(dir, "chromia.yml").apply {
-            writeText(
-                """
-                libs:
-                  $externalLibName:
-                    registry: a.registry.abc
-                    path: a/path/to/registry
-                """.trimIndent()
-            )
-        }
-
-        val ignoreReportingUris = ChromiaModelProvider(dir.toURI()).resolveIgnoreReportingUris(srcDir.toURI())
+        val ignoreReportingUris = ChromiaModelProvider(
+            dir.toURI()
+        ).resolveIgnoreReportingUris(testDataBuilder.sourceFolderURI)
         assertThat(ignoreReportingUris).isEmpty()
     }
 
@@ -107,10 +90,8 @@ class ChromiaModelProviderTest {
     fun `resolveIgnoreReportingUris should return empty set when workspaceRootUri is not passed to call`(
         @TempDir dir: File
     ) {
-        val srcDir = File(dir, "src")
-        srcDir.mkdirs()
-
-        val ignoreReportingUris = ChromiaModelProvider(null).resolveIgnoreReportingUris(srcDir.toURI())
+        val testDataBuilder = testData(dir)
+        val ignoreReportingUris = ChromiaModelProvider(null).resolveIgnoreReportingUris(testDataBuilder.sourceFolderURI)
         assertThat(ignoreReportingUris).isEmpty()
     }
 
@@ -122,16 +103,18 @@ class ChromiaModelProviderTest {
 
     @Test
     fun `getRellLanguageVersion should return rell version from chromia model`(@TempDir dir: File) {
-        File(dir, "chromia.yml").apply {
-            writeText(
-                """
-                blockchains:
-                  rellDappWithLib:
-                    module: main
-                compile:
-                  rellVersion: 0.13.15
-                """.trimIndent()
-            )
+        testData(dir) {
+            config {
+                blockchains(
+                    """
+                    blockchains:
+                      rellDappWithLib:
+                        module: main
+                    compile:
+                      rellVersion: 0.13.15
+                    """.trimIndent()
+                )
+            }
         }
 
         val rellVersion = ChromiaModelProvider(dir.toURI()).getRellLanguageVersion()
@@ -142,16 +125,18 @@ class ChromiaModelProviderTest {
     fun `getRellLanguageVersion should return default version from chromia model when version is empty`(
         @TempDir dir: File
     ) {
-        File(dir, "chromia.yml").apply {
-            writeText(
-                """
-                blockchains:
-                  rellDappWithLib:
-                    module: main
-                compile:
-                  rellVersion: 
-                """.trimIndent()
-            )
+        testData(dir) {
+            config {
+                blockchains(
+                    """
+                    blockchains:
+                      rellDappWithLib:
+                        module: main
+                    compile:
+                      rellVersion: 
+                    """.trimIndent()
+                )
+            }
         }
 
         val rellVersion = ChromiaModelProvider(dir.toURI()).getRellLanguageVersion()
@@ -162,14 +147,16 @@ class ChromiaModelProviderTest {
     fun `getRellLanguageVersion should return default version when compile version isn't specified`(
         @TempDir dir: File
     ) {
-        File(dir, "chromia.yml").apply {
-            writeText(
-                """
-                blockchains:
-                  rellDappWithLib:
-                    module: main
-                """.trimIndent()
-            )
+        testData(dir) {
+            config {
+                blockchains(
+                    """
+                    blockchains:
+                      rellDappWithLib:
+                        module: main
+                    """.trimIndent()
+                )
+            }
         }
 
         val rellVersion = ChromiaModelProvider(dir.toURI()).getRellLanguageVersion()
@@ -178,14 +165,16 @@ class ChromiaModelProviderTest {
 
     @Test
     fun `updateChromiaModel should update chromia model cache`(@TempDir dir: File) {
-        File(dir, "chromia.yml").apply {
-            writeText(
-                """
-                blockchains:
-                  rellDappWithLib:
-                    module: main
-                """.trimIndent()
-            )
+        testData(dir) {
+            config {
+                blockchains(
+                    """
+                    blockchains:
+                      rellDappWithLib:
+                        module: main
+                    """.trimIndent()
+                )
+            }
         }
         val chromiaModel = ChromiaModelProvider(dir.toURI()).loadChromiaModel()
         val chromiaModelProvider = ChromiaModelProvider(dir.toURI())
