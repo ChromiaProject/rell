@@ -24,6 +24,7 @@ import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.immListOf
 
 object Lib_Type_Object {
@@ -64,6 +65,7 @@ object Lib_Type_Object {
     ): C_TypeValueMember_Value(attr.rName, attr.type, attr.restrictions) {
         override fun kindMsg() = "attribute"
         override fun nameMsg(): C_CodeMsg = attr.rName.str toCodeMsg attr.rName.str
+        override fun ideCompletion() = null
 
         override fun value(ctx: C_ExprContext, linkPos: S_Pos, linkName: C_Name?): V_TypeValueMember {
             return V_TypeValueMember_ObjectAttr(ctx, linkPos, linkName, rObject, attr)

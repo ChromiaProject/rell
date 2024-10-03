@@ -60,6 +60,7 @@ private class Ld_TypeDefMember_Constructor(
         val docDeclaration = DocDeclaration_TypeConstructor(
             hdr.simpleName,
             L_TypeUtils.docTypeParams(lConstructor.header.typeParams),
+            lConstructor.header.params.map { it.name.str }.toImmList(),
             lConstructor.header.params.map { it.docSymbol.declaration }.toImmList(),
             deprecated = lConstructor.deprecated,
             pure = lConstructor.pure,

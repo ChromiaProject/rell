@@ -5,6 +5,7 @@
 package net.postchain.rell.base.compiler.vexpr
 
 import net.postchain.rell.base.compiler.ast.S_CallArgument
+import net.postchain.rell.base.compiler.ast.S_CallArguments
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.*
@@ -236,8 +237,8 @@ abstract class V_Expr(
         return memberValue.compile(ctx, link, memberNameHand, baseNulled)
     }
 
-    open fun call(ctx: C_ExprContext, pos: S_Pos, args: List<S_CallArgument>, resTypeHint: C_TypeHint): V_Expr {
-        return callCommon(ctx, pos, args, resTypeHint, type, false)
+    open fun call(ctx: C_ExprContext, pos: S_Pos, args: S_CallArguments, resTypeHint: C_TypeHint): V_Expr {
+        return callCommon(ctx, pos, args.list, resTypeHint, type, false)
     }
 
     protected fun callCommon(

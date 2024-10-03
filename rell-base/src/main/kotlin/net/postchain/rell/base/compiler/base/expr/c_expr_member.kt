@@ -4,7 +4,9 @@
 
 package net.postchain.rell.base.compiler.base.expr
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_CallArgument
+import net.postchain.rell.base.compiler.ast.S_CallArguments
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.fn.C_FullCallArguments
@@ -12,9 +14,7 @@ import net.postchain.rell.base.compiler.base.fn.C_FunctionCallArgsUtils
 import net.postchain.rell.base.compiler.base.fn.C_FunctionCallTargetInfo
 import net.postchain.rell.base.compiler.base.fn.C_PartialCallArguments
 import net.postchain.rell.base.compiler.base.lib.*
-import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
-import net.postchain.rell.base.compiler.base.utils.C_Errors
-import net.postchain.rell.base.compiler.base.utils.toCodeMsg
+import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.compiler.vexpr.V_MemberFunctionCall
 import net.postchain.rell.base.compiler.vexpr.V_TypeValueMember
@@ -28,9 +28,12 @@ import net.postchain.rell.base.utils.doc.DocDeclaration_EntityAttribute
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
+import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.toImmMultimap
+import net.postchain.rell.base.utils.toMutableMultimap
 
 class C_MemberLink(
     val base: V_Expr,
@@ -42,6 +45,8 @@ class C_MemberLink(
 
 abstract class C_TypeValueMember(optionalName: R_Name?): C_TypeMember(optionalName) {
     abstract fun nameMsg(): C_CodeMsg
+    abstract fun ideCompletion(): IdeCompletion?
+
     abstract override fun replaceTypeParams(rep: C_TypeMemberReplacement): C_TypeValueMember
 
     abstract fun value(ctx: C_ExprContext, linkPos: S_Pos, linkName: C_Name?): V_TypeValueMember
@@ -50,7 +55,7 @@ abstract class C_TypeValueMember(optionalName: R_Name?): C_TypeMember(optionalNa
         ctx: C_ExprContext,
         selfType: R_Type,
         linkPos: S_Pos,
-        args: List<S_CallArgument>,
+        args: S_CallArguments,
         resTypeHint: C_TypeHint,
     ): V_TypeValueMember? = null
 
@@ -90,6 +95,13 @@ class C_TypeValueMember_BasicAttr(
     override fun kindMsg() = "attribute"
     override fun nameMsg() = attr.nameMsg()
 
+    override fun ideCompletion(): IdeCompletion? {
+        val doc = attr.ideName?.ideInfo?.getIdeInfo()?.doc
+        doc ?: return null
+        val location = doc.symbolName.parentName()?.strCode()
+        return C_IdeCompletionsUtils.makeIdeCompletion(doc, location)
+    }
+
     override fun value(ctx: C_ExprContext, linkPos: S_Pos, linkName: C_Name?): V_TypeValueMember {
         val vAttr = attr.vAttr(ctx, linkPos)
         val ideInfo = attr.ideName?.ideInfo ?: C_IdeSymbolInfo.UNKNOWN
@@ -125,6 +137,7 @@ class C_TypeValueMember_Function(
 ): C_TypeValueMember(rName) {
     override fun kindMsg() = "function"
     override fun nameMsg() = rName.str toCodeMsg rName.str
+    override fun ideCompletion() = null
     override fun isValue() = false
     override fun isCallable() = true
 
@@ -143,11 +156,14 @@ class C_TypeValueMember_Function(
         ctx: C_ExprContext,
         selfType: R_Type,
         linkPos: S_Pos,
-        args: List<S_CallArgument>,
+        args: S_CallArguments,
         resTypeHint: C_TypeHint,
     ): V_TypeValueMember {
+        val completions = fn.ideGetParameterCompletions()
+        ctx.blkCtx.frameCtx.ideCompCtx.trackScope(args.posRange, ctx, C_LateGetter.const(completions))
+
         val callTargetInfo = C_FunctionCallTargetInfo_LibMemberFunction(selfType, fn)
-        val callArgs = C_FunctionCallArgsUtils.compileCallArgs(ctx, args, callTargetInfo)
+        val callArgs = C_FunctionCallArgsUtils.compileCallArgs(ctx, args.list, callTargetInfo)
         val fullName = naming.replaceSelfType(selfType.mType).fullNameLazy
 
         val callCtx = C_LibFuncCaseCtx(linkPos, fullName)

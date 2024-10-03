@@ -10,9 +10,10 @@ import net.postchain.rell.base.compiler.base.core.C_LoopUid
 import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.compiler.base.core.C_OwnerBlockContext
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
+import net.postchain.rell.base.compiler.base.utils.C_IdeCompletionsScope
+import net.postchain.rell.base.compiler.base.utils.C_IdeCompletionsScopeProvider
 import net.postchain.rell.base.model.R_AtExprId
 import net.postchain.rell.base.model.R_EntityDefinition
-import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.R_DbAtEntity
 
@@ -21,7 +22,7 @@ class C_ExprContext private constructor(
     val varStates: C_VarStates,
     val atCtx: C_AtContext?,
     val insideGuardBlock: Boolean,
-) {
+): C_IdeCompletionsScopeProvider {
     val defCtx = blkCtx.defCtx
     val modCtx = defCtx.modCtx
     val nsCtx = defCtx.nsCtx
@@ -33,7 +34,9 @@ class C_ExprContext private constructor(
     val typeMgr = modCtx.typeMgr
     val executor = defCtx.executor
 
-    fun makeAtEntity(rEntity: R_EntityDefinition, atExprId: R_AtExprId) = R_DbAtEntity(rEntity, appCtx.nextAtEntityId(atExprId))
+    fun makeAtEntity(rEntity: R_EntityDefinition, atExprId: R_AtExprId): R_DbAtEntity {
+        return R_DbAtEntity(rEntity, appCtx.nextAtEntityId(atExprId))
+    }
 
     fun copy(
         blkCtx: C_BlockContext = this.blkCtx,
@@ -78,6 +81,8 @@ class C_ExprContext private constructor(
 
     fun findWhereAttributesByName(name: C_Name) = blkCtx.lookupAtImplicitAttributesByName(this, name)
     fun findWhereAttributesByType(pos: S_Pos, type: R_Type) = blkCtx.lookupAtImplicitAttributesByType(this, pos, type)
+
+    override fun ideCompletionsScope(): C_IdeCompletionsScope = blkCtx.ideCompletionsScope()
 
     companion object {
         fun createRoot(blkCtx: C_BlockContext) = C_ExprContext(

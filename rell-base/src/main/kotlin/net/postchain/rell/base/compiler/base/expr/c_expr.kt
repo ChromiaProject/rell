@@ -5,6 +5,7 @@
 package net.postchain.rell.base.compiler.base.expr
 
 import net.postchain.rell.base.compiler.ast.S_CallArgument
+import net.postchain.rell.base.compiler.ast.S_CallArguments
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMemberTag
@@ -61,7 +62,7 @@ abstract class C_Expr {
         return vExpr.member(ctx, memberNameHand, false, exprHint)
     }
 
-    open fun call(ctx: C_ExprContext, pos: S_Pos, args: List<S_CallArgument>, resTypeHint: C_TypeHint): C_Expr {
+    open fun call(ctx: C_ExprContext, pos: S_Pos, args: S_CallArguments, resTypeHint: C_TypeHint): C_Expr {
         val vExpr = vExpr() // May fail with "not a value" - that's OK.
         val vResExpr = vExpr.call(ctx, pos, args, resTypeHint)
         return C_ValueExpr(vResExpr)
@@ -124,7 +125,7 @@ class C_ValueMemberExpr(
         return C_ValueOrError_Value(makeMemberExpr(vMember))
     }
 
-    override fun call(ctx: C_ExprContext, pos: S_Pos, args: List<S_CallArgument>, resTypeHint: C_TypeHint): C_Expr {
+    override fun call(ctx: C_ExprContext, pos: S_Pos, args: S_CallArguments, resTypeHint: C_TypeHint): C_Expr {
         val vMember = member.call(exprCtx, selfType, memberPos, args, resTypeHint)
         vMember ?: return super.call(ctx, pos, args, resTypeHint)
         ideInfoHand.setIdeInfo(vMember.ideInfo)

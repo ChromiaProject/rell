@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.module
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.*
@@ -16,6 +17,7 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
+import net.postchain.rell.base.utils.ide.IdeCompletion
 import java.util.*
 
 class C_ModuleHeader(
@@ -31,12 +33,17 @@ class C_CompiledRellFile(
     val path: C_SourcePath,
     val mntTables: C_MountTables,
     val importsDescriptor: C_FileImportsDescriptor,
+    val ideCompletions: C_LateGetter<Multimap<String, IdeCompletion>>,
 ) {
     override fun toString() = path.str()
 
     companion object {
-        fun empty(path: C_SourcePath): C_CompiledRellFile =
-                C_CompiledRellFile(path, C_MountTables.EMPTY, C_FileImportsDescriptor.EMPTY)
+        fun empty(path: C_SourcePath): C_CompiledRellFile = C_CompiledRellFile(
+            path,
+            C_MountTables.EMPTY,
+            C_FileImportsDescriptor.EMPTY,
+            C_LateGetter.const(immMultimapOf()),
+        )
     }
 }
 

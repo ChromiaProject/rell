@@ -13,19 +13,25 @@ import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.mtype.M_ParamArity
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.ide.IdeCompletionParam
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.toImmMap
 
 abstract class DocDeclaration {
     val code: DocCode by lazy { getCode0() }
     val completion: Completion? by lazy { getCompletion0() }
 
+    open fun isDeprecated(): Boolean = false
     protected open fun getCompletion0(): Completion? = null
     protected abstract fun getCode0(): DocCode
 
     final override fun toString() = code.strCode()
 
-    class Completion(val params: String, val result: String?)
+    class Completion(
+        val params: List<IdeCompletionParam>?,
+        val result: String?,
+    )
 
     companion object {
         val NONE: DocDeclaration = DocDeclaration_None
@@ -47,6 +53,8 @@ abstract class DocDeclaration_Annotated(
         genCode0(b)
         return b.build()
     }
+
+    final override fun isDeprecated() = modifiers.isDeprecated()
 }
 
 class DocDeclaration_Module(
@@ -62,7 +70,7 @@ class DocDeclaration_ImportModule(
     private val moduleName: R_ModuleName,
     private val alias: R_Name?,
 ): DocDeclaration_Annotated(modifiers) {
-    override fun getCompletion0() = Completion("", moduleName.str())
+    override fun getCompletion0() = Completion(null, moduleName.str())
 
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("import")
@@ -80,7 +88,7 @@ class DocDeclaration_ImportWildcard(
     private val moduleName: R_ModuleName,
     private val aliasName: R_Name,
 ): DocDeclaration_Annotated(modifiers) {
-    override fun getCompletion0() = Completion("", "${moduleName.str()}.*")
+    override fun getCompletion0() = Completion(null, "${moduleName.str()}.*")
 
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("import")
@@ -99,7 +107,7 @@ class DocDeclaration_ImportExactModule(
 ): DocDeclaration_Annotated(modifiers) {
     override fun getCompletion0(): Completion {
         val result = "${moduleName.str()}.{...}"
-        return Completion("", result)
+        return Completion(null, result)
     }
 
     override fun genCode0(b: DocCode.Builder) {
@@ -158,9 +166,8 @@ class DocDeclaration_ImportExactAlias_Single(
 
     override fun getCompletion0(): Completion {
         val targetComp = targetDeclaration.completion
-        val params = targetComp?.params ?: ""
         val result = targetComp?.result ?: "${moduleName.str()}:${qualifiedName.str()}"
-        return Completion(params, result)
+        return Completion(targetComp?.params, result)
     }
 }
 
@@ -175,7 +182,7 @@ class DocDeclaration_ImportExactAlias_Wildcard(
 
     override fun getCompletion0(): Completion {
         val result = "${moduleName.str()}:${qualifiedName.str()}.*"
-        return Completion("", result)
+        return Completion(null, result)
     }
 }
 
@@ -292,6 +299,8 @@ class DocDeclaration_EntityAttribute(
     private val keys: Collection<R_Key> = immListOf(),
     private val indices: Collection<R_Index> = immListOf(),
 ): DocDeclaration() {
+    override fun getCompletion0() = DocDecUtils.completion(type)
+
     override fun getCode0(): DocCode {
         val b = DocCode.builder()
 
@@ -390,6 +399,8 @@ class DocDeclaration_Parameter(
     private val implies: L_ParamImplication?,
     private val expr: DocExpr?,
 ): DocDeclaration() {
+    override fun getCompletion0() = DocDecUtils.completion(param.type)
+
     override fun getCode0(): DocCode {
         val b = DocCode.builder()
 
@@ -436,7 +447,10 @@ class DocDeclaration_Function(
         checkEquals(params.size, header.params.size) { simpleName }
     }
 
-    override fun getCompletion0() = DocDecUtils.completion(header.resultType, params)
+    override fun getCompletion0(): Completion {
+        val paramsMap = params.mapIndexed { i, param -> header.params[i].name to param }.toImmMap()
+        return DocDecUtils.completion(header.resultType, paramsMap)
+    }
 
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("function")
@@ -469,7 +483,7 @@ class DocDeclaration_SpecialFunction(
     private val simpleName: R_Name,
     private val isStatic: Boolean,
 ): DocDeclaration() {
-    override fun getCompletion0() = Completion("(...)", null)
+    override fun getCompletion0() = Completion(immListOf(), null)
 
     override fun getCode0(): DocCode {
         val b = DocCode.builder()
@@ -485,9 +499,13 @@ class DocDeclaration_SpecialFunction(
 class DocDeclaration_Operation(
     modifiers: DocModifiers,
     private val simpleName: R_Name,
+    private val paramNames: List<String>,
     private val params: List<DocDeclaration>,
 ): DocDeclaration_Annotated(modifiers) {
-    override fun getCompletion0() = DocDecUtils.completion(null, params)
+    override fun getCompletion0(): Completion {
+        val paramsMap = params.mapIndexed { i, param -> paramNames[i] to param }.toImmMap()
+        return DocDecUtils.completion(null, paramsMap)
+    }
 
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("operation")
@@ -501,9 +519,13 @@ class DocDeclaration_Query(
     modifiers: DocModifiers,
     private val simpleName: R_Name,
     private val resultType: DocType,
+    private val paramNames: List<String>,
     private val params: List<DocDeclaration>,
 ): DocDeclaration_Annotated(modifiers) {
-    override fun getCompletion0() = DocDecUtils.completion(resultType, params)
+    override fun getCompletion0(): Completion {
+        val paramsMap = params.mapIndexed { i, param -> paramNames[i] to param }.toImmMap()
+        return DocDecUtils.completion(resultType, paramsMap)
+    }
 
     override fun genCode0(b: DocCode.Builder) {
         b.keyword("query")
@@ -559,13 +581,17 @@ class DocDeclaration_Type(
 }
 
 class DocDeclaration_TypeConstructor(
-    val simpleName: R_Name,
-    val typeParams: List<DocTypeParam>,
-    val params: List<DocDeclaration>,
-    val deprecated: C_Deprecated?,
-    val pure: Boolean,
+    private val simpleName: R_Name,
+    private val typeParams: List<DocTypeParam>,
+    private val paramNames: List<String>,
+    private val params: List<DocDeclaration>,
+    private val deprecated: C_Deprecated?,
+    private val pure: Boolean,
 ): DocDeclaration() {
-    override fun getCompletion0() = DocDecUtils.completion(null, params)
+    override fun getCompletion0(): Completion {
+        val paramsMap = params.mapIndexed { i, param -> paramNames[i] to param }.toImmMap()
+        return DocDecUtils.completion(null, paramsMap)
+    }
 
     override fun getCode0(): DocCode {
         val b = DocCode.builder()
@@ -624,9 +650,8 @@ class DocDeclaration_Alias(
 ): DocDeclaration_Annotated(modifiers) {
     override fun getCompletion0(): Completion {
         val targetComp = targetDeclaration.completion
-        val params = targetComp?.params ?: ""
         val result = targetComp?.result ?: targetFullName.str()
-        return Completion(params, result)
+        return Completion(targetComp?.params, result)
     }
 
     override fun genCode0(b: DocCode.Builder) {
@@ -661,6 +686,8 @@ class DocDeclaration_AtVariable(
     private val simpleName: String,
     private val type: DocType,
 ): DocDeclaration() {
+    override fun getCompletion0() = DocDecUtils.completion(type)
+
     override fun getCode0(): DocCode {
         val b = DocCode.builder()
         b.raw(simpleName)
@@ -675,6 +702,8 @@ class DocDeclaration_Variable(
     private val type: DocType,
     private val isMutable: Boolean,
 ): DocDeclaration() {
+    override fun getCompletion0() = DocDecUtils.completion(type)
+
     override fun getCode0(): DocCode {
         val b = DocCode.builder()
         b.keyword(if (isMutable) "var" else "val")
@@ -693,7 +722,7 @@ sealed class DocModifier {
         val PURE: DocModifier = DocModifier_Keyword("pure")
         val STATIC: DocModifier = DocModifier_Keyword("static")
 
-        private val DEPRECATED: DocModifier = DocModifier_Annotation(R_Name.of("deprecated"), immListOf())
+        val DEPRECATED: DocModifier = DocModifier_Annotation(R_Name.of("deprecated"), immListOf())
 
         private val DEPRECATED_ERROR: DocModifier = DocModifier_Annotation(
             R_Name.of("deprecated"),
@@ -767,6 +796,8 @@ class DocModifier_Annotation(
 class DocModifiers private constructor(
     private val modifiers: List<DocModifier>,
 ) {
+    fun isDeprecated(): Boolean = DocModifier.DEPRECATED in modifiers
+
     fun appendTo(b: DocCode.Builder) {
         for (mod in modifiers) {
             mod.genCode(b)
@@ -841,9 +872,13 @@ private object DocDecUtils {
         b.raw(")")
     }
 
-    fun completion(type: DocType? = null, params: List<DocDeclaration>? = null): DocDeclaration.Completion {
-        val paramsStr = if (params == null) "" else {
-            params.joinToString(", ", "(", ")") { C_IdeCompletionsUtils.docCodeToStr(it.code) }
+    fun completion(
+        type: DocType? = null,
+        params: Map<String, DocDeclaration>? = null,
+    ): DocDeclaration.Completion {
+        val ideParams = params?.map { (name, param) ->
+            val code = C_IdeCompletionsUtils.docCodeToStr(param.code)
+            IdeCompletionParam(name, code)
         }
 
         val typeStr = if (type == null) null else {
@@ -851,6 +886,6 @@ private object DocDecUtils {
             C_IdeCompletionsUtils.docCodeToStr(typeCode)
         }
 
-        return DocDeclaration.Completion(paramsStr, typeStr)
+        return DocDeclaration.Completion(ideParams, typeStr)
     }
 }

@@ -312,11 +312,11 @@ private class C_ModuleDirTree(
     }
 
     private inner class FileNode(
-            path: C_SourcePath,
-            private val dirModuleName: R_ModuleName,
-            val fileName: String,
-            private val rName: R_Name?,
-            private val sourceFile: C_SourceFile,
+        path: C_SourcePath,
+        private val dirModuleName: R_ModuleName,
+        val fileName: String,
+        private val rName: R_Name?,
+        private val sourceFile: C_SourceFile,
     ): TreeNode(path) {
         val idePath = sourceFile.idePath()
 
@@ -338,9 +338,10 @@ private class C_ModuleDirTree(
                 readerCtx.msgCtx.error(e)
                 null
             } catch (e: Throwable) {
-                if (CommonUtils.IS_UNIT_TEST) throw e else null
-                // This code might be called from IDE, for which reason it's better to suppress an error.
-                // TODO Suppress the error only when called from IDE
+                if (CommonUtils.IS_UNIT_TEST) {
+                    throw e
+                }
+                null
             }
         }
 

@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.def
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_CallArgument
 import net.postchain.rell.base.compiler.base.core.C_CompilerPass
 import net.postchain.rell.base.compiler.base.core.C_TypeHint
@@ -12,14 +13,18 @@ import net.postchain.rell.base.compiler.base.expr.C_CallArgument
 import net.postchain.rell.base.compiler.base.expr.C_CreateContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
+import net.postchain.rell.base.compiler.base.utils.C_IdeCompletionsUtils
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.compiler.vexpr.V_StructExpr
 import net.postchain.rell.base.model.R_Struct
 import net.postchain.rell.base.utils.LazyPosString
+import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.immMapOf
+import net.postchain.rell.base.utils.toImmMap
+import net.postchain.rell.base.utils.toImmMultimap
 
 class C_StructGlobalFunction(private val struct: R_Struct): C_GlobalFunction() {
-    override fun compileCall(
+    override fun compileCall0(
         ctx: C_ExprContext,
         name: LazyPosString,
         args: List<S_CallArgument>,
@@ -47,5 +52,13 @@ class C_StructGlobalFunction(private val struct: R_Struct): C_GlobalFunction() {
 
         val vExpr = V_StructExpr(ctx, fnPos, struct, attrs.explicitAttrs, attrs.implicitAttrs)
         return V_GlobalFunctionCall(vExpr, null, immMapOf())
+    }
+
+    override fun ideGetParameterCompletions(): Multimap<String, IdeCompletion> {
+        return struct.attributes
+            .map { (rName, rAttr) ->
+                rName.str to C_IdeCompletionsUtils.makeIdeCompletion(rAttr.docSymbol, struct.name)
+            }
+            .toImmMultimap()
     }
 }

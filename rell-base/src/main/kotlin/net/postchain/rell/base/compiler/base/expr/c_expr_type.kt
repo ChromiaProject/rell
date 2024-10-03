@@ -5,6 +5,7 @@
 package net.postchain.rell.base.compiler.base.expr
 
 import net.postchain.rell.base.compiler.ast.S_CallArgument
+import net.postchain.rell.base.compiler.ast.S_CallArguments
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.lib.C_TypeMember
@@ -63,7 +64,7 @@ class C_SpecificTypeExpr(
         return type.libType.hasConstructor()
     }
 
-    override fun call(ctx: C_ExprContext, pos: S_Pos, args: List<S_CallArgument>, resTypeHint: C_TypeHint): C_Expr {
+    override fun call(ctx: C_ExprContext, pos: S_Pos, args: S_CallArguments, resTypeHint: C_TypeHint): C_Expr {
         if (type.isError()) {
             ideInfoPtr.setDefault()
             // Do not report redundant errors on error types.

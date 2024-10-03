@@ -69,8 +69,6 @@ class S_Modifiers(val modifiers: List<S_Modifier> = immListOf()) {
     fun compile(modifierCtx: C_ModifierContext, modValues: C_ModifierValues): DocModifiers {
         val fixModValues = modValues.fix()
 
-        // Getting DocModifier-s is not the main purpose of this code, just side product of compilation.
-        // DocModifier-s will be null if doc symbols aren't enabled.
         val docMods = modifiers.mapNotNull {
             it.compile(modifierCtx, fixModValues)
         }

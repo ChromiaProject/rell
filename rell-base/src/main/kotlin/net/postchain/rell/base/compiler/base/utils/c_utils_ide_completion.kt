@@ -8,13 +8,11 @@ import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_PosRange
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.core.C_DefinitionName
-import net.postchain.rell.base.compiler.base.core.C_NamespaceContext
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocCode
 import net.postchain.rell.base.utils.doc.DocCodeTokenVisitor
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.IdeCompletion
-import net.postchain.rell.base.utils.immMultimapOf
-import net.postchain.rell.base.utils.toImmMap
 
 data class C_IdeCompletionsOptions(
     val file: C_SourcePath,
@@ -66,9 +64,18 @@ object C_IdeCompletionsUtils {
     }
 
     fun makeIdeCompletion(defName: C_DefinitionName, doc: DocSymbol, targetDoc: DocSymbol = doc): IdeCompletion {
-        val docComp = targetDoc.declaration.completion
         val location = getIdeCompletionLocation(defName)
-        return IdeCompletion(targetDoc.kind, doc.symbolName, docComp?.params ?: "", docComp?.result, location)
+        return makeIdeCompletion0(doc, targetDoc, location)
+    }
+
+    fun makeIdeCompletion(doc: DocSymbol, location: String? = null): IdeCompletion {
+        return makeIdeCompletion0(doc, doc, location)
+    }
+
+    private fun makeIdeCompletion0(doc: DocSymbol, targetDoc: DocSymbol, location: String?): IdeCompletion {
+        val docComp = targetDoc.declaration.completion
+        val deprecated = doc.declaration.isDeprecated()
+        return IdeCompletion(targetDoc.kind, doc.symbolName, docComp?.params, docComp?.result, location, doc, deprecated)
     }
 
     fun docCodeToStr(docCode: DocCode): String {
@@ -94,64 +101,90 @@ object C_IdeCompletionsUtils {
 
         return b.toString()
     }
+
+    fun isTargetScope(compilerOptions: C_CompilerOptions, filePath: C_SourcePath, range: S_PosRange?): Boolean {
+        val options = compilerOptions.ideCompletions
+        val ideFilePos = options?.pos
+        if (ideFilePos == null && range != null) {
+            return false
+        }
+
+        if (options?.file != filePath) {
+            return false
+        }
+
+        if (range != null && ideFilePos != null
+            && (ideFilePos < range.start.offset() || ideFilePos > range.end.offset())
+        ) {
+            return false
+        }
+
+        return true
+    }
 }
 
-sealed class C_IdeCompletionsContext {
-    abstract fun trackScope(nsCtx: C_NamespaceContext, range: S_PosRange?)
+interface C_IdeCompletionsScopeProvider {
+    fun ideCompletionsScope(): C_IdeCompletionsScope
 }
 
-class C_IdeCompletionsManager(compilerOptions: C_CompilerOptions) {
+class C_IdeCompletionsScope(
+    val parent: C_IdeCompletionsScope?,
+    val getter: C_LateGetter<Multimap<String, IdeCompletion>>,
+)
+
+class C_IdeCompletionsContext(
+    private val filePath: C_SourcePath?,
+    compilerOptions: C_CompilerOptions,
+) {
     private val options = compilerOptions.ideCompletions
-    private val activeFile = options?.file
 
-    val nopCtx: C_IdeCompletionsContext = C_IdeCompletionsContext_Nop
-
-    private val activeCtx = C_IdeCompletionsContext_Active(options?.pos)
-
-    fun getFileContext(path: C_SourcePath): C_IdeCompletionsContext {
-        return if (path == activeFile) activeCtx else nopCtx
-    }
-
-    fun finish(): Multimap<String, IdeCompletion> {
-        return activeCtx.finish()
-    }
-}
-
-private data object C_IdeCompletionsContext_Nop: C_IdeCompletionsContext() {
-    override fun trackScope(nsCtx: C_NamespaceContext, range: S_PosRange?) {
-        // Do nothing.
-    }
-}
-
-private class C_IdeCompletionsContext_Active(private val filePos: Int?): C_IdeCompletionsContext() {
-    private var ideScopeNsContext: C_NamespaceContext? = null
+    private val scopes = mutableListOf<C_IdeCompletionsScope>()
     private var finished = false
 
-    override fun trackScope(nsCtx: C_NamespaceContext, range: S_PosRange?) {
+    fun trackScope(
+        range: S_PosRange?,
+        parentScopeProvider: C_IdeCompletionsScopeProvider?,
+        getter: C_LateGetter<Multimap<String, IdeCompletion>> = C_LateGetter.const(immMultimapOf()),
+    ) {
         check(!finished)
 
-        // Assuming this function is always called for a more narrow range than the previous one.
-
-        if (filePos == null && ideScopeNsContext != null && range != null) {
-            // No specific position - taking the first context, which must be the topmost one.
+        val ideFilePos = options?.pos
+        if (ideFilePos == null && range != null) {
             return
         }
 
-        if (range != null && filePos != null
-            && (filePos < range.start.offset() || filePos > range.end.offset())
+        if (options?.file != filePath) {
+            return
+        }
+
+        if (range != null && ideFilePos != null
+            && (ideFilePos < range.start.offset() || ideFilePos > range.end.offset())
         ) {
-            // Target position is not in range.
             return
         }
 
-        ideScopeNsContext = nsCtx
+        val parentScope = parentScopeProvider?.ideCompletionsScope()
+        scopes.add(C_IdeCompletionsScope(parentScope, getter))
     }
 
     fun finish(): Multimap<String, IdeCompletion> {
         check(!finished)
         finished = true
 
-        val nsCtx = ideScopeNsContext
-        return nsCtx?.ideCompletions() ?: immMultimapOf()
+        val res = mutableMultimapOf<String, IdeCompletion>()
+
+        for (curScope in scopes) {
+            finishScope(curScope, res)
+        }
+
+        return res.asMap().mapValues { it.value.toSet().toImmList() }.toImmMultimap()
+    }
+
+    private fun finishScope(scope: C_IdeCompletionsScope, res: Multimap<String, IdeCompletion>) {
+        var curScope: C_IdeCompletionsScope? = scope
+        while (curScope != null) {
+            res.putAll(curScope.getter.get())
+            curScope = curScope.parent
+        }
     }
 }

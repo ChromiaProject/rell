@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.namespace
 
-import net.postchain.rell.base.compiler.ast.S_CallArgument
+import net.postchain.rell.base.compiler.ast.S_CallArguments
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.*
@@ -26,6 +26,7 @@ import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.ide.IdeCompletion
+import net.postchain.rell.base.utils.ide.IdeCompletionParam
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
@@ -158,7 +159,7 @@ class C_NamespaceMember_Alias(
         val targetComps = finalTarget.ideCompletions
         val location = C_IdeCompletionsUtils.getIdeCompletionLocation(defName)
         return targetComps.map {
-            IdeCompletion(it.kind, doc.symbolName, it.params, it.result, location)
+            IdeCompletion(it.kind, doc.symbolName, it.params, it.result, location, doc, it.deprecated)
         }
     }
 
@@ -364,15 +365,16 @@ private sealed class C_NamespaceMember_Struct(
 
         val (mandatory, optional) = rStruct.attributesList.partition { !it.hasExpr }
         val attrs = mandatory + optional
-        val params = attrs.joinToString(", ", "(", ")") {
+        val params = attrs.map {
             val docType = L_TypeUtils.docType(it.type.mType)
             val typeCode = docType.toCode()
             val typeStr = C_IdeCompletionsUtils.docCodeToStr(typeCode)
             val valueStr = if (it.hasExpr) " = ..." else ""
-            "${it.name}: $typeStr$valueStr"
+            IdeCompletionParam(it.name, "${it.name}: $typeStr$valueStr")
         }
 
-        val ideComp = IdeCompletion(DocSymbolKind.CONSTRUCTOR, doc.symbolName, params, null, location)
+        val deprecated = doc.declaration.isDeprecated()
+        val ideComp = IdeCompletion(DocSymbolKind.CONSTRUCTOR, doc.symbolName, params, null, location, doc, deprecated)
         return super.getIdeCompletions0() + listOf(ideComp)
     }
 
@@ -443,7 +445,7 @@ class C_FunctionExpr(
         return super.vExprOrError()
     }
 
-    override fun call(ctx: C_ExprContext, pos: S_Pos, args: List<S_CallArgument>, resTypeHint: C_TypeHint): C_Expr {
+    override fun call(ctx: C_ExprContext, pos: S_Pos, args: S_CallArguments, resTypeHint: C_TypeHint): C_Expr {
         val vCall = try {
             fn.compileCall(ctx, name, args, resTypeHint)
         } catch (e: C_Error) {

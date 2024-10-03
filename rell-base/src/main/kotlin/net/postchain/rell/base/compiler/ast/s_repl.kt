@@ -16,7 +16,10 @@ import net.postchain.rell.base.utils.toImmMap
 
 class S_ReplCommand(steps: List<S_ReplStep>, expr: S_Expr?) {
     private val defs = steps.mapNotNull { it.definition() }.toImmList()
-    private val stmts = (steps.mapNotNull { it.statement() } + listOfNotNull(expr).map { S_ExprStatement(it) }).toImmList()
+
+    private val stmts = let {
+        (steps.mapNotNull { it.statement() } + listOfNotNull(expr).map { S_ExprStatement(it, it.startPos) }).toImmList()
+    }
 
     fun compile(
         msgCtx: C_MessageContext,

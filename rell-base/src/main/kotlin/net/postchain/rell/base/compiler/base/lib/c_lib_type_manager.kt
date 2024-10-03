@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.lib
@@ -39,11 +39,16 @@ class C_LibTypeManager(modules: List<C_LibModule>) {
     }
 
     fun getValueMembers(type: R_Type, name: R_Name): List<C_TypeValueMember> {
-        val valueMembers = getValueMembers(type)
+        val valueMembers = getValueMembersPrivate(type)
         return valueMembers.getByName(name)
     }
 
-    private fun getValueMembers(type: R_Type): C_LibTypeMembers<C_TypeValueMember> {
+    fun getValueMembers(type: R_Type): List<C_TypeValueMember> {
+        val valueMembers = getValueMembersPrivate(type)
+        return valueMembers.getValues()
+    }
+
+    private fun getValueMembersPrivate(type: R_Type): C_LibTypeMembers<C_TypeValueMember> {
         return getTypeMember(type, this::getValueMembers0, C_TypeCacheEntry::valueMembers)
     }
 
@@ -81,7 +86,7 @@ class C_LibTypeManager(modules: List<C_LibModule>) {
     }
 
     fun getAtImplicitAttrsByType(selfType: R_Type, attrType: R_Type): List<C_AtTypeImplicitAttr> {
-        val members = getValueMembers(selfType)
+        val members = getValueMembersPrivate(selfType)
         return members.getValues()
             .mapNotNull {
                 val valueType = (it as? C_TypeValueMember_Value)?.valueType

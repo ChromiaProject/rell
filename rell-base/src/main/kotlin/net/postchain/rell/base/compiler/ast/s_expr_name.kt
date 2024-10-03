@@ -12,7 +12,6 @@ import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.vexpr.V_ConstantValueExpr
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.model.R_EnumType
-import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_NullType
 import net.postchain.rell.base.utils.toImmList
 

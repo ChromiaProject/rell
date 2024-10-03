@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.expr
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
@@ -14,10 +15,8 @@ import net.postchain.rell.base.lib.type.R_ListType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_IterableAdapter_Direct
-import net.postchain.rell.base.utils.chainToIterable
-import net.postchain.rell.base.utils.checkEquals
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmSet
+import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.ide.IdeCompletion
 
 class C_AtEntity(
     val declPos: S_Pos,
@@ -130,6 +129,21 @@ class C_AtFrom_Entities(
             val members = getter(atEntity.rEntity)
             members.map { C_AtFromImplicitAttr(base, atEntity.rEntity.type, it) }
         }.toImmList()
+    }
+
+    override fun ideCompletions(): Multimap<String, IdeCompletion> {
+        val members = items.flatMap { item ->
+            val selfType = item.atEntity.rEntity.type
+            outerExprCtx.typeMgr.getValueMembers(selfType)
+        }
+
+        return members
+            .mapNotNull {
+                val name = it.optionalName?.str
+                val completion = it.ideCompletion()
+                if (name == null || completion == null) null else (".$name" to completion)
+            }
+            .toImmMultimap()
     }
 
     override fun compile(details: C_AtDetails): V_Expr {

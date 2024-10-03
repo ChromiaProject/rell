@@ -332,7 +332,7 @@ abstract class RellBaseTester(
 
     protected fun defsCode(): String = defs.joinToString("\n")
 
-    protected fun moduleCode(extraCode: String): String {
+    fun moduleCode(extraCode: String): String {
         val defsCode = defsCode()
         val modCode = (if (defsCode.isEmpty()) "" else defsCode + "\n") + extraCode
         return modCode

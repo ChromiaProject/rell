@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.core
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.def.*
@@ -23,6 +24,7 @@ import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocSymbolKind
+import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
@@ -211,6 +213,7 @@ class C_ReplModuleContext(
 class C_FileContext(
     val modCtx: C_ModuleContext,
     val symCtx: C_SymbolContext,
+    val path: C_SourcePath,
 ) {
     val executor = modCtx.executor
     val appCtx = modCtx.appCtx
@@ -562,7 +565,8 @@ class C_FunctionBodyContext(
     val defCtx: C_DefinitionContext,
     val namePos: S_Pos,
     val explicitRetType: R_Type?,
-    val formalParams: C_FormalParameters
+    val formalParams: C_FormalParameters,
+    val ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>,
 ) {
     val appCtx = defCtx.appCtx
     val executor = defCtx.executor

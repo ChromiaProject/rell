@@ -267,7 +267,7 @@ class CLibFunctionTest: BaseCLibTest() {
             }
         }
 
-        modTst.extraModule {
+        modTst.libModule {
             namespace("ns") {
                 type("data") {
                     modTst.setRTypeFactory(this, "ns.data")
@@ -284,7 +284,7 @@ class CLibFunctionTest: BaseCLibTest() {
     }
 
     @Test fun testTypeInfiniteRecursion() {
-        modTst.extraModule {
+        modTst.libModule {
             type("data") {
                 modTst.setRTypeFactory(this)
                 constructor { body { -> Rt_UnitValue } }
@@ -296,7 +296,7 @@ class CLibFunctionTest: BaseCLibTest() {
     }
 
     @Test fun testVersionControlNamedArguments() {
-        modTst.extraModule {
+        modTst.libModule {
             function("f", "integer") {
                 param("x", "integer")
                 param("y", "integer")

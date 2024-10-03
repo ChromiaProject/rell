@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.ast
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.*
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
@@ -198,7 +199,7 @@ abstract class S_BasicDefinition(base: S_DefinitionBase): S_Definition(base) {
         return C_MidModuleMember_Basic(this)
     }
 
-    abstract fun compileBasic(ctx: C_MountContext)
+    abstract fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>>
 }
 
 class S_EntityDefinition(
@@ -208,7 +209,7 @@ class S_EntityDefinition(
     private val annotations: List<S_Name>,
     private val body: List<S_RelClause>?,
 ): S_BasicDefinition(base) {
-    override fun compileBasic(ctx: C_MountContext) {
+    override fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
         ctx.checkNotReplOrTest(name.pos, C_DeclarationType.ENTITY)
 
         if (deprecatedKwPos != null) {
@@ -221,7 +222,7 @@ class S_EntityDefinition(
 
         if (body == null) {
             compileHeader(ctx, nameHand)
-            return
+            return C_LateGetter.const(immMultimapOf())
         }
 
         val mods = C_ModifierValues(C_ModifierTargetType.ENTITY, cName)
@@ -290,6 +291,8 @@ class S_EntityDefinition(
         ctx.executor.onPass(C_CompilerPass.MEMBERS) {
             membersPass(defCtx, cName, extChain, rEntity, body)
         }
+
+        return C_LateGetter.const(immMultimapOf())
     }
 
     private fun compileHeader(ctx: C_MountContext, nameHand: C_NameHandle) {
@@ -475,7 +478,7 @@ class S_ObjectDefinition(
     private val name: S_Name,
     private val attrs: List<S_AttributeClause>,
 ): S_BasicDefinition(base) {
-    override fun compileBasic(ctx: C_MountContext) {
+    override fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
         ctx.checkNotExternal(name.pos, C_DeclarationType.OBJECT)
         ctx.checkNotReplOrTest(name.pos, C_DeclarationType.OBJECT)
 
@@ -531,6 +534,8 @@ class S_ObjectDefinition(
         ctx.executor.onPass(C_CompilerPass.MEMBERS) {
             membersPass(defCtx, cName, rObject)
         }
+
+        return C_LateGetter.const(immMultimapOf())
     }
 
     private fun membersPass(defCtx: C_DefinitionContext, cName: C_Name, rObject: R_ObjectDefinition) {
@@ -558,7 +563,7 @@ class S_StructDefinition(
     private val name: S_Name,
     private val attrs: List<S_AttributeClause>,
 ): S_BasicDefinition(base) {
-    override fun compileBasic(ctx: C_MountContext) {
+    override fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
         if (deprecatedKwPos != null) {
             ctx.msgCtx.error(deprecatedKwPos, "deprecated_kw:record:struct",
                     "Keyword 'record' is deprecated, use 'struct' instead")
@@ -603,6 +608,8 @@ class S_StructDefinition(
         ctx.executor.onPass(C_CompilerPass.MEMBERS) {
             membersPass(defCtx, cName, cStruct, attrsLate)
         }
+
+        return C_LateGetter.const(immMultimapOf())
     }
 
     private fun membersPass(
@@ -639,7 +646,6 @@ class S_EnumDefinition(
     private val name: S_Name,
     private val attrs: List<S_EnumValue>,
 ): S_Definition(base) {
-    // TODO Better design: compile external module in two steps, all definitions must be processed same way.
     override fun compile(ctx: S_DefinitionContext): C_MidModuleMember {
         val nameHand = name.compile(ctx.symCtx, def = true)
         val cName = nameHand.name
@@ -814,7 +820,7 @@ class S_GlobalConstantDefinition(
     val type: S_Type?,
     val expr: S_Expr,
 ): S_BasicDefinition(base) {
-    override fun compileBasic(ctx: C_MountContext) {
+    override fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
         val nameHand = name.compile(ctx, def = true)
         val cName = nameHand.name
 
@@ -870,6 +876,8 @@ class S_GlobalConstantDefinition(
                 cDefBase.setDocDeclaration(doc)
             }
         }
+
+        return C_LateGetter.const(immMultimapOf())
     }
 
     override fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder) {

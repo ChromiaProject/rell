@@ -16,7 +16,6 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.LibModuleTester
 import net.postchain.rell.base.testutils.iff
 import net.postchain.rell.base.testutils.iffArray
-import net.postchain.rell.base.utils.RellVersions
 import org.junit.Test
 
 class NullAnalysisPathTest: BaseRellTest() {
@@ -430,7 +429,7 @@ class NullAnalysisPathTest: BaseRellTest() {
     @Test fun testLibConstant() {
         tst.strictToString = false
         val modTst = LibModuleTester(tst, Lib_Rell.MODULE)
-        modTst.extraModule {
+        modTst.libModule {
             val structGetter = initLibStruct(this)
             constant("V", "rec?") {
                 value(structGetter)
@@ -462,7 +461,7 @@ class NullAnalysisPathTest: BaseRellTest() {
     @Test fun testLibPropertyNs() {
         tst.strictToString = false
         val modTst = LibModuleTester(tst, Lib_Rell.MODULE)
-        modTst.extraModule {
+        modTst.libModule {
             val structGetter = initLibStruct(this)
             property("pure", "rec?", pure = true) {
                 value { _, type -> structGetter(type) }
@@ -501,7 +500,7 @@ class NullAnalysisPathTest: BaseRellTest() {
         def("function f(): integer? = 123;")
 
         val modTst = LibModuleTester(tst, Lib_Rell.MODULE)
-        modTst.extraModule {
+        modTst.libModule {
             val structGetter = initLibStruct(this)
             extension("int_ext", "integer") {
                 property("pure", "rec?", pure = true) {

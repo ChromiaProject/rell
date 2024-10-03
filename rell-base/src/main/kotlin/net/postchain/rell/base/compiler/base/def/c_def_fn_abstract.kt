@@ -24,10 +24,10 @@ import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmSet
 
 class C_AbstractUserGlobalFunction(
-        fnPos: S_Pos,
-        rFunction: R_FunctionDefinition,
-        hasDefaultBody: Boolean,
-        private val rFnBase: R_FunctionBase,
+    fnPos: S_Pos,
+    rFunction: R_FunctionDefinition,
+    hasDefaultBody: Boolean,
+    private val rFnBase: R_FunctionBase,
 ): C_UserGlobalFunction(rFunction) {
     val descriptor = C_AbstractFunctionDescriptor(fnPos, rFunction, hasDefaultBody, headerGetter)
 

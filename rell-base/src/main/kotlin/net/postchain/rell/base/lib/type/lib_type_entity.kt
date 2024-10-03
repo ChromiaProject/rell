@@ -12,6 +12,7 @@ import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.lib.*
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_Errors
+import net.postchain.rell.base.compiler.base.utils.C_IdeCompletionsUtils
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.compiler.vexpr.V_GlobalConstantRestriction
@@ -24,6 +25,7 @@ import net.postchain.rell.base.model.R_Struct
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 
@@ -82,6 +84,13 @@ object Lib_Type_Entity {
     ): C_TypeValueMember_Value(attr.attrName, attr.type, attr.attribute()?.restrictions ?: C_MemberRestrictions.NULL) {
         override fun kindMsg() = "attribute"
         override fun nameMsg(): C_CodeMsg = attr.attrName.str toCodeMsg attr.attrName.str
+
+        override fun ideCompletion(): IdeCompletion? {
+            val doc = attr.ideName.ideInfo.getIdeInfo().doc
+            doc ?: return null
+            val location = attr.rEntity.defName.strictAppLevelName
+            return C_IdeCompletionsUtils.makeIdeCompletion(doc, location)
+        }
 
         override fun value(ctx: C_ExprContext, linkPos: S_Pos, linkName: C_Name?): V_TypeValueMember {
             return V_TypeValueMember_EntityAttr(ctx, linkPos, linkName, attr, null)

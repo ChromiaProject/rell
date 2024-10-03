@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.lib
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_CallArgument
 import net.postchain.rell.base.compiler.ast.S_CallArgumentValue_Expr
 import net.postchain.rell.base.compiler.ast.S_CallArgumentValue_Wildcard
@@ -24,10 +25,8 @@ import net.postchain.rell.base.model.R_FunctionType
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.R_MemberCalculator
-import net.postchain.rell.base.utils.LazyPosString
-import net.postchain.rell.base.utils.immMapOf
-import net.postchain.rell.base.utils.mapOrSame
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.ide.IdeCompletion
 
 object C_LibFunctionUtils {
     val RESTRICTIONS_NAMED_ARGS = C_FeatureRestrictions.make(
@@ -61,6 +60,8 @@ sealed class C_LibMemberFunction {
 
     abstract fun replaceTypeParams(rep: C_TypeMemberReplacement): C_LibMemberFunction
 
+    open fun ideGetParameterCompletions(): Multimap<String, IdeCompletion> = immMultimapOf()
+
     abstract fun compileCallFull(
         ctx: C_ExprContext,
         callCtx: C_LibFuncCaseCtx,
@@ -93,7 +94,7 @@ class C_SpecialLibGlobalFunction(
         return this
     }
 
-    override fun compileCall(
+    override fun compileCall0(
         ctx: C_ExprContext,
         name: LazyPosString,
         args: List<S_CallArgument>,
@@ -227,7 +228,7 @@ private class C_RegularLibGlobalFunction(
         return if (naming2 === naming && cases2 === cases) this else C_RegularLibGlobalFunction(naming2, cases2)
     }
 
-    override fun compileCall(
+    override fun compileCall0(
         ctx: C_ExprContext,
         name: LazyPosString,
         args: List<S_CallArgument>,
@@ -242,6 +243,8 @@ private class C_RegularLibGlobalFunction(
             argIdeInfos = defaultCase.argIdeInfos,
         )
     }
+
+    override fun ideGetParameterCompletions() = C_LibFuncCase.ideGetParameterCompletions(cases)
 
     private inner class C_FunctionCallTarget_LibGlobalFunction(
         val ctx: C_ExprContext,
@@ -361,6 +364,8 @@ private class C_RegularLibMemberFunction(
         val cases2 = cases.mapOrSame { it.replaceTypeParams(rep) }
         return if (cases2 === cases) this else C_RegularLibMemberFunction(cases2)
     }
+
+    override fun ideGetParameterCompletions() = C_LibFuncCase.ideGetParameterCompletions(cases)
 
     override fun compileCallFull(
         ctx: C_ExprContext,

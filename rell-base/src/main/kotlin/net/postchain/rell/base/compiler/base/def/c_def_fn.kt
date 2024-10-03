@@ -4,7 +4,9 @@
 
 package net.postchain.rell.base.compiler.base.def
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_CallArgument
+import net.postchain.rell.base.compiler.ast.S_CallArguments
 import net.postchain.rell.base.compiler.ast.S_FunctionBody
 import net.postchain.rell.base.compiler.base.core.C_CompilerPass
 import net.postchain.rell.base.compiler.base.core.C_FunctionBodyContext
@@ -12,26 +14,47 @@ import net.postchain.rell.base.compiler.base.core.C_TypeHint
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.fn.*
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
+import net.postchain.rell.base.compiler.base.utils.C_IdeCompletionsScope
+import net.postchain.rell.base.compiler.base.utils.C_IdeCompletionsUtils
+import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget_RegularUserFunction
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.LazyPosString
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocComment
+import net.postchain.rell.base.utils.ide.IdeCompletion
 
 abstract class C_GlobalFunction {
     open fun getFunctionDefinition(): R_FunctionDefinition? = null
     open fun getAbstractDescriptor(): C_AbstractFunctionDescriptor? = null
     open fun getExtendableDescriptor(): C_ExtendableFunctionDescriptor? = null
     open fun getDefMeta(): R_DefinitionMeta? = null
+    open fun ideGetParameterCompletions(): Multimap<String, IdeCompletion> = immMultimapOf()
 
-    abstract fun compileCall(
+    protected abstract fun compileCall0(
         ctx: C_ExprContext,
         name: LazyPosString,
         args: List<S_CallArgument>,
         resTypeHint: C_TypeHint,
     ): V_GlobalFunctionCall
+
+    fun compileCall(
+        ctx: C_ExprContext,
+        name: LazyPosString,
+        args: S_CallArguments,
+        resTypeHint: C_TypeHint,
+    ): V_GlobalFunctionCall {
+        val completionsLate = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
+        ctx.executor.onPass(C_CompilerPass.COMPLETIONS) {
+            val completions = ideGetParameterCompletions()
+            completionsLate.set(completions)
+        }
+        ctx.blkCtx.frameCtx.ideCompCtx.trackScope(args.posRange, ctx, completionsLate.getter)
+
+        return compileCall0(ctx, name, args.list, resTypeHint)
+    }
 }
 
 class C_UserFunctionHeader(
@@ -67,7 +90,7 @@ abstract class C_UserGlobalFunction(
 
     protected abstract fun compileCallTarget(base: C_FunctionCallTargetBase, retType: R_Type?): C_FunctionCallTarget
 
-    final override fun compileCall(
+    final override fun compileCall0(
         ctx: C_ExprContext,
         name: LazyPosString,
         args: List<S_CallArgument>,
@@ -78,6 +101,15 @@ abstract class C_UserGlobalFunction(
         val callTargetBase = C_FunctionCallTargetBase.forDirectFunction(ctx, name, header.params)
         val callTarget = compileCallTarget(callTargetBase, retType)
         return C_FunctionUtils.compileRegularCall(callTargetBase, callTarget, args, resTypeHint)
+    }
+
+    override fun ideGetParameterCompletions(): Multimap<String, IdeCompletion> {
+        return rFunction.params()
+            .map {
+                val comp = C_IdeCompletionsUtils.makeIdeCompletion(it.docSymbol)
+                it.name.str to comp
+            }
+            .toImmMultimap()
     }
 }
 

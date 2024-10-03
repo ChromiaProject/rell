@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model
@@ -7,11 +7,20 @@ package net.postchain.rell.base.model
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.runtime.*
 
-data class R_VarPtr(val name: String, val blockUid: R_FrameBlockUid, val offset: Int) {
+data class R_VarPtr(
+    val name: String,
+    val blockUid: R_FrameBlockUid,
+    val offset: Int,
+) {
     override fun toString() = "$blockUid/Var[$name,$offset]"
 }
 
-class R_FrameBlock(val parentUid: R_FrameBlockUid?, val uid: R_FrameBlockUid, val offset: Int, val size: Int)
+class R_FrameBlock(
+    val parentUid: R_FrameBlockUid?,
+    val uid: R_FrameBlockUid,
+    val offset: Int,
+    val size: Int,
+)
 
 class R_CallFrame(val defId: R_DefinitionId, val size: Int, val rootBlock: R_FrameBlock, val hasGuardBlock: Boolean) {
     fun createRtFrame(defCtx: Rt_DefinitionContext, stack: Rt_CallStack?, state: Rt_CallFrameState?): Rt_CallFrame {

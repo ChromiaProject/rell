@@ -6,6 +6,7 @@ package net.postchain.rell.base.compiler.base.core
 
 import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_Pos
+import net.postchain.rell.base.compiler.ast.S_PosRange
 import net.postchain.rell.base.compiler.ast.S_Statement
 import net.postchain.rell.base.compiler.base.def.C_AttrHeader
 import net.postchain.rell.base.compiler.base.expr.*
@@ -97,8 +98,11 @@ class C_BlockCodeBuilder(
     private val ctx: C_StmtContext,
     private val repl: Boolean,
     hasGuardBlock: Boolean,
+    private val posRange: S_PosRange,
     proto: C_BlockCodeProto,
 ) {
+    private val ideCompCtx = ctx.blkCtx.frameCtx.ideCompCtx
+
     private val rStmts = mutableListOf<R_Statement>()
     private var alwaysReturns = false
     private var deadCode = false
@@ -106,6 +110,10 @@ class C_BlockCodeBuilder(
     private var afterGuardBlock = false
     private var varStatesDelta = proto.varStatesDelta
     private var build = false
+
+    init {
+        ideCompCtx.trackScope(posRange, ctx.exprCtx)
+    }
 
     fun add(stmt: S_Statement) {
         check(!build)
@@ -120,7 +128,7 @@ class C_BlockCodeBuilder(
         val cStmt = stmt.compile(subCtx, repl)
 
         if (alwaysReturns && !deadCode) {
-            ctx.msgCtx.error(stmt.pos, "stmt_deadcode", "Dead code")
+            ctx.msgCtx.error(stmt.startPos, "stmt_deadcode", "Dead code")
             deadCode = true
         }
 
@@ -130,6 +138,9 @@ class C_BlockCodeBuilder(
             insideGuardBlock = false
             afterGuardBlock = true
         }
+
+        val subPosRange = if (stmt.endPos <= posRange.end) posRange.copy(start = stmt.endPos) else posRange
+        ideCompCtx.trackScope(subPosRange, ctx.exprCtx)
 
         alwaysReturns = alwaysReturns || cStmt.alwaysReturns
         varStatesDelta = varStatesDelta.and(cStmt.varStatesDelta)

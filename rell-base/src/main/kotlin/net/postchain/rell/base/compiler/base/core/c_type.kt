@@ -135,10 +135,7 @@ class C_TypeAdapter_Nullable(private val dstType: R_Type, private val innerAdapt
         return R_TypeAdapterExpr(dstType, expr, rAdapter)
     }
 
-    override fun adaptExprDb(expr: Db_Expr): Db_Expr {
-        // Not completely right, but Db_Exprs do not support nullable anyway.
-        return expr
-    }
+    override fun adaptExprDb(expr: Db_Expr) = expr
 
     override fun toRAdapter(): R_TypeAdapter {
         val rInnerAdapter = innerAdapter.toRAdapter()

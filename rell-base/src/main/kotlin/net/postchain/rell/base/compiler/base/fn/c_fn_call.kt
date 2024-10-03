@@ -80,9 +80,6 @@ abstract class C_FunctionCallTarget_Regular(
         val safe = safe()
         val vCall = V_CommonFunctionCall_Full(callInfo.callPos, callInfo.callPos, retType, vTarget, vCallArgs)
         val vExpr = V_FunctionCallExpr(ctx, callInfo.callPos, vBase, vCall, safe)
-
-        // Ide info is null, because user functions always use the default ide info of the function, as there is no
-        // overloading (using C_UniqueDefaultIdeInfoPtr).
         return V_GlobalFunctionCall(vExpr, null, targetBase.argIdeInfos)
     }
 

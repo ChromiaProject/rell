@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.ast
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.*
@@ -16,8 +17,12 @@ import net.postchain.rell.base.model.stmt.R_IterableAdapter
 import net.postchain.rell.base.model.stmt.R_IterableAdapter_Direct
 import net.postchain.rell.base.mtype.M_TypeUtils
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolId
+import net.postchain.rell.base.utils.immMultimapOf
+import net.postchain.rell.base.utils.toImmMultimap
 import net.postchain.rell.base.utils.toImmSet
+import net.postchain.rell.base.utils.toMutableMultimap
 
 abstract class S_Expr(val startPos: S_Pos) {
     abstract fun compile(ctx: C_ExprContext, hint: C_ExprHint = C_ExprHint.DEFAULT): C_Expr
@@ -240,7 +245,12 @@ class S_SubscriptExpr(val opPos: S_Pos, val base: S_Expr, val expr: S_Expr): S_E
     }
 }
 
-class S_CreateExpr(pos: S_Pos, val entityName: S_QualifiedName, val args: List<S_CallArgument>): S_Expr(pos) {
+class S_CreateExpr(
+    pos: S_Pos,
+    private val entityName: S_QualifiedName,
+    private val args: List<S_CallArgument>,
+    private val argsPosRange: S_PosRange,
+): S_Expr(pos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         ctx.checkDbUpdateAllowed(startPos)
 
@@ -264,6 +274,17 @@ class S_CreateExpr(pos: S_Pos, val entityName: S_QualifiedName, val args: List<S
     }
 
     private fun compileRegular(ctx: C_ExprContext, entity: R_EntityDefinition, callArgs: List<C_CallArgument>): V_Expr {
+        val completionsLate = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
+        ctx.executor.onPass(C_CompilerPass.COMPLETIONS) {
+            val completions = entity.attributes.entries.toImmMultimap { (rName, rAttr) ->
+                val location = entity.defName.strictAppLevelName
+                val comp = C_IdeCompletionsUtils.makeIdeCompletion(rAttr.docSymbol, location)
+                rName.str to comp
+            }
+            completionsLate.set(completions)
+        }
+        ctx.blkCtx.frameCtx.ideCompCtx.trackScope(argsPosRange, ctx, completionsLate.getter)
+
         val createCtx = C_CreateContext(ctx, entity.initFrameGetter, startPos.toFilePos())
 
         val attrArgs = C_CallArgument.toAttrArguments(ctx, callArgs, C_CodeMsg("create_expr", "create expression"))
@@ -644,7 +665,10 @@ class S_CallArgumentValue_Wildcard(val pos: S_Pos): S_CallArgumentValue() {
     override fun compile(ctx: C_ExprContext, typeHint: C_TypeHint) = C_CallArgumentValue_Wildcard(pos)
 }
 
-class S_CallArgument(val name: S_Name?, val value: S_CallArgumentValue) {
+class S_CallArgument(
+    val name: S_Name?,
+    val value: S_CallArgumentValue,
+) {
     fun compile(
         ctx: C_ExprContext,
         index: Int,
@@ -659,7 +683,15 @@ class S_CallArgument(val name: S_Name?, val value: S_CallArgumentValue) {
     }
 }
 
-class S_CallExpr(val base: S_Expr, val args: List<S_CallArgument>): S_Expr(base.startPos) {
+class S_CallArguments(
+    val list: List<S_CallArgument>,
+    val posRange: S_PosRange,
+)
+
+class S_CallExpr(
+    private val base: S_Expr,
+    private val args: S_CallArguments,
+): S_Expr(base.startPos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val cBase = base.compileSafe(ctx, C_ExprHint.DEFAULT_CALLABLE)
         return cBase.call(ctx, base.startPos, args, hint.typeHint)

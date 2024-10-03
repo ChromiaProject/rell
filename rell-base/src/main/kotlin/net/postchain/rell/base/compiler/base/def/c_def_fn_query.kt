@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.def
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_CallArgument
 import net.postchain.rell.base.compiler.ast.S_FunctionBody
 import net.postchain.rell.base.compiler.base.core.C_CompilerPass
@@ -15,11 +16,13 @@ import net.postchain.rell.base.compiler.base.fn.C_FunctionCallTargetBase
 import net.postchain.rell.base.compiler.base.fn.C_FunctionUtils
 import net.postchain.rell.base.compiler.base.fn.C_SubprogramHeader
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
+import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.doc.DocComment
+import net.postchain.rell.base.utils.ide.IdeCompletion
 
 class C_QueryHeader(
     params: C_FormalParameters,
@@ -45,7 +48,7 @@ class C_QueryGlobalFunction(val rQuery: R_QueryDefinition): C_GlobalFunction() {
         headerLate.set(header)
     }
 
-    override fun compileCall(
+    override fun compileCall0(
         ctx: C_ExprContext,
         name: LazyPosString,
         args: List<S_CallArgument>,

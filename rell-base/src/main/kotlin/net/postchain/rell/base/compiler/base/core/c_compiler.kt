@@ -35,6 +35,7 @@ enum class C_CompilerPass {
     EXPRESSIONS,
     FRAMES,
     DOCS,
+    COMPLETIONS,
     VALIDATION,
     APPLICATION,
     FINISH
@@ -246,10 +247,10 @@ object C_Compiler {
             extraLibMod,
         )
 
-        msgCtx.consumeError {
+        val modIdeCompletions = msgCtx.consumeError {
             val extCompiler = C_ExtModuleCompiler(appCtx, extModules, immMapOf())
             extCompiler.compileModules()
-        }
+        } ?: C_LateGetter.const(immMultimapOf())
 
         val files = extModules.flatMap { it.midModule.filePaths() }.toImmList()
 
@@ -261,8 +262,10 @@ object C_Compiler {
         val messages = CommonUtils.sortedByCopy(msgCtx.messages()) { C_ComparablePos(it.pos) }
         val errors = messages.filter { it.type == C_MessageType.ERROR }
 
+        val ideCompletions = modIdeCompletions.get().asMap().mapValues { it.value.toSet().toList() }.toImmMultimap()
+
         val rApp = if (errors.isEmpty()) appFinish?.rApp else null
-        return C_CompilationResult(rApp, messages, files, symFinish.symbolInfos, symFinish.completions)
+        return C_CompilationResult(rApp, messages, files, symFinish.symbolInfos, ideCompletions)
     }
 
     private fun compileMidModules(

@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.fn
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.*
@@ -18,6 +19,8 @@ import net.postchain.rell.base.model.R_GlobalConstantId
 import net.postchain.rell.base.utils.associateNotNullValues
 import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.doc.DocFunctionParamComments
+import net.postchain.rell.base.utils.ide.IdeCompletion
+import net.postchain.rell.base.utils.immMultimapOf
 
 abstract class C_SubprogramHeader(
     val params: C_FormalParameters,
@@ -32,6 +35,7 @@ object C_FunctionUtils {
         retType: S_Type?,
         body: S_FunctionBody?,
         comment: S_Comment?,
+        ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>,
     ): C_UserFunctionHeader {
         val explicitRetType = if (retType == null) null else (retType.compileOpt(defCtx) ?: R_CtErrorType)
         val bodyRetType = if (body == null) R_UnitType else null
@@ -39,10 +43,8 @@ object C_FunctionUtils {
 
         val rawHeader = compileCommonHeader(defCtx, fnPos, params, comment, false)
 
-        val cBody = if (body == null) null else {
-            val bodyCtx = C_FunctionBodyContext(defCtx, fnPos, rRetType, rawHeader.params)
-            C_UserFunctionDeepDefinitionBody(bodyCtx, body)
-        }
+        val bodyCtx = C_FunctionBodyContext(defCtx, fnPos, rRetType, rawHeader.params, ideCompsLate)
+        val cBody = if (body == null) null else C_UserFunctionDeepDefinitionBody(bodyCtx, body)
 
         return C_UserFunctionHeader(rawHeader.params, rawHeader.comment, rRetType, cBody)
     }
@@ -64,10 +66,11 @@ object C_FunctionUtils {
         retType: S_Type?,
         body: S_FunctionBody,
         comment: S_Comment?,
+        ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>,
     ): C_QueryHeader {
         val rRetType = if (retType == null) null else (retType.compileOpt(defCtx) ?: R_CtErrorType)
         val rawHeader = compileCommonHeader(defCtx, simpleName.pos, params, comment, defCtx.globalCtx.compilerOptions.gtv)
-        val bodyCtx = C_FunctionBodyContext(defCtx, simpleName.pos, rRetType, rawHeader.params)
+        val bodyCtx = C_FunctionBodyContext(defCtx, simpleName.pos, rRetType, rawHeader.params, ideCompsLate)
         val cBody = C_QueryDeepDefinitionBody(bodyCtx, body)
         return C_QueryHeader(rawHeader.params, rawHeader.comment, rRetType, cBody)
     }
@@ -79,7 +82,6 @@ object C_FunctionUtils {
         comment: S_Comment?,
         gtv: Boolean,
     ): C_RawSubprogramHeader {
-        //TODO not completely right to use APPDEFS step: functionally correct, but unrelated to docs
         val docCommentsLate = C_LateInit(C_CompilerPass.APPDEFS, DocFunctionParamComments.NULL)
         val cParams = C_FormalParameters.compile(defCtx, params, gtv, docCommentsLate.getter)
 

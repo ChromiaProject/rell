@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.lib
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.*
@@ -19,6 +20,7 @@ import net.postchain.rell.base.model.expr.R_FunctionCallTarget
 import net.postchain.rell.base.model.expr.R_FunctionCallTarget_SysMemberFunction
 import net.postchain.rell.base.mtype.*
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
 object C_LibFuncCaseUtils {
@@ -83,6 +85,8 @@ abstract class C_LibFuncCase<CallT: V_FunctionCall>(
 
     open fun getPartialCallTarget(caseCtx: C_LibFuncCaseCtx, selfType: R_Type): C_LibPartialCallTarget<CallT>? = null
 
+    protected open fun ideGetParameterCompletions(): Multimap<String, IdeCompletion> = immMultimapOf()
+
     companion object {
         fun <CallT: V_FunctionCall> matchCase(
             msgCtx: C_MessageContext,
@@ -135,6 +139,16 @@ abstract class C_LibFuncCase<CallT: V_FunctionCall>(
                 }
                 C_LibFuncCaseUtils.errNoMatch(msgCtx, caseCtx.linkPos, qName, expectedArgs)
             }
+        }
+
+        fun ideGetParameterCompletions(cases: List<C_LibFuncCase<*>>): Multimap<String, IdeCompletion> {
+            val res = mutableMultimapOf<String, IdeCompletion>()
+            for (case in cases) {
+                res.putAll(case.ideGetParameterCompletions())
+            }
+            return res.asMap()
+                .mapValues { it.value.toSet().toList() }
+                .toImmMultimap()
         }
     }
 }
@@ -481,6 +495,15 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
         )
 
         return lFunction.body.getSysFunction(meta)
+    }
+
+    final override fun ideGetParameterCompletions(): Multimap<String, IdeCompletion> {
+        val location = lFunction.fullName.str()
+        return lFunction.header.params
+            .filterNot { it.arity.many }
+            .toImmMultimap {
+                it.name.str to C_IdeCompletionsUtils.makeIdeCompletion(it.docSymbol, location)
+            }
     }
 }
 

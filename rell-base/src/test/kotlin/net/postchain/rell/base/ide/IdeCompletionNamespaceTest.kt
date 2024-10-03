@@ -4,30 +4,14 @@
 
 package net.postchain.rell.base.ide
 
-import com.google.common.collect.Multimap
-import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
-import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
-import net.postchain.rell.base.compiler.base.lib.C_LibModule
-import net.postchain.rell.base.compiler.base.utils.C_IdeCompletionsUtils
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
-import net.postchain.rell.base.compiler.base.utils.C_SourcePath
-import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
-import net.postchain.rell.base.lmodel.dsl.Ld_ModuleDsl
-import net.postchain.rell.base.model.R_ModuleName
-import net.postchain.rell.base.testutils.BaseRellTest
-import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.unwrap
-import net.postchain.rell.base.utils.ide.IdeCompletion
-import net.postchain.rell.base.utils.toImmMultimap
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class IdeCompletionTest: BaseRellTest() {
-    private var fullCompStr = true
-    private var defaultLib = false
-
+class IdeCompletionNamespaceTest: BaseIdeCompletionTest() {
     @Test fun testBasic() {
         chkComps("val X = 123; entity data {} struct rec {} function f() {}",
             "X|CONSTANT|:X||integer|",
@@ -187,13 +171,11 @@ class IdeCompletionTest: BaseRellTest() {
         chkComps(code, 1, a, "color|ENUM|:color||-|")
         chkComps(code, 2, a, "color|ENUM|:color||-|")
 
-        code = "val A = 123; entity user {} ^0 function f(^1 u: user ^2) { ^3 val y = 123; ^4 }"
+        code = "val A = 123; entity user {} ^0 function f(^1 u: user ^2) {}"
         chkComps(code, -1, a, "f|FUNCTION|:f|(u: user)|unit|", user)
         chkComps(code, 0, a, "f|FUNCTION|:f|(u: user)|unit|", user)
         chkComps(code, 1, a, "f|FUNCTION|:f|(u: user)|unit|", user)
         chkComps(code, 2, a, "f|FUNCTION|:f|(u: user)|unit|", user)
-        chkComps(code, 3, a, "f|FUNCTION|:f|(u: user)|unit|", user)
-        chkComps(code, 4, a, "f|FUNCTION|:f|(u: user)|unit|", user)
     }
 
     @Test fun testMultiFile() {
@@ -210,8 +192,6 @@ class IdeCompletionTest: BaseRellTest() {
         chkComps(code, -1, a, "x|NAMESPACE|:x")
         chkComps(code, 0, a, "x|NAMESPACE|:x")
         chkComps(code, 1, a, "x|NAMESPACE|:x")
-        chkComps(code, 2, a, b, "x|NAMESPACE|:x", "y|NAMESPACE|:x.y", "z|NAMESPACE|:x.y.z")
-        chkComps(code, 3, a, b, "x|NAMESPACE|:x", "y|NAMESPACE|:x.y", "z|NAMESPACE|:x.y.z")
     }
 
     @Test fun testNamespaceDisjoint() {
@@ -248,7 +228,6 @@ class IdeCompletionTest: BaseRellTest() {
         chkComps(code, 3, a, b, c, d, "x|NAMESPACE|:x", "y|NAMESPACE|:x.y")
         chkComps(code, 4, a, b, "x|NAMESPACE|:x", "y|NAMESPACE|:x.y")
         chkComps(code, 5, a, "x|NAMESPACE|:x")
-        chkComps(code, 6, a, b, c, d, "x|NAMESPACE|:x", "y|NAMESPACE|:x.y")
     }
 
     @Test fun testNamespaceDisjointMultiFile() {
@@ -291,12 +270,18 @@ class IdeCompletionTest: BaseRellTest() {
         chkCompKeys("C", "f", "g", "my_struct", "my_type", "prop", "spec_prop")
         chkLibComps("C", "C|CONSTANT|test:C||integer|test")
         chkLibComps("f", "f|FUNCTION|test:f|(x: my_struct)|my_type|test")
-        chkLibComps("g", "g|FUNCTION|test:g|(...)|-|test")
+        chkLibComps("g", "g|FUNCTION|test:g|()|-|test")
         chkLibComps("my_struct", "my_struct|STRUCT|test:my_struct||-|test",
             "my_struct|CONSTRUCTOR|test:my_struct|()|-|test")
         chkLibComps("my_type", "my_type|TYPE|test:my_type||-|test")
         chkLibComps("prop", "prop|PROPERTY|test:prop||integer|test")
         chkLibComps("spec_prop", "spec_prop|PROPERTY|test:spec_prop||-|test")
+    }
+
+    private fun chkLibComps(key: String, vararg expected: String) {
+        val map = calcComps0("", null)
+        val actual = map.get(key).toList()
+        assertEquals(expected.toList(), actual)
     }
 
     @Test fun testLibDefsAliases() {
@@ -464,105 +449,5 @@ class IdeCompletionTest: BaseRellTest() {
         chkComps("struct data { x: integer; y: text; }", s, "data|CONSTRUCTOR|:data|(x: integer, y: text)|-|")
         chkComps("struct data { x: integer; p: boolean = true; y: text; q: json? = null; }", s,
             "data|CONSTRUCTOR|:data|(x: integer, y: text, p: boolean = ..., q: json? = ...)|-|")
-    }
-
-    private fun chkCompKeys(vararg expected: String) {
-        val map = calcComps0("", null)
-        val actual = map.keySet().sorted()
-        assertEquals(expected.toList(), actual)
-    }
-
-    private fun chkLibComps(key: String, vararg expected: String) {
-        val map = calcComps0("", null)
-        val actual = map.get(key).toList()
-        assertEquals(expected.toList(), actual)
-    }
-
-    private fun chkComps(code: String, vararg expected: String) {
-        chkComps(code, -1, *expected)
-    }
-
-    private fun chkComps(code: String, pos: Int, vararg expected: String) {
-        val (realCode, realPos) = prepareCode(code, pos)
-        val actual = calcComps(realCode, realPos)
-        assertEquals(expected.toList(), actual)
-    }
-
-    private fun prepareCode(code: String, pos: Int): Pair<String, Int?> {
-        val re = Regex("\\^([0-9])")
-        val posMap = re.findAll(code).associate {
-            val i = it.groupValues[1].toInt()
-            i to it.range.first
-        }
-
-        val resCode = code.replace(re, "  ")
-        val resPos = if (pos == -1) null else posMap.getValue(pos)
-        return resCode to resPos
-    }
-
-    private fun calcComps(
-        code: String,
-        pos: Int?,
-        defaultOptions: C_CompilerOptions? = null,
-    ): List<String> {
-        val map = calcComps0(code, pos, defaultOptions)
-        return map.entries().sortedBy { it.key }.map { it.value }
-    }
-
-    private fun calcComps0(
-        code: String,
-        pos: Int?,
-        defaultOptions: C_CompilerOptions? = null,
-    ): Multimap<String, String> {
-        val sourceDir = tst.createSourceDir(code)
-        val path = C_SourcePath.parse("main.rell")
-
-        val baseOptions = defaultOptions ?: baseCompilerOptions()
-        val options = C_IdeCompletionsUtils.getCompilerOptions(sourceDir, path, pos, baseOptions)
-        checkNotNull(options)
-
-        val modSel = C_CompilerModuleSelection(listOf(R_ModuleName.EMPTY))
-        val cRes = RellTestUtils.compileApp(sourceDir, modSel, options, tst.extraMod)
-
-        val actualErr = if (cRes.errors.isEmpty()) "n/a" else RellTestUtils.msgsToString(cRes.errors)
-        assertEquals("n/a", actualErr)
-
-        return cRes.ideCompletions.entries()
-            .filterNot { (_, comp) -> defaultLib && isDefaultLib(comp) }
-            .map { (name, comp) ->
-                name to completionToStr(name, comp)
-            }
-            .toImmMultimap()
-    }
-
-    private fun isDefaultLib(comp: IdeCompletion): Boolean {
-        val name = comp.symbolName.strCode()
-        return name.startsWith("rell:") || name == ":block" || name == ":transaction"
-    }
-
-    private fun completionToStr(name: String, comp: IdeCompletion): String {
-        val parts = mutableListOf(name, comp.kind.name, comp.symbolName.strCode())
-        if (fullCompStr) {
-            parts.add(comp.params)
-            parts.add(comp.result ?: "-")
-            parts.add(comp.location ?: "-")
-        }
-        return parts.joinToString("|")
-    }
-
-    private fun libModule(block: Ld_ModuleDsl.() -> Unit) {
-        tst.extraMod = C_LibModule.make("test", requireSince = false) {
-            imports(Lib_Rell.MODULE.lModule)
-            block(this)
-        }
-    }
-
-    private fun baseCompilerOptions(): C_CompilerOptions {
-        return tst.compilerOptions().toBuilder()
-            .defaultLib(defaultLib)
-            .hiddenLib(false)
-            .symbolInfoFile(null)
-            .ideDocSymbolsEnabled(true)
-            .build()
     }
 }

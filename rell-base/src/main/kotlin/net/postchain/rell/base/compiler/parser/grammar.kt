@@ -155,7 +155,7 @@ object S_Grammar {
 
     private val tupleType by commaSeparatedOneMany(tupleTypeField) map {
         val single = getTupleSingleField(it)
-        if (single != null) single else S_TupleType(it.pos, it.items)
+        if (single != null) single else S_TupleType(it.startPos, it.items)
     }
 
     private val genericType by qualifiedName * commaSeparatedOneMany(typeRef, TokenPair(LT, GT)) map {
@@ -193,7 +193,7 @@ object S_Grammar {
 
     private val functionType by commaSeparatedZeroMany(typeRef) * -ARROW * typeRef map {
         (params, res) ->
-        S_FunctionType(params.pos, params.items, res)
+        S_FunctionType(params.startPos, params.items, res)
     }
 
     private val type: Parser<S_Type> by (
@@ -355,8 +355,8 @@ object S_Grammar {
             or ( incrementOperator map { S_PosValue(it.pos, S_UnaryOp_IncDec(it.value, false)) } )
     )
 
-    private val unaryPostfixOperator = (
-            ( incrementOperator map { S_PosValue(it.pos, S_UnaryOp_IncDec(it.value, true)) } )
+    private val unaryPostfixOperator: Parser<S_PosValue<S_UnaryOp>> = (
+            ( incrementOperator map { S_PosValue<S_UnaryOp>(it.pos, S_UnaryOp_IncDec(it.value, true)) } )
             or ( DOUBLEQUESTION mapNode { S_UnaryOp_IsNull } )
     )
 
@@ -395,7 +395,7 @@ object S_Grammar {
 
     private val tupleExpr by commaSeparatedOneMany(tupleExprField) map {
         val single = getTupleSingleField(it)
-        if (single != null) S_ParenthesesExpr(it.pos, single) else S_TupleExpr(it.pos, it.items)
+        if (single != null) S_ParenthesesExpr(it.startPos, single) else S_TupleExpr(it.startPos, it.items)
     }
 
     private val atExprFromItem by zeroOrMore(annotation) * optional(nameNode * -COLON) * expressionRef map {
@@ -406,7 +406,7 @@ object S_Grammar {
     }
 
     private val atExprFrom by commaSeparatedOneMany(atExprFromItem) map {
-        S_PosValue(it.pos, it.items)
+        S_PosValue(it.startPos, it.items)
     }
 
     private val atExprAt by (
@@ -430,13 +430,13 @@ object S_Grammar {
     }
 
     private val atExprWhatComplex by commaSeparatedOneMany(atExprWhatComplexItem) map {
-        S_AtExprWhat_Complex(it.pos, it.items)
+        S_AtExprWhat_Complex(it.posRange, it.items)
     }
 
     private val atExprWhat by atExprWhatSimple or atExprWhatComplex
 
     private val atExprWhere by commaSeparatedZeroMany(expressionRef, LR_CURL) map {
-        S_AtExprWhere(it.items)
+        S_AtExprWhere(it.items, it.posRange)
     }
 
     private val atExprLimit by -LIMIT * expressionRef
@@ -448,13 +448,13 @@ object S_Grammar {
     )
 
     private val listLiteralExpr by commaSeparatedZeroMany(expressionRef, LR_BRACK) map {
-        S_ListLiteralExpr(it.pos, it.items)
+        S_ListLiteralExpr(it.startPos, it.items)
     }
 
     private val mapLiteralExprEntry by expressionRef * -COLON * expressionRef map { (key, value) -> Pair(key, value) }
     private val emptyMapLiteralExpr by LBRACK * -COLON * -RBRACK map { pos -> S_MapLiteralExpr(pos.pos, listOf()) }
     private val nonEmptyMapLiteralExpr by commaSeparatedOneMany(mapLiteralExprEntry, LR_BRACK) map {
-        S_MapLiteralExpr(it.pos, it.items)
+        S_MapLiteralExpr(it.startPos, it.items)
     }
     private val mapLiteralExpr by emptyMapLiteralExpr or nonEmptyMapLiteralExpr
 
@@ -472,27 +472,25 @@ object S_Grammar {
         S_CallArgument(name, value)
     }
 
-    private val createExprArgs by commaSeparatedZeroMany(createExprArg) map { it.items }
-
-    private val createExpr by CREATE * qualifiedName * createExprArgs map {
+    private val createExpr by CREATE * qualifiedName * commaSeparatedZeroMany(createExprArg) map {
         (kw, entityName, args) ->
-        S_CreateExpr(kw.pos, entityName, args)
+        S_CreateExpr(kw.pos, entityName, args.items, args.posRange)
     }
 
     private val virtualTypeExpr by virtualType map { S_SpecialTypeExpr(it) }
-
-    private val callArg by optional(name * -ASSIGN) * callArgValue map {
-        (name, value) ->
-        S_CallArgument(name, value)
-    }
-
-    private val callArgs by commaSeparatedZeroMany(callArg) map { it.items }
 
     private val baseExprTailMember by -DOT * name map { name -> G_BaseExprTail_Member(name) }
     private val baseExprTailSubscript by LBRACK * expressionRef * -RBRACK map { (pos, expr) -> G_BaseExprTail_Subscript(pos.pos, expr) }
     private val baseExprTailNotNull by NOTNULL map { G_BaseExprTail_NotNull(it.pos) }
     private val baseExprTailSafeMember by -SAFECALL * name map { name -> G_BaseExprTail_SafeMember(name) }
     private val baseExprTailUnaryPostfixOp by unaryPostfixOperator map { G_BaseExprTail_UnaryPostfixOp(it.pos, it.value) }
+
+    private val callArg by optional(name * -ASSIGN) * callArgValue map {
+        (name, value) ->
+        S_CallArgument(name, value)
+    }
+
+    private val callArgs by commaSeparatedZeroMany(callArg) map { S_CallArguments(it.items, it.posRange) }
 
     private val baseExprTailCall by callArgs map { args ->
         G_BaseExprTail_Call(args)
@@ -603,19 +601,20 @@ object S_Grammar {
     private val simpleVarDeclarator by attrHeader map { S_SimpleVarDeclarator(it.value) }
 
     private val tupleVarDeclarator by commaSeparatedOneMany(parser(this::varDeclarator)) map {
-        S_TupleVarDeclarator(it.pos, it.items)
+        S_TupleVarDeclarator(it.startPos, it.items)
     }
 
     private val varDeclarator: Parser<S_VarDeclarator> by simpleVarDeclarator or tupleVarDeclarator
 
-    private val varStmt by varVal * varDeclarator * optional(-ASSIGN * expression) * -SEMI map {
-        (mutableNode, declarator, expr) ->
+    private val varStmt by varVal * varDeclarator * optional(-ASSIGN * expression) * SEMI map {
+        (mutableNode, declarator, expr, end) ->
         val kw = mutableNode.firstToken
-        S_VarStatement(kw.pos, declarator, expr, mutableNode.value, kw.comment)
+        S_VarStatement(kw.pos, end.pos, declarator, expr, mutableNode.value, kw.comment)
     }
 
-    private val returnStmt by RETURN * optional(expression) * -SEMI map { ( kw, expr ) ->
-        S_ReturnStatement(kw.pos, expr)
+    private val returnStmt by RETURN * optional(expression) * SEMI map {
+        (kw, expr, end) ->
+        S_ReturnStatement(kw.pos, end.pos, expr)
     }
 
     private val assignOp by (
@@ -627,19 +626,22 @@ object S_Grammar {
             or ( MOD_ASSIGN mapNode { S_AssignOpCode.MOD })
     )
 
-    private val assignStmt by baseExpr * assignOp * expression * -SEMI map {
-        (expr1, op, expr2) ->
-        S_AssignStatement(expr1, op, expr2)
+    private val assignStmt by baseExpr * assignOp * expression * SEMI map {
+        (expr1, op, expr2, end) ->
+        S_AssignStatement(expr1, op, expr2, end.pos)
     }
 
-    private val incrementStmt by incrementOperator * baseExpr * -SEMI map {
-        (op, expr) ->
-        S_ExprStatement(S_UnaryExpr(op.pos, S_PosValue(op.pos, S_UnaryOp_IncDec(op.value, false)), expr))
+    private val incrementStmt by incrementOperator * baseExpr * SEMI map {
+        (op, expr, end) ->
+        val sOp = S_PosValue<S_UnaryOp>(op.pos, S_UnaryOp_IncDec(op.value, false))
+        val sExpr = S_UnaryExpr(op.pos, sOp, expr)
+        S_ExprStatement(sExpr, end.pos)
     }
 
-    private val blockStmt by LCURL * zeroOrMore(statementRef) * -RCURL map {
-        (pos, statements) ->
-        S_BlockStatement(pos.pos, statements)
+    private val blockStmt by LCURL * zeroOrMore(statementRef) * RCURL map {
+        (lcurl, statements, rcurl) ->
+        val posRange = S_PosRange(lcurl.pos, rcurl.pos)
+        S_BlockStatement(posRange, statements)
     }
 
     private val ifStmt by IF * -LPAR * expression * -RPAR * statementRef * optional(-ELSE * statementRef) map {
@@ -652,9 +654,9 @@ object S_Grammar {
         S_WhenStatementCase(cond, stmt)
     }
 
-    private val whenStmt by WHEN * optional(-LPAR * expressionRef * -RPAR) * -LCURL * zeroOrMore(whenStmtCase) * -RCURL map {
-        (pos, expr, cases) ->
-        S_WhenStatement(pos.pos, expr, cases)
+    private val whenStmt by WHEN * optional(-LPAR * expressionRef * -RPAR) * -LCURL * zeroOrMore(whenStmtCase) * RCURL map {
+        (pos, expr, cases, end) ->
+        S_WhenStatement(pos.pos, end.pos, expr, cases)
     }
 
     private val whileStmt by WHILE * -LPAR * expression * -RPAR * statementRef map {
@@ -662,17 +664,17 @@ object S_Grammar {
         S_WhileStatement(pos.pos, expr, stmt)
     }
 
-    private val forStmt by FOR * -LPAR * varDeclarator * -IN * expression * -RPAR * statementRef map {
-        (pos, declarator, expr, stmt) ->
-        S_ForStatement(pos.pos, declarator, expr, stmt)
+    private val forStmt by FOR * -LPAR * varDeclarator * -IN * expression * RPAR * statementRef map {
+        (pos, declarator, expr, rpar, stmt) ->
+        S_ForStatement(pos.pos, declarator, expr, stmt, rpar.pos)
     }
 
-    private val breakStmt by BREAK * -SEMI map { S_BreakStatement(it.pos) }
-    private val continueStmt by CONTINUE * -SEMI map { S_ContinueStatement(it.pos) }
+    private val breakStmt by BREAK * SEMI map { (start, end) -> S_BreakStatement(start.pos, end.pos) }
+    private val continueStmt by CONTINUE * SEMI map { (start, end) -> S_ContinueStatement(start.pos, end.pos) }
 
-    private val callStmt by baseExpr * -SEMI map { expr -> S_ExprStatement(expr) }
+    private val callStmt by baseExpr * SEMI map { (expr, end) -> S_ExprStatement(expr, end.pos) }
 
-    private val createStmt by createExpr * -SEMI map { expr -> S_ExprStatement(expr) }
+    private val createStmt by createExpr * SEMI map { (expr, end) -> S_ExprStatement(expr, end.pos) }
 
     private val updateFromSingle by qualifiedName map {
         S_PosValue(it.pos, listOf(S_UpdateFromItem(null, it, null)))
@@ -684,7 +686,7 @@ object S_Grammar {
     }
 
     private val updateFromMulti by commaSeparatedOneMany(updateFromItem) map {
-        S_PosValue(it.pos, it.items)
+        S_PosValue(it.startPos, it.items)
     }
 
     private val updateFrom by updateFromSingle or updateFromMulti
@@ -712,14 +714,14 @@ object S_Grammar {
 
     private val updateWhat by commaSeparatedOneMany(updateWhatExpr) map { it.items }
 
-    private val updateStmt by UPDATE * updateTarget * updateWhat * -SEMI map {
-        (kw, target, what) ->
-        S_UpdateStatement(kw.pos, target, what)
+    private val updateStmt by UPDATE * updateTarget * updateWhat * SEMI map {
+        (kw, target, what, end) ->
+        S_UpdateStatement(kw.pos, end.pos, target, what)
     }
 
-    private val deleteStmt by DELETE * updateTarget * -SEMI map {
-        (kw, target) ->
-        S_DeleteStatement(kw.pos, target)
+    private val deleteStmt by DELETE * updateTarget * SEMI map {
+        (kw, target, end) ->
+        S_DeleteStatement(kw.pos, end.pos, target)
     }
 
     private val guardStmt by GUARD * blockStmt map {
@@ -760,7 +762,10 @@ object S_Grammar {
         (kw, name, params, body) -> AnnotatedDef(kw) { S_OperationDefinition(it, name, params, body) }
     }
 
-    private val functionBodyShort by -ASSIGN * expression * -SEMI map { S_FunctionBodyShort(it) }
+    private val functionBodyShort by ASSIGN * expression * SEMI map {
+        (start, expr, end) ->
+        S_FunctionBodyShort(S_PosRange(start.pos, end.pos), expr)
+    }
     private val functionBodyFull by blockStmt map { stmt -> S_FunctionBodyFull(stmt) }
     private val functionBodyNone by SEMI map { null }
     private val functionBody by functionBodyShort or functionBodyFull or functionBodyNone
@@ -857,8 +862,8 @@ object S_Grammar {
         S_DefinitionReplStep(def.createDef(modifiers))
     }
 
-    private val replExprStatement by expression * -SEMI map {
-        expr -> S_ExprStatement(expr)
+    private val replExprStatement by expression * SEMI map {
+        (expr, end) -> S_ExprStatement(expr, end.pos)
     }
 
     private val stmtReplStep by statementNoExpr or replExprStatement map {
@@ -888,9 +893,10 @@ object S_Grammar {
         item: Parser<T>,
         brackets: TokenPair = LR_PAR,
     ): Parser<S_CommaSeparatedList<T>> {
-        val parser = brackets.first * optional(commaSeparatedOneMany0(item)) * -brackets.second map {
-            (lBracket, values) ->
-            S_CommaSeparatedList(lBracket.pos, values?.items ?: immListOf(), values?.trailingComma ?: false)
+        val parser = brackets.first * optional(commaSeparatedOneMany0(item)) * brackets.second map {
+            (lBracket, values, rBracket) ->
+            val items = values?.items ?: immListOf()
+            S_CommaSeparatedList(lBracket.pos, rBracket.pos, items, values?.trailingComma ?: false)
         }
         _commaSeparatedParsers.add(parser)
         return parser
@@ -900,9 +906,9 @@ object S_Grammar {
         item: Parser<T>,
         brackets: TokenPair = LR_PAR,
     ): Parser<S_CommaSeparatedList<T>> {
-        val parser = brackets.first * commaSeparatedOneMany0(item) * -brackets.second map {
-            (lBracket, values) ->
-            S_CommaSeparatedList(lBracket.pos, values.items, values.trailingComma)
+        val parser = brackets.first * commaSeparatedOneMany0(item) * brackets.second map {
+            (lBracket, values, rBracket) ->
+            S_CommaSeparatedList(lBracket.pos, rBracket.pos, values.items, values.trailingComma)
         }
         _commaSeparatedParsers.add(parser)
         return parser
@@ -945,7 +951,15 @@ private class AnnotatedDef(
 private class AtExprMods(val limit: S_Expr?, val offset: S_Expr?)
 
 private class S_CommaSeparatedValues<T>(val items: List<T>, val trailingComma: Boolean)
-private class S_CommaSeparatedList<T>(val pos: S_Pos, val items: List<T>, val trailingComma: Boolean)
+
+private class S_CommaSeparatedList<T>(
+    val startPos: S_Pos,
+    val endPos: S_Pos,
+    val items: List<T>,
+    val trailingComma: Boolean,
+) {
+    val posRange: S_PosRange get() = S_PosRange(startPos, endPos)
+}
 
 private class TokenPair(val first: Parser<RellTokenMatch>, val second: Parser<RellTokenMatch>)
 

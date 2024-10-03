@@ -13,7 +13,7 @@ import org.junit.Test
 class IdeDocLibOverloadTest: BaseIdeSymbolTest() {
     private val modTst = LibModuleTester(tst, Lib_Rell.MODULE)
 
-    private fun extraModule(block: Ld_ModuleDsl.() -> Unit) = modTst.extraModule(block)
+    private fun extraModule(block: Ld_ModuleDsl.() -> Unit) = modTst.libModule(block)
 
     @Test fun testNamespaceFunctionOverload() {
         initNsFnOverload()

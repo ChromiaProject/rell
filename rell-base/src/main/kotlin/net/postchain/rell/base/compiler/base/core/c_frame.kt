@@ -4,18 +4,17 @@
 
 package net.postchain.rell.base.compiler.base.core
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.expr.*
-import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
-import net.postchain.rell.base.compiler.base.utils.C_Symbol
-import net.postchain.rell.base.compiler.base.utils.C_Symbol_Name
-import net.postchain.rell.base.compiler.base.utils.C_Symbol_Placeholder
+import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.compiler.vexpr.V_LocalVarExpr
 import net.postchain.rell.base.compiler.vexpr.V_SmartNullableExpr
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.ide.IdeCompletion
 import kotlin.math.max
 
 class C_LocalVarRef(
@@ -52,9 +51,14 @@ class C_LocalVar(
     }
 }
 
-class C_FrameContext private constructor(val fnCtx: C_FunctionContext, proto: C_CallFrameProto) {
+class C_FrameContext private constructor(
+    val fnCtx: C_FunctionContext,
+    proto: C_CallFrameProto,
+) {
     val msgCtx = fnCtx.msgCtx
     val appCtx = fnCtx.appCtx
+
+    val ideCompCtx = C_IdeCompletionsContext(fnCtx.defCtx.mntCtx.fileCtx.path, fnCtx.globalCtx.compilerOptions)
 
     private val ownerRootBlkCtx = C_OwnerBlockContext.createRoot(this, proto.rootBlockScope)
     val rootBlkCtx: C_BlockContext = ownerRootBlkCtx
@@ -98,6 +102,24 @@ sealed class C_BlockEntry {
     abstract fun toLocalVarOpt(): C_LocalVar?
     abstract fun ideSymbolInfo(): C_IdeSymbolInfo
     abstract fun compile(ctx: C_ExprContext, pos: S_Pos, ambiguous: Boolean): V_Expr
+
+    fun ideCompletion(): IdeCompletion? {
+        val ideInfo = ideSymbolInfo().getIdeInfo()
+        val doc = ideInfo.doc
+        doc ?: return null
+        return C_IdeCompletionsUtils.makeIdeCompletion(doc)
+    }
+
+    companion object {
+        fun ideCompletions(entries: List<Pair<String, C_BlockEntry>>): Multimap<String, IdeCompletion> {
+            return entries
+                .mapNotNull { (name, entry) ->
+                    val completion = entry.ideCompletion()
+                    if (completion == null) null else (name to completion)
+                }
+                .toImmMultimap()
+        }
+    }
 }
 
 class C_BlockEntry_Var(
@@ -135,13 +157,14 @@ class C_BlockEntry_AtEntity(
 class C_BlockScopeBuilder(
     private val fnCtx: C_FunctionContext,
     startOffset: Int,
+    private val ideParentCompletionsScopeProvider: C_IdeCompletionsScopeProvider,
     proto: C_BlockScope,
 ) {
     private val explicitEntries = mutableMapOf<R_Name, C_BlockEntry>()
     private val implicitEntries = mutableMultimapOf<R_Name, C_BlockEntry>()
     private var done = false
 
-    private var endOffset: Int = let {
+    private var endVarOffset: Int = let {
         var resOfs = startOffset
         for (entry in proto.localVars.values) {
             val offset = entry.localVar.offset
@@ -151,11 +174,18 @@ class C_BlockScopeBuilder(
         resOfs
     }
 
+    private var ideCompletionsScope: C_IdeCompletionsScope? = null
+    private val ideCompletionsList = mutableListOf<Pair<String, C_BlockEntry>>()
+
     init {
-        explicitEntries.putAll(proto.localVars.mapValues { C_BlockEntry_Var(it.value.localVar, it.value.ideInfo) })
+        for ((name, scopeVar) in proto.localVars) {
+            val entry = C_BlockEntry_Var(scopeVar.localVar, scopeVar.ideInfo)
+            explicitEntries[name] = entry
+            ideAddCompletion(name, entry)
+        }
     }
 
-    fun endOffset() = endOffset
+    fun endVarOffset() = endVarOffset
 
     fun lookupVar(name: R_Name): C_LocalVar? {
         val entry = explicitEntries[name]
@@ -178,13 +208,14 @@ class C_BlockScopeBuilder(
         atExprId: R_AtExprId?,
     ): C_LocalVar {
         check(!done)
-        val ofs = endOffset++
+        val ofs = endVarOffset++
         val varUid = fnCtx.nextVarUid(metaName)
         return C_LocalVar(metaName, name, type, mutable, ofs, varUid, atExprId)
     }
 
     fun addEntry(name: R_Name, explicit: Boolean, entry: C_BlockEntry) {
         check(!done)
+
         if (explicit) {
             if (name !in explicitEntries) {
                 explicitEntries[name] = entry
@@ -192,6 +223,30 @@ class C_BlockScopeBuilder(
         } else {
             implicitEntries.put(name, entry)
         }
+
+        ideAddCompletion(name, entry)
+    }
+
+    private fun ideAddCompletion(name: R_Name, entry: C_BlockEntry) {
+        ideCompletionsList.add(name.str to entry)
+        ideCompletionsScope = null
+    }
+
+    fun ideCompletionsScope(): C_IdeCompletionsScope {
+        var scope = ideCompletionsScope
+        if (scope == null) {
+            val parentScope = ideParentCompletionsScopeProvider.ideCompletionsScope()
+            val list = ideCompletionsList.toImmList()
+
+            val late = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
+            fnCtx.executor.onPass(C_CompilerPass.COMPLETIONS) {
+                late.set(C_BlockEntry.ideCompletions(list))
+            }
+
+            scope = C_IdeCompletionsScope(parentScope, late.getter)
+            ideCompletionsScope = scope
+        }
+        return scope
     }
 
     fun build(): C_BlockScope {
@@ -209,7 +264,10 @@ class C_BlockScopeBuilder(
     }
 }
 
-sealed class C_BlockContext(val frameCtx: C_FrameContext, val blockUid: R_FrameBlockUid) {
+sealed class C_BlockContext(
+    val frameCtx: C_FrameContext,
+    val blockUid: R_FrameBlockUid,
+): C_IdeCompletionsScopeProvider {
     val appCtx = frameCtx.appCtx
     val fnCtx = frameCtx.fnCtx
     val defCtx = fnCtx.defCtx
@@ -236,19 +294,19 @@ sealed class C_BlockContext(val frameCtx: C_FrameContext, val blockUid: R_FrameB
     abstract fun addAtPlaceholder(entry: C_BlockEntry)
 
     abstract fun addLocalVar(
-            name: C_Name,
-            type: R_Type,
-            mutable: Boolean,
-            atExprId: R_AtExprId?,
-            ideInfo: C_IdeSymbolInfo,
+        name: C_Name,
+        type: R_Type,
+        mutable: Boolean,
+        atExprId: R_AtExprId?,
+        ideInfo: C_IdeSymbolInfo,
     ): C_LocalVarRef
 
     abstract fun newLocalVar(
-            metaName: String,
-            name: R_Name?,
-            type: R_Type,
-            mutable: Boolean,
-            atExprId: R_AtExprId?
+        metaName: String,
+        name: R_Name?,
+        type: R_Type,
+        mutable: Boolean,
+        atExprId: R_AtExprId?,
     ): C_LocalVar
 }
 
@@ -296,9 +354,20 @@ class C_OwnerBlockContext(
     atFrom: C_AtFrom?,
     protoBlockScope: C_BlockScope,
 ): C_BlockContext(frameCtx, blockUid) {
-    private val startOffset: Int = parent?.scopeBuilder?.endOffset() ?: 0
-    private val scopeBuilder: C_BlockScopeBuilder = C_BlockScopeBuilder(fnCtx, startOffset, protoBlockScope)
-    private val atFromBlock: C_AtFromBlock? = if (atFrom == null) parent?.atFromBlock else C_AtFromBlock(parent?.atFromBlock, atFrom)
+    private val startVarOffset: Int = parent?.scopeBuilder?.endVarOffset() ?: 0
+
+    private val scopeBuilder: C_BlockScopeBuilder = C_BlockScopeBuilder(
+        fnCtx,
+        startVarOffset,
+        parent ?: frameCtx.fnCtx.nsCtx,
+        protoBlockScope,
+    )
+
+    private val atFromBlock: C_AtFromBlock? = let {
+        val parentBlock = parent?.atFromBlock
+        if (atFrom == null) parentBlock else C_AtFromBlock(parentBlock, atFrom)
+    }
+
     private val atPlaceholders = mutableListOf<C_BlockEntry>()
     private var build = false
 
@@ -452,14 +521,44 @@ class C_OwnerBlockContext(
         return res.toImmList()
     }
 
+    override fun ideCompletionsScope(): C_IdeCompletionsScope {
+        val baseScope = scopeBuilder.ideCompletionsScope()
+
+        val late = C_LateInit(C_CompilerPass.DOCS, immMultimapOf<String, IdeCompletion>())
+
+        frameCtx.appCtx.executor.onPass(C_CompilerPass.DOCS) {
+            val entries = atPlaceholders.map { C_Constants.AT_PLACEHOLDER to it }
+            val entryMap = C_BlockEntry.ideCompletions(entries)
+            val memberMap = ideCompletionsAtMembers()
+
+            val res = entryMap.toMutableMultimap()
+            res.putAll(memberMap)
+            late.set(res.toImmMultimap())
+        }
+
+        return C_IdeCompletionsScope(baseScope, late.getter)
+    }
+
+    private fun ideCompletionsAtMembers(): Multimap<String, IdeCompletion> {
+        val res = mutableMultimapOf<String, IdeCompletion>()
+
+        var block = atFromBlock
+        while (block != null) {
+            res.putAll(block.from.ideCompletions())
+            block = block.parent
+        }
+
+        return res.toImmMultimap()
+    }
+
     fun buildBlock(): C_FrameBlock {
         check(!build)
         build = true
         val scope = scopeBuilder.build()
-        val endOffset = scopeBuilder.endOffset()
-        frameCtx.adjustCallFrameSize(endOffset + 1)
-        val size = endOffset - startOffset
-        val rBlock = R_FrameBlock(parent?.blockUid, blockUid, startOffset, size)
+        val endVarOffset = scopeBuilder.endVarOffset()
+        frameCtx.adjustCallFrameSize(endVarOffset + 1)
+        val size = endVarOffset - startVarOffset
+        val rBlock = R_FrameBlock(parent?.blockUid, blockUid, startVarOffset, size)
         return C_FrameBlock(rBlock, scope)
     }
 

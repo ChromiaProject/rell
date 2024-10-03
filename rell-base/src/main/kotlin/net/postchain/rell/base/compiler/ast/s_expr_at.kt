@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.ast
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.lib.C_LibUtils
@@ -24,6 +25,7 @@ import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDeclaration_AtVariable
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
+import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeLocalSymbolLink
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
@@ -219,8 +221,13 @@ class S_AtExprWhatComplexField(
     val comment: S_Comment?,
 )
 
-class S_AtExprWhat_Complex(val startPos: S_Pos, val fields: List<S_AtExprWhatComplexField>): S_AtExprWhat() {
+class S_AtExprWhat_Complex(
+    private val posRange: S_PosRange,
+    private val fields: List<S_AtExprWhatComplexField>,
+): S_AtExprWhat() {
     override fun compile(ctx: C_ExprContext, from: C_AtFrom, subValues: MutableList<V_Expr>): C_AtWhat {
+        ctx.blkCtx.frameCtx.ideCompCtx.trackScope(posRange, ctx)
+
         val lazyTupleIdeId = lazy { ctx.defCtx.tupleIdeId() }
 
         val procFields = processFields(ctx)
@@ -239,7 +246,7 @@ class S_AtExprWhat_Complex(val startPos: S_Pos, val fields: List<S_AtExprWhatCom
             V_DbAtWhatField(ctx.appCtx, rIdeName, resultType, field.vExpr, field.flags, field.summarization)
         }
 
-        return C_AtWhat(vFields, startPos)
+        return C_AtWhat(vFields, posRange.start)
     }
 
     private fun processFields(ctx: C_ExprContext): List<WhatField> {
@@ -463,8 +470,13 @@ class S_AtExprWhat_Complex(val startPos: S_Pos, val fields: List<S_AtExprWhatCom
     }
 }
 
-class S_AtExprWhere(private val exprs: List<S_Expr>) {
+class S_AtExprWhere(
+    private val exprs: List<S_Expr>,
+    private val posRange: S_PosRange,
+) {
     fun compile(ctx: C_ExprContext, atExprId: R_AtExprId, subValues: MutableList<V_Expr>): V_Expr? {
+        ctx.blkCtx.frameCtx.ideCompCtx.trackScope(posRange, ctx)
+
         var whereCtx = ctx
         val whereExprs0 = mutableListOf<V_Expr>()
 
@@ -694,23 +706,7 @@ class S_AtExpr(
 
         val hasAggregateFields = whatFields.any { !(it.summarization?.isGroup() ?: true) }
 
-        val rowDecoder: R_AtExprRowDecoder
-        val recordType: R_Type
-
-        if (selFields.size == 1 && selFields[0].name == null) {
-            rowDecoder = R_AtExprRowDecoder_Simple
-            recordType = selFields[0].resultType
-        } else if (selFields.isNotEmpty()) {
-            val tupleFields = selFields.mapIndexed { i, field -> R_TupleField(i, field.name, field.resultType) }
-            val type = R_TupleType(tupleFields)
-            rowDecoder = R_AtExprRowDecoder_Tuple(type)
-            recordType = type
-        } else {
-            //TODO shall be handled where the "at:no_fields" error is reported
-            rowDecoder = R_AtExprRowDecoder_Simple
-            recordType = R_CtErrorType
-        }
-
+        val (rowDecoder, recordType) = compileRowDecoder(selFields)
         val resultType = C_AtExprResult.calcResultType(recordType, cardinality.value)
 
         return C_AtExprResult(
@@ -721,6 +717,18 @@ class S_AtExpr(
             groupFieldsIndexes,
             hasAggregateFields,
         )
+    }
+
+    private fun compileRowDecoder(selFields: List<V_DbAtWhatField>): Pair<R_AtExprRowDecoder, R_Type> {
+        return if (selFields.size == 1 && selFields[0].name == null) {
+            R_AtExprRowDecoder_Simple to selFields[0].resultType
+        } else if (selFields.isNotEmpty()) {
+            val tupleFields = selFields.mapIndexed { i, field -> R_TupleField(i, field.name, field.resultType) }
+            val type = R_TupleType(tupleFields)
+            R_AtExprRowDecoder_Tuple(type) to type
+        } else {
+            R_AtExprRowDecoder_Simple to R_CtErrorType
+        }
     }
 
     private fun compileLimitOffset(sExpr: S_Expr?, msg: String, ctx: C_ExprContext, subValues: MutableList<V_Expr>): V_Expr? {

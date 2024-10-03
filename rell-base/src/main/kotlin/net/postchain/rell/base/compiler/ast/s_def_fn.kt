@@ -163,9 +163,14 @@ abstract class S_FunctionBody {
         val frameCtx = C_FrameContext.create(fnCtx)
         val actParams = ctx.formalParams.compile(frameCtx)
 
+        fnCtx.executor.onPass(C_CompilerPass.VALIDATION) {
+            ctx.ideCompsLate.set(frameCtx.ideCompCtx.finish())
+        }
+
         val cBody = compileQuery0(ctx, actParams.stmtCtx)
         val callFrame = frameCtx.makeCallFrame(cBody.guardBlock)
         val rRetType = fnCtx.actualReturnType()
+
         return R_UserQueryBody(rRetType, actParams.rParams, actParams.rParamVars, cBody.rStmt, callFrame.rFrame)
     }
 
@@ -175,24 +180,32 @@ abstract class S_FunctionBody {
         val frameCtx = C_FrameContext.create(fnCtx)
         val actParams = ctx.formalParams.compile(frameCtx)
 
+        fnCtx.executor.onPass(C_CompilerPass.VALIDATION) {
+            ctx.ideCompsLate.set(frameCtx.ideCompCtx.finish())
+        }
+
         val cBody = compileFunction0(ctx, actParams.stmtCtx)
         val callFrame = frameCtx.makeCallFrame(cBody.guardBlock)
         val rRetType = fnCtx.actualReturnType()
+
         return R_FunctionBody(rRetType, actParams.rParams, actParams.rParamVars, cBody.rStmt, callFrame.rFrame)
     }
 }
 
-class S_FunctionBodyShort(val expr: S_Expr): S_FunctionBody() {
+class S_FunctionBodyShort(
+    private val posRange: S_PosRange,
+    private val expr: S_Expr,
+): S_FunctionBody() {
     override fun processStatementVars() = TypedKeyMap()
 
     override fun returnsValue() = true
 
     override fun compileQuery0(bodyCtx: C_FunctionBodyContext, stmtCtx: C_StmtContext): C_Statement {
-        val cExpr = expr.compile(stmtCtx, C_ExprHint.ofType(bodyCtx.explicitRetType))
-        val vExpr = cExpr.vExpr()
-
+        val vExpr = compileExpr(bodyCtx, stmtCtx)
         val type = vExpr.type
-        C_Utils.checkUnitType(bodyCtx.namePos, type) { "query_exprtype_unit" toCodeMsg "Query expressions returns nothing" }
+        C_Utils.checkUnitType(bodyCtx.namePos, type) {
+            "query_exprtype_unit" toCodeMsg "Query expressions returns nothing"
+        }
 
         val adapter = stmtCtx.fnCtx.matchReturnType(bodyCtx.namePos, type)
         val vExpr2 = adapter.adaptExpr(stmtCtx.exprCtx, vExpr)
@@ -202,7 +215,7 @@ class S_FunctionBodyShort(val expr: S_Expr): S_FunctionBody() {
     }
 
     override fun compileFunction0(bodyCtx: C_FunctionBodyContext, stmtCtx: C_StmtContext): C_Statement {
-        val vExpr = expr.compile(stmtCtx, C_ExprHint.ofType(bodyCtx.explicitRetType)).vExpr()
+        val vExpr = compileExpr(bodyCtx, stmtCtx)
         val type = vExpr.type
 
         val adapter = stmtCtx.fnCtx.matchReturnType(bodyCtx.namePos, type)
@@ -215,9 +228,15 @@ class S_FunctionBodyShort(val expr: S_Expr): S_FunctionBody() {
             C_Statement(R_ExprStatement(rExpr), false)
         }
     }
+
+    private fun compileExpr(bodyCtx: C_FunctionBodyContext, stmtCtx: C_StmtContext): V_Expr {
+        stmtCtx.blkCtx.frameCtx.ideCompCtx.trackScope(posRange, stmtCtx.exprCtx)
+        val cExpr = expr.compile(stmtCtx, C_ExprHint.ofType(bodyCtx.explicitRetType))
+        return cExpr.vExpr()
+    }
 }
 
-class S_FunctionBodyFull(val body: S_Statement): S_FunctionBody() {
+class S_FunctionBodyFull(private val body: S_Statement): S_FunctionBody() {
     override fun processStatementVars(): TypedKeyMap {
         val map = MutableTypedKeyMap()
         body.discoverVars(map)

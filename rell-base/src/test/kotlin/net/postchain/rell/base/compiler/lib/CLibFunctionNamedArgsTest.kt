@@ -219,7 +219,7 @@ class CLibFunctionNamedArgsTest: BaseCLibTest() {
     }
 
     private fun initNamedArgsOverload(blocks: List<Ld_CommonFunctionDsl.() -> Unit>) {
-        modTst.extraModule {
+        modTst.libModule {
             blocks.forEachIndexed { i, block ->
                 function("f", result = "text") {
                     block(this)

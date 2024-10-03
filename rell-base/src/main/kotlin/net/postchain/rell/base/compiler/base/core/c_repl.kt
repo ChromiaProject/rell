@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.core
 
+import net.postchain.rell.base.compiler.ast.S_PosRange
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.ast.S_Statement
 import net.postchain.rell.base.compiler.base.def.C_FunctionExtensionsTable
@@ -18,6 +19,8 @@ import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
 private const val REPL_NAME = "<REPL>"
+
+private val REPL_POS_RANGE = S_PosRange(C_Parser.REPL_NULL_POS, C_Parser.REPL_NULL_POS)
 
 class C_ExtReplCommand(
     extModules: List<C_ExtModule>,
@@ -66,7 +69,7 @@ class C_ExtReplCommand(
         )
 
         val symCtx = appCtx.symCtxProvider.getNopSymbolContext()
-        val fileCtx = C_FileContext(modCtx, symCtx)
+        val fileCtx = C_FileContext(modCtx, symCtx, C_SourcePath.EMPTY)
 
         appCtx.executor.onPass(C_CompilerPass.MODULES) {
             val fileFinish = fileCtx.finish()
@@ -107,7 +110,13 @@ class C_ExtReplCommand(
         val stmtCtx = C_StmtContext.createRoot(ctx.frameCtx.rootBlkCtx)
 
         ctx.executor.onPass(C_CompilerPass.EXPRESSIONS) {
-            val builder = C_BlockCodeBuilder(stmtCtx, true, false, ctx.codeState.cState.blockCodeProto)
+            val builder = C_BlockCodeBuilder(
+                stmtCtx,
+                repl = true,
+                hasGuardBlock = false,
+                posRange = REPL_POS_RANGE,
+                ctx.codeState.cState.blockCodeProto,
+            )
 
             for (stmt in statements) {
                 builder.add(stmt)

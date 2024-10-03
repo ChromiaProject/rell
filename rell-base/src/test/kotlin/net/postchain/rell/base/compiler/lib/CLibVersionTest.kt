@@ -18,7 +18,7 @@ class CLibVersionTest: BaseCLibTest() {
     private val modTst = LibModuleTester(tst, Lib_Rell.MODULE, moduleName = "test")
 
     @Test fun testNsBasic() {
-        modTst.extraModule {
+        modTst.libModule {
             constant("MAGIC", 123, since = "0.10.5")
             type("data", since = "0.10.5") {
                 modTst.setRTypeFactory(this)
@@ -58,7 +58,7 @@ class CLibVersionTest: BaseCLibTest() {
     }
 
     @Test fun testNsAliasType() {
-        modTst.extraModule {
+        modTst.libModule {
             type("data") {
                 modTst.setRTypeFactory(this)
                 constructor { body { -> Rt_UnitValue } }
@@ -73,7 +73,7 @@ class CLibVersionTest: BaseCLibTest() {
     }
 
     @Test fun testNsType() {
-        modTst.extraModule {
+        modTst.libModule {
             type("data", since = "0.10.5") {
                 modTst.setRTypeFactory(this)
                 constructor { body { -> Rt_UnitValue } }
@@ -154,7 +154,7 @@ class CLibVersionTest: BaseCLibTest() {
     }
 
     @Test fun testTypeBasic() {
-        modTst.extraModule {
+        modTst.libModule {
             type("data") {
                 modTst.setRTypeFactory(this)
                 constant("MAGIC", 123, since = "0.10.5")
@@ -181,7 +181,7 @@ class CLibVersionTest: BaseCLibTest() {
     }
 
     @Test fun testTypeConstructor() {
-        modTst.extraModule {
+        modTst.libModule {
             type("data1") {
                 modTst.setRTypeFactory(this)
                 constructor(since = "0.10.5") { body { -> Rt_UnitValue } }
@@ -200,7 +200,7 @@ class CLibVersionTest: BaseCLibTest() {
     }
 
     @Test fun testTypeConstructorOverload() {
-        modTst.extraModule {
+        modTst.libModule {
             type("data") {
                 modTst.setRTypeFactory(this)
                 constructor {
@@ -219,7 +219,7 @@ class CLibVersionTest: BaseCLibTest() {
     }
 
     @Test fun testTypeFunctionAlias() {
-        modTst.extraModule {
+        modTst.libModule {
             type("data") {
                 modTst.setRTypeFactory(this)
                 function("f1", "integer") {
@@ -241,7 +241,7 @@ class CLibVersionTest: BaseCLibTest() {
     }
 
     @Test fun testTypeFunctionOverload() {
-        modTst.extraModule {
+        modTst.libModule {
             type("data") {
                 modTst.setRTypeFactory(this)
                 function("f", "integer") {
@@ -287,7 +287,7 @@ class CLibVersionTest: BaseCLibTest() {
 
     private fun initParameter(fnBlock: Ld_CommonFunctionDsl.() -> Ld_BodyResult) {
         tst.allowLibNamedArgsAnyVersion = true
-        modTst.extraModule {
+        modTst.libModule {
             function("f", "integer", block = fnBlock)
             type("data") {
                 modTst.setRTypeFactory(this)

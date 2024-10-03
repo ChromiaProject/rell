@@ -170,7 +170,7 @@ private class C_FullCallArguments_Impl(
         return rawArgs.positional.map {
             when (it.value) {
                 is C_CallArgumentValue_Expr -> it.value.vExpr
-                is C_CallArgumentValue_Wildcard -> throw IllegalStateException() //TODO must not happen - handle in a better way
+                is C_CallArgumentValue_Wildcard -> throw IllegalStateException()
             }
         }
     }

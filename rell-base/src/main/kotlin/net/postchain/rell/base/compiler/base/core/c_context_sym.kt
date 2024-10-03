@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.core
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_BasicPos
 import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_Pos
@@ -13,13 +12,11 @@ import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.model.R_DefinitionName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.doc.*
-import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.mapValuesNotNull
 
 class C_SymbolContext(
     val nameCtx: C_NameContext,
-    val ideCompletCtx: C_IdeCompletionsContext,
     val docSymbolFactory: C_DocSymbolFactory,
 ) {
     fun makeDocSymbol(
@@ -183,20 +180,17 @@ class C_SymbolContextManager(
     val provider: C_SymbolContextProvider = C_SymbolContextProviderImpl()
 
     private val nameCtxMgr = C_NameContextManager(msgMgr, opts)
-    private val ideCompletMgr = C_IdeCompletionsManager(opts)
     private val docSymbolFactory = C_DocSymbolFactory.get(msgMgr, opts)
 
-    private val nopSymCtx = C_SymbolContext(nameCtxMgr.nopNameCtx, ideCompletMgr.nopCtx, docSymbolFactory)
+    private val nopSymCtx = C_SymbolContext(nameCtxMgr.nopNameCtx, docSymbolFactory)
 
     fun finish(): Finish {
         val symInfos = nameCtxMgr.finish()
-        val completions = ideCompletMgr.finish()
-        return Finish(symInfos, completions)
+        return Finish(symInfos)
     }
 
     class Finish(
         val symbolInfos: Map<S_Pos, IdeSymbolInfo>,
-        val completions: Multimap<String, IdeCompletion>,
     )
 
     private inner class C_SymbolContextProviderImpl: C_SymbolContextProvider {
@@ -205,8 +199,7 @@ class C_SymbolContextManager(
 
         override fun getFileSymbolContext(path: C_SourcePath): C_SymbolContext {
             val nameCtx = if (path == mainFile) nameCtxMgr.activeNameCtx else nameCtxMgr.nopNameCtx
-            val ideCompletCtx = ideCompletMgr.getFileContext(path)
-            return C_SymbolContext(nameCtx, ideCompletCtx, docSymbolFactory)
+            return C_SymbolContext(nameCtx, docSymbolFactory)
         }
     }
 }

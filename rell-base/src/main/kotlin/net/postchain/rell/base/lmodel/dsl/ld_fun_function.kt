@@ -148,7 +148,7 @@ class Ld_Function(
         val finHeader = header.finish(ctx, fullName, lMemberHeader)
         val lBody = body.finish(fullName.qualifiedName)
         val lFunction = L_Function(
-            fullName.qualifiedName,
+            fullName,
             header = finHeader.lHeader,
             body = lBody,
             flags = L_FunctionFlags(isPure = body.pure, isStatic = isStatic),

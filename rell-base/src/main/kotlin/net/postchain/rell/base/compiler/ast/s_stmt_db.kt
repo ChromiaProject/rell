@@ -208,13 +208,18 @@ class S_UpdateWhat(val pos: S_Pos, val name: S_Name?, val op: S_AssignOpCode?, v
     }
 }
 
-class S_UpdateStatement(pos: S_Pos, val target: S_UpdateTarget, val what: List<S_UpdateWhat>): S_Statement(pos) {
+class S_UpdateStatement(
+    startPos: S_Pos,
+    endPos: S_Pos,
+    val target: S_UpdateTarget,
+    val what: List<S_UpdateWhat>,
+): S_Statement(startPos, endPos) {
     override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
-        ctx.checkDbUpdateAllowed(pos)
+        ctx.checkDbUpdateAllowed(startPos)
 
         val atExprId = ctx.appCtx.nextAtExprId()
         val subValues = mutableListOf<V_Expr>()
-        val cTarget = target.compile(ctx.exprCtx, pos, atExprId, subValues)
+        val cTarget = target.compile(ctx.exprCtx, startPos, atExprId, subValues)
 
         if (cTarget == null) {
             what.forEach { it.expr.compileSafe(ctx.exprCtx) }
@@ -223,7 +228,7 @@ class S_UpdateStatement(pos: S_Pos, val target: S_UpdateTarget, val what: List<S
 
         val rEntity = cTarget.rTarget.entity().rEntity
         if (!rEntity.flags.canUpdate) {
-            C_Errors.errCannotUpdate(ctx.msgCtx, pos, rEntity.simpleName)
+            C_Errors.errCannotUpdate(ctx.msgCtx, startPos, rEntity.simpleName)
         }
 
         val rWhat = compileWhat(cTarget.cFrom.innerExprCtx(), cTarget.rTarget, rEntity, subValues)
@@ -269,22 +274,26 @@ class S_UpdateStatement(pos: S_Pos, val target: S_UpdateTarget, val what: List<S
     }
 }
 
-class S_DeleteStatement(pos: S_Pos, val target: S_UpdateTarget): S_Statement(pos) {
+class S_DeleteStatement(
+    startPos: S_Pos,
+    endPos: S_Pos,
+    private val target: S_UpdateTarget,
+): S_Statement(startPos, endPos) {
     override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
-        ctx.checkDbUpdateAllowed(pos)
+        ctx.checkDbUpdateAllowed(startPos)
 
         val atExprId = ctx.appCtx.nextAtExprId()
         val subValues = mutableListOf<V_Expr>()
-        val cTarget = target.compile(ctx.exprCtx, pos, atExprId, subValues)
+        val cTarget = target.compile(ctx.exprCtx, startPos, atExprId, subValues)
         cTarget ?: return C_Statement.ERROR
 
         val rEntity = cTarget.rTarget.entity().rEntity
 
         val msgName = rEntity.simpleName
         if (rEntity.flags.isObject) {
-            throw C_Error.more(pos, "stmt_delete_obj:$msgName", "Cannot delete object '$msgName' (not an entity)")
+            throw C_Error.more(startPos, "stmt_delete_obj:$msgName", "Cannot delete object '$msgName' (not an entity)")
         } else if (!rEntity.flags.canDelete) {
-            throw C_Errors.errCannotDelete(pos, msgName)
+            throw C_Errors.errCannotDelete(startPos, msgName)
         }
 
         val rFromBlock = cTarget.cFrom.compileUpdate()

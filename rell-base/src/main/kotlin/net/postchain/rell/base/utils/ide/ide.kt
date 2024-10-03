@@ -15,6 +15,7 @@ import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.runtime.Rt_RellVersion
 import net.postchain.rell.base.runtime.Rt_RellVersionProperty
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
 import org.apache.commons.configuration2.PropertiesConfiguration
@@ -45,13 +46,25 @@ class IdeCompilationResult(
     @JvmField val symbolInfos = symbolInfos.toImmMap()
 }
 
-class IdeCompletion(
+data class IdeCompletionParam(
+    val name: String,
+    val code: String,
+)
+
+data class IdeCompletion(
     val kind: DocSymbolKind,
     val symbolName: DocSymbolName,
-    val params: String,
+    val params: List<IdeCompletionParam>?,
     val result: String?,
     val location: String?,
-)
+    val docSymbol: DocSymbol?,
+    val deprecated: Boolean,
+) {
+    override fun toString(): String {
+        val paramsStr = params?.joinToString(", ", "(", ")") { it.code }
+        return "$kind|$symbolName|$paramsStr|${result?:"-"}|${location?:"-"}"
+    }
+}
 
 @Suppress("UNUSED")
 object IdeApi {

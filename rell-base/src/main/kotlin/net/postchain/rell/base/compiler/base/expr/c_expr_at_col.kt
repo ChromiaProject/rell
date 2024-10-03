@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.expr
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_BlockEntry_Var
 import net.postchain.rell.base.compiler.base.core.C_LocalVar
@@ -13,12 +14,13 @@ import net.postchain.rell.base.compiler.base.utils.C_Constants
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.*
 import net.postchain.rell.base.model.R_FrameBlock
-import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_VarPtr
 import net.postchain.rell.base.model.expr.R_ColAtParam
+import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.toImmMultimap
 
 class C_AtFrom_Iterable(
     outerExprCtx: C_ExprContext,
@@ -84,6 +86,18 @@ class C_AtFrom_Iterable(
         return ctx.typeMgr.getAtImplicitAttrsByType(selfType, type)
             .map { C_AtFromImplicitAttr(base, selfType, it) }
             .toImmList()
+    }
+
+    override fun ideCompletions(): Multimap<String, IdeCompletion> {
+        val selfType = item.elemType
+        val members = outerExprCtx.typeMgr.getValueMembers(selfType)
+        return members
+            .mapNotNull {
+                val name = it.optionalName?.str
+                val completion = it.ideCompletion()
+                if (name == null || completion == null) null else (".$name" to completion)
+            }
+            .toImmMultimap()
     }
 
     private fun compilePlaceholderRef(ctx: C_ExprContext, pos: S_Pos): V_Expr {

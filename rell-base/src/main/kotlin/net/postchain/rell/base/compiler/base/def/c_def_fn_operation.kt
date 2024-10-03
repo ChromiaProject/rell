@@ -38,7 +38,7 @@ class C_OperationGlobalFunction(val rOp: R_OperationDefinition): C_GlobalFunctio
         headerLate.set(header)
     }
 
-    override fun compileCall(
+    override fun compileCall0(
         ctx: C_ExprContext,
         name: LazyPosString,
         args: List<S_CallArgument>,

@@ -17,7 +17,7 @@ class CLibTypeTest: BaseCLibTest() {
     private val modTst = LibModuleTester(tst)
 
     @Test fun testConstant() {
-        modTst.extraModule {
+        modTst.libModule {
             imports(Lib_Rell.MODULE.lModule)
             type("data") {
                 modTst.setRTypeFactory(this)
@@ -28,7 +28,7 @@ class CLibTypeTest: BaseCLibTest() {
     }
 
     @Test fun testNoConstructor() {
-        modTst.extraModule {
+        modTst.libModule {
             type("data") {
                 modTst.setRTypeFactory(this)
             }
@@ -39,7 +39,7 @@ class CLibTypeTest: BaseCLibTest() {
     }
 
     @Test fun testSpecialConstructor() {
-        modTst.extraModule {
+        modTst.libModule {
             type("data") {
                 modTst.setRTypeFactory(this)
                 constructor(BaseLTest.makeTypeCon())
@@ -52,7 +52,7 @@ class CLibTypeTest: BaseCLibTest() {
     }
 
     @Test fun testExtensionReference() {
-        modTst.extraModule {
+        modTst.libModule {
             imports(Lib_Rell.MODULE.lModule)
             struct("data") {}
             extension("data_ext", type = "data") {
@@ -72,7 +72,7 @@ class CLibTypeTest: BaseCLibTest() {
     }
 
     @Test fun testDeprecated() {
-        modTst.extraModule {
+        modTst.libModule {
             imports(Lib_Rell.MODULE.lModule)
             type("data") {
                 modTst.setRTypeFactory(this)

@@ -280,7 +280,6 @@ private class C_VarValueDelta private constructor(
         }
 
         fun make(nulled: C_VarNulled? = null): C_VarValueDelta {
-            //TODO reuse instances
             return if (nulled == null) EMPTY else {
                 val map = immMapOf(immListOf<C_VarPathItem>() to nulled)
                 C_VarValueDelta(map)

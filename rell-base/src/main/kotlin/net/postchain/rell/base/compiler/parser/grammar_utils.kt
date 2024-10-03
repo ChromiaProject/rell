@@ -49,7 +49,7 @@ class G_BaseExprTail_Subscript(val pos: S_Pos, val expr: S_Expr): G_BaseExprTail
     override fun toExpr(base: S_Expr) = S_SubscriptExpr(pos, base, expr)
 }
 
-class G_BaseExprTail_Call(val args: List<S_CallArgument>): G_BaseExprTail() {
+class G_BaseExprTail_Call(val args: S_CallArguments): G_BaseExprTail() {
     override fun toExpr(base: S_Expr) = S_CallExpr(base, args)
 }
 

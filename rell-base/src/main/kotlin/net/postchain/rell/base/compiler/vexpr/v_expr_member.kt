@@ -5,6 +5,7 @@
 package net.postchain.rell.base.compiler.vexpr
 
 import net.postchain.rell.base.compiler.ast.S_CallArgument
+import net.postchain.rell.base.compiler.ast.S_CallArguments
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.compiler.base.core.C_Name
@@ -157,11 +158,11 @@ class V_ValueMemberExpr private constructor(
         return C_ValueExpr(vExpr)
     }
 
-    override fun call(ctx: C_ExprContext, pos: S_Pos, args: List<S_CallArgument>, resTypeHint: C_TypeHint): V_Expr {
+    override fun call(ctx: C_ExprContext, pos: S_Pos, args: S_CallArguments, resTypeHint: C_TypeHint): V_Expr {
         return if (safe && member.safeCallable() && member.type !is R_NullableType
             && actualType is R_NullableType && actualType.valueType == member.type)
         {
-            callCommon(ctx, pos, args, resTypeHint, member.type, true)
+            callCommon(ctx, pos, args.list, resTypeHint, member.type, true)
         } else {
             super.call(ctx, pos, args, resTypeHint)
         }

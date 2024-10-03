@@ -181,7 +181,7 @@ class L_FunctionFlags(
 )
 
 class L_Function(
-    val qualifiedName: R_QualifiedName,
+    val fullName: R_FullName,
     val header: L_FunctionHeader,
     val flags: L_FunctionFlags,
     val body: L_FunctionBody,
@@ -190,7 +190,7 @@ class L_Function(
         header.params.associateBy { it.name.str }.toImmMap()
     }
 
-    fun strCode(actualName: R_QualifiedName = qualifiedName): String {
+    fun strCode(actualName: R_QualifiedName = fullName.qualifiedName): String {
         val parts = listOfNotNull(
             if (flags.isStatic) "static" else null,
             if (flags.isPure) "pure" else null,
@@ -202,7 +202,7 @@ class L_Function(
 
     fun replaceTypeParams(map: Map<M_TypeParam, M_TypeSet>): L_Function {
         val header2 = header.replaceTypeParams(map)
-        return if (header2 === header) this else L_Function(qualifiedName, header2, flags, body)
+        return if (header2 === header) this else L_Function(fullName, header2, flags, body)
     }
 
     fun validate() {

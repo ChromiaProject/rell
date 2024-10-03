@@ -125,7 +125,7 @@ class C_Destination_EntityAttr(
         val where1 = C_ExprUtils.makeDbBinaryExprEq(left1, right1)
 
         val left2 = Db_EntityExpr(lastAtEntity)
-        val right2 = Lib_Type_Entity.pathToDbExpr(ctx, firstAtEntity, path, rEntity.type, base.pos) //TODO base.pos is a bit wrong
+        val right2 = Lib_Type_Entity.pathToDbExpr(ctx, firstAtEntity, path, rEntity.type, base.pos)
         val where2 = C_ExprUtils.makeDbBinaryExprEq(left2, right2)
 
         return C_ExprUtils.makeDbBinaryExpr(R_BooleanType, R_BinaryOp_And, Db_BinaryOp_And, where1, where2)

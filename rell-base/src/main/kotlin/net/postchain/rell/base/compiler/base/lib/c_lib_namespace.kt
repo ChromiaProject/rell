@@ -216,9 +216,8 @@ class C_LibNamespace private constructor(
             val namespaces = members.map { it.namespace }
             val resNamespace = merge(namespaces)
 
-            val resIdeInfo = members.first().ideInfo
-            val resRestrictions = members.first().restrictions //TODO merge restrictions
-            return C_LibNestedNamespace(resNamespace, resIdeInfo, resRestrictions)
+            val resMember = members.first()
+            return C_LibNestedNamespace(resNamespace, resMember.ideInfo, resMember.restrictions)
         }
     }
 }

@@ -181,8 +181,8 @@ sealed class C_FixedModifierValues {
 }
 
 private class C_FixedModifierValues_Impl(
-        private val target: C_ModifierTarget,
-        mods: Map<C_ModifierKey, C_ModifierValueEntry<*>>
+    private val target: C_ModifierTarget,
+    mods: Map<C_ModifierKey, C_ModifierValueEntry<*>>,
 ): C_FixedModifierValues() {
     private val mods = mods.toImmMap()
 

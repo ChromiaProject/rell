@@ -84,6 +84,8 @@ sealed class DocSymbolName {
     abstract fun strCode(): String
     final override fun toString() = strCode()
 
+    open fun parentName(): DocSymbolName? = null
+
     companion object {
         fun module(moduleName: String): DocSymbolName {
             return DocSymbolName_Module(moduleName)
@@ -108,13 +110,13 @@ sealed class DocSymbolName {
     }
 }
 
-private class DocSymbolName_Module(
+private data class DocSymbolName_Module(
     private val moduleName: String,
 ): DocSymbolName() {
     override fun strCode() = moduleName
 }
 
-private class DocSymbolName_Global(
+private data class DocSymbolName_Global(
     private val moduleName: String,
     private val qualifiedName: String,
 ): DocSymbolName() {
@@ -123,9 +125,14 @@ private class DocSymbolName_Global(
     }
 
     override fun strCode() = "$moduleName:$qualifiedName"
+
+    override fun parentName(): DocSymbolName? {
+        val i = qualifiedName.lastIndexOf('.')
+        return if (i < 0) null else DocSymbolName_Global(moduleName, qualifiedName.substring(0, i))
+    }
 }
 
-private class DocSymbolName_Local(
+private data class DocSymbolName_Local(
     private val simpleName: String,
 ): DocSymbolName() {
     override fun strCode() = simpleName

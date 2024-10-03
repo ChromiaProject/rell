@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.expr
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_PosValue
@@ -18,6 +19,7 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_IterableAdapter
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 
@@ -90,6 +92,7 @@ abstract class C_AtFrom(
     abstract fun findMembers(ctx: C_ExprContext, name: C_Name): List<C_AtFromMember>
     abstract fun findImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): List<C_AtFromImplicitAttr>
     abstract fun findImplicitAttributesByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): List<C_AtFromImplicitAttr>
+    abstract fun ideCompletions(): Multimap<String, IdeCompletion>
 
     abstract fun compile(details: C_AtDetails): V_Expr
     abstract fun compileJoin(details: C_AtDetails, isOuter: Boolean): C_AtFromItem

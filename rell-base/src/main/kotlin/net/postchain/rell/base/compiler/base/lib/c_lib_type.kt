@@ -5,6 +5,7 @@
 package net.postchain.rell.base.compiler.base.lib
 
 import net.postchain.rell.base.compiler.ast.S_CallArgument
+import net.postchain.rell.base.compiler.ast.S_CallArguments
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_PosValue
 import net.postchain.rell.base.compiler.base.core.*
@@ -322,11 +323,10 @@ private class C_RawGenericTypeExpr(
         return typeDef.rawConstructor != null
     }
 
-    override fun call(ctx: C_ExprContext, pos: S_Pos, args: List<S_CallArgument>, resTypeHint: C_TypeHint): C_Expr {
+    override fun call(ctx: C_ExprContext, pos: S_Pos, args: S_CallArguments, resTypeHint: C_TypeHint): C_Expr {
         val fn = typeDef.rawConstructor
         if (fn == null) {
             ideInfoPtr.setDefault()
-            // Handle no-constructor case: super throws error; TODO better handling
             return super.call(ctx, pos, args, resTypeHint)
         }
 

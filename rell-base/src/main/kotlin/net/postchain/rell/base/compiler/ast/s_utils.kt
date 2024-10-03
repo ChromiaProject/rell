@@ -89,7 +89,7 @@ class S_BasicPos(
 data class S_PosRange(val start: S_Pos, val end: S_Pos) {
     init {
         checkEquals(end.path(), start.path())
-        check(end >= start) { "$start $end" }
+        check(start <= end) { "$start $end" }
     }
 
     override fun toString() = "${start.path()}(${start.line()}:${start.column()}-${end.line()}:${end.column()})"

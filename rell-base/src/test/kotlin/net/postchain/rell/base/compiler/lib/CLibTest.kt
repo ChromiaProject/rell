@@ -13,7 +13,7 @@ class CLibTest: BaseCLibTest() {
     private val modTst = LibModuleTester(tst, Lib_Rell.MODULE)
 
     @Test fun testConstantType() {
-        modTst.extraModule {
+        modTst.libModule {
             constant("X", "integer?") {
                 value { Rt_IntValue.get(123) }
             }

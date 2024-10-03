@@ -426,10 +426,12 @@ data class C_ParserFilePath(val sourcePath: C_SourcePath, val idePath: IdeFilePa
 }
 
 object C_Parser {
-    private val replParserPath: C_ParserFilePath = let {
+    private val REPL_PARSER_PATH: C_ParserFilePath = let {
         val path = C_SourcePath.parse("<console>")
         C_ParserFilePath(path, IdeSourcePathFilePath(path))
     }
+
+    val REPL_NULL_POS: S_Pos = S_BasicPos(REPL_PARSER_PATH, 0, 1, 1)
 
     fun parse(filePath: C_SourcePath, idePath: IdeFilePath, sourceCode: String): S_RellFile {
         val parserPath = C_ParserFilePath(filePath, idePath)
@@ -439,13 +441,13 @@ object C_Parser {
     }
 
     fun parseRepl(code: String): S_ReplCommand {
-        val res = parse0(replParserPath, code, S_Grammar.replParser)
+        val res = parse0(REPL_PARSER_PATH, code, S_Grammar.replParser)
         val ast = res.getAst()
         return ast
     }
 
     fun checkEofErrorRepl(code: String): C_Error? {
-        val res = parse0(replParserPath, code, S_Grammar.replParser)
+        val res = parse0(REPL_PARSER_PATH, code, S_Grammar.replParser)
         return when (res) {
             is C_SuccessParserResult -> null
             is C_ErrorParserResult -> if (res.eof) res.error else null
@@ -706,7 +708,16 @@ sealed class C_LateGetter<out T> {
                 else -> C_ConstLateGetter(value)
             }
         }
+
+        fun <T: Any> list(getters: List<C_LateGetter<T>>): C_LateGetter<List<T>> {
+            return C_ListLateGetter(getters)
+        }
     }
+}
+
+fun <T: Any, R> List<C_LateGetter<T>>.transform(transformer: (List<T>) -> R): C_LateGetter<R> {
+    val listGetter = C_LateGetter.list(this)
+    return listGetter.transform(transformer)
 }
 
 private class C_ConstLateGetter<T>(private val value: T): C_LateGetter<T>() {
@@ -715,6 +726,14 @@ private class C_ConstLateGetter<T>(private val value: T): C_LateGetter<T>() {
 
 private class C_DirectLateGetter<T>(private val init: C_LateInit<T>): C_LateGetter<T>() {
     override fun get() = init.get()
+}
+
+private class C_ListLateGetter<T: Any>(private val getters: List<C_LateGetter<T>>): C_LateGetter<List<T>>() {
+    private val lazyValue: List<T> by lazy {
+        getters.map { it.get() }.toImmList()
+    }
+
+    override fun get(): List<T> = lazyValue
 }
 
 private class C_TransformingLateGetter<T, R>(

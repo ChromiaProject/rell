@@ -204,7 +204,7 @@ private object C_LibTypeAdapterInternal {
         for (validate in listOf(true, false)) {
             val cases = constructors.constructors.mapNotNull { con ->
                 constructorToCase(
-                    lTypeDef.qualifiedName,
+                    lTypeDef.fullName,
                     con,
                     typeParams,
                     lTypeDef.mGenericType.commonType,
@@ -223,7 +223,7 @@ private object C_LibTypeAdapterInternal {
     }
 
     private fun constructorToCase(
-        typeName: R_QualifiedName,
+        typeName: R_FullName,
         mem: C_LibTypeItem<L_Constructor>,
         outerTypeParams: List<M_TypeParam>,
         selfType: M_Type,
@@ -231,8 +231,6 @@ private object C_LibTypeAdapterInternal {
         naming: C_MemberNaming,
         validate: Boolean,
     ): C_LibFuncCase<V_GlobalFunctionCall>? {
-        //TODO consider a better solution than converting to a function
-
         val con = mem.member
 
         val mHeader = M_FunctionHeader(

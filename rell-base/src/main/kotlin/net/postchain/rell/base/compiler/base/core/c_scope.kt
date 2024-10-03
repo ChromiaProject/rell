@@ -9,9 +9,12 @@ import net.postchain.rell.base.compiler.base.namespace.C_Namespace
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceEntry
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMember
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMemberTag
+import net.postchain.rell.base.compiler.base.utils.C_LateGetter
+import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.Getter
 import net.postchain.rell.base.utils.ide.IdeCompletion
+import net.postchain.rell.base.utils.immMultimapOf
 import net.postchain.rell.base.utils.mutableMultimapOf
 import net.postchain.rell.base.utils.toImmMultimap
 
@@ -89,5 +92,29 @@ class C_Scope(
                 res.putAll(name.str, member.ideCompletions)
             }
         }
+    }
+
+    fun ideCompletionsDirect(
+        executor: C_CompilerExecutor,
+        compilerOptions: C_CompilerOptions,
+    ): C_LateGetter<Multimap<String, IdeCompletion>> {
+        val late = C_LateInit(C_CompilerPass.APPLICATION, immMultimapOf<String, IdeCompletion>())
+        executor.onPass(C_CompilerPass.APPLICATION) {
+            val res = mutableMultimapOf<String, IdeCompletion>()
+            var scope: C_Scope? = this
+            while (scope != null) {
+                for ((name, entry) in scope.rootNs.getEntries()) {
+                    val members = entry.directMembers.ifEmpty { entry.importMembers }
+                    for (member in members) {
+                        if (!member.restrictions.isRestricted(compilerOptions)) {
+                            res.putAll(name.str, member.ideCompletions)
+                        }
+                    }
+                }
+                scope = scope.parent
+            }
+            late.set(res.toImmMultimap())
+        }
+        return late.getter
     }
 }

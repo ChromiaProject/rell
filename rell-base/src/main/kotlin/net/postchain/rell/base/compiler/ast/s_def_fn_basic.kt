@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.ast
 
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.*
 import net.postchain.rell.base.compiler.base.fn.C_FormalParameters
@@ -23,10 +24,12 @@ import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.doc.DocDeclaration_Function
 import net.postchain.rell.base.utils.doc.DocFunctionHeader
 import net.postchain.rell.base.utils.doc.DocModifiers
+import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeOutlineNodeType
 import net.postchain.rell.base.utils.ide.IdeOutlineTreeBuilder
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.immMultimapOf
 import net.postchain.rell.base.utils.toImmList
 import kotlin.math.min
 
@@ -40,7 +43,7 @@ class S_FunctionDefinition(
     val fnPos = qualifiedName?.pos ?: kwPos
     val typePos = retType?.pos ?: fnPos
 
-    override fun compileBasic(ctx: C_MountContext) {
+    override fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
         ctx.checkNotExternal(fnPos, C_DeclarationType.FUNCTION)
 
         val cQualifiedNameHand = qualifiedName?.compile(ctx.symCtx.nameCtx, def = true)
@@ -72,8 +75,12 @@ class S_FunctionDefinition(
             else -> C_FunctionCompiler_Regular(base)
         }
 
+        val ideCompsLate = C_LateInit(C_CompilerPass.VALIDATION, immMultimapOf<String, IdeCompletion>())
+
         val defCtx = compiler.cDefBase.defCtx(ctx)
-        compiler.compile(defCtx)
+        compiler.compile(defCtx, ideCompsLate)
+
+        return ideCompsLate.getter
     }
 
     override fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder) {
@@ -129,7 +136,7 @@ private abstract class C_FunctionCompiler(
 
     val cDefBase = base.definitionBase(ideKind, docCommentLate.getter)
 
-    abstract fun compile(defCtx: C_DefinitionContext)
+    abstract fun compile(defCtx: C_DefinitionContext, ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>)
 
     protected fun compileSimpleName(defCtx: C_DefinitionContext): C_Name? {
         val simpleNameHand = checkSimpleName(defCtx.msgCtx)
@@ -149,12 +156,19 @@ private abstract class C_FunctionCompiler(
         return cDefBase.nsMemBase(deprecated = base.deprecated)
     }
 
-    protected fun compileHeader0(defCtx: C_DefinitionContext): C_UserFunctionHeader {
-        return C_FunctionUtils.compileFunctionHeader(defCtx, fnPos, sFn.params, sFn.retType, sFn.body, sFn.comment)
+    protected fun compileHeader0(
+        defCtx: C_DefinitionContext,
+        ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>,
+    ): C_UserFunctionHeader {
+        return C_FunctionUtils.compileFunctionHeader(defCtx, fnPos, sFn.params, sFn.retType, sFn.body, sFn.comment, ideCompsLate)
     }
 
-    protected fun compileHeaderCommon(defCtx: C_DefinitionContext, cFn: C_UserGlobalFunction): C_UserFunctionHeader {
-        val header = compileHeader0(defCtx)
+    protected fun compileHeaderCommon(
+        defCtx: C_DefinitionContext,
+        cFn: C_UserGlobalFunction,
+        ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>,
+    ): C_UserFunctionHeader {
+        val header = compileHeader0(defCtx, ideCompsLate)
         cFn.setHeader(header)
         docCommentLate.set(header.docComment, allowEarly = true)
         return header
@@ -229,7 +243,7 @@ private abstract class C_FunctionCompiler(
 private class C_FunctionCompiler_Regular(
     base: C_FunctionCompilerBase,
 ): C_FunctionCompiler(base, IdeSymbolKind.DEF_FUNCTION) {
-    override fun compile(defCtx: C_DefinitionContext) {
+    override fun compile(defCtx: C_DefinitionContext, ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>) {
         checkHasBody(defCtx.msgCtx)
 
         val rDefBase = cDefBase.rBase(defCtx.initFrameGetter)
@@ -241,7 +255,7 @@ private class C_FunctionCompiler_Regular(
         registerFunction(defCtx, simpleName, cFn)
 
         defCtx.executor.onPass(C_CompilerPass.MEMBERS) {
-            val header = compileHeaderCommon(defCtx, cFn)
+            val header = compileHeaderCommon(defCtx, cFn, ideCompsLate)
             defCtx.executor.onPass(C_CompilerPass.EXPRESSIONS) {
                 compileBodyCommon(header, rFnBase, simpleName?.rName)
             }
@@ -252,7 +266,7 @@ private class C_FunctionCompiler_Regular(
 private class C_FunctionCompiler_Abstract(
     base: C_FunctionCompilerBase,
 ): C_FunctionCompiler(base, IdeSymbolKind.DEF_FUNCTION_ABSTRACT) {
-    override fun compile(defCtx: C_DefinitionContext) {
+    override fun compile(defCtx: C_DefinitionContext, ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>) {
         if (!defCtx.modCtx.abstract) {
             val mName = defCtx.modCtx.moduleName.str()
             val nameCode = nameErrCode()
@@ -270,7 +284,7 @@ private class C_FunctionCompiler_Abstract(
         defCtx.mntCtx.fileCtx.addAbstractFunction(cFn.descriptor)
 
         defCtx.executor.onPass(C_CompilerPass.MEMBERS) {
-            val header = compileHeaderCommon(defCtx, cFn)
+            val header = compileHeaderCommon(defCtx, cFn, ideCompsLate)
             defCtx.executor.onPass(C_CompilerPass.EXPRESSIONS) {
                 compileBodyCommon(header, rFnBase, simpleName?.rName, hasBody = header.fnBody != null)
                 cFn.compileOverride()
@@ -283,7 +297,7 @@ private class C_FunctionCompiler_Abstract(
 private class C_FunctionCompiler_Override(
     base: C_FunctionCompilerBase,
 ): C_FunctionCompiler(base, IdeSymbolKind.DEF_FUNCTION) {
-    override fun compile(defCtx: C_DefinitionContext) {
+    override fun compile(defCtx: C_DefinitionContext, ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>) {
         checkHasBody(defCtx.msgCtx)
 
         if (defCtx.modCtx.repl) {
@@ -295,7 +309,7 @@ private class C_FunctionCompiler_Override(
         defCtx.mntCtx.fileCtx.addOverrideFunction(descriptor)
 
         defCtx.executor.onPass(C_CompilerPass.MEMBERS) {
-            compileHeader(defCtx, rFnBase, descriptor)
+            compileHeader(defCtx, rFnBase, descriptor, ideCompsLate)
         }
     }
 
@@ -303,8 +317,9 @@ private class C_FunctionCompiler_Override(
         defCtx: C_DefinitionContext,
         rFnBase: R_FunctionBase,
         overDescriptor: C_OverrideFunctionDescriptor,
+        ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>,
     ) {
-        val header = compileHeader0(defCtx)
+        val header = compileHeader0(defCtx, ideCompsLate)
 
         val absDescriptor = getAbstractDescriptor(defCtx)
         overDescriptor.setAbstract(absDescriptor)
@@ -412,7 +427,7 @@ private class C_FunctionCompiler_Override(
 private class C_FunctionCompiler_Extendable(
     base: C_FunctionCompilerBase,
 ): C_FunctionCompiler(base, IdeSymbolKind.DEF_FUNCTION_EXTENDABLE) {
-    override fun compile(defCtx: C_DefinitionContext) {
+    override fun compile(defCtx: C_DefinitionContext, ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>) {
         val rDefBase = cDefBase.rBase(defCtx.initFrameGetter)
         val rFnBase = R_FunctionBase(rDefBase.defName)
         val rFn = R_FunctionDefinition(rDefBase, rFnBase)
@@ -428,7 +443,7 @@ private class C_FunctionCompiler_Extendable(
         registerFunction(defCtx, simpleName, cFn)
 
         defCtx.executor.onPass(C_CompilerPass.MEMBERS) {
-            val header = compileHeaderCommon(defCtx, cFn)
+            val header = compileHeaderCommon(defCtx, cFn, ideCompsLate)
             defCtx.executor.onPass(C_CompilerPass.EXPRESSIONS) {
                 compileBodyCommon(header, rFnBase, simpleName?.rName, hasBody = header.fnBody != null)
                 cFn.compileDefinition()
@@ -445,7 +460,7 @@ private class C_FunctionCompiler_Extend(
     base: C_FunctionCompilerBase,
     private val extendNameHand: C_QualifiedNameHandle,
 ): C_FunctionCompiler(base, IdeSymbolKind.DEF_FUNCTION_EXTEND) {
-    override fun compile(defCtx: C_DefinitionContext) {
+    override fun compile(defCtx: C_DefinitionContext, ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>) {
         checkHasBody(defCtx.msgCtx)
 
         val rDefBase = cDefBase.rBase(defCtx.initFrameGetter)
@@ -457,7 +472,7 @@ private class C_FunctionCompiler_Extend(
         registerFunction(defCtx, simpleName, cFn)
 
         defCtx.executor.onPass(C_CompilerPass.MEMBERS) {
-            val header = compileHeader(defCtx, cFn, rFnBase, extendNameHand)
+            val header = compileHeader(defCtx, cFn, rFnBase, extendNameHand, ideCompsLate)
             defCtx.executor.onPass(C_CompilerPass.EXPRESSIONS) {
                 compileBody(defCtx.msgCtx, header, rFnBase, simpleName?.rName)
             }
@@ -469,6 +484,7 @@ private class C_FunctionCompiler_Extend(
         cFn: C_UserGlobalFunction,
         rFnBase: R_FunctionBase,
         extendNameHand: C_QualifiedNameHandle,
+        ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>,
     ): C_ExtendFunctionHeader {
         val cBaseFn = defCtx.nsCtx.getFunction(extendNameHand)
         val cExtDescriptor = cBaseFn?.getExtendableDescriptor()
@@ -495,7 +511,7 @@ private class C_FunctionCompiler_Extend(
             }
         }
 
-        val regHeader = compileHeaderCommon(defCtx, cFn)
+        val regHeader = compileHeaderCommon(defCtx, cFn, ideCompsLate)
         return C_ExtendFunctionHeader(regHeader, cExtDescriptor)
     }
 

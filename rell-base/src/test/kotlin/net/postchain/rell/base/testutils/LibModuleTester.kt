@@ -27,7 +27,7 @@ class LibModuleTester(
 
     private var curModRef: AtomicReference<C_LibModule>? = null
 
-    fun extraModule(block: Ld_ModuleDsl.() -> Unit) {
+    fun libModule(block: Ld_ModuleDsl.() -> Unit) {
         check(curModRef == null)
         val modRefLoc = AtomicReference<C_LibModule>()
         curModRef = modRefLoc

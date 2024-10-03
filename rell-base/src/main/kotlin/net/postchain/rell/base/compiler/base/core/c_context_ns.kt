@@ -23,6 +23,7 @@ import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.immMultimapOf
 import net.postchain.rell.base.utils.nounWithArticle
 import net.postchain.rell.base.utils.toImmList
 
@@ -31,7 +32,7 @@ class C_NamespaceContext(
     val symCtx: C_SymbolContext,
     val namespacePath: C_RNamePath,
     val scopeBuilder: C_ScopeBuilder,
-) {
+): C_IdeCompletionsScopeProvider {
     val globalCtx = modCtx.globalCtx
     val appCtx = modCtx.appCtx
     val msgCtx = modCtx.msgCtx
@@ -72,8 +73,17 @@ class C_NamespaceContext(
         return R_FullName(modCtx.moduleName, qualifiedName)
     }
 
-    fun ideCompletions(): Multimap<String, IdeCompletion> {
-        return scope.ideCompletions(globalCtx.compilerOptions)
+    override fun ideCompletionsScope(): C_IdeCompletionsScope {
+        val late = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
+        executor.onPass(C_CompilerPass.COMPLETIONS) {
+            val completions = scope.ideCompletions(globalCtx.compilerOptions)
+            late.set(completions)
+        }
+        return C_IdeCompletionsScope(null, late.getter)
+    }
+
+    fun ideCompletions(): C_LateGetter<Multimap<String, IdeCompletion>> {
+        return scope.ideCompletionsDirect(executor, globalCtx.compilerOptions)
     }
 }
 

@@ -108,18 +108,6 @@ class C_ExtendableUserGlobalFunction(
     }
 }
 
-private class C_FunctionCallTarget_ExtendableUserFunction(
-    base: C_FunctionCallTargetBase,
-    retType: R_Type?,
-    private val rBaseFunction: R_FunctionDefinition,
-    private val descriptor: R_ExtendableFunctionDescriptor
-): C_FunctionCallTarget_Regular(base, retType) {
-    override fun createVTarget(): V_FunctionCallTarget {
-        return V_FunctionCallTarget_ExtendableUserFunction(rBaseFunction, descriptor)
-    }
-}
-
-//TODO OPTIMIZE For REPL this will create a full copy of all extensions per command.
 class C_ExtendableFunctionCompiler(oldState: C_FunctionExtensionsTable?) {
     private val fns = mutableListOf<C_ExtFnEntry>()
     private var done = false
@@ -159,5 +147,16 @@ class C_ExtendableFunctionCompiler(oldState: C_FunctionExtensionsTable?) {
         fun compile(): C_FunctionExtensions {
             return C_FunctionExtensions(id, base, exts.toImmList())
         }
+    }
+}
+
+private class C_FunctionCallTarget_ExtendableUserFunction(
+    base: C_FunctionCallTargetBase,
+    retType: R_Type?,
+    private val rBaseFunction: R_FunctionDefinition,
+    private val descriptor: R_ExtendableFunctionDescriptor
+): C_FunctionCallTarget_Regular(base, retType) {
+    override fun createVTarget(): V_FunctionCallTarget {
+        return V_FunctionCallTarget_ExtendableUserFunction(rBaseFunction, descriptor)
     }
 }
