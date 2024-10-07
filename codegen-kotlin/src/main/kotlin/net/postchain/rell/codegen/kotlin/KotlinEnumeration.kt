@@ -16,7 +16,8 @@ class KotlinEnumeration(val className: ClassName, enum: R_EnumDefinition) : Enum
     override val imports = listOf(
         "import javax.annotation.processing.Generated",
         "import ${ToGtv::class.qualifiedName}",
-        "import ${GtvFactory::class.qualifiedName}"
+        "import ${GtvFactory::class.qualifiedName}",
+        "import net.postchain.gtv.Gtv",
     )
 
     override fun format() = """
