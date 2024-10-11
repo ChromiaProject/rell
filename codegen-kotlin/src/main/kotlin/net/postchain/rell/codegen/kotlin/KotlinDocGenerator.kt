@@ -14,4 +14,9 @@ object KotlinDocGenerator : AbstractDocGenerator() {
     override fun formatReturnTag(returnTag: DocCommentItem, returnType: String?): String {
         return "@return ${returnTag.text}"
     }
+
+    override fun sanitizeDescription(description: String): String {
+        // Remove doc comment starting comment marker
+        return description.replace(Regex("/\\*+"), "")
+    }
 }

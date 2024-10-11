@@ -103,4 +103,18 @@ internal class JavascriptDocGeneratorTest {
             |*/
         """.trimMargin())
     }
+
+    @Test
+    fun containingOpeningCommentMarker() {
+        val query = assertNotNull(testModule.queries["weird_comment"])
+        val formatted = JavascriptQuery(query).format()
+        assertThat(formatted).contains("""
+            |/**
+            |* 
+            |* Weird first line
+            |* /* @return weird number
+            |* @return {QueryObject}
+            |*/
+        """.trimMargin())
+    }
 }

@@ -192,4 +192,18 @@ internal class KotlinDocGeneratorTest {
             */
         """.trimIndent())
     }
+
+    @Test
+    fun containingOpeningCommentMarker() {
+        val query = assertNotNull(testModule.queries["weird_comment"])
+        val formatted = KotlinQuery(query).format()
+        assertThat(formatted).contains("""
+            /**
+             * Query docs:weird_comment 
+             * 
+             * Weird first line
+             *  @return weird number
+             */
+        """.trimIndent())
+    }
 }
