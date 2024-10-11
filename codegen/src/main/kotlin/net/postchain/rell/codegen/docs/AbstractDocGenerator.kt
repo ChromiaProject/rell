@@ -37,7 +37,7 @@ abstract class AbstractDocGenerator {
         return buildString {
             docSymbol.comment?.let { comment ->
                 appendLine()
-                appendLine(comment.description)
+                appendLine(sanitizeDescription(comment.description))
 
                 val mappedParams = params.associateBy { it.name.str }
                 val mappedTags = comment.tags.mapKeys { it.key.code }
@@ -64,6 +64,10 @@ abstract class AbstractDocGenerator {
                 formatDefaultReturnTag(this, returnType, docSymbol)
             }
         }
+    }
+
+    open fun sanitizeDescription(description: String): String {
+        return description
     }
 
     open fun formatDefaultParamTags(sb: StringBuilder, params: List<R_FunctionParam>) {

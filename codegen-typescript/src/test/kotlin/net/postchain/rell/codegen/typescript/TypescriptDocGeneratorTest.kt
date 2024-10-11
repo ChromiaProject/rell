@@ -157,4 +157,17 @@ internal class TypescriptDocGeneratorTest {
         val formatted = TypescriptStruct(CamelCaseClassName.fromRellDefinition(struct), struct).format()
         assertThat(formatted).doesNotContain("/**")
     }
+
+    @Test
+    fun containingOpeningCommentMarker() {
+        val query = assertNotNull(testModule.queries["weird_comment"])
+        val formatted = TypescriptQuery(query).format()
+        assertThat(formatted).contains("""
+            |/**
+            |* 
+            |* Weird first line
+            |* /* @return weird number
+            |*/
+        """.trimMargin())
+    }
 }

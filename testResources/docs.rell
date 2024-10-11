@@ -60,3 +60,10 @@ query missing_tags_doc_query(t: text?) = 1;
 */
 struct doc_struct { a: json; }
 struct not_doc_struct { a: json; }
+
+/** Weird first line
+/* @return weird number
+*/
+query weird_comment() {
+    return 1;
+}
