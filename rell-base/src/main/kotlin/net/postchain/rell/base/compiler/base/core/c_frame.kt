@@ -524,9 +524,9 @@ class C_OwnerBlockContext(
     override fun ideCompletionsScope(): C_IdeCompletionsScope {
         val baseScope = scopeBuilder.ideCompletionsScope()
 
-        val late = C_LateInit(C_CompilerPass.DOCS, immMultimapOf<String, IdeCompletion>())
+        val late = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
 
-        frameCtx.appCtx.executor.onPass(C_CompilerPass.DOCS) {
+        frameCtx.appCtx.executor.onPass(C_CompilerPass.COMPLETIONS) {
             val entries = atPlaceholders.map { C_Constants.AT_PLACEHOLDER to it }
             val entryMap = C_BlockEntry.ideCompletions(entries)
             val memberMap = ideCompletionsAtMembers()

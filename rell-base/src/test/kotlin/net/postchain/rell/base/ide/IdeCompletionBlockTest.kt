@@ -325,4 +325,28 @@ class IdeCompletionBlockTest: BaseIdeCompletionTest() {
         chkComps(code, 2, *g, "x|ENTITY_ATTR|:data.x||integer|:data", "y|ENTITY_ATTR|:data.y||text|:data", err = err)
         chkComps(code, 3, *g, err = err)
     }
+
+    @Test fun testCreateUnknownName() {
+        def("entity data { x: integer; y: text; }")
+
+        val g = arrayOf("data|ENTITY|:data||-|", "f|FUNCTION|:f|(i: boolean)|data|", "i|PARAMETER|i||boolean|-")
+        val code = "function f(i: boolean): data = create data ^0 ( ^1 foo ^2 ) ^3;"
+        val err = "unknown_name:foo"
+
+        chkComps(code, 0, *g, err = err)
+        chkComps(code, 1, *g, "x|ENTITY_ATTR|:data.x||integer|:data", "y|ENTITY_ATTR|:data.y||text|:data", err = err)
+        chkComps(code, 2, *g, "x|ENTITY_ATTR|:data.x||integer|:data", "y|ENTITY_ATTR|:data.y||text|:data", err = err)
+        chkComps(code, 3, *g, err = err)
+    }
+
+    @Test fun testAtEntity() {
+        val code = "entity data { x: integer; } function _f() = data @ { ^0 };"
+        chkComps(code, 0,
+            "$|AT_VAR_DB|$||data|-",
+            ".rowid|ENTITY_ATTR|:data.rowid||rowid|:data",
+            ".x|ENTITY_ATTR|:data.x||integer|:data",
+            "data|ENTITY|:data||-|",
+            "data|AT_VAR_DB|data||data|-",
+        )
+    }
 }

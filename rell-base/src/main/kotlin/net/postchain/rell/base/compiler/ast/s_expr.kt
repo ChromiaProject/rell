@@ -259,7 +259,12 @@ class S_CreateExpr(
         val entity = ctx.nsCtx.getEntity(entityNameHand)
         entity ?: return C_ExprUtils.errorExpr(ctx, entityName.pos)
 
-        val cArgs = C_CallArgument.compileAttributes(ctx, args, entity.attributes)
+        val cArgs = try {
+            C_CallArgument.compileAttributes(ctx, args, entity.attributes)
+        } catch (e: C_Error) {
+            processIdeCompletions(ctx, entity)
+            throw e
+        }
 
         var vExpr = compileStruct(ctx, entity, cArgs, entity.mirrorStructs.immutable)
         if (vExpr == null) vExpr = compileStruct(ctx, entity, cArgs, entity.mirrorStructs.mutable)
@@ -274,16 +279,7 @@ class S_CreateExpr(
     }
 
     private fun compileRegular(ctx: C_ExprContext, entity: R_EntityDefinition, callArgs: List<C_CallArgument>): V_Expr {
-        val completionsLate = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
-        ctx.executor.onPass(C_CompilerPass.COMPLETIONS) {
-            val completions = entity.attributes.entries.toImmMultimap { (rName, rAttr) ->
-                val location = entity.defName.strictAppLevelName
-                val comp = C_IdeCompletionsUtils.makeIdeCompletion(rAttr.docSymbol, location)
-                rName.str to comp
-            }
-            completionsLate.set(completions)
-        }
-        ctx.blkCtx.frameCtx.ideCompCtx.trackScope(argsPosRange, ctx, completionsLate.getter)
+        processIdeCompletions(ctx, entity)
 
         val createCtx = C_CreateContext(ctx, entity.initFrameGetter, startPos.toFilePos())
 
@@ -303,6 +299,22 @@ class S_CreateExpr(
         }
 
         return V_RegularCreateExpr(ctx, startPos, entity, attrs)
+    }
+
+    private fun processIdeCompletions(
+        ctx: C_ExprContext,
+        entity: R_EntityDefinition
+    ) {
+        val completionsLate = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
+        ctx.executor.onPass(C_CompilerPass.COMPLETIONS) {
+            val completions = entity.attributes.entries.toImmMultimap { (rName, rAttr) ->
+                val location = entity.defName.strictAppLevelName
+                val comp = C_IdeCompletionsUtils.makeIdeCompletion(rAttr.docSymbol, location)
+                rName.str to comp
+            }
+            completionsLate.set(completions)
+        }
+        ctx.blkCtx.frameCtx.ideCompCtx.trackScope(argsPosRange, ctx, completionsLate.getter)
     }
 
     private fun compileStruct(

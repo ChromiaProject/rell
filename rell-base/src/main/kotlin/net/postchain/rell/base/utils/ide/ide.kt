@@ -125,8 +125,12 @@ object IdeApi {
         val (moduleName, _) = C_ModuleUtils.getModuleInfo(filePath, ast)
         moduleName ?: return immMultimapOf()
 
-        val cRes = C_Compiler.compile(sourceDir, listOf(moduleName), actualOptions)
-        return cRes.ideCompletions
+        return try {
+            val cRes = C_Compiler.compile(sourceDir, listOf(moduleName), actualOptions)
+            cRes.ideCompletions
+        } catch (e: Exception) {
+            immMultimapOf()
+        }
     }
 
     @JvmStatic fun compile(
