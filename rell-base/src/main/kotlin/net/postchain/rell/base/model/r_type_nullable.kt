@@ -18,6 +18,7 @@ import net.postchain.rell.base.runtime.Rt_SqlContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.runtime.utils.toGtv
+import net.postchain.rell.base.utils.immListOf
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 
@@ -29,7 +30,7 @@ class R_NullableType(val valueType: R_Type): R_Type(calcName(valueType)) {
 
     override fun equals0(other: R_Type) = other is R_NullableType && valueType == other.valueType
     override fun hashCode0() = valueType.hashCode()
-    override fun explicitComponentTypes() = listOf(valueType)
+    override fun explicitComponentTypes() = immListOf(valueType)
 
     override fun isReference() = valueType.isReference()
     override fun isError() = valueType.isError()

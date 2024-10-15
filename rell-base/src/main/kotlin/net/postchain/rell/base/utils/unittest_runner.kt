@@ -1,14 +1,15 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils
 
 import com.google.common.base.Throwables
-import net.postchain.rell.base.model.R_App
-import net.postchain.rell.base.model.R_DefinitionName
-import net.postchain.rell.base.model.R_FunctionDefinition
-import net.postchain.rell.base.model.R_Module
+import net.postchain.rell.base.lib.test.Rt_AssertEqualsError
+import net.postchain.rell.base.lib.type.R_ListType
+import net.postchain.rell.base.lib.type.R_MapType
+import net.postchain.rell.base.lib.type.Rt_IntValue
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.SqlInitProjExt
@@ -17,8 +18,11 @@ import net.postchain.rell.base.sql.SqlUtils
 import org.apache.commons.lang3.StringUtils
 import java.time.Duration
 import java.util.regex.Pattern
+import kotlin.math.max
+import kotlin.math.min
 
-private val PRINT_SEPARATOR = "-".repeat(72)
+private const val SEPARATOR_LEN = 72
+private val PRINT_SEPARATOR = "-".repeat(SEPARATOR_LEN)
 
 class UnitTestResult(val duration: Duration, val error: Throwable?) {
     val isOk = error == null
@@ -52,6 +56,7 @@ class UnitTestRunnerContext(
     private val blockRunner: Rt_UnitTestBlockRunner,
     private val moduleArgsSource: Rt_ModuleArgsSource,
     val printTestCases: Boolean = true,
+    val printPrettyLargeValues: Boolean = true,
     val stopOnError: Boolean = false,
     val onTestCaseStart: (UnitTestCase) -> Unit = {},
     val onTestCaseFinished: (UnitTestCaseResult) -> Unit = {},
@@ -90,7 +95,9 @@ class UnitTestCaseResult(val case: UnitTestCase, val res: UnitTestResult) {
     override fun toString() = "$case:$res"
 }
 
-class UnitTestRunnerResults {
+class UnitTestRunnerResults(
+    private val printPrettyLargeValues: Boolean = true,
+) {
     private val results = mutableListOf<UnitTestCaseResult>()
 
     fun add(res: UnitTestCaseResult) {
@@ -107,9 +114,7 @@ class UnitTestRunnerResults {
             printer.print(PRINT_SEPARATOR)
             printer.print("FAILED TESTS:")
             for (r in failedTests) {
-                printer.print("")
-                printer.print(r.case.name)
-                printException(printer, r.res.error!!)
+                printFailedTest(printer, r)
             }
         }
 
@@ -133,6 +138,17 @@ class UnitTestRunnerResults {
         printer.print("\n***** ${if (allOk) "OK" else "FAILED"} *****")
 
         return allOk
+    }
+
+    private fun printFailedTest(printer: Rt_Printer, r: UnitTestCaseResult) {
+        printer.print("")
+
+        val name = r.case.name
+        printer.print("_".repeat(name.length.coerceAtMost(SEPARATOR_LEN)))
+        printer.print(name)
+        printer.print("")
+
+        printException(printer, r.res.error!!, printPrettyLargeValues, true)
     }
 
     private fun printResults(printer: Rt_Printer, list: List<UnitTestCaseResult>) {
@@ -164,7 +180,7 @@ object UnitTestRunner {
     }
 
     fun runTests(testCtx: UnitTestRunnerContext, cases: List<UnitTestCase>): Boolean {
-        val testRes = UnitTestRunnerResults()
+        val testRes = UnitTestRunnerResults(testCtx.printPrettyLargeValues)
         runTests(testCtx, cases, testRes)
         return testRes.print(testCtx.printer)
     }
@@ -212,7 +228,7 @@ object UnitTestRunner {
                 case.fn.callTop(exeCtx, listOf())
                 processResult(printer, case, startTs, null)
             } catch (e: Throwable) {
-                printException(printer, e)
+                printException(printer, e, testCtx.printPrettyLargeValues, false)
                 processResult(printer, case, startTs, e)
             }
         }
@@ -227,11 +243,15 @@ object UnitTestRunner {
     }
 }
 
-private fun printException(printer: Rt_Printer, e: Throwable) {
+private fun printException(printer: Rt_Printer, e: Throwable, printPrettyLargeValues: Boolean, extended: Boolean) {
     when (e) {
         is Rt_Exception -> {
-            val msg = Rt_Utils.appendStackTrace("Error: ${e.message}", e.info.stack)
-            printer.print(msg)
+            if (extended && e.err is Rt_AssertEqualsError) {
+                printAssertEqualsError(printer, e, e.err, printPrettyLargeValues)
+            } else {
+                val msg = Rt_Utils.appendStackTrace("Error: ${e.message}", e.info.stack)
+                printer.print(msg)
+            }
         }
         else -> {
             val s = Throwables.getStackTraceAsString(e)
@@ -239,6 +259,204 @@ private fun printException(printer: Rt_Printer, e: Throwable) {
         }
     }
 }
+
+private fun printAssertEqualsError(
+    printer: Rt_Printer,
+    e: Rt_Exception,
+    err: Rt_AssertEqualsError,
+    printPrettyLargeValues: Boolean,
+) {
+    printer.print("Error: ${e.info.extraMessage}")
+    printer.print("")
+
+    val expectedStr = valueToStr(err.expected, 500)
+    val actualStr = valueToStr(err.actual, 500)
+
+    if (max(expectedStr.length, actualStr.length) < 80 || !printPrettyLargeValues) {
+        printer.print("Expected: $expectedStr")
+        printer.print("Actual:   $actualStr")
+    } else {
+        printer.print("Expected:")
+        printAssertEqualsValuePretty(printer, err.expected)
+        printer.print("")
+        printer.print("Actual:")
+        printAssertEqualsValuePretty(printer, err.actual)
+    }
+    printer.print("")
+
+    printAssertEqualsErrorDiff(printer, err)
+
+    val stackMsg = Rt_Utils.appendStackTrace("Stack trace:", e.info.stack)
+    printer.print(stackMsg)
+}
+
+private fun printAssertEqualsValuePretty(printer: Rt_Printer, value: Rt_Value) {
+    val s = value.strPretty(0)
+    val lines = s.lines()
+    val truncLines = lines.take(100)
+    val s2 = truncLines.joinToString("\n")
+    printer.print(s2)
+    if (truncLines.size < lines.size) {
+        printer.print("<truncated, ${lines.size - truncLines.size} more line(s)>")
+    }
+}
+
+private fun printAssertEqualsErrorDiff(printer: Rt_Printer, err: Rt_AssertEqualsError) {
+    val expectedStr = valueToStr(err.expected, 1000)
+    val actualStr = valueToStr(err.actual, 1000)
+    if (max(expectedStr.length, actualStr.length) < 40) {
+        return
+    }
+
+    val type = err.expected.type()
+    val type2 = err.actual.type()
+    if (type2 != type || type.componentTypes().isEmpty()) {
+        return
+    }
+
+    val diff = getValueDiff(type, err.expected, err.actual)
+    if (diff.isEmpty()) {
+        return
+    }
+
+    printer.print("Diff:")
+    printValueDiff(printer, diff)
+
+    printer.print("")
+}
+
+private fun printValueDiff(printer: Rt_Printer, diff: Map<List<String>, Pair<Rt_Value?, Rt_Value?>>) {
+    val valueTrunc = 200
+    val truncDiff = diff.entries.toList().take(20).associate { it.key to it.value }
+
+    val groupDiff = mutableMapOf<List<String>, MutableMap<String, Pair<Rt_Value?, Rt_Value?>>>()
+    for ((path, pair) in truncDiff) {
+        if (path.isEmpty()) continue
+        val basePath = path.dropLast(1)
+        val last = path.last()
+        val baseMap = groupDiff.computeIfAbsent(basePath) { mutableMapOf() }
+        baseMap[last] = pair
+    }
+
+    for ((basePath, subMap) in groupDiff) {
+        if (subMap.size > 1) {
+            val basePathStr = basePath.joinToString("")
+            printer.print("    $basePathStr")
+            for ((key, pair) in subMap) {
+                val (v1, v2) = pair
+                printer.print("        $key")
+                if (v1 != null) printer.print("            expected: ${valueToStr(v1, valueTrunc)}")
+                if (v2 != null) printer.print("            actual:   ${valueToStr(v2, valueTrunc)}")
+            }
+        } else {
+            val (key, pair) = subMap.entries.first()
+            val pathStr = (basePath + immListOf(key)).joinToString("")
+            printer.print("    $pathStr")
+            val (v1, v2) = pair
+            if (v1 != null) printer.print("        expected: ${valueToStr(v1, valueTrunc)}")
+            if (v2 != null) printer.print("        actual:   ${valueToStr(v2, valueTrunc)}")
+        }
+    }
+
+    if (truncDiff.size < diff.size) {
+        printer.print("    <truncated, ${diff.size - truncDiff.size} more value(s)>")
+    }
+}
+
+private fun getValueDiff(type: R_Type, v1: Rt_Value, v2: Rt_Value): Map<List<String>, Pair<Rt_Value?, Rt_Value?>> {
+    return when {
+        v1 == v2 -> immMapOf()
+        type is R_NullableType && v1 != Rt_NullValue && v2 != Rt_NullValue -> getValueDiff(type.valueType, v1, v2)
+        type is R_TupleType -> {
+            val t1 = v1.asTuple()
+            val t2 = v2.asTuple()
+            val res = mutableMapOf<List<String>, Pair<Rt_Value?, Rt_Value?>>()
+            for (field in type.fields) {
+                val subV1 = t1[field.index]
+                val subV2 = t2[field.index]
+                val fieldKey = if (field.name != null) ".${field.name.str}" else "[${field.index}]"
+                val fieldPath = immListOf(fieldKey)
+                val subDiff = getValueDiff(field.type, subV1, subV2)
+                for ((subPath, subPair) in subDiff) {
+                    res[fieldPath + subPath] = subPair
+                }
+            }
+            res.toImmMap()
+        }
+        type is R_ListType -> {
+            val list1 = v1.asList()
+            val list2 = v2.asList()
+            val res = mutableMapOf<List<String>, Pair<Rt_Value?, Rt_Value?>>()
+            if (list1.size != list2.size) {
+                res[immListOf(".size()")] = Rt_IntValue.get(list1.size.toLong()) to Rt_IntValue.get(list2.size.toLong())
+            }
+            for (i in 0 until min(list1.size, list2.size)) {
+                val subV1 = list1[i]
+                val subV2 = list2[i]
+                val iPath = immListOf("[$i]")
+                val subDiff = getValueDiff(type.elementType, subV1, subV2)
+                for ((subPath, subPair) in subDiff) {
+                    res[iPath + subPath] = subPair
+                }
+            }
+            for (i in min(list1.size, list2.size) until max(list1.size, list2.size)) {
+                val subV1 = list1.getOrNull(i)
+                val subV2 = list2.getOrNull(i)
+                val iPath = immListOf("[$i]")
+                res[iPath] = (subV1 to subV2)
+            }
+            res.toImmMap()
+        }
+        type is R_MapType -> {
+            val map1 = v1.asMap()
+            val map2 = v2.asMap()
+            val res = mutableMapOf<List<String>, Pair<Rt_Value?, Rt_Value?>>()
+            if (map1.size != map2.size) {
+                res[immListOf(".size()")] = Rt_IntValue.get(map1.size.toLong()) to Rt_IntValue.get(map2.size.toLong())
+            }
+            val trunc = 50
+            for (k in map1.keys.intersect(map2.keys)) {
+                val subV1 = map1.getValue(k)
+                val subV2 = map2.getValue(k)
+                val kStr = valueToStr(k, trunc)
+                val kPath = immListOf("[$kStr]")
+                val subDiff = getValueDiff(type.valueType, subV1, subV2)
+                for ((subPath, subPair) in subDiff) {
+                    res[kPath + subPath] = subPair
+                }
+            }
+            for (k in map1.keys.minus(map2.keys)) {
+                val kStr = valueToStr(k, trunc)
+                val kPath = immListOf("[$kStr]")
+                res[kPath] = (map1.getValue(k) to null)
+            }
+            for (k in map2.keys.minus(map1.keys)) {
+                val kStr = valueToStr(k, trunc)
+                val kPath = immListOf("[$kStr]")
+                res[kPath] = (null to map2.getValue(k))
+            }
+            res.toImmMap()
+        }
+        type is R_StructType -> {
+            val s1 = v1.asStruct()
+            val s2 = v2.asStruct()
+            val res = mutableMapOf<List<String>, Pair<Rt_Value?, Rt_Value?>>()
+            for (attr in type.struct.attributesList) {
+                val subV1 = s1.get(attr.index)
+                val subV2 = s2.get(attr.index)
+                val subDiff = getValueDiff(attr.type, subV1, subV2)
+                val attrPath = immListOf(".${attr.name}")
+                for ((subPath, subPair) in subDiff) {
+                    res[attrPath + subPath] = subPair
+                }
+            }
+            res.toImmMap()
+        }
+        else -> immMapOf(immListOf<String>() to (v1 to v2))
+    }
+}
+
+private fun valueToStr(v: Rt_Value, truncate: Int): String = Rt_AssertEqualsError.valueToStr(v, truncate)
 
 class UnitTestMatcher private constructor(private val patterns: List<Pattern>) {
     fun matchFunction(defName: R_DefinitionName): Boolean {

@@ -369,13 +369,13 @@ class RellCodeTester(
     }
 
     private fun runTests(): String {
-        val res = processWithTestRunnerCtx { testRunnerCtx ->
-            val testFns = UnitTestRunner.getTestFunctions(testRunnerCtx.app, UnitTestMatcher.ANY)
+        val res = processWithTestRunnerCtx { testCtx ->
+            val testFns = UnitTestRunner.getTestFunctions(testCtx.app, UnitTestMatcher.ANY)
                     .map { UnitTestCase(UnitTestRunnerChain("foo", 123), it) }
                     .toImmList()
 
-            val testRes = UnitTestRunnerResults()
-            UnitTestRunner.runTests(testRunnerCtx, testFns, testRes)
+            val testRes = UnitTestRunnerResults(testCtx.printPrettyLargeValues)
+            UnitTestRunner.runTests(testCtx, testFns, testRes)
 
             val resList = testRes.getResults()
             val resMap = resList

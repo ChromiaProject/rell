@@ -16,6 +16,7 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.GtvRtConversion
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.toGtv
+import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.lib.type.Lib_Type_Any as AnyFns
 
 object Lib_Type_Collection {
@@ -177,7 +178,7 @@ sealed class R_CollectionType(
     final override fun isReference() = true
     final override fun isError() = isError
     final override fun isDirectMutable() = true
-    final override fun explicitComponentTypes() = listOf(elementType)
+    final override fun explicitComponentTypes() = immListOf(elementType)
     final override fun strCode() = name
 
     protected abstract fun getLibTypeDef(): C_LibTypeDef

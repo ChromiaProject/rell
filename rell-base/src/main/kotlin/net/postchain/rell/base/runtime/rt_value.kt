@@ -75,10 +75,9 @@ class Rt_LibValueType private constructor(name: String): Rt_ValueType(name) {
 }
 
 abstract class Rt_Value {
-
     enum class StrFormat {
         V1,
-        V2
+        V2,
     }
 
     protected abstract val valueType: Rt_ValueType
@@ -126,6 +125,12 @@ abstract class Rt_Value {
 
     abstract fun str(format: StrFormat = StrFormat.V1): String
     abstract fun strCode(showTupleFieldNames: Boolean = true): String
+
+    open fun strPretty(indent: Int): String {
+        val maxLen = 120
+        val s = str(StrFormat.V2)
+        return if (s.length <= maxLen) s else (s.substring(0, maxLen) + "...")
+    }
 
     final override fun toString(): String {
         // Calling toString() is considered wrong. Throwing exception in unit tests and returning str() in production

@@ -86,10 +86,23 @@ class Rt_SetValue(private val type: R_Type, private val elements: MutableSet<Rt_
     override fun asCollection() = elements
     override fun asSet() = elements
     override fun toFormatArg() = elements
-    override fun strCode(showTupleFieldNames: Boolean) = strCode(type, elements, showTupleFieldNames)
-    override fun str(format: StrFormat) = elements.joinToString(", ", "[", "]") { it.str(format) }
+
     override fun equals(other: Any?) = other === this || (other is Rt_SetValue && elements == other.elements)
     override fun hashCode() = elements.hashCode()
+
+    override fun strCode(showTupleFieldNames: Boolean) = strCode(type, elements, showTupleFieldNames)
+    override fun str(format: StrFormat) = elements.joinToString(", ", "[", "]") { it.str(format) }
+
+    override fun strPretty(indent: Int): String {
+        if (elements.isEmpty()) {
+            return str(StrFormat.V2)
+        }
+        val indentStr = "    ".repeat(indent)
+        return elements.joinToString(",", "[", "\n$indentStr]") {
+            val s = it.strPretty(indent + 1)
+            "\n$indentStr    $s"
+        }
+    }
 
     companion object {
         fun strCode(type: R_Type, elements: Set<Rt_Value>, showTupleFieldNames: Boolean): String =

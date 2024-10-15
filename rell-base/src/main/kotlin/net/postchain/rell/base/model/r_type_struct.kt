@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.base.model
 
 import net.postchain.gtv.Gtv
@@ -56,6 +60,18 @@ class Rt_StructValue(private val type: R_StructType, private val attributes: Mut
     override fun str(format: StrFormat) = str(this, type, type.struct, attributes, format)
     override fun strCode(showTupleFieldNames: Boolean) = strCode(this, type, type.struct, attributes)
 
+    override fun strPretty(indent: Int): String {
+        val indentStr = "    ".repeat(indent)
+        return STR_RECURSION_DETECTOR.calculate(this) {
+            val attrs = attributes.withIndex().joinToString(",") { (i, attr) ->
+                val n = type.struct.attributesList[i].name
+                val v = attr.strPretty(indent + 1)
+                "\n$indentStr    $n = $v"
+            }
+            "${type.name}{$attrs\n$indentStr}"
+        } ?: "${type.name}{...}"
+    }
+
     fun get(index: Int): Rt_Value {
         return attributes[index]
     }
@@ -90,7 +106,7 @@ class Rt_StructValue(private val type: R_StructType, private val attributes: Mut
     companion object {
         private val STR_RECURSION_DETECTOR = Rt_ValueRecursionDetector()
 
-        fun str(self: Rt_Value, type: R_Type, struct: R_Struct, attributes: List<out Rt_Value?>, format: StrFormat): String {
+        fun str(self: Rt_Value, type: R_Type, struct: R_Struct, attributes: List<Rt_Value?>, format: StrFormat): String {
             return STR_RECURSION_DETECTOR.calculate(self) {
                 val attrs = attributes.withIndex().joinToString(",") { (i, attr) ->
                     val n = struct.attributesList[i].name
@@ -101,14 +117,14 @@ class Rt_StructValue(private val type: R_StructType, private val attributes: Mut
             } ?: "${type.name}{...}"
         }
 
-        fun strCode(self: Rt_Value, type: R_Type, struct: R_Struct, attributes: List<out Rt_Value?>): String {
+        fun strCode(self: Rt_Value, type: R_Type, struct: R_Struct, attributes: List<Rt_Value?>): String {
             return STR_RECURSION_DETECTOR.calculate(self) {
                 val attrs = attributes.indices.joinToString(",") { attributeStrCode(struct, attributes, it) }
                 "${type.name}[$attrs]"
             } ?: "${type.name}[...]"
         }
 
-        private fun attributeStrCode(struct: R_Struct, attributes: List<out Rt_Value?>, idx: Int): String {
+        private fun attributeStrCode(struct: R_Struct, attributes: List<Rt_Value?>, idx: Int): String {
             val name = struct.attributesList[idx].name
             val value = attributes[idx]
             val valueStr = value?.strCode()

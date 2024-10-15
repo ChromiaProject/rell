@@ -52,7 +52,7 @@ class R_TupleType(fields: List<R_TupleField>): R_Type(calcName(fields)) {
         )
     }
 
-    override fun explicitComponentTypes() = fields.map { it.type }.toList()
+    override fun explicitComponentTypes() = fields.map { it.type }.toImmList()
 
     override fun isAssignableFrom(type: R_Type): Boolean {
         if (type !is R_TupleType) return false
@@ -172,6 +172,21 @@ class Rt_TupleValue(val type: R_TupleType, val elements: List<Rt_Value>): Rt_Val
 
     override fun str(format: StrFormat) = str("", type, elements, format)
     override fun strCode(showTupleFieldNames: Boolean) = strCode("", type, elements, showTupleFieldNames)
+
+    override fun strPretty(indent: Int): String {
+        if (elements.isEmpty()) {
+            return str(StrFormat.V2)
+        }
+
+        val indentStr = "    ".repeat(indent)
+        return type.fields
+            .mapIndexed { i, field ->
+                val v = elements[i].strPretty(indent + 1)
+                val s = if (field.name == null) v else "${field.name.str} = $v"
+                "\n$indentStr    $s"
+            }
+            .joinToString(",", "(", "\n$indentStr)")
+    }
 
     companion object {
         fun make(type: R_TupleType, vararg elements: Rt_Value): Rt_Value {

@@ -263,7 +263,7 @@ class R_MapType(
     override fun isDirectVirtualable() = keyType == R_TextType
 
     override fun strCode() = name
-    override fun explicitComponentTypes() = listOf(keyType, valueType)
+    override fun explicitComponentTypes() = immListOf(keyType, valueType)
 
     override fun getLibType0() = C_LibType.make(Lib_Rell.MAP_TYPE, keyType, valueType)
 
@@ -296,6 +296,10 @@ class Rt_MapValue(val type: R_MapType, map: MutableMap<Rt_Value, Rt_Value>): Rt_
     override fun asMutableMap() = mutableMap
     override fun asMapValue() = this
     override fun toFormatArg() = map
+
+    override fun equals(other: Any?) = other === this || (other is Rt_MapValue && map == other.map)
+    override fun hashCode() = map.hashCode()
+
     override fun strCode(showTupleFieldNames: Boolean) = strCode(type, showTupleFieldNames, map)
 
     override fun str(format: StrFormat): String {
@@ -304,8 +308,17 @@ class Rt_MapValue(val type: R_MapType, map: MutableMap<Rt_Value, Rt_Value>): Rt_
             .joinToString(", ", "{", "}") { "${it.key.str(format)}=${it.value.str(format)}" }
     }
 
-    override fun equals(other: Any?) = other === this || (other is Rt_MapValue && map == other.map)
-    override fun hashCode() = map.hashCode()
+    override fun strPretty(indent: Int): String {
+        if (map.isEmpty()) {
+            return str(StrFormat.V2)
+        }
+        val indentStr = "    ".repeat(indent)
+        return map.entries.joinToString(",", "{", "\n$indentStr}") {
+            val k = it.key.str(StrFormat.V2)
+            val v = it.value.strPretty(indent + 1)
+            "\n$indentStr    $k = $v"
+        }
+    }
 
     override fun asIterable(): Iterable<Rt_Value> {
         return asIterable(false)

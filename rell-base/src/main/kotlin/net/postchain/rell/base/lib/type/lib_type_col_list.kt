@@ -303,10 +303,22 @@ class Rt_ListValue(private val type: R_Type, private val elements: MutableList<R
     override fun asList() = elements
     override fun toFormatArg() = elements
 
-    override fun strCode(showTupleFieldNames: Boolean) = strCode(type, elements)
-    override fun str(format: StrFormat) = elements.joinToString(", ", "[", "]") { it.str(format) }
     override fun equals(other: Any?) = other === this || (other is Rt_ListValue && elements == other.elements)
     override fun hashCode() = elements.hashCode()
+
+    override fun strCode(showTupleFieldNames: Boolean) = strCode(type, elements)
+    override fun str(format: StrFormat) = elements.joinToString(", ", "[", "]") { it.str(format) }
+
+    override fun strPretty(indent: Int): String {
+        if (elements.isEmpty()) {
+            return str(StrFormat.V2)
+        }
+        val indentStr = "    ".repeat(indent)
+        return elements.joinToString(",", "[", "\n$indentStr]") {
+            val s = it.strPretty(indent + 1)
+            "\n$indentStr    $s"
+        }
+    }
 
     companion object {
         fun checkIndex(size: Int, index: Long) {

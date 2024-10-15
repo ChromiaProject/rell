@@ -77,6 +77,8 @@ object RellApiRunTests {
         val logPrinter: Rt_Printer,
         /** Print test case names and results during the execution. */
         val printTestCases: Boolean,
+        /** Print large values pretty-formatted (e.g. when a test fails because of assert_equals). */
+        val printPrettyLargeValues: Boolean,
         /** Add dependencies of test modules to the set of active modules of the app (default: `true`).
          * Affects available operations and function extensions. */
         val activateTestDependencies: Boolean,
@@ -99,6 +101,7 @@ object RellApiRunTests {
                 outPrinter = Rt_OutPrinter,
                 logPrinter = Rt_LogPrinter(),
                 printTestCases = true,
+                printPrettyLargeValues = true,
                 activateTestDependencies = true,
                 onTestCaseStart = {},
                 onTestCaseFinished = {},
@@ -116,6 +119,7 @@ object RellApiRunTests {
             private var outPrinter = proto.outPrinter
             private var logPrinter = proto.logPrinter
             private var printTestCases = proto.printTestCases
+            private var printPrettyLargeValues = proto.printPrettyLargeValues
             private var activateTestDependencies = proto.activateTestDependencies
             private var onTestCaseStart = proto.onTestCaseStart
             private var onTestCaseFinished = proto.onTestCaseFinished
@@ -150,6 +154,9 @@ object RellApiRunTests {
             /** @see [Config.printTestCases] */
             fun printTestCases(v: Boolean) = apply { printTestCases = v }
 
+            /**  @see [Config.printPrettyLargeValues]] */
+            fun printPrettyLargeValues(v: Boolean) = apply { printPrettyLargeValues = v }
+
             /** @see [Config.activateTestDependencies]  */
             fun activateTestDependencies(v: Boolean) = apply { activateTestDependencies = v }
 
@@ -171,6 +178,7 @@ object RellApiRunTests {
                     outPrinter = outPrinter,
                     logPrinter = logPrinter,
                     printTestCases = printTestCases,
+                    printPrettyLargeValues = printPrettyLargeValues,
                     activateTestDependencies = activateTestDependencies,
                     onTestCaseStart = onTestCaseStart,
                     onTestCaseFinished = onTestCaseFinished,
@@ -221,12 +229,13 @@ object RellApiGtxInternal {
                 blockRunner = blockRunner,
                 moduleArgsSource = Rt_GtvModuleArgsSource(config.compileConfig.moduleArgs, options),
                 printTestCases = config.printTestCases,
+                printPrettyLargeValues = config.printPrettyLargeValues,
                 stopOnError = config.stopOnError,
                 onTestCaseStart = config.onTestCaseStart,
                 onTestCaseFinished = config.onTestCaseFinished,
             )
 
-            val testRes = UnitTestRunnerResults()
+            val testRes = UnitTestRunnerResults(testCtx.printPrettyLargeValues)
             UnitTestRunner.runTests(testCtx, testCases, testRes)
             testRes
         }

@@ -1,0 +1,328 @@
+@test module;
+
+function test_scalar() {
+    assert_equals(456, 123);
+}
+
+function test_list_same_len() {
+    assert_equals([1,2,4,3,5], [1,2,3,4,5]);
+}
+
+function test_list_diff_len() {
+    assert_equals([1,2,0,4,5,6,7,8,9], [1,2,3,4,5]);
+}
+
+function test_map() {
+    assert_equals([123:'ABC',456:'FED',987:'GHI'], [123:'ABC',456:'DEF',789:'GHI']);
+}
+
+struct data {
+    x: integer;
+    y: integer;
+    z: integer;
+}
+
+function test_struct() {
+    assert_equals(data(x = 1, y = 0, z = 3), data(x = 1, y = 2, z = 3));
+}
+
+function test_tuple() {
+    assert_equals(
+        [(x = 1123, y = 1456, z = 1789), (x = 2123, y = 2456, z = 2789), (x = 3123, y = 3456, z = 3789)],
+        [(x = 1123, y = 1456, z = 1789), (x = 2123, y = 2654, z = 2789), (x = 3123, y = 3456, z = 3789)]
+    );
+}
+
+struct complex_data {
+    a: integer;
+    b: list<(x:integer,y:integer,z:integer)>;
+    c: byte_array;
+}
+
+function test_complex() {
+    assert_equals(
+        [123: complex_data(a = 1, b = [(x=10,y=11,z=12), (x=20,y=12,z=22), (x=30,y=31,z=32)], c = x'abcd')],
+        [123: complex_data(a = 1, b = [(x=10,y=11,z=12), (x=20,y=21,z=22), (x=30,y=31,z=32)], c = x'abcd')]
+    );
+}
+
+namespace nfts {
+    struct nft_details {
+        id: byte_array;
+        name: text;
+        image: text;
+        description: text;
+        collection_name: text;
+        collection_id: text;
+        collection_avatar: text;
+        owner: nfts.nft_owner;
+        brid: byte_array;
+        prototypes: list<text>;
+        interfaces: list<text>;
+        evm_contract_address: byte_array;
+        evm_token_id: integer;
+        evm_type: text;
+        personality_prompt: text;
+        bio: text;
+        attributes: list<nfts.nft_attribute_with_rarity>;
+    }
+
+    struct nft_owner {
+        account_id: byte_array;
+        username: text;
+        description: text;
+        avatar: text;
+        background_image: text;
+    }
+
+    struct nft_attribute_with_rarity {
+        name: text;
+        value: text;
+        rarity: integer;
+    }
+}
+
+function test_nft_details() {
+    val expected = nfts.nft_details(
+        id = x'a2aec9ce60bff31d14c0861f6c9e62cf1137e9475175e58d92f56f95b811d6e8',
+        name = 'Test Name #1002',
+        image = 'https://picsum.photos/200/300',
+        description = 'By TestCompany',
+        collection_name = 'aaaaa',
+        collection_id = 'com.company.ISomeCollectionId',
+        collection_avatar = 'https://picsum.photos/200/300',
+        owner = nfts.nft_owner(
+            account_id = x'b91b76128014026cff103a9ef9e31e551c8076bccb61253068a041ed87e1c73f',
+            username = 'Admin',
+            description = '',
+            avatar = '',
+            background_image = '',
+        ),
+        brid = x'0000000000000000000000000000000000000000000000000000000000000000',
+        prototypes = ['com.company.ISomeCollectionId'],
+        interfaces = [
+            'chromia.IDemoExternalNonFungible',
+            'chromia.INonFungibleOriginal',
+            'chromia.IMediaContent',
+            'chromia.IOriginal',
+            'com.company.ISomeCollectionId',
+        ],
+        evm_contract_address = x'636f6d2e636f6d70616e792e49536f6d65436f6c6c656374696f6e4964',
+        evm_token_id = 1002,
+        evm_type = 'ERC-721',
+        personality_prompt = 'Personality prompt',
+        bio = 'Bio',
+        attributes = [nfts.nft_attribute_with_rarity(name = 'color', value = 'Red', rarity = 1)],
+    );
+
+    val actual = nfts.nft_details(
+        id = x'a2aec9ce60bff31d14c0861f6c9e62cf1137e9475175e58d92f56f95b811d6e8',
+        name = 'Test Name #1002',
+        image = 'https://picsum.photos/200/300',
+        description = 'By TestCompany',
+        collection_name = 'Mock collection name',
+        collection_id = 'com.company.ISomeCollectionId',
+        collection_avatar = 'https://picsum.photos/200/300',
+        owner = nfts.nft_owner(
+            account_id = x'b91b76128014026cff103a9ef9e31e551c8076bccb61253068a041ed87e1c73f',
+            username = 'Admin',
+            description = '',
+            avatar = '',
+            background_image = '',
+        ),
+        brid = x'0000000000000000000000000000000000000000000000000000000000000000',
+        prototypes = ['com.company.ISomeCollectionId'],
+        interfaces = [
+            'chromia.IDemoExternalNonFungible',
+            'chromia.INonFungibleOriginal',
+            'chromia.IMediaContent',
+            'chromia.IOriginal',
+            'com.company.ISomeCollectionId',
+        ],
+        evm_contract_address = x'636f6d2e636f6d70616e792e49536f6d65436f6c6c656374696f6e4964',
+        evm_token_id = 1002,
+        evm_type = 'ERC-721',
+        personality_prompt = 'Personality prompt',
+        bio = 'Bio',
+        attributes = [nfts.nft_attribute_with_rarity(name = 'color', value = 'Red', rarity = 1)],
+    );
+
+    assert_equals(actual, expected);
+}
+
+namespace lib.ft4.accounts.strategies.transfer {
+    struct rule {
+        timeout_days: integer;
+        strategies: list<text>;
+        blockchains: allowlist;
+        senders: allowlist;
+        recipients: allowlist;
+        require_same_address: boolean;
+        allow_all_assets: boolean;
+        asset_limits: map<byte_array, integer>;
+    }
+
+    struct allowlist {
+        allow_all: boolean;
+        allowed_values: list<byte_array>;
+    }
+}
+
+function test_transfer_rules() {
+    val expected = [
+        lib.ft4.accounts.strategies.transfer.rule(
+            timeout_days = 10,
+            strategies = ['open'],
+            blockchains = lib.ft4.accounts.strategies.transfer.allowlist(
+                allow_all = false,
+                allowed_values = [
+                    x'08b02e0e14b634031fdf2ed3fd78e7410a5849cd28',
+                    x'0000000000000000000000000000000000000000000000000000000000000000',
+                ],
+            ),
+            senders = lib.ft4.accounts.strategies.transfer.allowlist(allow_all = true, allowed_values = []),
+            recipients = lib.ft4.accounts.strategies.transfer.allowlist(allow_all = true, allowed_values = []),
+            require_same_address = true,
+            allow_all_assets = true,
+            asset_limits = [:],
+        ),
+        lib.ft4.accounts.strategies.transfer.rule(
+            timeout_days = 60,
+            strategies = ['fee', 'stake'],
+            blockchains = lib.ft4.accounts.strategies.transfer.allowlist(
+                allow_all = false,
+                allowed_values = [x'0000000000000000000000000000000000000000000000000000000000000000'],
+            ),
+            senders = lib.ft4.accounts.strategies.transfer.allowlist(allow_all = true, allowed_values = []),
+            recipients = lib.ft4.accounts.strategies.transfer.allowlist(
+                allow_all = false,
+                allowed_values = [x'7b1dda0d03d062460c745b459779e1dee9845a5eec6341a81f91c081c5cc89c5'],
+            ),
+            require_same_address = false,
+            allow_all_assets = false,
+            asset_limits = [x'abcdef': 100000],
+        ),
+        lib.ft4.accounts.strategies.transfer.rule(
+            timeout_days = 60,
+            strategies = ['open', 'fee'],
+            blockchains = lib.ft4.accounts.strategies.transfer.allowlist(
+                allow_all = false,
+                allowed_values = [
+                    x'6403ccac0c67f7cb6af78e5e15b3aaebb2b42370f0d12e099ed01fa5a068f9fb',
+                    x'0000000000000000000000000000000000000000000000000000000000000000',
+                ]
+            ),
+            senders = lib.ft4.accounts.strategies.transfer.allowlist(allow_all = true, allowed_values = []),
+            recipients = lib.ft4.accounts.strategies.transfer.allowlist(
+                allow_all = false,
+                allowed_values = [x'e7240d97ba8a49f146f3464f8193491f68bb48f55d85307fd1c5ea24e233bbd8'],
+            ),
+            require_same_address = false,
+            allow_all_assets = false,
+            asset_limits = [
+                x'b31ba66a11a28930d948c8f959cc306184096d1ee858542e765a139b3c79b1aa': 5,
+                x'0bdb46231fb6b6fde8efd06dbab99dff23de1ec3dcab2cc43d3acc7fe62da7ac': 3,
+                x'ad60efda802fec15e22a8c4691d1eb13e144dee4984772c05ab9163cf2cf2996': 5,
+                x'39b34b11bf6c1c301327d5824f977c9360895446a529bb980ebefd2183ca4831': 5,
+                x'cf45a2cf3033543c2664886c7d39f9f31087bd5949120fe2e69affc0f926a71f': 7,
+            ],
+        ),
+        lib.ft4.accounts.strategies.transfer.rule(
+            timeout_days = 60,
+            strategies = ['open'],
+            blockchains = lib.ft4.accounts.strategies.transfer.allowlist(
+                allow_all = false,
+                allowed_values = [
+                    x'6403ccac0c67f7cb6af78e5e15b3aaebb2b42370f0d12e099ed01fa5a068f9fb',
+                    x'0000000000000000000000000000000000000000000000000000000000000000',
+                ]
+            ),
+            senders = lib.ft4.accounts.strategies.transfer.allowlist(allow_all = true, allowed_values = []),
+            recipients = lib.ft4.accounts.strategies.transfer.allowlist(
+                allow_all = false,
+                allowed_values = [x'a088742ac287d9a2cd2efdbbdb75c4f7538cb390ebbb1e375669b170e5915bbe'],
+            ),
+            require_same_address = false,
+            allow_all_assets = true,
+            asset_limits = [:],
+        ),
+    ];
+
+    val actual = [
+        lib.ft4.accounts.strategies.transfer.rule(
+            timeout_days = 10,
+            strategies = ['open'],
+            blockchains = lib.ft4.accounts.strategies.transfer.allowlist(
+                allow_all = false,
+                allowed_values = [
+                    x'08b02e0e14b634031fdf2ed3fd78e7410a5849cd28',
+                    x'0000000000000000000000000000000000000000000000000000000000000000',
+                ]
+            ),
+            senders = lib.ft4.accounts.strategies.transfer.allowlist(allow_all = true, allowed_values = []),
+            recipients = lib.ft4.accounts.strategies.transfer.allowlist(allow_all = true, allowed_values = []),
+            require_same_address = true,
+            allow_all_assets = true,
+            asset_limits = [:],
+        ),
+        lib.ft4.accounts.strategies.transfer.rule(
+            timeout_days = 60,
+            strategies = ['fee', 'stake'],
+            blockchains = lib.ft4.accounts.strategies.transfer.allowlist(
+                allow_all = false,
+                allowed_values = [x'0000000000000000000000000000000000000000000000000000000000000000'],
+            ),
+            senders = lib.ft4.accounts.strategies.transfer.allowlist(allow_all = true, allowed_values = []),
+            recipients = lib.ft4.accounts.strategies.transfer.allowlist(
+                allow_all = false,
+                allowed_values = [x'7b1dda0d03d062460c745b459779e1dee9845a5eec6341a81f91c081c5cc89c5'],
+            ),
+            require_same_address = false,
+            allow_all_assets = false,
+            asset_limits = [x'abcdef': 100000],
+        ),
+        lib.ft4.accounts.strategies.transfer.rule(
+            timeout_days = 60,
+            strategies = ['open', 'fee'],
+            blockchains = lib.ft4.accounts.strategies.transfer.allowlist(
+                allow_all = false,
+                allowed_values = [
+                    x'6403ccac0c67f7cb6af78e5e15b3aaebb2b42370f0d12e099ed01fa5a068f9fb',
+                    x'0000000000000000000000000000000000000000000000000000000000000000',
+                ]
+            ),
+            senders = lib.ft4.accounts.strategies.transfer.allowlist(allow_all = true, allowed_values = []),
+            recipients = lib.ft4.accounts.strategies.transfer.allowlist(
+                allow_all = false,
+                allowed_values = [x'e7240d97ba8a49f146f3464f8193491f68bb48f55d85307fd1c5ea24e233bbd8'],
+            ),
+            require_same_address = false,
+            allow_all_assets = false,
+            asset_limits = [
+                x'b31ba66a11a28930d948c8f959cc306184096d1ee858542e765a139b3c79b1aa': 5,
+                x'0bdb46231fb6b6fde8efd06dbab99dff23de1ec3dcab2cc43d3acc7fe62da7ac': 3,
+                x'ad60efda802fec15e22a8c4691d1eb13e144dee4984772c05ab9163cf2cf2996': 5,
+                x'39b34b11bf6c1c301327d5824f977c9360895446a529bb980ebefd2183ca4831': 5,
+                x'cf45a2cf3033543c2664886c7d39f9f31087bd5949120fe2e69affc0f926a71f': 7,
+            ],
+        ),
+        lib.ft4.accounts.strategies.transfer.rule(
+            timeout_days = 60,
+            strategies = ['open'],
+            blockchains = lib.ft4.accounts.strategies.transfer.allowlist(
+                allow_all = false,
+                allowed_values = [x'0000000000000000000000000000000000000000000000000000000000000000'],
+            ),
+            senders = lib.ft4.accounts.strategies.transfer.allowlist(allow_all = true, allowed_values = []),
+            recipients = lib.ft4.accounts.strategies.transfer.allowlist(
+                allow_all = false,
+                allowed_values = [x'a088742ac287d9a2cd2efdbbdb75c4f7538cb390ebbb1e375669b170e5915bbe'],
+            ),
+            require_same_address = false,
+            allow_all_assets = true,
+            asset_limits = [:],
+        ),
+    ];
+
+    assert_equals(actual, expected);
+}

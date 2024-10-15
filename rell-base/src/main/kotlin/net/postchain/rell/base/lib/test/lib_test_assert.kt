@@ -16,6 +16,7 @@ import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.immListOf
+import java.lang.RuntimeException
 
 private const val FAILURE_SNAME = "failure"
 private val FAILURE_QNAME = Lib_RellTest.NAMESPACE_NAME.add(FAILURE_SNAME)
@@ -208,9 +209,9 @@ object Lib_Test_Assert {
         val equalsValue = op.evaluate(actual, expected)
         if (!equalsValue.asBoolean()) {
             val code = "$fn:${actual.strCode()}:${expected.strCode()}"
-            val expectedStr = expected.str(Rt_Value.StrFormat.V2)
-            val actualStr = actual.str(Rt_Value.StrFormat.V2)
-            throw Rt_AssertError.exception(code, "expected <$expectedStr> but was <$actualStr>")
+            val expectedStr = Rt_AssertEqualsError.valueToStr(expected, 200)
+            val actualStr = Rt_AssertEqualsError.valueToStr(actual, 200)
+            throw Rt_AssertEqualsError.exception(code, "expected <$expectedStr> but was <$actualStr>", expected, actual)
         }
         return Rt_UnitValue
     }
@@ -275,12 +276,33 @@ private object Lib_Test_Type_Failure {
     }
 }
 
-class Rt_AssertError private constructor(val code: String, val msg: String): Rt_Error() {
-    override fun code() = "asrt_err:$code"
-    override fun message() = msg
+open class Rt_AssertError(
+    val code: String,
+    val msg: String,
+): Rt_Error() {
+    final override fun code() = "asrt_err:$code"
+    final override fun message() = msg
 
     companion object {
         fun exception(code: String, msg: String) = Rt_Exception(Rt_AssertError(code, msg))
+    }
+}
+
+class Rt_AssertEqualsError private constructor(
+    code: String,
+    msg: String,
+    val expected: Rt_Value,
+    val actual: Rt_Value,
+): Rt_AssertError(code, msg) {
+    companion object {
+        fun exception(code: String, msg: String, expected: Rt_Value, actual: Rt_Value): RuntimeException {
+            return Rt_Exception(Rt_AssertEqualsError(code, msg, expected, actual))
+        }
+
+        fun valueToStr(v: Rt_Value, truncate: Int): String {
+            val s = v.str(Rt_Value.StrFormat.V2)
+            return if (s.length <= truncate) s else (s.substring(0, truncate) + "...")
+        }
     }
 }
 

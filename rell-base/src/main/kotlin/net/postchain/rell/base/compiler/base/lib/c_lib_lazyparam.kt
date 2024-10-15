@@ -56,7 +56,7 @@ private class R_LazyType(private val valueType: R_Type): R_Type("lazy<${valueTyp
     override fun equals0(other: R_Type) = other is R_LazyType && valueType == other.valueType
     override fun hashCode0() = valueType.hashCode()
 
-    override fun explicitComponentTypes() = listOf(valueType)
+    override fun explicitComponentTypes() = immListOf(valueType)
     override fun strCode() = name
     override fun createGtvConversion() = GtvRtConversion_None
 
