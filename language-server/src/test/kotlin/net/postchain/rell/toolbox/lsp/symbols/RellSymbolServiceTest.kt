@@ -13,6 +13,7 @@ import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.editing.Document
+import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.SymbolKind
 import org.junit.jupiter.api.Test
@@ -25,11 +26,13 @@ class RellSymbolServiceTest {
     private val formattingStyleLinter = FormattingStyleLinter()
     private val formatterOptions = FormatterOptions()
     private val linterOptions = LinterOptions()
+    val rellFilePath = "rell_file.rell"
 
     @Test
     fun `Returns empty list when resource does not exist`(@TempDir dir: File) {
-        val rellFile = File(dir, "rell_file.rell").apply {
-            writeText(
+        val testDataBuilder = testData(dir) {
+            addFile(
+                rellFilePath,
                 """
                 module;
                 function main() {
@@ -42,6 +45,7 @@ class RellSymbolServiceTest {
         val indexer = WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         indexer.initialFileIndexBuild()
         val unIndexedFile = File(dir, "unindexed_file.rell").apply { writeText("""""") }
+        val rellFile = testDataBuilder.sourceFile(rellFilePath)
         val document = Document(unIndexedFile.toURI(), 1, rellFile.readText())
         val position = Position(1, 1)
         val res = rellSymbolService.getSymbolLocations(document, indexer, position)
@@ -50,8 +54,9 @@ class RellSymbolServiceTest {
 
     @Test
     fun `Returns empty list when symbol does not exist`(@TempDir dir: File) {
-        val rellFile = File(dir, "rell_file.rell").apply {
-            writeText(
+        val testDataBuilder = testData(dir) {
+            addFile(
+                rellFilePath,
                 """
                 module;
                 function main() {
@@ -60,6 +65,7 @@ class RellSymbolServiceTest {
                 """.trimIndent()
             )
         }
+        val rellFile = testDataBuilder.sourceFile(rellFilePath)
         val document = Document(rellFile.toURI(), 1, rellFile.readText())
         val indexer = WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         indexer.initialFileIndexBuild()
@@ -70,8 +76,9 @@ class RellSymbolServiceTest {
 
     @Test
     fun `Correct document symbols returned`(@TempDir dir: File) {
-        val rellFile = File(dir, "rell_file.rell").apply {
-            writeText(
+        val testDataBuilder = testData(dir) {
+            addFile(
+                rellFilePath,
                 """
                 import .account;
 
@@ -105,6 +112,7 @@ class RellSymbolServiceTest {
                 """.trimIndent()
             )
         }
+        val rellFile = testDataBuilder.sourceFile(rellFilePath)
         val rellFileUri = rellFile.toURI()
         val document = Document(rellFile.toURI(), 1, rellFile.readText())
         val indexer = WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)

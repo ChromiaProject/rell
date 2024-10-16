@@ -17,37 +17,88 @@ class TestDataBuilder {
         query hello() = "Hi!";
         operation call_op(value: integer) {} 
     """.trimIndent()
-    private val sourceFiles = mutableMapOf<String, () -> String>("main.rell" to { content })
+    private val sourceFiles = mutableMapOf<String, () -> String>()
+    private val workspaceFiles = mutableMapOf<String, () -> String>()
+    private val createdSourceFiles = mutableMapOf<String, File>()
     private val configBuilder = ConfigBuilder()
     private var secretBuilder: SecretBuilder? = null
     private var keysStoreBuilder: KeyStoreBuilder? = null
+    private var linterConfigBuilder: LinterConfigBuilder? = null
+    private var formatterConfigBuilder: FormatterConfigBuilder? = null
     private var srcDir: File? = null
+    private var wsDir: File? = null
+    private var configFile: File? = null
 
     val sourceFolder: File
         get() = srcDir!!
-    val sourceFolderURI: URI
+    val sourceFolderUri: URI
         get() = sourceFolder.toURI()
+
+    val workspaceFolder: File
+        get() = wsDir!!
+    val workspaceFolderUri: URI
+        get() = workspaceFolder.toURI()
+
+    val chromiaConfigFile: File
+        get() = configFile!!
+    val chromiaConfigFileUri: URI
+        get() = chromiaConfigFile.toURI()
+    val mainFile: File
+        get() = sourceFile(MAIN_FILE_NAME)
+    val mainFileUri: URI
+        get() = mainFile.toURI()
+
+    fun sourceFile(relativePath: String): File = createdSourceFiles[sourceFolder.resolve(relativePath).absolutePath]!!
 
     fun content(init: String) {
         content = init
     }
 
-    fun emptyModule(name: String) {
+    fun emptyRellModule(name: String) {
         addFile(name, "module;")
+    }
+
+    fun addMainFile(content: String) {
+        addFile(MAIN_FILE_NAME, content)
     }
 
     fun addFile(name: String, content: String) {
         sourceFiles[name] = { content }
     }
 
+    fun appendToSourceFile(relativePath: String, content: String) {
+        val sourceFile = sourceFile(relativePath)
+        sourceFile.appendText(content, Charsets.UTF_8)
+    }
+
+    fun addWorkspaceFile(name: String, content: String) {
+        workspaceFiles[name] = { content }
+    }
+
     internal fun createFiles(target: Path) {
-        srcDir = File(target.toFile(), "src")
+        wsDir = target.toFile()
+        srcDir = File(wsDir, "src")
+        srcDir?.mkdirs()
         sourceFiles.forEach { (name, content) ->
-            File(sourceFolder, name).also { it.parentFile.mkdirs() }.writeText(content())
+            createFileOnDisk(srcDir!!, name, content())
         }
-        configBuilder.createFile(target)
+        workspaceFiles.forEach { (name, content) ->
+            createFileOnDisk(wsDir!!, name, content())
+        }
+        configFile = configBuilder.createFile(target)
         secretBuilder?.createFile(target)
         keysStoreBuilder?.createFiles(target)
+        linterConfigBuilder?.createFile(target)
+        formatterConfigBuilder?.createFile(target)
+    }
+
+    private fun createFileOnDisk(targetDir: File, relativePath: String, content: String): File {
+        val file = File(targetDir, relativePath).apply {
+            parentFile.mkdirs()
+            writeText(content)
+        }
+        createdSourceFiles[file.absolutePath] = file
+        return file
     }
 
     fun config(init: ConfigBuilder.() -> Unit) {
@@ -64,11 +115,32 @@ class TestDataBuilder {
         init(keysStoreBuilder!!)
     }
 
+    fun linter(init: LinterConfigBuilder.() -> Unit = {}) {
+        val linterConfigBuilder = LinterConfigBuilder()
+        init(linterConfigBuilder)
+    }
+
+    fun formatter(init: FormatterConfigBuilder.() -> Unit = {}) {
+        val formatterConfigBuilder = FormatterConfigBuilder()
+        init(formatterConfigBuilder)
+    }
+
+    fun createSourceFile(relativePath: String, content: String): File {
+        addFile(relativePath, content)
+        return createFileOnDisk(sourceFolder, relativePath, content)
+    }
+
+    fun createWorkspaceFile(relativePath: String, content: String): File {
+        addWorkspaceFile(relativePath, content)
+        return createFileOnDisk(workspaceFolder, relativePath, content)
+    }
+
     companion object {
         val keyPair = KeyPair.of(
             "03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05",
             "BBBDFE956021912512E14BB081B27A35A0EABC4098CB687E973C434006BCE114"
         )
+        private const val MAIN_FILE_NAME = "main.rell"
     }
 }
 
@@ -142,7 +214,7 @@ class ConfigBuilder {
         definitions = init
     }
 
-    internal fun createFile(target: Path) {
+    internal fun createFile(target: Path): File {
         val sb = StringBuilder()
         if (definitions.isNotEmpty()) sb.append("$definitions\n")
         sb.append(content)
@@ -153,7 +225,9 @@ class ConfigBuilder {
         sb.append("\n$database")
         if (compile.isNotEmpty()) sb.append("\n$compile")
         if (extra.isNotEmpty()) sb.append("\n$extra")
-        File(target.toFile(), "chromia.yml").writeText(sb.toString())
+        return File(target.toFile(), "chromia.yml").apply {
+            writeText(sb.toString())
+        }
     }
 }
 
@@ -184,6 +258,34 @@ class KeyStoreBuilder {
            key.id = $keyIdName
             """.trimIndent()
         )
+    }
+}
+
+class LinterConfigBuilder {
+    private var content = ""
+
+    fun config(init: String) {
+        content = init
+    }
+
+    fun createFile(target: Path) {
+        File(target.toFile(), ".rell_lint").also {
+            it.parentFile.mkdirs()
+        }.writeText(content)
+    }
+}
+
+class FormatterConfigBuilder {
+    private var content = ""
+
+    fun config(init: String) {
+        content = init
+    }
+
+    fun createFile(target: Path) {
+        File(target.toFile(), ".rell_format").also {
+            it.parentFile.mkdirs()
+        }.writeText(content)
     }
 }
 

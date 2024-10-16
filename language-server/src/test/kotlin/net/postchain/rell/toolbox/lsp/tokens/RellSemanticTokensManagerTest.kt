@@ -12,6 +12,7 @@ import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.indexer.RellResourceFactory
 import net.postchain.rell.toolbox.parser.AntlrRellParser
+import net.postchain.rell.toolbox.testing.testData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
@@ -19,15 +20,15 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.io.File
 import java.util.stream.Stream
-import kotlin.io.path.createDirectory
 
 class RellSemanticTokensManagerTest {
+    private val rellFile = "rell_file.rell"
 
     @Test
     fun `Correct semantic tokens returned`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val rellFile = File(srcDir, "rell_file.rell").apply {
-            writeText(
+        val testDataBuilder = testData(tempDir) {
+            addFile(
+                rellFile,
                 """
                 module;
                 function main() {
@@ -42,7 +43,8 @@ class RellSemanticTokensManagerTest {
         }
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
         val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
-        val resource = resourceFactory.buildRellResource(rellFile.toURI(), fileMap)
+        val rellFileUri = testDataBuilder.sourceFile(rellFile).toURI()
+        val resource = resourceFactory.buildRellResource(rellFileUri, fileMap)
 
         val tokens = RellSemanticTokensManager().getSemanticTokens(resource)
 
@@ -65,9 +67,9 @@ class RellSemanticTokensManagerTest {
 
     @Test
     fun `Most common object mappings are covered`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val rellFile = File(srcDir, "rell_file.rell").apply {
-            writeText(
+        val testDataBuilder = testData(tempDir) {
+            addFile(
+                rellFile,
                 """
                 module;
                 enum en {S,}
@@ -79,7 +81,8 @@ class RellSemanticTokensManagerTest {
         }
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
         val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
-        val resource = resourceFactory.buildRellResource(rellFile.toURI(), fileMap)
+        val rellFileUri = testDataBuilder.sourceFile(rellFile).toURI()
+        val resource = resourceFactory.buildRellResource(rellFileUri, fileMap)
 
         val mappingTypes = listOf(
             RellTokenType.TYPE,
@@ -110,9 +113,9 @@ class RellSemanticTokensManagerTest {
 
     @Test
     fun `Most common value mappings are covered`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val rellFile = File(srcDir, "rell_file.rell").apply {
-            writeText(
+        val testDataBuilder = testData(tempDir) {
+            addFile(
+                rellFile,
                 """
                 module;
                 import x: xyz;
@@ -127,7 +130,8 @@ class RellSemanticTokensManagerTest {
         }
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
         val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
-        val resource = resourceFactory.buildRellResource(rellFile.toURI(), fileMap)
+        val rellFileUri = testDataBuilder.sourceFile(rellFile).toURI()
+        val resource = resourceFactory.buildRellResource(rellFileUri, fileMap)
 
         val mappingTypes = listOf(
             RellTokenType.DEFAULT,
@@ -146,9 +150,9 @@ class RellSemanticTokensManagerTest {
 
     @Test
     fun `Most common method mappings are covered`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val rellFile = File(srcDir, "rell_file.rell").apply {
-            writeText(
+        val testDataBuilder = testData(tempDir) {
+            addFile(
+                rellFile,
                 """
                 module;
                 operation op() {}
@@ -164,7 +168,8 @@ class RellSemanticTokensManagerTest {
         }
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
         val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
-        val resource = resourceFactory.buildRellResource(rellFile.toURI(), fileMap)
+        val rellFileUri = testDataBuilder.sourceFile(rellFile).toURI()
+        val resource = resourceFactory.buildRellResource(rellFileUri, fileMap)
 
         val mappingTypes = listOf(
             RellTokenType.DEFAULT,
@@ -182,9 +187,9 @@ class RellSemanticTokensManagerTest {
 
     @Test
     fun `Correct relative semantic tokens returned`(@TempDir tempDir: File) {
-        val srcDir = File(tempDir, "src").toPath().createDirectory().toFile()
-        val rellFile = File(srcDir, "rell_file.rell").apply {
-            writeText(
+        val testDataBuilder = testData(tempDir) {
+            addFile(
+                rellFile,
                 """
                 module;
                 function main() {
@@ -199,7 +204,8 @@ class RellSemanticTokensManagerTest {
         }
         val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
-        val resource = resourceFactory.buildRellResource(rellFile.toURI(), fileMap)
+        val rellFileUri = testDataBuilder.sourceFile(rellFile).toURI()
+        val resource = resourceFactory.buildRellResource(rellFileUri, fileMap)
 
         val relativeTokens = RellSemanticTokensManager().getRelativeSemanticTokens(resource)
 

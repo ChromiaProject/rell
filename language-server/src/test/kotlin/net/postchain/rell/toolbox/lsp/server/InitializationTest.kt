@@ -4,17 +4,16 @@ import assertk.assertThat
 import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.containsOnly
 import assertk.assertions.hasSize
-import net.postchain.rell.toolbox.indexer.findRellFilesInWorkspace
 import net.postchain.rell.toolbox.lsp.TestClient
 import net.postchain.rell.toolbox.lsp.TestServerModule
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
+import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.InitializedParams
 import org.eclipse.lsp4j.WorkspaceFolder
 import org.eclipse.lsp4j.launch.LSPLauncher
 import org.eclipse.lsp4j.services.LanguageServer
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -24,16 +23,17 @@ import java.io.File
 import java.io.IOException
 import java.net.Socket
 import java.net.SocketTimeoutException
-import java.net.URI
 import java.nio.file.Path
 
-@Suppress("JAVA_CLASS_ON_COMPANION")
 class InitializationTest {
     private lateinit var thread: Thread
     private lateinit var client: LanguageServer
     private lateinit var testClient: TestClient
     private lateinit var workspaceManager: RellWorkspaceManager
     private val serverModule = TestServerModule()
+
+    @TempDir
+    lateinit var tempDir: File
 
     @BeforeEach
     fun setupBeforeEach() {
@@ -60,15 +60,28 @@ class InitializationTest {
     }
 
     @Test
-    fun `Initializers are run and errors are populated`() {
+    fun `Initializers are run and errors are populated`(@TempDir tempDir: Path) {
+        val testDataBuilder = testData(tempDir) {
+            addFile(
+                "single_syntax_error.rell",
+                """
+                module;
+
+                function a() {
+                    val a = 2
+                }
+                """.trimIndent()
+            )
+        }
+
         val initParams = InitializeParams()
-        initParams.workspaceFolders = listOf(WorkspaceFolder(testWorkspaceFolder.toURI().toString()))
+        initParams.workspaceFolders = listOf(WorkspaceFolder(testDataBuilder.workspaceFolderUri.toString()))
         client.initialize(initParams).get()
         client.initialized(InitializedParams())
 
         await().until { testClient.diagnostics.isNotEmpty() }
 
-        val rellFiles = testWorkspaceFolder.walk().filter { it.isFile && it.extension == "rell" }
+        val rellFiles = testDataBuilder.workspaceFolder.walk().filter { it.isFile && it.extension == "rell" }
             .map { parseFileUri(it.toURI().toString()).toString() }.toList().toTypedArray()
 
         assertThat(testClient.diagnostics.keys).containsExactlyInAnyOrder(*rellFiles)
@@ -76,9 +89,9 @@ class InitializationTest {
 
     @Test
     fun `Workspace folder is used as workspace uri with trailing slash when source dir is not found`(
-        @TempDir dir: Path
+        @TempDir tempDir: Path
     ) {
-        val pathAsString = dir.toUri().toString().removeSuffix("/")
+        val pathAsString = tempDir.toUri().toString().removeSuffix("/")
         val initParams = InitializeParams()
         initParams.workspaceFolders = listOf(WorkspaceFolder(pathAsString))
 
@@ -103,21 +116,6 @@ class InitializationTest {
         } catch (@Suppress("SwallowedException") e: IOException) {
             Thread.sleep(500)
             connectToServer(attempt + 1)
-        }
-    }
-
-    companion object {
-        private var testWorkspaceFileURIs: MutableList<URI> = mutableListOf()
-        private val classLoader = javaClass.getClassLoader()
-        val testWorkspaceFolder = File(classLoader.getResource("rellDappWithErrors")!!.file)
-
-        @JvmStatic
-        @BeforeAll
-        fun setupBeforeAll() {
-            findRellFilesInWorkspace(
-                testWorkspaceFolder,
-                testWorkspaceFileURIs
-            )
         }
     }
 }

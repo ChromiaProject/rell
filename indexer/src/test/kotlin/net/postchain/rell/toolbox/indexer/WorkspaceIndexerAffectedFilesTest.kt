@@ -9,63 +9,50 @@ import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.linter.AbstractFormattingStyleLinter
 import net.postchain.rell.toolbox.linter.AbstractRellLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.testing.TestDataBuilder
+import net.postchain.rell.toolbox.testing.testData
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
-import kotlin.io.path.createDirectory
 
 class WorkspaceIndexerAffectedFilesTest {
     @TempDir
     lateinit var tempDir: File
-    private lateinit var mainFile: File
-    private lateinit var importFileDepth1: File
-    private lateinit var implicitlyImporting: File
+    private val syntaxErrorFile = "syntax_error.rell"
+    private val importFileDepth1 = "imported_module.rell"
+    private val submodule = "submodule/module.rell"
+    private val implicitlyImporting = "submodule/implicitly_importing.rell"
 
     private val rellLinter = mockk<AbstractRellLinter>()
     private val formattingStyleLinter = mockk<AbstractFormattingStyleLinter>()
     private val formatterOptions = FormatterOptions()
     private val linterOptions = LinterOptions()
 
+    private lateinit var testDataBuilder: TestDataBuilder
+
     @BeforeEach
     fun setup() {
         every { rellLinter.enhanceWithLintIssues(any(), any()) } returns Unit
         every { formattingStyleLinter.enhanceWithFormatterIssues(any(), any(), any(), any()) } returns Unit
 
-        mainFile = File(tempDir, "syntax_error.rell").apply {
-            writeText(
+        testDataBuilder = testData(tempDir) {
+            addFile(
+                syntaxErrorFile,
                 """
                 module;
                 import ^.imported_module.*;
                 """.trimIndent()
             )
-        }
-
-        importFileDepth1 = File(tempDir, "imported_module.rell").apply {
-            writeText(
-                """
-                module;
-                """.trimIndent()
-            )
-        }
-
-        val submoduleFolder = File(tempDir, "submodule")
-        submoduleFolder.toPath().createDirectory()
-        File(submoduleFolder, "module.rell").apply {
-            writeText(
+            addFile(importFileDepth1, "module;")
+            addFile(
+                submodule,
                 """
                 module;
                 import ^.imported_module.*;
                 """.trimIndent()
             )
-        }
-
-        implicitlyImporting = File(submoduleFolder, "implicitly_importing.rell").apply {
-            writeText(
-                """
-                fun no_imports_inside_file() {}
-                """.trimIndent()
-            )
+            addFile(implicitlyImporting, "fun no_imports_inside_file() {}")
         }
     }
 
@@ -74,9 +61,11 @@ class WorkspaceIndexerAffectedFilesTest {
         val workspaceIndexer =
             WorkspaceIndexer(tempDir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         workspaceIndexer.initialFileIndexBuild()
-        val files = workspaceIndexer.findAffectedFiles(importFileDepth1.toURI())
+        val importFileDepth1Uri = testDataBuilder.sourceFile(importFileDepth1).toURI()
+        val syntaxErrorFileUri = testDataBuilder.sourceFile(syntaxErrorFile).toURI()
+        val files = workspaceIndexer.findAffectedFiles(importFileDepth1Uri)
         assertThat(files.size).isEqualTo(4)
-        assertThat(files.containsAll(listOf(importFileDepth1.toURI(), mainFile.toURI()))).isTrue()
+        assertThat(files.containsAll(listOf(importFileDepth1Uri, syntaxErrorFileUri))).isTrue()
     }
 
     @Test
@@ -84,8 +73,9 @@ class WorkspaceIndexerAffectedFilesTest {
         val workspaceIndexer =
             WorkspaceIndexer(tempDir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         workspaceIndexer.initialFileIndexBuild()
-        val files = workspaceIndexer.findAffectedFiles(mainFile.toURI())
+        val syntaxErrorFileUri = testDataBuilder.sourceFile(syntaxErrorFile).toURI()
+        val files = workspaceIndexer.findAffectedFiles(syntaxErrorFileUri)
         assertThat(files.size).isEqualTo(1)
-        assertThat(files.first()).isEqualTo(mainFile.toURI())
+        assertThat(files.first()).isEqualTo(syntaxErrorFileUri)
     }
 }

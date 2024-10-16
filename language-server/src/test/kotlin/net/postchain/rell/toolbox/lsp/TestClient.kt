@@ -1,6 +1,5 @@
 package net.postchain.rell.toolbox.lsp
 
-import net.postchain.rell.toolbox.lsp.tokens.Token
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.services.LanguageClient
 import java.util.concurrent.CompletableFuture
