@@ -4,16 +4,19 @@
 
 package net.postchain.rell.base.lib
 
+import mu.KLogging
 import net.postchain.rell.base.lib.type.Rt_BooleanValue
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_CallContext
+import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_ExecutionContext
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.SqlUtils.withSavepoint
 import net.postchain.rell.base.utils.immListOf
 
-object Lib_TryCall {
+object Lib_TryCall: KLogging() {
     val NAMESPACE = Ld_NamespaceDsl.make {
         function("try_call", "boolean", since = "0.13.0") {
             comment("""
@@ -64,6 +67,7 @@ object Lib_TryCall {
                 tryCall0(f, ctx, okValue)
             }
         } catch (e: Exception) {
+            processException(e)
             errValueFn()
         }
 
@@ -73,6 +77,19 @@ object Lib_TryCall {
         val fnValue = f.asFunction()
         val v = fnValue.call(ctx, immListOf())
         return okValue ?: v
+    }
+
+    private fun processException(e: Exception) {
+        logger.info {
+            val msg = "try_call() failed"
+            when (e) {
+                is Rt_Exception -> {
+                    val fullMsg = "$msg: ${e.fullMessage()}"
+                    Rt_Utils.appendStackTrace(fullMsg, e.info.stack)
+                }
+                else -> "$msg: $e"
+            }
+        }
     }
 
     /**

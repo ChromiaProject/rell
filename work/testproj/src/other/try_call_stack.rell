@@ -1,0 +1,19 @@
+module;
+
+function f1(x: integer) = f2(x);
+function f2(x: integer) = try_call(f3(x, *));
+function f3(x: integer) = f4(x);
+
+function f4(x: integer) {
+    require(x != 1);
+    require(x != 2);
+    require(x != 3);
+}
+
+function main() {
+    log('begin');
+    f1(1);
+    f1(2);
+    f1(3);
+    log('end');
+}
