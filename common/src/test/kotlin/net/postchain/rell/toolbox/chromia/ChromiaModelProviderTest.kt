@@ -18,8 +18,8 @@ class ChromiaModelProviderTest {
     @Test
     fun `resolveIgnoreReportingUris should return set of path to external libraries`(@TempDir dir: File) {
         val testDataBuilder = testData(dir) {
-            emptyModule(internalLibModulePath)
-            emptyModule(externalLibModulePath)
+            emptyRellModule(internalLibModulePath)
+            emptyRellModule(externalLibModulePath)
             config {
                 blockchains(
                     """
@@ -34,7 +34,7 @@ class ChromiaModelProviderTest {
 
         val ignoreReportingUris = ChromiaModelProvider(
             dir.toURI()
-        ).resolveIgnoreReportingUris(testDataBuilder.sourceFolderURI)
+        ).resolveIgnoreReportingUris(testDataBuilder.sourceFolderUri)
         assertThat(ignoreReportingUris).containsOnly(
             testDataBuilder.sourceFolder.resolve(externalLibModulePath).parentFile.toURI()
         )
@@ -43,8 +43,8 @@ class ChromiaModelProviderTest {
     @Test
     fun `resolveIgnoreReportingUris should return empty set when no libs defined in chromia yml`(@TempDir dir: File) {
         val testDataBuilder = testData(dir) {
-            emptyModule(internalLibModulePath)
-            emptyModule(externalLibModulePath)
+            emptyRellModule(internalLibModulePath)
+            emptyRellModule(externalLibModulePath)
             config {
                 blockchains(
                     """
@@ -58,15 +58,15 @@ class ChromiaModelProviderTest {
 
         val ignoreReportingUris = ChromiaModelProvider(
             dir.toURI()
-        ).resolveIgnoreReportingUris(testDataBuilder.sourceFolderURI)
+        ).resolveIgnoreReportingUris(testDataBuilder.sourceFolderUri)
         assertThat(ignoreReportingUris).isEmpty()
     }
 
     @Test
     fun `resolveIgnoreReportingUris should return empty set when chromia yml format is faulty`(@TempDir dir: File) {
         val testDataBuilder = testData(dir) {
-            emptyModule(internalLibModulePath)
-            emptyModule(externalLibModulePath)
+            emptyRellModule(internalLibModulePath)
+            emptyRellModule(externalLibModulePath)
             config {
                 blockchains(
                     """
@@ -82,7 +82,7 @@ class ChromiaModelProviderTest {
 
         val ignoreReportingUris = ChromiaModelProvider(
             dir.toURI()
-        ).resolveIgnoreReportingUris(testDataBuilder.sourceFolderURI)
+        ).resolveIgnoreReportingUris(testDataBuilder.sourceFolderUri)
         assertThat(ignoreReportingUris).isEmpty()
     }
 
@@ -91,7 +91,7 @@ class ChromiaModelProviderTest {
         @TempDir dir: File
     ) {
         val testDataBuilder = testData(dir)
-        val ignoreReportingUris = ChromiaModelProvider(null).resolveIgnoreReportingUris(testDataBuilder.sourceFolderURI)
+        val ignoreReportingUris = ChromiaModelProvider(null).resolveIgnoreReportingUris(testDataBuilder.sourceFolderUri)
         assertThat(ignoreReportingUris).isEmpty()
     }
 

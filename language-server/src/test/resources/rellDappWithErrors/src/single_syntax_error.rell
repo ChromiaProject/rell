@@ -1,7 +1,0 @@
-module;
-
-
-function a() {
-    val a = 2
-}
-

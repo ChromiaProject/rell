@@ -5,6 +5,7 @@ import assertk.assertions.contains
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import net.postchain.rell.toolbox.lsp.server.utils.WorkspaceManagerTestBase
+import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.HoverParams
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.TextDocumentIdentifier
@@ -13,18 +14,22 @@ import java.io.File
 
 internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
 
+    private val testFilePath = "my_rell_module.rell"
+
     @Test
     fun `Hover information is never null`() {
-        val testFile = createFile(
-            sourceDir,
-            "my_rell_module.rell",
-            """
+        val testDataBuilder = testData(sourceDir) {
+            addFile(
+                testFilePath,
+                """
                 module;
                 val my_string = "HOVER_THIS";
-            """.trimIndent()
-        )
+                """.trimIndent()
+            )
+        }
 
         initializeWorkspace()
+        val testFile = testDataBuilder.sourceFile(testFilePath)
         workspaceManager.didOpen(testFile.toURI(), 1, testFile.readText())
         val hoverDocs = hoverOn("HOVER_THIS", testFile)
 
@@ -34,18 +39,20 @@ internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
 
     @Test
     fun `Hover on system lib gives information`() {
-        val testFile = createFile(
-            sourceDir,
-            "my_rell_module.rell",
-            """
+        val testDataBuilder = testData(sourceDir) {
+            addFile(
+                testFilePath,
+                """
                 module;
                 function foo() {
                     val my_integer = integer.from_text("123");
                 }
-            """.trimIndent()
-        )
+                """.trimIndent()
+            )
+        }
 
         initializeWorkspace()
+        val testFile = testDataBuilder.sourceFile(testFilePath)
         workspaceManager.didOpen(testFile.toURI(), 1, testFile.readText())
         val hoverDocs = hoverOn("from_text", testFile)
 
@@ -55,10 +62,10 @@ internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
 
     @Test
     fun `Hover on user function gives signature and Rell Docs`() {
-        val testFile = createFile(
-            sourceDir,
-            "my_rell_module.rell",
-            """
+        val testDataBuilder = testData(sourceDir) {
+            addFile(
+                testFilePath,
+                """
                 module;
                 
                 function test() = my_function();
@@ -72,10 +79,12 @@ internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                  * @returns This is the return value
                  */
                 function my_function(first: integer, second: integer) = 32;
-            """.trimIndent()
-        )
+                """.trimIndent()
+            )
+        }
 
         initializeWorkspace()
+        val testFile = testDataBuilder.sourceFile(testFilePath)
         workspaceManager.didOpen(testFile.toURI(), 1, testFile.readText())
         val hoverDocs = hoverOn("my_function", testFile)
 
@@ -98,17 +107,20 @@ internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
 
     @Test
     fun `Hover on non-rell file should not fail`() {
-        val testFile = createFile(
-            sourceDir,
-            ".gitignore",
-            """
+        val testFilePath = ".gitignore"
+        val testDataBuilder = testData(sourceDir) {
+            addFile(
+                testFilePath,
+                """
                 build
                 .DS_Store
-            """.trimIndent()
-        )
-        initializeWorkspace()
-        val hoverDocs = hoverOn("build", testFile)
+                """.trimIndent()
+            )
+        }
 
+        initializeWorkspace()
+        val testFile = testDataBuilder.sourceFile(testFilePath)
+        val hoverDocs = hoverOn("build", testFile)
         assertThat(hoverDocs.kind).isEqualTo("plaintext")
         assertThat(hoverDocs.value).isEmpty()
     }

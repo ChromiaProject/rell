@@ -1,5 +1,0 @@
-module;
-
-function main() {
-    return "main";
-}

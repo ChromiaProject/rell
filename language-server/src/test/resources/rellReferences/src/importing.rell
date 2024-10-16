@@ -1,5 +1,0 @@
-import .main.*;
-
-function referencing_from_another_file() {
-    val result = better_addition(44, 644);
-}

@@ -10,15 +10,40 @@ import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
+import net.postchain.rell.toolbox.testing.TestDataBuilder
+import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
-import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 @Suppress("JAVA_CLASS_ON_COMPANION")
 class ReferenceServiceTest {
+    private val rellLinter = RellLinter()
+    private val formattingStyleLinter = FormattingStyleLinter()
+    private val formatterOptions = FormatterOptions()
+    private val linterOptions = LinterOptions()
+
+    @TempDir
+    private lateinit var tempDir: File
+    private lateinit var workspaceFile: File
+    private lateinit var indexer: WorkspaceIndexer
+
+    @BeforeEach
+    fun setup() {
+        workspaceFile = setupReferenceTestProject(tempDir).workspaceFolder
+        indexer = WorkspaceIndexer(
+            workspaceFile.toURI(),
+            rellLinter,
+            linterOptions,
+            formattingStyleLinter,
+            formatterOptions
+        )
+        indexer.initialFileIndexBuild()
+    }
 
     @Test
     fun `Global references correctly found when triggered from definition`() {
@@ -179,26 +204,54 @@ class ReferenceServiceTest {
             )
         )
     }
+}
 
-    companion object {
-        private val classLoader = javaClass.getClassLoader()
-        val workspaceFile = File(classLoader.getResource("rellReferences")!!.file)
-        private val rellLinter = RellLinter()
-        private val formattingStyleLinter = FormattingStyleLinter()
-        private val formatterOptions = FormatterOptions()
-        private val linterOptions = LinterOptions()
-        val indexer = WorkspaceIndexer(
-            workspaceFile.toURI(),
-            rellLinter,
-            linterOptions,
-            formattingStyleLinter,
-            formatterOptions
+fun setupReferenceTestProject(dir: File): TestDataBuilder {
+    return testData(dir) {
+        addFile(
+            "importing.rell",
+            """
+            import .main.*;
+
+            function referencing_from_another_file() {
+                val result = better_addition(44, 644);
+            }
+            """.trimIndent()
         )
+        addMainFile(
+            """
+            module;
+            
+            function better_addition(paramA: integer, paramB: integer): integer {
+                val localA = paramA;
+                val localB = paramB;
+            
+                val localC = localA + paramA;
+            
+                return localC;
+            }
+            
+            function local_reference() {
+                val result = better_addition(4, 6);
+            }
+            """.trimIndent()
+        )
+        addFile(
+            "submodule/module.rell",
+            """
+            module;
+            
+            import ^.main.*;
+            """.trimIndent()
+        )
+        addFile(
+            "submodule/another_importing.rell",
+            """
 
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            indexer.initialFileIndexBuild()
-        }
+            function another_reference_from_submodule() {
+                val result = better_addition(24, 343);
+            }
+            """.trimIndent()
+        )
     }
 }

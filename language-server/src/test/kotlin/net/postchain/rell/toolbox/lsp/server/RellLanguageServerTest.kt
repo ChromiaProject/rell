@@ -13,6 +13,8 @@ import net.postchain.rell.toolbox.common.RellVersionInfo
 import net.postchain.rell.toolbox.lsp.TestClient
 import net.postchain.rell.toolbox.lsp.TestClientServerLauncher
 import net.postchain.rell.toolbox.lsp.TestServerModule
+import net.postchain.rell.toolbox.testing.TestDataBuilder
+import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.DefinitionParams
 import org.eclipse.lsp4j.DidChangeTextDocumentParams
 import org.eclipse.lsp4j.DidCloseTextDocumentParams
@@ -39,19 +41,23 @@ import org.testcontainers.shaded.org.awaitility.Awaitility.await
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 
 class RellLanguageServerTest {
     private lateinit var clientServerLauncher: TestClientServerLauncher
     private lateinit var server: RellLanguageServer
     private lateinit var workspaceManager: RellWorkspaceManager
     private lateinit var testClient: TestClient
+    private lateinit var testWorkspaceFolder: File
     private val serverModule = TestServerModule()
-    private val classLoader = javaClass.getClassLoader()
-    private val testWorkspaceFolder = File(classLoader.getResource("rellDappWithErrors")!!.file)
+    private val testFilePath = "new_file.rell"
+
+    @TempDir
+    lateinit var tempDir: File
 
     @BeforeEach
     fun setupBeforeEach() {
+        testWorkspaceFolder = setupRellTestProject(tempDir).workspaceFolder
+
         val koinApp = serverModule.startKoin()
         clientServerLauncher = TestClientServerLauncher(koinApp)
         clientServerLauncher.launch()
@@ -100,10 +106,10 @@ class RellLanguageServerTest {
 
     @Test
     fun `semanticTokensFull returns empty for non rell files`(@TempDir tempDir: Path) {
-        val srcPath = Paths.get("$tempDir/src")
-        Files.createDirectory(srcPath)
-        val file = File(tempDir.toString(), "/src/new_file.txt").apply {
-            writeText(
+        val testFilePath = "new_file.txt"
+        val testDataBuilder = testData(tempDir) {
+            addFile(
+                testFilePath,
                 """
                 module;
                 function foo() {}
@@ -111,6 +117,7 @@ class RellLanguageServerTest {
             )
         }
 
+        val file = testDataBuilder.sourceFile(testFilePath)
         val semanticTokenParams = createSemanticTokensParams(file)
         val response = server.semanticTokensFull(semanticTokenParams)
         assertThat(response.get().data).isNull()
@@ -118,10 +125,9 @@ class RellLanguageServerTest {
 
     @Test
     fun `definition do not return the tokens within the file if not opened`(@TempDir tempDir: Path) {
-        val srcPath = Paths.get("$tempDir/src")
-        Files.createDirectory(srcPath)
-        val file = File(tempDir.toString(), "/src/new_file.rell").apply {
-            writeText(
+        val testDataBuilder = testData(tempDir) {
+            addFile(
+                testFilePath,
                 """
                 module;
                 function foo() {
@@ -135,20 +141,21 @@ class RellLanguageServerTest {
             )
         }
 
+        val file = testDataBuilder.sourceFile(testFilePath)
         val pos = Position(2, 13)
         val definitionParams = createDefinitionParams(file, pos)
         val response = server.definition(definitionParams)
         await().until { testClient.diagnostics.isNotEmpty() }
+
         assertThat(response.get()!!.left).isEmpty()
         assertThat(testClient.diagnostics.keys).containsOnly(file.toURI().toString())
     }
 
     @Test
     fun `definition returns the tokens within the file if opened`(@TempDir tempDir: Path) {
-        val srcPath = Paths.get("$tempDir/src")
-        Files.createDirectory(srcPath)
-        val file = File(tempDir.toString(), "/src/new_file.rell").apply {
-            writeText(
+        val testDataBuilder = testData(tempDir) {
+            addFile(
+                testFilePath,
                 """
                 module;
                 function foo() {
@@ -162,6 +169,7 @@ class RellLanguageServerTest {
             )
         }
 
+        val file = testDataBuilder.sourceFile(testFilePath)
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
 
@@ -177,10 +185,9 @@ class RellLanguageServerTest {
 
     @Test
     fun `reference returns the locations to symbols`(@TempDir tempDir: Path) {
-        val srcPath = Paths.get("$tempDir/src")
-        Files.createDirectory(srcPath)
-        val file = File(tempDir.toString(), "/src/new_file.rell").apply {
-            writeText(
+        val testDataBuilder = testData(tempDir) {
+            addFile(
+                testFilePath,
                 """
                 module;
                 function foo() {
@@ -194,6 +201,7 @@ class RellLanguageServerTest {
             )
         }
 
+        val file = testDataBuilder.sourceFile(testFilePath)
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
 
@@ -303,15 +311,11 @@ class RellLanguageServerTest {
 
     @Test
     fun `didOpen event for file outside initialized workspace creates new indexer`(@TempDir tempDir: Path) {
-        val srcPath = Paths.get("$tempDir/src")
-        Files.createDirectory(srcPath)
-        val file = File(tempDir.toString(), "/src/new_file.rell").apply {
-            writeText(
-                """
-                module;
-                """.trimIndent()
-            )
+        val testDataBuilder = testData(tempDir) {
+            emptyRellModule(testFilePath)
         }
+
+        val file = testDataBuilder.sourceFile(testFilePath)
 
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
@@ -322,7 +326,7 @@ class RellLanguageServerTest {
         assertThat(testClient.diagnostics[file.toURI().toString()]!!.size).isEqualTo(0)
         assertThat(workspaceManager.openDocuments.keys).containsOnly(file.toURI())
         assertThat(workspaceManager.indexers.keys).containsOnly(
-            srcPath.toUri(),
+            testDataBuilder.sourceFolderUri,
             testWorkspaceFolder.resolve("src").toURI()
         )
     }
@@ -415,10 +419,9 @@ class RellLanguageServerTest {
     }
 
     private fun createSimpleRellFileInDirectory(directory: Path): File {
-        val srcPath = Paths.get("$directory/src")
-        Files.createDirectory(srcPath)
-        return File(directory.toString(), "/src/new_file.rell").apply {
-            writeText(
+        val testDataBuilder = testData(directory) {
+            addFile(
+                testFilePath,
                 """
                 module;
                 function foo {}
@@ -426,6 +429,8 @@ class RellLanguageServerTest {
                 """.trimIndent()
             )
         }
+
+        return testDataBuilder.sourceFile(testFilePath)
     }
 
     private fun createTextDocumentItem(file: File, version: Int = 1): TextDocumentItem {
@@ -467,5 +472,106 @@ class RellLanguageServerTest {
     private fun createDefinitionParams(file: File, position: Position): DefinitionParams {
         val id = TextDocumentIdentifier(file.toURI().toString())
         return DefinitionParams(id, position)
+    }
+
+    private fun setupRellTestProject(dir: File): TestDataBuilder {
+        return testData(dir) {
+            addFile(
+                "import.rell",
+                """
+                    module;
+                    
+                    import ^.semantic_error.*;
+                    
+                    operation create_c() {
+                        create c(name = "");
+                    }
+                """.trimIndent()
+            )
+            addFile(
+                "multiple_syntax_error.rell",
+                """
+                    module
+
+                    function a() {
+                        val a = "a"
+                    }
+                    
+                    va = 2;
+                    
+                    function () = ;
+                    
+                    create anEntity(name);
+                """.trimIndent()
+            )
+            addFile(
+                "no_errors.rell",
+                """
+                    module;
+
+                    function main() {
+                        return "main";
+                    }
+                """.trimIndent()
+            )
+            addFile(
+                "semantic_error.rell",
+                """
+                    module;
+
+                    entity c {
+                        name;
+                    }
+                    
+                    function a() {
+                        create b(name = "");
+                    }
+                    
+                    function a() {
+                        val a = 2;
+                    }
+                    
+                    function foo() {
+                        val a = 2;
+                    }
+                """.trimIndent()
+            )
+            addFile(
+                "single_syntax_error.rell",
+                """
+                    module;
+
+
+                    function a() {
+                        val a = 2
+                    }
+                """.trimIndent()
+            )
+            addFile(
+                "syntax_error.rell",
+                """
+                    module;
+
+
+                    function a() {
+                        val a = 2
+                    }
+                    
+                    
+                    namespace ns {
+                        function ns_b() {
+                            val a = 2
+                        }
+                    
+                        operation ns_op() {
+                            errVal = "error
+                        }
+                    }
+                    
+                    
+                    function c()
+                """.trimIndent()
+            )
+        }
     }
 }

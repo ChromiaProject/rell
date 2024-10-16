@@ -26,7 +26,12 @@ class Document(val fileUri: URI, val version: Int, val content: String) {
     fun applyTextDocumentChanges(changes: Iterable<TextDocumentContentChangeEvent>): Document {
         var currentDocument = this
         val newVersion = currentDocument.version + 1
-        for (change in changes) {
+
+        val sortedChanges = changes
+            .sortedByDescending { it.range.end.line }
+            .sortedByDescending { it.range.end.character }
+
+        for (change in sortedChanges) {
             val newContent: String = if (change.range == null) {
                 change.text
             } else {

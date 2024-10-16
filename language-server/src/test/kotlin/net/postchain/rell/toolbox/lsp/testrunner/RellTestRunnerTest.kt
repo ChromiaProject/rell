@@ -3,32 +3,41 @@ package net.postchain.rell.toolbox.lsp.testrunner
 import assertk.assertThat
 import assertk.assertions.containsOnly
 import net.postchain.rell.toolbox.lsp.server.utils.WorkspaceManagerTestBase
+import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
-import kotlin.io.path.createDirectory
 
 class RellTestRunnerTest : WorkspaceManagerTestBase() {
 
     @Test
     fun `Returns all test files in workspace`(@TempDir dir: File) {
-        val childDir = File(dir, "directory").toPath().createDirectory()
-        val firstTestFile = File(childDir.toFile(), "first_test_file.rell").apply {
-            writeText("@test module; function test_1() { return 1; }")
-        }
-        val secondTestFile = File(dir, "second_test_file.rell").apply {
-            writeText("@test module; function test_2() { return 1; }")
-        }
-        File(dir, "not_a_test_file.rell").apply {
-            writeText("module; function test_like() { return 1; }")
+        val firstTestFilePath = "directory/first_test_file.rell"
+        val secondTestFilePath = "second_test_file.rell"
+
+        val testDataBuilder = testData(dir) {
+            addFile(
+                firstTestFilePath,
+                "@test module; function test_1() { return 1; }"
+            )
+            addFile(
+                secondTestFilePath,
+                "@test module; function test_2() { return 1; }"
+            )
+            addFile(
+                "not_a_test_file.rell",
+                "module; function test_like() { return 1; }"
+            )
         }
 
         initializeWorkspace(dir)
         val testRunner = RellTestRunner(workspaceManager, symbolService)
 
-        testRunner.getTestFiles(dir.toURI()).let { testFiles ->
+        val firstTestFile = testDataBuilder.sourceFile(firstTestFilePath)
+        val secondTestFile = testDataBuilder.sourceFile(secondTestFilePath)
+        testRunner.getTestFiles(testDataBuilder.sourceFolderUri).let { testFiles ->
             assertThat(testFiles).containsOnly(
                 createRellTestFile(
                     firstTestFile,
@@ -46,9 +55,10 @@ class RellTestRunnerTest : WorkspaceManagerTestBase() {
 
     @Test
     fun `Returns all test functions in file`(@TempDir dir: File) {
-        val childDir = File(dir, "directory").toPath().createDirectory()
-        val testFile = File(childDir.toFile(), "test_file.rell").apply {
-            writeText(
+        val testFilePath = "test_file.rell"
+        val testDataBuilder = testData(dir) {
+            addFile(
+                testFilePath,
                 """
                 @test module; 
                 function test_1() { return 1; }
@@ -62,7 +72,7 @@ class RellTestRunnerTest : WorkspaceManagerTestBase() {
 
         initializeWorkspace(dir)
         val testRunner = RellTestRunner(workspaceManager, symbolService)
-
+        val testFile = testDataBuilder.sourceFile(testFilePath)
         testRunner.getTestCases(testFile.toURI()).let { testCases ->
             assertThat(testCases).containsOnly(
                 createRellTestCase("test_1", Position(1, 0), Position(1, 30), testFile),

@@ -58,12 +58,6 @@ open class WorkspaceManagerTestBase {
         diagnostics[uri] = issues
     }
 
-    protected fun createFile(parent: File, name: String, content: String): File {
-        return File(parent, name).apply {
-            writeText(content)
-        }
-    }
-
     protected fun initializeWorkspace(workspace: File = this.workspace) {
         val workspaceFolders = listOf(WorkspaceFolder(workspace.toURI().toString()))
         workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
