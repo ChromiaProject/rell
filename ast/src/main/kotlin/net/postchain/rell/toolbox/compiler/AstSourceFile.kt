@@ -7,7 +7,8 @@ import net.postchain.rell.base.utils.ide.IdeFilePath
 
 class AstSourceFile private constructor(
     private val ast: S_RellFile,
-    private val ideFilePath: IdeFilePath
+    private val ideFilePath: IdeFilePath,
+    private val text: String,
 ) : C_SourceFile() {
 
     override fun idePath(): IdeFilePath {
@@ -19,13 +20,12 @@ class AstSourceFile private constructor(
     }
 
     override fun readText(): String {
-        val cls = javaClass.getSimpleName()
-        throw C_CommonError("$cls:readText", "readText() not supported")
+        return text
     }
 
     companion object {
-        fun make(ast: S_RellFile, ideFilePath: IdeFilePath): C_SourceFile {
-            return AstSourceFile(ast, ideFilePath)
+        fun make(ast: S_RellFile, ideFilePath: IdeFilePath, text: String): C_SourceFile {
+            return AstSourceFile(ast, ideFilePath, text)
         }
     }
 }

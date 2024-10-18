@@ -4,6 +4,7 @@ import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer
+import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
@@ -38,6 +39,7 @@ val serverModule = module {
     singleOf(::RellTestRunner)
     singleOf(::RellLanguageServer)
     singleOf(::RellFormattingManager)
+    singleOf(::RellCompletionService)
 
     single(named(LauncherType.STDIO)) {
         StdioServerLauncher(

@@ -13,6 +13,7 @@ import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
+import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
 import net.postchain.rell.toolbox.lsp.editing.CodeActionService
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
@@ -24,6 +25,7 @@ import net.postchain.rell.toolbox.parser.RellBaseVisitor
 import net.postchain.rell.toolbox.parser.RellParser
 import org.eclipse.lsp4j.CodeAction
 import org.eclipse.lsp4j.Command
+import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.HoverParams
 import org.eclipse.lsp4j.Location
@@ -58,7 +60,8 @@ class RellWorkspaceManager(
     private val rellLinter: RellLinter,
     private val formattingStyleLinter: FormattingStyleLinter,
     private val formatterOptionsResolver: RellFormatterOptionsResolver,
-    private val linterOptionsResolver: RellLinterOptionsResolver
+    private val linterOptionsResolver: RellLinterOptionsResolver,
+    private val completionService: RellCompletionService,
 ) {
 
     var indexCachingEnabled: Boolean = false
@@ -568,6 +571,19 @@ class RellWorkspaceManager(
         return indexers.values.find {
             it.workspaceUri.toPath().startsWith(configFolder)
         }
+    }
+
+    fun getCompletions(fileUri: URI, position: Position): List<CompletionItem> {
+        val document = openDocuments[fileUri] ?: return listOf()
+        val indexer = getIndexerForOrNull(fileUri) ?: return listOf()
+        val offset = document.getOffSet(position)
+        val trimPrefixDot = shouldTrimPrefixDot(document, offset)
+
+        return completionService.getCompletions(fileUri, offset, indexer, trimPrefixDot)
+    }
+
+    private fun shouldTrimPrefixDot(doc: Document, offset: Int): Boolean {
+        return doc.previousNonLetterChar(offset) == '.'
     }
 
     companion object {

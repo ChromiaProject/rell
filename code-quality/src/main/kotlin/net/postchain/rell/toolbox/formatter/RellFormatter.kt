@@ -89,7 +89,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         doc.surround(xFunctionDef) { it.setNewLines(2) }
         doc.prepend(xFunctionDef.ruleX_QualifiedName()) { it.oneSpace() }
         doc.append(xFunctionDef.ruleX_QualifiedName()) { it.noSpace() }
-        formatBracePairWithoutSpace(xFunctionDef, doc, BracePairTypes.PARENTHESES)
+        formatBracePairWithoutSpace(xFunctionDef.ruleX_FormalParameters(), doc, BracePairTypes.PARENTHESES)
         formatType(xFunctionDef, doc)
         val lineSeparate = lineSeparateArguments(xFunctionDef, BracePairTypes.PARENTHESES)
         val (formalParameters, trailingComma) = xFunctionDef.ruleX_FormalParameters()
@@ -196,9 +196,9 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
     fun format(xTupleExprContext: RuleX_TupleExprContext, doc: FormattableDocument) {
         val xTupleExpr = xTupleExprContext.ruleX_CommaSeparated_14()
         val opening = xTupleExpr.ruleX_tkLPAR()
-        val closing = tokenFor(xTupleExpr, ")")
-        val lineSeparateExpression = lineSeparateExpr(opening?.start, closing?.symbol)
-        formatSkewedOpeningClosing(opening, xTupleExpr, doc, BracePairTypes.PARENTHESES)
+        val closing = xTupleExpr.ruleX_tkRPAR()
+        val lineSeparateExpression = lineSeparateExpr(opening?.start, closing?.start)
+        formatBracePairWithoutSpace(xTupleExpr, doc, BracePairTypes.PARENTHESES)
 
         val commaSeparateExpr13 = xTupleExpr.ruleX_CommaSeparated_13()
         val (tupleExprField, trailingComma) = xTupleExprContext.getXNamesWithTrailingComma()
@@ -393,7 +393,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
             doc.prepend(whenCase.ruleX_StatementRef()) { it.oneSpace() }
             doc.format(whenCase.ruleX_StatementRef())
         }
-        val closingCurly = tokenFor(xWhenStmt, "}")
+        val closingCurly = xWhenStmt.ruleX_tkRCURL()
         doc.prepend(closingCurly) { it.newLine() }
     }
 
@@ -624,6 +624,9 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
     fun format(xAtExprFrom: RuleX_AtExprFromContext, doc: FormattableDocument) {
         val (atExprFromItem, trailingComma) = xAtExprFrom.getAtExprFromItemWithTrailingComma()
         val lineSeparate = lineSeparateArguments(xAtExprFrom, BracePairTypes.PARENTHESES)
+        if (!lineSeparate || atExprFromItem.isNullOrEmpty()) {
+            formatBracePairWithoutSpace(xAtExprFrom, doc, BracePairTypes.PARENTHESES)
+        }
         formatTrailingComma(trailingComma, doc, lineSeparate)
         formatArguments(atExprFromItem, doc, formatAsMultiLine = lineSeparate)
         atExprFromItem?.forEach { doc.format(it) }
@@ -733,7 +736,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
 
     fun format(xTupleVarDec: RuleX_TupleVarDeclaratorContext, doc: FormattableDocument) {
         val tupleVarContext = xTupleVarDec.getTupleVarContext()
-        formatSkewedOpeningClosing(tupleVarContext.ruleX_tkLPAR(), tupleVarContext, doc, BracePairTypes.PARENTHESES)
+        formatBracePairWithoutSpace(tupleVarContext, doc, BracePairTypes.PARENTHESES)
         val (varDeclarators, trailingComma) = xTupleVarDec.getVarDeclaratorWithTrailingComma()
         val lineSeparate = formatAsMultiLine(varDeclarators)
         formatTrailingComma(trailingComma, doc, lineSeparate)
@@ -758,12 +761,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
     fun format(xMapExpr: RuleX_NonEmptyMapLiteralExprContext, doc: FormattableDocument) {
         val mapExprContext = xMapExpr.getMapExprContext()
 
-        formatSkewedOpeningClosing(
-            mapExprContext.ruleX_tkLBRACK(),
-            mapExprContext,
-            doc,
-            BracePairTypes.BRACKETS
-        )
+        formatBracePairWithoutSpace(mapExprContext, doc, BracePairTypes.BRACKETS)
         val lineSeparate = lineSeparateArguments(xMapExpr, BracePairTypes.BRACKETS)
         val (mapExprEntries, trailingComma) = xMapExpr.getMapExprEntryWithTrailingComma()
         formatTrailingComma(trailingComma, doc, lineSeparate)
@@ -827,12 +825,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
 
     fun format(xListExpr: RuleX_ListLiteralExprContext, doc: FormattableDocument) {
         val xLisExprContext = xListExpr.getListLiteralExprContext()
-        formatSkewedOpeningClosing(
-            xLisExprContext.ruleX_tkLBRACK(),
-            xLisExprContext,
-            doc,
-            BracePairTypes.BRACKETS
-        )
+        formatBracePairWithoutSpace(xLisExprContext, doc, BracePairTypes.BRACKETS)
         val (expressionRef, trailingComma) = xListExpr.getExpressionRefWithTrailingComma()
         val lineSeparate = formatAsMultiLine(expressionRef)
         formatTrailingComma(trailingComma, doc, lineSeparate)

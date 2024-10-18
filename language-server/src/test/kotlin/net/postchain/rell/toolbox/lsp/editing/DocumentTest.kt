@@ -66,4 +66,34 @@ internal class DocumentTest {
         assertThat(updatedDocument.version).isEqualTo(1)
         assertThat(updatedDocument.content).isEqualTo("New content")
     }
+
+    @Test
+    fun `PreviousNonLetterChar correctly returns previous non letter`() {
+        val document = Document(URI(""), 0, "Hello, World!")
+        assertThat(document.previousNonLetterChar(6)).isEqualTo(',')
+    }
+
+    @Test
+    fun `PreviousNonLetterChar returns null when no previous non letter exists`() {
+        val document = Document(URI(""), 0, "HelloWorld")
+        assertThat(document.previousNonLetterChar(10)).isEqualTo(null)
+    }
+
+    @Test
+    fun `PreviousNonLetterChar handles offset at start`() {
+        val document = Document(URI(""), 0, "Hello, World!")
+        assertThat(document.previousNonLetterChar(0)).isEqualTo(null)
+    }
+
+    @Test
+    fun `PreviousNonLetterChar handles offset at end`() {
+        val document = Document(URI(""), 0, "Hello, World!")
+        assertThat(document.previousNonLetterChar(13)).isEqualTo('!')
+    }
+
+    @Test
+    fun `PreviousNonLetterChar handles empty content`() {
+        val document = Document(URI(""), 0, "")
+        assertThat(document.previousNonLetterChar(0)).isEqualTo(null)
+    }
 }

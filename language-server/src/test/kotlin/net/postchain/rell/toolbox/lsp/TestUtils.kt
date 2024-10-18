@@ -1,8 +1,10 @@
 package net.postchain.rell.toolbox.lsp
 
+import java.io.File
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.PrepareRenameResult
 import org.eclipse.lsp4j.Range
+import org.eclipse.lsp4j.TextDocumentItem
 import org.eclipse.lsp4j.TextEdit
 
 data class TestTextEdit(val range: TestRange, val newText: String) {
@@ -27,5 +29,14 @@ data class TestPrepareRenameResult(val range: TestRange, val placeholder: String
     constructor(prepareRenameResult: PrepareRenameResult) : this(
         TestRange(prepareRenameResult.range),
         prepareRenameResult.placeholder
+    )
+}
+
+fun createTextDocumentItem(file: File, version: Int = 1): TextDocumentItem {
+    return TextDocumentItem(
+        file.toURI().toString(),
+        "rell",
+        version,
+        file.readText()
     )
 }

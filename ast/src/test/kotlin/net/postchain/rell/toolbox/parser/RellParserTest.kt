@@ -18,6 +18,8 @@ import net.postchain.rell.base.utils.ide.IdeCodeSnippet
 import net.postchain.rell.base.utils.ide.IdeDirApi
 import net.postchain.rell.toolbox.compiler.AstSourceFile
 import net.postchain.rell.toolbox.compiler.RellCompilerApi.validateSimple
+import net.postchain.rell.toolbox.parser.testing.TestSourceDir
+import net.postchain.rell.toolbox.parser.testing.TestSourceFile
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.junit.jupiter.api.Test
@@ -108,7 +110,7 @@ class RellParserTest {
 
         assertThat(transformedAst).isSimilarTo(compilerAst)
 
-        return ParsingArtifacts(sourcePath, idePath, transformedAst)
+        return ParsingArtifacts(sourcePath, idePath, transformedAst, sourceCode)
     }
 
     private fun getUserDocComments(
@@ -117,9 +119,9 @@ class RellParserTest {
     ): Map<String, String> {
         val fileMap = mutableMapOf<C_SourcePath, C_SourceFile>()
         val modules = mutableListOf<R_ModuleName>()
-        parsingArtifacts.forEach { (sourcePath, idePath, transformedAst) ->
-            fileMap[sourcePath] = AstSourceFile.make(transformedAst, idePath)
-            modules.add(IdeApi.getModuleName(sourcePath, transformedAst)!!)
+        parsingArtifacts.forEach {
+            fileMap[it.sourcePath] = AstSourceFile.make(it.transformedAst, it.idePath, it.sourceCode)
+            modules.add(IdeApi.getModuleName(it.sourcePath, it.transformedAst)!!)
         }
         val selfDir = IdeDirApi.mapDir(fileMap)
         return IdeApi.getAllComments(selfDir, modules, options)

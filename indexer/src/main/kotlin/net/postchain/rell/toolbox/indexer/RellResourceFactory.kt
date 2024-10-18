@@ -46,7 +46,11 @@ class RellResourceFactory(
             parseResult.parseTree,
             parseResult.parser.tokenStream
         )
-        return rellCompilerSourcePath to AstSourceFile.make(ast.first, IdeSourcePathFilePath(rellCompilerSourcePath))
+        return rellCompilerSourcePath to AstSourceFile.make(
+            ast.first,
+            IdeSourcePathFilePath(rellCompilerSourcePath),
+            fileContent
+        )
     }
 
     fun updateFileMap(fileMap: MutableMap<C_SourcePath, C_SourceFile>, fileUri: URI, fileContent: String? = null) {
@@ -66,7 +70,7 @@ class RellResourceFactory(
             parseResult.parseTree,
             parseResult.parser.tokenStream
         )
-        val compilationResult = compileResult(rellCompilerSourcePath, ast.first, fileMap)
+        val compilationResult = compileResult(rellCompilerSourcePath, ast.first, fileMap, fileContent)
         val symbolInfo = compilationResult?.symbolInfos ?: mapOf()
         val locationInfo = createLocationInfo(symbolInfo)
         val tokenStream = parseResult.parser.tokenStream as RellCommonTokenStream
@@ -97,7 +101,8 @@ class RellResourceFactory(
     fun compileResult(
         compilerSrcPath: C_SourcePath,
         ast: S_RellFile,
-        fileMap: MutableMap<C_SourcePath, C_SourceFile>
+        fileMap: MutableMap<C_SourcePath, C_SourceFile>,
+        fileContent: String,
     ): IdeCompilationResult? {
         // Having a workspace uri that ends with rell means we have a single file indexer.
         // Similar to java we have decided to not compile single file,
@@ -120,7 +125,7 @@ class RellResourceFactory(
             .ide(true)
             .build()
         val idePath = IdeSourcePathFilePath(compilerSrcPath)
-        val mainFile = AstSourceFile.make(ast, idePath)
+        val mainFile = AstSourceFile.make(ast, idePath, fileContent)
         fileMap[compilerSrcPath] = mainFile
         val selfDir = IdeDirApi.mapDir(fileMap)
         return try {

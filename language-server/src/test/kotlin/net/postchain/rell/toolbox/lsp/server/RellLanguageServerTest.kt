@@ -13,6 +13,7 @@ import net.postchain.rell.toolbox.common.RellVersionInfo
 import net.postchain.rell.toolbox.lsp.TestClient
 import net.postchain.rell.toolbox.lsp.TestClientServerLauncher
 import net.postchain.rell.toolbox.lsp.TestServerModule
+import net.postchain.rell.toolbox.lsp.createTextDocumentItem
 import net.postchain.rell.toolbox.testing.TestDataBuilder
 import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.DefinitionParams
@@ -31,7 +32,6 @@ import org.eclipse.lsp4j.ReferenceParams
 import org.eclipse.lsp4j.SemanticTokensParams
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import org.eclipse.lsp4j.TextDocumentIdentifier
-import org.eclipse.lsp4j.TextDocumentItem
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -431,15 +431,6 @@ class RellLanguageServerTest {
         }
 
         return testDataBuilder.sourceFile(testFilePath)
-    }
-
-    private fun createTextDocumentItem(file: File, version: Int = 1): TextDocumentItem {
-        return TextDocumentItem(
-            file.toURI().toString(),
-            "rell",
-            version,
-            file.readText()
-        )
     }
 
     private fun createReferenceParams(file: File, pos: Position): ReferenceParams {
