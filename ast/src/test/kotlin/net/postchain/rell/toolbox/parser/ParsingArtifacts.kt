@@ -8,4 +8,5 @@ data class ParsingArtifacts(
     val sourcePath: C_SourcePath,
     val idePath: IdeSourcePathFilePath,
     val transformedAst: S_RellFile,
+    val sourceCode: String,
 )

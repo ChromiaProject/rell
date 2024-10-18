@@ -1,4 +1,4 @@
-package net.postchain.rell.toolbox.parser
+package net.postchain.rell.toolbox.parser.testing
 
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
@@ -11,6 +11,8 @@ import net.postchain.rell.base.utils.ide.IdeDirApi.parseSourcePath
 import net.postchain.rell.base.utils.ide.IdeFilePath
 import net.postchain.rell.toolbox.compiler.RellCompilerApi
 import net.postchain.rell.toolbox.compiler.RellCompilerFilePath
+import net.postchain.rell.toolbox.parser.AntlrRellParser
+import net.postchain.rell.toolbox.parser.SyntaxErrorCollector
 
 object TestSourceDir {
     fun create(parser: AntlrRellParser, files: Map<String, String>): C_SourceDir {

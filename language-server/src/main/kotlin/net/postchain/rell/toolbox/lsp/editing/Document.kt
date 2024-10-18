@@ -48,4 +48,12 @@ class Document(val fileUri: URI, val version: Int, val content: String) {
     }
 
     fun getTextIn(interval: Interval): String = content.substring(interval.a, interval.b + 1)
+
+    fun previousNonLetterChar(offset: Int): Char? {
+        var currentOffset = offset - 1
+        while (content.getOrNull(currentOffset)?.isLetter() == true) {
+            currentOffset--
+        }
+        return content.getOrNull(currentOffset)
+    }
 }

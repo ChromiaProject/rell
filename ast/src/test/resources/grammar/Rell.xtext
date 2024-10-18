@@ -51,7 +51,7 @@ X_AnnotationArgs
    ;
 
 X_CommaSeparated_7
-   : {X_CommaSeparated_7} a=X_tkLPAR (b=X_CommaSeparated_6)? ')'
+   : {X_CommaSeparated_7} a=X_tkLPAR (b=X_CommaSeparated_6)? c=X_tkRPAR
    ;
 
 X_tkLPAR
@@ -122,6 +122,10 @@ X_tkCOMMA
    : {X_Token} ','
    ;
 
+X_tkRPAR
+   : {X_Token} ')'
+   ;
+
 X_tkMODULE
    : {X_Token} 'module'
    ;
@@ -158,7 +162,7 @@ X_EntityAnnotations
    ;
 
 X_CommaSeparated_10
-   : {X_CommaSeparated_10} a=X_tkLPAR b=X_CommaSeparated_9 ')'
+   : {X_CommaSeparated_10} a=X_tkLPAR b=X_CommaSeparated_9 c=X_tkRPAR
    ;
 
 X_CommaSeparated_9
@@ -223,7 +227,7 @@ X_FunctionType
    ;
 
 X_CommaSeparated_5
-   : {X_CommaSeparated_5} a=X_tkLPAR (b=X_CommaSeparated_4)? ')'
+   : {X_CommaSeparated_5} a=X_tkLPAR (b=X_CommaSeparated_4)? c=X_tkRPAR
    ;
 
 X_CommaSeparated_4
@@ -247,7 +251,7 @@ X_GenericType
    ;
 
 X_CommaSeparated_3
-   : {X_CommaSeparated_3} a=X_tkLT b=X_CommaSeparated_2 '>'
+   : {X_CommaSeparated_3} a=X_tkLT b=X_CommaSeparated_2 c=X_tkGT
    ;
 
 X_tkLT
@@ -256,6 +260,10 @@ X_tkLT
 
 X_CommaSeparated_2
    : {X_CommaSeparated_2} a+=X_TypeRef (',' a+=X_TypeRef)* (b=X_tkCOMMA)?
+   ;
+
+X_tkGT
+   : {X_Token} '>'
    ;
 
 X_NameType
@@ -267,7 +275,7 @@ X_TupleType
    ;
 
 X_CommaSeparated_1
-   : {X_CommaSeparated_1} a=X_tkLPAR b=X_CommaSeparated_0 ')'
+   : {X_CommaSeparated_1} a=X_tkLPAR b=X_CommaSeparated_0 c=X_tkRPAR
    ;
 
 X_CommaSeparated_0
@@ -380,7 +388,7 @@ X_CallArgs
    ;
 
 X_CommaSeparated_28
-   : {X_CommaSeparated_28} a=X_tkLPAR (b=X_CommaSeparated_27)? ')'
+   : {X_CommaSeparated_28} a=X_tkLPAR (b=X_CommaSeparated_27)? c=X_tkRPAR
    ;
 
 X_CommaSeparated_27
@@ -405,7 +413,7 @@ X_AtExprFrom
    ;
 
 X_CommaSeparated_16
-   : {X_CommaSeparated_16} a=X_tkLPAR b=X_CommaSeparated_15 ')'
+   : {X_CommaSeparated_16} a=X_tkLPAR b=X_CommaSeparated_15 c=X_tkRPAR
    ;
 
 X_CommaSeparated_15
@@ -440,7 +448,7 @@ X_AtExprWhere
    ;
 
 X_CommaSeparated_20
-   : {X_CommaSeparated_20} a=X_tkLCURL (b=X_CommaSeparated_19)? '}'
+   : {X_CommaSeparated_20} a=X_tkLCURL (b=X_CommaSeparated_19)? c=X_tkRCURL
    ;
 
 X_tkLCURL
@@ -449,6 +457,10 @@ X_tkLCURL
 
 X_CommaSeparated_19
    : {X_CommaSeparated_19} a+=X_ExpressionRef (',' a+=X_ExpressionRef)* (b=X_tkCOMMA)?
+   ;
+
+X_tkRCURL
+   : {X_Token} '}'
    ;
 
 X_AtExprWhat
@@ -469,7 +481,7 @@ X_AtExprWhatComplex
    ;
 
 X_CommaSeparated_18
-   : {X_CommaSeparated_18} a=X_tkLPAR b=X_CommaSeparated_17 ')'
+   : {X_CommaSeparated_18} a=X_tkLPAR b=X_CommaSeparated_17 c=X_tkRPAR
    ;
 
 X_CommaSeparated_17
@@ -510,7 +522,7 @@ X_TupleExpr
    ;
 
 X_CommaSeparated_14
-   : {X_CommaSeparated_14} a=X_tkLPAR b=X_CommaSeparated_13 ')'
+   : {X_CommaSeparated_14} a=X_tkLPAR b=X_CommaSeparated_13 c=X_tkRPAR
    ;
 
 X_CommaSeparated_13
@@ -522,19 +534,15 @@ X_TupleExprField
    ;
 
 X_CreateExpr
-   : {X_CreateExpr} a=X_tkCREATE b=X_QualifiedName c=X_CreateExprArgs
+   : {X_CreateExpr} a=X_tkCREATE b=X_QualifiedName c=X_CommaSeparated_26
    ;
 
 X_tkCREATE
    : {X_Token} 'create'
    ;
 
-X_CreateExprArgs
-   : {X_CreateExprArgs} a=X_CommaSeparated_26
-   ;
-
 X_CommaSeparated_26
-   : {X_CommaSeparated_26} a=X_tkLPAR (b=X_CommaSeparated_25)? ')'
+   : {X_CommaSeparated_26} a=X_tkLPAR (b=X_CommaSeparated_25)? c=X_tkRPAR
    ;
 
 X_CommaSeparated_25
@@ -550,7 +558,7 @@ X_ListLiteralExpr
    ;
 
 X_CommaSeparated_22
-   : {X_CommaSeparated_22} a=X_tkLBRACK (b=X_CommaSeparated_21)? ']'
+   : {X_CommaSeparated_22} a=X_tkLBRACK (b=X_CommaSeparated_21)? c=X_tkRBRACK
    ;
 
 X_tkLBRACK
@@ -559,6 +567,10 @@ X_tkLBRACK
 
 X_CommaSeparated_21
    : {X_CommaSeparated_21} a+=X_ExpressionRef (',' a+=X_ExpressionRef)* (b=X_tkCOMMA)?
+   ;
+
+X_tkRBRACK
+   : {X_Token} ']'
    ;
 
 X_EmptyMapLiteralExpr
@@ -570,7 +582,7 @@ X_NonEmptyMapLiteralExpr
    ;
 
 X_CommaSeparated_24
-   : {X_CommaSeparated_24} a=X_tkLBRACK b=X_CommaSeparated_23 ']'
+   : {X_CommaSeparated_24} a=X_tkLBRACK b=X_CommaSeparated_23 c=X_tkRBRACK
    ;
 
 X_CommaSeparated_23
@@ -733,7 +745,7 @@ X_tkENUM
    ;
 
 X_CommaSeparated_12
-   : {X_CommaSeparated_12} a=X_tkLCURL (b=X_CommaSeparated_11)? '}'
+   : {X_CommaSeparated_12} a=X_tkLCURL (b=X_CommaSeparated_11)? c=X_tkRCURL
    ;
 
 X_CommaSeparated_11
@@ -757,7 +769,7 @@ X_FormalParameters
    ;
 
 X_CommaSeparated_36
-   : {X_CommaSeparated_36} a=X_tkLPAR (b=X_CommaSeparated_35)? ')'
+   : {X_CommaSeparated_36} a=X_tkLPAR (b=X_CommaSeparated_35)? c=X_tkRPAR
    ;
 
 X_CommaSeparated_35
@@ -775,7 +787,11 @@ X_FunctionBody
    ;
 
 X_FunctionBodyShort
-   : {X_FunctionBodyShort} '=' a=X_Expression ';'
+   : {X_FunctionBodyShort} a=X_tkASSIGN b=X_Expression c=X_tkSEMI
+   ;
+
+X_tkASSIGN
+   : {X_Token} '='
    ;
 
 X_FunctionBodyFull
@@ -783,7 +799,7 @@ X_FunctionBodyFull
    ;
 
 X_BlockStmt
-   : {X_BlockStmt} a=X_tkLCURL (b+=X_StatementRef)* '}'
+   : {X_BlockStmt} a=X_tkLCURL (b+=X_StatementRef)* c=X_tkRCURL
    ;
 
 X_StatementRef
@@ -815,7 +831,7 @@ X_EmptyStmt
    ;
 
 X_VarStmt
-   : {X_VarStmt} a=X_VarVal b=X_VarDeclarator ('=' c=X_Expression)? ';'
+   : {X_VarStmt} a=X_VarVal b=X_VarDeclarator ('=' c=X_Expression)? d=X_tkSEMI
    ;
 
 X_VarVal
@@ -837,7 +853,7 @@ X_TupleVarDeclarator
    ;
 
 X_CommaSeparated_30
-   : {X_CommaSeparated_30} a=X_tkLPAR b=X_CommaSeparated_29 ')'
+   : {X_CommaSeparated_30} a=X_tkLPAR b=X_CommaSeparated_29 c=X_tkRPAR
    ;
 
 X_CommaSeparated_29
@@ -845,7 +861,7 @@ X_CommaSeparated_29
    ;
 
 X_AssignStmt
-   : {X_AssignStmt} a=X_BaseExpr b=X_AssignOp c=X_Expression ';'
+   : {X_AssignStmt} a=X_BaseExpr b=X_AssignOp c=X_Expression d=X_tkSEMI
    ;
 
 X_AssignOp
@@ -858,7 +874,7 @@ X_AssignOp
    ;
 
 X_ReturnStmt
-   : {X_ReturnStmt} a=X_tkRETURN (b=X_Expression)? ';'
+   : {X_ReturnStmt} a=X_tkRETURN (b=X_Expression)? c=X_tkSEMI
    ;
 
 X_tkRETURN
@@ -870,7 +886,7 @@ X_IfStmt
    ;
 
 X_WhenStmt
-   : {X_WhenStmt} a=X_tkWHEN ('(' b=X_ExpressionRef ')')? '{' (c+=X_WhenStmtCase)* '}'
+   : {X_WhenStmt} a=X_tkWHEN ('(' b=X_ExpressionRef ')')? '{' (c+=X_WhenStmtCase)* d=X_tkRCURL
    ;
 
 X_WhenStmtCase
@@ -886,7 +902,7 @@ X_tkWHILE
    ;
 
 X_ForStmt
-   : {X_ForStmt} a=X_tkFOR '(' b=X_VarDeclarator 'in' c=X_Expression ')' d=X_StatementRef
+   : {X_ForStmt} a=X_tkFOR '(' b=X_VarDeclarator 'in' c=X_Expression d=X_tkRPAR e=X_StatementRef
    ;
 
 X_tkFOR
@@ -894,7 +910,7 @@ X_tkFOR
    ;
 
 X_BreakStmt
-   : {X_BreakStmt} a=X_tkBREAK ';'
+   : {X_BreakStmt} a=X_tkBREAK b=X_tkSEMI
    ;
 
 X_tkBREAK
@@ -902,7 +918,7 @@ X_tkBREAK
    ;
 
 X_ContinueStmt
-   : {X_ContinueStmt} a=X_tkCONTINUE ';'
+   : {X_ContinueStmt} a=X_tkCONTINUE b=X_tkSEMI
    ;
 
 X_tkCONTINUE
@@ -910,7 +926,7 @@ X_tkCONTINUE
    ;
 
 X_UpdateStmt
-   : {X_UpdateStmt} a=X_tkUPDATE b=X_UpdateTarget c=X_UpdateWhat ';'
+   : {X_UpdateStmt} a=X_tkUPDATE b=X_UpdateTarget c=X_UpdateWhat d=X_tkSEMI
    ;
 
 X_tkUPDATE
@@ -940,7 +956,7 @@ X_UpdateFromMulti
    ;
 
 X_CommaSeparated_32
-   : {X_CommaSeparated_32} a=X_tkLPAR b=X_CommaSeparated_31 ')'
+   : {X_CommaSeparated_32} a=X_tkLPAR b=X_CommaSeparated_31 c=X_tkRPAR
    ;
 
 X_CommaSeparated_31
@@ -972,7 +988,7 @@ X_UpdateWhat
    ;
 
 X_CommaSeparated_34
-   : {X_CommaSeparated_34} a=X_tkLPAR b=X_CommaSeparated_33 ')'
+   : {X_CommaSeparated_34} a=X_tkLPAR b=X_CommaSeparated_33 c=X_tkRPAR
    ;
 
 X_CommaSeparated_33
@@ -988,7 +1004,7 @@ X_UpdateWhatNameOp
    ;
 
 X_DeleteStmt
-   : {X_DeleteStmt} a=X_tkDELETE b=X_UpdateTarget ';'
+   : {X_DeleteStmt} a=X_tkDELETE b=X_UpdateTarget c=X_tkSEMI
    ;
 
 X_tkDELETE
@@ -996,15 +1012,15 @@ X_tkDELETE
    ;
 
 X_IncrementStmt
-   : {X_IncrementStmt} a=X_IncrementOperator b=X_BaseExpr ';'
+   : {X_IncrementStmt} a=X_IncrementOperator b=X_BaseExpr c=X_tkSEMI
    ;
 
 X_CallStmt
-   : {X_CallStmt} a=X_BaseExpr ';'
+   : {X_CallStmt} a=X_BaseExpr b=X_tkSEMI
    ;
 
 X_CreateStmt
-   : {X_CreateStmt} a=X_CreateExpr ';'
+   : {X_CreateStmt} a=X_CreateExpr b=X_tkSEMI
    ;
 
 X_GuardStmt
@@ -1025,10 +1041,6 @@ X_NamespaceDef
 
 X_tkNAMESPACE
    : {X_Token} 'namespace'
-   ;
-
-X_tkRCURL
-   : {X_Token} '}'
    ;
 
 X_ImportDef
@@ -1070,7 +1082,7 @@ X_ImportTargetExact
    ;
 
 X_CommaSeparated_38
-   : {X_CommaSeparated_38} a=X_tkLCURL b=X_CommaSeparated_37 '}'
+   : {X_CommaSeparated_38} a=X_tkLCURL b=X_CommaSeparated_37 c=X_tkRCURL
    ;
 
 X_CommaSeparated_37

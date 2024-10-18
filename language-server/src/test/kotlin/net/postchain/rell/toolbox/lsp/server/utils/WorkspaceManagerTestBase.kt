@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.net.URI
+import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
 
 open class WorkspaceManagerTestBase {
     protected lateinit var workspaceManager: RellWorkspaceManager
@@ -45,7 +46,8 @@ open class WorkspaceManagerTestBase {
                 symbolService, referenceService, indexCachingService, rellLinter,
                 formattingStyleLinter,
                 RellFormatterOptionsResolver(),
-                RellLinterOptionsResolver()
+                RellLinterOptionsResolver(),
+                RellCompletionService()
             )
     }
 

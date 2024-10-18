@@ -14,6 +14,8 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.net.URI
+import kotlin.io.path.readText
+import kotlin.io.path.toPath
 
 @Suppress("JAVA_CLASS_ON_COMPANION")
 class RellResourceBuildModuleInfoTest {
@@ -60,7 +62,8 @@ class RellResourceBuildModuleInfoTest {
         val rellCompileResultSemanticError = rellDesc.compileResult(
             compilerSourcePathSemanticError,
             sRellFileSemanticError,
-            fileMap
+            fileMap,
+            fileUriSemanticError.toPath().readText()
         )
 
         val errorMessagesSemanticError = filterMessages(rellCompileResultSemanticError!!.messages, fileUriSemanticError)
@@ -69,7 +72,8 @@ class RellResourceBuildModuleInfoTest {
         val rellCompileResultImport = rellDesc.compileResult(
             compilerSourcePathImport,
             sRellFileImport,
-            fileMap
+            fileMap,
+            fileUriImport.toPath().readText()
         )
 
         val errorMessages = filterMessages(rellCompileResultImport!!.messages, fileUriImport)
@@ -97,7 +101,8 @@ class RellResourceBuildModuleInfoTest {
         val rellCompileResult = rellDesc.compileResult(
             compilerSourcePath,
             sRellFile,
-            fileMap
+            fileMap,
+            fileUri.toPath().readText()
         )
 
         val errorMessages = filterMessages(rellCompileResult!!.messages, fileUri)

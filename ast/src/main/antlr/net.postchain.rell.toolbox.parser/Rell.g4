@@ -163,7 +163,7 @@ ruleX_CommaSeparated_7:
 	ruleX_tkLPAR
 	ruleX_CommaSeparated_6
 	?
-	')'
+	ruleX_tkRPAR
 ;
 
 // Rule X_tkLPAR
@@ -275,6 +275,11 @@ ruleX_tkCOMMA:
 	','
 ;
 
+// Rule X_tkRPAR
+ruleX_tkRPAR:
+	')'
+;
+
 // Rule X_tkMODULE
 ruleX_tkMODULE:
 	'module'
@@ -343,7 +348,7 @@ ruleX_EntityAnnotations:
 ruleX_CommaSeparated_10:
 	ruleX_tkLPAR
 	ruleX_CommaSeparated_9
-	')'
+	ruleX_tkRPAR
 ;
 
 // Rule X_CommaSeparated_9
@@ -462,7 +467,7 @@ ruleX_CommaSeparated_5:
 	ruleX_tkLPAR
 	ruleX_CommaSeparated_4
 	?
-	')'
+	ruleX_tkRPAR
 ;
 
 // Rule X_CommaSeparated_4
@@ -508,7 +513,7 @@ ruleX_GenericType:
 ruleX_CommaSeparated_3:
 	ruleX_tkLT
 	ruleX_CommaSeparated_2
-	'>'
+	ruleX_tkGT
 ;
 
 // Rule X_tkLT
@@ -527,6 +532,11 @@ ruleX_CommaSeparated_2:
 	?
 ;
 
+// Rule X_tkGT
+ruleX_tkGT:
+	'>'
+;
+
 // Rule X_NameType
 ruleX_NameType:
 	ruleX_QualifiedName
@@ -541,7 +551,7 @@ ruleX_TupleType:
 ruleX_CommaSeparated_1:
 	ruleX_tkLPAR
 	ruleX_CommaSeparated_0
-	')'
+	ruleX_tkRPAR
 ;
 
 // Rule X_CommaSeparated_0
@@ -755,7 +765,7 @@ ruleX_CommaSeparated_28:
 	ruleX_tkLPAR
 	ruleX_CommaSeparated_27
 	?
-	')'
+	ruleX_tkRPAR
 ;
 
 // Rule X_CommaSeparated_27
@@ -805,7 +815,7 @@ ruleX_AtExprFrom:
 ruleX_CommaSeparated_16:
 	ruleX_tkLPAR
 	ruleX_CommaSeparated_15
-	')'
+	ruleX_tkRPAR
 ;
 
 // Rule X_CommaSeparated_15
@@ -884,7 +894,12 @@ ruleX_CommaSeparated_20:
 	ruleX_tkLCURL
 	ruleX_CommaSeparated_19
 	?
-	'}'
+	ruleX_tkRCURL
+;
+
+// Rule X_tkLCURL
+ruleX_tkLCURL:
+	'{'
 ;
 
 // Rule X_CommaSeparated_19
@@ -896,6 +911,11 @@ ruleX_CommaSeparated_19:
 	)*
 	ruleX_tkCOMMA
 	?
+;
+
+// Rule X_tkRCURL
+ruleX_tkRCURL:
+	'}'
 ;
 
 // Rule X_AtExprWhat
@@ -931,7 +951,7 @@ ruleX_AtExprWhatComplex:
 ruleX_CommaSeparated_18:
 	ruleX_tkLPAR
 	ruleX_CommaSeparated_17
-	')'
+	ruleX_tkRPAR
 ;
 
 // Rule X_CommaSeparated_17
@@ -994,7 +1014,7 @@ ruleX_TupleExpr:
 ruleX_CommaSeparated_14:
 	ruleX_tkLPAR
 	ruleX_CommaSeparated_13
-	')'
+	ruleX_tkRPAR
 ;
 
 // Rule X_CommaSeparated_13
@@ -1044,7 +1064,7 @@ ruleX_CommaSeparated_26:
 	ruleX_tkLPAR
 	ruleX_CommaSeparated_25
 	?
-	')'
+	ruleX_tkRPAR
 ;
 
 // Rule X_CommaSeparated_25
@@ -1078,7 +1098,7 @@ ruleX_CommaSeparated_22:
 	ruleX_tkLBRACK
 	ruleX_CommaSeparated_21
 	?
-	']'
+	ruleX_tkRBRACK
 ;
 
 // Rule X_tkLBRACK
@@ -1097,6 +1117,11 @@ ruleX_CommaSeparated_21:
 	?
 ;
 
+// Rule X_tkRBRACK
+ruleX_tkRBRACK:
+	']'
+;
+
 // Rule X_EmptyMapLiteralExpr
 ruleX_EmptyMapLiteralExpr:
 	ruleX_tkLBRACK
@@ -1113,7 +1138,7 @@ ruleX_NonEmptyMapLiteralExpr:
 ruleX_CommaSeparated_24:
 	ruleX_tkLBRACK
 	ruleX_CommaSeparated_23
-	']'
+	ruleX_tkRBRACK
 ;
 
 // Rule X_CommaSeparated_23
@@ -1451,7 +1476,7 @@ ruleX_CommaSeparated_12:
 	ruleX_tkLCURL
 	ruleX_CommaSeparated_11
 	?
-	'}'
+	ruleX_tkRCURL
 ;
 
 // Rule X_CommaSeparated_11
@@ -1498,7 +1523,7 @@ ruleX_CommaSeparated_36:
 	ruleX_tkLPAR
 	ruleX_CommaSeparated_35
 	?
-	')'
+	ruleX_tkRPAR
 ;
 
 // Rule X_CommaSeparated_35
@@ -1534,10 +1559,11 @@ ruleX_FunctionBody:
 
 // Rule X_FunctionBodyShort
 ruleX_FunctionBodyShort:
-	'='
+	ruleX_tkASSIGN
 	ruleX_Expression
-	';'
+	ruleX_tkSEMI
 ;
+
 
 // Rule X_FunctionBodyFull
 ruleX_FunctionBodyFull:
@@ -1549,12 +1575,7 @@ ruleX_BlockStmt:
 	ruleX_tkLCURL
 	ruleX_StatementRef
 	*
-	'}'
-;
-
-// Rule X_tkLCURL
-ruleX_tkLCURL:
-	'{'
+	ruleX_tkRCURL
 ;
 
 // Rule X_StatementRef
@@ -1614,7 +1635,7 @@ ruleX_VarStmt:
 		'='
 		ruleX_Expression
 	)?
-	';'
+	ruleX_tkSEMI
 ;
 
 // Rule X_VarVal
@@ -1652,7 +1673,7 @@ ruleX_TupleVarDeclarator:
 ruleX_CommaSeparated_30:
 	ruleX_tkLPAR
 	ruleX_CommaSeparated_29
-	')'
+	ruleX_tkRPAR
 ;
 
 // Rule X_CommaSeparated_29
@@ -1671,7 +1692,7 @@ ruleX_AssignStmt:
 	ruleX_BaseExpr
 	ruleX_AssignOp
 	ruleX_Expression
-	';'
+	ruleX_tkSEMI
 ;
 
 // Rule X_AssignOp
@@ -1703,7 +1724,7 @@ ruleX_ReturnStmt:
 	ruleX_tkRETURN
 	ruleX_Expression
 	?
-	';'
+	ruleX_tkSEMI
 ;
 
 // Rule X_tkRETURN
@@ -1735,7 +1756,7 @@ ruleX_WhenStmt:
 	'{'
 	ruleX_WhenStmtCase
 	*
-	'}'
+	ruleX_tkRCURL
 ;
 
 // Rule X_WhenStmtCase
@@ -1768,7 +1789,7 @@ ruleX_ForStmt:
 	ruleX_VarDeclarator
 	'in'
 	ruleX_Expression
-	')'
+	ruleX_tkRPAR
 	ruleX_StatementRef
 ;
 
@@ -1780,7 +1801,7 @@ ruleX_tkFOR:
 // Rule X_BreakStmt
 ruleX_BreakStmt:
 	ruleX_tkBREAK
-	';'
+	ruleX_tkSEMI
 ;
 
 // Rule X_tkBREAK
@@ -1791,7 +1812,7 @@ ruleX_tkBREAK:
 // Rule X_ContinueStmt
 ruleX_ContinueStmt:
 	ruleX_tkCONTINUE
-	';'
+	ruleX_tkSEMI
 ;
 
 // Rule X_tkCONTINUE
@@ -1804,7 +1825,7 @@ ruleX_UpdateStmt:
 	ruleX_tkUPDATE
 	ruleX_UpdateTarget
 	ruleX_UpdateWhat
-	';'
+	ruleX_tkSEMI
 ;
 
 // Rule X_tkUPDATE
@@ -1851,7 +1872,7 @@ ruleX_UpdateFromMulti:
 ruleX_CommaSeparated_32:
 	ruleX_tkLPAR
 	ruleX_CommaSeparated_31
-	')'
+	ruleX_tkRPAR
 ;
 
 // Rule X_CommaSeparated_31
@@ -1910,7 +1931,7 @@ ruleX_UpdateWhat:
 ruleX_CommaSeparated_34:
 	ruleX_tkLPAR
 	ruleX_CommaSeparated_33
-	')'
+	ruleX_tkRPAR
 ;
 
 // Rule X_CommaSeparated_33
@@ -1942,7 +1963,7 @@ ruleX_UpdateWhatNameOp:
 ruleX_DeleteStmt:
 	ruleX_tkDELETE
 	ruleX_UpdateTarget
-	';'
+	ruleX_tkSEMI
 ;
 
 // Rule X_tkDELETE
@@ -1954,19 +1975,19 @@ ruleX_tkDELETE:
 ruleX_IncrementStmt:
 	ruleX_IncrementOperator
 	ruleX_BaseExpr
-	';'
+	ruleX_tkSEMI
 ;
 
 // Rule X_CallStmt
 ruleX_CallStmt:
 	ruleX_BaseExpr
-	';'
+	ruleX_tkSEMI
 ;
 
 // Rule X_CreateStmt
 ruleX_CreateStmt:
 	ruleX_CreateExpr
-	';'
+	ruleX_tkSEMI
 ;
 
 // Rule X_GuardStmt
@@ -1999,11 +2020,6 @@ ruleX_NamespaceDef:
 // Rule X_tkNAMESPACE
 ruleX_tkNAMESPACE:
 	'namespace'
-;
-
-// Rule X_tkRCURL
-ruleX_tkRCURL:
-	'}'
 ;
 
 // Rule X_ImportDef
@@ -2081,7 +2097,7 @@ ruleX_ImportTargetExact:
 ruleX_CommaSeparated_38:
 	ruleX_tkLCURL
 	ruleX_CommaSeparated_37
-	'}'
+	ruleX_tkRCURL
 ;
 
 // Rule X_CommaSeparated_37

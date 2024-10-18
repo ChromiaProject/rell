@@ -101,7 +101,6 @@ public final class AntlrToRell {
     private static final RellcTransformer TRANS_XCREATE_EXPR_ARG = RellcUtils.transformer("X_CreateExprArg");
     private static final RellcTransformer TRANS_XCOMMA_SEPARATED_25 = RellcUtils.transformer("X_CommaSeparated_25");
     private static final RellcTransformer TRANS_XCOMMA_SEPARATED_26 = RellcUtils.transformer("X_CommaSeparated_26");
-    private static final RellcTransformer TRANS_XCREATE_EXPR_ARGS = RellcUtils.transformer("X_CreateExprArgs");
     private static final RellcTransformer TRANS_XCREATE_EXPR = RellcUtils.transformer("X_CreateExpr");
     private static final RellcTransformer TRANS_XCOMMA_SEPARATED_21 = RellcUtils.transformer("X_CommaSeparated_21");
     private static final RellcTransformer TRANS_XCOMMA_SEPARATED_22 = RellcUtils.transformer("X_CommaSeparated_22");
@@ -334,7 +333,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_7: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_6Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRPARContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_7.transform(ctx, node, tup);
             }
             case RULE_ruleX_AnnotationArgs: {
@@ -379,7 +379,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_10: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_9Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRPARContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_10.transform(ctx, node, tup);
             }
             case RULE_ruleX_EntityAnnotations: {
@@ -402,7 +403,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_5: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_4Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRPARContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_5.transform(ctx, node, tup);
             }
             case RULE_ruleX_FunctionType: {
@@ -420,7 +422,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_3: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLTContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_2Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkGTContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_3.transform(ctx, node, tup);
             }
             case RULE_ruleX_GenericType: {
@@ -449,7 +452,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_1: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_0Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRPARContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_1.transform(ctx, node, tup);
             }
             case RULE_ruleX_TupleType: {
@@ -552,7 +556,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_28: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_27Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRPARContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_28.transform(ctx, node, tup);
             }
             case RULE_ruleX_CallArgs: {
@@ -592,7 +597,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_16: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_15Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRPARContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_16.transform(ctx, node, tup);
             }
             case RULE_ruleX_AtExprFrom: {
@@ -632,7 +638,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_20: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLCURLContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_19Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRCURLContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_20.transform(ctx, node, tup);
             }
             case RULE_ruleX_AtExprWhere: {
@@ -662,7 +669,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_18: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_17Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRPARContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_18.transform(ctx, node, tup);
             }
             case RULE_ruleX_AtExprWhatComplex: {
@@ -745,7 +753,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_14: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_13Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRPARContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_14.transform(ctx, node, tup);
             }
             case RULE_ruleX_TupleExpr: {
@@ -769,14 +778,15 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_26: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_25Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRPARContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_26.transform(ctx, node, tup);
             }
-            case RULE_ruleX_CreateExprArgs: {
-                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_26Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0);
-                return TRANS_XCREATE_EXPR_ARGS.transform(ctx, node, tup);
-            }
+//            case RULE_ruleX_CreateExprArgs: {
+//                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_26Context.class, 0));
+//                Object tup = RellcUtils.tuple(var_0);
+//                return TRANS_XCREATE_EXPR_ARGS.transform(ctx, node, tup);
+//            }
             case RULE_ruleX_CreateExpr: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkCREATEContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_QualifiedNameContext.class, 0));
@@ -793,7 +803,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_22: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLBRACKContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_21Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRBRACKContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_22.transform(ctx, node, tup);
             }
             case RULE_ruleX_ListLiteralExpr: {
@@ -822,7 +833,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_24: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLBRACKContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_23Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRBRACKContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_24.transform(ctx, node, tup);
             }
             case RULE_ruleX_NonEmptyMapLiteralExpr: {
@@ -1118,7 +1130,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_12: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLCURLContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_11Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRCURLContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_12.transform(ctx, node, tup);
             }
             case RULE_ruleX_EnumDef: {
@@ -1144,7 +1157,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_36: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_35Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRPARContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_36.transform(ctx, node, tup);
             }
             case RULE_ruleX_FormalParameters: {
@@ -1153,8 +1167,10 @@ public final class AntlrToRell {
                 return TRANS_XFORMAL_PARAMETERS.transform(ctx, node, tup);
             }
             case RULE_ruleX_FunctionBodyShort: {
-                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionContext.class, 0));
-                Object tup = RellcUtils.tuple(var_0);
+                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkASSIGNContext.class, 0));
+                Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionContext.class, 0));
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkSEMIContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XFUNCTION_BODY_SHORT.transform(ctx, node, tup);
             }
             case RULE_ruleX_EmptyStmt: {
@@ -1186,7 +1202,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_30: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_29Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRPARContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_30.transform(ctx, node, tup);
             }
             case RULE_ruleX_TupleVarDeclarator: {
@@ -1201,7 +1218,9 @@ public final class AntlrToRell {
                 // Manual fix, generator uses RuleX_tkASSIGNContext instead of RuleX_ExpressionContext
                 Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionContext.class, 0));
 
-                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
+                Object var_3 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkSEMIContext.class, 0));
+
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2, var_3);
                 return TRANS_XVAR_STMT.transform(ctx, node, tup);
             }
             case RULE_ruleX_AssignOp_0: {
@@ -1238,13 +1257,15 @@ public final class AntlrToRell {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_BaseExprContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_AssignOpContext.class, 0));
                 Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionContext.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
+                Object var_3 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkSEMIContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2, var_3);
                 return TRANS_XASSIGN_STMT.transform(ctx, node, tup);
             }
             case RULE_ruleX_ReturnStmt: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRETURNContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionContext.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkSEMIContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XRETURN_STMT.transform(ctx, node, tup);
             }
             case RULE_ruleX_IfStmt: {
@@ -1270,7 +1291,8 @@ public final class AntlrToRell {
                 // Manual fix. generator passed RuleX_tkLPARContext instead of RuleX_ExpressionRefContext
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionRefContext.class, 0));
                 Object var_2 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_WhenStmtCaseContext.class));
-                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
+                Object var_3 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRCURLContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2, var_3);
                 return TRANS_XWHEN_STMT.transform(ctx, node, tup);
             }
             case RULE_ruleX_WhileStmt: {
@@ -1284,18 +1306,21 @@ public final class AntlrToRell {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkFORContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_VarDeclaratorContext.class, 0));
                 Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionContext.class, 0));
-                Object var_3 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_StatementRefContext.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1, var_2, var_3);
+                Object var_3 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRPARContext.class, 0));
+                Object var_4 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_StatementRefContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2, var_3, var_4);
                 return TRANS_XFOR_STMT.transform(ctx, node, tup);
             }
             case RULE_ruleX_BreakStmt: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkBREAKContext.class, 0));
-                Object tup = RellcUtils.tuple(var_0);
+                Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkSEMIContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1);
                 return TRANS_XBREAK_STMT.transform(ctx, node, tup);
             }
             case RULE_ruleX_ContinueStmt: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkCONTINUEContext.class, 0));
-                Object tup = RellcUtils.tuple(var_0);
+                Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkSEMIContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1);
                 return TRANS_XCONTINUE_STMT.transform(ctx, node, tup);
             }
             case RULE_ruleX_UpdateFromSingle: {
@@ -1318,7 +1343,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_32: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_31Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRPARContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_32.transform(ctx, node, tup);
             }
             case RULE_ruleX_UpdateFromMulti: {
@@ -1365,7 +1391,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_34: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLPARContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_33Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRPARContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_34.transform(ctx, node, tup);
             }
             case RULE_ruleX_UpdateWhat: {
@@ -1377,29 +1404,34 @@ public final class AntlrToRell {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkUPDATEContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_UpdateTargetContext.class, 0));
                 Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_UpdateWhatContext.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
+                Object var_3 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkSEMIContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2, var_3);
                 return TRANS_XUPDATE_STMT.transform(ctx, node, tup);
             }
             case RULE_ruleX_DeleteStmt: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkDELETEContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_UpdateTargetContext.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkSEMIContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XDELETE_STMT.transform(ctx, node, tup);
             }
             case RULE_ruleX_IncrementStmt: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_IncrementOperatorContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_BaseExprContext.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkSEMIContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XINCREMENT_STMT.transform(ctx, node, tup);
             }
             case RULE_ruleX_CallStmt: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_BaseExprContext.class, 0));
-                Object tup = RellcUtils.tuple(var_0);
+                Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkSEMIContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1);
                 return TRANS_XCALL_STMT.transform(ctx, node, tup);
             }
             case RULE_ruleX_CreateStmt: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CreateExprContext.class, 0));
-                Object tup = RellcUtils.tuple(var_0);
+                Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkSEMIContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1);
                 return TRANS_XCREATE_STMT.transform(ctx, node, tup);
             }
             case RULE_ruleX_GuardStmt: {
@@ -1411,7 +1443,8 @@ public final class AntlrToRell {
             case RULE_ruleX_BlockStmt: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLCURLContext.class, 0));
                 Object var_1 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_StatementRefContext.class));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRCURLContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XBLOCK_STMT.transform(ctx, node, tup);
             }
             case RULE_ruleX_FunctionBodyFull: {
@@ -1480,7 +1513,8 @@ public final class AntlrToRell {
             case RULE_ruleX_CommaSeparated_38: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkLCURLContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_CommaSeparated_37Context.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkRCURLContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XCOMMA_SEPARATED_38.transform(ctx, node, tup);
             }
             case RULE_ruleX_ImportTargetExact: {

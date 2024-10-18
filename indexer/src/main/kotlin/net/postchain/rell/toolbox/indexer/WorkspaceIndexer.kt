@@ -32,7 +32,7 @@ class WorkspaceIndexer(
     private val resourceFactory = RellResourceFactory(workspaceUri, AntlrRellParser(), chromiaModelProvider)
     private val rellCompilerUtils = RellCompilerUtils()
     var fileUriResourceMap = ConcurrentHashMap<URI, Resource>()
-    private var fileMap: ConcurrentHashMap<C_SourcePath, C_SourceFile> = ConcurrentHashMap()
+    var fileMap: ConcurrentHashMap<C_SourcePath, C_SourceFile> = ConcurrentHashMap()
 
     fun updateConfig(fileUri: URI, indexingStateNotifier: (state: IndexingState) -> Unit) {
         val configFile = File(fileUri)

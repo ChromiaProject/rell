@@ -176,8 +176,7 @@ abstract class RellAbstractFormatter(
     }
 
     fun lineSeparateArguments(methodDef: ParserRuleContext, pair: BracePairTypes): Boolean {
-        val bracketOpening = tokenFor(methodDef, pair.opening)
-        val bracketClosing = tokenFor(methodDef, pair.closing)
+        val (bracketOpening, bracketClosing) = bracePairFor(methodDef, pair)
         var isLineSeperated = false
         if (bracketOpening != null && bracketClosing != null) {
             val openingLine = bracketOpening.symbol.line
@@ -404,8 +403,8 @@ abstract class RellAbstractFormatter(
     }
 
     fun formatBracePairWithoutSpace(node: ParserRuleContext, doc: FormattableDocument, pair: BracePairTypes) {
-        val openingNode = tokenFor(node, pair.opening)
-        val closingNode = tokenFor(node, pair.closing)
+        val (openingNode, closingNode) = bracePairFor(node, pair)
+
         if (openingNode != null && closingNode != null) {
             doc.append(openingNode) { p ->
                 p.noSpace()
@@ -419,8 +418,7 @@ abstract class RellAbstractFormatter(
     }
 
     fun formatBracePairWithSpace(node: ParserRuleContext, doc: FormattableDocument, pair: BracePairTypes) {
-        val openingNode = tokenFor(node, pair.opening)
-        val closingNode = tokenFor(node, pair.closing)
+        val (openingNode, closingNode) = bracePairFor(node, pair)
         if (openingNode != null && closingNode != null) {
             doc.append(openingNode) {
                 it.oneSpace()
@@ -430,23 +428,6 @@ abstract class RellAbstractFormatter(
                 it.oneSpace()
                 it.highPriority()
             }
-        }
-    }
-
-    fun formatSkewedOpeningClosing(
-        opening: ParserRuleContext,
-        node: ParserRuleContext,
-        doc: FormattableDocument,
-        pair: BracePairTypes
-    ) {
-        val closing = tokenFor(node, pair.closing) ?: throw RellFormatterException("No closing bracket")
-        doc.append(opening) {
-            it.noSpace()
-            it.highPriority()
-        }
-        doc.prepend(closing) {
-            it.noSpace()
-            it.highPriority()
         }
     }
 
@@ -502,6 +483,48 @@ abstract class RellAbstractFormatter(
         }
         if (newLine) {
             doc.append(trailingComma) { it.newLine() }
+        }
+    }
+
+    fun bracePairFor(node: ParserRuleContext?, pairTypes: BracePairTypes): Pair<TerminalNode?, TerminalNode?> {
+        node ?: return Pair(null, null)
+        val allBraces = mutableListOf<TerminalNode>()
+        findAllBraces(node, pairTypes, allBraces)
+
+        return findMatchingOpenClosing(allBraces, pairTypes)
+    }
+
+    private fun findMatchingOpenClosing(
+        allBraces: MutableList<TerminalNode>,
+        pairTypes: BracePairTypes
+    ): Pair<TerminalNode?, TerminalNode?> {
+        var braceCount = 0
+        var openingBrace: TerminalNode? = null
+
+        for (brace in allBraces) {
+            if (brace.symbol.text == pairTypes.opening) {
+                if (openingBrace == null) openingBrace = brace
+                braceCount++
+            } else {
+                braceCount--
+                if (braceCount == 0 && openingBrace != null) {
+                    return Pair(openingBrace, brace)
+                }
+            }
+        }
+        return Pair(null, null)
+    }
+
+    private fun findAllBraces(node: ParserRuleContext, pairTypes: BracePairTypes, braces: MutableList<TerminalNode>) {
+        node.children?.forEach { child ->
+            when (child) {
+                is TerminalNode -> {
+                    if (child.symbol.text in setOf(pairTypes.opening, pairTypes.closing)) {
+                        braces.add(child)
+                    }
+                }
+                is ParserRuleContext -> findAllBraces(child, pairTypes, braces)
+            }
         }
     }
 
