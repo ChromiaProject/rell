@@ -72,6 +72,7 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
         comments.forEach { token ->
             val prependChange = Changes(token.startIndex, token.startIndex, formatterOptions).apply {
                 setNewLines(1, 1, 2)
+                highPriority()
             }
             hiddenRegionChangePrependModifier(prependChange, token)
             changes.add(prependChange)
