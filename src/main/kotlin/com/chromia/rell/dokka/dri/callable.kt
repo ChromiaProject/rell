@@ -11,7 +11,7 @@ import org.jetbrains.dokka.links.Nullable
 import org.jetbrains.dokka.links.TypeConstructor
 
 fun Callable.Companion.from(f: L_Function) = Callable(
-        f.qualifiedName.last.str,
+        f.fullName.last.str,
         params = f.header.params.map { JavaClassReference(it.type.strCode()) }
 )
 
