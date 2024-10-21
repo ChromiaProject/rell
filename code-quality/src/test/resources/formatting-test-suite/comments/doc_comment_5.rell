@@ -1,0 +1,11 @@
+module;
+
+function cool_func1() {
+    return 42;
+}
+/**
+ * some comment
+ */
+function cooler_function() {
+    return -1;
+}
