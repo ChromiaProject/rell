@@ -15,6 +15,14 @@ class UriUtilsTest {
     }
 
     @Test
+    fun `Should parse Windows URI correctly`() {
+        val fileUri = "file:/c%3A/Users/dummyUser/Documents/code/project-folder/rell/src/asd/attributes/boolean.rell"
+        val parsedUri = parseFileUri(fileUri)
+        val expected = "file:/c:/Users/dummyUser/Documents/code/project-folder/rell/src/asd/attributes/boolean.rell"
+        assertThat(parsedUri.toString()).isEqualTo(expected)
+    }
+
+    @Test
     fun `Should parse Unix path correctly`() {
         val fileUri = "file:///Users/dummyUser/Documents/code/project-folder/rell/src/asd/attributes/boolean.rell"
         val parsedUri = parseFileUri(fileUri)

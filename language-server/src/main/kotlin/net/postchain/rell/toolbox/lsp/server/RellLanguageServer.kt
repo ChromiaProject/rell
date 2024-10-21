@@ -9,6 +9,7 @@ import net.postchain.rell.toolbox.indexer.RellIssue
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsConverter
 import net.postchain.rell.toolbox.lsp.editing.CodeActionTitles
+import net.postchain.rell.toolbox.lsp.includeDefinition.LspIncludeDefinitionProvider
 import net.postchain.rell.toolbox.lsp.template.CreateNewProjectParams
 import net.postchain.rell.toolbox.lsp.template.NewProjectTemplate
 import net.postchain.rell.toolbox.lsp.template.NewProjectTemplateService
@@ -83,6 +84,7 @@ class RellLanguageServer(
     private val indexCachingService: RellIndexCachingService,
     private val testRunner: RellTestRunner,
     private val newProjectTemplateService: NewProjectTemplateService,
+    private val lspIncludeDefinitionProvider: LspIncludeDefinitionProvider
 ) : LanguageServer, LanguageClientAware, TextDocumentService, WorkspaceService {
 
     private val logger = KotlinLogging.logger {}
@@ -342,7 +344,11 @@ class RellLanguageServer(
         val fileUri = parseFileUri(params.textDocument.uri) ?: return CompletableFuture.completedFuture(listOf())
         return requestManager.runRead {
             if (fileUri.isRellFile()) {
-                workspaceManager.getReferenceLocations(fileUri, params.position)
+                workspaceManager.getReferenceLocations(
+                    fileUri,
+                    params.position,
+                    lspIncludeDefinitionProvider.getIncludeDefinition()
+                )
             } else {
                 null
             }

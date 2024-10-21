@@ -1,6 +1,7 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
+import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.containsOnly
 import assertk.assertions.endsWith
 import assertk.assertions.isEmpty
@@ -9,11 +10,13 @@ import assertk.assertions.isNotEmpty
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
+import assertk.assertions.isFalse
 import net.postchain.rell.toolbox.common.RellVersionInfo
 import net.postchain.rell.toolbox.lsp.TestClient
 import net.postchain.rell.toolbox.lsp.TestClientServerLauncher
 import net.postchain.rell.toolbox.lsp.TestServerModule
 import net.postchain.rell.toolbox.lsp.createTextDocumentItem
+import net.postchain.rell.toolbox.lsp.includeDefinition.LspIncludeDefinitionProvider
 import net.postchain.rell.toolbox.testing.TestDataBuilder
 import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.DefinitionParams
@@ -25,6 +28,7 @@ import org.eclipse.lsp4j.DocumentFormattingParams
 import org.eclipse.lsp4j.DocumentRangeFormattingParams
 import org.eclipse.lsp4j.DocumentSymbolParams
 import org.eclipse.lsp4j.FormattingOptions
+import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.ReferenceContext
@@ -41,12 +45,14 @@ import org.testcontainers.shaded.org.awaitility.Awaitility.await
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 
 class RellLanguageServerTest {
     private lateinit var clientServerLauncher: TestClientServerLauncher
     private lateinit var server: RellLanguageServer
     private lateinit var workspaceManager: RellWorkspaceManager
     private lateinit var testClient: TestClient
+    private lateinit var lspIncludeDefinitionProvider: LspIncludeDefinitionProvider
     private lateinit var testWorkspaceFolder: File
     private val serverModule = TestServerModule()
     private val testFilePath = "new_file.rell"
@@ -59,6 +65,7 @@ class RellLanguageServerTest {
         testWorkspaceFolder = setupRellTestProject(tempDir).workspaceFolder
 
         val koinApp = serverModule.startKoin()
+        lspIncludeDefinitionProvider = koinApp.koin.get()
         clientServerLauncher = TestClientServerLauncher(koinApp)
         clientServerLauncher.launch()
         clientServerLauncher.initializeServer(testWorkspaceFolder.toURI())
@@ -66,7 +73,6 @@ class RellLanguageServerTest {
         testClient = clientServerLauncher.testClient
         server = koinApp.koin.get<RellLanguageServer>()
         workspaceManager = koinApp.koin.get<RellWorkspaceManager>()
-
         assertThat(testClient.diagnostics).isEmpty()
     }
 
@@ -181,6 +187,98 @@ class RellLanguageServerTest {
         val response = server.definition(definitionParams)
 
         assertThat(response.get()!!.left).isNotEmpty()
+    }
+
+    @Test
+    fun `references return symbol without definition when LspIncludeDefinition is false`(
+        @TempDir tempDir: Path
+    ) {
+        serverModule.stopKoinGlobalContext()
+        val koinApp = serverModule.startKoin(false)
+        val lspIncludeDefinitionProvider = koinApp.koin.get<LspIncludeDefinitionProvider>()
+        val clientServerLauncher = TestClientServerLauncher(koinApp)
+        clientServerLauncher.launch()
+        clientServerLauncher.initializeServer(testWorkspaceFolder.toURI())
+
+        val testClient = clientServerLauncher.testClient
+        val server = koinApp.koin.get<RellLanguageServer>()
+        assertThat(testClient.diagnostics).isEmpty()
+
+        val srcPath = Paths.get("$tempDir/src")
+        Files.createDirectory(srcPath)
+        val file = File(tempDir.toString(), "/src/new_file.rell").apply {
+            writeText(
+                """
+                module;
+                function foo() {
+                    val x = bar.name;
+                }
+
+                entity bar {
+                    name;
+                }
+                """.trimIndent()
+            )
+        }
+        val textDocumentItem = createTextDocumentItem(file)
+        val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
+
+        server.didOpen(didOpenParam)
+        await().until { testClient.diagnostics.isNotEmpty() }
+
+        val pos = Position(2, 13)
+        val referenceParams = createReferenceParams(file, pos)
+        val response = server.references(referenceParams)
+
+        assertThat(lspIncludeDefinitionProvider.getIncludeDefinition()).isFalse()
+        assertThat(response.get()!!).containsExactlyInAnyOrder(
+            Location(
+                file.toURI().toString(),
+                Range(Position(2, 12), Position(2, 15))
+            )
+        )
+    }
+
+    @Test
+    fun `references return symbols including definition when LspIncludeDefinition is true`(@TempDir tempDir: Path) {
+        val srcPath = Paths.get("$tempDir/src")
+        Files.createDirectory(srcPath)
+        val file = File(tempDir.toString(), "/src/new_file.rell").apply {
+            writeText(
+                """
+                module;
+                function foo() {
+                    val x = bar.name;
+                }
+                
+                entity bar {
+                    name;
+                }
+                """.trimIndent()
+            )
+        }
+
+        val textDocumentItem = createTextDocumentItem(file)
+        val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
+
+        server.didOpen(didOpenParam)
+        await().until { testClient.diagnostics.isNotEmpty() }
+
+        val pos = Position(2, 13)
+        val referenceParams = createReferenceParams(file, pos)
+        val response = server.references(referenceParams)
+
+        assertThat(lspIncludeDefinitionProvider.getIncludeDefinition()).isTrue()
+        assertThat(response.get()!!).containsExactlyInAnyOrder(
+            Location(
+                file.toURI().toString(),
+                Range(Position(2, 12), Position(2, 15))
+            ),
+            Location(
+                file.toURI().toString(),
+                Range(Position(5, 7), Position(5, 10))
+            )
+        )
     }
 
     @Test
