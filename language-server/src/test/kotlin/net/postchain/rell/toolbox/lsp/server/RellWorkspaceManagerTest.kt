@@ -590,6 +590,31 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
     }
 
     @Test
+    fun `Find all references without definition`() {
+        val workspaceFile = setupReferenceTestProject(workspace).workspaceFolder
+        val mainFile = File(workspaceFile, "src/main.rell")
+        initializeWorkspace(workspaceFile)
+        workspaceManager.didOpen(mainFile.toURI(), 1, mainFile.readText())
+        val references = workspaceManager.getReferenceLocations(
+            mainFile.toURI(),
+            Position(2, 16),
+            false
+        )
+
+        assertThat(references).containsExactlyInAnyOrder(
+            Location(mainFile.toURI().toString(), Range(Position(12, 17), Position(12, 32))),
+            Location(
+                File(workspaceFile, "src/submodule/another_importing.rell").toURI().toString(),
+                Range(Position(2, 17), Position(2, 32))
+            ),
+            Location(
+                File(workspaceFile, "src/importing.rell").toURI().toString(),
+                Range(Position(3, 17), Position(3, 32))
+            ),
+        )
+    }
+
+    @Test
     fun `Find all references for entity attribute with implicit name`() {
         val rellFileContent = """
             module;

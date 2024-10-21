@@ -71,7 +71,9 @@ class RellWorkspaceManager(
     val indexers: MutableMap<URI, WorkspaceIndexer> = ConcurrentHashMap()
     val openDocuments: MutableMap<URI, Document> = mutableMapOf()
 
-    private val workspaceFolderUris get() = workspaceFolders.map { URI(it.uri) }
+    private val workspaceFolderUris get() = workspaceFolders.map {
+        parseFileUri(it.uri) ?: throw IllegalArgumentException("Invalid workspace folder ${it.uri}")
+    }
 
     fun initialize(workspaceFolders: List<WorkspaceFolder>, diagnosticsPublisher: (uri: URI, List<RellIssue>) -> Unit) {
         this.workspaceFolders = workspaceFolders

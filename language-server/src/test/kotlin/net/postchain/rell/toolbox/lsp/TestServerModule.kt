@@ -10,6 +10,7 @@ import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
+import net.postchain.rell.toolbox.lsp.includeDefinition.LspIncludeDefinitionProvider
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
 import net.postchain.rell.toolbox.lsp.server.CapabilitiesProvider
 import net.postchain.rell.toolbox.lsp.server.LauncherType
@@ -18,6 +19,7 @@ import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServerTerminator
 import net.postchain.rell.toolbox.lsp.server.RellRequestManager
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
+import net.postchain.rell.toolbox.lsp.server.utils.TestLspIncludeDefinitionProvider
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import net.postchain.rell.toolbox.lsp.template.NewProjectTemplateService
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestRunner
@@ -32,10 +34,10 @@ import org.koin.dsl.module
 
 class TestServerModule {
 
-    fun startKoin(): KoinApplication {
+    fun startKoin(includeDefinition: Boolean = true): KoinApplication {
         return startKoin {
             modules(
-                serverModule
+                serverModule(includeDefinition)
             )
         }
     }
@@ -44,7 +46,7 @@ class TestServerModule {
         GlobalContext.stopKoin()
     }
 
-    private val serverModule = module {
+    private fun serverModule(includeDefinition: Boolean) = module {
         single { RellSymbolService() }
         single { NewProjectTemplateService() }
         single { RellLinter() }
@@ -59,7 +61,9 @@ class TestServerModule {
         singleOf(::RellLanguageServerTerminator)
         single { CapabilitiesProvider() }
         single { RellSemanticTokensManager() }
-
+        single<LspIncludeDefinitionProvider> {
+            TestLspIncludeDefinitionProvider(includeDefinition)
+        }
         singleOf(::RellTestRunner)
         singleOf(::RellLanguageServer)
         singleOf(::RellFormattingManager)
