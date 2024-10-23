@@ -640,10 +640,10 @@ class R_TypeAdapter_Nullable(private val innerAdapter: R_TypeAdapter): R_TypeAda
 }
 
 class R_ParameterDefaultValueExpr(
-        type: R_Type,
-        private val callFilePos: R_FilePos,
-        private val initFrameGetter: C_LateGetter<R_CallFrame>,
-        private val exprGetter: C_LateGetter<R_Expr>
+    type: R_Type,
+    private val callFilePos: R_FilePos,
+    private val initFrameGetter: C_LateGetter<R_CallFrame>,
+    private val exprGetter: C_LateGetter<R_Expr>,
 ): R_Expr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val expr = exprGetter.get()
@@ -653,9 +653,9 @@ class R_ParameterDefaultValueExpr(
 }
 
 class R_AttributeDefaultValueExpr(
-        private val attr: R_Attribute,
-        private val createFilePos: R_FilePos?,
-        private val initFrameGetter: C_LateGetter<R_CallFrame>
+    private val attr: R_Attribute,
+    private val createFilePos: R_FilePos?,
+    private val initFrameGetter: C_LateGetter<R_CallFrame>,
 ): R_Expr(attr.type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         return Rt_Utils.evaluateInNewFrame(frame.defCtx, frame, attr.expr!!, createFilePos, initFrameGetter)

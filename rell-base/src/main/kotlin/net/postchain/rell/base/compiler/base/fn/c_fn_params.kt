@@ -33,10 +33,18 @@ class C_FormalParameter(
     val comment: S_Comment?,
     private val index: Int,
     private val defaultValue: C_ParameterDefaultValue?,
+    initFrameGetter: C_LateGetter<R_CallFrame>,
     docSymbolGetter: C_LateGetter<DocSymbol?>,
     private val docDeclarationGetter: C_LateGetter<DocDeclaration>,
 ) {
-    val rParam = R_FunctionParam(name.rName, type, docSymbolGetter, name.pos.toDocPos())
+    val rParam = R_FunctionParam(
+        name.rName,
+        type,
+        initFrameGetter,
+        defaultValue?.rExprGetter,
+        docSymbolGetter,
+        name.pos.toDocPos(),
+    )
 
     val docDeclaration: DocDeclaration get() = docDeclarationGetter.get()
 

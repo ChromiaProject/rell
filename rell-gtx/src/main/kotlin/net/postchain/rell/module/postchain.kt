@@ -40,14 +40,11 @@ import net.postchain.rell.gtx.Rt_DefaultPostchainTxContextFactory
 import net.postchain.rell.gtx.Rt_PostchainOpContext
 import net.postchain.rell.gtx.Rt_PostchainTxContextFactory
 import org.apache.commons.lang3.time.FastDateFormat
+import kotlin.math.sign
 
-private fun convertArgs(ctx: GtvToRtContext, params: List<R_FunctionParam>, args: List<Gtv>): List<Rt_Value> {
-    return args.mapIndexed { index, arg ->
-        val param = params[index]
-        val type = param.type
-        val subCtx = ctx.updateSymbol(GtvToRtSymbol_Param(param), true)
-        type.gtvToRt(subCtx, arg)
-    }
+private fun convertArg(ctx: GtvToRtContext, param: R_FunctionParam, arg: Gtv): Rt_Value {
+    val subCtx = ctx.updateSymbol(GtvToRtSymbol_Param(param), true)
+    return param.type.gtvToRt(subCtx, arg)
 }
 
 private class ErrorHandler(
@@ -153,26 +150,32 @@ private class RellGTXOperation(
             val txCtx = module.env.txContextFactory.createTxContext(ctx)
 
             val opCtx = Rt_PostchainOpContext(
-                    txCtx = txCtx,
-                    lastBlockTime = ctx.timestamp,
-                    transactionIid = ctx.txIID,
-                    blockHeight = blockHeight,
-                    opIndex = data.opIndex,
-                    signers = data.signers.map { it.toBytes() }.toImmList(),
-                    allOperations = data.operations.toImmList(),
+                txCtx = txCtx,
+                lastBlockTime = ctx.timestamp,
+                transactionIid = ctx.txIID,
+                blockHeight = blockHeight,
+                opIndex = data.opIndex,
+                signers = data.signers.map { it.toBytes() }.toImmList(),
+                allOperations = data.operations.toImmList(),
             )
 
             val heightProvider = Rt_TxChainHeightProvider(ctx)
             val exeCtx = module.createExecutionContext(ctx, opCtx, heightProvider, dbReadOnly = false)
 
             val opArgs = getOpArgs()
-
-            // It's important to not reuse old Rt args: function apply() may be called multiple times, and args may
-            // be mutable, thus every call must use a new copy of Rt args.
             mOpArgs = null
 
+            val defCtx = Rt_DefinitionContext(exeCtx, true, rOperation.defId)
+            val rtArgs = rOperation.params().mapIndexed { i, param ->
+                val rtArg = opArgs.args.getOrNull(i)
+                if (rtArg != null) rtArg else {
+                    val expr = param.exprGetter!!.get()
+                    Rt_Utils.evaluateInNewFrame(defCtx, null, expr, null, param.initFrameGetter)
+                }
+            }
+
             opArgs.gtvCtx.finish(exeCtx)
-            rOperation.call(exeCtx, opArgs.args)
+            rOperation.call(exeCtx, rtArgs)
         }
 
         return true
@@ -186,19 +189,24 @@ private class RellGTXOperation(
 
         val params = rOperation.params()
 
-        if (data.args.size != params.size) {
+        val gtvCtx = GtvToRtContext.make(
+            pretty = GTV_OPERATION_PRETTY,
+            strictGtvConversion = module.config.strictGtvConversion,
+            compilerOptions = module.config.compilerOptions,
+        )
+
+        val minParams = params.dropLastWhile { it.exprGetter != null }.size
+        if (gtvArgs.size < minParams || gtvArgs.size > params.size) {
             throw Rt_Exception.common(
                 "operation:[${rOperation.appLevelName}]:arg_count:${data.args.size}:${params.size}",
                 "Wrong argument count: ${data.args.size} instead of ${params.size}",
             )
         }
 
-        val gtvCtx = GtvToRtContext.make(
-            pretty = GTV_OPERATION_PRETTY,
-            strictGtvConversion = module.config.strictGtvConversion,
-            compilerOptions = module.config.compilerOptions,
-        )
-        val rtArgs = convertArgs(gtvCtx, params, gtvArgs)
+        val rtArgs = gtvArgs.mapIndexed { i, arg ->
+            val param = params[i]
+            convertArg(gtvCtx, param, arg)
+        }
 
         opArgs = Rt_OperationArgs(gtvCtx, rtArgs)
         mOpArgs = opArgs
@@ -304,8 +312,10 @@ private class RellPostchainModule(
         val heightProvider = Rt_ConstantChainHeightProvider(Long.MAX_VALUE)
 
         val exeCtx = createExecutionContext(ctx, Rt_NullOpContext, heightProvider, dbReadOnly = true)
-        val rtArgs = translateQueryArgs(exeCtx, rQuery, args)
-        val rtResult = rQuery.call(exeCtx, rtArgs)
+
+        val defCtx = Rt_DefinitionContext(exeCtx, false, rQuery.defId)
+        val rtArgs = translateQueryArgs(defCtx, rQuery, args)
+        val rtResult = rQuery.call(defCtx, rtArgs)
 
         val type = rQuery.type()
         val gtvResult = type.rtToGtv(rtResult, GTV_QUERY_PRETTY)
@@ -321,10 +331,10 @@ private class RellPostchainModule(
     }
 
     fun createExecutionContext(
-            eCtx: EContext,
-            opCtx: Rt_OpContext,
-            heightProvider: Rt_ChainHeightProvider,
-            dbReadOnly: Boolean
+        eCtx: EContext,
+        opCtx: Rt_OpContext,
+        heightProvider: Rt_ChainHeightProvider,
+        dbReadOnly: Boolean,
     ): Rt_ExecutionContext {
         val sqlMapping = Rt_ChainSqlMapping(eCtx.chainID)
 
@@ -336,28 +346,54 @@ private class RellPostchainModule(
         return Rt_ExecutionContext(appCtx, opCtx, sqlCtx, sqlExec, dbReadOnly)
     }
 
-    private fun translateQueryArgs(exeCtx: Rt_ExecutionContext, rQuery: R_QueryDefinition, gtvArgs: Gtv): List<Rt_Value> {
+    private fun translateQueryArgs(
+        defCtx: Rt_DefinitionContext,
+        rQuery: R_QueryDefinition,
+        gtvArgs: Gtv,
+    ): List<Rt_Value> {
         gtvArgs is GtvDictionary
         val params = rQuery.params()
 
         val argMap = gtvArgs.asDict()
-        val actArgNames = argMap.keys.filterNot { it == NON_STRICT_QUERY_ARGUMENT }.toSet() // TODO RELL-121 enable non-strict parsing
-        val expArgNames = params.map { it.name.str }.toSet()
-        if (actArgNames != expArgNames) {
-            val exp = expArgNames.joinToString(",")
-            val act = actArgNames.joinToString(",")
-            val code = "query:wrong_arg_names:${rQuery.appLevelName}:$exp:$act"
-            throw Rt_Exception.common(code, "Wrong arguments: $actArgNames instead of $expArgNames")
+
+        val invalidArgs = argMap.keys
+            .filterNot { it == NON_STRICT_QUERY_ARGUMENT }
+            .filter { argName ->
+                params.none { it.name.str == argName }
+            }
+        if (invalidArgs.isNotEmpty()) {
+            val code = "query:invalid_args:${rQuery.appLevelName}:${invalidArgs.joinToString(",")}"
+            throw Rt_Exception.common(code, "Invalid argument(s): ${invalidArgs.joinToString()}")
         }
 
         val gtvToRtCtx = GtvToRtContext.make(
             pretty = GTV_QUERY_PRETTY,
-            compilerOptions = exeCtx.globalCtx.compilerOptions,
+            compilerOptions = defCtx.globalCtx.compilerOptions,
         )
 
-        val args = params.map { argMap.getValue(it.name.str) }
-        val rtArgs = convertArgs(gtvToRtCtx, params, args)
-        gtvToRtCtx.finish(exeCtx)
+        val missingArgs = mutableListOf<String>()
+        val rtArgsList = mutableListOf<Rt_Value>()
+        for (param in params) {
+            val arg = argMap[param.name.str]
+            if (arg != null) {
+                val rtArg = convertArg(gtvToRtCtx, param, arg)
+                rtArgsList.add(rtArg)
+            } else if (param.exprGetter != null) {
+                val expr = param.exprGetter!!.get()
+                val rtArg = Rt_Utils.evaluateInNewFrame(defCtx, null, expr, null, param.initFrameGetter)
+                rtArgsList.add(rtArg)
+            } else {
+                missingArgs.add(param.name.str)
+            }
+        }
+
+        if (missingArgs.isNotEmpty()) {
+            val code = "query:missing_args:${rQuery.appLevelName}:${missingArgs.joinToString(",")}"
+            throw Rt_Exception.common(code, "Missing argument(s): ${missingArgs.joinToString()}")
+        }
+
+        val rtArgs = rtArgsList.toImmList()
+        gtvToRtCtx.finish(defCtx.exeCtx)
 
         return rtArgs
     }

@@ -100,11 +100,11 @@ object C_ReservedMountNames {
 }
 
 class C_ParameterDefaultValue(
-        private val pos: S_Pos,
-        private val paramName: R_Name,
-        private val rExprGetter: C_LateGetter<R_Expr>,
-        private val initFrameGetter: C_LateGetter<R_CallFrame>,
-        val rGetter: C_LateGetter<R_DefaultValue>
+    private val pos: S_Pos,
+    private val paramName: R_Name,
+    val rExprGetter: C_LateGetter<R_Expr>,
+    private val initFrameGetter: C_LateGetter<R_CallFrame>,
+    val rGetter: C_LateGetter<R_DefaultValue>,
 ) {
     fun createArgumentExpr(ctx: C_ExprContext, callPos: S_Pos, paramType: R_Type): V_Expr {
         val dbModRes = ctx.getDbModificationRestriction()

@@ -1,3 +1,12 @@
-RELEASE NOTES 0.15.0 (2024-??-??)
+RELEASE NOTES 0.15.0 (202?-??-??)
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+1. Runtime: Default parameter values in operations and queries for blockchain calls
+
+Default parameter values were supported in the past, but only when operations or queries were called from Rell code.
+Now, default values are also supported when operations/queries are called from a blockchain, so such parameters become
+optional.
+
+This allows to add new parameters without breaking existing client code. For operations, new parameters must be added at
+the end of the parameter list.

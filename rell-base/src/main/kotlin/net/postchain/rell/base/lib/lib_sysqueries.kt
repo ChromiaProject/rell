@@ -80,8 +80,8 @@ private object SysQueryFns {
 
     object GetMountNames: R_SysFunctionEx_N() {
         val PARAMS = immListOf(
-            R_FunctionParam(R_Name.of("kinds"), R_ListType(R_TextType), C_LateGetter.const(null)),
-            R_FunctionParam(R_Name.of("modules"), R_ListType(R_TextType), C_LateGetter.const(null)),
+            R_FunctionParam(R_Name.of("kinds"), R_ListType(R_TextType)),
+            R_FunctionParam(R_Name.of("modules"), R_ListType(R_TextType)),
         )
 
         val ALLOWED_KINDS = immListOf("query", "operation", "entity", "object")
@@ -134,7 +134,7 @@ private object SysQueryFns {
 
     object GetModuleArgs: R_SysFunctionEx_N() {
         val PARAMS = immListOf(
-            R_FunctionParam(R_Name.of("modules"), R_ListType(R_TextType), C_LateGetter.const(null)),
+            R_FunctionParam(R_Name.of("modules"), R_ListType(R_TextType)),
         )
 
         override fun call(ctx: Rt_CallContext, args: List<Rt_Value>): Rt_Value {

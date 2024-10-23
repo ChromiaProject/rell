@@ -12,6 +12,7 @@ import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.lib.type.R_OperationType
 import net.postchain.rell.base.lib.type.Rt_UnitValue
+import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.stmt.R_Statement
 import net.postchain.rell.base.model.stmt.R_StatementResult_Return
 import net.postchain.rell.base.runtime.*
@@ -27,7 +28,9 @@ import net.postchain.rell.base.utils.toImmMap
 class R_FunctionParam(
     val name: R_Name,
     val type: R_Type,
-    private val docGetter: C_LateGetter<DocSymbol?>,
+    val initFrameGetter: C_LateGetter<R_CallFrame> = C_LateGetter.const(R_CallFrame.ERROR),
+    val exprGetter: C_LateGetter<R_Expr>? = null,
+    private val docGetter: C_LateGetter<DocSymbol?> = C_LateGetter.const(null),
     override val docSourcePos: DocSourcePos? = null,
 ): DocDefinition() {
     override val docSymbol: DocSymbol get() = docGetter.get() ?: DocSymbol.NONE
@@ -141,7 +144,7 @@ class R_UserQueryBody(
     params: List<R_FunctionParam>,
     paramVars: List<R_ParamVar>,
     private val body: R_Statement,
-    private val frame: R_CallFrame
+    private val frame: R_CallFrame,
 ): R_QueryBody(retType, params) {
     private val paramVars = paramVars.toImmList()
 
@@ -192,6 +195,13 @@ class R_QueryDefinition(
         val body = bodyLate.get()
         checkCallArgs(this, body.params, args)
         val defCtx = Rt_DefinitionContext(exeCtx, false, defId)
+        val res = body.call(defCtx, args, null)
+        return res
+    }
+
+    fun call(defCtx: Rt_DefinitionContext, args: List<Rt_Value>): Rt_Value {
+        val body = bodyLate.get()
+        checkCallArgs(this, body.params, args)
         val res = body.call(defCtx, args, null)
         return res
     }

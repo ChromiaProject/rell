@@ -241,11 +241,11 @@ object Rt_Utils {
     }
 
     fun evaluateInNewFrame(
-            defCtx: Rt_DefinitionContext,
-            frame: Rt_CallFrame?,
-            expr: R_Expr,
-            filePos: R_FilePos?,
-            rFrameGetter: C_LateGetter<R_CallFrame>
+        defCtx: Rt_DefinitionContext,
+        frame: Rt_CallFrame?,
+        expr: R_Expr,
+        filePos: R_FilePos?,
+        rFrameGetter: C_LateGetter<R_CallFrame>,
     ): Rt_Value {
         val stack = if (filePos == null || frame == null) null else frame.subStack(filePos)
         val rSubFrame = rFrameGetter.get()

@@ -5,6 +5,10 @@
 package net.postchain.rell.gtx
 
 import net.postchain.gtv.GtvBigInteger
+import net.postchain.gtv.GtvFactory
+import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.gtv.GtvInteger
+import net.postchain.gtv.GtvString
 import net.postchain.rell.base.lang.type.DecimalTest
 import net.postchain.rell.base.lib.LibBlockTransactionTest
 import net.postchain.rell.gtx.testutils.BaseGtxTest
@@ -90,15 +94,15 @@ class GtxTest : BaseGtxTest() {
         def("query qtext(x: text) = 123;")
 
         chkCallQuery("qint", "x:321", "123")
-        chkCallQuery("qint", "a:321", "rt_err:query:wrong_arg_names:qint:x:a")
-        chkCallQuery("qint", "x:321,a:654", "rt_err:query:wrong_arg_names:qint:x:a,x")
+        chkCallQuery("qint", "a:321", "rt_err:query:invalid_args:qint:a")
+        chkCallQuery("qint", "x:321,a:654", "rt_err:query:invalid_args:qint:a")
         chkCallQuery("qint", "x:'abc'", "gtv_err:type:[integer]:INTEGER:STRING:param:x")
         chkCallQuery("qint", "x:[]", "gtv_err:type:[integer]:INTEGER:ARRAY:param:x")
         chkCallQuery("qint", "x:{}", "gtv_err:type:[integer]:INTEGER:DICT:param:x")
 
         chkCallQuery("qtext", "x:'abc'", "123")
-        chkCallQuery("qtext", "a:'abc'", "rt_err:query:wrong_arg_names:qtext:x:a")
-        chkCallQuery("qtext", "x:'abc',a:'def'", "rt_err:query:wrong_arg_names:qtext:x:a,x")
+        chkCallQuery("qtext", "a:'abc'", "rt_err:query:invalid_args:qtext:a")
+        chkCallQuery("qtext", "x:'abc',a:'def'", "rt_err:query:invalid_args:qtext:a")
         chkCallQuery("qtext", "x:123", "gtv_err:type:[text]:STRING:INTEGER:param:x")
         chkCallQuery("qtext", "x:[]", "gtv_err:type:[text]:STRING:ARRAY:param:x")
         chkCallQuery("qtext", "x:{}", "gtv_err:type:[text]:STRING:DICT:param:x")
@@ -144,6 +148,25 @@ class GtxTest : BaseGtxTest() {
         val decMax = DecimalTest.LIMIT.subtract(BigInteger.ONE)
         chkCallQuery("qdec", mapOf("x" to GtvBigInteger(decMax)), "'$decMax'")
         chkCallQuery("qdec", mapOf("x" to GtvBigInteger(DecimalTest.LIMIT)), "rt_err:decimal:overflow")
+    }
+
+    @Test fun testOptionalParamsOperation() {
+        def("operation op(x: integer = 123, y: text = 'hello', z: decimal = 45.67) {}")
+        chkCallOperation("op", listOf(), "OK")
+        chkCallOperation("op", listOf("321"), "OK")
+        chkCallOperation("op", listOf("321", "bye"), "OK")
+        chkCallOperation("op", listOf("321", "bye", "'76.54'"), "OK")
+    }
+
+    @Test fun testOptionalParamsQuery() {
+        def("query q(x: integer = 123, y: text = 'hello', z: decimal = 45.67) = (x, y, z);")
+        chkCallQuery("q", mapOf("x" to gtv(321), "y" to gtv("bye"), "z" to gtv("76.54")), "[321,'bye','76.54']")
+        chkCallQuery("q", mapOf("y" to gtv("bye"), "z" to gtv("76.54")), "[123,'bye','76.54']")
+        chkCallQuery("q", mapOf("x" to gtv(321), "z" to gtv("76.54")), "[321,'hello','76.54']")
+        chkCallQuery("q", mapOf("x" to gtv(321), "y" to gtv("bye")), "[321,'bye','45.67']")
+        chkCallQuery("q", mapOf("x" to gtv(321)), "[321,'hello','45.67']")
+        chkCallQuery("q", mapOf("y" to gtv("bye")), "[123,'bye','45.67']")
+        chkCallQuery("q", mapOf("z" to gtv("76.54")), "[123,'hello','76.54']")
     }
 
     @Test fun testVersionControl() {

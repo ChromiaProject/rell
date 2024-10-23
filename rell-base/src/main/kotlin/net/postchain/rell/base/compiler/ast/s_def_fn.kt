@@ -105,6 +105,7 @@ class S_FormalParameter(
             comment,
             index,
             defaultValue,
+            defCtx.initFrameGetter,
             docSymLate.getter,
             docDecGetter,
         )
