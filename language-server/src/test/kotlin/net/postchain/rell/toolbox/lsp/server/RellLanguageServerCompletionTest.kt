@@ -65,14 +65,14 @@ class RellLanguageServerCompletionTest {
 
         val textDocumentItem = createTextDocumentItem(testDataBuilder.mainFile)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
-        server.didOpen(didOpenParam)
+        server.textDocumentService.didOpen(didOpenParam)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         val position = org.eclipse.lsp4j.Position(0, 0)
         val documentId = TextDocumentIdentifier(testDataBuilder.mainFileUri.toString())
 
         val params = CompletionParams(documentId, position)
-        val completions = server.completion(params).join()
+        val completions = server.textDocumentService.completion(params).join()
 
         val expectedCompletions = arrayOf(
             "p",
