@@ -6,11 +6,11 @@ import assertk.assertions.containsOnly
 import assertk.assertions.endsWith
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
 import assertk.assertions.isNotEmpty
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
-import assertk.assertions.isFalse
 import net.postchain.rell.toolbox.common.RellVersionInfo
 import net.postchain.rell.toolbox.lsp.TestClient
 import net.postchain.rell.toolbox.lsp.TestClientServerLauncher

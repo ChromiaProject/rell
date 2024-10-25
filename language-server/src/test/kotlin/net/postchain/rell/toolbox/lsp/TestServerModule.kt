@@ -7,10 +7,10 @@ import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer
 import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
+import net.postchain.rell.toolbox.lsp.includeDefinition.LspIncludeDefinitionProvider
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
-import net.postchain.rell.toolbox.lsp.includeDefinition.LspIncludeDefinitionProvider
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
 import net.postchain.rell.toolbox.lsp.server.CapabilitiesProvider
 import net.postchain.rell.toolbox.lsp.server.LauncherType

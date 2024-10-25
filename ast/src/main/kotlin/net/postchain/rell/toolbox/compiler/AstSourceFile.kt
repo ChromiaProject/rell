@@ -1,7 +1,6 @@
 package net.postchain.rell.toolbox.compiler
 
 import net.postchain.rell.base.compiler.ast.S_RellFile
-import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.utils.ide.IdeFilePath
 

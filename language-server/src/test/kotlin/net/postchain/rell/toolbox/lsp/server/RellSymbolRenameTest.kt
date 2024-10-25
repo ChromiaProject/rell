@@ -159,7 +159,9 @@ class RellSymbolRenameTest {
 
         clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
         val fileOfRenamingEvent = openFile(testDataBuilder.mainFile)
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, Position(3, 15))).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, Position(3, 15))
+        ).join()
 
         assertThat(prepareResult.first).isNull()
         assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
@@ -172,7 +174,9 @@ class RellSymbolRenameTest {
 
         val newName = "newName"
         val affectedFile = testDataBuilder.sourceFile(affectedFilePath).toFileUri()
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, Position(3, 15), newName)).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, Position(3, 15), newName)
+        ).join()
 
         assertThat(result.changes.keys).containsOnly(fileOfRenamingEvent, affectedFile)
         assertThat(result.changes[fileOfRenamingEvent]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
@@ -206,12 +210,16 @@ class RellSymbolRenameTest {
         clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
         val fileOfRenamingEvent = openFile(testDataBuilder.sourceFile(testFilePath))
 
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, Position(0, 11))).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, Position(0, 11))
+        ).join()
         assertThat(prepareResult.first).isNull()
         assertThat(prepareResult.second).isNull()
         assertThat(prepareResult.third).isEqualTo(PrepareRenameDefaultBehavior(true))
 
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, Position(0, 11), "newName")).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, Position(0, 11), "newName")
+        ).join()
         assertThat(result.changes).isEmpty()
     }
 
@@ -254,7 +262,9 @@ class RellSymbolRenameTest {
 
         clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
         val fileOfRenamingEvent = openFile(testDataBuilder.mainFile)
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, Position(23, 5))).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, Position(23, 5))
+        ).join()
 
         assertThat(prepareResult.first).isNull()
         assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
@@ -266,7 +276,9 @@ class RellSymbolRenameTest {
         assertThat(prepareResult.third).isNull()
 
         val newName = "something_else"
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, Position(23, 5), newName)).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, Position(23, 5), newName)
+        ).join()
 
         assertThat(result.changes[fileOfRenamingEvent]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(TestRange(TestPosition(4, 4), TestPosition(4, 11)), "$oldName: $newName"),
@@ -300,7 +312,9 @@ class RellSymbolRenameTest {
         clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
         val fileOfRenamingEvent = openFile(testDataBuilder.mainFile)
         val positionForRenaming = Position(4, 7)
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, positionForRenaming)).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, positionForRenaming)
+        ).join()
 
         assertThat(prepareResult.first).isNull()
         assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
@@ -312,7 +326,9 @@ class RellSymbolRenameTest {
         assertThat(prepareResult.third).isNull()
 
         val newName = "something_else"
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, positionForRenaming, newName)).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, positionForRenaming, newName)
+        ).join()
         assertThat(result.changes[fileOfRenamingEvent]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(TestRange(TestPosition(4, 5), TestPosition(4, 12)), newName),
             TestTextEdit(TestRange(TestPosition(2, 11), TestPosition(2, 18)), "$oldName: $newName"),
@@ -343,7 +359,9 @@ class RellSymbolRenameTest {
         clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
         val fileOfRenamingEvent = openFile(testDataBuilder.mainFile)
         val positionForRenaming = Position(2, 15)
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, positionForRenaming)).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, positionForRenaming)
+        ).join()
 
         assertThat(prepareResult.first).isNull()
         assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
@@ -355,7 +373,9 @@ class RellSymbolRenameTest {
         assertThat(prepareResult.third).isNull()
 
         val newName = "something_else"
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, positionForRenaming, newName)).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, positionForRenaming, newName)
+        ).join()
 
         assertThat(result.changes[fileOfRenamingEvent]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(TestRange(TestPosition(2, 11), TestPosition(2, 18)), "$newName: $oldName"),
@@ -388,7 +408,9 @@ class RellSymbolRenameTest {
         clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
         val fileOfRenamingEvent = openFile(testDataBuilder.mainFile)
         val positionForRenaming = Position(2, 25)
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, positionForRenaming)).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, positionForRenaming)
+        ).join()
 
         assertThat(prepareResult.first).isNull()
         assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
@@ -400,7 +422,9 @@ class RellSymbolRenameTest {
         assertThat(prepareResult.third).isNull()
 
         val newName = "something_else"
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, positionForRenaming, newName)).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, positionForRenaming, newName)
+        ).join()
 
         assertThat(result.changes[fileOfRenamingEvent]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(TestRange(TestPosition(2, 11), TestPosition(2, 18)), "$newName: $oldName"),
@@ -449,7 +473,9 @@ class RellSymbolRenameTest {
 
         clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
         val fileOfRenamingEvent = openFile(testDataBuilder.mainFile)
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, Position(23, 9))).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, Position(23, 9))
+        ).join()
 
         assertThat(prepareResult.first).isNull()
         assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
@@ -461,7 +487,9 @@ class RellSymbolRenameTest {
         assertThat(prepareResult.third).isNull()
 
         val newName = "something_else"
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, Position(23, 9), newName)).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, Position(23, 9), newName)
+        ).join()
 
         assertThat(result.changes[fileOfRenamingEvent]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(TestRange(TestPosition(4, 4), TestPosition(4, 18)), "$oldName: $newName"),
@@ -513,7 +541,9 @@ class RellSymbolRenameTest {
         clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
         val fileOfRenamingEvent = openFile(testDataBuilder.mainFile)
         val positionForRenaming = Position(4, 12)
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, positionForRenaming)).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, positionForRenaming)
+        ).join()
 
         assertThat(prepareResult.first).isNull()
         assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
@@ -525,7 +555,9 @@ class RellSymbolRenameTest {
         assertThat(prepareResult.third).isNull()
 
         val newName = "something_else"
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, positionForRenaming, newName)).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, positionForRenaming, newName)
+        ).join()
 
         assertThat(result.changes[fileOfRenamingEvent]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(TestRange(TestPosition(4, 4), TestPosition(4, 18)), "$newName: $oldName"),
@@ -575,7 +607,9 @@ class RellSymbolRenameTest {
         clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
         val fileOfRenamingEvent = openFile(testDataBuilder.mainFile)
         val positionForRenaming = Position(11, 25)
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, positionForRenaming)).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, positionForRenaming)
+        ).join()
 
         assertThat(prepareResult.first).isNull()
         assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
@@ -587,7 +621,9 @@ class RellSymbolRenameTest {
         assertThat(prepareResult.third).isNull()
 
         val newName = "something_else"
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, positionForRenaming, newName)).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, positionForRenaming, newName)
+        ).join()
         assertThat(result.changes[fileOfRenamingEvent]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(TestRange(TestPosition(4, 4), TestPosition(4, 18)), "$oldName: $newName"),
             TestTextEdit(TestRange(TestPosition(11, 20), TestPosition(11, 34)), newName),
@@ -637,7 +673,9 @@ class RellSymbolRenameTest {
 
         clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
         val fileOfRenamingEvent = openFile(testDataBuilder.mainFile)
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, Position(23, 9))).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, Position(23, 9))
+        ).join()
 
         assertThat(prepareResult.first).isNull()
         assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
@@ -649,7 +687,9 @@ class RellSymbolRenameTest {
         assertThat(prepareResult.third).isNull()
 
         val newName = "something_else"
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, Position(23, 9), newName)).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, Position(23, 9), newName)
+        ).join()
 
         assertThat(result.changes[fileOfRenamingEvent]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
             TestTextEdit(TestRange(TestPosition(4, 4), TestPosition(4, 18)), "$oldName: $newName"),
@@ -709,7 +749,9 @@ class RellSymbolRenameTest {
 
         clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
         val fileOfRenamingEvent = openFile(testDataBuilder.sourceFile(testFilePath))
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, Position(2, 10))).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, Position(2, 10))
+        ).join()
 
         assertThat(prepareResult.first).isNull()
         assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
@@ -722,7 +764,9 @@ class RellSymbolRenameTest {
 
         val affectedFileUri = testDataBuilder.mainFile.toFileUri()
         val newName = "something_else"
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, Position(2, 10), newName)).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, Position(2, 10), newName)
+        ).join()
 
         assertThat(result.changes.keys).containsOnly(affectedFileUri, fileOfRenamingEvent)
         assertThat(result.changes[fileOfRenamingEvent]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
@@ -769,7 +813,9 @@ class RellSymbolRenameTest {
         clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
         val fileOfRenamingEvent = openFile(testDataBuilder.mainFile)
         val positionForRenaming = Position(2, 30)
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, Position(2, 30))).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, Position(2, 30))
+        ).join()
 
         assertThat(prepareResult.first).isNull()
         assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
@@ -782,7 +828,9 @@ class RellSymbolRenameTest {
 
         val newName = "something_else"
         val affectedFileUri = testDataBuilder.sourceFile(affectedFilePath).toFileUri()
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, positionForRenaming, newName)).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, positionForRenaming, newName)
+        ).join()
 
         assertThat(result.changes.keys).containsOnly(fileOfRenamingEvent, affectedFileUri)
         assertThat(result.changes[fileOfRenamingEvent]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
@@ -817,7 +865,9 @@ class RellSymbolRenameTest {
         val fileOfRenamingEvent = openFile(testDataBuilder.mainFile)
         val positionForRenaming = Position(5, 7)
 
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, positionForRenaming)).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, positionForRenaming)
+        ).join()
         assertThat(prepareResult.first).isNull()
         assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
             TestPrepareRenameResult(
@@ -828,7 +878,9 @@ class RellSymbolRenameTest {
         assertThat(prepareResult.third).isNull()
 
         val newName = "something_else"
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, positionForRenaming, newName)).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, positionForRenaming, newName)
+        ).join()
 
         assertThat(result.changes[fileOfRenamingEvent]!![0].newText).isEqualTo("$newName: $oldName")
         assertThat(result.changes.keys).containsOnly(fileOfRenamingEvent)
@@ -871,7 +923,9 @@ class RellSymbolRenameTest {
         clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
         val fileOfRenamingEvent = openFile(testDataBuilder.mainFile)
         val positionFoRenaming = Position(11, 39)
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, positionFoRenaming)).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, positionFoRenaming)
+        ).join()
 
         assertThat(prepareResult.first).isNull()
         assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
@@ -883,7 +937,9 @@ class RellSymbolRenameTest {
         assertThat(prepareResult.third).isNull()
 
         val newName = "something_else"
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, positionFoRenaming, newName)).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, positionFoRenaming, newName)
+        ).join()
 
         assertThat(result.changes.keys).containsOnly(fileOfRenamingEvent)
         assertThat(result.changes[fileOfRenamingEvent]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
@@ -926,7 +982,9 @@ class RellSymbolRenameTest {
         val fileOfRenamingEvent = openFile(testDataBuilder.mainFile)
         val positionFoRenaming = Position(16, 35)
         val newName = "something_else"
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, positionFoRenaming)).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, positionFoRenaming)
+        ).join()
 
         assertThat(prepareResult.first).isNull()
         assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
@@ -937,7 +995,9 @@ class RellSymbolRenameTest {
         )
         assertThat(prepareResult.third).isNull()
 
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, positionFoRenaming, newName)).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, positionFoRenaming, newName)
+        ).join()
 
         assertThat(result.changes.keys).containsOnly(fileOfRenamingEvent)
         assertThat(result.changes[fileOfRenamingEvent]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
@@ -974,7 +1034,9 @@ class RellSymbolRenameTest {
         clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
         val fileOfRenamingEvent = openFile(testDataBuilder.mainFile)
         val positionFoRenaming = Position(4, 15)
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, positionFoRenaming)).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, positionFoRenaming)
+        ).join()
 
         assertThat(prepareResult.first).isNull()
         assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
@@ -986,7 +1048,9 @@ class RellSymbolRenameTest {
         assertThat(prepareResult.third).isNull()
 
         val newName = "something_else"
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, positionFoRenaming, newName)).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, positionFoRenaming, newName)
+        ).join()
 
         assertThat(result.changes.keys).containsOnly(fileOfRenamingEvent)
         assertThat(result.changes[fileOfRenamingEvent]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
@@ -1046,7 +1110,9 @@ class RellSymbolRenameTest {
         clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
         val fileOfRenamingEvent = openFile(testDataBuilder.mainFile)
         val positionForRenaming = Position(5, 25)
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, positionForRenaming)).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, positionForRenaming)
+        ).join()
 
         assertThat(prepareResult.first).isNull()
         assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
@@ -1058,7 +1124,9 @@ class RellSymbolRenameTest {
         assertThat(prepareResult.third).isNull()
 
         val newName = "something_else"
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, positionForRenaming, newName)).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, positionForRenaming, newName)
+        ).join()
 
         assertThat(result.changes.keys).containsOnly(fileOfRenamingEvent)
         assertThat(result.changes[fileOfRenamingEvent]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(
@@ -1121,7 +1189,9 @@ class RellSymbolRenameTest {
         clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
         val fileOfRenamingEvent = openFile(testDataBuilder.mainFile)
         val positionForRenaming = Position(12, 42)
-        val prepareResult = server.textDocumentService.prepareRename(prepareRenameParams(fileOfRenamingEvent, positionForRenaming)).join()
+        val prepareResult = server.textDocumentService.prepareRename(
+            prepareRenameParams(fileOfRenamingEvent, positionForRenaming)
+        ).join()
 
         assertThat(prepareResult.first).isNull()
         assertThat(TestPrepareRenameResult(prepareResult.second)).isEqualTo(
@@ -1134,7 +1204,9 @@ class RellSymbolRenameTest {
 
         val newName = "something_else"
         val affectedFileUri = openFile(testDataBuilder.sourceFile(affectedFilePath))
-        val result = server.textDocumentService.rename(renameParams(fileOfRenamingEvent, positionForRenaming, newName)).join()
+        val result = server.textDocumentService.rename(
+            renameParams(fileOfRenamingEvent, positionForRenaming, newName)
+        ).join()
 
         assertThat(result.changes.keys).containsOnly(fileOfRenamingEvent, affectedFileUri)
         assertThat(result.changes[fileOfRenamingEvent]!!.map { TestTextEdit(it) }).containsExactlyInAnyOrder(

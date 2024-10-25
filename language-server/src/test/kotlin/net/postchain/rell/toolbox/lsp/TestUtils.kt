@@ -1,11 +1,11 @@
 package net.postchain.rell.toolbox.lsp
 
-import java.io.File
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.PrepareRenameResult
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.TextDocumentItem
 import org.eclipse.lsp4j.TextEdit
+import java.io.File
 
 data class TestTextEdit(val range: TestRange, val newText: String) {
     constructor(textEdit: TextEdit) : this(TestRange(textEdit.range), textEdit.newText)

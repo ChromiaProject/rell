@@ -5,6 +5,7 @@ import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer
+import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
@@ -16,7 +17,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.net.URI
-import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
 
 open class WorkspaceManagerTestBase {
     protected lateinit var workspaceManager: RellWorkspaceManager
