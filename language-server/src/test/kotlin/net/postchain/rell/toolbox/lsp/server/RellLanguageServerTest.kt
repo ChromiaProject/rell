@@ -104,7 +104,7 @@ class RellLanguageServerTest {
     fun `semanticTokensFull returns the tokens within the file`(@TempDir tempDir: Path) {
         val file = createSimpleRellFileInDirectory(tempDir)
         val semanticTokenParams = createSemanticTokensParams(file)
-        val response = server.semanticTokensFull(semanticTokenParams)
+        val response = server.textDocumentService.semanticTokensFull(semanticTokenParams)
         await().until { testClient.diagnostics.isNotEmpty() }
         assertThat(response.get().data).isNotEmpty()
         assertThat(testClient.diagnostics.keys).containsOnly(file.toURI().toString())
@@ -125,7 +125,7 @@ class RellLanguageServerTest {
 
         val file = testDataBuilder.sourceFile(testFilePath)
         val semanticTokenParams = createSemanticTokensParams(file)
-        val response = server.semanticTokensFull(semanticTokenParams)
+        val response = server.textDocumentService.semanticTokensFull(semanticTokenParams)
         assertThat(response.get().data).isNull()
     }
 
@@ -150,7 +150,7 @@ class RellLanguageServerTest {
         val file = testDataBuilder.sourceFile(testFilePath)
         val pos = Position(2, 13)
         val definitionParams = createDefinitionParams(file, pos)
-        val response = server.definition(definitionParams)
+        val response = server.textDocumentService.definition(definitionParams)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         assertThat(response.get()!!.left).isEmpty()
@@ -179,12 +179,12 @@ class RellLanguageServerTest {
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
 
-        server.didOpen(didOpenParam)
+        server.textDocumentService.didOpen(didOpenParam)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         val pos = Position(2, 13)
         val definitionParams = createDefinitionParams(file, pos)
-        val response = server.definition(definitionParams)
+        val response = server.textDocumentService.definition(definitionParams)
 
         assertThat(response.get()!!.left).isNotEmpty()
     }
@@ -223,12 +223,12 @@ class RellLanguageServerTest {
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
 
-        server.didOpen(didOpenParam)
+        server.textDocumentService.didOpen(didOpenParam)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         val pos = Position(2, 13)
         val referenceParams = createReferenceParams(file, pos)
-        val response = server.references(referenceParams)
+        val response = server.textDocumentService.references(referenceParams)
 
         assertThat(lspIncludeDefinitionProvider.getIncludeDefinition()).isFalse()
         assertThat(response.get()!!).containsExactlyInAnyOrder(
@@ -261,12 +261,12 @@ class RellLanguageServerTest {
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
 
-        server.didOpen(didOpenParam)
+        server.textDocumentService.didOpen(didOpenParam)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         val pos = Position(2, 13)
         val referenceParams = createReferenceParams(file, pos)
-        val response = server.references(referenceParams)
+        val response = server.textDocumentService.references(referenceParams)
 
         assertThat(lspIncludeDefinitionProvider.getIncludeDefinition()).isTrue()
         assertThat(response.get()!!).containsExactlyInAnyOrder(
@@ -303,12 +303,12 @@ class RellLanguageServerTest {
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
 
-        server.didOpen(didOpenParam)
+        server.textDocumentService.didOpen(didOpenParam)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         val pos = Position(2, 13)
         val referenceParams = createReferenceParams(file, pos)
-        val response = server.references(referenceParams)
+        val response = server.textDocumentService.references(referenceParams)
 
         assertThat(response.get()).isNotNull().isNotEmpty()
     }
@@ -319,11 +319,11 @@ class RellLanguageServerTest {
 
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
-        server.didOpen(didOpenParam)
+        server.textDocumentService.didOpen(didOpenParam)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         val documentSymbolParams = createDocumentSymbolParams(file)
-        val response = server.documentSymbol(documentSymbolParams)
+        val response = server.textDocumentService.documentSymbol(documentSymbolParams)
 
         assertThat(response.get()).isNotNull().isNotEmpty()
     }
@@ -336,7 +336,7 @@ class RellLanguageServerTest {
 
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
-        server.didOpen(didOpenParam)
+        server.textDocumentService.didOpen(didOpenParam)
         await().until { testClient.diagnostics.isNotEmpty() }
     }
 
@@ -344,7 +344,7 @@ class RellLanguageServerTest {
     fun `formatting returns changes needed`(@TempDir tempDir: Path) {
         val file = createSimpleRellFileInDirectory(tempDir)
         val formattingParams = createDocumentFormattingParams(file)
-        val response = server.formatting(formattingParams)
+        val response = server.textDocumentService.formatting(formattingParams)
 
         assertThat(response.get()).isNotNull().isNotEmpty()
     }
@@ -355,12 +355,12 @@ class RellLanguageServerTest {
 
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
-        server.didOpen(didOpenParam)
+        server.textDocumentService.didOpen(didOpenParam)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         val range = Range(Position(0, 1), Position(0, 7))
         val formattingParams = createDocumentRangeFormattingParams(file, range)
-        val response = server.rangeFormatting(formattingParams)
+        val response = server.textDocumentService.rangeFormatting(formattingParams)
 
         assertThat(response.get()).isNotNull().isNotEmpty()
     }
@@ -371,7 +371,7 @@ class RellLanguageServerTest {
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
 
-        server.didOpen(didOpenParam)
+        server.textDocumentService.didOpen(didOpenParam)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         assertThat(testClient.diagnostics.keys).containsOnly(file.toURI().toString())
@@ -385,7 +385,7 @@ class RellLanguageServerTest {
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
 
-        server.didOpen(didOpenParam)
+        server.textDocumentService.didOpen(didOpenParam)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         assertThat(testClient.diagnostics.keys).containsOnly(file.toURI().toString())
@@ -399,7 +399,7 @@ class RellLanguageServerTest {
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
 
-        server.didOpen(didOpenParam)
+        server.textDocumentService.didOpen(didOpenParam)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         assertThat(testClient.diagnostics.keys).containsOnly(file.toURI().toString())
@@ -417,7 +417,7 @@ class RellLanguageServerTest {
 
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
-        server.didOpen(didOpenParam)
+        server.textDocumentService.didOpen(didOpenParam)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         assertThat(testClient.diagnostics.keys).containsOnly(file.toURI().toString())
@@ -434,11 +434,11 @@ class RellLanguageServerTest {
         val file = testWorkspaceFolder.resolve("src/no_errors.rell")
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
-        server.didOpen(didOpenParam)
+        server.textDocumentService.didOpen(didOpenParam)
         await().until { workspaceManager.openDocuments.isNotEmpty() }
 
         val didCloseParam = DidCloseTextDocumentParams(TextDocumentIdentifier(file.toURI().toString()))
-        server.didClose(didCloseParam)
+        server.textDocumentService.didClose(didCloseParam)
 
         await().until { workspaceManager.openDocuments.isEmpty() }
         assertThat(workspaceManager.openDocuments).isEmpty()
@@ -450,7 +450,7 @@ class RellLanguageServerTest {
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
 
-        server.didOpen(didOpenParam)
+        server.textDocumentService.didOpen(didOpenParam)
         await().until { workspaceManager.openDocuments.containsKey(file.toURI()) }
         val diagnosticBeforeChange = testClient.diagnostics.toMap()
 
@@ -459,7 +459,7 @@ class RellLanguageServerTest {
         val contentChanges = TextDocumentContentChangeEvent(range, "")
         val didChangeParam = DidChangeTextDocumentParams(versionedTextDocument, listOf(contentChanges))
 
-        server.didChange(didChangeParam)
+        server.textDocumentService.didChange(didChangeParam)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         assertThat(diagnosticBeforeChange.keys).containsOnly(file.toURI().toString())
@@ -475,7 +475,7 @@ class RellLanguageServerTest {
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
 
-        server.didOpen(didOpenParam)
+        server.textDocumentService.didOpen(didOpenParam)
         await().until { workspaceManager.openDocuments.containsKey(file.toURI()) }
         val diagnosticBeforeChange = testClient.diagnostics.toMap()
 
@@ -484,7 +484,7 @@ class RellLanguageServerTest {
         val contentChanges = TextDocumentContentChangeEvent(range, ";")
         val didChangeParam = DidChangeTextDocumentParams(versionedTextDocument, listOf(contentChanges))
 
-        server.didChange(didChangeParam)
+        server.textDocumentService.didChange(didChangeParam)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         assertThat(diagnosticBeforeChange.keys).containsOnly(file.toURI().toString())
@@ -501,11 +501,11 @@ class RellLanguageServerTest {
 
         val textDocumentItem = createTextDocumentItem(savedFile)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
-        server.didOpen(didOpenParam)
+        server.textDocumentService.didOpen(didOpenParam)
         await().until { workspaceManager.openDocuments.containsKey(savedFile.toURI()) }
 
         val didSaveParams = DidSaveTextDocumentParams(TextDocumentIdentifier(savedFile.toURI().toString()))
-        server.didSave(didSaveParams)
+        server.textDocumentService.didSave(didSaveParams)
         await().until { testClient.diagnostics.size == 2 }
 
         assertThat(testClient.diagnostics.keys).containsOnly(

@@ -71,7 +71,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
 
         val fileEvent = FileEvent(newFileUri.toString(), FileChangeType.Created)
         val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEvent))
-        server.didChangeWatchedFiles(didChangeParams)
+        server.workspaceService.didChangeWatchedFiles(didChangeParams)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         assertThat(indexer.fileUriResourceMap.keys).containsOnly(newFileUri)
@@ -107,7 +107,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
 
         val fileEvent = FileEvent(configFileUri.toString(), FileChangeType.Created)
         val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEvent))
-        server.didChangeWatchedFiles(didChangeParams)
+        server.workspaceService.didChangeWatchedFiles(didChangeParams)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         val diagnostics = testClient.diagnostics
@@ -157,7 +157,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         val rellFileUpdate = FileEvent(rellFileUri.toString(), FileChangeType.Changed)
         val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEvent, rellFileUpdate))
 
-        server.didChangeWatchedFiles(didChangeParams)
+        server.workspaceService.didChangeWatchedFiles(didChangeParams)
 
         await().until { testClient.diagnostics.isNotEmpty() }
 
@@ -196,7 +196,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
 
         val fileEvent = FileEvent(newFileUri.toString(), FileChangeType.Created)
         val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEvent))
-        server.didChangeWatchedFiles(didChangeParams)
+        server.workspaceService.didChangeWatchedFiles(didChangeParams)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         assertThat(indexer.fileUriResourceMap.keys).containsOnly(affectedFileUri, newFileUri)
@@ -216,7 +216,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
 
         val fileEvent = FileEvent(newFileUri.toString(), FileChangeType.Deleted)
         val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEvent))
-        server.didChangeWatchedFiles(didChangeParams)
+        server.workspaceService.didChangeWatchedFiles(didChangeParams)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         assertThat(resourcesBeforeDeletion.keys).containsOnly(newFileUri)
@@ -235,7 +235,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
 
         val fileEvent = FileEvent(newFileUri.toString(), FileChangeType.Changed)
         val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEvent))
-        server.didChangeWatchedFiles(didChangeParams)
+        server.workspaceService.didChangeWatchedFiles(didChangeParams)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         assertThat(testClient.diagnostics.keys).containsOnly(newFileUri.toString())
@@ -258,7 +258,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         val fileEventDelete = FileEvent(oldFileUri.toString(), FileChangeType.Deleted)
         val fileEventCreate = FileEvent(renamedFileUri.toString(), FileChangeType.Created)
         val didChangeParamsRename = DidChangeWatchedFilesParams(listOf(fileEventDelete, fileEventCreate))
-        server.didChangeWatchedFiles(didChangeParamsRename)
+        server.workspaceService.didChangeWatchedFiles(didChangeParamsRename)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         assertThat(resourcesBeforeDeletion.keys).containsOnly(oldFileUri)
@@ -321,7 +321,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         val fileEventCreate = FileEvent(newFolderName.toURI().toString().trimEnd('/'), FileChangeType.Created)
         val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEventDelete, fileEventCreate))
 
-        server.didChangeWatchedFiles(didChangeParams)
+        server.workspaceService.didChangeWatchedFiles(didChangeParams)
         await().until { testClient.diagnostics.size == 5 }
 
         val issues = indexer.getAllIssues()
@@ -384,7 +384,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
 
         val fileEvent = FileEvent(testDataBuilder.chromiaConfigFileUri.toString(), FileChangeType.Changed)
         val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEvent))
-        server.didChangeWatchedFiles(didChangeParams)
+        server.workspaceService.didChangeWatchedFiles(didChangeParams)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         val diagnostics = testClient.diagnostics

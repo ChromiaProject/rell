@@ -52,7 +52,7 @@ class RellLanguageServerSemanticTokens {
             "{\"path\":\"/path/to/lib/ft3-lib/rell/src/lib/ft4/accounts/strategies/transfer/operations.rell" +
             "\",\"ref\":\"~\"}"
         val params = SemanticTokensParams(TextDocumentIdentifier(gitUri))
-        val tokens = server.semanticTokensFull(params).join()
+        val tokens = server.textDocumentService.semanticTokensFull(params).join()
 
         assertThat(tokens).isNotNull()
         assertThat(tokens.data).isNull()
