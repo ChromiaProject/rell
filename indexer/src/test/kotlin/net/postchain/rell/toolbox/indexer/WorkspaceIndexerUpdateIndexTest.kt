@@ -6,7 +6,6 @@ import assertk.assertions.isNotEqualTo
 import assertk.assertions.isNull
 import io.mockk.every
 import io.mockk.mockk
-import java.net.URI
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.linter.AbstractFormattingStyleLinter
 import net.postchain.rell.toolbox.linter.AbstractRellLinter
@@ -16,6 +15,7 @@ import net.postchain.rell.toolbox.testing.testData
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.test.assertNotNull
