@@ -8,7 +8,7 @@ import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import java.net.URI
 
-class Document(val fileUri: URI, val version: Int, val content: String) {
+data class Document(val fileUri: URI, val version: Int, val content: String) {
 
     fun getOffSet(position: Position): Int =
         positionToOffset(content, net.postchain.rell.toolbox.common.Position(position.line, position.character))

@@ -14,6 +14,7 @@ import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
 import net.postchain.rell.toolbox.lsp.server.CapabilitiesProvider
 import net.postchain.rell.toolbox.lsp.server.LauncherType
+import net.postchain.rell.toolbox.lsp.server.RellDocumentManager
 import net.postchain.rell.toolbox.lsp.server.RellFormattingManager
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServerTerminator
@@ -72,6 +73,7 @@ class TestServerModule {
         singleOf(::RellCompletionService)
         singleOf(::RellTextDocumentService)
         singleOf(::RellWorkspaceService)
+        singleOf(::RellDocumentManager)
 
         single { params ->
             StdioServerLauncher(

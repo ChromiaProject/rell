@@ -62,6 +62,7 @@ class RellWorkspaceManager(
     private val formatterOptionsResolver: RellFormatterOptionsResolver,
     private val linterOptionsResolver: RellLinterOptionsResolver,
     private val completionService: RellCompletionService,
+    private val documentManager: RellDocumentManager,
 ) {
 
     var indexCachingEnabled: Boolean = false
@@ -69,7 +70,6 @@ class RellWorkspaceManager(
     private lateinit var workspaceFolders: List<WorkspaceFolder>
     private lateinit var diagnosticsPublisher: (uri: URI, List<RellIssue>) -> Unit
     val indexers: MutableMap<URI, WorkspaceIndexer> = ConcurrentHashMap()
-    val openDocuments: MutableMap<URI, Document> = mutableMapOf()
 
     private val workspaceFolderUris get() = workspaceFolders.map {
         parseFileUri(it.uri) ?: throw IllegalArgumentException("Invalid workspace folder ${it.uri}")
@@ -172,7 +172,7 @@ class RellWorkspaceManager(
     fun getHoverDocumentation(params: HoverParams): MarkupContent {
         val fileUri = parseFileUri(params.textDocument.uri) ?: return MarkupContent("plaintext", "")
         val indexer = getIndexerFor(fileUri)
-        val document = openDocuments[fileUri] ?: return MarkupContent("plaintext", "")
+        val document = documentManager.getOpenDocument(fileUri) ?: return MarkupContent("plaintext", "")
 
         val symbolLocation = rellSymbolService.getSymbolLocationsWithSymbol(document, indexer, params.position)
         return MarkupContent("markdown", formatDocSymbol(symbolLocation?.second?.doc))
@@ -187,7 +187,7 @@ class RellWorkspaceManager(
     }
 
     fun didOpen(fileUri: URI, version: Int, content: String) {
-        openDocuments[fileUri] = Document(fileUri, version, content)
+        documentManager.openDocument(fileUri, version, content)
         val indexer = getIndexerFor(fileUri)
         indexer.updateFileUriResourceMap(fileUri, content)
         reportDiagnostics(indexer, listOf(fileUri))
@@ -242,18 +242,12 @@ class RellWorkspaceManager(
     }
 
     fun didClose(fileUri: URI) {
-        openDocuments.remove(fileUri)
+        documentManager.closeDocument(fileUri)
     }
 
     fun didChangeTextDocumentContent(fileUri: URI, contentChanges: List<TextDocumentContentChangeEvent>) {
-        val document = openDocuments[fileUri]
-        if (document == null) {
-            logger.error { "The document $fileUri has not been opened." }
-            return
-        }
-        val updatedDocument = document.applyTextDocumentChanges(contentChanges)
+        val updatedDocument = documentManager.applyTextDocumentChanges(fileUri, contentChanges)
         val indexer = getIndexerFor(fileUri)
-        openDocuments[fileUri] = updatedDocument
         indexer.updateFileUriResourceMap(fileUri, updatedDocument.content)
         reportDiagnostics(indexer, listOf(fileUri))
     }
@@ -307,7 +301,7 @@ class RellWorkspaceManager(
     }
 
     fun didSave(fileUri: URI) {
-        val contents = openDocuments[fileUri]
+        val contents = documentManager.getOpenDocument(fileUri)
         if (contents == null) {
             logger.error { "The document $fileUri has not been opened." }
             return
@@ -329,7 +323,7 @@ class RellWorkspaceManager(
         position: Position
     ): Either<MutableList<out Location>, MutableList<out LocationLink>> {
         val indexer = getIndexerFor(fileUri)
-        val document = openDocuments[fileUri] ?: return Either.forLeft(mutableListOf())
+        val document = documentManager.getOpenDocument(fileUri) ?: return Either.forLeft(mutableListOf())
         return Either.forLeft(rellSymbolService.getSymbolLocations(document, indexer, position))
     }
 
@@ -338,28 +332,20 @@ class RellWorkspaceManager(
         position: Position
     ): Pair<Location, IdeSymbolInfo>? {
         val indexer = getIndexerFor(fileUri)
-        val document = openDocuments[fileUri] ?: return null
+        val document = documentManager.getOpenDocument(fileUri) ?: return null
 
         return rellSymbolService.getSymbolLocationsWithSymbol(document, indexer, position)
     }
 
     fun getDocumentSymbols(fileUri: URI): List<Either<SymbolInformation, DocumentSymbol>> {
         val resource = getResource(fileUri) ?: return listOf()
-        val document = openDocuments[fileUri] ?: return listOf()
+        val document = documentManager.getOpenDocument(fileUri) ?: return listOf()
         return rellSymbolService.getDocumentSymbols(fileUri, document, resource)
     }
 
-    private fun getDocument(uri: URI): Document = getOpenDocument(uri) ?: Document(
-        uri,
-        version = 0,
-        content = File(uri).readText()
-    )
-
-    fun getOpenDocument(uri: URI): Document? = openDocuments[uri]
-
     fun getReferenceLocations(fileUri: URI, position: Position?, includeDefinition: Boolean = true): List<Location> {
         val indexer = getIndexerFor(fileUri)
-        val document = openDocuments[fileUri] ?: return listOf()
+        val document = documentManager.getOpenDocument(fileUri) ?: return listOf()
 
         val result: MutableList<Location> = mutableListOf()
         if (includeDefinition && position != null) {
@@ -380,7 +366,8 @@ class RellWorkspaceManager(
         position: Position
     ): Either3<Range, PrepareRenameResult, PrepareRenameDefaultBehavior> {
         val indexer = getIndexerFor(fileUri)
-        val document = openDocuments[fileUri] ?: return Either3.forThird(PrepareRenameDefaultBehavior())
+        val document = documentManager.getOpenDocument(fileUri)
+            ?: return Either3.forThird(PrepareRenameDefaultBehavior())
 
         val location = rellSymbolService.getSymbolLocationForRenaming(document, indexer, position)
             ?: return Either3.forThird(PrepareRenameDefaultBehavior())
@@ -416,7 +403,7 @@ class RellWorkspaceManager(
 
     fun rename(fileUri: URI, position: Position, newName: String): WorkspaceEdit {
         val indexer = getIndexerFor(fileUri)
-        val document = openDocuments[fileUri] ?: return WorkspaceEdit()
+        val document = documentManager.getOpenDocument(fileUri) ?: return WorkspaceEdit()
         val (renamingTriggerSymbol, interval) = rellSymbolService.getSymbolInfoWithInterval(document, indexer, position)
             ?: return WorkspaceEdit()
 
@@ -446,7 +433,7 @@ class RellWorkspaceManager(
     ): TextEdit {
         val locationFileUri = URI(location.uri)
         val symbolToRename = rellSymbolService.getSymbolInfoWithInterval(
-            getDocument(locationFileUri),
+            documentManager.getDocument(locationFileUri),
             indexer,
             location.range.start
         )?.ideSymbolInfo ?: return TextEdit(location.range, newName)
@@ -576,7 +563,7 @@ class RellWorkspaceManager(
     }
 
     fun getCompletions(fileUri: URI, position: Position): List<CompletionItem> {
-        val document = openDocuments[fileUri] ?: return listOf()
+        val document = documentManager.getOpenDocument(fileUri) ?: return listOf()
         val indexer = getIndexerForOrNull(fileUri) ?: return listOf()
         val offset = document.getOffSet(position)
         val trimPrefixDot = shouldTrimPrefixDot(document, offset)

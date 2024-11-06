@@ -205,7 +205,35 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
 
         val rellFileResource = workspaceManager.indexers[sourceDir.toURI()]!!.fileUriResourceMap[rellFile.toURI()]!!
         assertThat(rellFileResource.parseTree.text).contains(updatedContents)
-        assertThat(workspaceManager.openDocuments.keys).containsOnly(rellFile.toURI())
+        assertThat(documentManager.getOpenDocuments().keys).containsOnly(rellFile.toURI())
+    }
+
+    @Test
+    fun `Document manager handles files from multiple workspaces at the same time`() {
+        val content = """
+                module;
+                function some_function() {
+                    return "main";
+                }
+        """.trimIndent()
+        val workspace1 = File(workspace, "workspace1").apply { mkdir() }
+        val workspace2 = File(workspace, "workspace2").apply { mkdir() }
+        val testDataBuilder1 = testData(workspace1) {
+            addMainFile(content)
+        }
+        val testDataBuilder2 = testData(workspace2) {
+            addMainFile(content)
+        }
+        val file1 = testDataBuilder1.mainFile
+        val file2 = testDataBuilder2.mainFile
+        val file1Uri = file1.toURI()
+        val file2Uri = file2.toURI()
+        initializeWorkspaces(listOf(workspace1, workspace2))
+
+        workspaceManager.didOpen(file1Uri, 1, file1.readText())
+        workspaceManager.didOpen(file2Uri, 1, file2.readText())
+
+        assertThat(documentManager.getOpenDocuments().keys).containsOnly(file1Uri, file2Uri)
     }
 
     @Test
@@ -225,7 +253,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         val gitFileResource = indexer.fileUriResourceMap[gitFileUri]
         assertThat(gitFileResource).isNull()
         assertThat(indexer.fileUriResourceMap.keys).contains(rellFileUri)
-        assertThat(workspaceManager.openDocuments.keys).containsOnly(gitFileUri)
+        assertThat(documentManager.getOpenDocuments().keys).containsOnly(gitFileUri)
     }
 
     @Test
@@ -287,9 +315,9 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         initializeWorkspace()
 
         workspaceManager.didOpen(rellFileUri, 1, "gibberish")
-        assertThat(workspaceManager.openDocuments.keys).containsOnly(rellFileUri)
+        assertThat(documentManager.getOpenDocuments().keys).containsOnly(rellFileUri)
         workspaceManager.didClose(rellFileUri)
-        assertThat(workspaceManager.openDocuments.keys).isEmpty()
+        assertThat(documentManager.getOpenDocuments().keys).isEmpty()
     }
 
     @Test
@@ -316,8 +344,8 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 }
         """.trimIndent()
 
-        assertThat(workspaceManager.openDocuments.keys).containsOnly(rellFileUri)
-        assertThat(workspaceManager.openDocuments[rellFileUri]!!.content).isEqualTo(expectedRellFileContent)
+        assertThat(documentManager.getOpenDocuments().keys).containsOnly(rellFileUri)
+        assertThat(documentManager.getOpenDocuments()[rellFileUri]!!.content).isEqualTo(expectedRellFileContent)
     }
 
     @Test

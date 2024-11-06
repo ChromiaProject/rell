@@ -51,6 +51,7 @@ class RellLanguageServerTest {
     private lateinit var clientServerLauncher: TestClientServerLauncher
     private lateinit var server: RellLanguageServer
     private lateinit var workspaceManager: RellWorkspaceManager
+    private lateinit var documentManager: RellDocumentManager
     private lateinit var testClient: TestClient
     private lateinit var lspIncludeDefinitionProvider: LspIncludeDefinitionProvider
     private lateinit var testWorkspaceFolder: File
@@ -73,6 +74,7 @@ class RellLanguageServerTest {
         testClient = clientServerLauncher.testClient
         server = koinApp.koin.get<RellLanguageServer>()
         workspaceManager = koinApp.koin.get<RellWorkspaceManager>()
+        documentManager = koinApp.koin.get<RellDocumentManager>()
         assertThat(testClient.diagnostics).isEmpty()
     }
 
@@ -376,7 +378,7 @@ class RellLanguageServerTest {
 
         assertThat(testClient.diagnostics.keys).containsOnly(file.toURI().toString())
         assertThat(testClient.diagnostics[file.toURI().toString()]!!.size).isEqualTo(0)
-        assertThat(workspaceManager.openDocuments.keys).containsOnly(file.toURI())
+        assertThat(documentManager.getOpenDocuments().keys).containsOnly(file.toURI())
     }
 
     @Test
@@ -390,7 +392,7 @@ class RellLanguageServerTest {
 
         assertThat(testClient.diagnostics.keys).containsOnly(file.toURI().toString())
         assertThat(testClient.diagnostics[file.toURI().toString()]!!.size).isEqualTo(1)
-        assertThat(workspaceManager.openDocuments.keys).containsOnly(file.toURI())
+        assertThat(documentManager.getOpenDocuments().keys).containsOnly(file.toURI())
     }
 
     @Test
@@ -404,7 +406,7 @@ class RellLanguageServerTest {
 
         assertThat(testClient.diagnostics.keys).containsOnly(file.toURI().toString())
         assertThat(testClient.diagnostics[file.toURI().toString()]!!.size).isEqualTo(3)
-        assertThat(workspaceManager.openDocuments.keys).containsOnly(file.toURI())
+        assertThat(documentManager.getOpenDocuments().keys).containsOnly(file.toURI())
     }
 
     @Test
@@ -422,7 +424,7 @@ class RellLanguageServerTest {
 
         assertThat(testClient.diagnostics.keys).containsOnly(file.toURI().toString())
         assertThat(testClient.diagnostics[file.toURI().toString()]!!.size).isEqualTo(0)
-        assertThat(workspaceManager.openDocuments.keys).containsOnly(file.toURI())
+        assertThat(documentManager.getOpenDocuments().keys).containsOnly(file.toURI())
         assertThat(workspaceManager.indexers.keys).containsOnly(
             testDataBuilder.sourceFolderUri,
             testWorkspaceFolder.resolve("src").toURI()
@@ -435,13 +437,13 @@ class RellLanguageServerTest {
         val textDocumentItem = createTextDocumentItem(file)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
         server.textDocumentService.didOpen(didOpenParam)
-        await().until { workspaceManager.openDocuments.isNotEmpty() }
+        await().until { documentManager.getOpenDocuments().isNotEmpty() }
 
         val didCloseParam = DidCloseTextDocumentParams(TextDocumentIdentifier(file.toURI().toString()))
         server.textDocumentService.didClose(didCloseParam)
 
-        await().until { workspaceManager.openDocuments.isEmpty() }
-        assertThat(workspaceManager.openDocuments).isEmpty()
+        await().until { documentManager.getOpenDocuments().isEmpty() }
+        assertThat(documentManager.getOpenDocuments()).isEmpty()
     }
 
     @Test
@@ -451,7 +453,7 @@ class RellLanguageServerTest {
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
 
         server.textDocumentService.didOpen(didOpenParam)
-        await().until { workspaceManager.openDocuments.containsKey(file.toURI()) }
+        await().until { documentManager.getOpenDocuments().containsKey(file.toURI()) }
         val diagnosticBeforeChange = testClient.diagnostics.toMap()
 
         val versionedTextDocument = VersionedTextDocumentIdentifier(file.toURI().toString(), 2)
@@ -466,7 +468,7 @@ class RellLanguageServerTest {
         assertThat(diagnosticBeforeChange[file.toURI().toString()]!!.size).isEqualTo(0)
         assertThat(testClient.diagnostics.keys).containsOnly(file.toURI().toString())
         assertThat(testClient.diagnostics[file.toURI().toString()]!!.size).isEqualTo(1)
-        assertThat(workspaceManager.openDocuments.keys).containsOnly(file.toURI())
+        assertThat(documentManager.getOpenDocuments().keys).containsOnly(file.toURI())
     }
 
     @Test
@@ -476,7 +478,7 @@ class RellLanguageServerTest {
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
 
         server.textDocumentService.didOpen(didOpenParam)
-        await().until { workspaceManager.openDocuments.containsKey(file.toURI()) }
+        await().until { documentManager.getOpenDocuments().containsKey(file.toURI()) }
         val diagnosticBeforeChange = testClient.diagnostics.toMap()
 
         val versionedTextDocument = VersionedTextDocumentIdentifier(file.toURI().toString(), 2)
@@ -491,7 +493,7 @@ class RellLanguageServerTest {
         assertThat(diagnosticBeforeChange[file.toURI().toString()]!!.size).isEqualTo(1)
         assertThat(testClient.diagnostics.keys).containsOnly(file.toURI().toString())
         assertThat(testClient.diagnostics[file.toURI().toString()]!!.size).isEqualTo(0)
-        assertThat(workspaceManager.openDocuments.keys).containsOnly(file.toURI())
+        assertThat(documentManager.getOpenDocuments().keys).containsOnly(file.toURI())
     }
 
     @Test
@@ -502,7 +504,7 @@ class RellLanguageServerTest {
         val textDocumentItem = createTextDocumentItem(savedFile)
         val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
         server.textDocumentService.didOpen(didOpenParam)
-        await().until { workspaceManager.openDocuments.containsKey(savedFile.toURI()) }
+        await().until { documentManager.getOpenDocuments().containsKey(savedFile.toURI()) }
 
         val didSaveParams = DidSaveTextDocumentParams(TextDocumentIdentifier(savedFile.toURI().toString()))
         server.textDocumentService.didSave(didSaveParams)
