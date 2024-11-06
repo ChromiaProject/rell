@@ -40,6 +40,7 @@ class RellSymbolRenameTest {
     private lateinit var clientServerLauncher: TestClientServerLauncher
     private lateinit var server: RellLanguageServer
     private lateinit var workspaceManager: RellWorkspaceManager
+    private lateinit var documentManager: RellDocumentManager
     private lateinit var testClient: TestClient
 
     private val serverModule = TestServerModule()
@@ -55,6 +56,7 @@ class RellSymbolRenameTest {
         testClient = clientServerLauncher.testClient
         server = koinApp.koin.get<RellLanguageServer>()
         workspaceManager = koinApp.koin.get<RellWorkspaceManager>()
+        documentManager = koinApp.koin.get<RellDocumentManager>()
     }
 
     @AfterEach
@@ -1242,7 +1244,7 @@ class RellSymbolRenameTest {
     private fun applyChanges(changes: Map<String, List<TextEdit>>) {
         changes.forEach { (fileOfRenamingEvent, textEdits) ->
             val uri = URI(fileOfRenamingEvent)
-            val document = workspaceManager.getOpenDocument(uri) ?: Document(uri, 1, uri.toPath().readText())
+            val document = documentManager.getOpenDocument(uri) ?: Document(uri, 1, uri.toPath().readText())
             val changedDocument = document.applyTextDocumentChanges(
                 textEdits.map {
                     TextDocumentContentChangeEvent(

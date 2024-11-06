@@ -13,7 +13,8 @@ import java.net.URI
 
 class RellFormattingManager(
     private val workspaceManager: RellWorkspaceManager,
-    private val formatterOptionsResolver: RellFormatterOptionsResolver
+    private val formatterOptionsResolver: RellFormatterOptionsResolver,
+    private val documentManager: RellDocumentManager,
 ) {
     fun format(fileUri: URI, options: FormattingOptions?): List<TextEdit> {
         val (fileDocument, replacements) = getDocumentReplacements(fileUri, options)
@@ -36,7 +37,7 @@ class RellFormattingManager(
         options: FormattingOptions?
     ): Pair<Document, List<TextReplacement>> {
         val formatterRequest = setUserOptions(fileUri, options)
-        val document = workspaceManager.getOpenDocument(fileUri)
+        val document = documentManager.getOpenDocument(fileUri)
         val fileDocument = document ?: Document(fileUri, 1, File(fileUri).readText())
         val replacements = RellFormatter.getFormattingChanges(fileDocument.content, formatterRequest)
         return fileDocument to replacements

@@ -9,6 +9,7 @@ import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
+import net.postchain.rell.toolbox.lsp.server.RellDocumentManager
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import org.eclipse.lsp4j.WorkspaceFolder
@@ -24,6 +25,7 @@ open class WorkspaceManagerTestBase {
     protected lateinit var workspace: File
     protected lateinit var sourceDir: File
     protected val symbolService = RellSymbolService()
+    protected val documentManager = RellDocumentManager()
 
     protected val rellLinter = RellLinter()
     protected val formattingStyleLinter = FormattingStyleLinter()
@@ -47,7 +49,8 @@ open class WorkspaceManagerTestBase {
                 formattingStyleLinter,
                 RellFormatterOptionsResolver(),
                 RellLinterOptionsResolver(),
-                RellCompletionService()
+                RellCompletionService(),
+                documentManager
             )
     }
 
@@ -62,6 +65,11 @@ open class WorkspaceManagerTestBase {
 
     protected fun initializeWorkspace(workspace: File = this.workspace) {
         val workspaceFolders = listOf(WorkspaceFolder(workspace.toURI().toString()))
+        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+    }
+
+    protected fun initializeWorkspaces(workspaces: List<File>) {
+        val workspaceFolders = workspaces.map { WorkspaceFolder(it.toURI().toString()) }
         workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
     }
 }
