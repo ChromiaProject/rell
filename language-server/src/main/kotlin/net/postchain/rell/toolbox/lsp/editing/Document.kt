@@ -27,20 +27,16 @@ data class Document(val fileUri: URI, val version: Int, val content: String) {
         var currentDocument = this
         val newVersion = currentDocument.version + 1
 
-        val sortedChanges = changes
-            .sortedByDescending { it.range.end.line }
-            .sortedByDescending { it.range.end.character }
-
-        for (change in sortedChanges) {
+        for (change in changes) {
             val newContent: String = if (change.range == null) {
                 change.text
             } else {
                 val start = currentDocument.getOffSet(change.range.start)
                 val end = currentDocument.getOffSet(change.range.end)
                 (
-                    currentDocument.content.substring(0, start) + change.text +
-                        currentDocument.content.substring(end)
-                    )
+                        currentDocument.content.substring(0, start) + change.text +
+                                currentDocument.content.substring(end)
+                        )
             }
             currentDocument = Document(fileUri, newVersion, newContent)
         }
@@ -56,4 +52,5 @@ data class Document(val fileUri: URI, val version: Int, val content: String) {
         }
         return content.getOrNull(currentOffset)
     }
+
 }

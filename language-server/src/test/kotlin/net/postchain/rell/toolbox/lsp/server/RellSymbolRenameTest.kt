@@ -1245,8 +1245,13 @@ class RellSymbolRenameTest {
         changes.forEach { (fileOfRenamingEvent, textEdits) ->
             val uri = URI(fileOfRenamingEvent)
             val document = documentManager.getOpenDocument(uri) ?: Document(uri, 1, uri.toPath().readText())
+
+            val sortedTextEdits = textEdits
+                .sortedByDescending { it.range.end.line }
+                .sortedByDescending { it.range.end.character }
+
             val changedDocument = document.applyTextDocumentChanges(
-                textEdits.map {
+                sortedTextEdits.map {
                     TextDocumentContentChangeEvent(
                         it.range,
                         it.newText
