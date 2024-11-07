@@ -2,7 +2,7 @@
   <configuration default="false" name="Run language server with trace" type="JetRunConfigurationType">
     <option name="MAIN_CLASS_NAME" value="net.postchain.rell.toolbox.lsp.SocketMainKt" />
     <module name="rell-toolbox.language-server.main" />
-    <option name="PROGRAM_PARAMETERS" value="-trace" />
+    <option name="PROGRAM_PARAMETERS" value="-trace -devMode" />
     <shortenClasspath name="NONE" />
     <method v="2">
       <option name="Make" enabled="true" />

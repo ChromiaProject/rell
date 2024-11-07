@@ -4,6 +4,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import net.postchain.rell.toolbox.util.getCurrentLogFileName
 import org.eclipse.lsp4j.launch.LSPLauncher
+import org.eclipse.lsp4j.services.LanguageClient
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.FileOutputStream
@@ -24,13 +25,15 @@ class StdioServerLauncher(
             logger.info { "Starting Rell Language Server..." }
             val validate: Boolean = shouldValidate(args)
             val trace: PrintWriter? = setTracePrintWriter(args)
-            val launcher = LSPLauncher.createServerLauncher(
-                languageServer,
-                serverInputStream,
-                serverOutputStream,
-                validate,
-                trace
-            )
+            val launcher = LSPLauncher.Builder<LanguageClient>()
+                .setLocalService(languageServer)
+                .setRemoteInterface(LanguageClient::class.java)
+                .setInput(serverInputStream)
+                .setOutput(serverOutputStream)
+                .validateMessages(validate)
+                .traceMessages(trace)
+                .setExceptionHandler { defaultExceptionHandler(it, args) }
+                .create()
             redirectStandardStreams()
             languageServer.connect(launcher.remoteProxy)
             launcher.startListening()
