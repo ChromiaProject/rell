@@ -3,9 +3,21 @@ plugins {
     id("com.gradleup.shadow") version "8.3.2"
     application
     id("jacoco-report-aggregation")
+    id("io.sentry.jvm.gradle") version "4.13.0"
+}
+
+sentry {
+    // Generates a JVM (Java, Kotlin, etc.) source bundle and uploads your source code to Sentry.
+    // This enables source context, allowing you to see your source
+    // code as part of your stack traces in Sentry.
+    includeSourceContext = true
+    org = "chromaway-ab-za"
+    projectName = "rell-toolbox"
+    authToken = System.getenv("SENTRY_AUTH_TOKEN")
 }
 
 dependencies {
+    implementation(libs.sentry.log4j2)
     implementation(libs.bundles.lsp4j)
     implementation(libs.bundles.logging)
     implementation(libs.bundles.koin)
@@ -35,6 +47,10 @@ dependencies {
 
 tasks.check {
     dependsOn(tasks.named<JacocoReport>("testCodeCoverageReport"))
+}
+
+tasks.sourcesJar {
+    dependsOn(tasks.generateSentryDebugMetaPropertiesjava, tasks.collectExternalDependenciesForSentry)
 }
 
 application {

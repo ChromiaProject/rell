@@ -3,6 +3,7 @@ package net.postchain.rell.toolbox.lsp.launcher
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import org.eclipse.lsp4j.launch.LSPLauncher
+import org.eclipse.lsp4j.services.LanguageClient
 import java.io.PrintWriter
 import java.net.InetAddress
 import java.net.ServerSocket
@@ -21,13 +22,15 @@ class SocketServerLauncher(languageServer: RellLanguageServer) : AbstractServerL
                 InetAddress.getLoopbackAddress()
             ).use { socket ->
                 val client = socket.accept()
-                val launcher = LSPLauncher.createServerLauncher(
-                    languageServer,
-                    client.getInputStream(),
-                    client.getOutputStream(),
-                    validate,
-                    trace
-                )
+                val launcher = LSPLauncher.Builder<LanguageClient>()
+                    .setLocalService(languageServer)
+                    .setRemoteInterface(LanguageClient::class.java)
+                    .setInput(client.getInputStream())
+                    .setOutput(client.getOutputStream())
+                    .validateMessages(validate)
+                    .traceMessages(trace)
+                    .setExceptionHandler { defaultExceptionHandler(it, args) }
+                    .create()
                 languageServer.connect(launcher.remoteProxy)
                 launcher.startListening()
                 logger.info { "Rell Language Server started." }
