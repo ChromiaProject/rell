@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
+
 plugins {
     id("net.postchain.rell.toolbox.kotlin-common-conventions")
     id("com.gradleup.shadow") version "8.3.2"
@@ -59,6 +61,12 @@ application {
 
 tasks.jar {
     manifest.attributes["Multi-Release"] = true
+}
+
+tasks.shadowJar{
+    manifest.attributes["Multi-Release"] = true
+    transform(Log4j2PluginsCacheFileTransformer::class.java)
+    mergeServiceFiles()
 }
 
 publishing {
