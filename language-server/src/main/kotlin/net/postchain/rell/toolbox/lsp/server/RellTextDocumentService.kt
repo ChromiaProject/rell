@@ -196,10 +196,11 @@ class RellTextDocumentService(
     }
 
     override fun resolveCodeAction(unresolved: CodeAction): CompletableFuture<CodeAction> {
-        val codeActionTitle = unresolved.title
-        val fileUri = parseFileUri((unresolved.data as JsonObject).get("fileUri").asString)
+        val data = unresolved.data as? JsonObject ?: return CompletableFuture.completedFuture(CodeAction())
+        val fileUri = parseFileUri(data.get("fileUri").asString)
             ?: return CompletableFuture.completedFuture(CodeAction())
-        return if (codeActionTitle == CodeActionTitles.AUTO_FIXABLE.title) {
+
+        return if (unresolved.title == CodeActionTitles.AUTO_FIXABLE.title) {
             return CompletableFuture.completedFuture(workspaceManager.getCodeActionForFile(fileUri))
         } else {
             CompletableFuture.completedFuture(CodeAction())
