@@ -22,7 +22,7 @@ class CapabilitiesProvider {
             setDefinitionProvider(true)
             setReferencesProvider(true)
             setDocumentSymbolProvider(true)
-            setWorkspaceSymbolProvider(true)
+            setWorkspaceSymbolProvider(false)
             setTextDocumentSync(TextDocumentSyncKind.Incremental)
             semanticTokensProvider = SemanticTokensWithRegistrationOptions().apply {
                 legend = SemanticTokensLegend(
