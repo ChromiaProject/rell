@@ -16,9 +16,11 @@ data class Document(val fileUri: URI, val version: Int, val content: String) {
     fun getPosition(offset: Int): Position = offsetToPosition(content, offset).toLspPosition()
 
     /**
-     * As opposed to [TextEdit][] the positions in the edits of a [DidChangeTextDocumentParams] refer to the
+     * As opposed to [TextEdit][org.eclipse.lsp4j.TextEdit] the positions in the edits of a
+     * [DidChangeTextDocumentParams][org.eclipse.lsp4j.DidChangeTextDocumentParams] refer to the
      * state after applying the preceding edits. See
-     * https://microsoft.github.io/language-server-protocol/specification#textedit-1 and
+     * https://microsoft.github.io/language-server-protocol/specification#textedit-1
+     * https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textEditArray
      * https://github.com/microsoft/vscode/issues/23173#issuecomment-289378160 for details.
      *
      * @return a new document with an incremented version and the text document changes applied.
@@ -34,9 +36,9 @@ data class Document(val fileUri: URI, val version: Int, val content: String) {
                 val start = currentDocument.getOffSet(change.range.start)
                 val end = currentDocument.getOffSet(change.range.end)
                 (
-                        currentDocument.content.substring(0, start) + change.text +
-                                currentDocument.content.substring(end)
-                        )
+                    currentDocument.content.substring(0, start) + change.text +
+                        currentDocument.content.substring(end)
+                    )
             }
             currentDocument = Document(fileUri, newVersion, newContent)
         }
@@ -52,5 +54,4 @@ data class Document(val fileUri: URI, val version: Int, val content: String) {
         }
         return content.getOrNull(currentOffset)
     }
-
 }
