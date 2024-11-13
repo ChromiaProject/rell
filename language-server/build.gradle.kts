@@ -1,5 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
 
+val sentryEnabled = System.getenv("SENTRY_AUTH_TOKEN") != null
+
 plugins {
     id("net.postchain.rell.toolbox.kotlin-common-conventions")
     id("com.gradleup.shadow") version "8.3.2"
@@ -12,7 +14,7 @@ sentry {
     // Generates a JVM (Java, Kotlin, etc.) source bundle and uploads your source code to Sentry.
     // This enables source context, allowing you to see your source
     // code as part of your stack traces in Sentry.
-    includeSourceContext = true
+    includeSourceContext = sentryEnabled
     org = "chromaway-ab-za"
     projectName = "rell-toolbox"
     authToken = System.getenv("SENTRY_AUTH_TOKEN")
