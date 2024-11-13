@@ -135,7 +135,7 @@ class RellResourceFactory(
                 options
             )
         } catch (e: Exception) {
-            logger.error(e) { "Compilation failed for file: ${compilerSrcPath.str()}" }
+            logger.warn(e) { "Compilation failed for file: ${compilerSrcPath.str()}" }
             null
         }
     }
