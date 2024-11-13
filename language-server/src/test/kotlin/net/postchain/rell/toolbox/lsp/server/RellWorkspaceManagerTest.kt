@@ -582,7 +582,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         }
         val localLinkFile = testDataBuilder.sourceFile(localLinkFilePath)
 
-        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString()))
+        val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString(), TEST_WORKSPACE_NAME))
         workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
         workspaceManager.didOpen(localLinkFile.toURI(), 1, localLinkFile.readText())
 

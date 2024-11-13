@@ -1,6 +1,7 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
+import assertk.assertions.isEmpty
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import net.postchain.rell.toolbox.lsp.TestClient
@@ -55,7 +56,7 @@ class RellLanguageServerSemanticTokens {
         val tokens = server.textDocumentService.semanticTokensFull(params).join()
 
         assertThat(tokens).isNotNull()
-        assertThat(tokens.data).isNull()
+        assertThat(tokens.data).isEmpty()
         assertThat(tokens.resultId).isNull()
     }
 }
