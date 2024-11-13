@@ -349,6 +349,36 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
     }
 
     @Test
+    fun `didChangeTextDocumentContent correctly updates file when ordered sequential edits are part of one event`() {
+        val testDataBuilder = testData(workspace) {
+            addFile(rellFilePath, rellFileContent)
+        }
+        val rellFile = testDataBuilder.sourceFile(rellFilePath)
+        initializeWorkspace()
+        workspaceManager.didOpen(rellFile.toURI(), 1, rellFileContent)
+
+        val updateEvents = listOf(
+            TextDocumentContentChangeEvent(Range(Position(2, 4), Position(2, 4)), " "),
+            TextDocumentContentChangeEvent(Range(Position(2, 5), Position(2, 5)), " "),
+            TextDocumentContentChangeEvent(Range(Position(2, 6), Position(2, 6)), " "),
+            TextDocumentContentChangeEvent(Range(Position(2, 7), Position(2, 7)), " "),
+        )
+
+        workspaceManager.didChangeTextDocumentContent(rellFile.toURI(), updateEvents)
+
+        val rellFileUri = rellFile.toURI()
+        val expectedRellFileContent = """
+                module;
+                function main() {
+                        return "main";
+                }
+        """.trimIndent()
+
+        assertThat(documentManager.getOpenDocuments().keys).containsOnly(rellFileUri)
+        assertThat(documentManager.getOpenDocuments()[rellFileUri]!!.content).isEqualTo(expectedRellFileContent)
+    }
+
+    @Test
     fun `Adding, renaming or deleting file correctly updates index`() {
         val deleteFilePath = "delete_file.rell"
         val testDataBuilder = testData(workspace) {
