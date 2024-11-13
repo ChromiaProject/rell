@@ -128,7 +128,7 @@ class RellLanguageServerTest {
         val file = testDataBuilder.sourceFile(testFilePath)
         val semanticTokenParams = createSemanticTokensParams(file)
         val response = server.textDocumentService.semanticTokensFull(semanticTokenParams)
-        assertThat(response.get().data).isNull()
+        assertThat(response.get().data).isEmpty()
     }
 
     @Test

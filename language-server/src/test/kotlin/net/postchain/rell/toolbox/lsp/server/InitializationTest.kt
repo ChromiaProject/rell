@@ -75,7 +75,9 @@ class InitializationTest {
         }
 
         val initParams = InitializeParams()
-        initParams.workspaceFolders = listOf(WorkspaceFolder(testDataBuilder.workspaceFolderUri.toString()))
+        initParams.workspaceFolders = listOf(
+            WorkspaceFolder(testDataBuilder.workspaceFolderUri.toString(), "testWorkspace")
+        )
         client.initialize(initParams).get()
         client.initialized(InitializedParams())
 
@@ -93,7 +95,7 @@ class InitializationTest {
     ) {
         val pathAsString = tempDir.toUri().toString().removeSuffix("/")
         val initParams = InitializeParams()
-        initParams.workspaceFolders = listOf(WorkspaceFolder(pathAsString))
+        initParams.workspaceFolders = listOf(WorkspaceFolder(pathAsString, "testWorkspace"))
 
         client.initialize(initParams).get()
         client.initialized(InitializedParams())

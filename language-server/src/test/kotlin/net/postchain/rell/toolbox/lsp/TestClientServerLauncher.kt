@@ -41,7 +41,7 @@ class TestClientServerLauncher(private val koinApp: KoinApplication) {
 
     fun initializeServer(workspaceUri: URI, clearDiagnostic: Boolean = true) {
         val initParams = InitializeParams()
-        initParams.workspaceFolders = listOf(WorkspaceFolder(workspaceUri.toString()))
+        initParams.workspaceFolders = listOf(WorkspaceFolder(workspaceUri.toString(), "testWorkspace"))
         client.initialize(initParams).get()
         client.initialized(InitializedParams())
 

@@ -29,6 +29,7 @@ open class WorkspaceManagerTestBase {
 
     protected val rellLinter = RellLinter()
     protected val formattingStyleLinter = FormattingStyleLinter()
+    val TEST_WORKSPACE_NAME = "testWorkspace"
 
     @BeforeEach
     fun setup(@TempDir tempWorkspace: File) {
@@ -64,12 +65,12 @@ open class WorkspaceManagerTestBase {
     }
 
     protected fun initializeWorkspace(workspace: File = this.workspace) {
-        val workspaceFolders = listOf(WorkspaceFolder(workspace.toURI().toString()))
+        val workspaceFolders = listOf(WorkspaceFolder(workspace.toURI().toString(), TEST_WORKSPACE_NAME))
         workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
     }
 
     protected fun initializeWorkspaces(workspaces: List<File>) {
-        val workspaceFolders = workspaces.map { WorkspaceFolder(it.toURI().toString()) }
+        val workspaceFolders = workspaces.map { WorkspaceFolder(it.toURI().toString(), TEST_WORKSPACE_NAME) }
         workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
     }
 }
