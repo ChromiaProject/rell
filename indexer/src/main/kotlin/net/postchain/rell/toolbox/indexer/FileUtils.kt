@@ -34,6 +34,8 @@ fun sha256(bytes: ByteArray): String {
     return result.toString()
 }
 
-fun calculateChecksum(fileUri: URI) = sha256(File(fileUri).readBytes())
+fun calculateChecksum(fileUri: URI) = calculateChecksum(File(fileUri))
+
+fun calculateChecksum(file: File) = sha256(file.readBytes())
 
 fun calculateChecksum(fileContent: String) = sha256(fileContent)

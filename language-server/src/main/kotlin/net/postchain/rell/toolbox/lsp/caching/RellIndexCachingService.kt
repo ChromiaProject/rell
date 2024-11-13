@@ -25,11 +25,11 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
             val indexAsBytes = cacheFile.readBytes()
             indexSerializer.deserializeAsWorkspaceIndexer(indexAsBytes)
         } catch (e: Exception) {
-            logger.error(e) { "Failed to deserialize index cache file: $cacheFile" }
+            logger.warn(e) { "Failed to deserialize index cache file: $cacheFile" }
             try {
                 cacheFile.delete()
             } catch (e: Exception) {
-                logger.error(e) { "Failed to delete cache file: $cacheFile" }
+                logger.warn(e) { "Failed to delete cache file: $cacheFile" }
             }
             null
         }
@@ -53,7 +53,7 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
                 val indexAsBytes = indexSerializer.serializeAsBytes(indexer)
                 cacheFile.writeBytes(indexAsBytes)
             } catch (e: Exception) {
-                logger.error { "Failed to persist workspace index: ${indexer.workspaceUri} ${e.message}" }
+                logger.warn { "Failed to persist workspace index: ${indexer.workspaceUri} ${e.message}" }
             }
         }
     }
@@ -85,7 +85,7 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
                 try {
                     cacheFile.delete()
                 } catch (e: Exception) {
-                    logger.error(e) { "Failed to delete cache file: $cacheFile" }
+                    logger.warn(e) { "Failed to delete cache file: $cacheFile" }
                 }
             }
         }
@@ -104,7 +104,7 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
         return try {
             getCacheFolder().deleteRecursively()
         } catch (e: Exception) {
-            logger.error { "Failed to invalidate caches: ${e.message}" }
+            logger.warn { "Failed to invalidate caches: ${e.message}" }
             false
         }
     }

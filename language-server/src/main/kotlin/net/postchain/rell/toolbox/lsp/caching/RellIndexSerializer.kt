@@ -13,6 +13,7 @@ import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
+import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
 class RellIndexSerializer(
@@ -46,8 +47,12 @@ class RellIndexSerializer(
     }
 
     private fun toSerializableResources(indexer: WorkspaceIndexer): List<SerializableResource> {
-        val serializableData = indexer.fileUriResourceMap.map { (_, resource) ->
-            val checksum = calculateChecksum(resource.fileUri)
+        val serializableData = indexer.fileUriResourceMap.mapNotNull { (_, resource) ->
+            val file = File(resource.fileUri)
+            if (!file.exists()) {
+                return@mapNotNull null
+            }
+            val checksum = calculateChecksum(file)
             SerializableResource(
                 resource.parseTree,
                 resource.moduleInfo,
