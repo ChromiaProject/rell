@@ -45,6 +45,7 @@ class RellTextDocumentService(
     private val requestManager: RellRequestManager,
     private val semanticTokensManager: RellSemanticTokensManager,
     private val formattingManager: RellFormattingManager,
+    private val indexingManager: RellIndexingManager,
     private val lspIncludeDefinitionProvider: LspIncludeDefinitionProvider
 ) : TextDocumentService {
     override fun didOpen(params: DidOpenTextDocumentParams) {
@@ -88,7 +89,7 @@ class RellTextDocumentService(
         val uri = parseFileUri(params.textDocument.uri) ?: return CompletableFuture.completedFuture(SemanticTokens())
 
         return requestManager.runRead {
-            val resource = workspaceManager.getResource(uri)
+            val resource = indexingManager.getResource(uri)
             if (uri.isRellFile() && resource != null) {
                 SemanticTokens(semanticTokensManager.getRelativeSemanticTokens(resource))
             } else {

@@ -17,6 +17,8 @@ import java.net.URI
 class RellWorkspaceService(
     private val workspaceManager: RellWorkspaceManager,
     private val requestManager: RellRequestManager,
+    private val indexingManager: RellIndexingManager,
+    private val diagnosticsManager: RellDiagnosticsManager,
 ) : WorkspaceService, LanguageClientAware {
     private lateinit var languageClient: LanguageClient
 
@@ -26,7 +28,7 @@ class RellWorkspaceService(
 
     override fun didChangeConfiguration(params: DidChangeConfigurationParams) {
         requestManager.runWrite {
-            workspaceManager.runIndexers()
+            indexingManager.runIndexers()
         }
     }
 
@@ -44,11 +46,11 @@ class RellWorkspaceService(
                     dirtyFiles.add(uri)
                 }
             } else {
-                val indexer = workspaceManager.getIndexerForConfigFile(uri)
+                val indexer = indexingManager.getIndexerForConfigFile(uri)
                 if (indexer != null && indexer.isConfigFile(uri)) {
                     requestManager.runWrite {
                         indexer.updateConfig(uri, ::handleIndexingState)
-                        workspaceManager.reportDiagnostics(indexer)
+                        diagnosticsManager.reportDiagnostics(indexer)
                     }
                 } else {
                     if (change.type == FileChangeType.Deleted) {

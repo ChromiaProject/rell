@@ -32,6 +32,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
     private lateinit var clientServerLauncher: TestClientServerLauncher
     private lateinit var server: RellLanguageServer
     private lateinit var workspaceManager: RellWorkspaceManager
+    private lateinit var indexingManager: RellIndexingManager
     private lateinit var testClient: TestClient
     private val serverModule = TestServerModule()
 
@@ -47,6 +48,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         testClient = clientServerLauncher.testClient
         server = koinApp.koin.get<RellLanguageServer>()
         workspaceManager = koinApp.koin.get<RellWorkspaceManager>()
+        indexingManager = koinApp.koin.get<RellIndexingManager>()
     }
 
     @AfterEach
@@ -59,7 +61,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
     fun `didChangeWatched file created`() {
         val testDataBuilder = testData(tempDir)
         clientServerLauncher.initializeServer(testDataBuilder.sourceFolderUri)
-        val indexer = workspaceManager.indexers[testDataBuilder.sourceFolderUri]!!
+        val indexer = indexingManager.indexers[testDataBuilder.sourceFolderUri]!!
         testDataBuilder.addFile("new_file.rell", "module;")
         val newFileUri = testDataBuilder.createSourceFile(
             "new_file.rell",
@@ -95,7 +97,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         }
         val rellFile = testDataBuilder.sourceFile(rellFilePath).toURI()
         clientServerLauncher.initializeServer(tempDir.toURI())
-        val indexer = workspaceManager.indexers[testDataBuilder.sourceFolderUri]!!
+        val indexer = indexingManager.indexers[testDataBuilder.sourceFolderUri]!!
         val configFileUri = File(tempDir.toString(), ".rell_lint").apply {
             writeText(
                 """
@@ -142,7 +144,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
             )
         }
         clientServerLauncher.initializeServer(testDataBuilder.sourceFolderUri)
-        val indexer = workspaceManager.indexers[testDataBuilder.sourceFolderUri]!!
+        val indexer = indexingManager.indexers[testDataBuilder.sourceFolderUri]!!
         val configFileUri = File(testDataBuilder.workspaceFolder.toString(), ".rell_lint").apply {
             writeText(
                 """
@@ -190,7 +192,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         val affectedFileUri = testDataBuilder.sourceFile(rellFilePath).toURI()
 
         clientServerLauncher.initializeServer(testDataBuilder.sourceFolderUri)
-        val indexer = workspaceManager.indexers[testDataBuilder.sourceFolderUri]!!
+        val indexer = indexingManager.indexers[testDataBuilder.sourceFolderUri]!!
 
         val newFileUri = testDataBuilder.createSourceFile("new_file.rell", "module;").toURI()
 
@@ -211,7 +213,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         }
         val newFileUri = testDataBuilder.sourceFile(rellFile).toURI()
         clientServerLauncher.initializeServer(testDataBuilder.sourceFolderUri)
-        val indexer = workspaceManager.indexers[testDataBuilder.sourceFolderUri]!!
+        val indexer = indexingManager.indexers[testDataBuilder.sourceFolderUri]!!
         val resourcesBeforeDeletion = indexer.fileUriResourceMap.toMap()
 
         val fileEvent = FileEvent(newFileUri.toString(), FileChangeType.Deleted)
@@ -231,7 +233,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         }
         val newFileUri = testDataBuilder.sourceFile(rellFile).toURI()
         clientServerLauncher.initializeServer(testDataBuilder.sourceFolderUri)
-        val indexer = workspaceManager.indexers[testDataBuilder.sourceFolderUri]!!
+        val indexer = indexingManager.indexers[testDataBuilder.sourceFolderUri]!!
 
         val fileEvent = FileEvent(newFileUri.toString(), FileChangeType.Changed)
         val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEvent))
@@ -250,7 +252,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         }
         val oldFileUri = testDataBuilder.sourceFile(rellFile).toURI()
         clientServerLauncher.initializeServer(testDataBuilder.sourceFolderUri)
-        val indexer = workspaceManager.indexers[testDataBuilder.sourceFolderUri]!!
+        val indexer = indexingManager.indexers[testDataBuilder.sourceFolderUri]!!
         val resourcesBeforeDeletion = indexer.fileUriResourceMap.toMap()
 
         val renamedFileUri = testDataBuilder.createSourceFile("renamed_file.rell", "module;").toURI()
@@ -307,7 +309,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         }
 
         clientServerLauncher.initializeServer(testDataBuilder.sourceFolderUri)
-        val indexer = workspaceManager.indexers[testDataBuilder.sourceFolderUri]!!
+        val indexer = indexingManager.indexers[testDataBuilder.sourceFolderUri]!!
 
         indexer.getAllIssues().forEach { (_, issues) ->
             assertThat(issues.size).isEqualTo(0)
@@ -378,7 +380,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         }
         val rellFile = testDataBuilder.mainFileUri
         clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
-        val indexer = workspaceManager.indexers[testDataBuilder.sourceFolderUri]!!
+        val indexer = indexingManager.indexers[testDataBuilder.sourceFolderUri]!!
         val configContent = testDataBuilder.chromiaConfigFile.readText()
         testDataBuilder.chromiaConfigFile.writeText(configContent.replace("0.13.4", "0.14.1"))
 

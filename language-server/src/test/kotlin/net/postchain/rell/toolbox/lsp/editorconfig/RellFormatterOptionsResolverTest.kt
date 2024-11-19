@@ -11,7 +11,7 @@ import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
-import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
+import net.postchain.rell.toolbox.lsp.server.RellIndexingManager
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -91,8 +91,8 @@ class RellFormatterOptionsResolverTest {
     }
 
     private fun createRellFormatterOptionsResolver(tempDir: File): RellFormatterOptionsResolver {
-        val workspaceManager = mockk<RellWorkspaceManager>()
-        every { workspaceManager.getIndexerFor(any()) } returns WorkspaceIndexer(
+        val indexingManager = mockk<RellIndexingManager>()
+        every { indexingManager.getIndexerFor(any()) } returns WorkspaceIndexer(
             tempDir.toURI(),
             rellLinter,
             linterOptions,

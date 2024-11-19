@@ -33,7 +33,7 @@ class RellTestRunnerTest : WorkspaceManagerTestBase() {
         }
 
         initializeWorkspace(dir)
-        val testRunner = RellTestRunner(workspaceManager, symbolService)
+        val testRunner = RellTestRunner(indexingManager, symbolService)
 
         val firstTestFile = testDataBuilder.sourceFile(firstTestFilePath)
         val secondTestFile = testDataBuilder.sourceFile(secondTestFilePath)
@@ -71,7 +71,7 @@ class RellTestRunnerTest : WorkspaceManagerTestBase() {
         }
 
         initializeWorkspace(dir)
-        val testRunner = RellTestRunner(workspaceManager, symbolService)
+        val testRunner = RellTestRunner(indexingManager, symbolService)
         val testFile = testDataBuilder.sourceFile(testFilePath)
         testRunner.getTestCases(testFile.toURI()).let { testCases ->
             assertThat(testCases).containsOnly(

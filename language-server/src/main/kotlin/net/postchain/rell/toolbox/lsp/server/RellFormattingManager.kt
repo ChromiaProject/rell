@@ -12,7 +12,7 @@ import java.io.File
 import java.net.URI
 
 class RellFormattingManager(
-    private val workspaceManager: RellWorkspaceManager,
+    private val indexingManager: RellIndexingManager,
     private val formatterOptionsResolver: RellFormatterOptionsResolver,
     private val documentManager: RellDocumentManager,
 ) {
@@ -55,7 +55,7 @@ class RellFormattingManager(
 
     private fun setUserOptions(fileUri: URI, options: FormattingOptions?): FormatterOptions {
         val formatterRequest = FormatterOptions()
-        val workspaceUri = workspaceManager.getIndexerFor(fileUri).workspaceUri
+        val workspaceUri = indexingManager.getIndexerFor(fileUri).workspaceUri
         val resolvedFormatterOptions = formatterOptionsResolver.getWorkspaceFormattingOptionsOrNull(workspaceUri)
         if (resolvedFormatterOptions != null) {
             return resolvedFormatterOptions

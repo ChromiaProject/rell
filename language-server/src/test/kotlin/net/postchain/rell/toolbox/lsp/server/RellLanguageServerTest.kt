@@ -51,6 +51,7 @@ class RellLanguageServerTest {
     private lateinit var clientServerLauncher: TestClientServerLauncher
     private lateinit var server: RellLanguageServer
     private lateinit var workspaceManager: RellWorkspaceManager
+    private lateinit var indexingManager: RellIndexingManager
     private lateinit var documentManager: RellDocumentManager
     private lateinit var testClient: TestClient
     private lateinit var lspIncludeDefinitionProvider: LspIncludeDefinitionProvider
@@ -75,6 +76,7 @@ class RellLanguageServerTest {
         server = koinApp.koin.get<RellLanguageServer>()
         workspaceManager = koinApp.koin.get<RellWorkspaceManager>()
         documentManager = koinApp.koin.get<RellDocumentManager>()
+        indexingManager = koinApp.koin.get<RellIndexingManager>()
         assertThat(testClient.diagnostics).isEmpty()
     }
 
@@ -425,7 +427,7 @@ class RellLanguageServerTest {
         assertThat(testClient.diagnostics.keys).containsOnly(file.toURI().toString())
         assertThat(testClient.diagnostics[file.toURI().toString()]!!.size).isEqualTo(0)
         assertThat(documentManager.getOpenDocuments().keys).containsOnly(file.toURI())
-        assertThat(workspaceManager.indexers.keys).containsOnly(
+        assertThat(indexingManager.indexers.keys).containsOnly(
             testDataBuilder.sourceFolderUri,
             testWorkspaceFolder.resolve("src").toURI()
         )
