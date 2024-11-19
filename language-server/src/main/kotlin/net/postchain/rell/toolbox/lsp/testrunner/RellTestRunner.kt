@@ -1,7 +1,7 @@
 package net.postchain.rell.toolbox.lsp.testrunner
 
 import net.postchain.rell.toolbox.indexer.Resource
-import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
+import net.postchain.rell.toolbox.lsp.server.RellIndexingManager
 import net.postchain.rell.toolbox.lsp.symbols.NodeInfo
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import org.eclipse.lsp4j.DocumentSymbol
@@ -10,18 +10,18 @@ import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolKind
 import java.net.URI
 
-class RellTestRunner(val workspaceManager: RellWorkspaceManager, private val symbolService: RellSymbolService) {
+class RellTestRunner(val indexingManager: RellIndexingManager, private val symbolService: RellSymbolService) {
 
     fun getTestFiles(workspaceUri: URI): List<RellTestFile> {
-        val srcDir = workspaceManager.findSourceDirURI(workspaceUri)
-        val indexer = workspaceManager.getIndexerFor(srcDir)
+        val srcDir = indexingManager.findSourceDirURI(workspaceUri)
+        val indexer = indexingManager.getIndexerFor(srcDir)
         return indexer.fileUriResourceMap
             .filter { it.value.isTest() }
             .map { (uri, resource) -> RellTestFile(uri, resource.moduleInfo?.name?.str(), true, getTestCases(uri)) }
     }
 
     fun getTestCases(fileUri: URI): List<RellTestCase> {
-        val resource = workspaceManager.getResource(fileUri) ?: return listOf()
+        val resource = indexingManager.getResource(fileUri) ?: return listOf()
         if (!resource.isTest()) {
             return listOf()
         }

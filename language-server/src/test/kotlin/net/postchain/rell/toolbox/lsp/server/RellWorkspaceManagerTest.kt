@@ -54,7 +54,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         val rellFile = testDataBuilder.sourceFile(rellFilePath)
 
         initializeWorkspace()
-        val indexers = workspaceManager.indexers
+        val indexers = indexingManager.indexers
         val sourceDirUri = sourceDir.toURI()
 
         assertThat(indexers).hasSize(1)
@@ -88,7 +88,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
 
         initializeWorkspace()
 
-        val indexers = workspaceManager.indexers
+        val indexers = indexingManager.indexers
         val sourceDirUri = sourceDir.toURI()
 
         assertThat(indexers).hasSize(1)
@@ -123,7 +123,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         val mainFile = testDataBuilder.sourceFile(mainFilePath)
         initializeWorkspace(mainFile)
 
-        val indexers = workspaceManager.indexers
+        val indexers = indexingManager.indexers
 
         assertThat(indexers).hasSize(1)
         assertThat(indexers.keys.first()).isEqualTo(mainFile.toURI())
@@ -159,7 +159,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         val childFile = testDataBuilder.sourceFile(childFilePath)
         initializeWorkspace(childFile)
 
-        val indexers = workspaceManager.indexers
+        val indexers = indexingManager.indexers
         val sourceDirUri = sourceDir.toURI()
 
         assertThat(indexers).hasSize(1)
@@ -184,7 +184,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         }
 
         initializeWorkspace(childDirs)
-        val indexers = workspaceManager.indexers
+        val indexers = indexingManager.indexers
 
         assertThat(indexers).hasSize(1)
         assertThat(indexers.keys.first()).isEqualTo(childDirs.toURI())
@@ -203,7 +203,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         rellFile.writeText(updatedContents)
         workspaceManager.didOpen(rellFile.toURI(), 1, updatedContents)
 
-        val rellFileResource = workspaceManager.indexers[sourceDir.toURI()]!!.fileUriResourceMap[rellFile.toURI()]!!
+        val rellFileResource = indexingManager.indexers[sourceDir.toURI()]!!.fileUriResourceMap[rellFile.toURI()]!!
         assertThat(rellFileResource.parseTree.text).contains(updatedContents)
         assertThat(documentManager.getOpenDocuments().keys).containsOnly(rellFile.toURI())
     }
@@ -249,7 +249,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         val gitFileContent = "gitcontent"
         workspaceManager.didOpen(gitFileUri, 1, gitFileContent)
 
-        val indexer = workspaceManager.indexers[sourceDir.toURI()]!!
+        val indexer = indexingManager.indexers[sourceDir.toURI()]!!
         val gitFileResource = indexer.fileUriResourceMap[gitFileUri]
         assertThat(gitFileResource).isNull()
         assertThat(indexer.fileUriResourceMap.keys).contains(rellFileUri)
@@ -264,8 +264,8 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
 
         initializeWorkspace()
 
-        assertThat(workspaceManager.indexers.keys).containsOnly(testDataBuilder.sourceFolderUri)
-        val expectedIndexer = workspaceManager.indexers[testDataBuilder.sourceFolderUri]!!
+        assertThat(indexingManager.indexers.keys).containsOnly(testDataBuilder.sourceFolderUri)
+        val expectedIndexer = indexingManager.indexers[testDataBuilder.sourceFolderUri]!!
         val newRellFileUri = File(sourceDir, "new_rell_file.rell").apply {
             writeText(
                 """
@@ -276,8 +276,8 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 """.trimIndent()
             )
         }.toURI()
-        val indexer = workspaceManager.getIndexerFor(newRellFileUri)
-        assertThat(workspaceManager.indexers.keys).containsOnly(testDataBuilder.sourceFolderUri)
+        val indexer = indexingManager.getIndexerFor(newRellFileUri)
+        assertThat(indexingManager.indexers.keys).containsOnly(testDataBuilder.sourceFolderUri)
         assertThat(indexer === expectedIndexer).isTrue()
     }
 
@@ -288,7 +288,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         }
         val rellFileUri = testDataBuilder.sourceFile(rellFilePath).toURI()
         initializeWorkspace()
-        val indexer = workspaceManager.getIndexerFor(rellFileUri)
+        val indexer = indexingManager.getIndexerFor(rellFileUri)
 
         assertThat(indexer.fileUriResourceMap.keys).containsOnly(rellFileUri)
     }
@@ -301,7 +301,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         val singleRellFileUri = testDataBuilder.sourceFile(rellFilePath).toURI()
         workspaceManager.initialize(listOf(), ::populateDiagnostics)
 
-        val indexer = workspaceManager.getIndexerFor(singleRellFileUri)
+        val indexer = indexingManager.getIndexerFor(singleRellFileUri)
 
         assertThat(indexer.fileUriResourceMap.keys).containsOnly(singleRellFileUri)
     }
@@ -406,7 +406,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         val deleteFileUri = testDataBuilder.sourceFile(deleteFilePath).toURI()
         initializeWorkspace()
 
-        val indexer = workspaceManager.indexers[testDataBuilder.sourceFolderUri]!!
+        val indexer = indexingManager.indexers[testDataBuilder.sourceFolderUri]!!
         assertThat(indexer.fileUriResourceMap).hasSize(2)
         assertThat(indexer.fileUriResourceMap.keys).containsOnly(beforeRenameFileUri, deleteFileUri)
 
@@ -459,7 +459,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         initializeWorkspace()
         workspaceManager.didOpen(rellFileUri, 1, rellFileContent)
 
-        val indexer = workspaceManager.indexers[sourceDir.toURI()]!!
+        val indexer = indexingManager.indexers[sourceDir.toURI()]!!
         assertThat(indexer.fileUriResourceMap[importerFileUri]!!.semanticErrors).isEmpty()
 
         val newContent = "gibberish"

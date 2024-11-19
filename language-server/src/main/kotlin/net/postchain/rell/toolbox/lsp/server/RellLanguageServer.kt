@@ -39,6 +39,7 @@ class RellLanguageServer(
     private val newProjectTemplateService: NewProjectTemplateService,
     private val textDocumentService: RellTextDocumentService,
     private val workspaceService: RellWorkspaceService,
+    private val indexingManager: RellIndexingManager,
 ) : LanguageServer, LanguageClientAware {
 
     private val logger = KotlinLogging.logger {}
@@ -77,7 +78,7 @@ class RellLanguageServer(
 
     private fun processInitializationOptions(initializationOptions: Any?) {
         if (initializationOptions != null && initializationOptions is JsonObject) {
-            workspaceManager.indexCachingEnabled = initializationOptions.get("indexCaching")?.asBoolean == true
+            indexingManager.indexCachingEnabled = initializationOptions.get("indexCaching")?.asBoolean == true
         }
     }
 

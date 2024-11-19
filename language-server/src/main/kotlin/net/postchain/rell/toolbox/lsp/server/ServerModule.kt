@@ -45,6 +45,8 @@ val serverModule = module {
     singleOf(::RellTextDocumentService)
     singleOf(::RellWorkspaceService)
     singleOf(::RellDocumentManager)
+    singleOf(::RellDiagnosticsManager)
+    singleOf(::RellIndexingManager)
 
     single(named(LauncherType.STDIO)) {
         StdioServerLauncher(

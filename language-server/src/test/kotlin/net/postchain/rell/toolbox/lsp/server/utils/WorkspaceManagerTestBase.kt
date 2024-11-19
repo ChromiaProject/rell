@@ -9,7 +9,9 @@ import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
+import net.postchain.rell.toolbox.lsp.server.RellDiagnosticsManager
 import net.postchain.rell.toolbox.lsp.server.RellDocumentManager
+import net.postchain.rell.toolbox.lsp.server.RellIndexingManager
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import org.eclipse.lsp4j.WorkspaceFolder
@@ -21,11 +23,13 @@ import java.net.URI
 
 open class WorkspaceManagerTestBase {
     protected lateinit var workspaceManager: RellWorkspaceManager
+    protected lateinit var indexingManager: RellIndexingManager
     protected var diagnostics = mutableMapOf<URI, List<RellIssue>>()
     protected lateinit var workspace: File
     protected lateinit var sourceDir: File
     protected val symbolService = RellSymbolService()
     protected val documentManager = RellDocumentManager()
+    protected val diagnosticsManager = RellDiagnosticsManager()
 
     protected val rellLinter = RellLinter()
     protected val formattingStyleLinter = FormattingStyleLinter()
@@ -44,14 +48,24 @@ open class WorkspaceManagerTestBase {
                 RellLinterOptionsResolver()
             )
         )
+
+        indexingManager = RellIndexingManager(
+            indexCachingService,
+            diagnosticsManager,
+            rellLinter,
+            formattingStyleLinter,
+            RellFormatterOptionsResolver(),
+            RellLinterOptionsResolver(),
+        )
+
         workspaceManager =
             RellWorkspaceManager(
-                symbolService, referenceService, indexCachingService, rellLinter,
-                formattingStyleLinter,
-                RellFormatterOptionsResolver(),
-                RellLinterOptionsResolver(),
+                symbolService,
+                referenceService,
                 RellCompletionService(),
-                documentManager
+                documentManager,
+                indexingManager,
+                diagnosticsManager,
             )
     }
 

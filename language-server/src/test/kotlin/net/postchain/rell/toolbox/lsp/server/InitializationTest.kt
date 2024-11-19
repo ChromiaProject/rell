@@ -30,6 +30,7 @@ class InitializationTest {
     private lateinit var client: LanguageServer
     private lateinit var testClient: TestClient
     private lateinit var workspaceManager: RellWorkspaceManager
+    private lateinit var indexingManager: RellIndexingManager
     private val serverModule = TestServerModule()
 
     @TempDir
@@ -51,6 +52,7 @@ class InitializationTest {
 
         client = clientLauncher.remoteProxy
         workspaceManager = koinApp.koin.get<RellWorkspaceManager>()
+        indexingManager = koinApp.koin.get<RellIndexingManager>()
     }
 
     @AfterEach
@@ -100,9 +102,9 @@ class InitializationTest {
         client.initialize(initParams).get()
         client.initialized(InitializedParams())
 
-        await().until { workspaceManager.indexers.isNotEmpty() }
+        await().until { indexingManager.indexers.isNotEmpty() }
 
-        val indexers = workspaceManager.indexers
+        val indexers = indexingManager.indexers
         val expectedWorkspaceUri = parseFileUri("$pathAsString/")
         assertThat(indexers.keys).containsOnly(expectedWorkspaceUri)
         assertThat(indexers[expectedWorkspaceUri]!!.fileUriResourceMap).hasSize(0)
