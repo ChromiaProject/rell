@@ -268,6 +268,23 @@
                         </execution>
                     </executions>
                 </plugin>
+
+                <plugin>
+                    <groupId>com.chromaway</groupId>
+                    <artifactId>kotlin-bcv-maven-plugin</artifactId>
+                    <version>0.1.0</version>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>check</id>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -351,7 +368,12 @@
             <url>https://maven.emrld.io</url>
         </repository>
     </repositories>
-
+    <pluginRepositories>
+        <pluginRepository>
+            <id>kotlin-bcv-maven-plugin</id>
+            <url>https://gitlab.com/api/v4/projects/64479054/packages/maven</url>
+        </pluginRepository>
+    </pluginRepositories>
     <distributionManagement>
         <repository>
             <id>gitlab-maven</id>

@@ -1,0 +1,213 @@
+final class net/postchain/rell/api/base/ArrayGtvNode : net/postchain/rell/api/base/GtvNode {
+	public fun <init> (Ljava/lang/String;Ljava/util/List;)V
+	public final fun add (Lnet/postchain/gtv/Gtv;)V
+	public final fun contains (Ljava/lang/String;)Z
+	public synthetic fun toValue ()Lnet/postchain/gtv/Gtv;
+	public fun toValue ()Lnet/postchain/gtv/GtvArray;
+	public fun type ()Lnet/postchain/gtv/GtvType;
+}
+
+final class net/postchain/rell/api/base/DictGtvNode : net/postchain/rell/api/base/GtvNode {
+	public fun <init> (Ljava/lang/String;Ljava/util/Map;)V
+	public final fun get (Ljava/lang/String;)Lnet/postchain/rell/api/base/GtvNode;
+	public final fun put (Ljava/lang/String;Lnet/postchain/gtv/Gtv;)V
+	public final fun putArray (Ljava/lang/String;)Lnet/postchain/rell/api/base/ArrayGtvNode;
+	public final fun putDict (Ljava/lang/String;)Lnet/postchain/rell/api/base/DictGtvNode;
+	public final fun putString (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun remove (Ljava/lang/String;)V
+	public synthetic fun toValue ()Lnet/postchain/gtv/Gtv;
+	public fun toValue ()Lnet/postchain/gtv/GtvDictionary;
+	public fun type ()Lnet/postchain/gtv/GtvType;
+}
+
+abstract class net/postchain/rell/api/base/GtvNode {
+	public static final field Companion Lnet/postchain/rell/api/base/GtvNode$Companion;
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getPath ()Ljava/lang/String;
+	public abstract fun toValue ()Lnet/postchain/gtv/Gtv;
+	public abstract fun type ()Lnet/postchain/gtv/GtvType;
+}
+
+public final class net/postchain/rell/api/base/GtvNode$Companion {
+	public final fun create (Ljava/lang/String;Lnet/postchain/gtv/Gtv;)Lnet/postchain/rell/api/base/GtvNode;
+	public final fun subPath (Ljava/lang/String;I)Ljava/lang/String;
+	public final fun subPath (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class net/postchain/rell/api/base/MainRellCliEnv : net/postchain/rell/api/base/RellCliEnv {
+	public static final field INSTANCE Lnet/postchain/rell/api/base/MainRellCliEnv;
+	public fun error (Ljava/lang/String;)V
+	public fun print (Ljava/lang/String;)V
+}
+
+synthetic class net/postchain/rell/api/base/MainRellCliEnv$1 : kotlin/jvm/internal/FunctionAdapter, net/postchain/rell/base/runtime/Rt_Printer {
+	public static final field INSTANCE Lnet/postchain/rell/api/base/MainRellCliEnv$1;
+	public final fun equals (Ljava/lang/Object;)Z
+	public final fun getFunctionDelegate ()Lkotlin/Function;
+	public final fun hashCode ()I
+	public final fun print (Ljava/lang/Object;)V
+	public synthetic fun print (Ljava/lang/String;)V
+}
+
+synthetic class net/postchain/rell/api/base/MainRellCliEnv$2 : kotlin/jvm/internal/FunctionAdapter, net/postchain/rell/base/runtime/Rt_Printer {
+	public final fun equals (Ljava/lang/Object;)Z
+	public final fun getFunctionDelegate ()Lkotlin/Function;
+	public final fun hashCode ()I
+	public final fun print (Ljava/lang/String;)V
+}
+
+public final class net/postchain/rell/api/base/NullRellCliEnv : net/postchain/rell/api/base/RellCliEnv {
+	public static final field INSTANCE Lnet/postchain/rell/api/base/NullRellCliEnv;
+	public fun error (Ljava/lang/String;)V
+	public fun print (Ljava/lang/String;)V
+}
+
+public final class net/postchain/rell/api/base/PrinterRellCliEnv : net/postchain/rell/api/base/RellCliEnv {
+	public fun <init> (Lnet/postchain/rell/base/runtime/Rt_Printer;Lnet/postchain/rell/base/runtime/Rt_Printer;)V
+	public synthetic fun <init> (Lnet/postchain/rell/base/runtime/Rt_Printer;Lnet/postchain/rell/base/runtime/Rt_Printer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun error (Ljava/lang/String;)V
+	public fun print (Ljava/lang/String;)V
+}
+
+public final class net/postchain/rell/api/base/RellApiBaseInternal {
+	public static final field INSTANCE Lnet/postchain/rell/api/base/RellApiBaseInternal;
+	public final fun catchCommonError (Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public final fun compileApp (Lnet/postchain/rell/api/base/RellApiCompile$Config;Lnet/postchain/rell/base/compiler/base/core/C_CompilerOptions;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;Ljava/util/List;)Lkotlin/Pair;
+	public final fun compileApp0 (Lnet/postchain/rell/api/base/RellApiCompile$Config;Lnet/postchain/rell/base/compiler/base/core/C_CompilerOptions;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;Ljava/util/List;)Lnet/postchain/rell/api/base/RellApiCompilationResult;
+	public final fun compileGtv (Lnet/postchain/rell/api/base/RellApiCompile$Config;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;)Lnet/postchain/gtv/Gtv;
+	public final fun compileGtv0 (Lnet/postchain/rell/api/base/RellApiCompile$Config;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;Ljava/util/List;)Lnet/postchain/gtv/Gtv;
+	public final fun compileGtvEx (Lnet/postchain/rell/api/base/RellApiCompile$Config;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;)Lkotlin/Pair;
+	public final fun makeCompilerModuleSelection (Lnet/postchain/rell/api/base/RellApiCompile$Config;Ljava/util/List;Ljava/util/List;)Lnet/postchain/rell/base/compiler/base/core/C_CompilerModuleSelection;
+	public final fun makeCompilerOptions (Lnet/postchain/rell/api/base/RellApiCompile$Config;)Lnet/postchain/rell/base/compiler/base/core/C_CompilerOptions;
+	public final fun wrapCompilation (Lnet/postchain/rell/api/base/RellApiCompile$Config;Lkotlin/jvm/functions/Function0;)Lkotlin/Pair;
+}
+
+public final class net/postchain/rell/api/base/RellApiBaseUtils {
+	public static final field INSTANCE Lnet/postchain/rell/api/base/RellApiBaseUtils;
+	public final fun createChainContext ()Lnet/postchain/rell/base/runtime/Rt_ChainContext;
+	public final fun createGlobalContext (Lnet/postchain/rell/base/compiler/base/core/C_CompilerOptions;ZLnet/postchain/rell/base/runtime/Rt_Printer;Lnet/postchain/rell/base/runtime/Rt_Printer;)Lnet/postchain/rell/base/runtime/Rt_GlobalContext;
+	public static synthetic fun createGlobalContext$default (Lnet/postchain/rell/api/base/RellApiBaseUtils;Lnet/postchain/rell/base/compiler/base/core/C_CompilerOptions;ZLnet/postchain/rell/base/runtime/Rt_Printer;Lnet/postchain/rell/base/runtime/Rt_Printer;ILjava/lang/Object;)Lnet/postchain/rell/base/runtime/Rt_GlobalContext;
+	public final fun createSourceDir (Ljava/lang/String;)Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;
+	public final fun createSqlContext (Lnet/postchain/rell/base/model/R_App;)Lnet/postchain/rell/base/runtime/Rt_SqlContext;
+	public final fun errMsg (Ljava/lang/String;)Ljava/lang/String;
+	public final fun getMainModules (Lnet/postchain/rell/base/model/R_App;)Ljava/util/List;
+	public final fun handleCompilationResult (Lnet/postchain/rell/api/base/RellCliEnv;Lnet/postchain/rell/base/compiler/base/core/C_CompilationResult;Z)Lnet/postchain/rell/base/model/R_App;
+}
+
+public final class net/postchain/rell/api/base/RellApiCompilationResult {
+	public fun <init> (Lnet/postchain/rell/base/compiler/base/core/C_CompilationResult;)V
+	public final fun getCRes ()Lnet/postchain/rell/base/compiler/base/core/C_CompilationResult;
+}
+
+public final class net/postchain/rell/api/base/RellApiCompile {
+	public static final field INSTANCE Lnet/postchain/rell/api/base/RellApiCompile;
+	public final fun compileApp (Lnet/postchain/rell/api/base/RellApiCompile$Config;Ljava/io/File;Ljava/util/List;Ljava/util/List;)Lnet/postchain/rell/base/model/R_App;
+	public static synthetic fun compileApp$default (Lnet/postchain/rell/api/base/RellApiCompile;Lnet/postchain/rell/api/base/RellApiCompile$Config;Ljava/io/File;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lnet/postchain/rell/base/model/R_App;
+	public final fun compileGtv (Lnet/postchain/rell/api/base/RellApiCompile$Config;Ljava/io/File;Ljava/lang/String;)Lnet/postchain/gtv/Gtv;
+}
+
+public final class net/postchain/rell/api/base/RellApiCompile$Config {
+	public static final field Companion Lnet/postchain/rell/api/base/RellApiCompile$Config$Companion;
+	public fun <init> (Lnet/postchain/rell/api/base/RellCliEnv;Lnet/postchain/rell/base/model/R_LangVersion;Ljava/util/Map;ZZZZZLjava/util/List;ZZ)V
+	public final fun getAdditionalGtxModules ()Ljava/util/List;
+	public final fun getAppModuleInTestsError ()Z
+	public final fun getCliEnv ()Lnet/postchain/rell/api/base/RellCliEnv;
+	public final fun getDocSymbolsEnabled ()Z
+	public final fun getIncludeAppSubModules ()Z
+	public final fun getIncludeTestSubModules ()Z
+	public final fun getModuleArgs ()Ljava/util/Map;
+	public final fun getModuleArgsMissingError ()Z
+	public final fun getMountConflictError ()Z
+	public final fun getQuiet ()Z
+	public final fun getVersion ()Lnet/postchain/rell/base/model/R_LangVersion;
+	public final fun toBuilder ()Lnet/postchain/rell/api/base/RellApiCompile$Config$Builder;
+}
+
+public final class net/postchain/rell/api/base/RellApiCompile$Config$Builder {
+	public fun <init> ()V
+	public fun <init> (Lnet/postchain/rell/api/base/RellApiCompile$Config;)V
+	public synthetic fun <init> (Lnet/postchain/rell/api/base/RellApiCompile$Config;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun additionalGtxModules (Ljava/util/List;)Lnet/postchain/rell/api/base/RellApiCompile$Config$Builder;
+	public final fun appModuleInTestsError (Z)Lnet/postchain/rell/api/base/RellApiCompile$Config$Builder;
+	public final fun build ()Lnet/postchain/rell/api/base/RellApiCompile$Config;
+	public final fun cliEnv (Lnet/postchain/rell/api/base/RellCliEnv;)Lnet/postchain/rell/api/base/RellApiCompile$Config$Builder;
+	public final fun docSymbolsEnabled (Z)Lnet/postchain/rell/api/base/RellApiCompile$Config$Builder;
+	public final fun includeAppSubModules (Z)Lnet/postchain/rell/api/base/RellApiCompile$Config$Builder;
+	public final fun includeTestSubModules (Z)Lnet/postchain/rell/api/base/RellApiCompile$Config$Builder;
+	public final fun moduleArgs (Ljava/util/Map;)Lnet/postchain/rell/api/base/RellApiCompile$Config$Builder;
+	public final fun moduleArgs ([Lkotlin/Pair;)Lnet/postchain/rell/api/base/RellApiCompile$Config$Builder;
+	public final fun moduleArgs0 (Ljava/util/Map;)Lnet/postchain/rell/api/base/RellApiCompile$Config$Builder;
+	public final fun moduleArgsMissingError (Z)Lnet/postchain/rell/api/base/RellApiCompile$Config$Builder;
+	public final fun mountConflictError (Z)Lnet/postchain/rell/api/base/RellApiCompile$Config$Builder;
+	public final fun quiet (Z)Lnet/postchain/rell/api/base/RellApiCompile$Config$Builder;
+	public final fun version (Ljava/lang/String;)Lnet/postchain/rell/api/base/RellApiCompile$Config$Builder;
+	public final fun version (Lnet/postchain/rell/base/model/R_LangVersion;)Lnet/postchain/rell/api/base/RellApiCompile$Config$Builder;
+}
+
+public final class net/postchain/rell/api/base/RellApiCompile$Config$Companion {
+	public final fun getDEFAULT ()Lnet/postchain/rell/api/base/RellApiCompile$Config;
+}
+
+public final class net/postchain/rell/api/base/RellCliBasicException : net/postchain/rell/api/base/RellCliException {
+	public fun <init> (Ljava/lang/String;)V
+}
+
+public abstract interface class net/postchain/rell/api/base/RellCliEnv {
+	public static final field Companion Lnet/postchain/rell/api/base/RellCliEnv$Companion;
+	public abstract fun error (Ljava/lang/String;)V
+	public static fun getDEFAULT ()Lnet/postchain/rell/api/base/RellCliEnv;
+	public static fun getNULL ()Lnet/postchain/rell/api/base/RellCliEnv;
+	public abstract fun print (Ljava/lang/String;)V
+}
+
+public final class net/postchain/rell/api/base/RellCliEnv$Companion {
+	public final fun getDEFAULT ()Lnet/postchain/rell/api/base/RellCliEnv;
+	public final fun getNULL ()Lnet/postchain/rell/api/base/RellCliEnv;
+}
+
+public abstract class net/postchain/rell/api/base/RellCliException : java/lang/RuntimeException {
+	public fun <init> (Ljava/lang/String;)V
+}
+
+public final class net/postchain/rell/api/base/RellCliExitException : net/postchain/rell/api/base/RellCliException {
+	public fun <init> (ILjava/lang/String;)V
+	public synthetic fun <init> (ILjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getCode ()I
+}
+
+public final class net/postchain/rell/api/base/RellCliTarget {
+	public fun <init> (Ljava/io/File;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;)V
+	public final fun getModules ()Ljava/util/List;
+	public final fun getSourceDir ()Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;
+	public final fun getSourcePath ()Ljava/io/File;
+}
+
+public final class net/postchain/rell/api/base/RellConfigGen {
+	public static final field Companion Lnet/postchain/rell/api/base/RellConfigGen$Companion;
+	public fun <init> (Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Lnet/postchain/rell/base/model/R_LangVersion;Ljava/util/List;Ljava/util/List;Lnet/postchain/rell/base/model/R_App;)V
+	public final fun getApp ()Lnet/postchain/rell/base/model/R_App;
+	public final fun makeConfig (Ljava/lang/String;)Lnet/postchain/gtv/Gtv;
+	public final fun makeConfig (Lnet/postchain/gtv/Gtv;)Lnet/postchain/gtv/Gtv;
+}
+
+public final class net/postchain/rell/api/base/RellConfigGen$Companion {
+	public final fun configToText (Lnet/postchain/gtv/Gtv;)Ljava/lang/String;
+	public final fun create (Lnet/postchain/rell/api/base/RellCliEnv;Lnet/postchain/rell/api/base/RellCliTarget;)Lnet/postchain/rell/api/base/RellConfigGen;
+	public final fun create (Lnet/postchain/rell/api/base/RellCliEnv;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;Lnet/postchain/rell/base/model/R_LangVersion;)Lnet/postchain/rell/api/base/RellConfigGen;
+	public static synthetic fun create$default (Lnet/postchain/rell/api/base/RellConfigGen$Companion;Lnet/postchain/rell/api/base/RellCliEnv;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;Lnet/postchain/rell/base/model/R_LangVersion;ILjava/lang/Object;)Lnet/postchain/rell/api/base/RellConfigGen;
+	public final fun getModuleFiles (Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;)Ljava/util/Map;
+	public final fun makeConfig (Lnet/postchain/gtv/Gtv;Lnet/postchain/gtv/Gtv;)Lnet/postchain/gtv/Gtv;
+}
+
+final class net/postchain/rell/api/base/RellModuleSources {
+	public fun <init> (Ljava/util/List;Ljava/util/Map;)V
+	public final fun getFiles ()Ljava/util/Map;
+	public final fun getModules ()Ljava/util/List;
+}
+
+final class net/postchain/rell/api/base/TermGtvNode : net/postchain/rell/api/base/GtvNode {
+	public fun <init> (Ljava/lang/String;Lnet/postchain/gtv/Gtv;)V
+	public fun toValue ()Lnet/postchain/gtv/Gtv;
+	public fun type ()Lnet/postchain/gtv/GtvType;
+}
+

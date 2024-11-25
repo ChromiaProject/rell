@@ -1,0 +1,115 @@
+final class net/postchain/rell/api/shell/CliReplOutputChannel : net/postchain/rell/base/repl/ReplOutputChannel {
+	public static final field INSTANCE Lnet/postchain/rell/api/shell/CliReplOutputChannel;
+	public fun printCompilerError (Ljava/lang/String;Ljava/lang/String;)V
+	public fun printCompilerMessage (Lnet/postchain/rell/base/compiler/base/utils/C_Message;)V
+	public fun printControl (Ljava/lang/String;Ljava/lang/String;)V
+	public fun printInfo (Ljava/lang/String;)V
+	public fun printPlatformRuntimeError (Ljava/lang/Throwable;)V
+	public fun printRuntimeError (Lnet/postchain/rell/base/runtime/Rt_Exception;)V
+	public fun printValue (Lnet/postchain/rell/base/runtime/Rt_Value;)V
+	public fun setValueFormat (Lnet/postchain/rell/base/repl/ReplValueFormat;)V
+}
+
+public final class net/postchain/rell/api/shell/CliReplOutputChannelFactory : net/postchain/rell/base/repl/ReplOutputChannelFactory {
+	public static final field INSTANCE Lnet/postchain/rell/api/shell/CliReplOutputChannelFactory;
+	public fun createOutputChannel ()Lnet/postchain/rell/base/repl/ReplOutputChannel;
+}
+
+final class net/postchain/rell/api/shell/JlineReplInputChannel : net/postchain/rell/base/repl/ReplInputChannel {
+	public fun <init> (Lorg/jline/reader/LineReader;)V
+	public fun readLine (Ljava/lang/String;)Ljava/lang/String;
+}
+
+final class net/postchain/rell/api/shell/JlineReplInputChannelFactory : net/postchain/rell/base/repl/ReplInputChannelFactory {
+	public static final field INSTANCE Lnet/postchain/rell/api/shell/JlineReplInputChannelFactory;
+	public fun createInputChannel (Ljava/io/File;)Lnet/postchain/rell/base/repl/ReplInputChannel;
+}
+
+public final class net/postchain/rell/api/shell/RellApiRunShell {
+	public static final field INSTANCE Lnet/postchain/rell/api/shell/RellApiRunShell;
+	public final fun runShell (Lnet/postchain/rell/api/shell/RellApiRunShell$Config;Ljava/io/File;Ljava/lang/String;)V
+}
+
+public final class net/postchain/rell/api/shell/RellApiRunShell$Config {
+	public static final field Companion Lnet/postchain/rell/api/shell/RellApiRunShell$Config$Companion;
+	public fun <init> (Lnet/postchain/rell/api/base/RellApiCompile$Config;Ljava/lang/String;ZZLnet/postchain/rell/base/runtime/Rt_Printer;Lnet/postchain/rell/base/runtime/Rt_Printer;Ljava/io/File;Lnet/postchain/rell/base/repl/ReplInputChannelFactory;Lnet/postchain/rell/base/repl/ReplOutputChannelFactory;Z)V
+	public final fun getCompileConfig ()Lnet/postchain/rell/api/base/RellApiCompile$Config;
+	public final fun getDatabaseUrl ()Ljava/lang/String;
+	public final fun getHistoryFile ()Ljava/io/File;
+	public final fun getInputChannelFactory ()Lnet/postchain/rell/base/repl/ReplInputChannelFactory;
+	public final fun getLogPrinter ()Lnet/postchain/rell/base/runtime/Rt_Printer;
+	public final fun getOutPrinter ()Lnet/postchain/rell/base/runtime/Rt_Printer;
+	public final fun getOutputChannelFactory ()Lnet/postchain/rell/base/repl/ReplOutputChannelFactory;
+	public final fun getPrintIntroMessage ()Z
+	public final fun getSqlErrorLog ()Z
+	public final fun getSqlLog ()Z
+	public final fun toBuilder ()Lnet/postchain/rell/api/shell/RellApiRunShell$Config$Builder;
+}
+
+public final class net/postchain/rell/api/shell/RellApiRunShell$Config$Builder {
+	public fun <init> ()V
+	public fun <init> (Lnet/postchain/rell/api/shell/RellApiRunShell$Config;)V
+	public synthetic fun <init> (Lnet/postchain/rell/api/shell/RellApiRunShell$Config;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun build ()Lnet/postchain/rell/api/shell/RellApiRunShell$Config;
+	public final fun compileConfig (Lnet/postchain/rell/api/base/RellApiCompile$Config;)Lnet/postchain/rell/api/shell/RellApiRunShell$Config$Builder;
+	public final fun databaseUrl (Ljava/lang/String;)Lnet/postchain/rell/api/shell/RellApiRunShell$Config$Builder;
+	public final fun historyFile (Ljava/io/File;)Lnet/postchain/rell/api/shell/RellApiRunShell$Config$Builder;
+	public final fun inputChannelFactory (Lnet/postchain/rell/base/repl/ReplInputChannelFactory;)Lnet/postchain/rell/api/shell/RellApiRunShell$Config$Builder;
+	public final fun logPrinter (Lnet/postchain/rell/base/runtime/Rt_Printer;)Lnet/postchain/rell/api/shell/RellApiRunShell$Config$Builder;
+	public final fun outPrinter (Lnet/postchain/rell/base/runtime/Rt_Printer;)Lnet/postchain/rell/api/shell/RellApiRunShell$Config$Builder;
+	public final fun outputChannelFactory (Lnet/postchain/rell/base/repl/ReplOutputChannelFactory;)Lnet/postchain/rell/api/shell/RellApiRunShell$Config$Builder;
+	public final fun printIntroMessage (Z)Lnet/postchain/rell/api/shell/RellApiRunShell$Config$Builder;
+	public final fun sqlErrorLog (Z)Lnet/postchain/rell/api/shell/RellApiRunShell$Config$Builder;
+	public final fun sqlLog (Z)Lnet/postchain/rell/api/shell/RellApiRunShell$Config$Builder;
+}
+
+public final class net/postchain/rell/api/shell/RellApiRunShell$Config$Companion {
+	public final fun getDEFAULT ()Lnet/postchain/rell/api/shell/RellApiRunShell$Config;
+}
+
+public final class net/postchain/rell/api/shell/RellApiShellInternal {
+	public static final field INSTANCE Lnet/postchain/rell/api/shell/RellApiShellInternal;
+	public final fun getDefaultReplHistoryFile ()Ljava/io/File;
+	public final fun runShell (Lnet/postchain/rell/api/shell/RellApiRunShell$Config;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Lnet/postchain/rell/base/model/R_ModuleName;)V
+}
+
+final class net/postchain/rell/api/shell/RellJLineParsedLine : org/jline/reader/CompletingParsedLine {
+	public fun <init> (Ljava/lang/String;I)V
+	public fun cursor ()I
+	public fun escape (Ljava/lang/CharSequence;Z)Ljava/lang/CharSequence;
+	public fun line ()Ljava/lang/String;
+	public fun rawWordCursor ()I
+	public fun rawWordLength ()I
+	public fun word ()Ljava/lang/String;
+	public fun wordCursor ()I
+	public fun wordIndex ()I
+	public fun words ()Ljava/util/List;
+}
+
+final class net/postchain/rell/api/shell/RellJLineParser : org/jline/reader/Parser {
+	public fun <init> ()V
+	public fun isEscapeChar (C)Z
+	public fun parse (Ljava/lang/String;ILorg/jline/reader/Parser$ParseContext;)Lorg/jline/reader/ParsedLine;
+}
+
+public final class net/postchain/rell/api/shell/ReplIo {
+	public static final field INSTANCE Lnet/postchain/rell/api/shell/ReplIo;
+	public final fun getDEFAULT_INPUT_FACTORY ()Lnet/postchain/rell/base/repl/ReplInputChannelFactory;
+	public final fun getDEFAULT_OUTPUT_FACTORY ()Lnet/postchain/rell/base/repl/ReplOutputChannelFactory;
+}
+
+public final class net/postchain/rell/api/shell/ReplShell {
+	public static final field INSTANCE Lnet/postchain/rell/api/shell/ReplShell;
+	public final fun start (Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Lnet/postchain/rell/base/model/R_ModuleName;Lnet/postchain/rell/base/runtime/Rt_GlobalContext;Lnet/postchain/rell/base/sql/SqlManager;Lnet/postchain/rell/base/repl/ReplInterpreterProjExt;Lnet/postchain/rell/api/shell/ReplShellOptions;)V
+}
+
+public final class net/postchain/rell/api/shell/ReplShellOptions {
+	public fun <init> (Lnet/postchain/rell/base/compiler/base/core/C_CompilerOptions;Lnet/postchain/rell/base/repl/ReplInputChannelFactory;Lnet/postchain/rell/base/repl/ReplOutputChannelFactory;Ljava/io/File;ZLjava/util/Map;)V
+	public final fun getCompilerOptions ()Lnet/postchain/rell/base/compiler/base/core/C_CompilerOptions;
+	public final fun getHistoryFile ()Ljava/io/File;
+	public final fun getInputChannelFactory ()Lnet/postchain/rell/base/repl/ReplInputChannelFactory;
+	public final fun getModuleArgs ()Ljava/util/Map;
+	public final fun getOutputChannelFactory ()Lnet/postchain/rell/base/repl/ReplOutputChannelFactory;
+	public final fun getPrintIntroMessage ()Z
+}
+
