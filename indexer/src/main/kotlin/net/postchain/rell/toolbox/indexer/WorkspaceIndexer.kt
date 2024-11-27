@@ -33,6 +33,8 @@ class WorkspaceIndexer(
     private val rellCompilerUtils = RellCompilerUtils()
     var fileUriResourceMap = ConcurrentHashMap<URI, Resource>()
     var fileMap: ConcurrentHashMap<C_SourcePath, C_SourceFile> = ConcurrentHashMap()
+    val resources: Collection<Resource>
+        get() = fileUriResourceMap.values
 
     fun updateConfig(fileUri: URI, indexingStateNotifier: (state: IndexingState) -> Unit) {
         val configFile = File(fileUri)

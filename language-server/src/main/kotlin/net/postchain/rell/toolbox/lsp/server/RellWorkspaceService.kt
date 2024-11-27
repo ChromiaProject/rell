@@ -1,24 +1,30 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import net.postchain.rell.toolbox.indexer.IndexingState
+import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import org.eclipse.lsp4j.DidChangeConfigurationParams
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams
 import org.eclipse.lsp4j.FileChangeType
 import org.eclipse.lsp4j.ProgressParams
+import org.eclipse.lsp4j.SymbolInformation
 import org.eclipse.lsp4j.WorkDoneProgressBegin
 import org.eclipse.lsp4j.WorkDoneProgressEnd
+import org.eclipse.lsp4j.WorkspaceSymbol
+import org.eclipse.lsp4j.WorkspaceSymbolParams
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware
 import org.eclipse.lsp4j.services.WorkspaceService
 import java.io.File
 import java.net.URI
+import java.util.concurrent.CompletableFuture
 
 class RellWorkspaceService(
     private val workspaceManager: RellWorkspaceManager,
     private val requestManager: RellRequestManager,
     private val indexingManager: RellIndexingManager,
     private val diagnosticsManager: RellDiagnosticsManager,
+    private val symbolService: RellSymbolService,
 ) : WorkspaceService, LanguageClientAware {
     private lateinit var languageClient: LanguageClient
 
@@ -69,6 +75,13 @@ class RellWorkspaceService(
             workspaceManager.didChangeFolders(dirtyFolders, deletedFolders)
             languageClient.refreshSemanticTokens()
         }
+    }
+
+    override fun symbol(params: WorkspaceSymbolParams):
+        CompletableFuture<Either<List<SymbolInformation>, List<WorkspaceSymbol>>> {
+        return CompletableFuture.completedFuture(
+            Either.forRight(symbolService.getWorkspaceSymbols(params.query, indexingManager.getAllIndexers()))
+        )
     }
 
     private fun handleIndexingState(state: IndexingState) {

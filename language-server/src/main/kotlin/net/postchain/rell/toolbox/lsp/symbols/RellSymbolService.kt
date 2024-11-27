@@ -21,6 +21,7 @@ import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolInformation
 import org.eclipse.lsp4j.SymbolKind
+import org.eclipse.lsp4j.WorkspaceSymbol
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.net.URI
 
@@ -168,6 +169,27 @@ class RellSymbolService {
         val outlineTreeBuilder = OutlineTreeBuilder(rootNodeInfo, null)
         IdeApi.buildOutlineTree(outlineTreeBuilder, resource.ast)
         return outlineTreeBuilder.build().toDocumentSymbol()
+    }
+
+    fun getWorkspaceSymbols(query: String, indexers: List<WorkspaceIndexer>): List<WorkspaceSymbol> {
+        val filterPredicate = { symbol: WorkspaceSymbol ->
+            symbol.name.contains(query, ignoreCase = true) || query.isEmpty()
+        }
+
+        return indexers.flatMap { indexer ->
+            indexer.resources.flatMap { resource ->
+                getResourceSymbols(resource, filterPredicate)
+            }
+        }
+    }
+
+    private fun getResourceSymbols(
+        resource: Resource,
+        filterPredicate: (WorkspaceSymbol) -> Boolean
+    ): List<WorkspaceSymbol> {
+        val workspaceSymbolsBuilder = WorkspaceSymbolsBuilder(resource.fileUri, filterPredicate)
+        IdeApi.buildOutlineTree(workspaceSymbolsBuilder, resource.ast)
+        return workspaceSymbolsBuilder.build()
     }
 
     private fun createFileNodeInfo(

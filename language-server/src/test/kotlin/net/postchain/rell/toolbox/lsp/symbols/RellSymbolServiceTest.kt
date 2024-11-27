@@ -44,7 +44,7 @@ class RellSymbolServiceTest {
 
         val indexer = WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         indexer.initialFileIndexBuild()
-        val unIndexedFile = File(dir, "unindexed_file.rell").apply { writeText("""""") }
+        val unIndexedFile = File(dir, "unindexed_file.rell").apply { writeText("") }
         val rellFile = testDataBuilder.sourceFile(rellFilePath)
         val document = Document(unIndexedFile.toURI(), 1, rellFile.readText())
         val position = Position(1, 1)
