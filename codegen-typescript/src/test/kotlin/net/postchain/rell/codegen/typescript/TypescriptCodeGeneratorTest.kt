@@ -39,7 +39,7 @@ internal class TypescriptCodeGeneratorTest {
         @BeforeAll
         @JvmStatic
         fun setup() {
-            val res = compilerContainer.execInContainer("sh", "-c", "npm install -g typescript postchain-client@1.7.0")
+            val res = compilerContainer.execInContainer("sh", "-c", "npm install -g typescript postchain-client@1.20.1")
             assertThat(res).executeSuccessFully()
         }
 
@@ -62,13 +62,15 @@ internal class TypescriptCodeGeneratorTest {
             writeText("""
                 {
                   "compilerOptions": {
-                    "noImplicitAny": false,
+                    "strict": true,
+                    "noImplicitAny": true,
                     "noEmitOnError": true,
                     "removeComments": false,
                     "moduleResolution": "node",
                     "sourceMap": true,
                     "target": "es2015",
                     "outDir": "dist",
+                    "skipLibCheck": true,
                     "paths": {
                         "*": ["/usr/local/lib/node_modules/*"]
                     }
