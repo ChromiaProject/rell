@@ -9,6 +9,7 @@ import net.postchain.rell.codegen.util.capitalize
 import net.postchain.rell.codegen.util.rTypeToJsTypeString
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import java.util.Locale
+import net.postchain.rell.codegen.util.JsTypeRawGtvString
 
 class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         CamelCaseClassName.fromRellQuery(queryDef),
@@ -19,8 +20,16 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         queryDef.type(),
         "QueryObject"
 ), Query {
-    override val imports: List<String> = listOf("import { QueryObject } from \"postchain-client\";")
     private val returnStructure = returnStructure(returnType)
+    override val imports: List<String> = imports()
+
+    private fun imports(): List<String> {
+        val imports: MutableList<String> = mutableListOf("import { QueryObject } from \"postchain-client\";")
+        if (returnType?.name?.contains("gtv") == true) {
+            imports.add("import { $JsTypeRawGtvString } from \"postchain-client\";")
+        }
+        return imports
+    }
     override val moduleName: String
         get() = className.module
 
@@ -30,6 +39,8 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
 
     override fun formatReturnType(): String = "QueryObject<${if (returnStructure.isNotBlank()) buildReturnType() else rTypeToJsTypeString(returnType!!)}>"
 
+    //TODO: Rename to capture what functions does `Rell Object Type -> Ts Object Type`
+    // Also use when statement instead of if 
     override fun returnStructure(returnType: R_Type?): String {
         if (returnType == null) return ""
         if (returnType is R_NullableType) return returnStructure(returnType.valueType)
@@ -50,5 +61,4 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         if (returnType is R_CollectionType) return "$typeName[]"
         return typeName
     }
-
 }

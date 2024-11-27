@@ -4,6 +4,7 @@ import assertk.Assert
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsAll
+import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.hasSize
 import assertk.assertions.support.expected
 import assertk.assertions.support.show
@@ -114,8 +115,14 @@ internal class TypescriptCodeGeneratorTest {
     @Test
     fun mapInput() {
         val (sections, documents) = generateAndCompile("/map_input", "map_input")
-        assertThat(sections).hasSize(10)
+        assertThat(sections).hasSize(8)
         assertThat(documents).hasSize(1)
+
+        assertThat(rellCliEnv.errorCache).containsExactlyInAnyOrder(
+            "Skipping [map_input:return_type_map_gtv_text] Query return type contains unsupported map type: gtv type as key, gtv<gtv, *>",
+            "Skipping [map_input:input_parameter_map_gtv_text] Operation parameters contain unsupported map type: gtv type as key, gtv<gtv, *>",
+            "Skipping [map_input:input_parameter_map_gtv_gtv] Operation parameters contain unsupported map type: gtv type as key, gtv<gtv, *>",
+        )
     }
 
     @Test
@@ -178,6 +185,13 @@ internal class TypescriptCodeGeneratorTest {
     fun namespace() {
         val (sections, documents) = generateAndCompile("/namespace", "ns_test")
         assertThat(sections).hasSize(3)
+        assertThat(documents).hasSize(1)
+    }
+
+    @Test
+    fun gtv() {
+        val (sections, documents) = generateAndCompile("/gtv", "gtv")
+        assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }
 

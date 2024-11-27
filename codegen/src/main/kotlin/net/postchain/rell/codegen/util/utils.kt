@@ -49,7 +49,7 @@ fun String.snakeToUpperCamelCase(): String {
 
 fun rTypeToJsTypeString(type: R_Type, allowSet: Boolean = false): String {
     return when (type) {
-        is R_NullableType -> "${rTypeToJsTypeString(type.valueType)} | null"
+        is R_NullableType -> if (type.valueType is R_GtvType) JsTypeRawGtvString else "${rTypeToJsTypeString(type.valueType)} | null"
         is R_BooleanType -> "number"
         is R_IntegerType -> "number"
         is R_BigIntegerType -> "bigint"
@@ -65,11 +65,13 @@ fun rTypeToJsTypeString(type: R_Type, allowSet: Boolean = false): String {
         is R_StructType -> CamelCaseClassName.fromRellType(type).className
         is R_EnumType -> CamelCaseClassName.fromRellType(type).className
         is R_TupleType -> formatTupleType(type)
-        is R_GtvType -> "any"
+        is R_GtvType -> JsTypeRawGtvString
 
         else -> "any"
     }
 }
+
+const val JsTypeRawGtvString = "RawGtv"
 
 private fun formatTupleType(type: R_TupleType): String {
     if (type.name.contains(":")) return formatNamedTuple(type)
