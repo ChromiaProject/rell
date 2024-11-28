@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.utils
 
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import net.postchain.crypto.CryptoSystem
 import net.postchain.crypto.Secp256K1CryptoSystem
@@ -23,13 +24,8 @@ object PostchainGtvUtils {
 
     private val merkleCalculator: MerkleHashCalculator<Gtv> = GtvMerkleHashCalculator(cryptoSystem)
 
-    private val GSON = make_gtv_gson()
-
-    private val PRETTY_GSON = GsonBuilder()
-        .registerTypeAdapter(Gtv::class.java, GtvAdapter(strict = false))
-        .serializeNulls()
-        .setPrettyPrinting()
-        .create()!!
+    private val GSON: Gson = make_gtv_gson_builder().create()
+    private val PRETTY_GSON: Gson = makeLenientGtvGsonBuilder().setPrettyPrinting().create()
 
     fun gtvToBytes(v: Gtv): ByteArray = GtvEncoder.encodeGtv(v)
     fun bytesToGtv(v: ByteArray): Gtv = GtvFactory.decodeGtv(v)

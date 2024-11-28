@@ -14,12 +14,13 @@ import org.jooq.impl.DSL
 import org.jooq.impl.DSL.constraint
 import org.jooq.impl.SQLDataType
 
-private val disableLogo = run {
-    System.setProperty("org.jooq.no-logo", "true")
-}
-
 object SqlGen {
-    private val disableLogo2 = disableLogo
+    // Needed to disable jooq output.
+    @Suppress("unused")
+    private val disableLogo = run {
+        System.setProperty("org.jooq.no-logo", "true")
+        System.setProperty("org.jooq.no-tips", "true")
+    }
 
     val DSL_CTX: DSLContext = DSL.using(SQLDialect.POSTGRES)
 
@@ -188,7 +189,10 @@ object SqlGen {
         return ddl
     }
 
-    private fun genAttrColumns(attrs: Collection<R_Attribute>, step: CreateTableColumnStep): CreateTableColumnStep {
+    private fun genAttrColumns(
+        attrs: Collection<R_Attribute>,
+        step: CreateTableElementListStep,
+    ): CreateTableElementListStep {
         var q = step
         for (attr in attrs) {
             q = q.column(attr.sqlMapping, getSqlType(attr.type))

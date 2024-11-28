@@ -483,6 +483,15 @@ class LibGtvTest: BaseRellTest() {
         chkFromGtv("123.456", "decimal.from_gtv(g)", "rt_err:fn:gtv.from_json(text)")
     }
 
+    @Test fun testToText() {
+        chk("'' + (true).to_gtv()", "text[1]")
+        chk("'' + (123).to_gtv()", "text[123]")
+        chk("'' + (123L).to_gtv()", "text[123L]")
+        chk("'' + (123.456).to_gtv()", "text[\"123.456\"]")
+        chk("'' + ('Hello').to_gtv()", "text[\"Hello\"]")
+        chk("'' + (x'1234').to_gtv()", "text[\"1234\"]")
+    }
+
     private fun chkFromGtv(gtv: String, expr: String, expected: String) = chkFromGtv(tst, gtv, expr, expected)
 
     private fun chkFromGtv(gtv: Gtv, expr: String, expected: String) {
