@@ -209,8 +209,8 @@ object Lib_Test_Assert {
         val equalsValue = op.evaluate(actual, expected)
         if (!equalsValue.asBoolean()) {
             val code = "$fn:${actual.strCode()}:${expected.strCode()}"
-            val expectedStr = Rt_AssertEqualsError.valueToStr(expected, 200)
-            val actualStr = Rt_AssertEqualsError.valueToStr(actual, 200)
+            val expectedStr = Rt_AssertEqualsError.valueToStr(expected, 500)
+            val actualStr = Rt_AssertEqualsError.valueToStr(actual, 500)
             throw Rt_AssertEqualsError.exception(code, "expected <$expectedStr> but was <$actualStr>", expected, actual)
         }
         return Rt_UnitValue

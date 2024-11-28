@@ -127,7 +127,7 @@ abstract class Rt_Value {
     abstract fun strCode(showTupleFieldNames: Boolean = true): String
 
     open fun strPretty(indent: Int): String {
-        val maxLen = 120
+        val maxLen = 500
         val s = str(StrFormat.V2)
         return if (s.length <= maxLen) s else (s.substring(0, maxLen) + "...")
     }

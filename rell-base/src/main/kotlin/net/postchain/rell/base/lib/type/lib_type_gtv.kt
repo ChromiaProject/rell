@@ -230,6 +230,9 @@ class Rt_GtvValue private constructor(val value: Gtv): Rt_Value() {
     override fun type() = R_GtvType
     override fun asGtv() = value
 
+    override fun equals(other: Any?) = other === this || (other is Rt_GtvValue && value == other.value)
+    override fun hashCode() = value.hashCode()
+
     override fun strCode(showTupleFieldNames: Boolean) = "gtv[${str(StrFormat.V2)}]"
 
     override fun str(format: StrFormat): String {
@@ -239,8 +242,30 @@ class Rt_GtvValue private constructor(val value: Gtv): Rt_Value() {
         }
     }
 
-    override fun equals(other: Any?) = other === this || (other is Rt_GtvValue && value == other.value)
-    override fun hashCode() = value.hashCode()
+    override fun strPretty(indent: Int): String {
+        if (value.type == GtvType.ARRAY) {
+            val array = value.asArray()
+            if (array.isNotEmpty()) {
+                val indentStr = "    ".repeat(indent)
+                return array.joinToString(",", "[", "\n$indentStr]") {
+                    val s = Rt_GtvValue(it).strPretty(indent + 1)
+                    "\n$indentStr    $s"
+                }
+            }
+        } else if (value.type == GtvType.DICT) {
+            val map = value.asDict()
+            if (map.isNotEmpty()) {
+                val indentStr = "    ".repeat(indent)
+                return map.entries.joinToString(",", "[", "\n$indentStr]") {
+                    val k = GtvFactory.gtv(it.key).toString()
+                    val v = Rt_GtvValue(it.value).strPretty(indent + 1)
+                    "\n$indentStr    $k: $v"
+                }
+            }
+        }
+
+        return super.strPretty(indent)
+    }
 
     companion object {
         val NULL: Rt_Value = Rt_GtvValue(GtvNull)

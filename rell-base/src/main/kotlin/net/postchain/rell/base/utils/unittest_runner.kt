@@ -5,10 +5,10 @@
 package net.postchain.rell.base.utils
 
 import com.google.common.base.Throwables
+import net.postchain.gtv.GtvFactory
+import net.postchain.gtv.GtvType
 import net.postchain.rell.base.lib.test.Rt_AssertEqualsError
-import net.postchain.rell.base.lib.type.R_ListType
-import net.postchain.rell.base.lib.type.R_MapType
-import net.postchain.rell.base.lib.type.Rt_IntValue
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
@@ -269,8 +269,8 @@ private fun printAssertEqualsError(
     printer.print("Error: ${e.info.extraMessage}")
     printer.print("")
 
-    val expectedStr = valueToStr(err.expected, 500)
-    val actualStr = valueToStr(err.actual, 500)
+    val expectedStr = valueToStr(err.expected, 1000)
+    val actualStr = valueToStr(err.actual, 1000)
 
     if (max(expectedStr.length, actualStr.length) < 80 || !printPrettyLargeValues) {
         printer.print("Expected: $expectedStr")
@@ -326,7 +326,7 @@ private fun printAssertEqualsErrorDiff(printer: Rt_Printer, err: Rt_AssertEquals
 }
 
 private fun printValueDiff(printer: Rt_Printer, diff: Map<List<String>, Pair<Rt_Value?, Rt_Value?>>) {
-    val valueTrunc = 200
+    val valueTrunc = 500
     val truncDiff = diff.entries.toList().take(20).associate { it.key to it.value }
 
     val groupDiff = mutableMapOf<List<String>, MutableMap<String, Pair<Rt_Value?, Rt_Value?>>>()
@@ -386,56 +386,12 @@ private fun getValueDiff(type: R_Type, v1: Rt_Value, v2: Rt_Value): Map<List<Str
         type is R_ListType -> {
             val list1 = v1.asList()
             val list2 = v2.asList()
-            val res = mutableMapOf<List<String>, Pair<Rt_Value?, Rt_Value?>>()
-            if (list1.size != list2.size) {
-                res[immListOf(".size()")] = Rt_IntValue.get(list1.size.toLong()) to Rt_IntValue.get(list2.size.toLong())
-            }
-            for (i in 0 until min(list1.size, list2.size)) {
-                val subV1 = list1[i]
-                val subV2 = list2[i]
-                val iPath = immListOf("[$i]")
-                val subDiff = getValueDiff(type.elementType, subV1, subV2)
-                for ((subPath, subPair) in subDiff) {
-                    res[iPath + subPath] = subPair
-                }
-            }
-            for (i in min(list1.size, list2.size) until max(list1.size, list2.size)) {
-                val subV1 = list1.getOrNull(i)
-                val subV2 = list2.getOrNull(i)
-                val iPath = immListOf("[$i]")
-                res[iPath] = (subV1 to subV2)
-            }
-            res.toImmMap()
+            getValueDiffList(list1, list2, type.elementType)
         }
         type is R_MapType -> {
             val map1 = v1.asMap()
             val map2 = v2.asMap()
-            val res = mutableMapOf<List<String>, Pair<Rt_Value?, Rt_Value?>>()
-            if (map1.size != map2.size) {
-                res[immListOf(".size()")] = Rt_IntValue.get(map1.size.toLong()) to Rt_IntValue.get(map2.size.toLong())
-            }
-            val trunc = 50
-            for (k in map1.keys.intersect(map2.keys)) {
-                val subV1 = map1.getValue(k)
-                val subV2 = map2.getValue(k)
-                val kStr = valueToStr(k, trunc)
-                val kPath = immListOf("[$kStr]")
-                val subDiff = getValueDiff(type.valueType, subV1, subV2)
-                for ((subPath, subPair) in subDiff) {
-                    res[kPath + subPath] = subPair
-                }
-            }
-            for (k in map1.keys.minus(map2.keys)) {
-                val kStr = valueToStr(k, trunc)
-                val kPath = immListOf("[$kStr]")
-                res[kPath] = (map1.getValue(k) to null)
-            }
-            for (k in map2.keys.minus(map1.keys)) {
-                val kStr = valueToStr(k, trunc)
-                val kPath = immListOf("[$kStr]")
-                res[kPath] = (null to map2.getValue(k))
-            }
-            res.toImmMap()
+            getValueDiffMap(map1, map2, type.valueType)
         }
         type is R_StructType -> {
             val s1 = v1.asStruct()
@@ -452,8 +408,87 @@ private fun getValueDiff(type: R_Type, v1: Rt_Value, v2: Rt_Value): Map<List<Str
             }
             res.toImmMap()
         }
+        type == R_GtvType -> {
+            val g1 = v1.asGtv()
+            val g2 = v2.asGtv()
+            if (g1.type == g2.type && g1.type == GtvType.ARRAY) {
+                val list1 = g1.asArray().map { Rt_GtvValue.get(it) }
+                val list2 = g2.asArray().map { Rt_GtvValue.get(it) }
+                getValueDiffList(list1, list2, R_GtvType)
+            } else if (g1.type == g2.type && g1.type == GtvType.DICT) {
+                val map1 = g1.asDict()
+                    .map { Rt_GtvValue.get(GtvFactory.gtv(it.key)) to Rt_GtvValue.get(it.value) }
+                    .toMap()
+                val map2 = g2.asDict()
+                    .map { Rt_GtvValue.get(GtvFactory.gtv(it.key)) to Rt_GtvValue.get(it.value) }
+                    .toMap()
+                getValueDiffMap(map1, map2, R_GtvType)
+            } else {
+                immMapOf(immListOf<String>() to (v1 to v2))
+            }
+        }
         else -> immMapOf(immListOf<String>() to (v1 to v2))
     }
+}
+
+private fun getValueDiffList(
+    list1: List<Rt_Value>,
+    list2: List<Rt_Value>,
+    elementType: R_Type,
+): Map<List<String>, Pair<Rt_Value?, Rt_Value?>> {
+    val res = mutableMapOf<List<String>, Pair<Rt_Value?, Rt_Value?>>()
+    if (list1.size != list2.size) {
+        res[immListOf(".size()")] = Rt_IntValue.get(list1.size.toLong()) to Rt_IntValue.get(list2.size.toLong())
+    }
+    for (i in 0 until min(list1.size, list2.size)) {
+        val subV1 = list1[i]
+        val subV2 = list2[i]
+        val iPath = immListOf("[$i]")
+        val subDiff = getValueDiff(elementType, subV1, subV2)
+        for ((subPath, subPair) in subDiff) {
+            res[iPath + subPath] = subPair
+        }
+    }
+    for (i in min(list1.size, list2.size) until max(list1.size, list2.size)) {
+        val subV1 = list1.getOrNull(i)
+        val subV2 = list2.getOrNull(i)
+        val iPath = immListOf("[$i]")
+        res[iPath] = (subV1 to subV2)
+    }
+    return res.toImmMap()
+}
+
+private fun getValueDiffMap(
+    map1: Map<Rt_Value, Rt_Value>,
+    map2: Map<Rt_Value, Rt_Value>,
+    valueType: R_Type,
+): Map<List<String>, Pair<Rt_Value?, Rt_Value?>> {
+    val res = mutableMapOf<List<String>, Pair<Rt_Value?, Rt_Value?>>()
+    if (map1.size != map2.size) {
+        res[immListOf(".size()")] = Rt_IntValue.get(map1.size.toLong()) to Rt_IntValue.get(map2.size.toLong())
+    }
+    val trunc = 500
+    for (k in map1.keys.intersect(map2.keys)) {
+        val subV1 = map1.getValue(k)
+        val subV2 = map2.getValue(k)
+        val kStr = valueToStr(k, trunc)
+        val kPath = immListOf("[$kStr]")
+        val subDiff = getValueDiff(valueType, subV1, subV2)
+        for ((subPath, subPair) in subDiff) {
+            res[kPath + subPath] = subPair
+        }
+    }
+    for (k in map1.keys.minus(map2.keys)) {
+        val kStr = valueToStr(k, trunc)
+        val kPath = immListOf("[$kStr]")
+        res[kPath] = (map1.getValue(k) to null)
+    }
+    for (k in map2.keys.minus(map1.keys)) {
+        val kStr = valueToStr(k, trunc)
+        val kPath = immListOf("[$kStr]")
+        res[kPath] = (null to map2.getValue(k))
+    }
+    return res.toImmMap()
 }
 
 private fun valueToStr(v: Rt_Value, truncate: Int): String = Rt_AssertEqualsError.valueToStr(v, truncate)

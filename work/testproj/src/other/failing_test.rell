@@ -326,3 +326,49 @@ function test_transfer_rules() {
 
     assert_equals(actual, expected);
 }
+
+struct provider_auth_update_message {
+    provider_pubkey: pubkey;
+    key_roles: list<provider_auth_update_role>;
+}
+
+struct provider_auth_update_role {
+    role: text;
+    threshold: integer;
+    keys: list<(pubkey: pubkey, active: boolean)>;
+}
+
+function test_assert_events() {
+    assert_equals(
+        ("icmf_message", (
+            topic = "the_topic",
+            body = provider_auth_update_message(
+                provider_pubkey = rell.test.pubkeys.alice,
+                key_roles = [
+                    provider_auth_update_role(
+                        role = "main",
+                        threshold = 0,
+                        [(pubkey = rell.test.pubkeys.alice, active = true), (pubkey = rell.test.pubkeys.bob, active = true)]),
+                    provider_auth_update_role(
+                        role = "something_else",
+                        threshold = 1,
+                        [(pubkey = rell.test.pubkeys.trudy, active = true)]),
+                ]).to_gtv()).to_gtv_pretty()
+        ),
+        ("icmf_message", (
+            topic = "the_topic",
+            body = provider_auth_update_message(
+                provider_pubkey = rell.test.pubkeys.alice,
+                key_roles = [
+                    provider_auth_update_role(
+                        role = "main",
+                        threshold = 0,
+                        [(pubkey = rell.test.pubkeys.alice, active = true), (pubkey = rell.test.pubkeys.bob, active = true)]),
+                    provider_auth_update_role(
+                        role = "something_else",
+                        threshold = 7,
+                        [(pubkey = rell.test.pubkeys.trudy, active = true)]),
+                ]).to_gtv()).to_gtv_pretty()
+        )
+    );
+}
