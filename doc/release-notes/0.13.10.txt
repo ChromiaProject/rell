@@ -1,0 +1,140 @@
+RELEASE NOTES 0.13.10 (2024-04-02)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Language: At-expression join syntax
+
+Each entity in an at-expression can have its own where-expression, which is translated into SQL JOIN ON clause. So
+instead of
+
+    (u: user, c: contract) @* { c.user == u } ( u, c )
+
+one can write:
+
+    (
+        u: user,
+        c: contract @* { c.user == u }
+    ) @* {} ( u, c )
+
+The first expression is translated into SQL like:
+
+    SELECT U.rowid, C.rowid FROM user U, contract C WHERE C.user = U.rowid
+
+while the second one is translated into:
+
+    SELECT U.rowid, C.rowid FROM user U JOIN contract C ON C.user = U.rowid
+
+The two statements do the same, as inner joins are used by default. But the new syntax makes a difference when using
+outer joins.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Language: Outer joins in at-expressions
+
+With the new join syntax, one can use @outer annotation to make an outer join:
+
+    (
+        u: user,
+        @outer c: contract @* { c.user == u }
+    ) @* {} ( u, c )
+
+This expression is translated into SQL like:
+
+    SELECT U.rowid, C.rowid FROM user U LEFT OUTER JOIN contract C ON C.user = U.rowid
+
+If there is no matching "contract" for a "user", a null "contract" record is added to the result set. In contrast, for
+a default (inner) join, the "user" record wouldn't be added to the result set if there is no matching "contract".
+
+When outer join is used, the type of "c" is "contract?", not "contract". This means its attributes can't be accessed
+directly, and one shall use null-handling operators, like "?." or "?:".
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Language: Operators "==" and "!=" allow comparing "T?" with "T"
+
+So expressions like
+
+    user?.name == 'Bob'
+
+will work, allowing to compare text? and text.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Library: Function iterable.join_to_text()
+
+iterable<T>.join_to_text(
+    separator: text = ", ",
+    prefix: text = "",
+    postfix: text = "",
+    limit: integer? = null,
+    truncated: text = "...",
+    transform: (T) -> text = T.to_text()
+): text
+
+Function creates a text from all the elements separated using separator and using the given prefix and
+postfix if supplied. It can be used on all subtypes of iterable<T>: list<T>, set<T>, map<K,V>, byte_array, range.
+If the iterable is large, you can specify a non-negative value of limit, in which case
+only the first limit of elements will be appended, followed by the truncated text (which defaults to "...").
+
+Usage example:
+
+    [1,2,3].join_to_text() // returns "1, 2, 3"
+    [1,2,3].join_to_text("*") // returns "1*2*3"
+    [1,2,3].join_to_text("*", "<", ">") // returns "<1*2*3>"
+
+    function foo(element : integer) { return "foo" + element; }
+    [1,2,3].join_to_text(", ", "", "", null, "", foo(*)) // returns "foo1, foo2, foo3"
+
+Parameter details:
+
+    separator - the text value used between each of the elements in the iterable.
+    prefix - the text to be prefixed to the resulting text.
+    postfix - the text to be appended to the resulting text.
+    limit - the maximum number of elements from the iterable to include in the result.
+            If the number of elements exceeds this limit, the truncated text is appended.
+            The default is null, which means no limit.
+            Limit needs to be a non-negative integer between 0 and (2^31)-1.
+    truncated - the text to be appended if the number of elements exceeds the specified limit.
+    transform - the function to apply to each element before joining.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+5. Library: New features of type rell.meta (modules, kind_text)
+
+(1) Support of modules: the constructor rell.meta(...) accepts an alias of an imported module and returns the meta
+    information about the module. Properties are:
+
+        module_name - module name
+        mount_name - module's mount name (defined by a @mount annotation, default is empty string)
+        full_name - module name
+        simple_name - last part of the module name (i.e. "c" for module "a.b.c"), or empty string for a root module
+
+    Example:
+
+        import foo.bar;
+        function get_foobar_meta_info() = rell.meta(bar);
+
+(2) Function to get the meta information about the current module:
+
+        function rell.meta.current_module(): rell.meta
+
+(3) New property to get the kind of the definition:
+
+        kind_text: text
+
+    Possible values: "module", "entity", "object", "operation", "query".
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+6. Library: Transactional try_call()
+
+Function try_call() rolls back database changes made by the target function if the call fails.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+7. Language version control
+
+Language version specified in the compiler configuration (e.g. via blockchain configuration option gtx.rell.version)
+will disable features added in newer versions of Rell, even if the actual version of the Rell interpreter supports them.
+
+For example, the "rell.meta" type will be available only if the configured Rell version is 0.13.5 or higher.
+
+Purpose: to control Rell app source code compatibility with nodes. Different nodes may run different versions of Rell.
+The new version control will make all nodes handle a Rell app the same way.
+
+Details:
+1. The minimum supported language version is 0.10.10.
+2. Version control works only for production features. Test features (e.g. rell.test.* library API) is not affected.

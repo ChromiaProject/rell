@@ -1,0 +1,24 @@
+RELEASE NOTES 0.13.4 (2023-10-30)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Library: Conversion between different operation types
+
+Rell has three types that represent operations: gtx_operation, struct<operation> and rell.test.op. New library
+functions and properties were added to them.
+
+rell.test.op.name: text;
+
+    Read the name of the operation.
+
+rell.test.op.args: list<gtv>;
+
+    Returns arguments of the operation. A new mutable list is created on every read.
+
+rell.test.op.to_gtx_operation(): gtx_operation;
+gtx_operation.to_test_op(): rell.test.op;
+
+    Conversions between gtx_operation and rell.test.op.
+
+struct<operation>.to_gtx_operation(): gtx_operation;
+
+    Converts a struct<operation> to gtx_operation.

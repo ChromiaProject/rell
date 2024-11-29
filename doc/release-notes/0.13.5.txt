@@ -1,0 +1,110 @@
+RELEASE NOTES 0.13.5 (2023-11-14)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Library: Crypto functions for keys and addresses
+
+crypto.eth_privkey_to_address(privkey: byte_array): byte_array;
+
+    Takes 32-byte private key, returns 20-byte Ethereum address. Same result can be calculated by:
+    crypto.keccak256(crypto.privkey_to_pubkey(privkey).sub(1)).sub(12)
+
+crypto.eth_pubkey_to_address(pubkey: byte_array): byte_array;
+
+    Takes a public key (33, 64 or 65 bytes), returns 20-byte Ethereum address.
+
+crypto.pubkey_encode(pubkey: byte_array, compressed: boolean = false): byte_array;
+
+    Calculates a compressed (33-byte) or uncompressed (65-byte) public key from an input public key. Allows to convert
+    a compressed key to an uncompressed key or vice versa.
+
+crypto.pubkey_to_xy(pubkey: byte_array): (big_integer, big_integer);
+
+    Takes a public key, returns corresponding EC point coordinates.
+
+crypto.xy_to_pubkey(x: big_integer, y: big_integer, compressed: boolean = false): byte_array;
+
+    Takes EC point coordinates, returns a public key (compressed or uncompressed). Fails if the coordinates are not a
+    valid public key point.
+
+All added functions that take a public key, support three kinds of public keys:
+
+1. Compressed 33-byte public key.
+2. Uncompressed 65-byte public key.
+3. Uncompressed 64-byte public key - same as the 65-byte key, but without the first byte; such key is returned by the
+   crypto.eth_ecrecover() function and supported for convenience.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Library: Type rell.meta to get definition meta-information (like a mount name of an operation)
+
+New type "rell.meta" has the following members:
+
+constructor(definition);
+
+    Constructor. Returns a value of type "rell.meta" describing the given definition (specified by name).
+    The definition can be: entity, object, operation, query.
+
+simple_name: text;
+
+    Simple name (e.g. "bar" if the full name is "lib:foo.bar").
+
+full_name: text;
+
+    Full name, including the module name, in the form: <module_name>:[<namespace_path>.]<simple_name>.
+    For example: ":foo" (root module), "my_module:bar", "my_module:my_namespace.bar".
+
+module_name: text;
+
+    Module name. Can be an empty string (for the root module).
+
+mount_name: text;
+
+    Mount name. Throws an error (at runtime) if the kind of the definition doesn't have a mount name.
+    (All definitions supported so far have mount names.)
+
+Example. Getting a mount name of an operation:
+
+    operation my_op() {}
+    query get_op_name() = rell.meta(my_op).mount_name;
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Tools: Unit tests duration output
+
+Unit tests will print duration of each test case and the total duration. The duration is also returned by Rell API
+in the UnitTestResult class.
+
+Output example:
+
+    TEST RESULTS:
+
+    OK tests.foobar:test_foo (0.005s)
+
+    FAILED tests.foobar:test_fail_require (0.001s)
+    FAILED tests.foobar:test_fail_assert_equals (0.001s)
+
+    SUMMARY: 2 FAILED / 1 PASSED / 3 TOTAL (0.007s)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Tools: REPL output format Gtv.toString()
+
+New value output format activated by command '\og': converts a value to Gtv and prints its string representation.
+
+The '\os' (strict) format removed, as it's internal and can be unstable (may change in future updates).
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+5. Runtime: Default values in module args
+
+If a module_args attribute has a default value, it's not necessary to specify that attribute in the configuration.
+If all attributes of module_args have default values, no need to specify args for the corresponding module at all.
+Rell will use default values instead of throwing an error.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+6. Language: Insert multiple database records with one statement
+
+New variant of the "create" expression, which accepts a list of structs:
+
+    create MyEntity(list<struct<MyEntity>>): list<MyEntity>
+
+Useful when there is a need to insert many records of the same type at once - inserts all records with a single SQL
+statement. If the list is empty, no SQL is executed.
+
+Returns the list of inserted entities, same size and same order as the input list.

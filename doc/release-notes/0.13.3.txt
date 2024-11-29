@@ -1,0 +1,85 @@
+RELEASE NOTES 0.13.3 (2023-10-25)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Runtime: changed the structure of the rell.get_app_structure query result
+
+Attributes (values) of entities, objects, structs and enums are now returned as an array instead of a dictionary.
+Reason: to preserve the order of attributes. Particularly important for structs (values must use same order as
+attributes).
+
+Rell code example:
+
+    struct module_args {
+        x: integer;
+        y: text;
+    }
+
+Corresponding app structure example (fragment):
+
+    {
+        "structs": {
+            "module_args": {
+                "attributes": [
+                    { "mutable": 0, "name": "x", "type": "integer" },
+                    { "mutable": 0, "name": "y", "type": "text" }
+                ]
+            }
+        }
+    }
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Tests: Block time determinism and library API
+
+Test block time is now deterministic. By default, the first block timestamp is 2020-01-01 00:00:00 UTC, and interval
+between blocks is 10 seconds.
+
+More precisely, when a block is run, it's timestamp is determined this way:
+
+1. If block timestamp was set to a specific value via the rell.test.set_next_block_time() function, that value is used
+   and discarded (so subsequent blocks won't use it).
+2. Otherwise, if there is the last block, the new timestamp is the last block timestamp plus the block interval.
+3. Otherwise, the timestamp is 2020-01-01 00:00:00 UTC.
+
+All library API is defined in the rell.test namespace.
+
+val DEFAULT_FIRST_BLOCK_TIME: timestamp = 1577836800000;
+val DEFAULT_BLOCK_INTERVAL: integer = 10000;
+
+    Constants for default first block timestamp and default block interval, both in milliseconds.
+
+last_block_time: timestamp;
+
+    Last block timestamp. Throws an exception if last block doesn't exist.
+
+last_block_time_or_null: timestamp?;
+
+    Last block timestamp, or null if last block doesn't exist.
+
+next_block_time: timestamp;
+
+    Next block timestamp. Calculated on every read by the rules described above.
+
+block_interval: integer;
+
+    Block interval in milliseconds. Default is 10000 (10 seconds).
+
+set_block_interval(interval: integer): integer;
+
+    Sets a new block interval, returns the old interval.
+
+set_next_block_time(time: timestamp);
+
+    Sets the next block time to a specific value. Affects only the next block.
+
+set_next_block_time_delta(delta: integer);
+
+    Equivalent of set_next_block_time(last_block_time + delta), except that the call has no effect if the last block
+    doesn't exist.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Library: op_context.get_current_operation()
+
+op_context.get_current_operation(): gtx_operation;
+
+    Returns the current operation. Equivalent of op_context.get_all_operations()[op_context.op_index], but faster - does
+    not create a list of all operations.

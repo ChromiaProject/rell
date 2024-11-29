@@ -1,0 +1,28 @@
+RELEASE NOTES 0.13.14 (2024-07-05)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Docs: Doc comments support
+
+Java-like doc comments in form /** ... */ can be attached to Rell definitions:
+
+    /**
+     * Calculates the square of a number.
+     *
+     * @param x The number.
+     * @returns The result.
+     * @see `cube()`
+     */
+    function square(x: integer) {
+        return x * x;
+    }
+
+Supported tags:
+
+    @param <name> <text>
+    @returns <text>
+    @since <text>
+    @see <text>
+
+Text uses the Markdown format.
+
+Note. Tag @returns is replaced by @return in 0.14.0.

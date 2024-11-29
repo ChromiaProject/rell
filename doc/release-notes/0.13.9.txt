@@ -1,0 +1,66 @@
+RELEASE NOTES 0.13.9 (2024-02-23)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. SQL: Adding and removing keys and indices
+
+Adding or removing keys and indices in an entity is now supported. Corresponding SQL keys or indexes are
+created or dropped during database initialization.
+
+Details:
+
+1. If a new key is added and the values of its attributes in the database aren't unique, database initialization fails.
+2. Adding a key or index may be slow for big tables.
+3. Adding new key or index attributes to an entity is supported too.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Language: Annotations @list, @set and @map for at-expressions
+
+Similarly to @sum, @min and @max aggregation annotations, now there are annotations to aggregate values into
+collections:
+
+1. @list T: returns list<T>.
+2. @set T: returns set<T>.
+3. @map (K, V): accepts a two-element tuple, returns map<K, V>, fails on key conflict.
+
+Usage:
+
+    entity data { k: integer; v: text; }
+
+    data @ {} ( @list .v )              // returns list<text>
+    data @ {} ( @set .v )               // returns set<text>
+    data @ {} ( @map (.k, .v) )         // returns map<integer, text>
+
+With grouping:
+
+    data @* {} ( @group .k, @list .v )  // returns list<(integer,list<text>)>
+    data @* {} ( @group .k, @set .v )   // returns list<(integer,set<text>)>
+
+To group values into a map of lists, combine two at-expressions:
+
+    data @* {} ( @group .k, @list .v ) @ {} ( @map $ )      // returns map<integer,list<text>>
+
+1. First at-expression (@*) returns list<(integer,list<text>)>.
+2. Second at-expression (@) converts list<(integer,list<text>)> to map<integer,list<text>>.
+
+Notes:
+
+1. Expression
+        data @ {} ( @list .v )
+   returns list<text>, but
+        data @* {} ( @list .v )
+   returns list<list<text>>, which always has one element of type list<text>.
+
+2. When annotation @list, @set or @map is used in a database at-expression, all values (which match the where part)
+   are read from the database without grouping and aggregation, and then grouped and aggregated in memory.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Runtime: Strict Gtv conversion mode for operations
+
+New blockchain configuration option "gtx.rell.strictGtvConversion" (boolean, default false) enables the strict mode.
+In this mode, operation arguments must use canonical Gtv representation, so a value can be encoded only in one way.
+
+For instance, following gtv -> Rell conversions are not allowed in strict mode:
+
+- biginteger -> integer
+- integer, biginteger -> decimal
+- string -> byte_array

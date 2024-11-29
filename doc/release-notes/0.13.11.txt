@@ -1,0 +1,35 @@
+RELEASE NOTES 0.13.11 (2024-04-15)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Library: New decimal.to_text(true) format
+
+Format of decimal.to_text(true) changed to return a normalized scientific representation of a number, which has one
+digit before the point. For example, for 123456.0 the result is "1.23456E+5", for 0.123456 it's "1.23456E-1".
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Language: Maximum entity and object mount name length changed to 58
+
+The maximum length reduced from 60 to 58 characters. The table name length limit in Postgres is 63, Rell adds a chain
+ID prefix like "c123.".
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Library: Function crypto.get_signature()
+
+New function:
+
+    crypto.get_signature(data_hash: byte_array, privkey: byte_array): byte_array
+
+Calculates a signature, which can be verified with the crypto.verify_signature() function.
+Size of "data_hash" and "privkey" must be 32, the size of the returned value is 64.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Language: Warning when returning a mixed tuple from a query
+
+There will be a warning if a query return type contains a mixed tuple - a tuple which has both named and unnamed fields.
+Queries define a public API of a Rell app, and returning mixed tuples is considered a bad practice.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+5. Version control: taking compiler version into account
+
+New blockchain configuration option "gtx.rell.compilerVersion" is set by the compiler and checked at runtime.
+The version control is disabled if the app was compiled by an older Rell version.

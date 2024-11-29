@@ -1,0 +1,6 @@
+RELEASE NOTES 0.14.2 (2024-10-16)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Library: try_call() logs errors
+
+Exceptions caught by try_call() are printed to the log (with stack trace) for debugging purposes.

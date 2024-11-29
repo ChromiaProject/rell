@@ -1,0 +1,77 @@
+RELEASE NOTES 0.13.12 (2024-05-05)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Language: Anonymous import
+
+Use special alias "_" for anonymous imports:
+
+    import _: foo;
+    import _: bar;
+
+Anonymous imports make a module active, enabling its operations, queries, function extensions and overrides - same way
+as normal imports. But there is no way to access the module from code (as it has no alias), and no names are added to
+the namespace.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Language: Reserved names
+
+Following names are reserved, as they may become keywords in the future:
+
+    alias
+    as
+    catch
+    const
+    final
+    finally
+    fun
+    internal
+    is
+    native
+    private
+    protected
+    savepoint
+    sealed
+    static
+    super
+    this
+    throw
+    trait
+    transact
+    try
+    typealias
+    yield
+
+Using a reserved name in Rell code is not allowed.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Language: Trailing commas
+
+A trailing comma is allowed in any comma-separated list of expressions or other language constructs.
+This is useful when having one item per line. Examples:
+
+    val my_list = [
+        123,
+        456,
+        789,
+    ];
+
+    val my_map = [
+        123: 'A',
+        456: 'B',
+    ];
+
+    enum colors {
+        RED,
+        GREEN,
+        BLUE,
+    }
+
+    function f(
+        x: integer,
+        y: text,
+    ) {...}
+
+    query q() = f(
+        123,
+        'A',
+    );

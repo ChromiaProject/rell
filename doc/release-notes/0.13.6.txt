@@ -1,0 +1,33 @@
+RELEASE NOTES 0.13.6 (2023-12-01)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Runtime: Better function extensions activation rules in unit tests
+
+What changed:
+
+1. In unit tests, active function extensions for test functions and for block operations are now the same.
+2. New Rell API option "activateTestDependencies" controls if extensions imported only from tests are active
+   (by default yes).
+3. Extensions defined in the same module as the corresponding extendable function are always active.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Library: Power function (integer, big_integer)
+
+Functions to calculate a power (X ^ Y):
+
+    integer.pow(exponent: integer): integer;
+    big_integer.pow(exponent: integer): big_integer;
+
+Usage example:
+
+    val x = (2).pow(8);     // returns 256
+    val y = (2L).pow(64);   // returns 18446744073709551616
+
+Details:
+
+1. The exponent cannot be negative.
+2. Error on overflow, if the result is out of integer or big_integer range.
+3. Beware that the result of integer.pow() is limited to the 64-bit signed integer range, so the operation like
+   (2).pow(64) will overflow - use big_integer.pow() to get a big_integer result, e.g. (2).to_big_integer().pow(64).
+4. If the exponent is 0, the result is always 1; if the exponent is 1, the result is the original value.
+5. Both functions are SQL-compatible, so they can be used in a database at-expression.
