@@ -111,29 +111,6 @@ class CodeGenerator(private val factory: DocumentFactory, private val config: Co
         }
     }
 
-
-    private fun hasSupportedParamsType(function: R_MountedRoutineDefinition, args: List<R_FunctionParam>): Boolean {
-        if (args.isEmpty()) return true
-
-        val hasInvalidParams = args.filter { it.type is R_MapType }
-            .map { it.type as R_MapType }
-            .any { it.keyType == R_GtvType }
-
-        if (hasInvalidParams) {
-            rellCliEnv.error("Skipping [${function.appLevelName}] ${function.functionType()} parameters contain unsupported map type: gtv type as key, gtv<gtv, *>")
-            return false
-        }
-
-        return true
-    }
-
-    private fun R_MountedRoutineDefinition.functionType(): String {
-        return when(this) {
-            is R_QueryDefinition -> "Query"
-            is R_OperationDefinition -> "Operation"
-        }
-    }
-
     private fun isMixedTuple(type: R_TupleType): Boolean {
         return type.fields.any { it.name == null } && type.fields.any { it.name != null }
     }
