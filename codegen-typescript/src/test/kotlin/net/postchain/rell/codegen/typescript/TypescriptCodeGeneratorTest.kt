@@ -115,14 +115,8 @@ internal class TypescriptCodeGeneratorTest {
     @Test
     fun mapInput() {
         val (sections, documents) = generateAndCompile("/map_input", "map_input")
-        assertThat(sections).hasSize(8)
+        assertThat(sections).hasSize(11)
         assertThat(documents).hasSize(1)
-
-        assertThat(rellCliEnv.errorCache).containsExactlyInAnyOrder(
-            "Skipping [map_input:return_type_map_gtv_text] Query return type contains unsupported map type: gtv type as key, gtv<gtv, *>",
-            "Skipping [map_input:input_parameter_map_gtv_text] Operation parameters contain unsupported map type: gtv type as key, gtv<gtv, *>",
-            "Skipping [map_input:input_parameter_map_gtv_gtv] Operation parameters contain unsupported map type: gtv type as key, gtv<gtv, *>",
-        )
     }
 
     @Test

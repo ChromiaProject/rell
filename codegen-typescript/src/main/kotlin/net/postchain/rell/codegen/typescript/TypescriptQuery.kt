@@ -39,8 +39,6 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
 
     override fun formatReturnType(): String = "QueryObject<${if (returnStructure.isNotBlank()) buildReturnType() else rTypeToJsTypeString(returnType!!)}>"
 
-    //TODO: Rename to capture what functions does `Rell Object Type -> Ts Object Type`
-    // Also use when statement instead of if 
     override fun returnStructure(returnType: R_Type?): String {
         if (returnType == null) return ""
         if (returnType is R_NullableType) return returnStructure(returnType.valueType)

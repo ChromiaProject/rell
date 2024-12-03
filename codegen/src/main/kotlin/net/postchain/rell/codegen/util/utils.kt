@@ -61,7 +61,7 @@ fun rTypeToJsTypeString(type: R_Type, allowSet: Boolean = false): String {
         is R_JsonType -> "string"
         is R_SetType -> if (allowSet) "Set<${rTypeToJsTypeString(type.elementType, allowSet)}>" else "${rTypeToJsTypeString(type.elementType)}[]"
         is R_ListType -> "${rTypeToJsTypeString(type.elementType)}[]"
-        is R_MapType -> "{[x in ${rTypeToJsTypeString(type.keyType)}]: ${rTypeToJsTypeString(type.valueType)}}"
+        is R_MapType -> formatMapType(type)
         is R_StructType -> CamelCaseClassName.fromRellType(type).className
         is R_EnumType -> CamelCaseClassName.fromRellType(type).className
         is R_TupleType -> formatTupleType(type)
@@ -72,6 +72,14 @@ fun rTypeToJsTypeString(type: R_Type, allowSet: Boolean = false): String {
 }
 
 const val JsTypeRawGtvString = "RawGtv"
+
+private fun formatMapType(type: R_MapType): String {
+    return if (type.keyType is R_TextType) {
+        "Record<string, ${rTypeToJsTypeString(type.valueType)}>"
+    } else {
+        "Array<[${rTypeToJsTypeString(type.keyType)}, ${rTypeToJsTypeString(type.valueType)}]>"
+    }
+}
 
 private fun formatTupleType(type: R_TupleType): String {
     if (type.name.contains(":")) return formatNamedTuple(type)

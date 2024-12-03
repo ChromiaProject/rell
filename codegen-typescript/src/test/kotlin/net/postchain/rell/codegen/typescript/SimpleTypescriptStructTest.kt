@@ -32,7 +32,7 @@ class SimpleTypescriptStructTest {
             "byte_array,'a: Buffer'",
             "rowid,'a: number'",
             "entity,'a: number'",
-            "map,'a: {[x in string]: number}'",
+            "map,'a: Record<string, number>'",
             "nullable,'a: string | null'",
             "json,'a: string'",
             "list,'a: string[]'",

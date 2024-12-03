@@ -45,7 +45,7 @@ class CodeGenerator(private val factory: DocumentFactory, private val config: Co
 
         val queries = if (config.includeQueries()) {
             rellQueries.values
-                .filter { hasSupportedReturnType(it, it.type()) && hasSupportedParamsType(it, it.params()) }
+                .filter { hasSupportedReturnType(it, it.type()) }
                 .map { factory.createQuery(it) }
         }
         else {
@@ -53,7 +53,7 @@ class CodeGenerator(private val factory: DocumentFactory, private val config: Co
         }
 
         val operations = if (config.includeOperations()) {
-            rellOperations.values.filter { hasSupportedParamsType(it, it.params()) }.map { factory.createOperation(it) }
+            rellOperations.values.map { factory.createOperation(it) }
         } else {
             listOf()
         }
@@ -96,20 +96,12 @@ class CodeGenerator(private val factory: DocumentFactory, private val config: Co
         }
     }
 
-    //TODO: Clean up
     private fun hasSupportedReturnType(query: R_QueryDefinition, returnType: R_Type): Boolean {
         if (returnType is R_NullableType) return hasSupportedReturnType(query, returnType.valueType)
 
         if (returnType is R_CollectionType) return hasSupportedReturnType(query, returnType.elementType)
 
-        if (returnType is R_MapType) {
-            return if (returnType.keyType is R_GtvType) {
-                rellCliEnv.error("Skipping [${query.appLevelName}] Query return type contains unsupported map type: gtv type as key, gtv<gtv, *>")
-                false
-            } else {
-                hasSupportedReturnType(query, returnType.valueType)
-            }
-        }
+        if (returnType is R_MapType) return hasSupportedReturnType(query, returnType.valueType)
 
         return if (returnType is R_TupleType && isMixedTuple(returnType)) {
             rellCliEnv.error("Skipping [${query.appLevelName}] Query return type contains unsupported mixed tuple type: $returnType")
