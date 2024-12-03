@@ -15,7 +15,7 @@ class TypescriptOperation(op: R_OperationDefinition) : TypescriptFunction(
     false,
     null
 ), Operation {
-    override val imports: List<String> = listOf("import { Operation } from \"postchain-client\";")
+    override val imports: List<String> = imports(TsFunctionImplementations.OPERATION)
 
     override fun formatReturnObjectArgs(): String {
         return params.joinToString(",\n\t", "[", "]") { parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type) }

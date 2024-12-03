@@ -21,15 +21,7 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         "QueryObject"
 ), Query {
     private val returnStructure = returnStructure(returnType)
-    override val imports: List<String> = imports()
-
-    private fun imports(): List<String> {
-        val imports: MutableList<String> = mutableListOf("import { QueryObject } from \"postchain-client\";")
-        if (returnType?.name?.contains("gtv") == true) {
-            imports.add("import { $JsTypeRawGtvString } from \"postchain-client\";")
-        }
-        return imports
-    }
+    override val imports: List<String> = imports(TsFunctionImplementations.QUERY)
     override val moduleName: String
         get() = className.module
 
