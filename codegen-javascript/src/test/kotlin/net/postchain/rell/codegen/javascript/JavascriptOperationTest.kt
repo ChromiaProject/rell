@@ -27,8 +27,8 @@ class JavascriptOperationTest {
         val k = JavascriptOperation(op)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("export function inputParameterTextOperation(tx,\n\tt)")
-            contains("tx.addOperation(\"input_parameter_text\", t)")
+            contains("export function inputParameterTextOperation(t)")
+            contains("return { name: \"input_parameter_text\", args: [t] }")
         }
     }
 
@@ -43,8 +43,8 @@ class JavascriptOperationTest {
         val k = JavascriptOperation(op)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("export function $javascriptQualifiedOpName(tx)")
-            contains("tx.addOperation(\"$rellQualifiedOpName\")")
+            contains("export function $javascriptQualifiedOpName()")
+            contains("return { name: \"$rellQualifiedOpName\" }")
         }
     }
 
@@ -86,12 +86,15 @@ class JavascriptOperationTest {
         val op = kotlin.test.assertNotNull(testModule.operations[opName])
         val k = JavascriptOperation(op)
         val formatted = k.format()
-        val functionParams = if (params.isEmpty()) "" else ",\n\t$params"
+        val functionParams = params.ifEmpty { "" }
         assertThat(formatted).all {
-            contains("export function ${opName.snakeToLowerCamelCase()}Operation(tx$functionParams) {")
+            contains("export function ${opName.snakeToLowerCamelCase()}Operation($functionParams) {")
             contains(assertFun)
-            contains("tx.addOperation(\"$opName\"")
-            endsWith("$gtvParam)\n}")
+            if (functionParams.isEmpty()) {
+                contains("return { name: \"$opName\" };")
+            } else {
+                contains("return { name: \"$opName\", args: [$gtvParam] };")
+            }
         }
     }
 }

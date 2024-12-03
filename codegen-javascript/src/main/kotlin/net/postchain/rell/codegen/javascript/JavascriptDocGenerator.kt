@@ -11,7 +11,7 @@ import kotlin.collections.forEach
 object JavascriptDocGenerator : AbstractDocGenerator() {
     override fun formatDefaultParamTags(sb: StringBuilder, params: List<R_FunctionParam>) {
         params.forEach { param ->
-            sb.appendLine("@param {${rTypeToJsTypeString(param.type)}} ${param.name.str.snakeToLowerCamelCase()}")
+            sb.appendLine("@param {${rTypeToJsTypeString(param.type, allowSet = true)}} ${param.name.str.snakeToLowerCamelCase()}")
         }
     }
 

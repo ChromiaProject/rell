@@ -14,13 +14,23 @@ class JavascriptOperation(op: R_OperationDefinition) : JavascriptFunction(
 ), Operation {
     override val imports = listOf("")
 
-    override fun formatBody() = "tx.addOperation(\"$mountName\"${formatOperationParameters()})"
-    override fun formatReturnType() = "Operation"
+    override fun formatBody() = buildString {
+        append("return { name: \"$mountName\"")
+        if (params.isNotEmpty()) {
+            append(", args: ${formatOperationParameters()}")
+        }
+        append(" };")
+    }
 
-    override fun formatInputParameters() = "tx${super.formatInputParameters().let { if (it.isNotBlank()) ",\n\t$it" else "" }}"
+    override fun formatReturnType() = "Operation"
 
     private fun formatOperationParameters(): String {
         if (params.isEmpty()) return ""
-        return ", ${params.joinToString(",\n\t") { super.parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type) }}"
+        return params.joinToString(",\n\t", "[", "]") {
+                super.parameterTransformer(
+                    it.name.str.snakeToLowerCamelCase(),
+                    it.type
+                )
+            }
     }
 }
