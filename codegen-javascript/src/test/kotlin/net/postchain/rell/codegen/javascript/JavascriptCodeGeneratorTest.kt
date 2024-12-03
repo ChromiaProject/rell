@@ -101,7 +101,7 @@ internal class JavascriptCodeGeneratorTest {
     @Test
     fun mapInput() {
         val (sections, documents) = generateAndLint("/map_input", "map_input")
-        assertThat(sections).hasSize(2 /* queries */ + 7 /* operations */ + 1 /*assertions*/)
+        assertThat(sections).hasSize(3 /* queries */ + 7 /* operations */ + 1 /*assertions*/)
         assertThat(documents).hasSize(1 + 1 /* root */)
     }
 
