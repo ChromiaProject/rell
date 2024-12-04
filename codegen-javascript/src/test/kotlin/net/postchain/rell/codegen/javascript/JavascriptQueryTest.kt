@@ -27,34 +27,34 @@ class JavascriptQueryTest {
         assertThat(formatted).all {
             contains("""
                 |export function inputParameterNargsQueryObject() {
-                |${"\t"}return { name: "input_parameter_nargs", args: undefined };
+                |${"\t"}return { name: "input_parameter_nargs" };
                 |}""".trimMargin())
         }
     }
 
     @ParameterizedTest(name = "rell: {0} -> javascript: {1}")
     @CsvSource(
-            "my_ns1.q1_in_namespace,myNs1Q1InNamespace,e",
-            "my_ns1.q2_in_namespace,myNs1Q2InNamespace,s",
-            "my_ns1.q3a_return_type_enum,myNs1Q3aReturnTypeEnum,e",
-            "my_ns1.q3b_return_type_enum,myNs1Q3bReturnTypeEnum,m",
-            "my_ns1.q4_return_type_list_struct,myNs1Q4ReturnTypeListStruct,m",
-            "my_ns1.q5_return_type_list_struct,myNs1Q5ReturnTypeListStruct,v",
-            "my_ns1.q6_return_type_list_struct,myNs1Q6ReturnTypeListStruct,''",
-            "my_ns1.q7_return_type_enum_map,myNs1Q7ReturnTypeEnumMap,''",
-            "my_ns1.q8_return_type_enum_map,myNs1Q8ReturnTypeEnumMap,''",
-            "my_ns1.q9_return_type_any_map,myNs1Q9ReturnTypeAnyMap,''",
-            "my_ns1.q10_return_type_any_map,myNs1Q10ReturnTypeAnyMap,''",
-            "my_ns1.my_ns2.q2_in_namespace,myNs1MyNs2Q2InNamespace,''",
-            "my_ns1.my_ns2.q_3_in_namespace,myNs1MyNs2Q3InNamespace,''"
+            "my_ns1.q1_in_namespace,myNs1Q1InNamespace,e,'e: e'",
+            "my_ns1.q2_in_namespace,myNs1Q2InNamespace,s,'s: Object.values(s)'",
+            "my_ns1.q3a_return_type_enum,myNs1Q3aReturnTypeEnum,e,'e: e'",
+            "my_ns1.q3b_return_type_enum,myNs1Q3bReturnTypeEnum,m,'m: m'",
+            "my_ns1.q4_return_type_list_struct,myNs1Q4ReturnTypeListStruct,m,'m: m'",
+            "my_ns1.q5_return_type_list_struct,myNs1Q5ReturnTypeListStruct,v,'v: v'",
+            "my_ns1.q6_return_type_list_struct,myNs1Q6ReturnTypeListStruct,'',''",
+            "my_ns1.q7_return_type_enum_map,myNs1Q7ReturnTypeEnumMap,'',''",
+            "my_ns1.q8_return_type_enum_map,myNs1Q8ReturnTypeEnumMap,'',''",
+            "my_ns1.q9_return_type_any_map,myNs1Q9ReturnTypeAnyMap,'',''",
+            "my_ns1.q10_return_type_any_map,myNs1Q10ReturnTypeAnyMap,'',''",
+            "my_ns1.my_ns2.q2_in_namespace,myNs1MyNs2Q2InNamespace,'',''",
+            "my_ns1.my_ns2.q_3_in_namespace,myNs1MyNs2Q3InNamespace,'',''"
     )
-    fun namespaceTest(rellQualifiedName: String, javascriptQualifiedName: String, params: String) {
+    fun namespaceTest(rellQualifiedName: String, javascriptQualifiedName: String, params: String, gtvArgs: String) {
         val q = kotlin.test.assertNotNull(testModule.queries[rellQualifiedName])
         val k = JavascriptQuery(q)
         val formatted = k.format()
         assertThat(formatted).all {
             contains("export function ${javascriptQualifiedName}QueryObject($params)")
-            contains("return { name: \"$rellQualifiedName\", args: ${if(params == "") "undefined" else params } }")
+            contains("return { name: \"$rellQualifiedName\"${if(params != "") { ", args: { $gtvArgs }" } else { "" } }")
         }
     }
 

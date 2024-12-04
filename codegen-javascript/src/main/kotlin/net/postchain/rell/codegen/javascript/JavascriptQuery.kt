@@ -17,14 +17,15 @@ class JavascriptQuery(queryDef: R_QueryDefinition) : JavascriptFunction(
     override val moduleName: String
         get() = className.module
 
-    override fun formatBody() = "return { name: \"$mountName\", args: ${formatQueryParameters()} };"
+    override fun formatBody(): String = buildString {
+        append("return { name: \"$mountName\"")
+        if (params.isNotEmpty()) {
+            append(", args: ${formatReturnObjectArgs()}")
+        }
+        append(" };")
+    }
     override fun formatReturnType() = "QueryObject"
     override fun formatReturnObjectArgs(): String {
-        TODO("Not yet implemented")
-    }
-
-    private fun formatQueryParameters(): String {
-        if (params.isEmpty()) return "undefined"
-        return params.joinToString(", ") {  it.name.str.snakeToLowerCamelCase() }
+        return params.joinToString(", ", "{ ", " }") { "${it.name.str}: ${parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type)}"}
     }
 }
