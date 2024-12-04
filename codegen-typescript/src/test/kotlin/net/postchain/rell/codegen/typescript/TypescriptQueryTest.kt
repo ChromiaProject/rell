@@ -63,7 +63,7 @@ class TypescriptQueryTest {
             "return_type_integer,number",
             "return_type_big_integer,bigint",
             "return_type_text,string",
-            "return_type_decimal,number",
+            "return_type_decimal,string",
             "return_type_byte_array,Buffer",
             "return_type_pubkey,Buffer",
             "return_type_entity,number",

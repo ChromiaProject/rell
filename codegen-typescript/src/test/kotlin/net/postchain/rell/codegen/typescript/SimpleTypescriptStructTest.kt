@@ -27,7 +27,7 @@ class SimpleTypescriptStructTest {
             "boolean,'a: number'",
             "integer,'a: number'",
             "big_integer,'a: bigint'",
-            "decimal,'a: number'",
+            "decimal,'a: string'",
             "text,'a: string'",
             "byte_array,'a: Buffer'",
             "rowid,'a: number'",

@@ -54,7 +54,7 @@ fun rTypeToJsTypeString(type: R_Type, allowSet: Boolean = false, queryReturn: Bo
         is R_BooleanType -> "number"
         is R_IntegerType -> "number"
         is R_BigIntegerType -> "bigint"
-        is R_DecimalType -> "number"
+        is R_DecimalType -> "string"
         is R_TextType -> "string"
         is R_ByteArrayType -> "Buffer"
         is R_RowidType -> "number"
