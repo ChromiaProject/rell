@@ -69,7 +69,7 @@ internal class TypescriptOperationTest {
             "input_parameter_list_string,l: string[],l",
             "input_parameter_set_gtv,g: Set<RawGtv>,Array.from(g)",
             "input_parameter_entity,e: number,e",
-            "input_parameter_struct,s: TestStruct,s",
+            "input_parameter_struct,s: TestStruct,Object.values(s)",
             "input_parameter_list_input,v: Buffer[],v",
             "input_parameter_nullable_list_input,v: Buffer[] | null,v",
             "input_parameter_set_input,v: Set<Buffer>,Array.from(v)",

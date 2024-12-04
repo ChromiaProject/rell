@@ -113,7 +113,7 @@ class TypescriptQueryTest {
             "input_parameter_pubkey,pubkey: Buffer,'{ pubkey: pubkey }'",
             "input_parameter_blockchain_rid,blockchainRid: Buffer,'{ blockchain_rid: blockchainRid }'",
             "input_parameter_entity,e: number,'{ e: e }'",
-            "input_parameter_struct,s: TestStruct,'{ s: s }'",
+            "input_parameter_struct,s: TestStruct,'{ s: Object.values(s) }'",
             "input_parameter_list_input,v: Buffer[],'{ v: v }'",
             "input_parameter_set_input,v: Set<Buffer>,'{ v: Array.from(v) }'",
             "input_parameter_map_input,'v: Record<string, Buffer>','{ v: v }'",
