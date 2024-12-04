@@ -17,20 +17,14 @@ class JavascriptOperation(op: R_OperationDefinition) : JavascriptFunction(
     override fun formatBody() = buildString {
         append("return { name: \"$mountName\"")
         if (params.isNotEmpty()) {
-            append(", args: ${formatOperationParameters()}")
+            append(", args: ${formatReturnObjectArgs()}")
         }
         append(" };")
     }
 
     override fun formatReturnType() = "Operation"
 
-    private fun formatOperationParameters(): String {
-        if (params.isEmpty()) return ""
-        return params.joinToString(",\n\t", "[", "]") {
-                super.parameterTransformer(
-                    it.name.str.snakeToLowerCamelCase(),
-                    it.type
-                )
-            }
+    override fun formatReturnObjectArgs(): String {
+        return params.joinToString(", ", "[", "]") { parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type) }
     }
 }

@@ -23,12 +23,12 @@ class JavascriptOperationTest {
 
     @Test
     fun basicSyntaxTest() {
-        val op = kotlin.test.assertNotNull(testModule.operations["input_parameter_text"])
+        val op = kotlin.test.assertNotNull(testModule.operations["input_parameter_multi"])
         val k = JavascriptOperation(op)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("export function inputParameterTextOperation(t)")
-            contains("return { name: \"input_parameter_text\", args: [t] }")
+            contains("export function inputParameterMultiOperation(s, s2)")
+            contains("return { name: \"input_parameter_multi\", args: [s, s2] }")
         }
     }
 
@@ -79,7 +79,7 @@ class JavascriptOperationTest {
             "input_parameter_map_gtv_text,m,m,assertObject(m)",
             "input_parameter_map_gtv_gtv,m,m,assertObject(m)",
             "input_parameter_map_enum_text,m,m,assertObject(m)",
-            "input_parameter_multi,'s,\n\ts2','s,\n\ts2',assertString(s)\n\tassertString(s2)"
+            "input_parameter_multi,'s, s2','s, s2',assertString(s)\n\tassertString(s2)"
 
     )
     fun parameterTypeTest(opName: String, params: String, gtvParam: String, assertFun: String) {

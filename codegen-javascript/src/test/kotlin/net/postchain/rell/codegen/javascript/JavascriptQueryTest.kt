@@ -80,7 +80,7 @@ class JavascriptQueryTest {
             "input_parameter_nullable_list_input,v,if (v != null) assertArray(v)",
             "input_parameter_gtv,g,assertAny(g)",
             "input_parameter_nullable_gtv,g,if (g != null) assertAny(g)",
-            "input_parameter_multiple,'s,\n\ts2','assertString(s)\n\tassertString(s2)'"
+            "input_parameter_multiple,'s, s2','assertString(s)\n\tassertString(s2)'"
     )
     fun parameterTypeTest(queryName: String, queryParams: String, assertFun: String) {
         val query = kotlin.test.assertNotNull(testModule.queries[queryName])

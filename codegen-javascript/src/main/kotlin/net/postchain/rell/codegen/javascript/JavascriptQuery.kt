@@ -19,9 +19,12 @@ class JavascriptQuery(queryDef: R_QueryDefinition) : JavascriptFunction(
 
     override fun formatBody() = "return { name: \"$mountName\", args: ${formatQueryParameters()} };"
     override fun formatReturnType() = "QueryObject"
+    override fun formatReturnObjectArgs(): String {
+        TODO("Not yet implemented")
+    }
 
     private fun formatQueryParameters(): String {
         if (params.isEmpty()) return "undefined"
-        return params.joinToString(",\n\t") {  it.name.str.snakeToLowerCamelCase() }
+        return params.joinToString(", ") {  it.name.str.snakeToLowerCamelCase() }
     }
 }

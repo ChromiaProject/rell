@@ -42,7 +42,7 @@ abstract class JavascriptFunction(
 
     open fun formatInputParameters(): String {
         if (params.isEmpty()) return ""
-        return params.joinToString(",\n\t") { it.name.str.snakeToLowerCamelCase() }
+        return params.joinToString(", ") { it.name.str.snakeToLowerCamelCase() }
     }
 
     private fun formatTypechecks(): String {
@@ -97,4 +97,5 @@ abstract class JavascriptFunction(
 
     abstract fun formatBody(): String
     abstract fun formatReturnType(): String
+    abstract fun formatReturnObjectArgs(): String
 }
