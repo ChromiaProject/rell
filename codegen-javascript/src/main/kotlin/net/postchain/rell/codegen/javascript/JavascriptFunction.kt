@@ -59,10 +59,10 @@ abstract class JavascriptFunction(
 
     private fun rTypeToBuiltinType(type: R_Type): JavascriptBuiltinType {
         return when (type) {
-            is R_BooleanType -> JavascriptBuiltinType.BooleanAssertion
+            is R_BooleanType -> JavascriptBuiltinType.NumberAssertion
             is R_IntegerType -> JavascriptBuiltinType.NumberAssertion
             is R_BigIntegerType -> JavascriptBuiltinType.BigIntegerAssertion
-            is R_DecimalType -> JavascriptBuiltinType.NumberAssertion
+            is R_DecimalType -> JavascriptBuiltinType.StringAssertion
             is R_TextType -> JavascriptBuiltinType.StringAssertion
             is R_ByteArrayType -> JavascriptBuiltinType.BufferAssertion
             is R_RowidType -> JavascriptBuiltinType.NumberAssertion
@@ -70,9 +70,9 @@ abstract class JavascriptFunction(
             is R_JsonType -> JavascriptBuiltinType.StringAssertion
             is R_SetType -> JavascriptBuiltinType.SetAssertion
             is R_ListType -> JavascriptBuiltinType.ArrayAssertion
-            is R_MapType -> JavascriptBuiltinType.ObjectAssertion
+            is R_MapType -> if (type.keyType is R_TextType) JavascriptBuiltinType.ObjectAssertion else JavascriptBuiltinType.ArrayAssertion
             is R_StructType -> JavascriptBuiltinType.ObjectAssertion
-            is R_EnumType -> JavascriptBuiltinType.ObjectAssertion
+            is R_EnumType -> JavascriptBuiltinType.NumberAssertion
             is R_TupleType -> rTupleToBuiltinType(type)
 
             else -> JavascriptBuiltinType.AnyAssertion
@@ -92,6 +92,7 @@ abstract class JavascriptFunction(
 
     protected fun parameterTransformer(name: String, type: R_Type): String = when (type) {
         is R_SetType -> "Array.from($name)"
+        is R_StructType -> "Object.values($name)"
         else -> name
     }
 
