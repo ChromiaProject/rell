@@ -58,7 +58,7 @@ class TypescriptQueryTest {
 
     @ParameterizedTest(name = "query for return type {0} should convert to {1}")
     @CsvSource(
-            "return_type_enum,TestEnum",
+            "return_type_enum,string",
             "return_type_boolean,number",
             "return_type_integer,number",
             "return_type_big_integer,bigint",

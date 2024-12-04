@@ -47,7 +47,8 @@ fun String.snakeToUpperCamelCase(): String {
     return capitalize(this.snakeToLowerCamelCase())
 }
 
-fun rTypeToJsTypeString(type: R_Type, allowSet: Boolean = false): String {
+// See type conversions: https://docs.chromia.com/intro/architecture/generic-transaction-protocol#type-conversions
+fun rTypeToJsTypeString(type: R_Type, allowSet: Boolean = false, queryReturn: Boolean = false): String {
     return when (type) {
         is R_NullableType -> if (type.valueType is R_GtvType) JsTypeRawGtvString else "${rTypeToJsTypeString(type.valueType)} | null"
         is R_BooleanType -> "number"
@@ -63,7 +64,7 @@ fun rTypeToJsTypeString(type: R_Type, allowSet: Boolean = false): String {
         is R_ListType -> "${rTypeToJsTypeString(type.elementType)}[]"
         is R_MapType -> formatMapType(type)
         is R_StructType -> CamelCaseClassName.fromRellType(type).className
-        is R_EnumType -> CamelCaseClassName.fromRellType(type).className
+        is R_EnumType -> if (queryReturn) rTypeToJsTypeString(R_TextType) else CamelCaseClassName.fromRellType(type).className
         is R_TupleType -> formatTupleType(type)
         is R_GtvType -> JsTypeRawGtvString
 

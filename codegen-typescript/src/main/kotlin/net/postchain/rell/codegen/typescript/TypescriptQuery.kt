@@ -29,7 +29,7 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         return params.joinToString(", ", "{ ", " }") { "${it.name.str}: ${parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type)}" }
     }
 
-    override fun formatReturnType(): String = "QueryObject<${if (returnStructure.isNotBlank()) buildReturnType() else rTypeToJsTypeString(returnType!!)}>"
+    override fun formatReturnType(): String = "QueryObject<${if (returnStructure.isNotBlank()) buildReturnType() else rTypeToJsTypeString(returnType!!, queryReturn = true)}>"
 
     override fun returnStructure(returnType: R_Type?): String {
         if (returnType == null) return ""
