@@ -47,13 +47,14 @@ fun String.snakeToUpperCamelCase(): String {
     return capitalize(this.snakeToLowerCamelCase())
 }
 
-fun rTypeToJsTypeString(type: R_Type, allowSet: Boolean = false): String {
+// See type conversions: https://docs.chromia.com/intro/architecture/generic-transaction-protocol#type-conversions
+fun rTypeToJsTypeString(type: R_Type, allowSet: Boolean = false, queryReturn: Boolean = false): String {
     return when (type) {
-        is R_NullableType -> "${rTypeToJsTypeString(type.valueType)} | null"
+        is R_NullableType -> if (type.valueType is R_GtvType) JsTypeRawGtvString else "${rTypeToJsTypeString(type.valueType)} | null"
         is R_BooleanType -> "number"
         is R_IntegerType -> "number"
         is R_BigIntegerType -> "bigint"
-        is R_DecimalType -> "number"
+        is R_DecimalType -> "string"
         is R_TextType -> "string"
         is R_ByteArrayType -> "Buffer"
         is R_RowidType -> "number"
@@ -61,13 +62,23 @@ fun rTypeToJsTypeString(type: R_Type, allowSet: Boolean = false): String {
         is R_JsonType -> "string"
         is R_SetType -> if (allowSet) "Set<${rTypeToJsTypeString(type.elementType, allowSet)}>" else "${rTypeToJsTypeString(type.elementType)}[]"
         is R_ListType -> "${rTypeToJsTypeString(type.elementType)}[]"
-        is R_MapType -> "{[x in ${rTypeToJsTypeString(type.keyType)}]: ${rTypeToJsTypeString(type.valueType)}}"
+        is R_MapType -> formatMapType(type)
         is R_StructType -> CamelCaseClassName.fromRellType(type).className
-        is R_EnumType -> CamelCaseClassName.fromRellType(type).className
+        is R_EnumType -> if (queryReturn) rTypeToJsTypeString(R_TextType) else CamelCaseClassName.fromRellType(type).className
         is R_TupleType -> formatTupleType(type)
-        is R_GtvType -> "any"
+        is R_GtvType -> JsTypeRawGtvString
 
-        else -> "any"
+        else -> JsTypeRawGtvString
+    }
+}
+
+const val JsTypeRawGtvString = "RawGtv"
+
+private fun formatMapType(type: R_MapType): String {
+    return if (type.keyType is R_TextType) {
+        "Record<string, ${rTypeToJsTypeString(type.valueType)}>"
+    } else {
+        "Array<[${rTypeToJsTypeString(type.keyType)}, ${rTypeToJsTypeString(type.valueType)}]>"
     }
 }
 

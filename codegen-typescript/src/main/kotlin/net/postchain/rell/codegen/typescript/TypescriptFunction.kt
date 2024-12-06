@@ -7,6 +7,7 @@ import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.section.DocumentSection
+import net.postchain.rell.codegen.util.JsTypeRawGtvString
 import net.postchain.rell.codegen.util.rTypeToJsTypeString
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 
@@ -43,11 +44,24 @@ abstract class TypescriptFunction(
                 .toString()
     }
 
+    fun imports(impl: TsFunctionImplementations): List<String> {
+        val imports = when(impl) {
+            TsFunctionImplementations.QUERY -> mutableListOf("import { QueryObject } from \"postchain-client\";")
+            TsFunctionImplementations.OPERATION -> mutableListOf("import { Operation } from \"postchain-client\";")
+        }
+
+        if (returnType?.name?.contains("gtv") == true) {
+            imports.add("import { $JsTypeRawGtvString } from \"postchain-client\";")
+        }
+        return imports
+    }
+
+
     private fun asyncAnnotation() = if (async) "async " else ""
 
     private fun formatInputParameters(): String {
         if (params.isEmpty()) return ""
-        return params.joinToString(",\n\t") { "${it.name.str.snakeToLowerCamelCase()}: ${rTypeToJsTypeString(it.type, true)}" }
+        return params.joinToString(", ") { "${it.name.str.snakeToLowerCamelCase()}: ${rTypeToJsTypeString(it.type, true)}" }
     }
 
     private fun formatReturnObject(): String = buildString {
@@ -62,4 +76,8 @@ abstract class TypescriptFunction(
     abstract fun returnStructure(returnType: R_Type?): String
     abstract fun formatReturnType(): String
 
+}
+
+enum class TsFunctionImplementations {
+    QUERY, OPERATION
 }

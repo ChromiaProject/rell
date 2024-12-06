@@ -4,6 +4,7 @@ import assertk.Assert
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsAll
+import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.hasSize
 import assertk.assertions.support.expected
 import assertk.assertions.support.show
@@ -39,7 +40,7 @@ internal class TypescriptCodeGeneratorTest {
         @BeforeAll
         @JvmStatic
         fun setup() {
-            val res = compilerContainer.execInContainer("sh", "-c", "npm install -g typescript postchain-client@1.7.0")
+            val res = compilerContainer.execInContainer("sh", "-c", "npm install -g typescript postchain-client@1.20.1")
             assertThat(res).executeSuccessFully()
         }
 
@@ -62,13 +63,15 @@ internal class TypescriptCodeGeneratorTest {
             writeText("""
                 {
                   "compilerOptions": {
-                    "noImplicitAny": false,
+                    "strict": true,
+                    "noImplicitAny": true,
                     "noEmitOnError": true,
                     "removeComments": false,
                     "moduleResolution": "node",
                     "sourceMap": true,
                     "target": "es2015",
                     "outDir": "dist",
+                    "skipLibCheck": true,
                     "paths": {
                         "*": ["/usr/local/lib/node_modules/*"]
                     }
@@ -112,7 +115,7 @@ internal class TypescriptCodeGeneratorTest {
     @Test
     fun mapInput() {
         val (sections, documents) = generateAndCompile("/map_input", "map_input")
-        assertThat(sections).hasSize(10)
+        assertThat(sections).hasSize(11)
         assertThat(documents).hasSize(1)
     }
 
@@ -176,6 +179,13 @@ internal class TypescriptCodeGeneratorTest {
     fun namespace() {
         val (sections, documents) = generateAndCompile("/namespace", "ns_test")
         assertThat(sections).hasSize(3)
+        assertThat(documents).hasSize(1)
+    }
+
+    @Test
+    fun gtv() {
+        val (sections, documents) = generateAndCompile("/gtv", "gtv")
+        assertThat(sections).hasSize(4)
         assertThat(documents).hasSize(1)
     }
 

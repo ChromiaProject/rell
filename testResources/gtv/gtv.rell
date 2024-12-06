@@ -1,0 +1,16 @@
+module;
+
+struct gtv_struct {
+    name;
+    data: gtv;
+}
+
+query gtv_query(arg: gtv): gtv {
+    return gtv.from_json("gtv");
+}
+
+query gtv_decimal_query(arg: gtv?): gtv_struct {
+    return gtv_struct(name = "GtvBob", data = gtv.from_json("gtv"));
+}
+
+operation gtv_op(gtv, arg: gtv?, gtv_struct) { }

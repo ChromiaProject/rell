@@ -89,7 +89,7 @@ internal class KotlinCodeGeneratorTest {
     @Test
     fun mapInput() {
         val (sections, documents) = generateAndCompile("/map_input", "map_input")
-        assertThat(sections).hasSize(10)
+        assertThat(sections).hasSize(11)
         assertThat(documents).hasSize(1)
     }
 

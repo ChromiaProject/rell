@@ -67,7 +67,7 @@ internal class SimpleTypescriptEntityTest {
             "a,boolean,number",
             "a,integer,number",
             "a,big_integer,bigint",
-            "a,decimal,number",
+            "a,decimal,string",
             "a,text,string",
             "a,byte_array,Buffer",
             "a,rowid,number",
