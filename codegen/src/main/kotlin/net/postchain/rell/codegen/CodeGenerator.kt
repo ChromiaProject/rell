@@ -14,6 +14,10 @@ import net.postchain.rell.codegen.document.Document
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.section.DocumentSection
 import java.io.File
+import net.postchain.rell.base.lib.type.R_GtvType
+import net.postchain.rell.base.model.R_FunctionParam
+import net.postchain.rell.base.model.R_MountedRoutineDefinition
+import net.postchain.rell.base.model.R_OperationDefinition
 
 class CodeGenerator(private val factory: DocumentFactory, private val config: CodeGeneratorConfig, private val rellCliEnv: RellCliEnv = RellCliEnv.DEFAULT) {
 
@@ -39,13 +43,20 @@ class CodeGenerator(private val factory: DocumentFactory, private val config: Co
         val rellQueries = app.modules.flatMap { it.queries.values }.associateBy { it.appLevelName }
         val rellOperations = app.modules.flatMap { it.operations.values }.associateBy { it.appLevelName }.filter { !it.value.moduleLevelName.startsWith("__") }
 
-        val queries = if (config.includeQueries())
+        val queries = if (config.includeQueries()) {
             rellQueries.values
-                    .filter { hasSupportedReturnType(it, it.type()) }
-                    .map { factory.createQuery(it) }
-        else
+                .filter { hasSupportedReturnType(it, it.type()) }
+                .map { factory.createQuery(it) }
+        }
+        else {
             listOf()
-        val operations = if (config.includeOperations()) rellOperations.values.map { factory.createOperation(it) } else listOf()
+        }
+
+        val operations = if (config.includeOperations()) {
+            rellOperations.values.map { factory.createOperation(it) }
+        } else {
+            listOf()
+        }
 
         val neededObjects = (operations + queries).flatMap { it.deps }.distinctBy { it.module + it.className }
         val enums = rellEnums
@@ -87,8 +98,11 @@ class CodeGenerator(private val factory: DocumentFactory, private val config: Co
 
     private fun hasSupportedReturnType(query: R_QueryDefinition, returnType: R_Type): Boolean {
         if (returnType is R_NullableType) return hasSupportedReturnType(query, returnType.valueType)
+
         if (returnType is R_CollectionType) return hasSupportedReturnType(query, returnType.elementType)
+
         if (returnType is R_MapType) return hasSupportedReturnType(query, returnType.valueType)
+
         return if (returnType is R_TupleType && isMixedTuple(returnType)) {
             rellCliEnv.error("Skipping [${query.appLevelName}] Query return type contains unsupported mixed tuple type: $returnType")
             false

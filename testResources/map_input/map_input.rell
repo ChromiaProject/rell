@@ -10,5 +10,6 @@ operation input_parameter_map_gtv_text(m: map<gtv,text>) {}
 operation input_parameter_map_gtv_gtv(m: map<gtv,gtv>) {}
 operation input_parameter_map_enum_text(m: map<test_enum,text>) {}
 
-query map_return_type() = map<test_enum,text>();
-query map_gtv_return_type() = map<text,gtv>();
+query return_type_map_enum_text() = map<test_enum,text>();
+query return_type_map_text_gtv() = map<text,gtv>();
+query return_type_map_gtv_text() = map<gtv,text>();

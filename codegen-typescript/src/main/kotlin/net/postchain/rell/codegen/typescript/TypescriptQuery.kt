@@ -9,6 +9,7 @@ import net.postchain.rell.codegen.util.capitalize
 import net.postchain.rell.codegen.util.rTypeToJsTypeString
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import java.util.Locale
+import net.postchain.rell.codegen.util.JsTypeRawGtvString
 
 class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         CamelCaseClassName.fromRellQuery(queryDef),
@@ -19,8 +20,8 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         queryDef.type(),
         "QueryObject"
 ), Query {
-    override val imports: List<String> = listOf("import { QueryObject } from \"postchain-client\";")
     private val returnStructure = returnStructure(returnType)
+    override val imports: List<String> = imports(TsFunctionImplementations.QUERY)
     override val moduleName: String
         get() = className.module
 
@@ -28,7 +29,7 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         return params.joinToString(", ", "{ ", " }") { "${it.name.str}: ${parameterTransformer(it.name.str.snakeToLowerCamelCase(), it.type)}" }
     }
 
-    override fun formatReturnType(): String = "QueryObject<${if (returnStructure.isNotBlank()) buildReturnType() else rTypeToJsTypeString(returnType!!)}>"
+    override fun formatReturnType(): String = "QueryObject<${if (returnStructure.isNotBlank()) buildReturnType() else rTypeToJsTypeString(returnType!!, queryReturn = true)}>"
 
     override fun returnStructure(returnType: R_Type?): String {
         if (returnType == null) return ""
@@ -50,5 +51,4 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         if (returnType is R_CollectionType) return "$typeName[]"
         return typeName
     }
-
 }
