@@ -1,0 +1,132 @@
+module;
+
+
+operation before_query_test() {
+	create query_entity(true);
+}
+
+entity query_entity {
+    a: boolean;
+}
+
+entity nullalbe_query_entity {
+    a: boolean;
+}
+
+struct test_struct {
+    a: boolean;
+}
+
+enum test_enum { a }
+
+query return_type_enum() = test_enum.a;
+query return_type_boolean() = true;
+query return_type_integer() = 1;
+query return_type_big_integer() = 1L;
+query return_type_text() = "";
+query return_type_decimal() = 1.1;
+query return_type_byte_array() = x"";
+query return_type_pubkey(): pubkey = x"";
+query return_type_entity() = query_entity @ { true };
+query return_type_nullable_entity() = nullalbe_query_entity @? { true };
+query return_type_struct() = test_struct(true);
+query return_type_rowid() = query_entity @ { true } (.rowid);
+query return_type_nullable_rowid() = nullalbe_query_entity @? { true } (.rowid);
+query return_type_gtv(): gtv = gtv.from_json("17");
+query return_type_nullable_gtv(): gtv? = null;
+query return_type_list_integer() = list<integer>();
+query return_type_list_boolean() = list<boolean>();
+query return_type_list_byte_array() = list<byte_array>();
+query return_type_set_integer() = set<integer>();
+query return_type_list_struct(): list<test_struct> {
+	val l =	list<test_struct>();
+	val s = test_struct(a = true);
+	l.add(s);
+	return l;
+}
+query return_type_nullable_list_struct(): list<test_struct>? = list<test_struct>();
+query return_type_list_entity() = query_entity @* { .a };
+query return_type_nullable_list_entity(): list<nullalbe_query_entity>? = null;
+query return_type_list_gtv() = list<gtv>();
+query return_type_list_list_list() = list<list<list<gtv>>>();
+query return_type_set_gtv() = set<gtv>();
+query return_type_map(): map<text, text> {
+	val m = map<text, text>();
+	m["a"] = "b";
+	return m;
+}
+query return_type_nullable_map(): map<text, text>? = map<text, text>();
+query return_type_enum_map(): map<test_enum, text> {
+	val m = map<test_enum, text>();
+	val e: test_enum = test_enum.a;
+	m[e] = "a";
+	return m;
+}
+query return_type_nullable_enum_map(): map<test_enum, text>? = map<test_enum, text>();
+query return_type_any_map(): map<test_struct, text> {
+	val m = map<test_struct, text>();
+	val s = test_struct(a = true);
+	m[s] = "a";
+	return m;
+}
+query return_type_named_tuple() = (foo = 1);
+query return_type_nullable_named_tuple(): (foo:integer)? = (foo = 1);
+query return_type_named_tuple_list(since: rowid) {
+  return query_entity @* { .rowid >= since } (rowid = .rowid, a = .a) limit 10;
+}
+query return_type_unnamed_tuple() = (1,);
+query return_type_proposals_since(since: rowid) {
+  return query_entity @* { .rowid >= since } (.rowid, .a) limit 10;
+}
+
+query input_parameter_nargs() = 1;
+query input_parameter_text(t: text) = 1;
+query input_parameter_nullable(t: text?) = 1;
+query input_parameter_enum(e: test_enum) = 1;
+query input_parameter_integer(i: integer) = 1;
+query input_parameter_big_integer(i: big_integer) = 1;
+query input_parameter_boolean(b: boolean) = 1;
+query input_parameter_rowid(r: rowid) = 1;
+query input_parameter_pubkey(pubkey) = 1;
+query input_parameter_blockchain_rid(blockchain_rid: byte_array) = 1;
+query input_parameter_entity(e: query_entity) = 1;
+query input_parameter_struct(s: test_struct) = 1;
+query input_parameter_list_input(v: list<byte_array>) = 1;
+query input_parameter_nullable_list_input(v: list<byte_array>?) = 1;
+query input_parameter_set_input(v: set<byte_array>) = 1;
+query input_parameter_map_input(v: map<text,byte_array>) = 1;
+query input_parameter_enum_map(m: map<test_enum,byte_array>) = 1;
+query input_parameter_any_map(m: map<test_struct,byte_array>) = 1;
+query input_parameter_multiple(s: text, s2: text) = 1;
+query input_parameter_gtv(g: gtv) = 1;
+query input_parameter_nullable_gtv(g: gtv?) = 1;
+
+// namespaceTest()
+namespace my_ns1 {
+    query q1_in_namespace(e: test_enum) = test_struct(true);
+    struct test_struct2 { name; }
+    query q2_in_namespace(s: test_struct2) = test_struct2("name");
+
+    enum local_test_enum { a }
+    query q3a_return_type_enum(e: local_test_enum) = test_enum.a;
+    query q3b_return_type_enum(m: map<test_enum,byte_array>) = local_test_enum.a;
+
+    struct local_test_struct { a: boolean; }
+    namespace my_ns1_2 {
+        struct test_struct2 { a: boolean; }
+    }
+    query q4_return_type_list_struct(m: map<byte_array,my_ns1_2.test_struct2>) = list<test_struct>();
+    query q5_return_type_list_struct(v: list<local_test_struct>) = list<local_test_struct>();
+    query q6_return_type_list_struct() = list<my_ns1_2.test_struct2>();
+
+    query q7_return_type_enum_map() = map<test_enum, text>();
+    query q8_return_type_enum_map() = map<local_test_enum, text>();
+
+    query q9_return_type_any_map() = map<test_struct, text>();
+    query q10_return_type_any_map() = map<local_test_struct, text>();
+
+    namespace my_ns2 {
+        query q2_in_namespace() = "";
+        query q_3_in_namespace() = (foo = 1);
+    }
+}
