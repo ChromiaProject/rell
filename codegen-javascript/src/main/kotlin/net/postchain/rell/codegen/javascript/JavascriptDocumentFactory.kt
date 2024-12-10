@@ -11,14 +11,17 @@ class JavascriptDocumentFactory : DocumentFactory {
 
     override fun createDocument(moduleName: String) = JavascriptDocument(moduleName)
 
+    //TODO: Enabling building a mapping from Rell Entity -> Javascript object would help Javascript users
     override fun createEntity(className: ClassName, rellEntity: R_EntityDefinition) =
             throw NotImplementedError("Not needed for Javascript")
 
     override fun createBuiltins(type: BuiltinType) = type.createBuiltin()
 
+    //TODO: Enabling building a mapping from Rell Struct -> Javascript object would help Javascript users
     override fun createStruct(className: ClassName, rellStruct: R_StructDefinition) =
             throw NotImplementedError("Not needed for Javascript")
 
+    //TODO: Enabling building a mapping from Rell Enum -> Javascript object would help Javascript users
     override fun createEnum(className: ClassName, rellEnum: R_EnumDefinition) =
             throw NotImplementedError("Not needed for Javascript")
 

@@ -85,7 +85,7 @@ internal class JavascriptCodeGeneratorTest {
     @Test
     fun multiModule() {
         val (sections, documents) = generateAndLint("/multi", "a", "f")
-        assertThat(sections).hasSize(13 /* queries */ + 1 /* operations */ + 1 /* assertions */)
+        assertThat(sections).hasSize(13 /* queries */ + 1 /* operations */ + 2 /* assertions */)
         assertThat(documents).hasSize(4)
         val a = documents["a/a.js"]!!.format()
         assertThat(a).contains("import { assertObject } from \"../root\";")
@@ -94,14 +94,14 @@ internal class JavascriptCodeGeneratorTest {
     @Test
     fun multiNestedModule() {
         val (sections, documents) = generateAndLint("/multi", "c.nested")
-        assertThat(sections).hasSize(12 /* queries */ + 1 /* operations */ + 1 /*assertion*/)
+        assertThat(sections).hasSize(12 /* queries */ + 1 /* operations */ + 2 /*assertion*/)
         assertThat(documents).hasSize(3)
     }
 
     @Test
     fun mapInput() {
         val (sections, documents) = generateAndLint("/map_input", "map_input")
-        assertThat(sections).hasSize(3 /* queries */ + 7 /* operations */ + 1 /*assertions*/)
+        assertThat(sections).hasSize(3 /* queries */ + 7 /* operations */ + 2 /*assertions*/)
         assertThat(documents).hasSize(1 + 1 /* root */)
     }
 
@@ -122,7 +122,7 @@ internal class JavascriptCodeGeneratorTest {
     @Test
     fun decimal() {
         val (sections, documents) = generateAndLint("/decimal", "decimal")
-        assertThat(sections).hasSize(2 /* queries */ + 1 /* operation */ + 3 /*assertions*/)
+        assertThat(sections).hasSize(2 /* queries */ + 1 /* operation */ + 2 /*assertions*/)
         assertThat(documents).hasSize(1 + 1 /* root */)
     }
 

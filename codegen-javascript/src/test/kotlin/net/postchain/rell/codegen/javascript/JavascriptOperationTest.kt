@@ -23,12 +23,12 @@ class JavascriptOperationTest {
 
     @Test
     fun basicSyntaxTest() {
-        val op = kotlin.test.assertNotNull(testModule.operations["input_parameter_text"])
+        val op = kotlin.test.assertNotNull(testModule.operations["input_parameter_multi"])
         val k = JavascriptOperation(op)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("export function inputParameterTextOperation(tx,\n\tt)")
-            contains("tx.addOperation(\"input_parameter_text\", t)")
+            contains("export function inputParameterMultiOperation(s, s2)")
+            contains("return { name: \"input_parameter_multi\", args: [s, s2] }")
         }
     }
 
@@ -43,8 +43,8 @@ class JavascriptOperationTest {
         val k = JavascriptOperation(op)
         val formatted = k.format()
         assertThat(formatted).all {
-            contains("export function $javascriptQualifiedOpName(tx)")
-            contains("tx.addOperation(\"$rellQualifiedOpName\")")
+            contains("export function $javascriptQualifiedOpName()")
+            contains("return { name: \"$rellQualifiedOpName\" }")
         }
     }
 
@@ -55,8 +55,8 @@ class JavascriptOperationTest {
             "input_parameter_integer,i,i,assertNumber(i)",
             "input_parameter_big_integer,i,i,assertBigInteger(i)",
             "input_parameter_byte_array,b,b,assertBuffer(b)",
-            "input_parameter_enum,e,e,assertObject(e)",
-            "input_parameter_boolean,b,b,assertBoolean(b)",
+            "input_parameter_enum,e,e,assertNumber(e)",
+            "input_parameter_boolean,b,b,assertNumber(b)",
             "input_parameter_rowid,r,r,assertNumber(r)",
             "input_parameter_pubkey,pubkey,pubkey,assertBuffer(pubkey)",
             "input_parameter_nullable_pubkey,pubkey,pubkey,if (pubkey != null) assertBuffer(pubkey)",
@@ -68,30 +68,33 @@ class JavascriptOperationTest {
             "input_parameter_list_string,l,l,assertArray(l)",
             "input_parameter_set_gtv,g,Array.from(g),assertSet(g)",
             "input_parameter_entity,e,e,assertNumber(e)",
-            "input_parameter_struct,s,s,assertObject(s)",
+            "input_parameter_struct,s,Object.values(s),assertObject(s)",
             "input_parameter_list_input,v,v,assertArray(v)",
             "input_parameter_nullable_list_input,v,v,if (v != null) assertArray(v)",
             "input_parameter_set_input,v,Array.from(v),assertSet(v)",
             "input_parameter_set_string,s,Array.from(s),assertSet(s)",
             "input_parameter_map_text_bytearray,m,m,assertObject(m)",
             "input_parameter_map_text_gtv,m,m,assertObject(m)",
-            "input_parameter_map_integer_text,m,m,assertObject(m)",
-            "input_parameter_map_gtv_text,m,m,assertObject(m)",
-            "input_parameter_map_gtv_gtv,m,m,assertObject(m)",
-            "input_parameter_map_enum_text,m,m,assertObject(m)",
-            "input_parameter_multi,'s,\n\ts2','s,\n\ts2',assertString(s)\n\tassertString(s2)"
+            "input_parameter_map_integer_text,m,m,assertArray(m)",
+            "input_parameter_map_gtv_text,m,m,assertArray(m)",
+            "input_parameter_map_gtv_gtv,m,m,assertArray(m)",
+            "input_parameter_map_enum_text,m,m,assertArray(m)",
+            "input_parameter_multi,'s, s2','s, s2',assertString(s)\n\tassertString(s2)"
 
     )
     fun parameterTypeTest(opName: String, params: String, gtvParam: String, assertFun: String) {
         val op = kotlin.test.assertNotNull(testModule.operations[opName])
         val k = JavascriptOperation(op)
         val formatted = k.format()
-        val functionParams = if (params.isEmpty()) "" else ",\n\t$params"
+        val functionParams = params.ifEmpty { "" }
         assertThat(formatted).all {
-            contains("export function ${opName.snakeToLowerCamelCase()}Operation(tx$functionParams) {")
+            contains("export function ${opName.snakeToLowerCamelCase()}Operation($functionParams) {")
             contains(assertFun)
-            contains("tx.addOperation(\"$opName\"")
-            endsWith("$gtvParam)\n}")
+            if (functionParams.isEmpty()) {
+                contains("return { name: \"$opName\" };")
+            } else {
+                contains("return { name: \"$opName\", args: [$gtvParam] };")
+            }
         }
     }
 }
