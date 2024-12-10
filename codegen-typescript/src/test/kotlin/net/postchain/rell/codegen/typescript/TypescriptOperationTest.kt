@@ -80,7 +80,7 @@ internal class TypescriptOperationTest {
             "input_parameter_map_gtv_text,'m: Array<[RawGtv, string]>',m",
             "input_parameter_map_gtv_gtv,'m: Array<[RawGtv, RawGtv]>',m",
             "input_parameter_map_enum_text,'m: Array<[TestEnum, string]>',m",
-            "input_parameter_multi,'s: string,\n\ts2: string','s,\n\ts2'"
+            "input_parameter_multi,'s: string, s2: string','s, s2'"
     )
     fun parameterTypeTest(opName: String, params: String, gtvParam: String) {
         val op = kotlin.test.assertNotNull(testModule.operations[opName])

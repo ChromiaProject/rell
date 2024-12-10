@@ -120,7 +120,7 @@ class TypescriptQueryTest {
             "input_parameter_enum_map,'m: Array<[TestEnum, Buffer]>','{ m: m }'",
             "input_parameter_any_map,'m: Array<[TestStruct, Buffer]>','{ m: m }'",
             "input_parameter_nullable_list_input,v: Buffer[] | null,'{ v: v }'",
-            "input_parameter_multiple, 's: string,\n\ts2: string','{ s: s, s2: s2 }'",
+            "input_parameter_multiple, 's: string, s2: string','{ s: s, s2: s2 }'",
             "input_parameter_gtv,g: RawGtv,'{ g: g }'",
             "input_parameter_nullable_gtv,g: RawGtv,'{ g: g }'",
     )

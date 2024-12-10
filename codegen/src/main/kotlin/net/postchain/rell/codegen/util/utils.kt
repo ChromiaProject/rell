@@ -68,7 +68,17 @@ fun rTypeToJsTypeString(type: R_Type, allowSet: Boolean = false, queryReturn: Bo
         is R_TupleType -> formatTupleType(type)
         is R_GtvType -> JsTypeRawGtvString
 
-        else -> "any"
+        else -> JsTypeRawGtvString
+    }
+}
+
+const val JsTypeRawGtvString = "RawGtv"
+
+private fun formatMapType(type: R_MapType): String {
+    return if (type.keyType is R_TextType) {
+        "Record<string, ${rTypeToJsTypeString(type.valueType)}>"
+    } else {
+        "Array<[${rTypeToJsTypeString(type.keyType)}, ${rTypeToJsTypeString(type.valueType)}]>"
     }
 }
 
