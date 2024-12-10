@@ -82,16 +82,6 @@ private fun formatMapType(type: R_MapType): String {
     }
 }
 
-const val JsTypeRawGtvString = "RawGtv"
-
-private fun formatMapType(type: R_MapType): String {
-    return if (type.keyType is R_TextType) {
-        "Record<string, ${rTypeToJsTypeString(type.valueType)}>"
-    } else {
-        "Array<[${rTypeToJsTypeString(type.keyType)}, ${rTypeToJsTypeString(type.valueType)}]>"
-    }
-}
-
 private fun formatTupleType(type: R_TupleType): String {
     if (type.name.contains(":")) return formatNamedTuple(type)
     val fieldTypes = mutableListOf<String>()
