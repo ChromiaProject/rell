@@ -49,10 +49,7 @@ abstract class TypescriptFunction(
             TsFunctionImplementations.QUERY -> mutableListOf("import { QueryObject } from \"postchain-client\";")
             TsFunctionImplementations.OPERATION -> mutableListOf("import { Operation } from \"postchain-client\";")
         }
-
-        if (returnType?.name?.contains("gtv") == true) {
-            imports.add("import { $JsTypeRawGtvString } from \"postchain-client\";")
-        }
+        imports.add("import { $JsTypeRawGtvString } from \"postchain-client\";")
         return imports
     }
 
