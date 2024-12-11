@@ -15,6 +15,8 @@ object JavascriptDocGenerator : AbstractDocGenerator() {
         }
     }
 
+    //TODO: We could make the return type to be more useful for QueryObject to also add the value type do the
+    // comment. For example `QueryObject<string>`. See if we can use rTypeToJsTypeString(...)
     override fun formatDefaultReturnTag(sb: StringBuilder, returnType: String?, docSymbol: DocSymbol) {
         if (returnType != null && docSymbol.kind in setOf(DocSymbolKind.OPERATION, DocSymbolKind.QUERY)) {
             sb.appendLine("@return {$returnType}")
