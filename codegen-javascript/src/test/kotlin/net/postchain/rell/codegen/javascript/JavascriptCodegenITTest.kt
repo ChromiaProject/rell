@@ -1,4 +1,4 @@
-package net.postchain.rell.codegen.typescript
+package net.postchain.rell.codegen.javascript
 
 import assertk.Assert
 import assertk.assertThat
@@ -6,22 +6,19 @@ import assertk.assertions.support.expected
 import assertk.assertions.support.show
 import java.io.File
 import java.time.Duration
-import net.postchain.rell.codegen.SingleFileRellApp
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.BindMode
+import org.testcontainers.containers.Container
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.Network
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy
 import org.testcontainers.containers.wait.strategy.Wait
-import org.testcontainers.containers.wait.strategy.WaitStrategy
-import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.MountableFile
 
 @Testcontainers
 
-class TypescriptCodegenITTest {
+class JavascriptCodegenITTest {
 
 
     companion object {
@@ -33,11 +30,11 @@ class TypescriptCodegenITTest {
         fun setup() {
             val projectRootTestResources =  File(this::class.java.getResource("/integration_test_project")!!.toURI())
             val projectRellPath = "$projectRootTestResources/rell"
-            val projectFrontendPath = "$projectRootTestResources/frontend/typescript"
+            val projectFrontendPath = "$projectRootTestResources/frontend/javascript"
 
             val projectRootInContainer = "/usr/app/integration_test_project"
             val projectRellPathInContainer = "$projectRootInContainer/rell"
-            val projectFrontendPathInContainer = "$projectRootInContainer/frontend/typescript"
+            val projectFrontendPathInContainer = "$projectRootInContainer/frontend/javascript"
 
 
             val network = Network.newNetwork()
@@ -83,7 +80,6 @@ class TypescriptCodegenITTest {
                 projectFrontendPathInContainer
             )
             nodeContainer.execInContainer("npm", "install")
-
         }
     }
 
@@ -93,7 +89,7 @@ class TypescriptCodegenITTest {
         assertThat(res).executeSuccessFully()
     }
 
-    private fun Assert<org.testcontainers.containers.Container.ExecResult>.executeSuccessFully() = given { actual ->
+    private fun Assert<Container.ExecResult>.executeSuccessFully() = given { actual ->
         if (actual.exitCode == 0) return
         val errorMessage = buildString {
             appendLine("Node test suite failed with exit code: ${actual.exitCode}")
