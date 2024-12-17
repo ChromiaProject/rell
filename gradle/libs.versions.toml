@@ -13,7 +13,7 @@ slf4j = "1.7.36"
 mockk = "1.13.8"
 ec4j = "0.3.0"
 java-diff-utils = "4.12"
-chromia-build-tools = "0.20.14"
+chromia-build-tools = "0.0.2"
 fury-core = "0.4.1"
 system-stubs-jupiter = "2.1.7"
 sentry-log4j2 = '7.16.0'
@@ -23,7 +23,7 @@ rell-base = { module = "net.postchain.rell:rell-base", version.ref = "rell" }
 rell-api-base = { module = "net.postchain.rell:rell-api-base", version.ref = "rell" }
 rell-tools = { module = "net.postchain.rell:rell-tools", version.ref = "rell" }
 
-chromia-build-tools = { module = "com.chromia.cli:chromia-build-tools", version.ref = "chromia-build-tools" }
+chromia-build-tools = { module = "com.chromia.cli.tools:chromia-build-tools", version.ref = "chromia-build-tools" }
 
 ec4j = { module = "org.ec4j.core:ec4j-core", version.ref = "ec4j" }
 

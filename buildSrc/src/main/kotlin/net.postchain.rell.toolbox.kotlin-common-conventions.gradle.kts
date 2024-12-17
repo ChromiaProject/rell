@@ -1,7 +1,7 @@
 
 import io.gitlab.arturbosch.detekt.Detekt
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.apache.tools.ant.DirectoryScanner
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 DirectoryScanner.removeDefaultExclude("**/.gitignore")
 
@@ -41,8 +41,8 @@ repositories {
         url = uri("https://gitlab.com/api/v4/projects/50818999/packages/maven")
     }
     maven {
-        name = "Chromia Build Tools Registry"
-        url = uri("https://gitlab.com/api/v4/projects/39844192/packages/maven")
+        name = "Chromia Cli Tools Registry"
+        url = uri("https://gitlab.com/api/v4/projects/64941451/packages/maven")
     }
     maven {
         name = "Detekt Gitlab Plugin Registry"
