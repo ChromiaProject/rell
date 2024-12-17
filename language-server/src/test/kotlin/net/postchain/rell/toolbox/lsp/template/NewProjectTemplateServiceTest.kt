@@ -26,7 +26,8 @@ class NewProjectTemplateServiceTest {
             NewProjectTemplate("PLAIN", "Plain"),
             NewProjectTemplate("PLAIN_MULTI", "Plain Multi"),
             NewProjectTemplate("MINIMAL", "Minimal"),
-            NewProjectTemplate("PLAIN_LIBRARY", "Plain Library")
+            NewProjectTemplate("PLAIN_LIBRARY", "Plain Library"),
+            NewProjectTemplate("ASSET_MANAGEMENT", "Asset Management")
         )
     }
 
