@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.testutils
@@ -7,7 +7,7 @@ package net.postchain.rell.base.testutils
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvInteger
 import net.postchain.gtv.generateProof
-import net.postchain.gtv.merkle.GtvMerkleHashCalculator
+import net.postchain.gtv.merkle.GtvMerkleHashCalculatorV1
 import net.postchain.gtv.merkle.path.GtvPathFactory
 import net.postchain.gtv.merkle.path.GtvPathSet
 import net.postchain.rell.base.utils.PostchainGtvUtils
@@ -35,7 +35,7 @@ object VirtualTestUtils {
 
         val gtvPaths = GtvPathSet(pathsSet)
 
-        val calculator = GtvMerkleHashCalculator(PostchainGtvUtils.cryptoSystem)
+        val calculator = GtvMerkleHashCalculatorV1(PostchainGtvUtils.cryptoSystem)
         val merkleProofTree = gtv.generateProof(gtvPaths, calculator)
         val proofGtv = merkleProofTree.toGtv()
         return proofGtv
