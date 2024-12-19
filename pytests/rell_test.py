@@ -112,8 +112,8 @@ def test__calc__rell_get_build():
     assert r.stderr == ''
 
     parts = r.stdout.split('; ')
-    assert re.fullmatch(r'rell: \d{1,3}[.]\d{1,3}[.]\d{1,3}(-SNAPSHOT)?', parts[0])
-    assert re.fullmatch(r'postchain: \d{1,3}[.]\d{1,3}[.]\d{1,3}(-SNAPSHOT)?', parts[1])
+    assert re.fullmatch(r'rell: \d{1,3}[.]\d{1,3}[.]\d{1,3}(-[A-Za-z0-9]+)?', parts[0])
+    assert re.fullmatch(r'postchain: \d{1,3}[.]\d{1,3}[.]\d{1,3}(-[A-Za-z0-9]+)?', parts[1])
     assert re.fullmatch(r'branch: .+', parts[2])
     assert re.fullmatch(r'commit: [0-9a-f]{5,} \(\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[+]\d\d\d\d\)', parts[3])
     assert re.fullmatch(r'dirty: (false|true)\n', parts[4])
@@ -125,7 +125,7 @@ def test__calc__rell_get_build_details():
 
     testlib.check_json(r.stdout, {
         'kotlin.version': r'<RE>\d{1,3}[.]\d{1,3}[.]\d{1,3}',
-        'postchain.version': r'<RE>\d{1,3}[.]\d{1,3}[.]\d{1,3}(-SNAPSHOT)?',
+        'postchain.version': r'<RE>\d{1,3}[.]\d{1,3}[.]\d{1,3}(-[A-Za-z0-9]+)?',
         'rell.branch': r'<RE>.+',
         'rell.commit.id': r'<RE>[0-9a-f]{5,}',
         'rell.commit.id.full': r'<RE>[0-9a-f]{40}',
@@ -133,7 +133,7 @@ def test__calc__rell_get_build_details():
         'rell.commit.message.short': r'<RE>.+',
         'rell.commit.time': r'<RE>\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[+]\d\d\d\d',
         'rell.dirty': r'<RE>false|true',
-        'rell.version': r'<RE>\d{1,3}[.]\d{1,3}[.]\d{1,3}(-SNAPSHOT)?',
+        'rell.version': r'<RE>\d{1,3}[.]\d{1,3}[.]\d{1,3}(-[A-Za-z0-9]+)?',
     })
 
 def test__mod__rell_get_app_structure():

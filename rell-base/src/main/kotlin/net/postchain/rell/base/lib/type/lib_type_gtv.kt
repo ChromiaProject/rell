@@ -4,7 +4,9 @@
 
 package net.postchain.rell.base.lib.type
 
+import mu.KLogging
 import net.postchain.gtv.*
+import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_BodyResult
@@ -17,9 +19,10 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.PostchainGtvUtils
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.immMapOf
+import java.lang.RuntimeException
 import java.math.BigInteger
 
-object Lib_Type_Gtv {
+object Lib_Type_Gtv: KLogging() {
     val LIST_OF_GTV_TYPE = R_ListType(R_GtvType)
 
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -126,12 +129,13 @@ object Lib_Type_Gtv {
                     comment("Computes the hash of this value.")
                     bodyMeta {
                         val selfType = this.fnBodyMeta.rSelfType
+                        val callPos = this.fnBodyMeta.callPos
                         if (selfType is R_VirtualType) {
                             body { a ->
                                 val virtual = a.asVirtual()
                                 val gtv = virtual.gtv
                                 val hash = Rt_Utils.wrapErr("fn:virtual:hash") {
-                                    PostchainGtvUtils.merkleHash(gtv)
+                                    calcHash(callPos, gtv)
                                 }
                                 Rt_ByteArrayValue.get(hash)
                             }
@@ -140,7 +144,7 @@ object Lib_Type_Gtv {
                             body { a ->
                                 val hash = Rt_Utils.wrapErr("fn:any:hash") {
                                     val gtv = selfType.rtToGtv(a, false)
-                                    PostchainGtvUtils.merkleHash(gtv)
+                                    calcHash(callPos, gtv)
                                 }
                                 Rt_ByteArrayValue.get(hash)
                             }
@@ -214,6 +218,68 @@ object Lib_Type_Gtv {
         val typeStr = type.name
         val fnName = m.fnSimpleName
         m.validationError("fn:invalid:$typeStr:$fnName", "Function '$fnName' not available for type '$typeStr'")
+    }
+
+    private fun calcHash(callPos: S_Pos, gtv: Gtv): ByteArray {
+        val hash1 = PostchainGtvUtils.merkleHashV1(gtv)
+        val hash2 = PostchainGtvUtils.merkleHashV2(gtv)
+        if (!hash1.contentEquals(hash2)) {
+            val s = hashDiffGtvToStr(gtv)
+            logger.info("hash diff at $callPos: $s")
+        }
+        return hash1
+    }
+
+    private fun hashDiffGtvToStr(gtv: Gtv): String {
+        val maxLen = 1000
+        val notes = mutableListOf<String>()
+        var res = gtv.toString()
+
+        if (res.length > maxLen) {
+            val partGtv = findNestedHashDiffGtv(gtv, maxLen)
+            if (partGtv !== gtv) {
+                notes.add("part")
+            }
+
+            res = partGtv.toString()
+            if (res.length > maxLen) {
+                val origLen = res.length
+                res = res.substring(0, maxLen) + "..."
+                notes.add("len $origLen")
+            }
+        }
+
+        if (notes.isNotEmpty()) {
+            res += " " + notes.joinToString(", ", "(", ")")
+        }
+
+        return res
+    }
+
+    private fun findNestedHashDiffGtv(gtv: Gtv, maxLen: Int): Gtv {
+        var partGtv = gtv
+        while (true) {
+            val subGtvs = try {
+                when (partGtv.type) {
+                    GtvType.ARRAY -> partGtv.asArray().toList()
+                    GtvType.DICT -> partGtv.asDict().values
+                    else -> immListOf()
+                }
+            } catch (e: RuntimeException) {
+                immListOf()
+            }
+            val diffGtv = subGtvs.firstOrNull {
+                val hash1 = PostchainGtvUtils.merkleHashV1(it)
+                val hash2 = PostchainGtvUtils.merkleHashV2(it)
+                !hash1.contentEquals(hash2)
+            }
+            if (diffGtv != null) {
+                partGtv = diffGtv
+                if (partGtv.toString().length <= maxLen) return partGtv
+            } else {
+                return partGtv
+            }
+        }
     }
 }
 

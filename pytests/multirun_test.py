@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#  Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+#  Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
 
 import re
 import pytest
@@ -27,7 +27,7 @@ CTE_STDOUT = [
     '<LOG:INFO><RE>PostchainApp -     source directory: /.+',
     '<LOG:INFO><RE>PostchainApp -     run config file: /.+/.+[.]xml',
     '<LOG:INFO><RE>PostchainApp - ',
-    '<LOG:INFO><RE>RellToolsUtils - rell: [0-9]+[.][0-9]+[.][0-9]+(-SNAPSHOT)?;.*',
+    '<LOG:INFO><RE>RellToolsUtils - rell: [0-9]+[.][0-9]+[.][0-9]+(-[A-Za-z0-9]+)?;.*',
 ]
 
 def test__run_simple():

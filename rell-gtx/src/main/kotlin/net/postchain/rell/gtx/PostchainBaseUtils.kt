@@ -22,7 +22,7 @@ object PostchainBaseUtils {
     val DATABASE_VERSION: Int = StorageBuilder.getCurrentDbVersion()
 
     fun calcBlockchainRid(config: Gtv): Bytes32 {
-        val hash = PostchainGtvUtils.merkleHash(config)
+        val hash = PostchainGtvUtils.merkleHashV1(config)
         return Bytes32(hash)
     }
 
