@@ -12,7 +12,7 @@ import net.postchain.rell.base.model.R_StackPos
 object Lib_Print {
     val NAMESPACE = Ld_NamespaceDsl.make {
         function("print", result = "unit", since = "0.6.0") {
-            comment("Prints the given message to the node log")
+            comment("Prints the given message to STDOUT")
             param("values", type = "anything", arity = L_ParamArity.ZERO_MANY, comment = "Any string or value")
             bodyContextN { ctx, args ->
                 val str = args.joinToString(" ") { it.str() }
