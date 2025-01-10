@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+  ~ Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
   -->
 
 <project
@@ -33,7 +33,7 @@
         <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
-            <version>3.24.1</version>
+            <version>3.28.0</version>
         </dependency>
 
         <dependency>
