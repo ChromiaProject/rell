@@ -557,13 +557,21 @@ abstract class RellAbstractFormatter(
     fun nextSemanticRegion(token: Token): Token? {
         val commonTokenStream = parser.tokenStream as CommonTokenStream
         if (token.tokenIndex < 0 || token.tokenIndex >= commonTokenStream.tokens.size) return null
-        return commonTokenStream.get(token.tokenIndex + 1)
+        return try {
+            commonTokenStream.get(token.tokenIndex + 1)
+        } catch (_: IndexOutOfBoundsException) {
+            null
+        }
     }
 
     fun previousSemanticRegion(token: Token): Token? {
         val commonTokenStream = parser.tokenStream as CommonTokenStream
         if (token.tokenIndex <= 0 || token.tokenIndex >= commonTokenStream.tokens.size) return null
-        return commonTokenStream.get(token.tokenIndex - 1)
+        return try {
+            commonTokenStream.get(token.tokenIndex - 1)
+        } catch (_: IndexOutOfBoundsException) {
+            null
+        }
     }
 
     fun nextHiddenRegion(token: Token): Token? {

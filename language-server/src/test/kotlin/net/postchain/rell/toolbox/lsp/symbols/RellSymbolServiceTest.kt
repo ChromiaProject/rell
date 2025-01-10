@@ -1,5 +1,6 @@
 package net.postchain.rell.toolbox.lsp.symbols
 
+import assertk.Assert
 import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.extracting
@@ -7,6 +8,7 @@ import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
+import assertk.assertions.support.expected
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
@@ -15,6 +17,7 @@ import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolKind
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -156,4 +159,58 @@ class RellSymbolServiceTest {
             "get_user_balance" to SymbolKind.Function,
         )
     }
+
+    @Test
+    fun `Full range contains selection range`(@TempDir dir: File) {
+        val testDataBuilder = testData(dir) {
+            addFile(
+                rellFilePath,
+                """
+                module;
+
+                object my_name {
+                    mutable name = "World";
+                }
+                
+                operation set_name(name) {
+                    my_name.name = name;
+                }
+                
+                query hello_world() = "Hello %s!".format(my_name.name);
+                
+                
+                
+                entity
+                operation send_message()
+                """.trimIndent().trimEnd()
+            )
+        }
+        val rellFile = testDataBuilder.sourceFile(rellFilePath)
+        val rellFileUri = rellFile.toURI()
+        val document = Document(rellFile.toURI(), 1, rellFile.readText())
+        val indexer = WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
+        indexer.initialFileIndexBuild()
+        val resource = indexer.getResource(rellFileUri)!!
+
+        val symbols = rellSymbolService.getDocumentSymbols(rellFileUri, document, resource)
+
+        val root = symbols[0].right
+        root.children.forEach { symbol ->
+            assertThat(symbol.selectionRange).isInBetween(symbol.range)
+        }
+    }
+}
+
+fun Assert<Range>.isInBetween(full: Range) = given { part ->
+    val between = when {
+        part.start.line < full.start.line -> false
+        part.start.line == full.start.line && part.start.character < full.start.character -> false
+        part.end.line > full.end.line -> false
+        part.end.line == full.end.line && part.end.character > full.end.character -> false
+        else -> true
+    }
+    if (between) {
+        return
+    }
+    expected("$full to contain $part")
 }

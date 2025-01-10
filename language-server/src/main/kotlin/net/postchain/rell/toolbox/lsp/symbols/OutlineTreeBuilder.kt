@@ -93,10 +93,16 @@ fun getFullRegion(node: S_Node, name: S_Node): Range {
 fun getNameRegion(node: S_Node): Range {
     val attachment = node.attachment as AntlrRellNodeAttachment
     val nodeLength = attachment.node.text.length
-    return Range(
-        Position(attachment.node.start.line - 1, attachment.node.start.charPositionInLine),
+    val startPos = Position(attachment.node.start.line - 1, attachment.node.start.charPositionInLine)
+    val endPos = if (attachment.node.start.line == attachment.node.stop.line &&
+        attachment.node.start.charPositionInLine == attachment.node.stop.charPositionInLine
+    ) {
         Position(attachment.node.stop.line - 1, attachment.node.stop.charPositionInLine + nodeLength)
-    )
+    } else {
+        Position(attachment.node.stop.line - 1, attachment.node.stop.charPositionInLine)
+    }
+
+    return Range(startPos, endPos)
 }
 
 fun getSymbolKind(type: IdeOutlineNodeType): SymbolKind {
