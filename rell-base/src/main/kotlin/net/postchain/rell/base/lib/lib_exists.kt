@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib
@@ -31,14 +31,26 @@ object Lib_Exists {
     val NAMESPACE = Ld_NamespaceDsl.make {
         function("exists", C_SysFn_Exists(false), since = "0.6.0") {
             comment("""
-                Checks if the value is null or empty.
-                @return true if the value is not not or not empty.
+                Checks if a value is not `null` or empty.
+
+                An argument can be:
+
+                1. Nullable type (`T?`) - checked for `null`.
+                2. Collection (`list`, `set`, `map`) - checked for being empty (a nullable collection is also checked
+                for `null`).
+
+                Special case: when used within a database at-expression, and the argument is also a database
+                at-expression, it becomes a nested at-expression, which can use entities of the outer one. The call is
+                translated into the SQL `EXISTS` clause with a nested `SELECT`.
+
+                @return `true` if the value is not `null` and not an empty collection
+                @see empty(...)
             """)
         }
         function("empty", C_SysFn_Exists(true), since = "0.8.0") {
             comment("""
-                Checks if the value is null or empty.
-                @return true if the value is not or empty.
+                Checks if a value is `null` or empty. Equivalent to `not exists(...)`.
+                @see exists(...)
             """)
         }
     }
