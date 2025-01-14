@@ -12,8 +12,14 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class DatabaseCollationIT {
-    @Test fun testCollationTestPass() {
-        PostgreSQLContainer(DockerImageName.parse("postgres:14.9-alpine3.18")).apply { start() }.use { postgres ->
+    @Test
+    fun testCollationTestPass() {
+        PostgreSQLContainer(
+            DockerImageName.parse("postgres:16.6-alpine3.21@sha256:aba1fab94626cf8b0f4549055214239a37e0a690f03f142b7bca05b9ed36c6db")
+                .asCompatibleSubstituteFor("postgres")
+        ).apply {
+            start()
+        }.use { postgres ->
             val databaseUrlWithUserAndPassword =
                 buildDatabaseUrl(postgres.jdbcUrl, postgres.username, postgres.password)
             chkRunTests(databaseUrlWithUserAndPassword)
@@ -21,23 +27,30 @@ class DatabaseCollationIT {
         }
     }
 
-    @Test fun testCollationTestFail() {
-        PostgreSQLContainer(DockerImageName.parse("postgres:14.9")).apply { start() }.use { postgres ->
-            val databaseUrlWithUserAndPassword =
-                buildDatabaseUrl(postgres.jdbcUrl, postgres.username, postgres.password)
-
-            assertTrue {
-                (assertFailsWith<UserMistake> {
-                    chkRunTests(databaseUrlWithUserAndPassword)
-                }.message ?: "").contains("Database collation check failed")
-            }
-
-            assertTrue {
-                (assertFailsWith<UserMistake> {
-                    chkRunShell(databaseUrlWithUserAndPassword)
-                }.message ?: "").contains("Database collation check failed")
-            }
+    @Test
+    fun testCollationTestFail() {
+        PostgreSQLContainer(
+            DockerImageName.parse("postgres:16.6:c7afedc5c15994625b5be4cb4736c030271b55be0360b78a99c90ec2fbe658b6")
+                .asCompatibleSubstituteFor("postgres")
+        ).apply {
+            start()
         }
+            .use { postgres ->
+                val databaseUrlWithUserAndPassword =
+                    buildDatabaseUrl(postgres.jdbcUrl, postgres.username, postgres.password)
+
+                assertTrue {
+                    (assertFailsWith<UserMistake> {
+                        chkRunTests(databaseUrlWithUserAndPassword)
+                    }.message ?: "").contains("Database collation check failed")
+                }
+
+                assertTrue {
+                    (assertFailsWith<UserMistake> {
+                        chkRunShell(databaseUrlWithUserAndPassword)
+                    }.message ?: "").contains("Database collation check failed")
+                }
+            }
     }
 
     private fun buildDatabaseUrl(databaseUrl: String, user: String, password: String) =
@@ -50,7 +63,8 @@ class DatabaseCollationIT {
             .compileConfig(compileConfig)
             .databaseUrl(databaseUrl)
             .build()
-        val res = RellApiRunTests.runTests(testConfig, File("../work/testproj/src"), listOf(), listOf("tests.data_test"))
+        val res =
+            RellApiRunTests.runTests(testConfig, File("../work/testproj/src"), listOf(), listOf("tests.data_test"))
         assertTrue { res.getResults().all { it.res.isOk } }
     }
 
