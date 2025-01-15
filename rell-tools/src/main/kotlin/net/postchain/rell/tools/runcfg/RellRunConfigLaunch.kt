@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.tools.runcfg
@@ -10,12 +10,14 @@ import net.postchain.PostchainNode
 import net.postchain.StorageBuilder
 import net.postchain.api.internal.BlockchainApi
 import net.postchain.api.rest.infra.RestApiConfig
+import net.postchain.base.configuration.BlockchainConfigurationData
 import net.postchain.base.gtv.GtvToBlockchainRidFactory
 import net.postchain.base.withReadWriteConnection
 import net.postchain.common.exception.UserMistake
 import net.postchain.config.app.AppConfig
 import net.postchain.core.EContext
 import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvEncoder
 import net.postchain.logging.BLOCKCHAIN_RID_TAG
 import net.postchain.logging.CHAIN_IID_TAG
 import net.postchain.logging.NODE_PUBKEY_TAG
@@ -105,7 +107,8 @@ private fun startPostchainNode(rellAppConf: RellPostAppCliConfig): AppConfig {
 
     for (chain in chainsSorted) {
         val genesisConfig = chain.configs.getValue(0).gtvConfig
-        val brid = GtvToBlockchainRidFactory.calculateBlockchainRid(genesisConfig, node.postchainContext.cryptoSystem)
+        val genesisConfigBytes = GtvEncoder.encodeGtv(genesisConfig)
+        val brid = GtvToBlockchainRidFactory.calculateBlockchainRid(BlockchainConfigurationData.fromRaw(genesisConfigBytes))
         withLoggingContext(
             NODE_PUBKEY_TAG to nodeAppConf.pubKey,
             CHAIN_IID_TAG to chain.iid.toString(),

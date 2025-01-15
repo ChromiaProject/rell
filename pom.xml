@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+  ~ Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
   -->
 <project
     xmlns="http://maven.apache.org/POM/4.0.0"
@@ -27,7 +27,7 @@
     </modules>
 
     <properties>
-        <postchain.version>3.25.1</postchain.version>
+        <postchain.version>3.27.0</postchain.version>
         <dist-classifier>dist</dist-classifier>
 
         <kotlin.version>2.0.0</kotlin.version>

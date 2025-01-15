@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.tools
@@ -9,11 +9,13 @@ import mu.withLoggingContext
 import net.postchain.PostchainNode
 import net.postchain.api.internal.BlockchainApi
 import net.postchain.api.rest.infra.RestApiConfig
+import net.postchain.base.configuration.BlockchainConfigurationData
 import net.postchain.base.gtv.GtvToBlockchainRidFactory
 import net.postchain.base.withReadWriteConnection
 import net.postchain.config.app.AppConfig
 import net.postchain.core.EContext
 import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvEncoder
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.logging.BLOCKCHAIN_RID_TAG
 import net.postchain.logging.CHAIN_IID_TAG
@@ -56,9 +58,11 @@ private fun main0(args: RunPostchainAppArgs) {
     val template = genBlockchainConfigTemplate(nodeAppConf.pubKeyByteArray)
     val bcConf = configGen.makeConfig(template)
 
+    val bcConfBytes = GtvEncoder.encodeGtv(bcConf)
+    val brid = GtvToBlockchainRidFactory.calculateBlockchainRid(BlockchainConfigurationData.fromRaw(bcConfBytes))
+
     val node = PostchainNode(nodeAppConf, true)
     val chainId = 0L
-    val brid = GtvToBlockchainRidFactory.calculateBlockchainRid(bcConf, node.postchainContext.cryptoSystem)
 
     val pcEnv = RellPostchainModuleEnvironment(
         combinedPrinter = Rt_LogPrinter(),

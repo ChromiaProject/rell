@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.gtx
@@ -13,6 +13,7 @@ import net.postchain.devtools.PostchainTestNode
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.GtxBuilder
+import net.postchain.rell.base.utils.PostchainGtvUtils
 import org.junit.After
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -98,7 +99,7 @@ class BasicGtxModuleTest : IntegrationTest() {
 
     private fun makeTx(ownerIdx: Int, opName: String, vararg opArgs: Gtv): ByteArray {
         val owner = KeyPairHelper.pubKey(ownerIdx)
-        return GtxBuilder(blockchainRid!!, listOf(owner), myCS)
+        return GtxBuilder(blockchainRid!!, listOf(owner), myCS, PostchainGtvUtils.merkleCalculator)
             .addOperation(opName, *opArgs.toList().toTypedArray())
             .finish()
             .sign(myCS.buildSigMaker(owner, KeyPairHelper.privKey(ownerIdx)))

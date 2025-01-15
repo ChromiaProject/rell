@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.gtx
@@ -73,7 +73,7 @@ class PostchainTest: BaseResourcefulTest() {
                 "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
                 "blockchains(blockchain_rid:bytea,chain_iid:int8)",
                 "c123.blocks(block_header_data:bytea,block_height:int8,block_iid:bigserial,block_rid:bytea,block_witness:bytea,timestamp:int8)",
-                "c123.configurations(configuration_data:bytea,configuration_hash:bytea,height:int8)",
+                "c123.configurations(configuration_data:bytea,configuration_hash:bytea,height:int8,merkle_hash_version:int8)",
                 "c123.sys.faulty_configuration(configuration_hash:bytea,report_height:int8)",
                 "c123.sys.transaction_signers(signer:bytea,tx_iid:int8)",
                 "c123.transactions(block_iid:int8,tx_data:bytea,tx_hash:bytea,tx_iid:bigserial,tx_number:int8,tx_rid:bytea)",
@@ -89,7 +89,7 @@ class PostchainTest: BaseResourcefulTest() {
                 "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
                 "blockchains(blockchain_rid:bytea,chain_iid:int8)",
                 "c123.blocks(block_header_data:bytea,block_height:int8,block_iid:bigserial,block_rid:bytea,block_witness:bytea,timestamp:int8)",
-                "c123.configurations(configuration_data:bytea,configuration_hash:bytea,height:int8)",
+                "c123.configurations(configuration_data:bytea,configuration_hash:bytea,height:int8,merkle_hash_version:int8)",
                 "c123.sys.faulty_configuration(configuration_hash:bytea,report_height:int8)",
                 "c123.sys.transaction_signers(signer:bytea,tx_iid:int8)",
                 "c123.transactions(block_iid:int8,tx_data:bytea,tx_hash:bytea,tx_iid:bigserial,tx_number:int8,tx_rid:bytea)",
@@ -106,12 +106,12 @@ class PostchainTest: BaseResourcefulTest() {
                 "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
                 "blockchains(blockchain_rid:bytea,chain_iid:int8)",
                 "c123.blocks(block_header_data:bytea,block_height:int8,block_iid:bigserial,block_rid:bytea,block_witness:bytea,timestamp:int8)",
-                "c123.configurations(configuration_data:bytea,configuration_hash:bytea,height:int8)",
+                "c123.configurations(configuration_data:bytea,configuration_hash:bytea,height:int8,merkle_hash_version:int8)",
                 "c123.sys.faulty_configuration(configuration_hash:bytea,report_height:int8)",
                 "c123.sys.transaction_signers(signer:bytea,tx_iid:int8)",
                 "c123.transactions(block_iid:int8,tx_data:bytea,tx_hash:bytea,tx_iid:bigserial,tx_number:int8,tx_rid:bytea)",
                 "c456.blocks(block_header_data:bytea,block_height:int8,block_iid:bigserial,block_rid:bytea,block_witness:bytea,timestamp:int8)",
-                "c456.configurations(configuration_data:bytea,configuration_hash:bytea,height:int8)",
+                "c456.configurations(configuration_data:bytea,configuration_hash:bytea,height:int8,merkle_hash_version:int8)",
                 "c456.sys.faulty_configuration(configuration_hash:bytea,report_height:int8)",
                 "c456.sys.transaction_signers(signer:bytea,tx_iid:int8)",
                 "c456.transactions(block_iid:int8,tx_data:bytea,tx_hash:bytea,tx_iid:bigserial,tx_number:int8,tx_rid:bytea)",

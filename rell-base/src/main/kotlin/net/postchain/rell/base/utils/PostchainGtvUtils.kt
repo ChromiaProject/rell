@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils
@@ -20,8 +20,7 @@ import net.postchain.rell.base.runtime.Rt_Value
 
 object PostchainGtvUtils {
     val cryptoSystem: CryptoSystem = Secp256K1CryptoSystem()
-
-    private val merkleCalculator: GtvMerkleHashCalculatorBase = GtvMerkleHashCalculatorV1(cryptoSystem)
+    val merkleCalculator: GtvMerkleHashCalculatorBase = GtvMerkleHashCalculatorV1(cryptoSystem)
 
     private val GSON: Gson = make_gtv_gson_builder().create()
     private val PRETTY_GSON: Gson = makeLenientGtvGsonBuilder().setPrettyPrinting().create()

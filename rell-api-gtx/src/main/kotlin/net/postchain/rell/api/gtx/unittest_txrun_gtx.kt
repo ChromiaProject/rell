@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.api.gtx
@@ -108,7 +108,12 @@ class Rt_PostchainUnitTestBlockRunner(
 
     private fun prepareTxBytes(bcConfig: BlockchainConfiguration, eCtx: EContext, tx: RawTestTxValue): ByteArray {
         val signers = tx.signers.map { it.pub.toByteArray() }
-        val dataBuilder = GtxBuilder(bcConfig.blockchainRid, signers, PostchainGtvUtils.cryptoSystem)
+        val dataBuilder = GtxBuilder(
+            bcConfig.blockchainRid,
+            signers,
+            PostchainGtvUtils.cryptoSystem,
+            PostchainGtvUtils.merkleCalculator,
+        )
 
         for (op in tx.ops) {
             dataBuilder.addOperation(op.name.str(), *op.args.toTypedArray())
