@@ -13,19 +13,30 @@ import java.net.URI
 class RellTestRunner(val indexingManager: RellIndexingManager, private val symbolService: RellSymbolService) {
 
     fun getTestFiles(workspaceUri: URI): List<RellTestFile> {
-        val srcDir = indexingManager.findSourceDirURI(workspaceUri)
-        val indexer = indexingManager.getIndexerFor(srcDir)
-        return indexer.fileUriResourceMap
-            .filter { it.value.isTest() }
-            .map { (uri, resource) -> RellTestFile(uri, resource.moduleInfo?.name?.str(), true, getTestCases(uri)) }
+        return indexingManager.getAllIndexers().flatMap { indexer ->
+            indexer.fileUriResourceMap
+                .filter { it.value.isTest() }
+                .map { (uri, resource) ->
+                    RellTestFile(
+                        uri,
+                        resource.moduleInfo?.name?.str(),
+                        true,
+                        getTestCases(resource)
+                    )
+                }
+        }
     }
 
     fun getTestCases(fileUri: URI): List<RellTestCase> {
         val resource = indexingManager.getResource(fileUri) ?: return listOf()
+        return getTestCases(resource)
+    }
+
+    fun getTestCases(resource: Resource): List<RellTestCase> {
         if (!resource.isTest()) {
             return listOf()
         }
-        return populateTestCases(fileUri, resource)
+        return populateTestCases(resource.fileUri, resource)
     }
 
     private fun populateTestCases(fileUri: URI, resource: Resource): List<RellTestCase> {

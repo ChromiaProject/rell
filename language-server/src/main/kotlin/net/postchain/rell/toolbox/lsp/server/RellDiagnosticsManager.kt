@@ -7,9 +7,14 @@ import java.net.URI
 
 class RellDiagnosticsManager {
     private lateinit var diagnosticsPublisher: (uri: URI, List<RellIssue>) -> Unit
+    private lateinit var notificationPublisher: (type: NotificationType, message: String) -> Unit
 
     fun setDiagnosticsPublisher(publisher: (uri: URI, List<RellIssue>) -> Unit) {
         diagnosticsPublisher = publisher
+    }
+
+    fun setNotificationPublisher(publisher: (type: NotificationType, message: String) -> Unit) {
+        notificationPublisher = publisher
     }
 
     fun reportAllDiagnostics(indexers: Collection<WorkspaceIndexer>) {
@@ -46,7 +51,23 @@ class RellDiagnosticsManager {
         fileUris.forEach { clearDiagnostics(it) }
     }
 
+    fun sendNotification(type: NotificationType, messsage: String) {
+        if (!::notificationPublisher.isInitialized) {
+            logger.error { "Notification publisher not initialized" }
+            return
+        }
+        notificationPublisher(type, messsage)
+    }
+
     companion object {
         private val logger = KotlinLogging.logger {}
     }
+}
+
+
+enum class NotificationType {
+    ERROR,
+    WARNING,
+    INFO,
+    LOG,
 }

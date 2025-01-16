@@ -328,9 +328,9 @@ class RellLanguageServerDidChangeWatchedFilesTest {
 
         val issues = indexer.getAllIssues()
         assertThat(issues.keys.map { it.toString() }).containsExactlyInAnyOrder(
-            "file:$tempDir/src/newmodule/another_importing.rell",
-            "file:$tempDir/src/newmodule/module.rell",
-            "file:$tempDir/src/main.rell",
+            "file:${tempDir.toURI().path}src/newmodule/another_importing.rell",
+            "file:${tempDir.toURI().path}src/newmodule/module.rell",
+            "file:${tempDir.toURI().path}src/main.rell",
         )
 
         issues.forEach { (uri, issues) ->
@@ -415,6 +415,57 @@ class RellLanguageServerDidChangeWatchedFilesTest {
                 "expr:smartnull:var:never:[abc]"
             ),
         )
+    }
+
+    @Test
+    fun `didChangeWatched new project created within workspace`() {
+        val rellContent = "module;"
+        val initialProject = testData(tempDir.resolve("project_a")) {
+            addWorkspaceFile("orphan/test.rell", rellContent)
+            addMainFile(rellContent)
+        }
+
+        clientServerLauncher.initializeServer(tempDir.toURI())
+
+        val orphanUri = initialProject.workspaceFolder.resolve("orphan/test.rell").toURI()
+        val orphanIndexer = indexingManager.orphanIndexers.values.first()
+        assertThat(indexingManager.indexers.size).isEqualTo(1)
+        assertThat(indexingManager.indexers[initialProject.sourceFolderUri]!!.fileUriResourceMap.keys).containsOnly(
+            initialProject.mainFileUri
+        )
+        assertThat(indexingManager.orphanIndexers.size).isEqualTo(1)
+        assertThat(orphanIndexer.fileUriResourceMap.keys).containsExactlyInAnyOrder(orphanUri)
+
+        val secondProject = testData(tempDir.resolve("project_b")) {
+            addMainFile(rellContent)
+        }
+
+        val createdProjectDidChangeParams =
+            createDidChangeWatchedFilesParamsFromCreatedFolder(secondProject.workspaceFolder)
+
+        server.workspaceService.didChangeWatchedFiles(createdProjectDidChangeParams)
+        await().until { testClient.diagnostics.isNotEmpty() }
+
+        assertThat(indexingManager.orphanIndexers.size).isEqualTo(1)
+        assertThat(orphanIndexer.fileUriResourceMap.keys).containsExactlyInAnyOrder(orphanUri)
+        assertThat(indexingManager.indexers.keys).containsExactlyInAnyOrder(
+            initialProject.sourceFolderUri,
+            secondProject.sourceFolderUri
+        )
+        assertThat(indexingManager.indexers[initialProject.sourceFolderUri]!!.fileUriResourceMap.keys).containsOnly(
+            initialProject.mainFileUri
+        )
+        assertThat(indexingManager.indexers[secondProject.sourceFolderUri]!!.fileUriResourceMap.keys).containsOnly(
+            secondProject.mainFileUri
+        )
+    }
+
+    private fun createDidChangeWatchedFilesParamsFromCreatedFolder(folder: File): DidChangeWatchedFilesParams {
+        val fileEvents = folder.walkTopDown().map { file ->
+            FileEvent(file.toURI().toString(), FileChangeType.Created)
+        }.toList()
+
+        return DidChangeWatchedFilesParams(fileEvents)
     }
 
     // TODO: Add test to make sure we aren't creating redundant single file indexers when renaming or adding new files

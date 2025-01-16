@@ -5,6 +5,7 @@ import com.chromia.cli.model.parseModel
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.net.URI
+import java.nio.file.Path
 
 class ChromiaModelProvider(private val workspaceRootUri: URI?) {
 
@@ -34,12 +35,7 @@ class ChromiaModelProvider(private val workspaceRootUri: URI?) {
     fun loadChromiaModel(): ChromiaModel? {
         if (workspaceRootUri == null) return null
         val chromiaModelFile = findChromiaModelFile(workspaceRootUri) ?: return null
-        return try {
-            parseModel(chromiaModelFile)
-        } catch (@Suppress("SwallowedException") e: Exception) {
-            logger.error(e) { "Failed to parse Chromia model file: $chromiaModelFile" }
-            null
-        }
+        return loadChromiaModelFromFile(chromiaModelFile.toPath())
     }
 
     fun updateChromiaModel(workspaceRootUri: URI?, chromiaModel: ChromiaModel?) {
@@ -66,5 +62,14 @@ class ChromiaModelProvider(private val workspaceRootUri: URI?) {
 
         const val DEFAULT_CHROMIA_MODEL_FILENAME = "chromia.yml"
         const val DEFAULT_CHROMIA_MODEL_RELL_VERSION = "0.13.14"
+
+        fun loadChromiaModelFromFile(chromiaModelFile: Path): ChromiaModel? {
+            return try {
+                parseModel(chromiaModelFile)
+            } catch (@Suppress("SwallowedException") e: Exception) {
+                logger.error(e) { "Failed to parse Chromia model file: $chromiaModelFile" }
+                null
+            }
+        }
     }
 }

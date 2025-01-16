@@ -14,6 +14,7 @@ import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.parser.AntlrRellParser
 import java.io.File
 import java.net.URI
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.toPath
 
@@ -23,7 +24,8 @@ class WorkspaceIndexer(
     private val linterOptions: LinterOptions,
     private val formattingStyleLinter: AbstractFormattingStyleLinter,
     private val formatterOptions: FormatterOptions,
-    val projectRootUri: URI? = null
+    val projectRootUri: URI? = null,
+    val excludeFolders: Set<Path> = emptySet()
 ) {
     private val logger = KotlinLogging.logger {}
     private val chromiaModelProvider = ChromiaModelProvider(projectRootUri)
@@ -83,6 +85,9 @@ class WorkspaceIndexer(
 
         for (source in sources) {
             val (fileUri, fileContent) = source
+            if (!isValidFileUri(fileUri)) {
+                continue
+            }
             if (fileUriResourceMap.containsKey(fileUri) && !reindex) {
                 continue
             }
@@ -203,6 +208,9 @@ class WorkspaceIndexer(
 
     // Change in source code
     fun updateFileUriResourceMap(fileUri: URI) {
+        if (!isValidFileUri(fileUri)) {
+            return
+        }
         if (!File(fileUri).exists()) {
             removeFileUriResourceMap(fileUri)
         } else {
@@ -217,8 +225,7 @@ class WorkspaceIndexer(
     }
 
     fun updateFileUriResourceMap(fileUri: URI, fileContent: String) {
-        if (isGitScheme(fileUri)) {
-            logger.info { "Skipping indexing of file $fileUri because it is a git file" }
+        if (!isValidFileUri(fileUri)) {
             return
         }
         if (!File(fileUri).exists()) {
@@ -243,7 +250,21 @@ class WorkspaceIndexer(
         }
     }
 
+    private fun isValidFileUri(fileUri: URI): Boolean {
+        if (isGitScheme(fileUri)) {
+            logger.info { "Skipping indexing of file $fileUri because it is a git file" }
+            return false
+        }
+        if (isInsideDotGitFolder(fileUri)) {
+            logger.info { "Skipping indexing of file $fileUri because it is inside a .git folder" }
+            return false
+        }
+        return true
+    }
+
     private fun isGitScheme(gitUri: URI) = "git" == gitUri.scheme
+
+    private fun isInsideDotGitFolder(fileUri: URI) = fileUri.path.contains("/.git/")
 
     fun removeFileUriResourceMap(fileUri: URI) {
         fileUriResourceMap.remove(fileUri)
@@ -285,9 +306,10 @@ class WorkspaceIndexer(
     }
 
     private fun addRellFilesUri(): List<URI> {
-        val uris: MutableList<URI> = ArrayList()
-        findRellFilesInWorkspace(File(workspaceUri), uris)
-        return uris.toList()
+        return File(workspaceUri).walkTopDown().filter {
+            it.isFile && it.extension == "rell" &&
+                excludeFolders.none { excludeFolder -> it.toPath().startsWith(excludeFolder) }
+        }.map { it.toURI() }.toList()
     }
 
     fun getResource(uri: URI): Resource? {
@@ -327,8 +349,7 @@ class WorkspaceIndexer(
     }
 
     private fun isChromiaModelFile(uri: URI): Boolean {
-        return uri.toPath().fileName.toString() == ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME &&
-            isInProjectRoot(uri)
+        return uri.toPath().fileName.toString() == ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME
     }
 
     private fun isInProjectRoot(uri: URI): Boolean {

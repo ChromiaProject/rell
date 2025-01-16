@@ -71,7 +71,7 @@ class RellLanguageServer(
         languageClient.logMessage(message)
 
         return requestManager.runWrite {
-            workspaceManager.initialize(workspaceFolders, ::publishDiagnostics)
+            workspaceManager.initialize(workspaceFolders, ::publishDiagnostics, ::sendNotification)
             result
         }
     }
@@ -93,6 +93,20 @@ class RellLanguageServer(
             publishDiagnosticsParams.diagnostics = DiagnosticsConverter.toDiagnostics(issues)
 
             languageClient.publishDiagnostics(publishDiagnosticsParams)
+        }
+    }
+
+    private fun sendNotification(type: NotificationType, message: String) {
+        initialized.thenAccept { _ ->
+            val messageType = when (type) {
+                NotificationType.INFO -> MessageType.Info
+                NotificationType.WARNING -> MessageType.Warning
+                NotificationType.ERROR -> MessageType.Error
+                NotificationType.LOG -> MessageType.Log
+            }
+
+            val messageParams = MessageParams(messageType, message)
+            languageClient.showMessage(messageParams)
         }
     }
 

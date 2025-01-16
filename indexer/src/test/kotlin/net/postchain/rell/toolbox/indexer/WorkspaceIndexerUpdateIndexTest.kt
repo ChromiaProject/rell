@@ -84,7 +84,7 @@ class WorkspaceIndexerUpdateIndexTest {
         val prevUriResourceMap = workspaceIndexer.fileUriResourceMap.toMap()
 
         val oldUri = testDataBuilder.sourceFile("rell_file.rell").toURI()
-        val newUri = URI("$sourceFolder/renamed_rell_file.rell")
+        val newUri = testDataBuilder.sourceFolder.resolve("renamed_rell_file.rell").toURI()
         workspaceIndexer.updateFileUriResourceMap(oldUri, newUri)
         val updateFileUriResourceMap = workspaceIndexer.fileUriResourceMap
 
