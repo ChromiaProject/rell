@@ -15,8 +15,10 @@ import org.eclipse.lsp4j.WorkspaceFolder
 import java.io.File
 import java.net.URI
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.io.path.exists
 import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.minutes
 
@@ -30,32 +32,90 @@ class RellIndexingManager(
 ) {
     var indexCachingEnabled: Boolean = false
     val indexers: MutableMap<URI, WorkspaceIndexer> = ConcurrentHashMap()
+    internal val orphanIndexers: MutableMap<URI, WorkspaceIndexer> = ConcurrentHashMap()
     private lateinit var workspaceFolders: List<WorkspaceFolder>
 
-    private val workspaceFolderUris get() = workspaceFolders.map {
-        parseFileUri(it.uri) ?: throw IllegalArgumentException("Invalid workspace folder ${it.uri}")
-    }
+    private val workspaceFolderUris
+        get() = workspaceFolders.map {
+            parseFileUri(it.uri) ?: throw IllegalArgumentException("Invalid workspace folder ${it.uri}")
+        }
 
     fun initialize(workspaceFolders: List<WorkspaceFolder>) {
         this.workspaceFolders = workspaceFolders
         runIndexers()
+        handleNestedIndexers()
         diagnosticsManager.reportAllDiagnostics(getAllIndexers())
     }
 
     fun runIndexers() {
-        val newIndexers = mutableMapOf<URI, WorkspaceIndexer>()
-        workspaceFolderUris.forEach { workspaceFolder ->
-            val indexer = doIndex(workspaceFolder)
-            newIndexers[indexer.workspaceUri] = indexer
-            diagnosticsManager.reportDiagnostics(indexer)
-        }
+        val newIndexers = workspaceFolderUris.flatMap { workspaceFolder ->
+            val indexRoots = findIndexRoots(workspaceFolder)
+            if (indexRoots.isEmpty()) {
+                listOf(doIndex(findSourceDirURI(workspaceFolder), workspaceFolder))
+            } else {
+                indexRoots.map { indexRoot ->
+                    doIndex(indexRoot.sourceRootUri, indexRoot.chromiaConfigDirUri)
+                }
+            }
+        }.associateBy { it.workspaceUri }
+
+        val orphanIndexer = createOrphanIndexers(newIndexers.keys)
+
         indexers.clear()
         indexers.putAll(newIndexers)
+        orphanIndexers.putAll(orphanIndexer)
 
         if (indexCachingEnabled) {
             indexCachingService.persistOnDiskPeriodically(indexers.values, 1.minutes)
         }
         indexCachingService.cleanupOldCaches()
+    }
+
+    fun indexFromRoots(chromiaConfigFiles: List<URI>) {
+        val newIndexers =
+            chromiaConfigFiles.map { IndexRoot(it.toPath(), findSourceRootPath(it.toPath())) }.map { indexRoot ->
+                doIndex(indexRoot.sourceRootUri, indexRoot.chromiaConfigDirUri)
+            }.associateBy { it.workspaceUri }
+
+        indexers.putAll(newIndexers)
+        cleanUpOrphans(newIndexers)
+    }
+
+    private fun createOrphanIndexers(excludeFolderUris: Set<URI>): Map<URI, WorkspaceIndexer> {
+        val result = workspaceFolderUris.map { workspaceFolder ->
+            doIndex(workspaceFolder, workspaceFolder, excludeFolderUris.map { it.toPath() }.toSet())
+        }.filter {
+            it.fileUriResourceMap.isNotEmpty()
+        }.associateBy { it.workspaceUri }
+
+        return result
+    }
+
+    private fun findIndexRoots(workspaceFolderUri: URI): List<IndexRoot> {
+        val workspacePath = Paths.get(workspaceFolderUri)
+
+        val chromiaConfigFiles = findChromiaConfigFiles(workspacePath)
+        return chromiaConfigFiles.map {
+            IndexRoot(it, findSourceRootPath(it))
+        }
+    }
+
+    private fun findChromiaConfigFiles(workspacePath: Path): List<Path> {
+        return Files.walk(workspacePath)
+            .filter { path ->
+                val fileName = path.fileName.toString()
+                fileName == ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME
+            }
+            .toList()
+    }
+
+    private fun findSourceRootPath(chromiaModelPath: Path): Path {
+        val configSourcePath = ChromiaModelProvider.loadChromiaModelFromFile(chromiaModelPath)?.compile?.source
+        return if (configSourcePath != null && configSourcePath.exists()) {
+            configSourcePath.normalize()
+        } else {
+            Paths.get(findSourceDirURI(chromiaModelPath.parent.toUri()))
+        }
     }
 
     private fun getLinterAndFormatterOptions(workspaceFolderUri: URI): Pair<LinterOptions, FormatterOptions> {
@@ -64,8 +124,11 @@ class RellIndexingManager(
         return Pair(linterOptions, formatterOptions)
     }
 
-    private fun doIndex(workspaceFolderUri: URI): WorkspaceIndexer {
-        val resolvedSourceDirUri = findSourceDirURI(workspaceFolderUri)
+    private fun doIndex(
+        resolvedSourceDirUri: URI,
+        workspaceFolderUri: URI,
+        excludeFolders: Set<Path> = emptySet()
+    ): WorkspaceIndexer {
         val cachedIndexer =
             if (indexCachingEnabled) indexCachingService.getWorkspaceIndexer(resolvedSourceDirUri) else null
 
@@ -78,7 +141,8 @@ class RellIndexingManager(
                 linterOptions,
                 formattingStyleLinter,
                 formatterOptions,
-                workspaceFolderUri
+                workspaceFolderUri,
+                excludeFolders
             )
         indexer.initialFileIndexBuild(cachedIndexer)
         return indexer
@@ -152,9 +216,25 @@ class RellIndexingManager(
     // is indexed from from a child folder from the other indexer.
     fun getIndexerFor(fileUri: URI): WorkspaceIndexer = getIndexerForOrNull(fileUri) ?: doSingleFileIndex(fileUri)
 
+    fun getIndexerForFolderOrNull(fileUri: URI): WorkspaceIndexer? {
+        return indexers.values
+            .filter { fileUri.startsWith(it.projectRootUri) }
+            .maxByOrNull { it.projectRootUri?.path?.length ?: 0 }
+            ?: getOrphanIndexer(fileUri)
+    }
+
     fun getIndexerForOrNull(fileUri: URI): WorkspaceIndexer? {
         for (indexer in indexers.entries) {
-            if (fileUri.path.startsWith(indexer.key.path)) {
+            if (fileUri.path.trimEnd('/').startsWith(indexer.key.path?.trimEnd('/') ?: continue)) {
+                return indexer.value
+            }
+        }
+        return getOrphanIndexer(fileUri)
+    }
+
+    private fun getOrphanIndexer(fileUri: URI): WorkspaceIndexer? {
+        for (indexer in orphanIndexers.entries) {
+            if (fileUri.path.startsWith(indexer.value.projectRootUri?.path ?: continue)) {
                 return indexer.value
             }
         }
@@ -207,7 +287,51 @@ class RellIndexingManager(
         }
     }
 
-    fun handleFolderChanges(dirtyFolders: List<URI>, deletedFolders: List<URI>): Pair<List<URI>, List<URI>> {
+    fun handleFolderChanges(dirtyFolders: List<URI>, deletedFolders: List<URI>) {
+        if (isFolderRename(dirtyFolders, deletedFolders)) {
+            handleFolderRename(dirtyFolders, deletedFolders)
+        } else {
+            syncFileAndFolderState(dirtyFolders, deletedFolders)
+        }
+    }
+
+    private fun isFolderRename(dirtyFolders: List<URI>, deletedFolders: List<URI>): Boolean {
+        return dirtyFolders.size == 1 && deletedFolders.size == 1
+    }
+
+    private fun handleFolderRename(dirtyFolders: List<URI>, deletedFolders: List<URI>) {
+        val deletedFolderUri = deletedFolders.firstOrNull() ?: return
+        val newFolderUri = dirtyFolders.firstOrNull() ?: return
+
+        getIndexerForFolderOrNull(deletedFolderUri)?.let { indexer ->
+            if (deletedFolderIsIndexerRoot(indexer, deletedFolderUri)) {
+                folderRenameOnIndexerProjectRoot(indexer, newFolderUri)
+            } else {
+                syncFileAndFolderState(dirtyFolders, deletedFolders)
+            }
+        }
+    }
+
+    private fun deletedFolderIsIndexerRoot(indexer: WorkspaceIndexer, deletedFolderUri: URI) =
+        indexer.projectRootUri?.path?.trimEnd('/') == deletedFolderUri.path.trimEnd('/')
+
+    private fun folderRenameOnIndexerProjectRoot(indexer: WorkspaceIndexer, newFolderUri: URI) {
+        val indexRoots = findIndexRoots(newFolderUri)
+
+        val newIndexers = if (indexRoots.isEmpty()) {
+            listOf(doIndex(findSourceDirURI(newFolderUri), newFolderUri))
+        } else {
+            indexRoots.map { indexRoot ->
+                doIndex(indexRoot.sourceRootUri, indexRoot.chromiaConfigDirUri)
+            }
+        }.associateBy { it.workspaceUri }
+
+        indexers.putAll(newIndexers)
+        indexers.remove(indexer.workspaceUri)
+        cleanUpOrphans(newIndexers)
+    }
+
+    private fun syncFileAndFolderState(dirtyFolders: List<URI>, deletedFolders: List<URI>) {
         val deletedFiles = mutableListOf<URI>()
         val dirtyFiles = mutableListOf<URI>()
 
@@ -223,10 +347,7 @@ class RellIndexingManager(
 
         // Need to do two passes of the files to guarantee that imports and modules are resolved correctly
         dirtyFiles.addAll(dirtyFiles)
-
         handleFileChanges(dirtyFiles, deletedFiles, true)
-
-        return Pair(dirtyFiles, deletedFiles)
     }
 
     private fun handleDeletedFiles(
@@ -259,6 +380,38 @@ class RellIndexingManager(
     private fun updateAffectedFiles(affectedUris: Set<URI>) {
         affectedUris.forEach { uri ->
             getIndexerFor(uri).updateFileUriResourceMap(uri)
+        }
+    }
+
+    // TODO: Clean up depth of nesting
+    private fun cleanUpOrphans(indexers: Map<URI, WorkspaceIndexer>) {
+        indexers.values.forEach { indexer ->
+            orphanIndexers.forEach { orphanIndexer ->
+                orphanIndexer.value.fileUriResourceMap.keys.forEach { uri ->
+                    if (indexer.fileUriResourceMap[uri] != null) {
+                        orphanIndexer.value.removeFileUriResourceMap(uri)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun handleNestedIndexers() {
+        val nestedProjects = indexers.keys.flatMap { key ->
+            indexers.keys.filter { it != key && it.startsWith(key) }
+                .takeIf { it.isNotEmpty() }
+                ?.toMutableList()
+                ?.apply { add(key) }
+                ?: emptyList()
+        }.map { it.path }
+
+        if (nestedProjects.isNotEmpty()) {
+            diagnosticsManager.sendNotification(
+                NotificationType.WARNING,
+                "Nested Rell projects detected. The projects with overlapping paths:\n" +
+                        nestedProjects.joinToString() +
+                        "\n Consider restructuring the project directories to avoid nested configurations."
+            )
         }
     }
 

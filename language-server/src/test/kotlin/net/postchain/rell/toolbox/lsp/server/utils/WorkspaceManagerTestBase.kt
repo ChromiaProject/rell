@@ -20,11 +20,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.net.URI
+import net.postchain.rell.toolbox.lsp.server.NotificationType
 
 open class WorkspaceManagerTestBase {
     protected lateinit var workspaceManager: RellWorkspaceManager
     protected lateinit var indexingManager: RellIndexingManager
     protected var diagnostics = mutableMapOf<URI, List<RellIssue>>()
+    protected var notifications = mutableListOf<Pair<NotificationType, String>>()
     protected lateinit var workspace: File
     protected lateinit var sourceDir: File
     protected val symbolService = RellSymbolService()
@@ -72,19 +74,24 @@ open class WorkspaceManagerTestBase {
     @AfterEach
     fun breakdown() {
         diagnostics.clear()
+        notifications.clear()
     }
 
     protected fun populateDiagnostics(uri: URI, issues: List<RellIssue>) {
         diagnostics[uri] = issues
     }
 
+    protected fun populateNotifications(type: NotificationType, message: String) {
+        notifications.add(type to message)
+    }
+
     protected fun initializeWorkspace(workspace: File = this.workspace) {
         val workspaceFolders = listOf(WorkspaceFolder(workspace.toURI().toString(), TEST_WORKSPACE_NAME))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics, ::populateNotifications)
     }
 
     protected fun initializeWorkspaces(workspaces: List<File>) {
         val workspaceFolders = workspaces.map { WorkspaceFolder(it.toURI().toString(), TEST_WORKSPACE_NAME) }
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics, ::populateNotifications)
     }
 }

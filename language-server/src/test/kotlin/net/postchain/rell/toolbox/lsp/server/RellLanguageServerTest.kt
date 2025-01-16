@@ -100,7 +100,7 @@ class RellLanguageServerTest {
 
     @Test
     fun `cacheFolder endpoint is resolves with correct info`() {
-        val response = server.cacheFolder().get()
+        val response = server.cacheFolder().get().replace("\\", "/");
         assertThat(response).endsWith(".chromia/rell-language-server/cache")
     }
 

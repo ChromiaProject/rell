@@ -43,42 +43,55 @@ class RellWorkspaceService(
         val deletedFiles = mutableListOf<URI>()
         val dirtyFolders = mutableListOf<URI>()
         val deletedFolders = mutableListOf<URI>()
+        val createdChromiaConfig = mutableListOf<URI>()
+
         for (change in params.changes) {
             val uri = parseFileUri(change.uri) ?: continue
-            if (uri.isRellFile()) {
-                if (change.type == FileChangeType.Deleted) {
-                    deletedFiles.add(uri)
-                } else {
-                    dirtyFiles.add(uri)
-                }
-            } else {
-                val indexer = indexingManager.getIndexerForConfigFile(uri)
-                if (indexer != null && indexer.isConfigFile(uri)) {
-                    requestManager.runWrite {
-                        indexer.updateConfig(uri, ::handleIndexingState)
-                        diagnosticsManager.reportDiagnostics(indexer)
-                    }
-                } else {
+
+            when {
+                uri.isRellFile() -> {
                     if (change.type == FileChangeType.Deleted) {
-                        deletedFolders.add(uri)
+                        deletedFiles.add(uri)
                     } else {
-                        if (File(uri).isDirectory) {
-                            dirtyFolders.add(uri)
+                        dirtyFiles.add(uri)
+                    }
+                }
+
+                uri.isChromiaConfig() && change.type == FileChangeType.Created -> {
+                    createdChromiaConfig.add(uri)
+                }
+
+                else -> {
+                    val indexer = indexingManager.getIndexerForConfigFile(uri)
+                    if (indexer != null && indexer.isConfigFile(uri)) {
+                        requestManager.runWrite {
+                            indexer.updateConfig(uri, ::handleIndexingState)
+                            diagnosticsManager.reportDiagnostics(indexer)
+                        }
+                    } else {
+                        if (change.type == FileChangeType.Deleted) {
+                            deletedFolders.add(uri)
+                        } else {
+                            if (File(uri).isDirectory) {
+                                dirtyFolders.add(uri)
+                            }
                         }
                     }
+
                 }
             }
         }
 
         requestManager.runWrite {
-            workspaceManager.didChangeFiles(dirtyFiles, deletedFiles, updateAffectedFiles = true)
+            workspaceManager.didCreateChromiaConfig(createdChromiaConfig)
             workspaceManager.didChangeFolders(dirtyFolders, deletedFolders)
+            workspaceManager.didChangeFiles(dirtyFiles, deletedFiles, updateAffectedFiles = true)
             languageClient.refreshSemanticTokens()
         }
     }
 
     override fun symbol(params: WorkspaceSymbolParams):
-        CompletableFuture<Either<List<SymbolInformation>, List<WorkspaceSymbol>>> {
+            CompletableFuture<Either<List<SymbolInformation>, List<WorkspaceSymbol>>> {
         return CompletableFuture.completedFuture(
             Either.forRight(symbolService.getWorkspaceSymbols(params.query, indexingManager.getAllIndexers()))
         )

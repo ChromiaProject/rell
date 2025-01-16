@@ -29,8 +29,8 @@ public class RellGrammarChangesTest {
             var ourXtextGrammarFile = "/grammar/Rell.xtext";
             System.setOut(customPrintStream);
             XtextGrammarKt.main();
-            var capturedXtextGrammar = removeComments(byteArrayOutputStream.toString());
-            var expectedXtextGrammar = removeComments(readResourceFile(ourXtextGrammarFile));
+            var capturedXtextGrammar = normalizeNewLines(removeComments(byteArrayOutputStream.toString()));
+            var expectedXtextGrammar = normalizeNewLines(removeComments(readResourceFile(ourXtextGrammarFile)));
             // When assertion fails, we should
             // 1. Inspect the difference between the two grammars
             // 2. Adjust our ANTLR grammar to match the changes in the Rell grammar
@@ -46,6 +46,10 @@ public class RellGrammarChangesTest {
         Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
         Matcher matcher = pattern.matcher(text);
         return matcher.replaceAll("").trim();
+    }
+
+    private String normalizeNewLines(String text) {
+        return text.replace("\r\n", "\n");
     }
 
     private static String readResourceFile(String filePathInResources) throws IOException, URISyntaxException {

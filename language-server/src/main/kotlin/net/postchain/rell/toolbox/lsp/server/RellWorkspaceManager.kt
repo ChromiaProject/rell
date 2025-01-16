@@ -1,6 +1,7 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.File
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.indexer.RellIssue
@@ -47,8 +48,13 @@ class RellWorkspaceManager(
     private val diagnosticsManager: RellDiagnosticsManager
 ) {
 
-    fun initialize(workspaceFolders: List<WorkspaceFolder>, diagnosticsPublisher: (uri: URI, List<RellIssue>) -> Unit) {
+    fun initialize(
+        workspaceFolders: List<WorkspaceFolder>,
+        diagnosticsPublisher: (uri: URI, List<RellIssue>) -> Unit,
+        notificationPublisher: (type: NotificationType, message: String) -> Unit
+    ) {
         diagnosticsManager.setDiagnosticsPublisher(diagnosticsPublisher)
+        diagnosticsManager.setNotificationPublisher(notificationPublisher)
         indexingManager.initialize(workspaceFolders)
     }
 
@@ -62,8 +68,10 @@ class RellWorkspaceManager(
     }
 
     fun didOpen(fileUri: URI, version: Int, content: String) {
-        documentManager.openDocument(fileUri, version, content)
-        indexingManager.updateFileContent(fileUri, content)
+        if (fileUri.scheme == "file" && File(fileUri).exists()) {
+            documentManager.openDocument(fileUri, version, content)
+            indexingManager.updateFileContent(fileUri, content)
+        }
     }
 
     fun didClose(fileUri: URI) {
@@ -92,6 +100,10 @@ class RellWorkspaceManager(
         val indexer = indexingManager.getIndexerFor(fileUri)
         val affectedUris = indexer.findAffectedFiles(fileUri)
         didChangeFiles(affectedUris.toList() + fileUri, listOf())
+    }
+
+    fun didCreateChromiaConfig(chromiaConfigFiles: List<URI>) {
+        indexingManager.indexFromRoots(chromiaConfigFiles)
     }
 
     fun getDefinitionLocations(
@@ -317,7 +329,7 @@ class RellWorkspaceManager(
                         Position(
                             ctx.ruleX_QualifiedNameNode().stop.line - 1,
                             ctx.ruleX_QualifiedNameNode().stop.charPositionInLine +
-                                ctx.ruleX_QualifiedNameNode().stop.text.length
+                                    ctx.ruleX_QualifiedNameNode().stop.text.length
                         )
                     )
                     result = FullNameWithRange(

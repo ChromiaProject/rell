@@ -40,15 +40,6 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
     fun `Initialization correctly index relevant files`() {
         val testDataBuilder = testData(workspace) {
             addFile(rellFilePath, rellFileContent)
-            addWorkspaceFile(
-                "excluded.rell",
-                """
-                module;
-                function excluded() {
-                    return "excluded";
-                }
-                """.trimIndent()
-            )
             addFile("not_a_rell_file.json", "{module}")
         }
         val rellFile = testDataBuilder.sourceFile(rellFilePath)
@@ -253,7 +244,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         val gitFileResource = indexer.fileUriResourceMap[gitFileUri]
         assertThat(gitFileResource).isNull()
         assertThat(indexer.fileUriResourceMap.keys).contains(rellFileUri)
-        assertThat(documentManager.getOpenDocuments().keys).containsOnly(gitFileUri)
+        assertThat(documentManager.getOpenDocuments().keys).isEmpty()
     }
 
     @Test
@@ -299,7 +290,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
             addFile(rellFilePath, rellFileContent)
         }
         val singleRellFileUri = testDataBuilder.sourceFile(rellFilePath).toURI()
-        workspaceManager.initialize(listOf(), ::populateDiagnostics)
+        workspaceManager.initialize(listOf(), ::populateDiagnostics, ::populateNotifications)
 
         val indexer = indexingManager.getIndexerFor(singleRellFileUri)
 
@@ -530,7 +521,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
             Position(3, 20)
         ) // TODO: Believe we are off with one line here
 
-        assertThat(candidate.left!![0].uri.contains(localLinkFile.toString())).isTrue()
+        assertThat(candidate.left!![0].uri.contains(localLinkFile.toURI().toString())).isTrue()
         assertThat(candidate.left!![0].range.start).isEqualTo(Position(2, 8))
         assertThat(candidate.left!![0].range.end).isEqualTo(Position(2, 23))
     }
@@ -560,7 +551,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
             Position(3, 12)
         )
 
-        assertThat(candidate.left!![0].uri.contains(localLinkFile.toString())).isTrue()
+        assertThat(candidate.left!![0].uri.contains(localLinkFile.toURI().toString())).isTrue()
         assertThat(candidate.left!![0].range.start).isEqualTo(Position(2, 8))
         assertThat(candidate.left!![0].range.end).isEqualTo(Position(2, 23))
     }
@@ -583,14 +574,14 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         val localLinkFile = testDataBuilder.sourceFile(localLinkFilePath)
 
         val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString(), TEST_WORKSPACE_NAME))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics)
+        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics, ::populateNotifications)
         workspaceManager.didOpen(localLinkFile.toURI(), 1, localLinkFile.readText())
 
         val candidate = workspaceManager.getDefinitionLocations(
             localLinkFile.toURI(),
             Position(3, 27)
         )
-        assertThat(candidate.left!![0].uri.contains(localLinkFile.toString())).isTrue()
+        assertThat(candidate.left!![0].uri.contains(localLinkFile.toURI().toString())).isTrue()
         assertThat(candidate.left!![0].range.start).isEqualTo(Position(2, 8))
         assertThat(candidate.left!![0].range.end).isEqualTo(Position(2, 23))
     }
