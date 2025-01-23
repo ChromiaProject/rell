@@ -19,12 +19,9 @@ import net.postchain.rell.base.runtime.GtvToRtDefaultValueEvaluator
 import net.postchain.rell.base.runtime.Rt_Value
 
 object PostchainGtvUtils {
-    // Must be in sync with the default version used in Postchain (not supposed to change)
-    const val DEFAULT_HASH_VERSION = 1
-
     val cryptoSystem: CryptoSystem = Secp256K1CryptoSystem()
     val hashCalculator = HashCalculator()
-    val merkleHashCalculator: GtvMerkleHashCalculatorBase = makeMerkleHashCalculator(DEFAULT_HASH_VERSION.toLong())
+    val merkleHashCalculator: GtvMerkleHashCalculatorBase = makeMerkleHashCalculator(1)
 
     private val GSON: Gson = make_gtv_gson_builder().create()
     private val PRETTY_GSON: Gson = makeLenientGtvGsonBuilder().setPrettyPrinting().create()

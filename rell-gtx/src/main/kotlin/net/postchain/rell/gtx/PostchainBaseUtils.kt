@@ -5,13 +5,11 @@
 package net.postchain.rell.gtx
 
 import net.postchain.StorageBuilder
-import net.postchain.base.configuration.BlockchainFeatures
-import net.postchain.base.configuration.KEY_FEATURES
+import net.postchain.base.configuration.BlockchainConfigurationData
 import net.postchain.base.data.DatabaseAccess
 import net.postchain.base.data.DatabaseAccessFactory
 import net.postchain.common.exception.UserMistake
 import net.postchain.gtv.Gtv
-import net.postchain.gtv.merkleHash
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_ModuleName
@@ -25,10 +23,8 @@ import net.postchain.rell.base.utils.toIntExact
 object PostchainBaseUtils {
     val DATABASE_VERSION: Int = StorageBuilder.getCurrentDbVersion()
 
-    fun getBlockchainConfigHashVersion(config: Gtv, defaultVersion: Int = PostchainGtvUtils.DEFAULT_HASH_VERSION): Int {
-        val features = config.asDict()[KEY_FEATURES]
-        val version0 = features?.asDict().orEmpty()[BlockchainFeatures.merkle_hash_version.name]?.asInteger()
-        return version0?.toIntExact() ?: defaultVersion
+    fun getBlockchainConfigHashVersion(config: Gtv): Int {
+        return BlockchainConfigurationData.merkleHashVersion(config).toIntExact()
     }
 
     fun calcBlockchainRid(config: Gtv): Bytes32 {
