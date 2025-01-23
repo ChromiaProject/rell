@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib
@@ -490,6 +490,58 @@ class LibGtvTest: BaseRellTest() {
         chk("'' + (123.456).to_gtv()", "text[\"123.456\"]")
         chk("'' + ('Hello').to_gtv()", "text[\"Hello\"]")
         chk("'' + (x'1234').to_gtv()", "text[\"1234\"]")
+    }
+
+    @Test fun testLegacyHashBasic() {
+        chk("gtv.legacy_hash(123, 1)", "byte_array[1100c41df25b87fee6921937b38c863d05445bc20d8760ad282c8c7d220e844b]")
+        chk("gtv.legacy_hash(123, 2)", "byte_array[1100c41df25b87fee6921937b38c863d05445bc20d8760ad282c8c7d220e844b]")
+        chk("gtv.legacy_hash('', 1)", "byte_array[36cb80657ea32c81c1985c76ec5930d5d4993093f48b313728c6746e3ea6c79f]")
+        chk("gtv.legacy_hash('', 2)", "byte_array[36cb80657ea32c81c1985c76ec5930d5d4993093f48b313728c6746e3ea6c79f]")
+        chk("gtv.legacy_hash(x'', 1)", "byte_array[e91787fed131491cab96c4682e5d9a4f51e58f31d511c5d1929f12ba1bee19a1]")
+        chk("gtv.legacy_hash(x'', 2)", "byte_array[e91787fed131491cab96c4682e5d9a4f51e58f31d511c5d1929f12ba1bee19a1]")
+        chk("gtv.legacy_hash(true, 1)", "byte_array[6ccd14b5a877874ddc7ca52bd3aeded5543b73a354779224bbb86b0fd315b418]")
+        chk("gtv.legacy_hash(true, 2)", "byte_array[6ccd14b5a877874ddc7ca52bd3aeded5543b73a354779224bbb86b0fd315b418]")
+
+        chk("gtv.legacy_hash([1,2,3], 1)", "byte_array[8a6ec7112c4e652c1d6971525a2fbebd9a26d38c026a7eb5bde8aaa54fd57101]")
+        chk("gtv.legacy_hash([1,2,3], 2)", "byte_array[8a6ec7112c4e652c1d6971525a2fbebd9a26d38c026a7eb5bde8aaa54fd57101]")
+        chk("gtv.legacy_hash([1:'A'], 1)", "byte_array[6cf3188247697d78fdcbdf1a7f7b27d60cc13059365c5b87394f1bb3dbbe71e8]")
+        chk("gtv.legacy_hash([1:'A'], 2)", "byte_array[a7c897da1b29aa14265fa1f49dbb33fb689ee1efa0930272482dc9e8d6dffff2]")
+
+        chk("gtv.legacy_hash(123, 0)", "rt_err:gtv.legacy_hash")
+        chk("gtv.legacy_hash(123, 3)", "rt_err:gtv.legacy_hash")
+        chk("gtv.legacy_hash(123, -1)", "rt_err:gtv.legacy_hash")
+        chk("gtv.legacy_hash(123, 2147483648)", "rt_err:gtv.legacy_hash")
+    }
+
+    @Test fun testLegacyHashComplex() {
+        def("function l(v: list<integer> = []) = v;")
+        def("function m(v: map<text, integer> = [:]) = v;")
+
+        chk("gtv.legacy_hash(l(), 1)", "byte_array[46af9064f12528cad6a7c377204acd0ac38cdc6912903e7dab3703764c8dd5e5]")
+        chk("gtv.legacy_hash(l(), 2)", "byte_array[46af9064f12528cad6a7c377204acd0ac38cdc6912903e7dab3703764c8dd5e5]")
+        chk("gtv.legacy_hash(m(), 1)", "byte_array[300b4292a3591228725e6e2e20be3ab63a6a99cc695e925c6c20a90c570a5e71]")
+        chk("gtv.legacy_hash(m(), 2)", "byte_array[300b4292a3591228725e6e2e20be3ab63a6a99cc695e925c6c20a90c570a5e71]")
+
+        chk("gtv.legacy_hash([l()], 1)", "byte_array[46af9064f12528cad6a7c377204acd0ac38cdc6912903e7dab3703764c8dd5e5]")
+        chk("gtv.legacy_hash([l()], 2)", "byte_array[b27d13915e478770d8cbaaf72d2c92f67a17250b2c40c9a7b36c3e996ae5fad7]")
+        chk("gtv.legacy_hash([m()], 1)", "byte_array[46af9064f12528cad6a7c377204acd0ac38cdc6912903e7dab3703764c8dd5e5]")
+        chk("gtv.legacy_hash([m()], 2)", "byte_array[5ac6c92dffe0a0defa0581023e84c3d344a42d4ff90fc2a3af0d40dbf8d7a622]")
+        chk("gtv.legacy_hash(['A':l()], 1)", "byte_array[76ad4a841051111505dea3ec06c2f65fb70d86833ef32610e1f41b8909108cc6]")
+        chk("gtv.legacy_hash(['A':l()], 2)", "byte_array[76ad4a841051111505dea3ec06c2f65fb70d86833ef32610e1f41b8909108cc6]")
+        chk("gtv.legacy_hash(['A':m()], 1)", "byte_array[2a7d9b859b7242fdea8d24f78d98a923d97057e5e3fdcd4028c6b046ebbaa5e8]")
+        chk("gtv.legacy_hash(['A':m()], 2)", "byte_array[2a7d9b859b7242fdea8d24f78d98a923d97057e5e3fdcd4028c6b046ebbaa5e8]")
+
+        chk("gtv.legacy_hash(['a','b'], 1)", "byte_array[fa7e2b366975bba0f22d8d83020e9e11425aa55c8f87b912c445102b7c94f34a]")
+        chk("gtv.legacy_hash(['a','b'], 2)", "byte_array[fa7e2b366975bba0f22d8d83020e9e11425aa55c8f87b912c445102b7c94f34a]")
+        chk("gtv.legacy_hash(['a':'b'], 1)", "byte_array[0d09e3484840b6f184f490715cd05722a01dfba016fb737c86d5cf4b5f4c0b26]")
+        chk("gtv.legacy_hash(['a':'b'], 2)", "byte_array[0d09e3484840b6f184f490715cd05722a01dfba016fb737c86d5cf4b5f4c0b26]")
+        chk("gtv.legacy_hash([['a':'b']], 1)", "byte_array[fa7e2b366975bba0f22d8d83020e9e11425aa55c8f87b912c445102b7c94f34a]")
+        chk("gtv.legacy_hash([['a':'b']], 2)", "byte_array[9f13843cf8eee59dd266bbb09c3d366674e6cedd99e86d7a109519c7e6defd39]")
+
+        chk("gtv.legacy_hash([123], 1)", "byte_array[341fdf9993ea5847fb8ad1ba7f92cd3c0fb2932e2ab1dee5fcbcbd7d995d0aa3]")
+        chk("gtv.legacy_hash([123], 2)", "byte_array[341fdf9993ea5847fb8ad1ba7f92cd3c0fb2932e2ab1dee5fcbcbd7d995d0aa3]")
+        chk("gtv.legacy_hash([[123]], 1)", "byte_array[341fdf9993ea5847fb8ad1ba7f92cd3c0fb2932e2ab1dee5fcbcbd7d995d0aa3]")
+        chk("gtv.legacy_hash([[123]], 2)", "byte_array[036f58e462a180cd60f30030cdce670cce4a403284757a4db00f53661134ce65]")
     }
 
     private fun chkFromGtv(gtv: String, expr: String, expected: String) = chkFromGtv(tst, gtv, expr, expected)

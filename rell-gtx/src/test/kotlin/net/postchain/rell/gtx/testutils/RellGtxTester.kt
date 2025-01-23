@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.gtx.testutils
@@ -238,10 +238,10 @@ class RellGtxTester(
             GtvType.ARRAY -> GtvFactory.gtv(tpl.asArray().mapNotNull { makeModuleConfigNode(parts, it, false) })
             GtvType.DICT -> {
                 val map = tpl.asDict().entries
-                        .map { it.key to makeModuleConfigNode(parts, it.value, false) }
-                        .filter { it.second != null }
-                        .map { it.first to it.second!! }
-                        .toMap().toMutableMap()
+                    .map { it.key to makeModuleConfigNode(parts, it.value, false) }
+                    .filter { it.second != null }
+                    .associate { it.first to it.second!! }
+                    .toMutableMap()
                 if (root) {
                     map.putAll(parts.extraModuleConfig.mapValues { GtvTestUtils.decodeGtvStr(it.value) })
                 }

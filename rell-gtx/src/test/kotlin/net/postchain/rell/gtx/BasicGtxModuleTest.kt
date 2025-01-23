@@ -99,7 +99,7 @@ class BasicGtxModuleTest : IntegrationTest() {
 
     private fun makeTx(ownerIdx: Int, opName: String, vararg opArgs: Gtv): ByteArray {
         val owner = KeyPairHelper.pubKey(ownerIdx)
-        return GtxBuilder(blockchainRid!!, listOf(owner), myCS, PostchainGtvUtils.merkleCalculator)
+        return GtxBuilder(blockchainRid!!, listOf(owner), myCS, PostchainGtvUtils.merkleHashCalculator)
             .addOperation(opName, *opArgs.toList().toTypedArray())
             .finish()
             .sign(myCS.buildSigMaker(owner, KeyPairHelper.privKey(ownerIdx)))

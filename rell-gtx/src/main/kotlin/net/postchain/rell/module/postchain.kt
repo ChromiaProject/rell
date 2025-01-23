@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.module
@@ -40,7 +40,6 @@ import net.postchain.rell.gtx.Rt_DefaultPostchainTxContextFactory
 import net.postchain.rell.gtx.Rt_PostchainOpContext
 import net.postchain.rell.gtx.Rt_PostchainTxContextFactory
 import org.apache.commons.lang3.time.FastDateFormat
-import kotlin.math.sign
 
 private fun convertArg(ctx: GtvToRtContext, param: R_FunctionParam, arg: Gtv): Rt_Value {
     val subCtx = ctx.updateSymbol(GtvToRtSymbol_Param(param), true)
@@ -242,6 +241,7 @@ private class RellModuleConfig(
 
 private class RellPostchainModule(
     val env: RellPostchainModuleEnvironment,
+    val config: RellModuleConfig,
     private val rApp: R_App,
     chainCtx: Rt_ChainContext,
     private val chainDeps: Map<String, ByteArray>,
@@ -249,7 +249,7 @@ private class RellPostchainModule(
     logPrinter: Rt_Printer,
     private val errorHandler: ErrorHandler,
     moduleArgsSource: Rt_ModuleArgsSource,
-    val config: RellModuleConfig,
+    gtvHashCalculator: PostchainGtvUtils.HashCalculator,
 ): GTXModule {
     private val operationNames = rApp.operations.keys.map { it.str() }.toImmSet()
     private val queryNames = rApp.queries.keys.map { it.str() }.toImmSet()
@@ -268,6 +268,7 @@ private class RellPostchainModule(
         repl = false,
         test = false,
         moduleArgsSource = moduleArgsSource,
+        gtvHashCalculator = gtvHashCalculator,
     )
 
     override fun getOperations(): Set<String> {
@@ -473,6 +474,7 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
 
             RellPostchainModule(
                 env,
+                moduleConfig,
                 modApp.app,
                 chainCtx,
                 chainDeps,
@@ -480,7 +482,7 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
                 outPrinter = modOutPrinter,
                 errorHandler = errorHandler,
                 moduleArgsSource = moduleArgsSource,
-                config = moduleConfig,
+                gtvHashCalculator = getGtvHashCalculator(modApp.compilerOptions, config),
             )
         }
     }
@@ -576,6 +578,17 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
         return deps.toMap()
     }
 
+    private fun getGtvHashCalculator(
+        compilerOptions: C_CompilerOptions,
+        config: Gtv,
+    ): PostchainGtvUtils.HashCalculator {
+        var version = PostchainBaseUtils.getBlockchainConfigHashVersion(config)
+        if (version == 2 && !HASH_V2_SWITCH.isActive(compilerOptions)) {
+            version = 1
+        }
+        return PostchainGtvUtils.HashCalculator(version)
+    }
+
     private class RellGtvConfig(
         private val env: RellPostchainModuleEnvironment,
         rellNode: Map<String, Gtv>,
@@ -613,6 +626,8 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
     }
 
     companion object: KLogging() {
+        private val HASH_V2_SWITCH = C_FeatureSwitch(RellVersions.SINCE_NOW)
+
         fun compileApp(config: Gtv, env: RellPostchainModuleEnvironment): Pair<C_CompilationResult, C_SourceDir> {
             val gtxNode = config.asDict().getValue("gtx").asDict()
             val rellNode = gtxNode.getValue("rell").asDict()

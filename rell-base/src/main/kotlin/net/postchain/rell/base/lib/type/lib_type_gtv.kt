@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.type
@@ -14,9 +14,8 @@ import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
-import net.postchain.rell.base.utils.PostchainGtvUtils
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.immMapOf
+import net.postchain.rell.base.utils.*
+import java.lang.IllegalArgumentException
 import java.math.BigInteger
 
 object Lib_Type_Gtv {
@@ -83,6 +82,26 @@ object Lib_Type_Gtv {
                 }
             }
 
+            staticFunction("legacy_hash", result = "byte_array", pure = true, since = RellVersions.SINCE_NOW) {
+                comment("@see T.hash()")
+                generic("T", subOf = "any")
+                param("value", "T")
+                param("version", "integer")
+                bodyMeta {
+                    val valueType = this.fnBodyMeta.rTypeArgs.getValue("T")
+                    if (valueType is R_VirtualType) {
+                        bodyContext { ctx, a, b ->
+                            calcHashVirtual(ctx, a, b, this.fnQualifiedName)
+                        }
+                    } else {
+                        validateToGtvBody(this, valueType)
+                        bodyContext { ctx, a, b ->
+                            calcHashNormal(ctx, valueType, a, b, this.fnQualifiedName)
+                        }
+                    }
+                }
+            }
+
             function("to_bytes", "byte_array", pure = true, since = "0.9.0") {
                 comment("Encodes this `gtv` to a `byte_array`.")
                 alias("toBytes", C_MessageType.ERROR, since = "0.6.1")
@@ -127,22 +146,13 @@ object Lib_Type_Gtv {
                     bodyMeta {
                         val selfType = this.fnBodyMeta.rSelfType
                         if (selfType is R_VirtualType) {
-                            body { a ->
-                                val virtual = a.asVirtual()
-                                val gtv = virtual.gtv
-                                val hash = Rt_Utils.wrapErr("fn:virtual:hash") {
-                                    PostchainGtvUtils.merkleHash(gtv)
-                                }
-                                Rt_ByteArrayValue.get(hash)
+                            bodyContext { ctx, a ->
+                                calcHashVirtual(ctx, a, null, "fn:virtual:hash")
                             }
                         } else {
                             validateToGtvBody(this, selfType)
-                            body { a ->
-                                val hash = Rt_Utils.wrapErr("fn:any:hash") {
-                                    val gtv = selfType.rtToGtv(a, false)
-                                    PostchainGtvUtils.merkleHash(gtv)
-                                }
-                                Rt_ByteArrayValue.get(hash)
+                            bodyContext { ctx, a ->
+                                calcHashNormal(ctx, selfType, a, null, "fn:any:hash")
                             }
                         }
                     }
@@ -214,6 +224,37 @@ object Lib_Type_Gtv {
         val typeStr = type.name
         val fnName = m.fnSimpleName
         m.validationError("fn:invalid:$typeStr:$fnName", "Function '$fnName' not available for type '$typeStr'")
+    }
+
+    private fun calcHashNormal(
+        ctx: Rt_CallContext,
+        valueType: R_Type,
+        value: Rt_Value,
+        version: Rt_Value?,
+        fnName: String,
+    ): Rt_Value {
+        val hash = Rt_Utils.wrapErr(fnName) {
+            val gtv = valueType.rtToGtv(value, false)
+            calcHash0(ctx, gtv, version)
+        }
+        return Rt_ByteArrayValue.get(hash)
+    }
+
+    private fun calcHashVirtual(ctx: Rt_CallContext, value: Rt_Value, version: Rt_Value?, fnName: String): Rt_Value {
+        val virtual = value.asVirtual()
+        val gtv = virtual.gtv
+        val hash = Rt_Utils.wrapErr(fnName) {
+            calcHash0(ctx, gtv, version)
+        }
+        return Rt_ByteArrayValue.get(hash)
+    }
+
+    private fun calcHash0(ctx: Rt_CallContext, gtv: Gtv, version: Rt_Value?): ByteArray {
+        val iVersion = if (version == null) null else {
+            val v = version.asInteger().toIntExactOrNull()
+            v ?: throw IllegalArgumentException("Hash version out of range: $version")
+        }
+        return ctx.appCtx.gtvHashCalculator.hash(gtv, iVersion)
     }
 }
 

@@ -1,14 +1,17 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.gtx
 
 import net.postchain.StorageBuilder
+import net.postchain.base.configuration.BlockchainFeatures
+import net.postchain.base.configuration.KEY_FEATURES
 import net.postchain.base.data.DatabaseAccess
 import net.postchain.base.data.DatabaseAccessFactory
 import net.postchain.common.exception.UserMistake
 import net.postchain.gtv.Gtv
+import net.postchain.gtv.merkleHash
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_ModuleName
@@ -17,12 +20,20 @@ import net.postchain.rell.base.runtime.Rt_ModuleArgsSource
 import net.postchain.rell.base.utils.Bytes32
 import net.postchain.rell.base.utils.PostchainGtvUtils
 import net.postchain.rell.base.utils.toImmMap
+import net.postchain.rell.base.utils.toIntExact
 
 object PostchainBaseUtils {
     val DATABASE_VERSION: Int = StorageBuilder.getCurrentDbVersion()
 
+    fun getBlockchainConfigHashVersion(config: Gtv, defaultVersion: Int = PostchainGtvUtils.DEFAULT_HASH_VERSION): Int {
+        val features = config.asDict()[KEY_FEATURES]
+        val version0 = features?.asDict().orEmpty()[BlockchainFeatures.merkle_hash_version.name]?.asInteger()
+        return version0?.toIntExact() ?: defaultVersion
+    }
+
     fun calcBlockchainRid(config: Gtv): Bytes32 {
-        val hash = PostchainGtvUtils.merkleHash(config)
+        val version = getBlockchainConfigHashVersion(config)
+        val hash = PostchainGtvUtils.hashCalculator.hash(config, version)
         return Bytes32(hash)
     }
 

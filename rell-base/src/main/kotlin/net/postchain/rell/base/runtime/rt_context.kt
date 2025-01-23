@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.runtime
@@ -9,6 +9,8 @@ import mu.KLogging
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvNull
+import net.postchain.gtv.merkle.GtvMerkleHashCalculatorBase
+import net.postchain.gtv.merkle.GtvMerkleHashCalculatorV1
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.lib.test.Rt_TestBlockClock
 import net.postchain.rell.base.model.*
@@ -277,6 +279,7 @@ class Rt_AppContext(
     val test: Boolean,
     val replOut: ReplOutputChannel? = null,
     val blockRunner: Rt_UnitTestBlockRunner = Rt_NullUnitTestBlockRunner,
+    val gtvHashCalculator: PostchainGtvUtils.HashCalculator = PostchainGtvUtils.HashCalculator(),
     moduleArgsSource: Rt_ModuleArgsSource = Rt_ModuleArgsSource.NULL,
     globalConstantsState: Rt_GlobalConstants.State = Rt_GlobalConstants.State(),
 ) {
@@ -354,7 +357,11 @@ class Rt_ExecutionContext(
     }
 }
 
-class Rt_CallContext(val defCtx: Rt_DefinitionContext, val stack: Rt_CallStack?, private val dbUpdateAllowed: Boolean) {
+class Rt_CallContext(
+    val defCtx: Rt_DefinitionContext,
+    val stack: Rt_CallStack?,
+    private val dbUpdateAllowed: Boolean,
+) {
     val exeCtx = defCtx.exeCtx
     val appCtx = exeCtx.appCtx
     val sqlCtx = exeCtx.sqlCtx
@@ -368,7 +375,7 @@ class Rt_CallContext(val defCtx: Rt_DefinitionContext, val stack: Rt_CallStack?,
         return Rt_CallContext(defCtx, subStack, dbUpdateAllowed)
     }
 
-    fun subStack(filePos: R_FilePos): Rt_CallStack {
+    private fun subStack(filePos: R_FilePos): Rt_CallStack {
         val stackPos = R_StackPos(defCtx.defId, filePos)
         return Rt_CallStack(stack, stackPos)
     }

@@ -11,7 +11,7 @@ import net.postchain.gtv.*
 import net.postchain.gtv.gtvml.GtvMLEncoder
 import net.postchain.gtv.gtvml.GtvMLParser
 import net.postchain.gtv.merkle.GtvMerkleHashCalculatorBase
-import net.postchain.gtv.merkle.GtvMerkleHashCalculatorV1
+import net.postchain.gtv.merkle.makeMerkleHashCalculator
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.model.R_StructDefinition
 import net.postchain.rell.base.runtime.GtvToRtContext
@@ -19,8 +19,12 @@ import net.postchain.rell.base.runtime.GtvToRtDefaultValueEvaluator
 import net.postchain.rell.base.runtime.Rt_Value
 
 object PostchainGtvUtils {
+    // Must be in sync with the default version used in Postchain (not supposed to change)
+    const val DEFAULT_HASH_VERSION = 1
+
     val cryptoSystem: CryptoSystem = Secp256K1CryptoSystem()
-    val merkleCalculator: GtvMerkleHashCalculatorBase = GtvMerkleHashCalculatorV1(cryptoSystem)
+    val hashCalculator = HashCalculator()
+    val merkleHashCalculator: GtvMerkleHashCalculatorBase = makeMerkleHashCalculator(DEFAULT_HASH_VERSION.toLong())
 
     private val GSON: Gson = make_gtv_gson_builder().create()
     private val PRETTY_GSON: Gson = makeLenientGtvGsonBuilder().setPrettyPrinting().create()
@@ -34,8 +38,6 @@ object PostchainGtvUtils {
     fun gtvToJson(v: Gtv): String = GSON.toJson(v, Gtv::class.java)
     fun jsonToGtv(s: String): Gtv = GSON.fromJson(s, Gtv::class.java) ?: GtvNull
     fun gtvToJsonPretty(v: Gtv): String = PRETTY_GSON.toJson(v, Gtv::class.java)
-
-    fun merkleHash(v: Gtv): ByteArray = v.merkleHash(merkleCalculator)
 
     fun moduleArgsGtvToRt(
         struct: R_StructDefinition,
@@ -53,5 +55,22 @@ object PostchainGtvUtils {
             compilerOptions = compilerOptions,
         )
         return struct.type.gtvToRt(convCtx, gtv)
+    }
+
+    class HashCalculator(defaultVersion: Int = 2) {
+        private val v1: GtvMerkleHashCalculatorBase = makeMerkleHashCalculator(1)
+        private val v2: GtvMerkleHashCalculatorBase = makeMerkleHashCalculator(2)
+        private val default: GtvMerkleHashCalculatorBase = getCalculator(defaultVersion)
+
+        fun hash(value: Gtv, version: Int? = null): ByteArray {
+            val calculator = if (version == null) default else getCalculator(version)
+            return value.merkleHash(calculator)
+        }
+
+        private fun getCalculator(version: Int): GtvMerkleHashCalculatorBase = when (version) {
+            1 -> v1
+            2 -> v2
+            else -> throw IllegalArgumentException("Invalid hash version: $version")
+        }
     }
 }

@@ -112,7 +112,7 @@ class Rt_PostchainUnitTestBlockRunner(
             bcConfig.blockchainRid,
             signers,
             PostchainGtvUtils.cryptoSystem,
-            PostchainGtvUtils.merkleCalculator,
+            PostchainGtvUtils.merkleHashCalculator,
         )
 
         for (op in tx.ops) {
