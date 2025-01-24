@@ -626,7 +626,7 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
     }
 
     companion object: KLogging() {
-        private val HASH_V2_SWITCH = C_FeatureSwitch(RellVersions.SINCE_NOW)
+        private val HASH_V2_SWITCH = C_FeatureSwitch("0.14.5")
 
         fun compileApp(config: Gtv, env: RellPostchainModuleEnvironment): Pair<C_CompilationResult, C_SourceDir> {
             val gtxNode = config.asDict().getValue("gtx").asDict()

@@ -27,7 +27,7 @@ class GtxMerkleHashTest: BaseGtxTest() {
         tst.extraModuleConfig["features"] = "{'merkle_hash_version':2}"
         chkV2()
 
-        tst.compatibilityVer(RellVersions.SINCE_NOW)
+        tst.compatibilityVer("0.14.5")
         chkV2()
 
         tst.compatibilityVer("0.14.3")
