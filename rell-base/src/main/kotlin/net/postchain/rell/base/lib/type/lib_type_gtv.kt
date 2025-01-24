@@ -82,7 +82,7 @@ object Lib_Type_Gtv {
                 }
             }
 
-            staticFunction("legacy_hash", result = "byte_array", pure = true, since = RellVersions.SINCE_NOW) {
+            staticFunction("legacy_hash", result = "byte_array", pure = true, since = "0.14.5") {
                 comment("@see T.hash()")
                 generic("T", subOf = "any")
                 param("value", "T")
