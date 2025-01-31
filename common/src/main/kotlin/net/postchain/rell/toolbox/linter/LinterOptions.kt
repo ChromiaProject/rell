@@ -13,6 +13,7 @@ data class LinterOptions(
     var ruleFormatter: Boolean? = null,
     var ruleConstantDetection: Boolean? = null,
     var ruleUnusedVariable: Boolean? = null,
+    var ruleOuterJoinCartesianProduct: Boolean? = null,
 ) {
     fun updateOptionsFromFile(configFile: File) {
         EditorConfigParser.parse(configFile)?.let {
@@ -45,6 +46,9 @@ data class LinterOptions(
 
                         "rule_unused_variable" -> {
                             ruleUnusedVariable = parseBoolean(property.value)
+                        }
+                        "rule_outer_join_cartesian_product" -> {
+                            ruleOuterJoinCartesianProduct = parseBoolean(property.value)
                         }
                     }
                 }

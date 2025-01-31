@@ -4,6 +4,7 @@ import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.linter.rules.ConstantDetectionRule
 import net.postchain.rell.toolbox.linter.rules.ImportFromNonModuleRule
 import net.postchain.rell.toolbox.linter.rules.NamingConventionRule
+import net.postchain.rell.toolbox.linter.rules.OuterJoinCartesianProductRule
 import net.postchain.rell.toolbox.linter.rules.SpecificQuotesRule
 import net.postchain.rell.toolbox.linter.rules.UnusedVariableRule
 import net.postchain.rell.toolbox.parser.RellBaseVisitor
@@ -20,7 +21,8 @@ class LinterVisitor(
         SpecificQuotesRule(config, resource, linterContext),
         ConstantDetectionRule(config, resource, linterContext),
         UnusedVariableRule(config, resource, linterContext),
-        ImportFromNonModuleRule(config, resource, linterContext)
+        ImportFromNonModuleRule(config, resource, linterContext),
+        OuterJoinCartesianProductRule(config, resource, linterContext),
     )
 
     override fun visitChildren(node: RuleNode) {
