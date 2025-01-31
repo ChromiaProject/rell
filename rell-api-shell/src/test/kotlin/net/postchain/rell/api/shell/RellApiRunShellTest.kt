@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.api.shell
@@ -75,6 +75,18 @@ class RellApiRunShellTest: BaseRellApiTest() {
         chkShell(sourceDir, listOf("import bar; bar.g()"),
             "RES:bar:module_args[p=text[Hello],q=int[789]]",
             compileConfig = compileConfig,
+        )
+    }
+
+    @Test fun testMerkleHash() {
+        val input = listOf(
+            "gtv.from_json('[[]]').hash()",
+            "gtv.from_json('[{}]').hash()",
+        )
+
+        chkShell(C_SourceDir.EMPTY, input,
+            "RES:byte_array[b27d13915e478770d8cbaaf72d2c92f67a17250b2c40c9a7b36c3e996ae5fad7]",
+            "RES:byte_array[5ac6c92dffe0a0defa0581023e84c3d344a42d4ff90fc2a3af0d40dbf8d7a622]",
         )
     }
 

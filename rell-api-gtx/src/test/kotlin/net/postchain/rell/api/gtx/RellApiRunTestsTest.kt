@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.api.gtx
@@ -261,6 +261,32 @@ class RellApiRunTestsTest: BaseRellApiTest() {
         val expRes = if (err) "test:test:FAILED" else "test:test:OK"
         chkRunTests(runConfig, sourceDir, appModules, testModules, expRes)
         printer.chk(*expectedOut)
+    }
+
+    @Test fun testOperationMerkleHash() {
+        val runConfig = runTestsDbConfig()
+        val sourceDir = C_SourceDir.mapDirOf(
+            "lib.rell" to """
+                module;
+                entity data { h: byte_array; }
+                operation op(v: gtv) { create data(v.hash()); }
+            """,
+            "test.rell" to """
+                @test module;
+                import lib;
+                function chk(s: text, exp: byte_array) {
+                    lib.op(gtv.from_json(s)).run();
+                    val act = lib.data@{}(.h);
+                    assert_equals(act, exp);
+                }
+                function test_1() { chk('[[]]', x'46af9064f12528cad6a7c377204acd0ac38cdc6912903e7dab3703764c8dd5e5'); }
+                function test_2() { chk('[[]]', x'b27d13915e478770d8cbaaf72d2c92f67a17250b2c40c9a7b36c3e996ae5fad7'); }
+                function test_3() { chk('[{}]', x'5ac6c92dffe0a0defa0581023e84c3d344a42d4ff90fc2a3af0d40dbf8d7a622'); }
+            """,
+        )
+        chkRunTests(runConfig, sourceDir, listOf(), listOf("test"),
+            "test:test_1:FAILED", "test:test_2:OK", "test:test_3:OK",
+        )
     }
 
     private fun runTestsConfig(

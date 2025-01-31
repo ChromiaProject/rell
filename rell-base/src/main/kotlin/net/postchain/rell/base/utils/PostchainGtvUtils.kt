@@ -21,7 +21,7 @@ import net.postchain.rell.base.runtime.Rt_Value
 object PostchainGtvUtils {
     val cryptoSystem: CryptoSystem = Secp256K1CryptoSystem()
     val hashCalculator = HashCalculator()
-    val merkleHashCalculator: GtvMerkleHashCalculatorBase = makeMerkleHashCalculator(1)
+    val merkleHashCalculator: GtvMerkleHashCalculatorBase = makeMerkleHashCalculator(2)
 
     private val GSON: Gson = make_gtv_gson_builder().create()
     private val PRETTY_GSON: Gson = makeLenientGtvGsonBuilder().setPrettyPrinting().create()

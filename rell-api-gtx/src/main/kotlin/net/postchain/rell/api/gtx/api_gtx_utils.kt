@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.api.gtx
@@ -82,7 +82,7 @@ object RellApiGtxUtils {
         if (schema != null) {
             sqlMgr2.transaction { sqlExec ->
                 sqlExec.connection { con ->
-                    RellApiGtxUtils.prepareSchema(con, schema)
+                    prepareSchema(con, schema)
                 }
             }
         }
@@ -90,19 +90,22 @@ object RellApiGtxUtils {
     }
 
     fun genBlockchainConfigTemplateNoRell(pubKey: ByteArray, compileConfig: RellApiCompile.Config): Gtv {
-        return GtvFactory.gtv(
-            "blockstrategy" to GtvFactory.gtv("name" to GtvFactory.gtv("net.postchain.base.BaseBlockBuildingStrategy")),
-            "configurationfactory" to GtvFactory.gtv("net.postchain.gtx.GTXBlockchainConfigurationFactory"),
-            "signers" to GtvFactory.gtv(listOf(GtvFactory.gtv(pubKey))),
-            "gtx" to GtvFactory.gtv(
-                "modules" to GtvFactory.gtv(
+        return gtv(
+            "blockstrategy" to gtv("name" to gtv("net.postchain.base.BaseBlockBuildingStrategy")),
+            "configurationfactory" to gtv("net.postchain.gtx.GTXBlockchainConfigurationFactory"),
+            "signers" to gtv(listOf(gtv(pubKey))),
+            "gtx" to gtv(
+                "modules" to gtv(
                         buildList {
-                            addAll(compileConfig.additionalGtxModules.map { GtvFactory.gtv(it) })
+                            addAll(compileConfig.additionalGtxModules.map { gtv(it) })
                             add(gtv("net.postchain.rell.module.RellPostchainModuleFactory"))
                             add(gtv("net.postchain.gtx.StandardOpsGTXModule"))
                         }
                 ),
-            )
+            ),
+            "features" to gtv(
+                "merkle_hash_version" to gtv(2),
+            ),
         )
     }
 }
