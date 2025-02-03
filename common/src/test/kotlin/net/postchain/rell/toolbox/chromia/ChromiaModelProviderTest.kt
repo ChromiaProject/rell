@@ -72,7 +72,7 @@ class ChromiaModelProviderTest {
                     """
                     libs:
                       $externalLibName:
-                        registry: a.registry.abc
+                      registry: a.registry.abc
                         path: a/path/to/registry
                     """.trimIndent()
                 )

@@ -61,7 +61,7 @@ class ChromiaModelProvider(private val workspaceRootUri: URI?) {
         private val logger = KotlinLogging.logger {}
 
         const val DEFAULT_CHROMIA_MODEL_FILENAME = "chromia.yml"
-        const val DEFAULT_CHROMIA_MODEL_RELL_VERSION = "0.13.14"
+        const val DEFAULT_CHROMIA_MODEL_RELL_VERSION = "0.14.2"
 
         fun loadChromiaModelFromFile(chromiaModelFile: Path): ChromiaModel? {
             return try {

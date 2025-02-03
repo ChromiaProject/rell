@@ -1,7 +1,9 @@
 package net.postchain.rell.toolbox.indexer
 
 import assertk.assertThat
+import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.containsOnly
+import assertk.assertions.extracting
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
 import assertk.assertions.startsWith
@@ -287,7 +289,7 @@ class WorkspaceIndexerTest {
     }
 
     @Test
-    fun `Rell Version default gives no smart null check error`(@TempDir dir: File) {
+    fun `Rell Version default gives smart null check error`(@TempDir dir: File) {
         val fileContent = """
          module;
             
@@ -321,7 +323,9 @@ class WorkspaceIndexerTest {
         val allIssues = workspaceIndexer.getAllIssues()
         val mainFileUri = testDataBuilder.mainFileUri
         assertThat(allIssues.keys).containsOnly(mainFileUri)
-        assertThat(allIssues[mainFileUri]!!.size).isEqualTo(0)
+        assertThat(allIssues[mainFileUri]!!).extracting { it.code to it.message }.containsExactlyInAnyOrder(
+            "expr:smartnull:var:never:[abc]" to "Variable 'abc' cannot be null at this location",
+        )
     }
 
     @Test
