@@ -70,6 +70,9 @@ class OutlineNode(
             children.map { it.toDocumentSymbol() }.toImmList()
         )
     }
+
+    fun getChildren(): List<OutlineNode> = children
+    fun getInfo(): NodeInfo = info
 }
 
 fun getFullRegion(node: S_Node, name: S_Node): Range {

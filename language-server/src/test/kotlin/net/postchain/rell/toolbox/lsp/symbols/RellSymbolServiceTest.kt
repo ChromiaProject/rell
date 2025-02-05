@@ -9,6 +9,7 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.support.expected
+import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
@@ -16,6 +17,7 @@ import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.testing.testData
+import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolKind
@@ -29,7 +31,7 @@ class RellSymbolServiceTest {
     private val formattingStyleLinter = FormattingStyleLinter()
     private val formatterOptions = FormatterOptions()
     private val linterOptions = LinterOptions()
-    val rellFilePath = "rell_file.rell"
+    private val rellFilePath = "rell_file.rell"
 
     @Test
     fun `Returns empty list when resource does not exist`(@TempDir dir: File) {
@@ -124,12 +126,8 @@ class RellSymbolServiceTest {
 
         val symbols = rellSymbolService.getDocumentSymbols(rellFileUri, document, resource)
 
-        assertThat(symbols.size).isEqualTo(1)
-        assertThat(symbols[0].left).isNull()
-
-        val root = symbols[0].right
-        assertThat(root).isNotNull()
-        assertThat(root.name).isEqualTo("rell_file.rell")
+        assertThat(symbols).isNotNull()
+        assertThat(symbols!!.name).isEqualTo("rell_file.rell")
 
         val expectedChildren = arrayOf(
             "account" to SymbolKind.Package,
@@ -139,9 +137,9 @@ class RellSymbolServiceTest {
             "get_tokens_amount" to SymbolKind.Function,
             "XXX" to SymbolKind.Namespace,
         )
-        assertThat(root.children).extracting { it.name to it.kind }.containsExactly(*expectedChildren)
+        assertThat(symbols.children).extracting { it.name to it.kind }.containsExactly(*expectedChildren)
 
-        val balanceEntity = root.children.find { it.name == "balance" }!!
+        val balanceEntity = symbols.children.find { it.name == "balance" }!!
         assertThat(balanceEntity.children).extracting { it.name to it.kind }.containsExactly(
             "account" to SymbolKind.Property,
             "asset" to SymbolKind.Property,
@@ -149,7 +147,7 @@ class RellSymbolServiceTest {
             "chain_id" to SymbolKind.Property,
         )
 
-        val namespaceXXX = root.children.find { it.name == "XXX" }!!
+        val namespaceXXX = symbols.children.find { it.name == "XXX" }!!
         assertThat(namespaceXXX.children).extracting { it.name to it.kind }.containsExactly(
             "YYY" to SymbolKind.Namespace,
         )
@@ -194,10 +192,190 @@ class RellSymbolServiceTest {
 
         val symbols = rellSymbolService.getDocumentSymbols(rellFileUri, document, resource)
 
-        val root = symbols[0].right
-        root.children.forEach { symbol ->
+        assertThat(symbols).isNotNull()
+        symbols!!.children.forEach { symbol ->
             assertThat(symbol.selectionRange).isInBetween(symbol.range)
         }
+    }
+
+    @Test
+    fun `get correct IdeSymbolInfo for import symbols inside '{}'`(@TempDir dir: File) {
+        val moduleName = "module_b"
+        val functionName = "fun_in_module"
+        val testDataBuilder = testData(dir) {
+            addModule(
+                "a/$moduleName",
+                """
+                function $functionName() = 123;
+                """.trimIndent()
+            )
+            addMainFile(
+                """
+                import a.$moduleName.{};
+                """.trimIndent()
+            )
+        }
+
+        val document = Document(testDataBuilder.mainFileUri, 1, testDataBuilder.mainFile.readText())
+        // TODO: investigate compiler sourcePath issue
+        val indexer =
+            WorkspaceIndexer(
+                dir.resolve("src").toURI(),
+                rellLinter,
+                linterOptions,
+                formattingStyleLinter,
+                formatterOptions
+            )
+        indexer.initialFileIndexBuild()
+
+        val symbol = DocumentSymbol(
+            moduleName,
+            SymbolKind.Package,
+            Range(Position(0, 0), Position(0, 20)),
+            Range(Position(0, 9), Position(0, 17)),
+        )
+
+        val result = rellSymbolService.getSymbolInfoForImportedModule(symbol, document, indexer)
+
+        assertThat(result.size).isEqualTo(1)
+        with(result[0]) {
+            assertThat(kind).isEqualTo(IdeSymbolKind.DEF_FUNCTION)
+            assertThat(defId!!.encode()).isEqualTo("function[$functionName]")
+        }
+    }
+
+    @Test
+    fun `find active import symbol from position within '{}' of root import`(@TempDir dir: File) {
+        val moduleName = "module_b"
+        val testDataBuilder = testData(dir) {
+            addModule(
+                "a/$moduleName",
+                """
+                module;
+                function fun_in_module() = 123;
+                """.trimIndent()
+            )
+            addMainFile(
+                """
+                import a.$moduleName.{};
+                """.trimIndent()
+            )
+        }
+
+        val document = Document(testDataBuilder.mainFileUri, 1, testDataBuilder.mainFile.readText())
+        val indexer = WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
+        indexer.initialFileIndexBuild()
+
+        val offSetWithinCurlyBrackets = 19 // import a.$moduleName.{};
+        val symbol = rellSymbolService.getActiveImportSymbol(
+            testDataBuilder.mainFileUri,
+            offSetWithinCurlyBrackets,
+            document,
+            indexer
+        )
+
+        assertThat(symbol!!.kind).isEqualTo(SymbolKind.Package)
+        assertThat(symbol.name).isEqualTo(moduleName)
+    }
+
+    @Test
+    fun `find active import symbol from position within '{}' in namespace`(@TempDir dir: File) {
+        val moduleName = "module_b"
+        val testDataBuilder = testData(dir) {
+            addModule(
+                "a/$moduleName",
+                """
+                module;
+                function fun_in_module() = 123;
+                """.trimIndent()
+            )
+            addMainFile(
+                """
+                namespace ns {
+                    import a.$moduleName.{};
+                }
+                """.trimIndent()
+            )
+        }
+
+        val document = Document(testDataBuilder.mainFileUri, 1, testDataBuilder.mainFile.readText())
+        val indexer = WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
+        indexer.initialFileIndexBuild()
+
+        val offSetWithinCurlyBrackets = 38 // import a.$moduleName.{};
+        val symbol = rellSymbolService.getActiveImportSymbol(
+            testDataBuilder.mainFileUri,
+            offSetWithinCurlyBrackets,
+            document,
+            indexer
+        )
+
+        assertThat(symbol!!.kind).isEqualTo(SymbolKind.Package)
+        assertThat(symbol.name).isEqualTo(moduleName)
+    }
+
+    @Test
+    fun `find active import symbol from position within '{}' in nested namespace`(@TempDir dir: File) {
+        val moduleName = "module_b"
+        val testDataBuilder = testData(dir) {
+            addModule(
+                "a/$moduleName",
+                """
+                module;
+                function fun_in_module() = 123;
+                """.trimIndent()
+            )
+            addMainFile(
+                """
+                namespace ns1 {
+                    namespace ns2 {
+                        import a.$moduleName.{};
+                    }
+                }
+                """.trimIndent()
+            )
+        }
+
+        val document = Document(testDataBuilder.mainFileUri, 1, testDataBuilder.mainFile.readText())
+        val indexer = WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
+        indexer.initialFileIndexBuild()
+
+        val offSetWithinCurlyBrackets = 63 // import a.$moduleName.{};
+        val symbol = rellSymbolService.getActiveImportSymbol(
+            testDataBuilder.mainFileUri,
+            offSetWithinCurlyBrackets,
+            document,
+            indexer
+        )
+
+        assertThat(symbol!!.kind).isEqualTo(SymbolKind.Package)
+        assertThat(symbol.name).isEqualTo(moduleName)
+    }
+
+    @Test
+    fun `test getActiveImportSymbol returns null for non-package symbol`(@TempDir dir: File) {
+        val testDataBuilder = testData(dir) {
+            addMainFile(
+                """
+                module;
+                function fun_in_module() = 123;
+                """.trimIndent()
+            )
+        }
+
+        val document = Document(testDataBuilder.mainFileUri, 1, testDataBuilder.mainFile.readText())
+        val indexer = WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
+        indexer.initialFileIndexBuild()
+
+        val offSetOnFunInModule = 24 // import a.$moduleName.{};
+        val symbol = rellSymbolService.getActiveImportSymbol(
+            testDataBuilder.mainFileUri,
+            offSetOnFunInModule,
+            document,
+            indexer
+        )
+
+        assertThat(symbol).isNull()
     }
 }
 

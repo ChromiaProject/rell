@@ -5,6 +5,7 @@ import net.postchain.rell.toolbox.common.positionToOffset
 import net.postchain.rell.toolbox.util.toLspPosition
 import org.antlr.v4.runtime.misc.Interval
 import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import java.net.URI
 
@@ -14,6 +15,18 @@ data class Document(val fileUri: URI, val version: Int, val content: String) {
         positionToOffset(content, net.postchain.rell.toolbox.common.Position(position.line, position.character))
 
     fun getPosition(offset: Int): Position = offsetToPosition(content, offset).toLspPosition()
+
+    fun getStartAndEndOffset(range: Range): Pair<Int, Int> =
+        Pair(getOffSet(range.start), getOffSet(range.end))
+
+    fun offSetInRange(offset: Int, range: Range): Boolean {
+        try {
+            val (startOffSet, endOffSet) = getStartAndEndOffset(range)
+            return offset >= startOffSet && offset <= endOffSet
+        } catch (e: IndexOutOfBoundsException) {
+            return false
+        }
+    }
 
     /**
      * As opposed to [TextEdit][org.eclipse.lsp4j.TextEdit] the positions in the edits of a
