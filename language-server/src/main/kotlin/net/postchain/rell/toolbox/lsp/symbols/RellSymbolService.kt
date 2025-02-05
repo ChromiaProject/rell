@@ -19,10 +19,8 @@ import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
-import org.eclipse.lsp4j.SymbolInformation
 import org.eclipse.lsp4j.SymbolKind
 import org.eclipse.lsp4j.WorkspaceSymbol
-import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.net.URI
 
 class RellSymbolService {
@@ -143,7 +141,6 @@ class RellSymbolService {
         return resource.locationInfo[Interval.of(offset - 1, offset)]
     }
 
-    // TODO maybe move out to utils if needed elsewhere
     private fun formatWorkspaceUri(workspaceUri: URI): URI {
         return if (workspaceUri.toString().endsWith("/")) {
             workspaceUri
@@ -156,13 +153,12 @@ class RellSymbolService {
         fileUri: URI,
         document: Document,
         resource: Resource
-    ): List<Either<SymbolInformation, DocumentSymbol>> {
+    ): DocumentSymbol? {
         if (document.content.isEmpty()) {
-            return listOf()
+            return null
         }
         val fileNodeInfo = createFileNodeInfo(fileUri, document)
-        val documentSymbol = getDocumentSymbolsWithRoot(fileNodeInfo, resource)
-        return listOf(Either.forRight(documentSymbol))
+        return getDocumentSymbolsWithRoot(fileNodeInfo, resource)
     }
 
     fun getDocumentSymbolsWithRoot(rootNodeInfo: NodeInfo, resource: Resource): DocumentSymbol {
@@ -181,6 +177,64 @@ class RellSymbolService {
                 getResourceSymbols(resource, filterPredicate)
             }
         }
+    }
+
+    fun getActiveImportSymbol(
+        fileUri: URI,
+        offset: Int,
+        document: Document,
+        indexer: WorkspaceIndexer
+    ): DocumentSymbol? {
+        val resource = indexer.getResource(fileUri) ?: return null
+        return getDocumentSymbols(
+            fileUri,
+            document,
+            resource
+        )?.children?.let { findPackageSymbol(it, offset, document) }
+    }
+
+    private fun findPackageSymbol(
+        symbols: List<DocumentSymbol>,
+        offset: Int,
+        document: Document
+    ): DocumentSymbol? {
+        return symbols.firstOrNull { symbol ->
+            document.offSetInRange(offset, symbol.range)
+        }?.let { symbol ->
+            when (symbol.kind) {
+                SymbolKind.Package -> symbol
+                SymbolKind.Namespace -> symbol.children?.let { findPackageSymbol(it, offset, document) }
+                else -> null
+            }
+        }
+    }
+
+    fun getSymbolInfoForImportedModule(
+        symbol: DocumentSymbol,
+        document: Document,
+        indexer: WorkspaceIndexer
+    ): List<IdeSymbolInfo> {
+        val (startOffset, endOffset) = document.getStartAndEndOffset(symbol.range)
+        val importPath = document.getTextIn(Interval.of(startOffset, endOffset)).substringBeforeLast(".")
+        val position = Position(symbol.range.start.line, importPath.length)
+        val symbolLocation = getSymbolLocationsWithSymbol(document, indexer, position)
+        val moduleName = symbolLocation?.second?.doc?.symbolName?.toString() ?: return listOf()
+        return getModuleSymbols(indexer, moduleName)
+    }
+
+    private fun getModuleSymbols(indexer: WorkspaceIndexer, moduleName: String): List<IdeSymbolInfo> {
+        return indexer.resources
+            .asSequence()
+            .filter { resource ->
+                resource.moduleInfo?.name?.toString() == moduleName
+            }
+            .flatMap { resource ->
+                resource.symbolInfos.values.asSequence()
+                    .filter {
+                        it.link == null && it.kind in RellRelevantImportSymbol.getAllIdeSymbolKinds()
+                    }
+            }
+            .toList()
     }
 
     private fun getResourceSymbols(
@@ -204,6 +258,67 @@ class RellSymbolService {
     private fun lastSegment(uri: URI): String {
         val path = uri.getPath()
         return path.substring(path.lastIndexOf('/') + 1)
+    }
+
+    fun findEnclosingFileOrNamespace(
+        fileUri: URI,
+        document: Document,
+        resource: Resource,
+        offset: Int
+    ): DocumentSymbol? {
+        if (document.content.isEmpty()) {
+            return null
+        }
+        val fileNodeInfo = createFileNodeInfo(fileUri, document)
+        val outlineNode = OutlineTreeBuilder(fileNodeInfo, null).also { builder ->
+            IdeApi.buildOutlineTree(builder, resource.ast)
+        }.build()
+        val position = document.getPosition(offset)
+        return findEnclosingFileOrNamespaceSymbol(outlineNode, position)
+    }
+
+    private fun findEnclosingFileOrNamespaceSymbol(node: OutlineNode, position: Position): DocumentSymbol? {
+        val documentSymbol = node.toDocumentSymbol()
+
+        if (!containsPosition(node.getInfo().fullRegion, position)) {
+            return null
+        }
+
+        val matchingChild = findChildContainingPosition(node, position)
+        return when (documentSymbol.kind) {
+            SymbolKind.File -> when {
+                matchingChild == null -> documentSymbol
+                matchingChild.toDocumentSymbol().kind == SymbolKind.Namespace ->
+                    findEnclosingFileOrNamespaceSymbol(matchingChild, position)
+                else -> null
+            }
+
+            SymbolKind.Namespace -> return when {
+                matchingChild == null -> documentSymbol
+                matchingChild.toDocumentSymbol().kind == SymbolKind.Namespace ->
+                    findEnclosingFileOrNamespaceSymbol(matchingChild, position)
+                else -> null
+            }
+            else -> null
+        }
+    }
+
+    private fun findChildContainingPosition(node: OutlineNode, position: Position): OutlineNode? {
+        return node.getChildren().firstOrNull { child ->
+            containsPosition(child.getInfo().fullRegion, position)
+        }
+    }
+
+    // TODO: Basically the same check as we have in Document.offSetInRange. Make one (global?) util instead
+    private fun containsPosition(range: Range?, position: Position): Boolean {
+        if (range == null) return false
+        return when {
+            position.line < range.start.line -> false
+            position.line > range.end.line -> false
+            position.line == range.start.line && position.character < range.start.character -> false
+            position.line == range.end.line && position.character > range.end.character -> false
+            else -> true
+        }
     }
 
     companion object {

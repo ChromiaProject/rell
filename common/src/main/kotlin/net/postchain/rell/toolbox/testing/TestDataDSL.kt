@@ -66,6 +66,10 @@ class TestDataBuilder {
         sourceFiles[name] = { content }
     }
 
+    fun addModule(relativePath: String, content: String = "module;") {
+        sourceFiles["$relativePath/module.rell"] = { content }
+    }
+
     fun appendToSourceFile(relativePath: String, content: String) {
         val sourceFile = sourceFile(relativePath)
         sourceFile.appendText(content, Charsets.UTF_8)

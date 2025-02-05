@@ -96,4 +96,41 @@ internal class DocumentTest {
         val document = Document(URI(""), 0, "")
         assertThat(document.previousNonLetterChar(0)).isEqualTo(null)
     }
+
+    @Test
+    fun `getStartAndEndOffset returns correct offsets for a range`() {
+        val range = Range(Position(1, 6), Position(3, 2))
+        val (startOffset, endOffset) = document.getStartAndEndOffset(range)
+        assertThat(startOffset).isEqualTo(16)
+        assertThat(endOffset).isEqualTo(37)
+    }
+
+    @Test
+    fun `getStartAndEndOffset handles single line range`() {
+        val range = Range(Position(0, 0), Position(0, 9))
+        val (startOffset, endOffset) = document.getStartAndEndOffset(range)
+        assertThat(startOffset).isEqualTo(0)
+        assertThat(endOffset).isEqualTo(9)
+    }
+
+    @Test
+    fun `offSetInRange correctly identifies offset within range`() {
+        val range = Range(Position(1, 6), Position(3, 2))
+        assertThat(document.offSetInRange(17, range)).isEqualTo(true)
+        assertThat(document.offSetInRange(36, range)).isEqualTo(true)
+    }
+
+    @Test
+    fun `offSetInRange correctly identifies offset on range border`() {
+        val range = Range(Position(1, 6), Position(3, 2))
+        assertThat(document.offSetInRange(16, range)).isEqualTo(true) // Start offset
+        assertThat(document.offSetInRange(37, range)).isEqualTo(true) // End offset
+    }
+
+    @Test
+    fun `offSetInRange correctly identifies offset outside range`() {
+        val range = Range(Position(1, 6), Position(3, 2))
+        assertThat(document.offSetInRange(15, range)).isEqualTo(false) // Before range
+        assertThat(document.offSetInRange(38, range)).isEqualTo(false) // After range
+    }
 }

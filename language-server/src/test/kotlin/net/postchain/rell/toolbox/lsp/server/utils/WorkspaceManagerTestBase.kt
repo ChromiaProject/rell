@@ -64,7 +64,7 @@ open class WorkspaceManagerTestBase {
             RellWorkspaceManager(
                 symbolService,
                 referenceService,
-                RellCompletionService(),
+                RellCompletionService(symbolService),
                 documentManager,
                 indexingManager,
                 diagnosticsManager,

@@ -1,7 +1,6 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.File
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.indexer.RellIssue
@@ -34,6 +33,7 @@ import org.eclipse.lsp4j.WorkspaceEdit
 import org.eclipse.lsp4j.WorkspaceFolder
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.jsonrpc.messages.Either3
+import java.io.File
 import java.net.URI
 
 val TYPE_DEFINITIONS =
@@ -128,7 +128,8 @@ class RellWorkspaceManager(
     fun getDocumentSymbols(fileUri: URI): List<Either<SymbolInformation, DocumentSymbol>> {
         val resource = indexingManager.getResource(fileUri) ?: return listOf()
         val document = documentManager.getOpenDocument(fileUri) ?: return listOf()
-        return rellSymbolService.getDocumentSymbols(fileUri, document, resource)
+        val documentSymbol = rellSymbolService.getDocumentSymbols(fileUri, document, resource)
+        return listOf(Either.forRight(documentSymbol))
     }
 
     fun getReferenceLocations(fileUri: URI, position: Position?, includeDefinition: Boolean = true): List<Location> {
@@ -329,7 +330,7 @@ class RellWorkspaceManager(
                         Position(
                             ctx.ruleX_QualifiedNameNode().stop.line - 1,
                             ctx.ruleX_QualifiedNameNode().stop.charPositionInLine +
-                                    ctx.ruleX_QualifiedNameNode().stop.text.length
+                                ctx.ruleX_QualifiedNameNode().stop.text.length
                         )
                     )
                     result = FullNameWithRange(
@@ -347,13 +348,8 @@ class RellWorkspaceManager(
         val document = documentManager.getOpenDocument(fileUri) ?: return listOf()
         val indexer = indexingManager.getIndexerForOrNull(fileUri) ?: return listOf()
         val offset = document.getOffSet(position)
-        val trimPrefixDot = shouldTrimPrefixDot(document, offset)
 
-        return completionService.getCompletions(fileUri, offset, indexer, trimPrefixDot)
-    }
-
-    private fun shouldTrimPrefixDot(doc: Document, offset: Int): Boolean {
-        return doc.previousNonLetterChar(offset) == '.'
+        return completionService.getCompletions(fileUri, offset, indexer, document)
     }
 
     companion object {
