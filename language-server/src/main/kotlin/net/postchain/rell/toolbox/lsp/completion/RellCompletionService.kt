@@ -39,12 +39,13 @@ class RellCompletionService(private val rellSymbolService: RellSymbolService) {
         document: Document
     ): List<CompletionItem> {
         val activeImportSymbol = rellSymbolService.getActiveImportSymbol(fileUri, offset, document, indexer)
-        return if (activeImportSymbol != null) {
+        val completions = if (activeImportSymbol != null) {
             val moduleSymbols = rellSymbolService.getSymbolInfoForImportedModule(activeImportSymbol, document, indexer)
             getCompletionForModuleSymbols(moduleSymbols)
         } else {
             getRootCompletions(fileUri, offset, document, indexer)
         }
+        return completions
     }
 
     private fun shouldTrimPrefixDot(doc: Document, offset: Int): Boolean {
@@ -72,10 +73,10 @@ class RellCompletionService(private val rellSymbolService: RellSymbolService) {
         val trimPrefixDot = shouldTrimPrefixDot(document, offset)
         val getAvailableModules = shouldGetAvailableModules(fileUri, document, resource, offset)
 
-        return createCompletionItems(
-            completions,
-            trimPrefixDot
-        ) + createKeywordsCompletionItems() + getAvailableModulesCompletion(fileUri, indexer, getAvailableModules)
+        return createCompletionItems(completions, trimPrefixDot) +
+                createKeywordsCompletionItems() +
+                getAvailableModulesCompletion(fileUri, indexer, getAvailableModules) +
+                createSnippetCompletions()
     }
 
     private fun shouldGetAvailableModules(fileUri: URI, document: Document, resource: Resource, offset: Int): Boolean =
