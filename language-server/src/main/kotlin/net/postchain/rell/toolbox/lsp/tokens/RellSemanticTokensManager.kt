@@ -19,9 +19,9 @@ class RellSemanticTokensManager {
 
         val tokens = mutableListOf<Token>()
         for (node in tokenNodes) {
-            val symbolKind = resource.getSymbolKindForInterval(NodeInterval(node))
-            if (symbolKind != null) {
-                tokens.add(Token(symbolKind, node))
+            val symbolInfo = resource.getSymbolInfoForInterval(NodeInterval(node))
+            if (symbolInfo != null) {
+                tokens.add(Token(symbolInfo, node))
             }
         }
 

@@ -6,7 +6,6 @@ import net.postchain.rell.base.compiler.base.utils.C_Message
 import net.postchain.rell.base.utils.ide.IdeModuleInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
-import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.formatter.FormatterIssue
 import net.postchain.rell.toolbox.linter.LinterIssue
 import net.postchain.rell.toolbox.parser.AbstractRellCommonTokenStream
@@ -31,9 +30,9 @@ data class Resource(
     val checksum: String? = null,
     val tokenStream: AbstractRellCommonTokenStream,
 ) {
-    fun getSymbolKindForInterval(interval: Interval): IdeSymbolKind? {
+    fun getSymbolInfoForInterval(interval: Interval): IdeSymbolInfo? {
         val symbolInfoWithInterval = locationInfo[interval]
-        return symbolInfoWithInterval?.ideSymbolInfo?.kind
+        return symbolInfoWithInterval?.ideSymbolInfo
     }
 
     fun isTest(): Boolean {
