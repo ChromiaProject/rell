@@ -1,5 +1,6 @@
 package net.postchain.rell.toolbox.lsp.tokens
 
+import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
 enum class RellTokenModifier(
@@ -34,7 +35,9 @@ enum class RellTokenModifier(
     NAMED_ARGUMENT("rell-named_argument"),
     LOCAL_VAL("rell-local_val"),
     LOCAL_VAR("rell-local_var"),
-    AT_ALIAS("rell-at_alias")
+    AT_ALIAS("rell-at_alias"),
+    PARAMETER("rell-parameter"),
+    CALL("rell-call"),
 }
 
 enum class RellTokenType(
@@ -86,13 +89,18 @@ enum class RellTokenType(
     NAMED_ARGUMENT("variable", RellTokenModifier.NAMED_ARGUMENT),
     LOCAL_VAL("variable", RellTokenModifier.LOCAL_VAL, RellTokenModifier.READONLY),
     LOCAL_VAR("variable", RellTokenModifier.LOCAL_VAR),
-    AT_ALIAS("variable", RellTokenModifier.AT_ALIAS);
+    AT_ALIAS("variable", RellTokenModifier.AT_ALIAS),
+    LOCAL_PARAMETER("variable", RellTokenModifier.LOCAL_VAL, RellTokenModifier.PARAMETER),
+    FUNCTION_CALL("function", RellTokenModifier.FUNCTION, RellTokenModifier.CALL),
+    OPERATION_CALL("function", RellTokenModifier.OPERATION, RellTokenModifier.CALL),
+    QUERY_CALL("function", RellTokenModifier.QUERY, RellTokenModifier.CALL);
 
     val modifiersAsList: List<RellTokenModifier> = modifiers.toList()
     val tokenId: Int = this.ordinal
 }
 
-fun tokenFromIdeKind(kind: IdeSymbolKind): RellTokenType {
+fun tokenFromIdeSymbolInfo(info: IdeSymbolInfo): RellTokenType {
+    val kind = info.kind
     return when (kind) {
         IdeSymbolKind.DEF_IMPORT_ALIAS -> RellTokenType.DEFAULT
         IdeSymbolKind.DEF_CONSTANT -> RellTokenType.GLOBAL_CONSTANT
@@ -101,19 +109,19 @@ fun tokenFromIdeKind(kind: IdeSymbolKind): RellTokenType {
         IdeSymbolKind.DEF_FUNCTION_ABSTRACT -> RellTokenType.FUNCTION_EXTENDABLE
         IdeSymbolKind.DEF_FUNCTION_EXTEND -> RellTokenType.FUNCTION
         IdeSymbolKind.DEF_FUNCTION_EXTENDABLE -> RellTokenType.FUNCTION_EXTENDABLE
-        IdeSymbolKind.DEF_FUNCTION -> RellTokenType.FUNCTION
-        IdeSymbolKind.DEF_FUNCTION_SYSTEM -> RellTokenType.FUNCTION
+        IdeSymbolKind.DEF_FUNCTION -> getCallOrDefault(info, RellTokenType.FUNCTION_CALL, RellTokenType.FUNCTION)
+        IdeSymbolKind.DEF_FUNCTION_SYSTEM -> RellTokenType.FUNCTION_CALL
         IdeSymbolKind.DEF_IMPORT_MODULE -> RellTokenType.MODULE
         IdeSymbolKind.DEF_NAMESPACE -> RellTokenType.NAMESPACE
         IdeSymbolKind.DEF_OBJECT -> RellTokenType.OBJECT
-        IdeSymbolKind.DEF_OPERATION -> RellTokenType.OPERATION
-        IdeSymbolKind.DEF_QUERY -> RellTokenType.QUERY
+        IdeSymbolKind.DEF_OPERATION -> getCallOrDefault(info, RellTokenType.OPERATION_CALL, RellTokenType.OPERATION)
+        IdeSymbolKind.DEF_QUERY -> getCallOrDefault(info, RellTokenType.QUERY_CALL, RellTokenType.QUERY)
         IdeSymbolKind.DEF_STRUCT -> RellTokenType.STRUCT
         IdeSymbolKind.DEF_TYPE -> RellTokenType.TYPE
         IdeSymbolKind.EXPR_CALL_ARG -> RellTokenType.NAMED_ARGUMENT
         IdeSymbolKind.EXPR_IMPORT_ALIAS -> RellTokenType.MODULE
         IdeSymbolKind.LOC_AT_ALIAS -> RellTokenType.AT_ALIAS
-        IdeSymbolKind.LOC_PARAMETER -> RellTokenType.LOCAL_VAL
+        IdeSymbolKind.LOC_PARAMETER -> RellTokenType.LOCAL_PARAMETER
         IdeSymbolKind.LOC_VAL -> RellTokenType.LOCAL_VAL
         IdeSymbolKind.LOC_VAR -> RellTokenType.LOCAL_VAR
         IdeSymbolKind.MEM_ENTITY_ATTR_INDEX -> RellTokenType.ENTITY_ATTR_KEYINDEX_VAL
@@ -133,4 +141,8 @@ fun tokenFromIdeKind(kind: IdeSymbolKind): RellTokenType {
         IdeSymbolKind.UNKNOWN -> RellTokenType.DEFAULT
         IdeSymbolKind.MEM_SYS_PROPERTY_PURE -> RellTokenType.DEFAULT
     }
+}
+
+fun getCallOrDefault(info: IdeSymbolInfo, call: RellTokenType, default: RellTokenType): RellTokenType {
+    return if (info.defId == null) call else default
 }

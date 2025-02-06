@@ -6,8 +6,12 @@ import assertk.assertions.containsAll
 import assertk.assertions.containsExactly
 import assertk.assertions.extracting
 import assertk.assertions.isEqualTo
+import assertk.assertions.isGreaterThanOrEqualTo
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.base.utils.ide.IdeSymbolCategory
+import net.postchain.rell.base.utils.ide.IdeSymbolId
+import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.indexer.RellResourceFactory
@@ -102,13 +106,15 @@ class RellSemanticTokensManagerTest {
 
     @Test
     fun `test that all tokens are covered`() {
-        assertThat(provideParameters().count().toInt()).isEqualTo(IdeSymbolKind.entries.size)
+        assertThat(provideParameters().count().toInt()).isGreaterThanOrEqualTo(IdeSymbolKind.entries.size)
     }
 
     @ParameterizedTest
     @MethodSource("provideParameters")
-    fun `test all token types mappings`(origin: IdeSymbolKind, target: RellTokenType) {
-        assertThat(target).isEqualTo(tokenFromIdeKind(origin))
+    fun `test all token types mappings`(origin: IdeSymbolKind, target: RellTokenType, isCall: Boolean) {
+        val defId = if (isCall) null else DUMMY_DEF_ID
+        val info = IdeSymbolInfo.make(origin, defId, null, null)
+        assertThat(tokenFromIdeSymbolInfo(info)).isEqualTo(target)
     }
 
     @Test
@@ -138,6 +144,7 @@ class RellSemanticTokensManagerTest {
             RellTokenType.GLOBAL_CONSTANT,
             RellTokenType.TYPE,
             RellTokenType.FUNCTION,
+            RellTokenType.FUNCTION_CALL,
             RellTokenType.LOCAL_VAR,
             RellTokenType.LOCAL_VAL,
         )
@@ -217,45 +224,54 @@ class RellSemanticTokensManagerTest {
         @JvmStatic
         fun provideParameters(): Stream<Arguments> {
             return Stream.of(
-                Arguments.of(IdeSymbolKind.DEF_IMPORT_ALIAS, RellTokenType.DEFAULT),
-                Arguments.of(IdeSymbolKind.DEF_CONSTANT, RellTokenType.GLOBAL_CONSTANT),
-                Arguments.of(IdeSymbolKind.DEF_ENTITY, RellTokenType.ENTITY),
-                Arguments.of(IdeSymbolKind.DEF_ENUM, RellTokenType.ENUM),
-                Arguments.of(IdeSymbolKind.DEF_FUNCTION_ABSTRACT, RellTokenType.FUNCTION_EXTENDABLE),
-                Arguments.of(IdeSymbolKind.DEF_FUNCTION_EXTEND, RellTokenType.FUNCTION),
-                Arguments.of(IdeSymbolKind.DEF_FUNCTION_EXTENDABLE, RellTokenType.FUNCTION_EXTENDABLE),
-                Arguments.of(IdeSymbolKind.DEF_FUNCTION, RellTokenType.FUNCTION),
-                Arguments.of(IdeSymbolKind.DEF_FUNCTION_SYSTEM, RellTokenType.FUNCTION),
-                Arguments.of(IdeSymbolKind.DEF_IMPORT_MODULE, RellTokenType.MODULE),
-                Arguments.of(IdeSymbolKind.DEF_NAMESPACE, RellTokenType.NAMESPACE),
-                Arguments.of(IdeSymbolKind.DEF_OBJECT, RellTokenType.OBJECT),
-                Arguments.of(IdeSymbolKind.DEF_OPERATION, RellTokenType.OPERATION),
-                Arguments.of(IdeSymbolKind.DEF_QUERY, RellTokenType.QUERY),
-                Arguments.of(IdeSymbolKind.DEF_STRUCT, RellTokenType.STRUCT),
-                Arguments.of(IdeSymbolKind.DEF_TYPE, RellTokenType.TYPE),
-                Arguments.of(IdeSymbolKind.EXPR_CALL_ARG, RellTokenType.NAMED_ARGUMENT),
-                Arguments.of(IdeSymbolKind.EXPR_IMPORT_ALIAS, RellTokenType.MODULE),
-                Arguments.of(IdeSymbolKind.LOC_AT_ALIAS, RellTokenType.AT_ALIAS),
-                Arguments.of(IdeSymbolKind.LOC_PARAMETER, RellTokenType.LOCAL_VAL),
-                Arguments.of(IdeSymbolKind.LOC_VAL, RellTokenType.LOCAL_VAL),
-                Arguments.of(IdeSymbolKind.LOC_VAR, RellTokenType.LOCAL_VAR),
-                Arguments.of(IdeSymbolKind.MEM_ENTITY_ATTR_INDEX, RellTokenType.ENTITY_ATTR_KEYINDEX_VAL),
-                Arguments.of(IdeSymbolKind.MEM_ENTITY_ATTR_INDEX_VAR, RellTokenType.ENTITY_ATTR_KEYINDEX_VAR),
-                Arguments.of(IdeSymbolKind.MEM_ENTITY_ATTR_KEY, RellTokenType.ENTITY_ATTR_KEYINDEX_VAL),
-                Arguments.of(IdeSymbolKind.MEM_ENTITY_ATTR_KEY_VAR, RellTokenType.ENTITY_ATTR_KEYINDEX_VAR),
-                Arguments.of(IdeSymbolKind.MEM_ENTITY_ATTR_NORMAL, RellTokenType.ENTITY_ATTR_NORMAL_VAL),
-                Arguments.of(IdeSymbolKind.MEM_ENTITY_ATTR_NORMAL_VAR, RellTokenType.ENTITY_ATTR_NORMAL_VAR),
-                Arguments.of(IdeSymbolKind.MEM_ENTITY_ATTR_ROWID, RellTokenType.ENTITY_ATTR_KEYINDEX_VAL),
-                Arguments.of(IdeSymbolKind.MEM_ENUM_VALUE, RellTokenType.ENUM_VALUE),
-                Arguments.of(IdeSymbolKind.MEM_STRUCT_ATTR, RellTokenType.STRUCT_ATTR_VAL),
-                Arguments.of(IdeSymbolKind.MEM_STRUCT_ATTR_VAR, RellTokenType.STRUCT_ATTR_VAR),
-                Arguments.of(IdeSymbolKind.MEM_SYS_PROPERTY, RellTokenType.DEFAULT),
-                Arguments.of(IdeSymbolKind.MEM_TUPLE_ATTR, RellTokenType.TUPLE_ATTR),
-                Arguments.of(IdeSymbolKind.MOD_ANNOTATION, RellTokenType.ANNOTATION),
-                Arguments.of(IdeSymbolKind.MOD_ANNOTATION_LEGACY, RellTokenType.ANNOTATION),
-                Arguments.of(IdeSymbolKind.UNKNOWN, RellTokenType.DEFAULT),
-                Arguments.of(IdeSymbolKind.MEM_SYS_PROPERTY_PURE, RellTokenType.DEFAULT)
+                makeArguments(IdeSymbolKind.DEF_IMPORT_ALIAS, RellTokenType.DEFAULT),
+                makeArguments(IdeSymbolKind.DEF_CONSTANT, RellTokenType.GLOBAL_CONSTANT),
+                makeArguments(IdeSymbolKind.DEF_ENTITY, RellTokenType.ENTITY),
+                makeArguments(IdeSymbolKind.DEF_ENUM, RellTokenType.ENUM),
+                makeArguments(IdeSymbolKind.DEF_FUNCTION_ABSTRACT, RellTokenType.FUNCTION_EXTENDABLE),
+                makeArguments(IdeSymbolKind.DEF_FUNCTION_EXTEND, RellTokenType.FUNCTION),
+                makeArguments(IdeSymbolKind.DEF_FUNCTION_EXTENDABLE, RellTokenType.FUNCTION_EXTENDABLE),
+                makeArguments(IdeSymbolKind.DEF_FUNCTION, RellTokenType.FUNCTION),
+                makeArguments(IdeSymbolKind.DEF_FUNCTION, RellTokenType.FUNCTION_CALL, isCall = true),
+                makeArguments(IdeSymbolKind.DEF_FUNCTION_SYSTEM, RellTokenType.FUNCTION_CALL),
+                makeArguments(IdeSymbolKind.DEF_IMPORT_MODULE, RellTokenType.MODULE),
+                makeArguments(IdeSymbolKind.DEF_NAMESPACE, RellTokenType.NAMESPACE),
+                makeArguments(IdeSymbolKind.DEF_OBJECT, RellTokenType.OBJECT),
+                makeArguments(IdeSymbolKind.DEF_OPERATION, RellTokenType.OPERATION),
+                makeArguments(IdeSymbolKind.DEF_OPERATION, RellTokenType.OPERATION_CALL, isCall = true),
+                makeArguments(IdeSymbolKind.DEF_QUERY, RellTokenType.QUERY),
+                makeArguments(IdeSymbolKind.DEF_QUERY, RellTokenType.QUERY_CALL, isCall = true),
+                makeArguments(IdeSymbolKind.DEF_STRUCT, RellTokenType.STRUCT),
+                makeArguments(IdeSymbolKind.DEF_TYPE, RellTokenType.TYPE),
+                makeArguments(IdeSymbolKind.EXPR_CALL_ARG, RellTokenType.NAMED_ARGUMENT),
+                makeArguments(IdeSymbolKind.EXPR_IMPORT_ALIAS, RellTokenType.MODULE),
+                makeArguments(IdeSymbolKind.LOC_AT_ALIAS, RellTokenType.AT_ALIAS),
+                makeArguments(IdeSymbolKind.LOC_PARAMETER, RellTokenType.LOCAL_PARAMETER),
+                makeArguments(IdeSymbolKind.LOC_VAL, RellTokenType.LOCAL_VAL),
+                makeArguments(IdeSymbolKind.LOC_VAR, RellTokenType.LOCAL_VAR),
+                makeArguments(IdeSymbolKind.MEM_ENTITY_ATTR_INDEX, RellTokenType.ENTITY_ATTR_KEYINDEX_VAL),
+                makeArguments(IdeSymbolKind.MEM_ENTITY_ATTR_INDEX_VAR, RellTokenType.ENTITY_ATTR_KEYINDEX_VAR),
+                makeArguments(IdeSymbolKind.MEM_ENTITY_ATTR_KEY, RellTokenType.ENTITY_ATTR_KEYINDEX_VAL),
+                makeArguments(IdeSymbolKind.MEM_ENTITY_ATTR_KEY_VAR, RellTokenType.ENTITY_ATTR_KEYINDEX_VAR),
+                makeArguments(IdeSymbolKind.MEM_ENTITY_ATTR_NORMAL, RellTokenType.ENTITY_ATTR_NORMAL_VAL),
+                makeArguments(IdeSymbolKind.MEM_ENTITY_ATTR_NORMAL_VAR, RellTokenType.ENTITY_ATTR_NORMAL_VAR),
+                makeArguments(IdeSymbolKind.MEM_ENTITY_ATTR_ROWID, RellTokenType.ENTITY_ATTR_KEYINDEX_VAL),
+                makeArguments(IdeSymbolKind.MEM_ENUM_VALUE, RellTokenType.ENUM_VALUE),
+                makeArguments(IdeSymbolKind.MEM_STRUCT_ATTR, RellTokenType.STRUCT_ATTR_VAL),
+                makeArguments(IdeSymbolKind.MEM_STRUCT_ATTR_VAR, RellTokenType.STRUCT_ATTR_VAR),
+                makeArguments(IdeSymbolKind.MEM_SYS_PROPERTY, RellTokenType.DEFAULT),
+                makeArguments(IdeSymbolKind.MEM_TUPLE_ATTR, RellTokenType.TUPLE_ATTR),
+                makeArguments(IdeSymbolKind.MOD_ANNOTATION, RellTokenType.ANNOTATION),
+                makeArguments(IdeSymbolKind.MOD_ANNOTATION_LEGACY, RellTokenType.ANNOTATION),
+                makeArguments(IdeSymbolKind.UNKNOWN, RellTokenType.DEFAULT),
+                makeArguments(IdeSymbolKind.MEM_SYS_PROPERTY_PURE, RellTokenType.DEFAULT)
             )
         }
+
+        fun makeArguments(origin: IdeSymbolKind, target: RellTokenType, isCall: Boolean = false): Arguments {
+            return Arguments.of(origin, target, isCall)
+        }
+
+        val DUMMY_DEF_ID = IdeSymbolId(IdeSymbolCategory.FUNCTION, "dummy")
     }
 }
