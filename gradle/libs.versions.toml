@@ -21,7 +21,6 @@ sentry-log4j2 = '7.16.0'
 [libraries]
 rell-base = { module = "net.postchain.rell:rell-base", version.ref = "rell" }
 rell-api-base = { module = "net.postchain.rell:rell-api-base", version.ref = "rell" }
-rell-tools = { module = "net.postchain.rell:rell-tools", version.ref = "rell" }
 
 chromia-build-tools = { module = "com.chromia.cli.tools:chromia-build-tools", version.ref = "chromia-build-tools" }
 
@@ -43,6 +42,7 @@ jackson-yml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-ya
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 
 antlr = { module = "org.antlr:antlr4", version.ref = "antlr" }
+antlr-runtime = { module = "org.antlr:antlr4-runtime", version.ref = "antlr" }
 sentry-log4j2 = { module = "io.sentry:sentry-log4j2", version.ref = "sentry-log4j2" }
 
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin-test" }
@@ -66,7 +66,7 @@ slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 [bundles]
 testcontainers = ["testcontainers-base", "testcintainers-junit"]
 logging = ["oshai", "log4j", "log4j-core", "log4j-jul"]
-rell = ["rell-base"] # "rell-api-base", "rell-tools"
+rell = ["rell-base"]
 lsp4j = ["lsp4j", "lsp4j-debug", "lsp4j-websocket"]
 koin = ["koin-core", "koin-logger"]
 jackson = ["jackson", "jackson-yml", "jackson-kotlin"]

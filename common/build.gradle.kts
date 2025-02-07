@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.antlr)
+    implementation(libs.antlr.runtime)
     implementation(libs.ec4j)
     implementation(libs.system.stubs.jupiter)
     implementation(libs.bundles.rell)

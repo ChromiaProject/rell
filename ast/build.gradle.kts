@@ -8,7 +8,7 @@ val rellTestCasesConfiguration by configurations.creating
 
 dependencies {
     antlr(libs.antlr)
-    implementation(libs.antlr)
+    api(libs.antlr.runtime)
     implementation(libs.rell.base)
     implementation(project(":common"))
 
@@ -68,4 +68,13 @@ sourceSets.getByName("test") {
 
 sourceSets.getByName("main") {
     java.srcDir(tasks.generateGrammarSource)
+}
+
+// Workaround excluding antlr "non-runtime" dependencies from jar.
+// Adjust it when antlr gradle plugin will be fixed
+// https://github.com/gradle/gradle/issues/820#issuecomment-288838412
+configurations {
+    api {
+        setExtendsFrom(extendsFrom.filterNot { it == antlr.get() })
+    }
 }
