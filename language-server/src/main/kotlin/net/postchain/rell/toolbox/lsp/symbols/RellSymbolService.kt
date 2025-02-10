@@ -228,6 +228,16 @@ class RellSymbolService {
             .filter { resource ->
                 resource.moduleInfo?.name?.toString() == moduleName
             }
+            .mapNotNull { resource ->
+                // resource from cache does not have docSymbol, so we need to "recompile" it to get it.
+                // TODO: this is a workaround, and should be fixed in the future by storing docSymbol in cache
+                // or by not using cache at all (when compiler is fast enough)
+                if (isResourceFromCache(resource)) {
+                    indexer.updateFileUriResourceMap(resource.fileUri)
+                } else {
+                    resource
+                }
+            }
             .flatMap { resource ->
                 resource.symbolInfos.values.asSequence()
                     .filter {
@@ -235,6 +245,10 @@ class RellSymbolService {
                     }
             }
             .toList()
+    }
+
+    private fun isResourceFromCache(resource: Resource): Boolean {
+        return resource.symbolInfos.any { it.value.doc == null }
     }
 
     private fun getResourceSymbols(
