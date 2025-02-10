@@ -207,12 +207,13 @@ class WorkspaceIndexer(
     }
 
     // Change in source code
-    fun updateFileUriResourceMap(fileUri: URI) {
+    fun updateFileUriResourceMap(fileUri: URI): Resource? {
         if (!isValidFileUri(fileUri)) {
-            return
+            return null
         }
-        if (!File(fileUri).exists()) {
+        return if (!File(fileUri).exists()) {
             removeFileUriResourceMap(fileUri)
+            null
         } else {
             val fileContent = File(fileUri).readText()
             val resource = resourceFactory.buildRellResource(fileUri, fileContent, fileMap)
@@ -221,6 +222,7 @@ class WorkspaceIndexer(
 
             fileUriResourceMap[fileUri] = resource
             resourceFactory.updateFileMap(fileMap, fileUri)
+            resource
         }
     }
 

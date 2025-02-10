@@ -9,13 +9,17 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.support.expected
+import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
+import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer
 import net.postchain.rell.toolbox.lsp.editing.Document
+import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
+import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.Position
@@ -241,6 +245,68 @@ class RellSymbolServiceTest {
         with(result[0]) {
             assertThat(kind).isEqualTo(IdeSymbolKind.DEF_FUNCTION)
             assertThat(defId!!.encode()).isEqualTo("function[$functionName]")
+        }
+    }
+
+    @Test
+    fun `get correct IdeSymbolInfo for cached resource`(@TempDir dir: File) {
+        val moduleName = "module_b"
+        val functionName = "fun_in_module"
+        val testDataBuilder = testData(dir) {
+            addModule(
+                "a/$moduleName",
+                """
+                function $functionName() = 123;
+                """.trimIndent()
+            )
+            addMainFile(
+                """
+                import a.$moduleName.{};
+                """.trimIndent()
+            )
+        }
+        val indexSerializer = RellIndexSerializer(
+            rellLinter,
+            formattingStyleLinter,
+            RellFormatterOptionsResolver(),
+            RellLinterOptionsResolver()
+        )
+
+        val document = Document(testDataBuilder.mainFileUri, 1, testDataBuilder.mainFile.readText())
+        val indexer = WorkspaceIndexer(
+            dir.resolve("src").toURI(),
+            rellLinter,
+            linterOptions,
+            formattingStyleLinter,
+            formatterOptions
+        ).apply { initialFileIndexBuild() }
+
+        val restoredIndexer = WorkspaceIndexer(
+            dir.resolve("src").toURI(),
+            rellLinter,
+            linterOptions,
+            formattingStyleLinter,
+            formatterOptions
+        ).apply {
+            val fromCache = indexSerializer.deserializeAsWorkspaceIndexer(indexSerializer.serializeAsBytes(indexer))
+            initialFileIndexBuild(fromCache)
+        }
+        restoredIndexer.initialFileIndexBuild()
+        restoredIndexer.updateFileUriResourceMap(testDataBuilder.mainFileUri)
+
+        val symbol = DocumentSymbol(
+            moduleName,
+            SymbolKind.Package,
+            Range(Position(0, 0), Position(0, 20)),
+            Range(Position(0, 9), Position(0, 17)),
+        )
+
+        val result = rellSymbolService.getSymbolInfoForImportedModule(symbol, document, restoredIndexer)
+
+        assertThat(result.size).isEqualTo(1)
+        with(result[0]) {
+            assertThat(doc).isNotNull()
+            assertThat(doc!!.kind).isEqualTo(DocSymbolKind.FUNCTION)
         }
     }
 
