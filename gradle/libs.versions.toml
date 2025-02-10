@@ -1,7 +1,7 @@
 [versions]
-rell = "0.14.5"
-postchain = "3.27.2"
-postchain-client = "3.19.0"
+rell = "0.14.6"
+postchain = "3.27.4"
+postchain-client = "3.23.4"
 clikt = "3.5.2"
 testcontainers = "1.18.3"
 
