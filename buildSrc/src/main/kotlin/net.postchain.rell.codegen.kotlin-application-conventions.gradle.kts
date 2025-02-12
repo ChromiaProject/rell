@@ -23,5 +23,5 @@ publishing {
 }
 
 dependencies {
-    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.17.1")
+    runtimeOnly("org.slf4j:slf4j-simple:2.0.16")
 }

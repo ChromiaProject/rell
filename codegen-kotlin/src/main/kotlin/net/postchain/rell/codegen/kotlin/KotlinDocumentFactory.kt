@@ -1,6 +1,7 @@
 package net.postchain.rell.codegen.kotlin
 
 import net.postchain.rell.base.model.*
+import net.postchain.rell.codegen.StringSerializable
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.kotlin.util.KotlinBuiltinType

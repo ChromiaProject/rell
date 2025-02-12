@@ -10,19 +10,19 @@ import assertk.assertions.support.show
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.SingleFileRellApp
-import net.postchain.rell.codegen.document.Document
+import net.postchain.rell.codegen.StringSerializable
 import net.postchain.rell.codegen.document.DocumentSaver
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.CachedRellCliEnv
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.testcontainers.containers.Container.ExecResult
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.utility.MountableFile
 import java.io.File
 import java.nio.file.Files
-import org.testcontainers.containers.Container.ExecResult
-import org.testcontainers.utility.MountableFile
 import kotlin.io.path.name
 
 @Testcontainers
@@ -49,7 +49,7 @@ internal class JavascriptCodeGeneratorTest {
         }
     }
 
-    private fun generateAndLint(rellPath: String, vararg baseModule: String): Pair<List<DocumentSection>, Map<String, Document>> {
+    private fun generateAndLint(rellPath: String, vararg baseModule: String): Pair<List<DocumentSection>, Map<String, StringSerializable>> {
         val sections = generator.createSections(
                 File(this::class.java.getResource(rellPath)!!.toURI()),
                 baseModule.asList())

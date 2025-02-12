@@ -8,7 +8,7 @@ import assertk.assertions.isEqualTo
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.SingleFileRellApp
-import net.postchain.rell.codegen.document.Document
+import net.postchain.rell.codegen.StringSerializable
 import net.postchain.rell.codegen.document.DocumentSaver
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.CachedRellCliEnv
@@ -28,7 +28,7 @@ internal class KotlinCodeGeneratorTest {
     private val config = object : KotlinCodeGeneratorConfig { override fun packageName() = "com.example" }
     private val generator = CodeGenerator(KotlinDocumentFactory(config), config, rellCliEnv)
 
-    private fun generateAndCompile(rellPath: String, vararg baseModule: String): Pair<List<DocumentSection>, Map<String, Document>> {
+    private fun generateAndCompile(rellPath: String, vararg baseModule: String): Pair<List<DocumentSection>, Map<String, StringSerializable>> {
         val sections = generator.createSections(
                 File(this::class.java.getResource(rellPath)!!.toURI()),
                 baseModule.asList())

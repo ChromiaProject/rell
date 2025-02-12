@@ -3,6 +3,8 @@
  */
 package net.postchain.rell.codegen.app
 
+import com.github.ajalt.clikt.core.main
+
 fun main(args: Array<String>) =
     CodeGenCommand()
         .main(args)

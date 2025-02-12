@@ -1,5 +1,5 @@
 package net.postchain.rell.codegen
 
-interface StringSerializable {
+fun interface StringSerializable {
     fun format(): String
 }

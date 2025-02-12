@@ -1,25 +1,18 @@
 package net.postchain.rell.codegen.mermaid
 
 import assertk.assertThat
-import assertk.assertions.exists
 import assertk.assertions.hasSize
-import com.github.dockerjava.api.command.WaitContainerResultCallback
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.MermaidCodeGeneratorConfig
 import net.postchain.rell.codegen.MermaidDocumentFactory
-import net.postchain.rell.codegen.document.Document
+import net.postchain.rell.codegen.StringSerializable
 import net.postchain.rell.codegen.document.DocumentSaver
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.CachedRellCliEnv
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.GenericContainer
-import org.testcontainers.containers.output.WaitingConsumer
-import org.testcontainers.containers.wait.strategy.AbstractWaitStrategy
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy
-import org.testcontainers.containers.wait.strategy.Wait
-import org.testcontainers.containers.wait.strategy.WaitStrategy
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.shaded.org.awaitility.Awaitility
 import java.io.File
@@ -39,7 +32,7 @@ internal class MermaidCodeGeneratorTest {
     }
     private val generator = CodeGenerator(MermaidDocumentFactory(config), config, rellCliEnv)
 
-    private fun generateSvg(rellPath: String, vararg baseModule: String): Pair<List<DocumentSection>, Map<String, Document>> {
+    private fun generateSvg(rellPath: String, vararg baseModule: String): Pair<List<DocumentSection>, Map<String, StringSerializable>> {
         val sections = generator.createSections(
                 File(this::class.java.getResource(rellPath)!!.toURI()),
                 baseModule.asList())

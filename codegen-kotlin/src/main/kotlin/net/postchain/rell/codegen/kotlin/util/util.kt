@@ -74,3 +74,5 @@ fun aliasToGtv(name: String, type: R_Type): String? = when {
     name == "pubkey" && type is R_ByteArrayType -> "gtv(pubkey.data)"
     else -> null
 }
+
+fun kotlinPackage(packageName: String, moduleName: String): String = if (moduleName.isBlank()) packageName else "$packageName.$moduleName"

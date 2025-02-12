@@ -4,14 +4,13 @@ import assertk.Assert
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsAll
-import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.hasSize
 import assertk.assertions.support.expected
 import assertk.assertions.support.show
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.SingleFileRellApp
-import net.postchain.rell.codegen.document.Document
+import net.postchain.rell.codegen.StringSerializable
 import net.postchain.rell.codegen.document.DocumentSaver
 import net.postchain.rell.codegen.section.DocumentSection
 import net.postchain.rell.codegen.util.CachedRellCliEnv
@@ -51,7 +50,7 @@ internal class TypescriptCodeGeneratorTest {
     }
 
 
-    private fun generateAndCompile(rellPath: String, vararg baseModule: String): Pair<List<DocumentSection>, Map<String, Document>> {
+    private fun generateAndCompile(rellPath: String, vararg baseModule: String): Pair<List<DocumentSection>, Map<String, StringSerializable>> {
         val sections = generator.createSections(
                 File(this::class.java.getResource(rellPath)!!.toURI()),
                 baseModule.asList())

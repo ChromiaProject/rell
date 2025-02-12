@@ -10,14 +10,9 @@ import net.postchain.rell.base.model.R_QueryDefinition
 import net.postchain.rell.base.model.R_TupleType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.codegen.deps.CamelCaseClassName
-import net.postchain.rell.codegen.document.Document
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.section.DocumentSection
 import java.io.File
-import net.postchain.rell.base.lib.type.R_GtvType
-import net.postchain.rell.base.model.R_FunctionParam
-import net.postchain.rell.base.model.R_MountedRoutineDefinition
-import net.postchain.rell.base.model.R_OperationDefinition
 
 class CodeGenerator(private val factory: DocumentFactory, private val config: CodeGeneratorConfig, private val rellCliEnv: RellCliEnv = RellCliEnv.DEFAULT) {
 
@@ -45,10 +40,9 @@ class CodeGenerator(private val factory: DocumentFactory, private val config: Co
 
         val queries = if (config.includeQueries()) {
             rellQueries.values
-                .filter { hasSupportedReturnType(it, it.type()) }
-                .map { factory.createQuery(it) }
-        }
-        else {
+                    .filter { hasSupportedReturnType(it, it.type()) }
+                    .map { factory.createQuery(it) }
+        } else {
             listOf()
         }
 
@@ -76,24 +70,31 @@ class CodeGenerator(private val factory: DocumentFactory, private val config: Co
         return enums + entities + builtins + structures + queries + operations
     }
 
-    fun constructDocuments(sections: List<DocumentSection>): Map<String, Document> {
+    fun constructDocuments(sections: List<DocumentSection>): Map<String, StringSerializable> {
         return when (config.fileSaveMode()) {
             FileSaveMode.Module -> sections
                     .groupBy { it.moduleName }
-                    .map { (module, sections) ->
+                    .flatMap { (module, sections) ->
                         val document = factory.createDocument(module)
                         sections.forEach { document.addSection(it) }
                         val directoryName = module.replace(".", "/")
                         val fileName = if (module.isBlank()) "root" else module.replace(".", "_")
-                        "$directoryName/$fileName.${factory.fileExtension}" to document
+                        listOf("$directoryName/$fileName.${factory.fileExtension}" to document) +
+                                sections.flatMap {
+                                    it.extraFiles(module).map { (filename, content) ->
+                                        "$directoryName/$filename.${factory.fileExtension}" to content
+                                    }
+                                }
                     }.toMap()
+
             FileSaveMode.Dapp -> {
                 val document = factory.createDocument("")
                 sections.forEach { document.addSection(it) }
                 mapOf("rell.${factory.fileExtension}" to document)
             }
+
             FileSaveMode.Separate -> mapOf()
-        }
+        } + factory.extraFiles().map { (filename, content) -> "$filename.${factory.fileExtension}" to content }
     }
 
     private fun hasSupportedReturnType(query: R_QueryDefinition, returnType: R_Type): Boolean {
