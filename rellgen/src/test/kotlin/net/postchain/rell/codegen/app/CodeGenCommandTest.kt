@@ -3,6 +3,7 @@ package net.postchain.rell.codegen.app
 import assertk.assertThat
 import assertk.assertions.containsAll
 import assertk.assertions.hasSize
+import com.github.ajalt.clikt.core.parse
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.io.path.createTempDirectory

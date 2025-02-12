@@ -39,6 +39,8 @@ abstract class ExtensionMethodSection(
     override val moduleName: String
         get() = className.module
 
+    val queryMethodName = className.className
+
     final override val imports: List<String> = listOf(
             "import ${BigDecimal::class.qualifiedName}",
             "import ${BigInteger::class.qualifiedName}",
@@ -74,7 +76,7 @@ abstract class ExtensionMethodSection(
         |${KotlinDocGenerator.formatDoc(docSymbol, padding = " * ")}
         | */
         |${GeneratedAnnotation.createAnnotation(className.rellName)}
-        |fun ${extendedClass.simpleName}.${className.className}(${formatInputParameters()}) = 
+        |fun ${extendedClass.simpleName}.$queryMethodName(${formatInputParameters()}) = 
         |   $extendenMethod(${className.constantName}${formatGtvParameters()})${formatReturnType(returnType)}
     """.trimMargin()
         val returnTypeString = "\n${returnStructure(returnType)}"

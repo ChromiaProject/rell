@@ -10,4 +10,11 @@ interface DocumentSection : StringSerializable {
     val deps: Set<ClassName>
         get() = setOf()
     val docSymbol: DocSymbol
+
+    /**
+     * Only supported in `FileSaveMode.Module`.
+     *
+     * @return filename without extension and content of file
+     */
+    fun extraFiles(moduleName: String): List<Pair<String, StringSerializable>> = listOf()
 }
