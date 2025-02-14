@@ -12,25 +12,19 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
-import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
-import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
 import net.postchain.rell.toolbox.lsp.references.setupReferenceTestProject
 import net.postchain.rell.toolbox.lsp.server.utils.WorkspaceManagerTestBase
-import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
-import net.postchain.rell.toolbox.testing.TestDataBuilder
 import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import org.eclipse.lsp4j.WorkspaceFolder
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.net.URI
 import kotlin.io.path.createDirectories
-import kotlin.test.assertEquals
 
 class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
 
@@ -753,4 +747,18 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         )
     }
 
+    @Test
+    fun `Find completions should return empty list if not found`() {
+        val moduleName = "module_a"
+        val testDataBuilder = testData(workspace) {
+            addModule(moduleName, "")
+        }
+        val moduleFile = testDataBuilder.sourceFile("$moduleName/module.rell")
+        initializeWorkspace()
+        workspaceManager.didOpen(moduleFile.toURI(), 1, "")
+
+        val docSymbols = workspaceManager.getDocumentSymbols(moduleFile.toURI())
+
+        assertThat(docSymbols).isEmpty()
+    }
 }

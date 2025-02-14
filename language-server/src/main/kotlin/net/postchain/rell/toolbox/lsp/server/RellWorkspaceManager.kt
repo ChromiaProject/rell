@@ -128,7 +128,7 @@ class RellWorkspaceManager(
     fun getDocumentSymbols(fileUri: URI): List<Either<SymbolInformation, DocumentSymbol>> {
         val resource = indexingManager.getResource(fileUri) ?: return listOf()
         val document = documentManager.getOpenDocument(fileUri) ?: return listOf()
-        val documentSymbol = rellSymbolService.getDocumentSymbols(fileUri, document, resource)
+        val documentSymbol = rellSymbolService.getDocumentSymbols(fileUri, document, resource) ?: return listOf()
         return listOf(Either.forRight(documentSymbol))
     }
 

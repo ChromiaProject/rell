@@ -74,13 +74,15 @@ class RellCompletionService(private val rellSymbolService: RellSymbolService) {
         val getAvailableModules = shouldGetAvailableModules(fileUri, document, resource, offset)
 
         return createCompletionItems(completions, trimPrefixDot) +
-                createKeywordsCompletionItems() +
-                getAvailableModulesCompletion(fileUri, indexer, getAvailableModules) +
-                createSnippetCompletions()
+            createKeywordsCompletionItems() +
+            getAvailableModulesCompletion(fileUri, indexer, getAvailableModules) +
+            createSnippetCompletions()
     }
 
-    private fun shouldGetAvailableModules(fileUri: URI, document: Document, resource: Resource, offset: Int): Boolean =
-        rellSymbolService.findEnclosingFileOrNamespace(fileUri, document, resource, offset) != null
+    private fun shouldGetAvailableModules(fileUri: URI, document: Document, resource: Resource, offset: Int): Boolean {
+        val validOffset = if (document.content.length == offset) offset - 1 else offset
+        return rellSymbolService.findEnclosingFileOrNamespace(fileUri, document, resource, validOffset) != null
+    }
 
     private fun getAvailableModulesCompletion(
         fileUri: URI,
