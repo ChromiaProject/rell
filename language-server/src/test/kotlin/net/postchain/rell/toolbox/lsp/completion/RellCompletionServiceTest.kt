@@ -31,6 +31,10 @@ class RellCompletionServiceTest {
     private lateinit var tempDir: File
     private lateinit var testDataBuilder: TestDataBuilder
     private lateinit var indexer: WorkspaceIndexer
+    private val rellLinter = RellLinter()
+    private val formattingStyleLinter = FormattingStyleLinter()
+    private val formatterOptions = FormatterOptions()
+    private val linterOptions = LinterOptions()
     private val completionService = RellCompletionService(RellSymbolService())
     private val importerFilePath = "importer.rell"
     private val libraryFilePath = "library.rell"
@@ -689,6 +693,56 @@ class RellCompletionServiceTest {
         )
 
         assertThat(completions).extracting { it.label }.containsNone(*invalidModuleImports)
+    }
+
+    @Test
+    fun `Module import completions should be return at EOF`(@TempDir tmpDir: File) {
+        val testDataBuilder = testData(tmpDir) {
+            addModule(
+                "module_a",
+                """
+                module;
+                """.trimIndent()
+            )
+            addModule(
+                "module_b",
+                """
+                module;
+                function test() {
+                }
+                """.trimIndent()
+            )
+            addMainFile(
+                """
+                module;
+                im
+                """.trimIndent()
+            )
+        }
+
+        val mainFileURI = testDataBuilder.mainFileUri
+        val offset = 9
+
+        val indexer = WorkspaceIndexer(
+            testDataBuilder.sourceFolderUri,
+            rellLinter,
+            linterOptions,
+            formattingStyleLinter,
+            formatterOptions,
+            testDataBuilder.workspaceFolderUri
+        )
+        indexer.initialFileIndexBuild()
+
+        val completions = completionService.getCompletions(mainFileURI, offset, indexer, mainFileURI.toDocument())
+
+        val expectedModuleImports = arrayOf(
+            "import module_a.*;",
+            "import module_a.{T};",
+            "import module_b.*;",
+            "import module_b.{T};"
+        )
+
+        assertThat(completions).extracting { it.label }.containsAll(*expectedModuleImports)
     }
 
     private fun initIndexerForTestData(testDataBuilder: TestDataBuilder): WorkspaceIndexer {
