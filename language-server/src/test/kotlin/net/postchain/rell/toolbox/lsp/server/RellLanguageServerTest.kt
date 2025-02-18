@@ -4,13 +4,14 @@ import assertk.assertThat
 import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.containsOnly
 import assertk.assertions.endsWith
+import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isNotEmpty
 import assertk.assertions.isNotNull
-import assertk.assertions.isNull
 import assertk.assertions.isTrue
+import com.google.gson.JsonObject
 import net.postchain.rell.toolbox.common.RellVersionInfo
 import net.postchain.rell.toolbox.lsp.TestClient
 import net.postchain.rell.toolbox.lsp.TestClientServerLauncher
@@ -93,6 +94,27 @@ class RellLanguageServerTest {
     }
 
     @Test
+    fun `files watcher is registered from server`() {
+        assertThat(testClient.registeredCapabilities).hasSize(1)
+
+        val registeredCapability = testClient.registeredCapabilities.first()
+        assertThat(registeredCapability.method).isEqualTo("workspace/didChangeWatchedFiles")
+
+        val registerOptions = registeredCapability.registerOptions as? JsonObject
+        assertThat(registerOptions).isNotNull()
+
+        assertThat(registerOptions!!.get("watchers")).isNotNull()
+        assertThat(registerOptions.getAsJsonArray("watchers").size()).isEqualTo(1)
+        val watcher = registerOptions.getAsJsonArray("watchers").first().asJsonObject
+
+        assertThat(watcher.get("globPattern")).isNotNull()
+        assertThat(watcher.get("globPattern").asJsonObject.get("pattern").asString).isEqualTo("**/*")
+
+        assertThat(watcher.get("kind")).isNotNull()
+        assertThat(watcher.get("kind").asInt).isEqualTo(7)
+    }
+
+    @Test
     fun `invalidateCaches endpoint is resolves with correct info`() {
         val response = server.invalidateCaches().get()
         assertThat(response).isTrue()
@@ -100,7 +122,7 @@ class RellLanguageServerTest {
 
     @Test
     fun `cacheFolder endpoint is resolves with correct info`() {
-        val response = server.cacheFolder().get().replace("\\", "/");
+        val response = server.cacheFolder().get().replace("\\", "/")
         assertThat(response).endsWith(".chromia/rell-language-server/cache")
     }
 

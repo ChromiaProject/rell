@@ -14,19 +14,28 @@ import net.postchain.rell.toolbox.lsp.testrunner.RellTestCase
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestFile
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestRunner
 import net.postchain.rell.toolbox.util.getCurrentLogFileName
+import org.eclipse.lsp4j.DidChangeWatchedFilesRegistrationOptions
+import org.eclipse.lsp4j.FileSystemWatcher
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.InitializeResult
 import org.eclipse.lsp4j.InitializedParams
 import org.eclipse.lsp4j.MessageParams
 import org.eclipse.lsp4j.MessageType
 import org.eclipse.lsp4j.PublishDiagnosticsParams
+import org.eclipse.lsp4j.Registration
+import org.eclipse.lsp4j.RegistrationParams
+import org.eclipse.lsp4j.RelativePattern
 import org.eclipse.lsp4j.SetTraceParams
+import org.eclipse.lsp4j.WatchKind
+import org.eclipse.lsp4j.WorkspaceFolder
+import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest
 import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware
 import org.eclipse.lsp4j.services.LanguageServer
 import java.io.File
 import java.net.URI
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
 class RellLanguageServer(
@@ -62,6 +71,8 @@ class RellLanguageServer(
 
         processInitializationOptions(params.initializationOptions)
 
+        registerFileWatchers(params.workspaceFolders)
+
         val currentLogFileName = File(getCurrentLogFileName())
         val message =
             MessageParams(
@@ -73,6 +84,22 @@ class RellLanguageServer(
         return requestManager.runWrite {
             workspaceManager.initialize(workspaceFolders, ::publishDiagnostics, ::sendNotification)
             result
+        }
+    }
+
+    private fun registerFileWatchers(workspaceFolders: List<WorkspaceFolder>?) {
+        workspaceFolders?.forEach { folder ->
+            val allFilesWatcher = FileSystemWatcher()
+            allFilesWatcher.globPattern = Either.forRight(RelativePattern(Either.forLeft(folder), "**/*"))
+            allFilesWatcher.kind = WatchKind.Create or WatchKind.Change or WatchKind.Delete
+
+            val registrationOptions = DidChangeWatchedFilesRegistrationOptions(listOf(allFilesWatcher))
+            val registration = Registration(
+                UUID.randomUUID().toString(),
+                "workspace/didChangeWatchedFiles",
+                registrationOptions
+            )
+            languageClient.registerCapability(RegistrationParams(listOf(registration)))
         }
     }
 
