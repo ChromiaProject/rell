@@ -13,6 +13,7 @@ import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
+import net.postchain.rell.toolbox.lsp.symbols.RellCompletionSymbolService
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import net.postchain.rell.toolbox.lsp.template.NewProjectTemplateService
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestRunner
@@ -23,20 +24,21 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val serverModule = module {
-    single { RellSymbolService() }
-    single { NewProjectTemplateService() }
-    single { RellLinter() }
-    single { FormattingStyleLinter() }
+    singleOf(::RellSymbolService)
+    singleOf(::RellCompletionSymbolService)
+    singleOf(::NewProjectTemplateService)
+    singleOf(::RellLinter)
+    singleOf(::FormattingStyleLinter)
     singleOf(::RellIndexCachingService)
     singleOf(::RellIndexSerializer)
-    single { RellReferenceService(get()) }
+    singleOf(::RellReferenceService)
     singleOf(::RellWorkspaceManager)
-    single { RellRequestManager() }
-    single { RellFormatterOptionsResolver() }
-    single { RellLinterOptionsResolver() }
+    singleOf(::RellRequestManager)
+    singleOf(::RellFormatterOptionsResolver)
+    singleOf(::RellLinterOptionsResolver)
     singleOf(::RellLanguageServerTerminator)
-    single { CapabilitiesProvider() }
-    single { RellSemanticTokensManager() }
+    singleOf(::CapabilitiesProvider)
+    singleOf(::RellSemanticTokensManager)
     single<LspIncludeDefinitionProvider> { DefaultLspIncludeDefinitionProvider() }
     singleOf(::RellTestRunner)
     singleOf(::RellLanguageServer)

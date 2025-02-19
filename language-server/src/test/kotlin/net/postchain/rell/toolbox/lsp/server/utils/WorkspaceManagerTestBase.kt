@@ -9,10 +9,12 @@ import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
+import net.postchain.rell.toolbox.lsp.server.NotificationType
 import net.postchain.rell.toolbox.lsp.server.RellDiagnosticsManager
 import net.postchain.rell.toolbox.lsp.server.RellDocumentManager
 import net.postchain.rell.toolbox.lsp.server.RellIndexingManager
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
+import net.postchain.rell.toolbox.lsp.symbols.RellCompletionSymbolService
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import org.eclipse.lsp4j.WorkspaceFolder
 import org.junit.jupiter.api.AfterEach
@@ -20,7 +22,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.net.URI
-import net.postchain.rell.toolbox.lsp.server.NotificationType
 
 open class WorkspaceManagerTestBase {
     protected lateinit var workspaceManager: RellWorkspaceManager
@@ -30,6 +31,7 @@ open class WorkspaceManagerTestBase {
     protected lateinit var workspace: File
     protected lateinit var sourceDir: File
     protected val symbolService = RellSymbolService()
+    protected val completionSymbolService = RellCompletionSymbolService(RellSymbolService())
     protected val documentManager = RellDocumentManager()
     protected val diagnosticsManager = RellDiagnosticsManager()
 
@@ -64,7 +66,7 @@ open class WorkspaceManagerTestBase {
             RellWorkspaceManager(
                 symbolService,
                 referenceService,
-                RellCompletionService(symbolService),
+                RellCompletionService(completionSymbolService),
                 documentManager,
                 indexingManager,
                 diagnosticsManager,

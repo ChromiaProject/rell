@@ -14,7 +14,6 @@ import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.editing.Document
-import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import net.postchain.rell.toolbox.testing.TestDataBuilder
 import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.CompletionItemKind
@@ -24,6 +23,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.net.URI
+import net.postchain.rell.toolbox.lsp.symbols.RellCompletionSymbolService
+import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 
 class RellCompletionServiceTest {
 
@@ -35,7 +36,9 @@ class RellCompletionServiceTest {
     private val formattingStyleLinter = FormattingStyleLinter()
     private val formatterOptions = FormatterOptions()
     private val linterOptions = LinterOptions()
-    private val completionService = RellCompletionService(RellSymbolService())
+    private val symbolService = RellSymbolService()
+    private val completionSymbolService = RellCompletionSymbolService(symbolService)
+    private val completionService = RellCompletionService(completionSymbolService)
     private val importerFilePath = "importer.rell"
     private val libraryFilePath = "library.rell"
     private val explicitImportFilePath = "explicit_token_importer.rell"
