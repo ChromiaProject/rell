@@ -25,6 +25,7 @@ import net.postchain.rell.toolbox.lsp.server.RellTextDocumentService
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceService
 import net.postchain.rell.toolbox.lsp.server.utils.TestLspIncludeDefinitionProvider
+import net.postchain.rell.toolbox.lsp.symbols.RellCompletionSymbolService
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import net.postchain.rell.toolbox.lsp.template.NewProjectTemplateService
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestRunner
@@ -52,20 +53,21 @@ class TestServerModule {
     }
 
     private fun serverModule(includeDefinition: Boolean) = module {
-        single { RellSymbolService() }
-        single { NewProjectTemplateService() }
-        single { RellLinter() }
-        single { FormattingStyleLinter() }
+        singleOf(::RellSymbolService)
+        singleOf(::RellCompletionSymbolService)
+        singleOf(::NewProjectTemplateService)
+        singleOf(::RellLinter)
+        singleOf(::FormattingStyleLinter)
         singleOf(::RellIndexCachingService)
         singleOf(::RellIndexSerializer)
-        single { RellReferenceService(get()) }
+        singleOf(::RellReferenceService)
         singleOf(::RellWorkspaceManager)
-        single { RellFormatterOptionsResolver() }
-        single { RellLinterOptionsResolver() }
-        single { RellRequestManager() }
+        singleOf(::RellFormatterOptionsResolver)
+        singleOf(::RellLinterOptionsResolver)
+        singleOf(::RellRequestManager)
         singleOf(::RellLanguageServerTerminator)
-        single { CapabilitiesProvider() }
-        single { RellSemanticTokensManager() }
+        singleOf(::CapabilitiesProvider)
+        singleOf(::RellSemanticTokensManager)
         single<LspIncludeDefinitionProvider> {
             TestLspIncludeDefinitionProvider(includeDefinition)
         }

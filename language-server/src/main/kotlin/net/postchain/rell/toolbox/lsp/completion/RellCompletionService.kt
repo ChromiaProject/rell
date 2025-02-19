@@ -16,8 +16,8 @@ import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.lsp.hover.formatDocSymbol
+import net.postchain.rell.toolbox.lsp.symbols.RellCompletionSymbolService
 import net.postchain.rell.toolbox.lsp.symbols.RellRelevantImportSymbol
-import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionItemKind
 import org.eclipse.lsp4j.CompletionItemLabelDetails
@@ -29,7 +29,7 @@ import java.net.URI
 import kotlin.collections.component1
 import kotlin.collections.component2
 
-class RellCompletionService(private val rellSymbolService: RellSymbolService) {
+class RellCompletionService(private val rellSymbolService: RellCompletionSymbolService) {
     private val rellCompilerUtils = RellCompilerUtils()
 
     fun getCompletions(
