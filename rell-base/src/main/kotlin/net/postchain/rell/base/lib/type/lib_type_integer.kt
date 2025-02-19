@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.type
@@ -17,13 +17,13 @@ import net.postchain.rell.base.model.R_TypeSqlAdapter
 import net.postchain.rell.base.model.R_TypeSqlAdapter_Primitive
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Comparator
+import net.postchain.rell.base.sql.PreparedStatementParams
+import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.utils.toImmList
 import org.jooq.impl.SQLDataType
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 
 object Lib_Type_Integer {
     private const val SINCE0 = "0.6.0"
@@ -261,13 +261,13 @@ object R_IntegerType: R_PrimitiveType("integer") {
     private object R_TypeSqlAdapter_Integer: R_TypeSqlAdapter_Primitive("integer", SQLDataType.BIGINT) {
         override fun toSqlValue(value: Rt_Value) = value.asInteger()
 
-        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) {
-            stmt.setLong(idx, value.asInteger())
+        override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
+            params.setLong(idx, value.asInteger())
         }
 
-        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
-            val v = rs.getLong(idx)
-            return checkSqlNull(v == 0L, rs, R_IntegerType, nullable) ?: Rt_IntValue.get(v)
+        override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
+            val v = row.getLong(idx)
+            return checkSqlNull(v == 0L, row, R_IntegerType, nullable) ?: Rt_IntValue.get(v)
         }
     }
 }

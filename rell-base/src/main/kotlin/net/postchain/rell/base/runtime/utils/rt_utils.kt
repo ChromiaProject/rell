@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.runtime.utils
@@ -14,12 +14,6 @@ import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.runtime.*
-import net.postchain.rell.base.sql.SqlExecutor
-import net.postchain.rell.base.sql.SqlManager
-import java.sql.Connection
-import java.sql.PreparedStatement
-import java.sql.ResultSet
-import java.sql.SQLException
 
 fun Boolean.toGtv(): Gtv = GtvFactory.gtv(this)
 fun Int.toGtv(): Gtv = GtvFactory.gtv(this.toLong())
@@ -79,66 +73,6 @@ class Rt_TupleComparator(private val elemComparators: List<Comparator<Rt_Value>>
             }
         }
         return 0
-    }
-}
-
-class Rt_SqlManager(private val sqlMgr: SqlManager, private val logErrors: Boolean): SqlManager() {
-    override val hasConnection = sqlMgr.hasConnection
-
-    override fun <T> execute0(tx: Boolean, code: (SqlExecutor) -> T): T {
-        val res = sqlMgr.execute(tx) { sqlExec ->
-            val sqlExec2 = Rt_SqlExecutor(sqlExec, logErrors)
-            code(sqlExec2)
-        }
-        return res
-    }
-}
-
-class Rt_SqlExecutor(private val sqlExec: SqlExecutor, private val logErrors: Boolean): SqlExecutor() {
-    override fun <T> connection(code: (Connection) -> T): T {
-        val res = wrapErr("(connection)") {
-            sqlExec.connection(code)
-        }
-        return res
-    }
-
-    override fun hasRealConnection() = sqlExec.hasRealConnection()
-
-    override fun execute(sql: String) {
-        wrapErr(sql) {
-            sqlExec.execute(sql)
-        }
-    }
-
-    override fun execute(sql: String, preparator: (PreparedStatement) -> Unit) {
-        wrapErr(sql) {
-            sqlExec.execute(sql, preparator)
-        }
-    }
-
-    override fun executeUpdate(sql: String, preparator: (PreparedStatement) -> Unit): Int {
-        return wrapErr(sql) {
-            sqlExec.executeUpdate(sql, preparator)
-        }
-    }
-
-    override fun executeQuery(sql: String, preparator: (PreparedStatement) -> Unit, consumer: (ResultSet) -> Unit) {
-        wrapErr(sql) {
-            sqlExec.executeQuery(sql, preparator, consumer)
-        }
-    }
-
-    private fun <T> wrapErr(sql: String, code: () -> T): T {
-        try {
-            val res = code()
-            return res
-        } catch (e: SQLException) {
-            if (logErrors) {
-                System.err.println("SQL: $sql")
-                e.printStackTrace()
-            }
-            throw Rt_Exception.common("sqlerr:${e.errorCode}", "SQL Error: ${e.message}")
-        }
     }
 }
 

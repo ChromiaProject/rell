@@ -12,7 +12,7 @@ import net.postchain.core.EContext
 import net.postchain.gtx.StandardOpsGTXModule
 import net.postchain.rell.base.compiler.base.utils.C_ReservedMountNames
 import net.postchain.rell.base.model.R_MountName
-import net.postchain.rell.base.sql.ConnectionSqlExecutor
+import net.postchain.rell.base.sql.ConnectionSqlManager
 import net.postchain.rell.base.sql.SqlExecutor
 import net.postchain.rell.base.sql.SqlUtils
 import net.postchain.rell.base.testutils.BaseResourcefulTest
@@ -25,7 +25,7 @@ import kotlin.test.assertEquals
 class PostchainTest: BaseResourcefulTest() {
     @Test fun testInitializeApp() {
         val con = resource(SqlTestUtils.createSqlConnection())
-        SqlUtils.dropAll(ConnectionSqlExecutor(con), true)
+        SqlUtils.dropAll(ConnectionSqlManager.makeSqlExecutor(con), true)
         chkTables(con, "")
 
         sqlAccess().initializeApp(con, PostchainBaseUtils.DATABASE_VERSION)
@@ -53,7 +53,7 @@ class PostchainTest: BaseResourcefulTest() {
 
     @Test fun testInitializeBlockchain() {
         val con = resource(SqlTestUtils.createSqlConnection())
-        SqlUtils.dropAll(ConnectionSqlExecutor(con), true)
+        SqlUtils.dropAll(ConnectionSqlManager.makeSqlExecutor(con), true)
         val sa = sqlAccess()
         sa.initializeApp(con, PostchainBaseUtils.DATABASE_VERSION)
 
@@ -193,7 +193,7 @@ class PostchainTest: BaseResourcefulTest() {
     }
 
     private fun createAndDumpTables(con: Connection, code: (SqlExecutor) -> Unit): Map<String, Map<String, String>> {
-        val sqlExec: SqlExecutor = ConnectionSqlExecutor(con)
+        val sqlExec: SqlExecutor = ConnectionSqlManager.makeSqlExecutor(con)
         SqlUtils.dropAll(sqlExec, true)
         chkTables(con, "")
         code(sqlExec)

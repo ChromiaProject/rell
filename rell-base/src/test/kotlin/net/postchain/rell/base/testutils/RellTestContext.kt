@@ -1,16 +1,14 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.testutils
 
 import net.postchain.common.BlockchainRid
-import net.postchain.rell.base.runtime.utils.Rt_SqlManager
+import net.postchain.rell.base.runtime.utils.Rt_SqlManagerUtils
 import net.postchain.rell.base.sql.*
 import java.io.Closeable
 import java.sql.Connection
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 import java.util.*
 import kotlin.test.assertEquals
 
@@ -97,7 +95,7 @@ class RellTestContext(
 
     private fun createSqlManager(conn: Connection): SqlMgrHolder {
         val innerMgr = ConnectionSqlManager(conn, sqlLogging)
-        val outerMgr = Rt_SqlManager(TestSqlManager(innerMgr, sqlStats), logErrors = false)
+        val outerMgr = Rt_SqlManagerUtils.makeSqlManager(TestSqlManager(innerMgr, sqlStats), logErrors = false)
         return SqlMgrHolder(innerMgr, outerMgr)
     }
 
@@ -170,7 +168,7 @@ class RellTestContext(
         val sqls: Queue<String> = ArrayDeque()
     }
 
-    private class TestSqlManager(private val mgr: SqlManager, private val stats: TestSqlStats): SqlManager() {
+    private class TestSqlManager(private val mgr: SqlManager, private val stats: TestSqlStats): AbstractSqlManager() {
         override val hasConnection = mgr.hasConnection
 
         override fun <T> execute0(tx: Boolean, code: (SqlExecutor) -> T): T {
@@ -188,17 +186,17 @@ class RellTestContext(
                 exec.execute(sql)
             }
 
-            override fun execute(sql: String, preparator: (PreparedStatement) -> Unit) {
+            override fun execute(sql: String, preparator: SqlPreparator) {
                 stats.sqls.add(sql)
                 exec.execute(sql, preparator)
             }
 
-            override fun executeUpdate(sql: String, preparator: (PreparedStatement) -> Unit): Int {
+            override fun executeUpdate(sql: String, preparator: SqlPreparator): Int {
                 stats.sqls.add(sql)
                 return exec.executeUpdate(sql, preparator)
             }
 
-            override fun executeQuery(sql: String, preparator: (PreparedStatement) -> Unit, consumer: (ResultSet) -> Unit) {
+            override fun executeQuery(sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit) {
                 stats.sqls.add(sql)
                 exec.executeQuery(sql, preparator, consumer)
             }

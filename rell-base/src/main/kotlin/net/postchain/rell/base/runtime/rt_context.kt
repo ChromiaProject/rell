@@ -9,8 +9,6 @@ import mu.KLogging
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvNull
-import net.postchain.gtv.merkle.GtvMerkleHashCalculatorBase
-import net.postchain.gtv.merkle.GtvMerkleHashCalculatorV1
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.lib.test.Rt_TestBlockClock
 import net.postchain.rell.base.model.*
@@ -138,7 +136,7 @@ class Rt_RegularSqlContext private constructor(
             val res = mutableMapOf<Long, ByteArray>()
             sqlExec.executeQuery("SELECT chain_iid, blockchain_rid FROM blockchains ORDER BY chain_iid;", {}) { rs ->
                 val chainId = rs.getLong(1)
-                val rid = rs.getBytes(2)
+                val rid = rs.getBytes(2)!!
                 check(chainId !in res)
                 res[chainId] = rid
             }
@@ -337,11 +335,14 @@ class Rt_ExecutionContext(
     val appCtx: Rt_AppContext,
     val opCtx: Rt_OpContext,
     val sqlCtx: Rt_SqlContext,
-    val sqlExec: SqlExecutor,
+    sqlExec: SqlExecutor,
     var dbReadOnly: Boolean = true,
     state: State? = null,
 ) {
     val globalCtx = appCtx.globalCtx
+
+    val sysSqlExec = sqlExec
+    val userSqlExec = sqlExec.withAttributes(SqlExecutor.Attributes(category = SqlExecutor.Category.USER))
 
     private var nextNopNonce: Long = state?.nextNopNonce ?: 0L
 

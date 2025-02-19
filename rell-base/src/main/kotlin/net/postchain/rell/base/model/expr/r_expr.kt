@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model.expr
@@ -344,7 +344,7 @@ sealed class R_CreateExpr(type: R_Type, private val rEntity: R_EntityDefinition)
             val rowidFunc = sqlCtx.mainChainMapping().rowidFunction
             val rtSql = buildSql(sqlCtx, rEntity, page, "\"$rowidFunc\"()")
             val rtSel = SqlSelect(rtSql, immListOf(rEntity.type))
-            val rows = rtSel.execute(frame.sqlExec)
+            val rows = rtSel.execute(frame.userSqlExec)
             allRows.addAll(rows)
         }
 

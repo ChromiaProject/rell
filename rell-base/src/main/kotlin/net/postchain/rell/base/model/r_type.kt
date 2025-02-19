@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model
@@ -16,13 +16,13 @@ import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.runtime.utils.toGtv
+import net.postchain.rell.base.sql.PreparedStatementParams
+import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.LazyString
 import net.postchain.rell.base.utils.doc.DocCode
 import net.postchain.rell.base.utils.immListOf
 import org.jooq.DataType
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 import java.util.*
 
 class R_GtvCompatibility(val fromGtv: Boolean, val toGtv: Boolean)
@@ -71,8 +71,8 @@ sealed class R_TypeSqlAdapter(val sqlType: DataType<*>?) {
     }
 
     abstract fun toSqlValue(value: Rt_Value): Any
-    abstract fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value)
-    abstract fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value
+    abstract fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value)
+    abstract fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value
     abstract fun metaName(sqlCtx: Rt_SqlContext): String
 }
 
@@ -83,11 +83,11 @@ private class R_TypeSqlAdapter_None(private val type: R_Type): R_TypeSqlAdapter(
         throw Rt_Utils.errNotSupported("Type cannot be converted to SQL: ${type.strCode()}")
     }
 
-    override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) {
+    override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
         throw Rt_Utils.errNotSupported("Type cannot be converted to SQL: ${type.strCode()}")
     }
 
-    override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
+    override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
         throw Rt_Utils.errNotSupported("Type cannot be converted from SQL: ${type.strCode()}")
     }
 
@@ -99,8 +99,8 @@ private class R_TypeSqlAdapter_None(private val type: R_Type): R_TypeSqlAdapter(
 abstract class R_TypeSqlAdapter_Some(sqlType: DataType<*>?): R_TypeSqlAdapter(sqlType) {
     override fun isSqlCompatible(compilerOptions: C_CompilerOptions) = true
 
-    protected fun checkSqlNull(suspect: Boolean, rs: ResultSet, type: R_Type, nullable: Boolean): Rt_Value? {
-        return if (suspect && rs.wasNull()) {
+    protected fun checkSqlNull(suspect: Boolean, row: ResultSetRow, type: R_Type, nullable: Boolean): Rt_Value? {
+        return if (suspect && row.wasNull()) {
             if (nullable) {
                 Rt_NullValue
             } else {
@@ -111,12 +111,8 @@ abstract class R_TypeSqlAdapter_Some(sqlType: DataType<*>?): R_TypeSqlAdapter(sq
         }
     }
 
-    protected fun checkSqlNull(value: Any?, type: R_Type, nullable: Boolean): Rt_Value? {
-        return if (value == null) {
-            if (nullable) Rt_NullValue else throw errSqlNull(type)
-        } else {
-            null
-        }
+    protected fun checkSqlNull(type: R_Type, nullable: Boolean): Rt_Value {
+        return if (nullable) Rt_NullValue else throw errSqlNull(type)
     }
 
     private fun errSqlNull(type: R_Type): Rt_Exception {
@@ -258,10 +254,11 @@ object R_CtErrorType: R_SimpleType("<error>", C_LibUtils.defName("<error>")) {
     override fun calcCommonType(other: R_Type) = other
 
     private object R_TypeSqlAdapter_CtError: R_TypeSqlAdapter_Some(null) {
-        override fun toSqlValue(value: Rt_Value) = throw Rt_Utils.errNotSupported("Error")
-        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) = throw Rt_Utils.errNotSupported("Error")
-        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean) = throw Rt_Utils.errNotSupported("Error")
-        override fun metaName(sqlCtx: Rt_SqlContext) = throw Rt_Utils.errNotSupported("Error")
+        override fun toSqlValue(value: Rt_Value) = throw err()
+        override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) = throw err()
+        override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean) = throw err()
+        override fun metaName(sqlCtx: Rt_SqlContext) = throw err()
+        private fun err(): Rt_Exception = Rt_Utils.errNotSupported("Error")
     }
 }
 

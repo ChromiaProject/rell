@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.type
@@ -14,10 +14,10 @@ import net.postchain.rell.base.model.R_TypeSqlAdapter
 import net.postchain.rell.base.model.R_TypeSqlAdapter_Primitive
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Comparator
+import net.postchain.rell.base.sql.PreparedStatementParams
+import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.utils.immSetOf
 import org.jooq.impl.SQLDataType
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 
 object Lib_Type_Boolean {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -47,13 +47,13 @@ object R_BooleanType: R_PrimitiveType("boolean") {
     private object R_TypeSqlAdapter_Boolean: R_TypeSqlAdapter_Primitive("boolean", SQLDataType.BOOLEAN) {
         override fun toSqlValue(value: Rt_Value) = value.asBoolean()
 
-        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) {
-            stmt.setBoolean(idx, value.asBoolean())
+        override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
+            params.setBoolean(idx, value.asBoolean())
         }
 
-        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
-            val v = rs.getBoolean(idx)
-            return checkSqlNull(!v, rs, R_BooleanType, nullable) ?: Rt_BooleanValue.get(v)
+        override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
+            val v = row.getBoolean(idx)
+            return checkSqlNull(!v, row, R_BooleanType, nullable) ?: Rt_BooleanValue.get(v)
         }
     }
 }

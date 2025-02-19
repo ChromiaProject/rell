@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.sql
@@ -142,11 +142,11 @@ private class SqlInitPlanner private constructor(
     }
 
     private fun plan(): Boolean {
-        val tables = exeCtx.sqlExec.connection { con ->
+        val tables = exeCtx.sysSqlExec.connection { con ->
             SqlUtils.getExistingChainTables(con, mapping)
         }
 
-        val functions = SqlUtils.getExistingFunctions(exeCtx.sqlExec).toImmSet()
+        val functions = SqlUtils.getExistingFunctions(exeCtx.sysSqlExec).toImmSet()
 
         val metaExists = SqlMeta.checkMetaTablesExisting(mapping, tables, initCtx.msgs)
         initCtx.checkErrors()
@@ -167,7 +167,7 @@ private class SqlInitPlanner private constructor(
             initCtx.step(ORD_TABLES, "Create meta tables", SqlStepAction_ExecSql(SqlMeta.genMetaTablesCreate(sqlCtx)))
         }
 
-        val metaData = if (!metaExists) mapOf() else SqlMeta.loadMetaData(exeCtx.sqlExec, mapping, initCtx.msgs)
+        val metaData = if (!metaExists) mapOf() else SqlMeta.loadMetaData(exeCtx.sysSqlExec, mapping, initCtx.msgs)
         initCtx.checkErrors()
 
         SqlMeta.checkDataTables(sqlCtx, tables, metaData, initCtx.msgs)
@@ -306,7 +306,7 @@ private class SqlEntityIniter private constructor(
     private fun processNewAttrs(entity: R_EntityDefinition, metaEntityId: Int, newAttrs: List<String>) {
         val attrsStr = newAttrs.joinToString()
 
-        val recs = SqlUtils.recordsExist(exeCtx.sqlExec, sqlCtx, entity)
+        val recs = SqlUtils.recordsExist(exeCtx.sysSqlExec, sqlCtx, entity)
 
         val entityName = msgEntityName(entity)
 
@@ -507,7 +507,7 @@ private class SqlInitStep(
 
 private class SqlStepCtx(val logger: KLogger, val exeCtx: Rt_ExecutionContext, val objsInit: SqlObjectsInit) {
     val sqlCtx = exeCtx.sqlCtx
-    val sqlExec = exeCtx.sqlExec
+    val sqlExec = exeCtx.sysSqlExec
 }
 
 private sealed class SqlStepAction {
@@ -547,7 +547,7 @@ private class SqlStepAction_AddColumns_AlterTable(
     override fun run(ctx: SqlStepCtx) {
         val frame = Rt_CallFrame.createInitFrame(ctx.exeCtx, entity, true)
         val sql = R_CreateExpr.buildAddColumnsSql(frame, entity, attrs, existingRecs)
-        sql.execute(frame.sqlExec)
+        sql.execute(frame.sysSqlExec)
     }
 }
 

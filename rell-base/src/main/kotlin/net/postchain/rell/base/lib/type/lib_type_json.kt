@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.type
@@ -16,11 +16,11 @@ import net.postchain.rell.base.model.R_TypeSqlAdapter
 import net.postchain.rell.base.model.R_TypeSqlAdapter_Primitive
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Comparator
+import net.postchain.rell.base.sql.PreparedStatementParams
+import net.postchain.rell.base.sql.ResultSetRow
 import org.jooq.SQLDialect
 import org.jooq.impl.DefaultDataType
 import org.postgresql.util.PGobject
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 
 object Lib_Type_Json {
     private const val SINCE0 = "0.6.0"
@@ -79,14 +79,14 @@ object R_JsonType: R_PrimitiveType("json") {
             return obj
         }
 
-        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) {
+        override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
             val obj = toSqlValue(value)
-            stmt.setObject(idx, obj)
+            params.setObject(idx, obj)
         }
 
-        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
-            val str = rs.getString(idx)
-            return checkSqlNull(str, R_JsonType, nullable) ?: Rt_JsonValue.parse(str)
+        override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
+            val v = row.getString(idx)
+            return if (v != null) Rt_JsonValue.parse(v) else checkSqlNull(R_JsonType, nullable)
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.sql
@@ -40,14 +40,14 @@ object SqlUtils {
     fun getExistingTables(sqlExec: SqlExecutor): List<String> {
         val sql = "SELECT table_name FROM information_schema.tables WHERE table_catalog = CURRENT_DATABASE() AND table_schema = CURRENT_SCHEMA();"
         val list = mutableListOf<String>()
-        sqlExec.executeQuery(sql, {}) { rs -> list.add(rs.getString(1))}
+        sqlExec.executeQuery(sql, {}) { rs -> list.add(rs.getString(1)!!)}
         return list.toList()
     }
 
     fun getExistingFunctions(sqlExec: SqlExecutor): List<String> {
         val sql = "SELECT routine_name FROM information_schema.routines WHERE routine_catalog = CURRENT_DATABASE() AND routine_schema = CURRENT_SCHEMA();"
         val list = mutableListOf<String>()
-        sqlExec.executeQuery(sql, {}) { rs -> list.add(rs.getString(1))}
+        sqlExec.executeQuery(sql, {}) { rs -> list.add(rs.getString(1)!!)}
         return list.toList()
     }
 

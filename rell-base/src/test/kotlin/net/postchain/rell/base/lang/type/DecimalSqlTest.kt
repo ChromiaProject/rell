@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.type
@@ -41,7 +41,7 @@ class DecimalSqlTest: BaseRellTest(useSql = true) {
         val list = mutableListOf<Pair<Int, BigDecimal>>()
         sqlMgr.access { sqlExec ->
             sqlExec.executeQuery("SELECT k, v FROM $table ORDER BY k;", {}) { rs ->
-                list.add(rs.getInt(1) to rs.getBigDecimal(2))
+                list.add(rs.getInt(1) to rs.getBigDecimal(2)!!)
             }
         }
 

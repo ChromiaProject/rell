@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.api.gtx
@@ -18,8 +18,27 @@ import net.postchain.rell.base.runtime.Rt_LogPrinter
 import net.postchain.rell.base.runtime.Rt_OutPrinter
 import net.postchain.rell.base.runtime.Rt_Printer
 import net.postchain.rell.base.sql.SqlInitLogging
+import net.postchain.rell.base.sql.SqlInterceptor
+import net.postchain.rell.base.sql.WrappingSqlManager
 import net.postchain.rell.base.utils.*
 import java.io.File
+
+class SqlExecutionEvent(
+    val startTimeMs: Long,
+    val durationMs: Long,
+    val sql: String,
+    val isSystem: Boolean,
+    val parameters: List<Any?>,
+    /** `null` if this is not an `executeUpdate(...)` call */
+    val updateRowCount: Int?,
+    val error: Exception?,
+) {
+    init {
+        require(startTimeMs > 0) { startTimeMs }
+        require(durationMs >= 0) { durationMs }
+        require((updateRowCount ?: 0) >= 0) { "$updateRowCount" }
+    }
+}
 
 object RellApiRunTests {
     /**
@@ -86,6 +105,8 @@ object RellApiRunTests {
         val onTestCaseStart: (UnitTestCase) -> Unit,
         /** Test case finished callback. */
         val onTestCaseFinished: (UnitTestCaseResult) -> Unit,
+        /** SQL execution finished callback. */
+        val onSqlExecutionFinished: ((SqlExecutionEvent) -> Unit)?,
     ) {
         fun toBuilder() = Builder(this)
 
@@ -105,6 +126,7 @@ object RellApiRunTests {
                 activateTestDependencies = true,
                 onTestCaseStart = {},
                 onTestCaseFinished = {},
+                onSqlExecutionFinished = null,
             )
         }
 
@@ -123,6 +145,7 @@ object RellApiRunTests {
             private var activateTestDependencies = proto.activateTestDependencies
             private var onTestCaseStart = proto.onTestCaseStart
             private var onTestCaseFinished = proto.onTestCaseFinished
+            private var onSqlExecutionFinished = proto.onSqlExecutionFinished
 
             /** @see [Config.compileConfig] */
             fun compileConfig(v: RellApiCompile.Config) = apply { compileConfig = v }
@@ -166,6 +189,9 @@ object RellApiRunTests {
             /** @see [Config.onTestCaseFinished] */
             fun onTestCaseFinished(v: (UnitTestCaseResult) -> Unit) = apply { onTestCaseFinished = v }
 
+            /** @see [Config.onSqlExecutionFinished] */
+            fun onSqlExecutionFinished(v: (SqlExecutionEvent) -> Unit) = apply { onSqlExecutionFinished = v }
+
             fun build(): Config {
                 return Config(
                     compileConfig = compileConfig,
@@ -182,13 +208,14 @@ object RellApiRunTests {
                     activateTestDependencies = activateTestDependencies,
                     onTestCaseStart = onTestCaseStart,
                     onTestCaseFinished = onTestCaseFinished,
+                    onSqlExecutionFinished = onSqlExecutionFinished,
                 )
             }
         }
     }
 }
 
-object RellApiGtxInternal {
+internal object RellApiGtxInternal {
     fun runTests(
         config: RellApiRunTests.Config,
         options: C_CompilerOptions,
@@ -203,7 +230,8 @@ object RellApiGtxInternal {
             logPrinter = config.logPrinter,
         )
 
-        val blockRunner = createBlockRunner(config, sourceDir, app, appModules)
+        val sqlInterceptor = config.onSqlExecutionFinished?.let { ListeningSqlInterceptor(it) }
+        val blockRunner = createBlockRunner(config, sourceDir, app, appModules, sqlInterceptor)
 
         val sqlCtx = RellApiBaseUtils.createSqlContext(app)
         val chainCtx = RellApiBaseUtils.createChainContext()
@@ -222,7 +250,7 @@ object RellApiGtxInternal {
                 app = app,
                 printer = config.cliEnv::print,
                 sqlCtx = sqlCtx,
-                sqlMgr = sqlMgr,
+                sqlMgr = sqlInterceptor?.let { WrappingSqlManager.intercepting(sqlMgr, it) } ?: sqlMgr,
                 sqlInitProjExt = PostchainSqlInitProjExt,
                 globalCtx = globalCtx,
                 chainCtx = chainCtx,
@@ -246,6 +274,7 @@ object RellApiGtxInternal {
         sourceDir: C_SourceDir,
         app: R_App,
         appModules: List<R_ModuleName>?,
+        sqlInterceptor: SqlInterceptor?,
     ): Rt_UnitTestBlockRunner {
         val keyPair = Lib_RellTest.BLOCK_RUNNER_KEYPAIR
 
@@ -253,6 +282,7 @@ object RellApiGtxInternal {
             forceTypeCheck = false,
             sqlLog = config.sqlLog,
             dbInitLogLevel = SqlInitLogging.LOG_NONE,
+            sqlInterceptor = sqlInterceptor,
         )
 
         val mainModules = when {

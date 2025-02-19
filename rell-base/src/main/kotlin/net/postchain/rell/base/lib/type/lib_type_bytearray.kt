@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.type
@@ -20,12 +20,12 @@ import net.postchain.rell.base.model.expr.Db_SysFunction
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.runtime.utils.Rt_Utils
+import net.postchain.rell.base.sql.PreparedStatementParams
+import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.utils.CommonUtils
 import org.bouncycastle.util.Arrays
 import org.jooq.util.postgres.PostgresDataType
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 import java.util.*
 
 object Lib_Type_ByteArray {
@@ -236,11 +236,14 @@ object R_ByteArrayType: R_PrimitiveType("byte_array") {
 
     private object R_TypeSqlAdapter_ByteArray: R_TypeSqlAdapter_Primitive("byte_array", PostgresDataType.BYTEA) {
         override fun toSqlValue(value: Rt_Value) = value.asByteArray()
-        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) = stmt.setBytes(idx, value.asByteArray())
 
-        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
-            val v = rs.getBytes(idx)
-            return checkSqlNull(v, R_ByteArrayType, nullable) ?: Rt_ByteArrayValue.get(v)
+        override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
+            params.setBytes(idx, value.asByteArray())
+        }
+
+        override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
+            val v = row.getBytes(idx)
+            return if (v != null) Rt_ByteArrayValue.get(v) else checkSqlNull(R_ByteArrayType, nullable)
         }
     }
 }

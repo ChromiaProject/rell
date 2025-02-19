@@ -28,12 +28,9 @@ import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
-import net.postchain.rell.base.runtime.utils.Rt_SqlExecutor
+import net.postchain.rell.base.runtime.utils.Rt_SqlManagerUtils
 import net.postchain.rell.base.runtime.utils.Rt_Utils
-import net.postchain.rell.base.sql.ConnectionSqlExecutor
-import net.postchain.rell.base.sql.NullSqlInitProjExt
-import net.postchain.rell.base.sql.SqlInit
-import net.postchain.rell.base.sql.SqlInitLogging
+import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.gtx.PostchainBaseUtils
 import net.postchain.rell.gtx.Rt_DefaultPostchainTxContextFactory
@@ -341,10 +338,21 @@ private class RellPostchainModule(
 
         val chainDeps = chainDeps.mapValues { (_, rid) -> Rt_ChainDependency(rid) }
 
-        val sqlExec = Rt_SqlExecutor(ConnectionSqlExecutor(eCtx.conn, config.sqlLogging), globalCtx.logSqlErrors)
+        val sqlExec = createSqlExecutor(eCtx)
         val sqlCtx = Rt_RegularSqlContext.create(rApp, sqlMapping, chainDeps, sqlExec, heightProvider)
 
         return Rt_ExecutionContext(appCtx, opCtx, sqlCtx, sqlExec, dbReadOnly)
+    }
+
+    private fun createSqlExecutor(eCtx: EContext): SqlExecutor {
+        var sqlExec = ConnectionSqlManager.makeSqlExecutor(eCtx.conn, SqlConnectionLogger.getOrNull(config.sqlLogging))
+        sqlExec = Rt_SqlManagerUtils.makeSqlExecutor(sqlExec, globalCtx.logSqlErrors)
+
+        if (env.sqlInterceptor != null) {
+            sqlExec = InterceptingSqlExecutor(sqlExec, env.sqlInterceptor)
+        }
+
+        return sqlExec
     }
 
     private fun translateQueryArgs(
@@ -421,6 +429,7 @@ class RellPostchainModuleEnvironment(
     val fallbackModules: List<R_ModuleName> = immListOf(R_ModuleName.EMPTY),
     val precompiledApp: RellGtxModuleApp? = null,
     val txContextFactory: Rt_PostchainTxContextFactory = Rt_DefaultPostchainTxContextFactory,
+    val sqlInterceptor: SqlInterceptor? = null,
 ) {
     companion object {
         val DEFAULT = RellPostchainModuleEnvironment()

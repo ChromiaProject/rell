@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.base.model
 
 import net.postchain.gtv.Gtv
@@ -7,11 +11,11 @@ import net.postchain.rell.base.lib.type.Lib_Type_Entity
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.runtime.utils.toGtv
+import net.postchain.rell.base.sql.PreparedStatementParams
+import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.doc.DocCode
 import org.jooq.impl.SQLDataType
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 import java.util.*
 
 class R_EntityType(val rEntity: R_EntityDefinition): R_Type(rEntity.appLevelName, rEntity.cDefName) {
@@ -42,11 +46,14 @@ class R_EntityType(val rEntity: R_EntityDefinition): R_Type(rEntity.appLevelName
 
     private class R_TypeSqlAdapter_Entity(private val type: R_EntityType): R_TypeSqlAdapter_Some(SQLDataType.BIGINT) {
         override fun toSqlValue(value: Rt_Value) = value.asObjectId()
-        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) = stmt.setLong(idx, value.asObjectId())
 
-        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
-            val v = rs.getLong(idx)
-            return checkSqlNull(v == 0L, rs, type, nullable) ?: Rt_EntityValue(type, v)
+        override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
+            params.setLong(idx, value.asObjectId())
+        }
+
+        override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
+            val v = row.getLong(idx)
+            return checkSqlNull(v == 0L, row, type, nullable) ?: Rt_EntityValue(type, v)
         }
 
         override fun metaName(sqlCtx: Rt_SqlContext): String {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model.stmt
@@ -150,7 +150,7 @@ sealed class R_BaseUpdateStatement(val target: R_UpdateTarget, val fromBlock: R_
         frame.block(fromBlock) {
             val ctx = SqlGenContext.createTop(frame.sqlCtx, fromItems)
             val pSql = buildSql(frame, ctx, false)
-            pSql.execute(frame.sqlExec)
+            pSql.execute(frame.userSqlExec)
         }
     }
 
@@ -158,7 +158,7 @@ sealed class R_BaseUpdateStatement(val target: R_UpdateTarget, val fromBlock: R_
         val count: Int = frame.block(fromBlock) {
             val ctx = SqlGenContext.createTop(frame.sqlCtx, fromItems)
             val pSql = buildSql(frame, ctx, false)
-            pSql.executeUpdate(frame.sqlExec)
+            pSql.executeUpdate(frame.userSqlExec)
         }
         return count
     }

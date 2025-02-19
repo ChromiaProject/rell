@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model.expr
@@ -10,13 +10,13 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.Rt_SqlContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
+import net.postchain.rell.base.sql.PreparedStatementParams
+import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlExecutor
 import net.postchain.rell.base.utils.chainToIterable
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 
 data class SqlTableAlias(val entity: R_EntityDefinition, val exprId: R_AtExprId, val str: String)
 class SqlTableJoin(val attr: R_Attribute, val alias: SqlTableAlias)
@@ -202,7 +202,7 @@ class ParameterizedSql(val sql: String, params: List<Rt_Value>) {
         return res
     }
 
-    fun executeQuery(sqlExec: SqlExecutor, consumer: (ResultSet) -> Unit) {
+    fun executeQuery(sqlExec: SqlExecutor, consumer: (ResultSetRow) -> Unit) {
         val args = calcArgs()
         sqlExec.executeQuery(sql, args::bind, consumer)
     }
@@ -232,10 +232,10 @@ class ParameterizedSql(val sql: String, params: List<Rt_Value>) {
 class SqlArgs(values: List<Rt_Value>) {
     private val values = values.toImmList()
 
-    fun bind(stmt: PreparedStatement) {
+    fun bind(params: PreparedStatementParams) {
         for ((i, value) in values.withIndex()) {
             val type = value.type()
-            type.sqlAdapter.toSql(stmt, i + 1, value)
+            type.sqlAdapter.toSql(params, i + 1, value)
         }
     }
 }
@@ -248,11 +248,11 @@ class SqlSelect(val pSql: ParameterizedSql, val resultTypes: List<R_Type>) {
     fun execute(sqlExec: SqlExecutor, transformer: (List<Rt_Value>) -> List<Rt_Value>): List<List<Rt_Value>> {
         val result = mutableListOf<List<Rt_Value>>()
 
-        pSql.executeQuery(sqlExec) { rs ->
+        pSql.executeQuery(sqlExec) { rsRow ->
             val list = mutableListOf<Rt_Value>()
             for (i in resultTypes.indices) {
                 val type = resultTypes[i]
-                val value = type.sqlAdapter.fromSql(rs, i + 1, false)
+                val value = type.sqlAdapter.fromSql(rsRow, i + 1, false)
                 list.add(value)
             }
 

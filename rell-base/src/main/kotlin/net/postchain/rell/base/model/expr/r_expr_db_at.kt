@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model.expr
@@ -272,7 +272,7 @@ class RedDb_AtExprBase(
         val rtSql = buildSql(frame.sqlCtx, extras)
         val select = SqlSelect(rtSql, resultTypes)
         val combiners = selWhat.map { it.combiner(frame) }
-        val records = select.execute(frame.sqlExec) { row ->
+        val records = select.execute(frame.userSqlExec) { row ->
             val items = Rt_AtWhatCombiner.combineValues(combiners, row)
             items.map { it.value() }
         }

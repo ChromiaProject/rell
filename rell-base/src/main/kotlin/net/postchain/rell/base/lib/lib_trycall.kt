@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib
@@ -58,7 +58,7 @@ object Lib_TryCall: KLogging() {
     private fun tryCall(ctx: Rt_CallContext, f: Rt_Value, okValue: Rt_Value?, errValueFn: () -> Rt_Value): Rt_Value {
         return try {
             if (needsSavepoint(ctx.exeCtx)) {
-                ctx.exeCtx.sqlExec.connection { con ->
+                ctx.exeCtx.sysSqlExec.connection { con ->
                     withSavepoint(con) {
                         tryCall0(f, ctx, okValue)
                     }
@@ -96,5 +96,5 @@ object Lib_TryCall: KLogging() {
     * In order to optimize performance, we do it by avoiding creating unnecessary savepoints. The savepoints are only
     * created if there is a possible write operation towards the database
     */
-    private fun needsSavepoint(ctx: Rt_ExecutionContext) = ctx.sqlExec.hasRealConnection() && !ctx.dbReadOnly
+    private fun needsSavepoint(ctx: Rt_ExecutionContext) = ctx.sysSqlExec.hasRealConnection() && !ctx.dbReadOnly
 }

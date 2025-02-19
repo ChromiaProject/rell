@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.runtime
@@ -20,7 +20,8 @@ class Rt_CallFrame(
 ) {
     val exeCtx = defCtx.exeCtx
     val sqlCtx = defCtx.sqlCtx
-    val sqlExec = exeCtx.sqlExec
+    val sysSqlExec = exeCtx.sysSqlExec
+    val userSqlExec = exeCtx.userSqlExec
     val appCtx = exeCtx.appCtx
 
     private var curBlock = rFrame.rootBlock

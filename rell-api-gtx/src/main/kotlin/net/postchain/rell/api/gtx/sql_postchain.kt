@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.api.gtx
@@ -17,10 +17,10 @@ import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.gtx.PostchainBaseUtils
 import java.sql.Connection
 
-class PostchainStorageSqlManager(private val storage: Storage, logging: Boolean): SqlManager() {
+class PostchainStorageSqlManager(private val storage: Storage, logging: Boolean): AbstractSqlManager() {
     override val hasConnection = true
 
-    private val conLogger = SqlConnectionLogger(logging)
+    private val conLogger = SqlConnectionLogger.getOrNull(logging)
 
     init {
         storage.withReadConnection { ctx ->
@@ -43,7 +43,7 @@ class PostchainStorageSqlManager(private val storage: Storage, logging: Boolean)
 
     private fun <T> executeWithConnection(con: Connection, expectedAutoCommit: Boolean, code: (SqlExecutor) -> T): T {
         checkEquals(con.autoCommit, expectedAutoCommit)
-        val sqlExec = ConnectionSqlExecutor(con, conLogger)
+        val sqlExec = ConnectionSqlManager.makeSqlExecutor(con, conLogger)
         val res = code(sqlExec)
         checkEquals(con.autoCommit, expectedAutoCommit)
         return res
@@ -56,7 +56,7 @@ object PostchainSqlInitProjExt: SqlInitProjExt() {
         val bcRid = BlockchainRid(exeCtx.appCtx.chainCtx.blockchainRid.toByteArray())
 
         val sqlAccess = PostchainBaseUtils.createDatabaseAccess()
-        exeCtx.sqlExec.connection { con ->
+        exeCtx.sysSqlExec.connection { con ->
             sqlAccess.initializeApp(con, PostchainBaseUtils.DATABASE_VERSION)
             val eCtx: EContext = BaseEContext(con, chainId, sqlAccess)
             sqlAccess.initializeBlockchain(eCtx, bcRid)

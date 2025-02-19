@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model
@@ -18,9 +18,9 @@ import net.postchain.rell.base.runtime.Rt_SqlContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.runtime.utils.toGtv
+import net.postchain.rell.base.sql.PreparedStatementParams
+import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.utils.immListOf
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 
 class R_NullableType(val valueType: R_Type): R_Type(calcName(valueType)) {
     init {
@@ -80,16 +80,18 @@ class R_NullableType(val valueType: R_Type): R_Type(calcName(valueType)) {
 
         override fun isAllowedForEntityAttributes(compilerOptions: C_CompilerOptions) = false
 
-        override fun metaName(sqlCtx: Rt_SqlContext) = throw Rt_Utils.errNotSupported("Nullable entity attributes are not supported")
+        override fun metaName(sqlCtx: Rt_SqlContext): String {
+            throw Rt_Utils.errNotSupported("Nullable entity attributes are not supported")
+        }
 
         override fun toSqlValue(value: Rt_Value) = valueType.sqlAdapter.toSqlValue(value)
 
-        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) {
-            stmt.setBoolean(idx, value.asBoolean())
+        override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
+            params.setBoolean(idx, value.asBoolean())
         }
 
-        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
-            return valueType.sqlAdapter.fromSql(rs, idx, true)
+        override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
+            return valueType.sqlAdapter.fromSql(row, idx, true)
         }
     }
 

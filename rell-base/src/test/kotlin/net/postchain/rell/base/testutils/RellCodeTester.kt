@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.testutils
@@ -60,7 +60,7 @@ class RellCodeTester(
 
         if (createTables) {
             val chainId = exeCtx.sqlCtx.mainChainMapping().chainId
-            SqlTestUtils.createSysBlockchainTables(exeCtx.sqlExec, chainId)
+            SqlTestUtils.createSysBlockchainTables(exeCtx.sysSqlExec, chainId)
 
             SqlInit.init(exeCtx, NullSqlInitProjExt, SqlInitLogging())
         }

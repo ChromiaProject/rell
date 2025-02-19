@@ -5,18 +5,15 @@
 package net.postchain.rell.api.gtx
 
 import net.postchain.gtv.GtvFactory
-import net.postchain.rell.api.base.BaseRellApiTest
 import net.postchain.rell.api.base.RellApiCompile
-import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
-import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.testutils.Rt_TestPrinter
 import net.postchain.rell.base.testutils.SqlTestUtils
 import net.postchain.rell.base.utils.toImmList
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class RellApiRunTestsTest: BaseRellApiTest() {
+class RellApiRunTestsTest: BaseRellApiRunTestsTest() {
     @Test fun testRunTestsBasic() {
         val runConfig = RellApiRunTests.Config.Builder().build()
         val sourceDir = C_SourceDir.mapDirOf(
@@ -174,6 +171,16 @@ class RellApiRunTestsTest: BaseRellApiTest() {
         chkRunTests(runConfig, sourceDir, listOf("lib"), listOf("test"), "test:test:OK")
         runConfig = runTestsConfig(configBuilder().moduleArgs("lib" to mapOf("x" to GtvFactory.gtv(0))), runConfig)
         chkRunTests(runConfig, sourceDir, listOf("lib"), listOf("test"), "test:test:FAILED")
+    }
+
+    @Test fun testCompilationError() {
+        val sourceDir = C_SourceDir.mapDirOf(
+            "lib.rell" to "module; function f() { print(__unknown__); }",
+            "test.rell" to "@test module; import lib; function test() {}",
+        )
+
+        val runConfig = RellApiRunTests.Config.Builder().build()
+        chkRunTests(runConfig, sourceDir, listOf(), listOf("test"), "CTE:lib.rell:unknown_name:__unknown__")
     }
 
     @Test fun testFunctionExtendCallFromTest() {
@@ -342,63 +349,5 @@ class RellApiRunTestsTest: BaseRellApiTest() {
 
         chkRunTests(runConfig, sourceDir, listOf(), listOf("test"), *expStatus.toTypedArray())
         printer.chk(*expOut)
-    }
-
-    private fun runTestsConfig(
-        compileConfig: RellApiCompile.Config.Builder,
-        proto: RellApiRunTests.Config = RellApiRunTests.Config.DEFAULT,
-    ): RellApiRunTests.Config {
-        return proto.toBuilder().compileConfig(compileConfig.build()).build()
-    }
-
-    private fun runTestsDbConfig(): RellApiRunTests.Config {
-        return RellApiRunTests.Config.Builder()
-            .databaseUrl(SqlTestUtils.getDbUrl())
-            .build()
-    }
-
-    private fun chkRunTests(
-        config: RellApiRunTests.Config,
-        sourceDir: C_SourceDir,
-        appModules: List<String>?,
-        testModules: List<String>,
-        vararg expected: String,
-    ) {
-        val actualList = runTests(config, sourceDir, appModules, testModules)
-        assertEquals(expected.toList(), actualList)
-    }
-
-    private fun runTests(
-        config: RellApiRunTests.Config,
-        sourceDir: C_SourceDir,
-        appModules: List<String>?,
-        testModules: List<String>,
-    ): List<String> {
-        val appMods = appModules?.map { R_ModuleName.of(it) }
-        val testMods = testModules.map { R_ModuleName.of(it) }
-
-        val options = RellApiGtxInternal.makeRunTestsCompilerOptions(config)
-
-        val apiRes = try {
-            compileApp0(config.compileConfig, options, sourceDir, appMods, testMods)
-        } catch (e: C_CommonError) {
-            return listOf("CME:${e.code}")
-        }
-
-        val cRes = apiRes.cRes
-        val ctErr = handleCompilationError(cRes)
-        if (ctErr != null) return listOf(ctErr)
-        val rApp = cRes.app!!
-
-        val actualList = mutableListOf<String>()
-        val config2 = config.toBuilder()
-            .onTestCaseFinished { actualList.add("${it.case.name}:${it.res}") }
-            .build()
-
-        val res = RellApiGtxInternal.runTests(config2, options, sourceDir, rApp, appMods)
-        val resList = res.getResults().map { "${it.case.name}:${it.res}" }
-
-        assertEquals(actualList, resList)
-        return actualList.toImmList()
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.sql
@@ -105,8 +105,8 @@ object SqlMeta {
 
         sqlExec.executeQuery("""SELECT T."id", T."name", T."type", T."log" FROM "$table" T ORDER BY T."id";""", {}) { rs ->
             val id = rs.getInt(1)
-            val name = rs.getString(2)
-            val type = rs.getString(3)
+            val name = rs.getString(2)!!
+            val type = rs.getString(3)!!
             val log = rs.getBoolean(4)
             res.add(RecMetaEntity(id, name, type, log))
         }
@@ -122,8 +122,8 @@ object SqlMeta {
         val res = mutableListOf<RecMetaAttr>()
         sqlExec.executeQuery("""SELECT T."class_id", T."name", T."type" FROM "$table" T ORDER BY T."class_id", T."name";""", {}) { rs ->
             val classId = rs.getInt(1)
-            val name = rs.getString(2)
-            val type = rs.getString(3)
+            val name = rs.getString(2)!!
+            val type = rs.getString(3)!!
             res.add(RecMetaAttr(classId, name, type))
         }
         checkUniqueKeys(msgs, table, res) { "${it.classId}:${it.name}" }

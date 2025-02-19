@@ -34,6 +34,7 @@ import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.Rt_TupleValue
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.sql.SqlInterceptor
 import net.postchain.rell.base.sql.SqlUtils.withSavepoint
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.gtx.PostchainBaseUtils
@@ -64,7 +65,7 @@ class Rt_PostchainUnitTestBlockRunner(
 
         try {
             RellPostchainModuleEnvironment.set(pcEnv) {
-                ctx.exeCtx.sqlExec.connection { con ->
+                ctx.exeCtx.sysSqlExec.connection { con ->
                     val eCtx = createEContext(con, bcCtx)
                     val bcConfig = bcConfigFactory.makeBlockchainConfiguration(bcData, bcCtx, sigMaker, eCtx, PostchainGtvUtils.cryptoSystem)
                     withSavepoint(con) {
@@ -205,6 +206,7 @@ class Rt_BlockRunnerConfig(
     private val forceTypeCheck: Boolean = DEFENV.forceTypeCheck,
     private val sqlLog: Boolean = DEFENV.sqlLog,
     private val dbInitLogLevel: Int = DEFENV.dbInitLogLevel,
+    private val sqlInterceptor: SqlInterceptor? = DEFENV.sqlInterceptor,
 ) {
     fun makePostchainModuleEnvironment(
         globalCtx: Rt_GlobalContext,
@@ -225,6 +227,7 @@ class Rt_BlockRunnerConfig(
             fallbackModules = immListOf(),
             precompiledApp = precompiledApp,
             txContextFactory = txContextFactory,
+            sqlInterceptor = sqlInterceptor,
         )
     }
 

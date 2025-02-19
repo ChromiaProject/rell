@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.testutils
@@ -8,16 +8,12 @@ import com.google.common.collect.HashMultimap
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
-import net.postchain.rell.base.sql.SqlConstants
-import net.postchain.rell.base.sql.SqlExecutor
-import net.postchain.rell.base.sql.SqlManager
-import net.postchain.rell.base.sql.SqlUtils
+import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.utils.CommonUtils
 import org.postgresql.util.PGobject
 import java.math.BigDecimal
 import java.sql.Connection
 import java.sql.DriverManager
-import java.sql.ResultSet
 import java.util.*
 
 object SqlTestUtils {
@@ -194,15 +190,15 @@ object SqlTestUtils {
         return buf.toString()
     }
 
-    private fun dumpSqlRecord(rs: ResultSet): String {
+    private fun dumpSqlRecord(row: ResultSetRow): String {
         val values = mutableListOf<String>()
 
-        for (idx in 1 .. rs.metaData.columnCount) {
-            val value = rs.getObject(idx)
+        for (idx in 1 .. row.metaData.columnCount) {
+            val value = row.getObject(idx)
             val str = if (value is String) {
                 value
             } else if (value is ByteArray) {
-                "0x" + CommonUtils.bytesToHex(rs.getBytes(idx))
+                "0x" + CommonUtils.bytesToHex(row.getBytes(idx)!!)
             } else if (value is PGobject) {
                 value.value
             } else if (value is Int || value is Long) {

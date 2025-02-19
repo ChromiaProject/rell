@@ -7,10 +7,9 @@ package net.postchain.rell.api.gtx
 import net.postchain.StorageBuilder
 import net.postchain.config.app.AppConfig
 import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.rell.api.base.RellApiCompile
-import net.postchain.rell.base.runtime.utils.Rt_SqlManager
+import net.postchain.rell.base.runtime.utils.Rt_SqlManagerUtils
 import net.postchain.rell.base.sql.ConnectionSqlManager
 import net.postchain.rell.base.sql.NoConnSqlManager
 import net.postchain.rell.base.sql.SqlManager
@@ -78,7 +77,7 @@ object RellApiGtxUtils {
         logSqlErrors: Boolean,
         code: (SqlManager) -> T,
     ): T {
-        val sqlMgr2 = Rt_SqlManager(sqlMgr, logSqlErrors)
+        val sqlMgr2 = Rt_SqlManagerUtils.makeSqlManager(sqlMgr, logSqlErrors)
         if (schema != null) {
             sqlMgr2.transaction { sqlExec ->
                 sqlExec.connection { con ->

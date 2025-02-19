@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.runtime
@@ -44,7 +44,7 @@ private class GtvToRtState(
     fun finish(exeCtx: Rt_ExecutionContext) {
         for (rEntities in entityRowids.keySet()) {
             val rowids = entityRowids.get(rEntities)
-            checkRowids(exeCtx.sqlExec, exeCtx.sqlCtx, rEntities, rowids)
+            checkRowids(exeCtx.sysSqlExec, exeCtx.sqlCtx, rEntities, rowids)
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model
@@ -137,7 +137,7 @@ class R_ObjectDefinition(
         val createValues = R_CreateExpr.CreateValues(createAttrs, immListOf(createRecord))
 
         val sql = R_CreateExpr.buildSql(frame.defCtx.sqlCtx, rEntity, createValues, "0")
-        sql.execute(frame.sqlExec)
+        sql.execute(frame.sysSqlExec)
     }
 
     override fun toMetaGtv() = rEntity.toMetaGtv(false)

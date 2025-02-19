@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.type
@@ -20,6 +20,8 @@ import net.postchain.rell.base.model.expr.Db_SysFunction
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.runtime.utils.Rt_Utils
+import net.postchain.rell.base.sql.PreparedStatementParams
+import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.utils.checkEquals
 import org.jooq.DataType
@@ -28,8 +30,6 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.MathContext
 import java.math.RoundingMode
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 import java.util.*
 
 object Lib_Type_BigInteger {
@@ -451,14 +451,14 @@ object R_BigIntegerType: R_PrimitiveType("big_integer") {
     private object R_TypeSqlAdapter_BigInteger: R_TypeSqlAdapter_Primitive("big_integer", Lib_BigIntegerMath.SQL_TYPE) {
         override fun toSqlValue(value: Rt_Value) = value.asBigInteger()
 
-        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) {
+        override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
             val v = value.asBigInteger()
-            stmt.setBigDecimal(idx, BigDecimal(v))
+            params.setBigDecimal(idx, BigDecimal(v))
         }
 
-        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
-            val v = rs.getBigDecimal(idx)
-            return checkSqlNull(v, R_BigIntegerType, nullable) ?: Rt_BigIntegerValue.get(v)
+        override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
+            val v = row.getBigDecimal(idx)
+            return if (v != null) Rt_BigIntegerValue.get(v) else checkSqlNull(R_BigIntegerType, nullable)
         }
     }
 }

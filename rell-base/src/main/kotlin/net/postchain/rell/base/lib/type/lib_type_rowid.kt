@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.type
@@ -16,10 +16,10 @@ import net.postchain.rell.base.model.R_TypeSqlAdapter_Primitive
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.runtime.utils.Rt_Utils
+import net.postchain.rell.base.sql.PreparedStatementParams
+import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.utils.toImmList
 import org.jooq.impl.SQLDataType
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 
 object Lib_Type_Rowid {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -63,13 +63,13 @@ object R_RowidType: R_PrimitiveType("rowid") {
     private object R_TypeSqlAdapter_Rowid: R_TypeSqlAdapter_Primitive("rowid", SQLDataType.BIGINT) {
         override fun toSqlValue(value: Rt_Value) = value.asRowid()
 
-        override fun toSql(stmt: PreparedStatement, idx: Int, value: Rt_Value) {
-            stmt.setLong(idx, value.asRowid())
+        override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
+            params.setLong(idx, value.asRowid())
         }
 
-        override fun fromSql(rs: ResultSet, idx: Int, nullable: Boolean): Rt_Value {
-            val v = rs.getLong(idx)
-            return checkSqlNull(v == 0L, rs, R_RowidType, nullable) ?: Rt_RowidValue.get(v)
+        override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
+            val v = row.getLong(idx)
+            return checkSqlNull(v == 0L, row, R_RowidType, nullable) ?: Rt_RowidValue.get(v)
         }
     }
 }
