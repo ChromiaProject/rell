@@ -279,7 +279,7 @@ class Rt_AppContext(
     val test: Boolean,
     val replOut: ReplOutputChannel? = null,
     val blockRunner: Rt_UnitTestBlockRunner = Rt_NullUnitTestBlockRunner,
-    val gtvHashCalculator: PostchainGtvUtils.HashCalculator = PostchainGtvUtils.HashCalculator(),
+    val gtvHashCalculator: PostchainGtvUtils.HashCalculator = getDefaultHashCalculator(globalCtx),
     moduleArgsSource: Rt_ModuleArgsSource = Rt_ModuleArgsSource.NULL,
     globalConstantsState: Rt_GlobalConstants.State = Rt_GlobalConstants.State(),
 ) {
@@ -322,6 +322,14 @@ class Rt_AppContext(
 
     fun dumpGlobalConstants(): Rt_GlobalConstants.State {
         return globalConstants.dump()
+    }
+
+    companion object {
+        private fun getDefaultHashCalculator(globalCtx: Rt_GlobalContext): PostchainGtvUtils.HashCalculator {
+            val v2 = PostchainGtvUtils.HASH_V2_SWITCH.isActive(globalCtx.compilerOptions)
+            val version = if (v2) 2 else 1
+            return PostchainGtvUtils.HashCalculator(version)
+        }
     }
 }
 

@@ -583,7 +583,7 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
         config: Gtv,
     ): PostchainGtvUtils.HashCalculator {
         var version = PostchainBaseUtils.getBlockchainConfigHashVersion(config)
-        if (version == 2 && !HASH_V2_SWITCH.isActive(compilerOptions)) {
+        if (version == 2 && !PostchainGtvUtils.HASH_V2_SWITCH.isActive(compilerOptions)) {
             version = 1
         }
         return PostchainGtvUtils.HashCalculator(version)
@@ -626,8 +626,6 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
     }
 
     companion object: KLogging() {
-        private val HASH_V2_SWITCH = C_FeatureSwitch("0.14.5")
-
         fun compileApp(config: Gtv, env: RellPostchainModuleEnvironment): Pair<C_CompilationResult, C_SourceDir> {
             val gtxNode = config.asDict().getValue("gtx").asDict()
             val rellNode = gtxNode.getValue("rell").asDict()

@@ -13,12 +13,15 @@ import net.postchain.gtv.gtvml.GtvMLParser
 import net.postchain.gtv.merkle.GtvMerkleHashCalculatorBase
 import net.postchain.gtv.merkle.makeMerkleHashCalculator
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
+import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.model.R_StructDefinition
 import net.postchain.rell.base.runtime.GtvToRtContext
 import net.postchain.rell.base.runtime.GtvToRtDefaultValueEvaluator
 import net.postchain.rell.base.runtime.Rt_Value
 
 object PostchainGtvUtils {
+    val HASH_V2_SWITCH = C_FeatureSwitch("0.14.5")
+
     val cryptoSystem: CryptoSystem = Secp256K1CryptoSystem()
     val hashCalculator = HashCalculator()
     val merkleHashCalculator: GtvMerkleHashCalculatorBase = makeMerkleHashCalculator(2)

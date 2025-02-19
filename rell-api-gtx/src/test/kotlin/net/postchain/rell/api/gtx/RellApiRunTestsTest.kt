@@ -263,8 +263,9 @@ class RellApiRunTestsTest: BaseRellApiTest() {
         printer.chk(*expectedOut)
     }
 
-    @Test fun testOperationMerkleHash() {
+    @Test fun testMerkleHashOperation() {
         val runConfig = runTestsDbConfig()
+
         val sourceDir = C_SourceDir.mapDirOf(
             "lib.rell" to """
                 module;
@@ -287,6 +288,60 @@ class RellApiRunTestsTest: BaseRellApiTest() {
         chkRunTests(runConfig, sourceDir, listOf(), listOf("test"),
             "test:test_1:FAILED", "test:test_2:OK", "test:test_3:OK",
         )
+    }
+
+    @Test fun testMerkleHashVersionControl() {
+        val sourceDir = C_SourceDir.mapDirOf(
+            "lib.rell" to "module; operation op(v: gtv) { print('op', v.hash()); }",
+            "test.rell" to """
+                @test module;
+                import lib;
+                function chk(s: text) {
+                    print('input', s);
+                    val g = gtv.from_json(s);
+                    print('direct', g.hash());
+                    lib.op(g).run();
+                }
+                function test_1() { chk('[[]]'); }
+                function test_2() { chk('[{}]'); }
+            """,
+        )
+
+        chkVersionControl(sourceDir, "0.14.5", listOf("test:test_1:OK", "test:test_2:OK"),
+            "input [[]]",
+            "direct 0xb27d13915e478770d8cbaaf72d2c92f67a17250b2c40c9a7b36c3e996ae5fad7",
+            "op 0xb27d13915e478770d8cbaaf72d2c92f67a17250b2c40c9a7b36c3e996ae5fad7",
+            "input [{}]",
+            "direct 0x5ac6c92dffe0a0defa0581023e84c3d344a42d4ff90fc2a3af0d40dbf8d7a622",
+            "op 0x5ac6c92dffe0a0defa0581023e84c3d344a42d4ff90fc2a3af0d40dbf8d7a622",
+        )
+
+        chkVersionControl(sourceDir, "0.14.4", listOf("test:test_1:OK", "test:test_2:OK"),
+            "input [[]]",
+            "direct 0x46af9064f12528cad6a7c377204acd0ac38cdc6912903e7dab3703764c8dd5e5",
+            "op 0x46af9064f12528cad6a7c377204acd0ac38cdc6912903e7dab3703764c8dd5e5",
+            "input [{}]",
+            "direct 0x46af9064f12528cad6a7c377204acd0ac38cdc6912903e7dab3703764c8dd5e5",
+            "op 0x46af9064f12528cad6a7c377204acd0ac38cdc6912903e7dab3703764c8dd5e5",
+        )
+    }
+
+    private fun chkVersionControl(
+        sourceDir: C_SourceDir,
+        version: String,
+        expStatus: List<String>,
+        vararg expOut: String,
+    ) {
+        val printer = Rt_TestPrinter()
+
+        val runConfig0 = runTestsDbConfig()
+        val runConfig = runTestsDbConfig().toBuilder()
+            .compileConfig(runConfig0.compileConfig.toBuilder().version(version).build())
+            .outPrinter(printer)
+            .build()
+
+        chkRunTests(runConfig, sourceDir, listOf(), listOf("test"), *expStatus.toTypedArray())
+        printer.chk(*expOut)
     }
 
     private fun runTestsConfig(
