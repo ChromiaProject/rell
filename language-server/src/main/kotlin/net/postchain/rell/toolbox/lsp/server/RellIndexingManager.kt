@@ -1,6 +1,5 @@
 package net.postchain.rell.toolbox.lsp.server
 
-import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
@@ -14,11 +13,8 @@ import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import org.eclipse.lsp4j.WorkspaceFolder
 import java.io.File
 import java.net.URI
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.io.path.exists
 import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.minutes
 
@@ -49,7 +45,7 @@ class RellIndexingManager(
 
     fun runIndexers() {
         val newIndexers = workspaceFolderUris.flatMap { workspaceFolder ->
-            val indexRoots = findIndexRoots(workspaceFolder)
+            val indexRoots = IndexRoot.indexRootsFactory(workspaceFolder)
             if (indexRoots.isEmpty()) {
                 listOf(doIndex(findSourceDirURI(workspaceFolder), workspaceFolder))
             } else {
@@ -73,7 +69,7 @@ class RellIndexingManager(
 
     fun indexFromRoots(chromiaConfigFiles: List<URI>) {
         val newIndexers =
-            chromiaConfigFiles.map { IndexRoot(it.toPath(), findSourceRootPath(it.toPath())) }.map { indexRoot ->
+            chromiaConfigFiles.map { IndexRoot.indexRootFactory(it.toPath()) }.map { indexRoot ->
                 doIndex(indexRoot.sourceRootUri, indexRoot.chromiaConfigDirUri)
             }.associateBy { it.workspaceUri }
 
@@ -89,33 +85,6 @@ class RellIndexingManager(
         }.associateBy { it.workspaceUri }
 
         return result
-    }
-
-    private fun findIndexRoots(workspaceFolderUri: URI): List<IndexRoot> {
-        val workspacePath = Paths.get(workspaceFolderUri)
-
-        val chromiaConfigFiles = findChromiaConfigFiles(workspacePath)
-        return chromiaConfigFiles.map {
-            IndexRoot(it, findSourceRootPath(it))
-        }
-    }
-
-    private fun findChromiaConfigFiles(workspacePath: Path): List<Path> {
-        return Files.walk(workspacePath)
-            .filter { path ->
-                val fileName = path.fileName.toString()
-                fileName == ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME
-            }
-            .toList()
-    }
-
-    private fun findSourceRootPath(chromiaModelPath: Path): Path {
-        val configSourcePath = ChromiaModelProvider.loadChromiaModelFromFile(chromiaModelPath)?.compile?.source
-        return if (configSourcePath != null && configSourcePath.exists()) {
-            configSourcePath.normalize()
-        } else {
-            Paths.get(findSourceDirURI(chromiaModelPath.parent.toUri()))
-        }
     }
 
     private fun getLinterAndFormatterOptions(workspaceFolderUri: URI): Pair<LinterOptions, FormatterOptions> {
@@ -148,45 +117,6 @@ class RellIndexingManager(
         return indexer
     }
 
-    fun findSourceDirURI(workspaceUri: URI): URI {
-        val workspaceFolder = File(workspaceUri)
-
-        val rellSrcFolder = workspaceFolder.resolve("rell/src")
-        val rellFolder = workspaceFolder.resolve("rell")
-        val srcFolder = workspaceFolder.resolve("src")
-        val parentSrcFolder = findSrcParentDirectory(workspaceUri)
-
-        val sourceFolder = when {
-            rellSrcFolder.exists() && rellFolder.isDirectory -> rellSrcFolder
-            rellFolder.exists() && rellFolder.isDirectory -> rellFolder
-            srcFolder.exists() && srcFolder.isDirectory -> srcFolder
-            parentSrcFolder != null -> parentSrcFolder
-            else -> null
-        }
-
-        return sourceFolder?.toURI() ?: workspaceFolder.toURI()
-    }
-
-    private fun findSrcParentDirectory(uri: URI): File? {
-        if (!uri.path.endsWith(".rell")) return null
-
-        val path = Paths.get(uri)
-        var depth = 0
-        var currentPath = path
-        while (currentPath.parent != null && depth < MAX_DEPTH) {
-            depth++
-            val srcDirectory = currentPath.resolveSibling("src")
-            if (srcDirectory.isValid(path)) {
-                return srcDirectory.toFile()
-            }
-            currentPath = currentPath.parent
-        }
-        return null
-    }
-
-    private fun Path.isValid(other: Path) =
-        Files.exists(this) && Files.isDirectory(this) && other.startsWith(this)
-
     private fun doSingleFileIndex(fileUri: URI): WorkspaceIndexer {
         val sourceDirUri = findSourceDirURI(fileUri)
         val projectRootUri = findProjectRootURI(sourceDirUri)
@@ -218,7 +148,7 @@ class RellIndexingManager(
 
     fun getIndexerFor(fileUri: URI): WorkspaceIndexer = getIndexerForOrNull(fileUri) ?: doSingleFileIndex(fileUri)
 
-    fun getIndexerForFolderOrNull(fileUri: URI): WorkspaceIndexer? {
+    private fun getIndexerForFolderOrNull(fileUri: URI): WorkspaceIndexer? {
         return indexers.values
             .filter { fileUri.startsWith(it.projectRootUri) }
             .maxByOrNull { it.projectRootUri?.path?.length ?: 0 }
@@ -243,19 +173,6 @@ class RellIndexingManager(
             }
         }
         return null
-    }
-
-    private fun findProjectRootURI(sourceDirUri: URI): URI? {
-        val parentDir = File(sourceDirUri).parentFile ?: return null
-        val grandParentDir = parentDir.parentFile ?: return null
-
-        return when {
-            parentDir.resolve(ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME).exists() -> parentDir.toURI()
-            grandParentDir.resolve(ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME)
-                .exists() -> grandParentDir.toURI()
-
-            else -> null
-        }
     }
 
     fun getAllIndexers(): List<WorkspaceIndexer> = indexers.values.toList()
@@ -320,7 +237,7 @@ class RellIndexingManager(
         indexer.projectRootUri?.path?.trimEnd('/') == deletedFolderUri.path.trimEnd('/')
 
     private fun folderRenameOnIndexerProjectRoot(indexer: WorkspaceIndexer, newFolderUri: URI) {
-        val indexRoots = findIndexRoots(newFolderUri)
+        val indexRoots = IndexRoot.indexRootsFactory(newFolderUri)
 
         val newIndexers = if (indexRoots.isEmpty()) {
             listOf(doIndex(findSourceDirURI(newFolderUri), newFolderUri))
@@ -413,13 +330,9 @@ class RellIndexingManager(
             diagnosticsManager.sendNotification(
                 NotificationType.WARNING,
                 "Nested Rell projects detected. The projects with overlapping paths:\n" +
-                        nestedProjects.joinToString() +
-                        "\n Consider restructuring the project directories to avoid nested configurations."
+                    nestedProjects.joinToString() +
+                    "\n Consider restructuring the project directories to avoid nested configurations."
             )
         }
-    }
-
-    companion object {
-        private const val MAX_DEPTH = 5
     }
 }
