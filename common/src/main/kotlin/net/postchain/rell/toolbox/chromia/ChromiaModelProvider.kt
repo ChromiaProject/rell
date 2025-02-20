@@ -67,7 +67,7 @@ class ChromiaModelProvider(private val workspaceRootUri: URI?) {
             return try {
                 parseModel(chromiaModelFile)
             } catch (@Suppress("SwallowedException") e: Exception) {
-                logger.error(e) { "Failed to parse Chromia model file: $chromiaModelFile" }
+                logger.warn(e) { "Failed to parse Chromia model file: $chromiaModelFile" }
                 null
             }
         }
