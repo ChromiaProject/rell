@@ -164,10 +164,6 @@ class RellIndexingManager(
             else -> null
         }
 
-        if (workspaceUri.isRellFile() && !workspaceUri.startsWith(sourceFolder?.toURI())) {
-            return workspaceUri
-        }
-
         return sourceFolder?.toURI() ?: workspaceFolder.toURI()
     }
 
@@ -180,13 +176,16 @@ class RellIndexingManager(
         while (currentPath.parent != null && depth < MAX_DEPTH) {
             depth++
             val srcDirectory = currentPath.resolveSibling("src")
-            if (Files.exists(srcDirectory) && Files.isDirectory(srcDirectory)) {
+            if (srcDirectory.isValid(path)) {
                 return srcDirectory.toFile()
             }
             currentPath = currentPath.parent
         }
         return null
     }
+
+    private fun Path.isValid(other: Path) =
+        Files.exists(this) && Files.isDirectory(this) && other.startsWith(this)
 
     private fun doSingleFileIndex(fileUri: URI): WorkspaceIndexer {
         val sourceDirUri = findSourceDirURI(fileUri)

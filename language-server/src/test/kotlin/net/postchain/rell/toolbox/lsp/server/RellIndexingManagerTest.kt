@@ -324,16 +324,11 @@ class RellIndexingManagerTest : WorkspaceManagerTestBase() {
         outsideFile.writeText("module;")
         val outsideFileUri = outsideFile.toURI()
 
-        // This should trigger the edge case:
-        // 1. getIndexerFor will return an indexer (since file is within project root)
-        // 2. But the file won't be in fileUriResourceMap (since it's outside source dir)
         val indexer = indexingManager.getIndexerFor(outsideFileUri)
 
-        // Verify our assumptions
         assertThat(indexer.workspaceUri).isEqualTo(outsideFileUri)
         assertThat(indexer.fileUriResourceMap.keys).contains(outsideFileUri)
 
-        // This should not throw NPE
         assertDoesNotThrow { indexer.findAffectedFiles(outsideFileUri) }
     }
 }
