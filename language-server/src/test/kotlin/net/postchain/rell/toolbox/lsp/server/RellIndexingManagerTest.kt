@@ -1,6 +1,7 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
+import assertk.assertions.contains
 import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.containsOnly
 import assertk.assertions.hasSize
@@ -12,6 +13,7 @@ import assertk.assertions.isTrue
 import net.postchain.rell.toolbox.lsp.server.utils.WorkspaceManagerTestBase
 import net.postchain.rell.toolbox.testing.testData
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import java.io.File
 
 class RellIndexingManagerTest : WorkspaceManagerTestBase() {
@@ -288,7 +290,6 @@ class RellIndexingManagerTest : WorkspaceManagerTestBase() {
         assertThat(indexingManager.orphanIndexers.size).isEqualTo(1)
         assertThat(orphanIndexer.fileUriResourceMap.keys).containsExactlyInAnyOrder(orphanUri)
 
-
         val secondProject = testData(workspace.resolve("project_b")) {
             addMainFile(rellFileContent)
         }
@@ -307,5 +308,32 @@ class RellIndexingManagerTest : WorkspaceManagerTestBase() {
         assertThat(indexingManager.indexers[secondProject.sourceFolderUri]!!.fileUriResourceMap.keys).containsOnly(
             secondProject.mainFileUri
         )
+    }
+
+    @Test
+    fun `findAffectedFiles does not throw NPE when file is not in indexer's fileUriResourceMap`() {
+        // Setup initial project with a file
+        val initialProject = testData(workspace.resolve("project_a")) {
+            addMainFile(rellFileContent)
+        }
+
+        initializeWorkspace()
+
+        // Create a new file outside the source directory but within project root
+        val outsideFile = initialProject.workspaceFolder.resolve("outside.rell")
+        outsideFile.writeText("module;")
+        val outsideFileUri = outsideFile.toURI()
+
+        // This should trigger the edge case:
+        // 1. getIndexerFor will return an indexer (since file is within project root)
+        // 2. But the file won't be in fileUriResourceMap (since it's outside source dir)
+        val indexer = indexingManager.getIndexerFor(outsideFileUri)
+
+        // Verify our assumptions
+        assertThat(indexer.workspaceUri).isEqualTo(outsideFileUri)
+        assertThat(indexer.fileUriResourceMap.keys).contains(outsideFileUri)
+
+        // This should not throw NPE
+        assertDoesNotThrow { indexer.findAffectedFiles(outsideFileUri) }
     }
 }

@@ -163,6 +163,11 @@ class RellIndexingManager(
             parentSrcFolder != null -> parentSrcFolder
             else -> null
         }
+
+        if (workspaceUri.isRellFile() && !workspaceUri.startsWith(sourceFolder?.toURI())) {
+            return workspaceUri
+        }
+
         return sourceFolder?.toURI() ?: workspaceFolder.toURI()
     }
 
@@ -212,8 +217,6 @@ class RellIndexingManager(
         }
     }
 
-    // TODO: Revisit how we get the indexer. Would this approach work if the have two indexer active where one
-    // is indexed from from a child folder from the other indexer.
     fun getIndexerFor(fileUri: URI): WorkspaceIndexer = getIndexerForOrNull(fileUri) ?: doSingleFileIndex(fileUri)
 
     fun getIndexerForFolderOrNull(fileUri: URI): WorkspaceIndexer? {
@@ -225,7 +228,9 @@ class RellIndexingManager(
 
     fun getIndexerForOrNull(fileUri: URI): WorkspaceIndexer? {
         for (indexer in indexers.entries) {
-            if (fileUri.path.trimEnd('/').startsWith(indexer.key.path?.trimEnd('/') ?: continue)) {
+            val filePath = fileUri.path.trimEnd('/')
+            val indexerPath = indexer.key.path?.trimEnd('/') ?: continue
+            if (filePath.startsWith(indexerPath)) {
                 return indexer.value
             }
         }
