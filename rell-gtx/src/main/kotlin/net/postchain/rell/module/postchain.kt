@@ -345,14 +345,17 @@ private class RellPostchainModule(
     }
 
     private fun createSqlExecutor(eCtx: EContext): SqlExecutor {
-        var sqlExec = ConnectionSqlManager.makeSqlExecutor(eCtx.conn, SqlConnectionLogger.getOrNull(config.sqlLogging))
-        sqlExec = Rt_SqlManagerUtils.makeSqlExecutor(sqlExec, globalCtx.logSqlErrors)
+        var sqlInterceptor = env.sqlInterceptor
 
-        if (env.sqlInterceptor != null) {
-            sqlExec = InterceptingSqlExecutor(sqlExec, env.sqlInterceptor)
-        }
+        val conLogger = SqlConnectionLogger.getOrNull(config.sqlLogging)
+        sqlInterceptor = ConnectionSqlManager.wrapSqlInterceptor(sqlInterceptor, conLogger)
 
-        return sqlExec
+        sqlInterceptor = Rt_SqlManagerUtils.wrapSqlInterceptor(sqlInterceptor, globalCtx.logSqlErrors)
+
+        var sqlCon = SqlManagerConnection.create(eCtx.conn)
+        sqlCon = InterceptingSqlManagerConnection.wrap(sqlCon, sqlInterceptor)
+
+        return sqlCon.createExecutor()
     }
 
     private fun translateQueryArgs(

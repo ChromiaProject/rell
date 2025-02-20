@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.api.shell
@@ -172,7 +172,6 @@ object RellApiShellInternal {
 
         RellApiGtxUtils.runWithSqlManager(
             dbUrl = config.databaseUrl,
-            dbProperties = null,
             sqlLog = config.sqlLog,
             sqlErrorLog = config.sqlErrorLog,
         ) { sqlMgr ->

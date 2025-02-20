@@ -93,9 +93,15 @@ class RellTestContext(
         }
     }
 
-    private fun createSqlManager(conn: Connection): SqlMgrHolder {
-        val innerMgr = ConnectionSqlManager(conn, sqlLogging)
-        val outerMgr = Rt_SqlManagerUtils.makeSqlManager(TestSqlManager(innerMgr, sqlStats), logErrors = false)
+    private fun createSqlManager(con: Connection): SqlMgrHolder {
+        var sqlCon = SqlManagerConnection.create(con, sqlLogging)
+        val innerMgr = ConnectionSqlManager(sqlCon)
+        sqlCon = TestSqlConnection(sqlCon, sqlStats)
+
+        val interceptor = Rt_SqlManagerUtils.wrapSqlInterceptor(null, logErrors = false)
+        sqlCon = InterceptingSqlManagerConnection.wrap(sqlCon, interceptor)
+        val outerMgr = ConnectionSqlManager(sqlCon)
+
         return SqlMgrHolder(innerMgr, outerMgr)
     }
 
@@ -168,14 +174,16 @@ class RellTestContext(
         val sqls: Queue<String> = ArrayDeque()
     }
 
-    private class TestSqlManager(private val mgr: SqlManager, private val stats: TestSqlStats): AbstractSqlManager() {
-        override val hasConnection = mgr.hasConnection
-
-        override fun <T> execute0(tx: Boolean, code: (SqlExecutor) -> T): T {
-            return mgr.execute(tx) { sqlExec ->
-                code(TestSqlExecutor(sqlExec))
-            }
+    private class TestSqlConnection(private val con: SqlManagerConnection, private val stats: TestSqlStats): SqlManagerConnection {
+        override fun createExecutor(): SqlExecutor {
+            val exec = con.createExecutor()
+            return TestSqlExecutor(exec)
         }
+
+        override fun <T> transactionBody(code: () -> T): T = con.transactionBody(code)
+        override fun commit() = con.commit()
+        override fun rollback() = con.rollback()
+        override fun checkNoTx() = con.checkNoTx()
 
         private inner class TestSqlExecutor(private val exec: SqlExecutor): SqlExecutor() {
             override fun <T> connection(code: (Connection) -> T): T = exec.connection(code)

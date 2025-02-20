@@ -7,7 +7,6 @@ package net.postchain.rell.tools.runcfg
 import mu.KotlinLogging
 import mu.withLoggingContext
 import net.postchain.PostchainNode
-import net.postchain.StorageBuilder
 import net.postchain.api.internal.BlockchainApi
 import net.postchain.api.rest.infra.RestApiConfig
 import net.postchain.base.configuration.BlockchainConfigurationData
@@ -177,9 +176,9 @@ private fun runTests(args: CommonArgs, matcher: UnitTestMatcher, targetChains: C
     val printer: Rt_Printer = Rt_OutPrinter
     val testRes = UnitTestRunnerResults()
 
-    StorageBuilder.buildStorage(nodeAppConf).use { storage ->
-        val sqlMgr = PostchainStorageSqlManager(storage, args.sqlLog)
+    val dbUrl = getDbUrl(nodeAppConf)
 
+    RellApiGtxUtils.runWithSqlManager(dbUrl, args.sqlLog, false) { sqlMgr ->
         for (tChain in tChains) {
             val globalCtx = RellApiBaseUtils.createGlobalContext(compilerOptions, typeCheck = true)
             val sqlCtx = Rt_RegularSqlContext.createNoExternalChains(tChain.rApp, Rt_ChainSqlMapping(tChain.chain.iid))
@@ -217,6 +216,17 @@ private fun runTests(args: CommonArgs, matcher: UnitTestMatcher, targetChains: C
     if (!ok) {
         throw RellCliExitException(1)
     }
+}
+
+private fun getDbUrl(appConf: AppConfig): String {
+    val query = listOf(
+        "user" to appConf.databaseUsername,
+        "password" to appConf.databasePassword,
+        "currentSchema" to appConf.databaseSchema,
+    ).joinToString("&") {
+        "${it.first}=${it.second}"
+    }
+    return "${appConf.databaseUrl}?$query"
 }
 
 private fun createBlockRunner(

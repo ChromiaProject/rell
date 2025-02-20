@@ -4,15 +4,11 @@
 
 package net.postchain.rell.api.gtx
 
-import net.postchain.StorageBuilder
-import net.postchain.config.app.AppConfig
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.base.runtime.utils.Rt_SqlManagerUtils
-import net.postchain.rell.base.sql.ConnectionSqlManager
-import net.postchain.rell.base.sql.NoConnSqlManager
-import net.postchain.rell.base.sql.SqlManager
+import net.postchain.rell.base.sql.*
 import net.postchain.rell.gtx.PostchainBaseUtils
 import org.apache.http.client.utils.URLEncodedUtils
 import java.net.URI
@@ -46,9 +42,9 @@ object RellApiGtxUtils {
 
     fun <T> runWithSqlManager(
         dbUrl: String?,
-        dbProperties: String?,
         sqlLog: Boolean,
         sqlErrorLog: Boolean,
+        sqlInterceptor: SqlInterceptor? = null,
         code: (SqlManager) -> T,
     ): T {
         return if (dbUrl != null) {
@@ -56,36 +52,33 @@ object RellApiGtxUtils {
             val jdbcProperties = Properties()
             jdbcProperties.setProperty("binaryTransfer", "false")
             DriverManager.getConnection(dbUrl, jdbcProperties).use { con ->
-                con.autoCommit = true
-                PostchainBaseUtils.createDatabaseAccess().checkCollation(con, suppressError = false)
-                val sqlMgr = ConnectionSqlManager(con, sqlLog)
-                runWithSqlManager(schema, sqlMgr, sqlErrorLog, code)
+                runWithSqlConnection(con, schema, sqlLog, sqlErrorLog, sqlInterceptor, code)
             }
-        } else if (dbProperties != null) {
-            val appCfg = AppConfig.fromPropertiesFile(dbProperties)
-            val storage = StorageBuilder.buildStorage(appCfg)
-            val sqlMgr = PostchainStorageSqlManager(storage, sqlLog)
-            runWithSqlManager(appCfg.databaseSchema, sqlMgr, sqlErrorLog, code)
         } else {
             code(NoConnSqlManager)
         }
     }
 
-    private fun <T> runWithSqlManager(
+    private fun <T> runWithSqlConnection(
+        con: Connection,
         schema: String?,
-        sqlMgr: SqlManager,
+        logSql: Boolean,
         logSqlErrors: Boolean,
+        sqlInterceptor: SqlInterceptor?,
         code: (SqlManager) -> T,
     ): T {
-        val sqlMgr2 = Rt_SqlManagerUtils.makeSqlManager(sqlMgr, logSqlErrors)
+        con.autoCommit = true
+        PostchainBaseUtils.createDatabaseAccess().checkCollation(con, suppressError = false)
+
         if (schema != null) {
-            sqlMgr2.transaction { sqlExec ->
-                sqlExec.connection { con ->
-                    prepareSchema(con, schema)
-                }
-            }
+            prepareSchema(con, schema)
         }
-        return code(sqlMgr2)
+
+        val sqlInterceptor2 = Rt_SqlManagerUtils.wrapSqlInterceptor(sqlInterceptor, logSqlErrors)
+        var sqlCon = SqlManagerConnection.create(con, logSql)
+        sqlCon = InterceptingSqlManagerConnection.wrap(sqlCon, sqlInterceptor2)
+        val sqlMgr = ConnectionSqlManager(sqlCon)
+        return code(sqlMgr)
     }
 
     fun genBlockchainConfigTemplateNoRell(pubKey: ByteArray, compileConfig: RellApiCompile.Config): Gtv {

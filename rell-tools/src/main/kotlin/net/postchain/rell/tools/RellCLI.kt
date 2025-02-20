@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.tools
@@ -26,6 +26,7 @@ import net.postchain.rell.gtx.Rt_PostchainOpContext
 import net.postchain.rell.gtx.Rt_PostchainTxContext
 import net.postchain.rell.module.RellPostchainModuleEnvironment
 import picocli.CommandLine
+import java.io.FileInputStream
 import java.util.*
 
 @Suppress("unused")
@@ -283,7 +284,35 @@ private fun getAppLauncher(
 }
 
 private fun <T> runWithSqlManager(args: RellInterpreterCliArgs, sqlErrorLog: Boolean, code: (SqlManager) -> T): T {
-    return RellApiGtxUtils.runWithSqlManager(args.dbUrl, args.dbProperties, args.sqlLog, sqlErrorLog, code)
+    val dbUrl = getDbUrl(args)
+    return RellApiGtxUtils.runWithSqlManager(dbUrl, args.sqlLog, sqlErrorLog, null, code)
+}
+
+private fun getDbUrl(args: RellInterpreterCliArgs): String? {
+    val dbUrl = args.dbUrl
+    if (dbUrl != null) {
+        return dbUrl
+    }
+
+    val dbProperties = args.dbProperties
+    dbProperties ?: return null
+
+    val props = Properties()
+    FileInputStream(dbProperties).use { ins ->
+        props.load(ins)
+    }
+
+    val baseUrl = props.getValue("database.url")
+
+    val query = listOf(
+        "user" to props.getValue("database.username"),
+        "password" to props.getValue("database.password"),
+        "currentSchema" to props.getValue("database.schema"),
+    ).joinToString("&") {
+        "${it.first}=${it.second}"
+    }
+
+    return "$baseUrl?$query"
 }
 
 private fun findEntryPoint(app: R_App, moduleName: R_ModuleName, routineName: R_QualifiedName): RellEntryPoint {

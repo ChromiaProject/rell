@@ -6,9 +6,13 @@ package net.postchain.rell.base.sql
 
 import mu.KLogging
 import net.postchain.rell.base.runtime.Rt_Exception
+import net.postchain.rell.base.utils.One
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immSetOf
 import net.postchain.rell.base.utils.toImmSet
+import org.apache.commons.lang3.mutable.MutableBoolean
+import org.apache.commons.lang3.mutable.MutableInt
+import org.apache.commons.lang3.mutable.MutableObject
 import org.jooq.tools.jdbc.MockConnection
 import java.io.Closeable
 import java.sql.Connection
@@ -96,7 +100,7 @@ abstract class AbstractSqlManager: SqlManager {
         check(busy.compareAndSet(false, true))
         try {
             val res = execute0(tx) { sqlExec ->
-                SingleUseSqlExecutor(sqlExec).use(code)
+                SingleUseSqlExecutor(sqlExec, MutableBoolean(true)).use(code)
             }
             return res
         } finally {
@@ -104,61 +108,46 @@ abstract class AbstractSqlManager: SqlManager {
         }
     }
 
-    private class SingleUseSqlExecutor(private val sqlExec: SqlExecutor): SqlExecutor(), Closeable {
-        private var valid = true
-
+    private class SingleUseSqlExecutor(
+        private val sqlExec: SqlExecutor,
+        private val valid: MutableBoolean,
+    ): SqlExecutor(), Closeable {
         override fun <T> connection(code: (Connection) -> T): T {
-            check(valid)
+            check(valid.value)
             return sqlExec.connection(code)
         }
 
         override fun hasRealConnection() = sqlExec.hasRealConnection()
 
         override fun execute(sql: String) {
-            check(valid)
+            check(valid.value)
             sqlExec.execute(sql)
         }
 
         override fun execute(sql: String, preparator: SqlPreparator) {
-            check(valid)
+            check(valid.value)
             sqlExec.execute(sql, preparator)
         }
 
         override fun executeUpdate(sql: String, preparator: SqlPreparator): Int {
-            check(valid)
+            check(valid.value)
             return sqlExec.executeUpdate(sql, preparator)
         }
 
         override fun executeQuery(sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit) {
-            check(valid)
+            check(valid.value)
             sqlExec.executeQuery(sql, preparator, consumer)
         }
 
+        override fun withAttributes(attributes: Attributes): SqlExecutor {
+            check(valid.value)
+            val sqlExec2 = sqlExec.withAttributes(attributes)
+            return if (sqlExec2 === sqlExec) this else SingleUseSqlExecutor(sqlExec2, valid)
+        }
+
         override fun close() {
-            check(valid)
-            valid = false
-        }
-    }
-}
-
-class WrappingSqlManager(
-    private val sqlMgr: SqlManager,
-    private val wrapper: (SqlExecutor) -> SqlExecutor,
-): SqlManager {
-    override val hasConnection: Boolean get() = sqlMgr.hasConnection
-
-    override fun <T> execute(tx: Boolean, code: (SqlExecutor) -> T): T {
-        return sqlMgr.execute(tx) { sqlExec ->
-            val sqlExec2 = wrapper(sqlExec)
-            code(sqlExec2)
-        }
-    }
-
-    companion object {
-        fun intercepting(sqlMgr: SqlManager, interceptor: SqlInterceptor): SqlManager {
-            return WrappingSqlManager(sqlMgr) { sqlExec ->
-                InterceptingSqlExecutor(sqlExec, interceptor)
-            }
+            check(valid.value)
+            valid.setFalse()
         }
     }
 }
@@ -231,15 +220,112 @@ object NoConnSqlExecutor: SqlExecutor() {
     private fun err() = Rt_Exception.common("no_sql", "No database connection")
 }
 
-class ConnectionSqlManager(private val con: Connection, logging: Boolean): AbstractSqlManager() {
-    override val hasConnection = true
+interface SqlManagerConnection {
+    fun createExecutor(): SqlExecutor
 
-    private val conLogger = SqlConnectionLogger.getOrNull(logging)
-    private val sqlExec = makeSqlExecutor(con, conLogger)
+    /** A transaction without an implicit commit or rollback at the end. */
+    fun <T> transactionBody(code: () -> T): T
+    fun commit()
+    fun rollback()
+    fun checkNoTx()
 
-    init {
+    companion object {
+        fun create(con: Connection, sqlLog: Boolean = false): SqlManagerConnection {
+            var res: SqlManagerConnection = JdbcSqlManagerConnection(con)
+            val interceptor = ConnectionSqlManager.wrapSqlInterceptor(null, SqlConnectionLogger.getOrNull(sqlLog))
+            res = InterceptingSqlManagerConnection.wrap(res, interceptor)
+            return res
+        }
+    }
+}
+
+private class JdbcSqlManagerConnection(private val con: Connection): SqlManagerConnection {
+    private var inTx = false
+
+    override fun createExecutor(): SqlExecutor {
+        return ConnectionSqlExecutor(con)
+    }
+
+    override fun <T> transactionBody(code: () -> T): T {
+        check(!inTx)
+        checkNoTx()
+        try {
+            inTx = true
+            con.autoCommit = false
+            val res = code()
+            check(!con.autoCommit)
+            return res
+        } finally {
+            inTx = false
+            con.autoCommit = true
+        }
+    }
+
+    override fun commit() {
+        check(inTx)
+        con.commit()
+    }
+
+    override fun rollback() {
+        check(inTx)
+        con.rollback()
+    }
+
+    override fun checkNoTx() {
         check(con.autoCommit)
     }
+}
+
+class InterceptingSqlManagerConnection(
+    private val con: SqlManagerConnection,
+    private val interceptor: SqlInterceptor,
+): SqlManagerConnection {
+    override fun createExecutor(): SqlExecutor {
+        val sqlExec = con.createExecutor()
+        return InterceptingSqlExecutor(sqlExec, interceptor)
+    }
+
+    override fun <T> transactionBody(code: () -> T): T {
+        return con.transactionBody {
+            invoke("BEGIN TRANSACTION") {}
+            code()
+        }
+    }
+
+    override fun commit() {
+        invoke("COMMIT TRANSACTION") {
+            con.commit()
+        }
+    }
+
+    override fun rollback() {
+        invoke("ROLLBACK TRANSACTION") {
+            con.rollback()
+        }
+    }
+
+    private fun invoke(sql: String, code: () -> Unit) {
+        interceptor.invoke(sql, SqlExecutor.Attributes.DEFAULT, null) {
+            code()
+            null
+        }
+    }
+
+    override fun checkNoTx() {
+        con.checkNoTx()
+    }
+
+    companion object {
+        fun wrap(con: SqlManagerConnection, interceptor: SqlInterceptor?): SqlManagerConnection {
+            return if (interceptor == null) con else InterceptingSqlManagerConnection(con, interceptor)
+        }
+    }
+}
+
+class ConnectionSqlManager(private val con: SqlManagerConnection): AbstractSqlManager() {
+    override val hasConnection = true
+
+    private val sqlExec = con.createExecutor()
 
     override fun <T> execute0(tx: Boolean, code: (SqlExecutor) -> T): T {
         val res = if (tx) {
@@ -251,43 +337,36 @@ class ConnectionSqlManager(private val con: Connection, logging: Boolean): Abstr
     }
 
     private fun <T> transaction0(code: (SqlExecutor) -> T): T {
-        val autoCommit = con.autoCommit
-        check(autoCommit)
-        try {
-            con.autoCommit = false
+        con.checkNoTx()
+        return con.transactionBody {
             var rollback = true
             try {
-                conLogger?.log("BEGIN TRANSACTION")
                 val res = code(sqlExec)
-                conLogger?.log("COMMIT TRANSACTION")
                 con.commit()
                 rollback = false
-                return res
+                res
             } finally {
                 if (rollback) {
-                    conLogger?.log("ROLLBACK TRANSACTION")
                     con.rollback()
                 }
             }
-        } finally {
-            con.autoCommit = autoCommit
         }
     }
 
     private fun <T> access0(code: (SqlExecutor) -> T): T {
-        check(con.autoCommit)
+        con.checkNoTx()
         val res = code(sqlExec)
-        check(con.autoCommit)
+        con.checkNoTx()
         return res
     }
 
     companion object {
-        fun makeSqlExecutor(con: Connection, conLogger: SqlConnectionLogger? = null): SqlExecutor {
-            var res: SqlExecutor = ConnectionSqlExecutor(con)
-            if (conLogger != null) {
-                res = InterceptingSqlExecutor(res, LoggingSqlInterceptor(conLogger))
-            }
-            return res
+        fun wrapSqlInterceptor(
+            sqlInterceptor: SqlInterceptor?,
+            conLogger: SqlConnectionLogger? = null,
+        ): SqlInterceptor? {
+            conLogger ?: return sqlInterceptor
+            return SqlInterceptor.compound(LoggingSqlInterceptor(conLogger), sqlInterceptor)
         }
     }
 }
@@ -355,20 +434,33 @@ private class ConnectionSqlExecutor(private val con: Connection): SqlExecutor() 
 }
 
 interface SqlInterceptor {
-    fun <T> invoke(
+    fun invoke(
         sql: String?,
         attributes: SqlExecutor.Attributes,
         preparator: SqlPreparator?,
-        code: (SqlPreparator?) -> T,
-    ): T
+        code: (SqlPreparator?) -> Int?,
+    ): Int?
 
-    fun invokeUpdate(
+    companion object {
+        fun compound(first: SqlInterceptor, second: SqlInterceptor?): SqlInterceptor {
+            return if (second == null) first else CompoundSqlInterceptor(first, second)
+        }
+    }
+}
+
+private class CompoundSqlInterceptor(
+    private val first: SqlInterceptor,
+    private val second: SqlInterceptor,
+): SqlInterceptor {
+    override fun invoke(
         sql: String?,
         attributes: SqlExecutor.Attributes,
         preparator: SqlPreparator?,
-        code: (SqlPreparator?) -> Int,
-    ): Int {
-        return invoke(sql, attributes, preparator, code)
+        code: (SqlPreparator?) -> Int?,
+    ): Int? {
+        return first.invoke(sql, attributes, preparator) { preparator2 ->
+            second.invoke(sql, attributes, preparator2, code)
+        }
     }
 }
 
@@ -380,38 +472,48 @@ class InterceptingSqlExecutor(
     override fun hasRealConnection() = sqlExec.hasRealConnection()
 
     override fun <T> connection(code: (Connection) -> T): T {
-        val res = invoke(null, null) {
-            sqlExec.connection(code)
+        val ref = MutableObject<One<T>?>()
+        invoke(null, null) {
+            val res = sqlExec.connection(code)
+            ref.value = One(res)
+            null
         }
-        return res
+        return ref.value!!.value
     }
 
     override fun execute(sql: String) {
         invoke(sql, null) {
             sqlExec.execute(sql)
+            null
         }
     }
 
     override fun execute(sql: String, preparator: SqlPreparator) {
         invoke(sql, preparator) { preparator2 ->
             sqlExec.execute(sql, preparator2!!)
+            null
         }
     }
 
     override fun executeUpdate(sql: String, preparator: SqlPreparator): Int {
-        return interceptor.invokeUpdate(sql, attributes, preparator) { preparator2 ->
+        return interceptor.invoke(sql, attributes, preparator) { preparator2 ->
             sqlExec.executeUpdate(sql, preparator2!!)
-        }
+        }!!
     }
 
     override fun executeQuery(sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit) {
         invoke(sql, preparator) { preparator2 ->
-            sqlExec.executeQuery(sql, preparator2!!, consumer)
+            val rowCount = MutableInt()
+            sqlExec.executeQuery(sql, preparator2!!) { row ->
+                rowCount.increment()
+                consumer(row)
+            }
+            rowCount.value
         }
     }
 
-    private fun <T> invoke(sql: String?, preparator: SqlPreparator?, code: (SqlPreparator?) -> T): T {
-        return interceptor.invoke(sql, attributes, preparator, code)
+    private fun invoke(sql: String?, preparator: SqlPreparator?, code: (SqlPreparator?) -> Int?) {
+        interceptor.invoke(sql, attributes, preparator, code)
     }
 
     override fun withAttributes(attributes: Attributes): SqlExecutor {
@@ -420,15 +522,21 @@ class InterceptingSqlExecutor(
             InterceptingSqlExecutor(sqlExec2, interceptor, attributes)
         }
     }
+
+    companion object {
+        fun wrap(sqlExec: SqlExecutor, interceptor: SqlInterceptor?): SqlExecutor {
+            return if (interceptor == null) sqlExec else InterceptingSqlExecutor(sqlExec, interceptor)
+        }
+    }
 }
 
 private class LoggingSqlInterceptor(private val conLogger: SqlConnectionLogger): SqlInterceptor {
-    override fun <T> invoke(
+    override fun invoke(
         sql: String?,
         attributes: SqlExecutor.Attributes,
         preparator: SqlPreparator?,
-        code: (SqlPreparator?) -> T,
-    ): T {
+        code: (SqlPreparator?) -> Int?,
+    ): Int? {
         if (sql != null) {
             conLogger.log(sql)
         }

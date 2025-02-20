@@ -19,7 +19,6 @@ import net.postchain.rell.base.runtime.Rt_OutPrinter
 import net.postchain.rell.base.runtime.Rt_Printer
 import net.postchain.rell.base.sql.SqlInitLogging
 import net.postchain.rell.base.sql.SqlInterceptor
-import net.postchain.rell.base.sql.WrappingSqlManager
 import net.postchain.rell.base.utils.*
 import java.io.File
 
@@ -29,14 +28,13 @@ class SqlExecutionEvent(
     val sql: String,
     val isSystem: Boolean,
     val parameters: List<Any?>,
-    /** `null` if this is not an `executeUpdate(...)` call */
-    val updateRowCount: Int?,
+    val rowCount: Int?,
     val error: Exception?,
 ) {
     init {
         require(startTimeMs > 0) { startTimeMs }
         require(durationMs >= 0) { durationMs }
-        require((updateRowCount ?: 0) >= 0) { "$updateRowCount" }
+        require((rowCount ?: 0) >= 0) { "$rowCount" }
     }
 }
 
@@ -242,15 +240,15 @@ internal object RellApiGtxInternal {
 
         return RellApiGtxUtils.runWithSqlManager(
             dbUrl = config.databaseUrl,
-            dbProperties = null,
             sqlLog = config.sqlLog,
             sqlErrorLog = config.sqlErrorLog,
+            sqlInterceptor = sqlInterceptor,
         ) { sqlMgr ->
             val testCtx = UnitTestRunnerContext(
                 app = app,
                 printer = config.cliEnv::print,
                 sqlCtx = sqlCtx,
-                sqlMgr = sqlInterceptor?.let { WrappingSqlManager.intercepting(sqlMgr, it) } ?: sqlMgr,
+                sqlMgr = sqlMgr,
                 sqlInitProjExt = PostchainSqlInitProjExt,
                 globalCtx = globalCtx,
                 chainCtx = chainCtx,

@@ -11,46 +11,26 @@ import net.postchain.rell.base.sql.SqlPreparator
 import java.math.BigDecimal
 
 internal class ListeningSqlInterceptor(private val callback: ((SqlExecutionEvent) -> Unit)): SqlInterceptor {
-    override fun <T> invoke(
+    override fun invoke(
         sql: String?,
         attributes: SqlExecutor.Attributes,
         preparator: SqlPreparator?,
-        code: (SqlPreparator?) -> T,
-    ): T {
-        return invoke0(sql, attributes, preparator, code) { null }
-    }
-
-    override fun invokeUpdate(
-        sql: String?,
-        attributes: SqlExecutor.Attributes,
-        preparator: SqlPreparator?,
-        code: (SqlPreparator?) -> Int,
-    ): Int {
-        return invoke0(sql, attributes, preparator, code) { it }
-    }
-
-    private fun <T> invoke0(
-        sql: String?,
-        attributes: SqlExecutor.Attributes,
-        preparator: SqlPreparator?,
-        code: (SqlPreparator?) -> T,
-        rowCountGetter: (T) -> Int?,
-    ): T {
+        code: (SqlPreparator?) -> Int?,
+    ): Int? {
         sql ?: return code(preparator)
 
         val preparatorWrapper = preparator?.let { PreparatorWrapper(it) }
         val startTime = System.currentTimeMillis()
 
-        val res = try {
+        val rowCount = try {
             code(preparatorWrapper?.preparator)
         } catch (e: Exception) {
             fireEvent(sql, attributes, startTime, preparatorWrapper, null, e)
             throw e
         }
 
-        val rowCount = rowCountGetter(res)
         fireEvent(sql, attributes, startTime, preparatorWrapper, rowCount, null)
-        return res
+        return rowCount
     }
 
     private fun fireEvent(

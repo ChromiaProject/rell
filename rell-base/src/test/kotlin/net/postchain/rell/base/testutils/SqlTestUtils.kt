@@ -38,6 +38,10 @@ object SqlTestUtils {
         return con
     }
 
+    fun createSqlExecutor(con: Connection): SqlExecutor {
+        return SqlManagerConnection.create(con).createExecutor()
+    }
+
     fun getDbUrl(schema: String? = null): String {
         val prop = readDbProperties()
         var url = getDbUrl0(prop, schema)

@@ -9,29 +9,24 @@ import net.postchain.rell.base.sql.*
 import java.sql.SQLException
 
 object Rt_SqlManagerUtils {
-    fun makeSqlManager(sqlMgr: SqlManager, logErrors: Boolean): SqlManager {
-        return WrappingSqlManager(sqlMgr) { sqlExec ->
-            makeSqlExecutor(sqlExec, logErrors)
-        }
-    }
-
-    fun makeSqlExecutor(sqlExec: SqlExecutor, logErrors: Boolean): SqlExecutor {
-        var res = sqlExec
+    @Suppress("RedundantNullableReturnType")
+    fun wrapSqlInterceptor(base: SqlInterceptor?, logErrors: Boolean): SqlInterceptor? {
+        var res = base
         if (logErrors) {
-            res = InterceptingSqlExecutor(res, ErrorPrintingSqlInterceptor)
+            res = SqlInterceptor.compound(ErrorPrintingSqlInterceptor, res)
         }
-        res = InterceptingSqlExecutor(res, ErrorWrappingSqlInterceptor)
+        res = SqlInterceptor.compound(ErrorWrappingSqlInterceptor, res)
         return res
     }
 }
 
 private object ErrorPrintingSqlInterceptor: SqlInterceptor {
-    override fun <T> invoke(
+    override fun invoke(
         sql: String?,
         attributes: SqlExecutor.Attributes,
         preparator: SqlPreparator?,
-        code: (SqlPreparator?) -> T,
-    ): T {
+        code: (SqlPreparator?) -> Int?,
+    ): Int? {
         return try {
             code(preparator)
         } catch (e: SQLException) {
@@ -45,12 +40,12 @@ private object ErrorPrintingSqlInterceptor: SqlInterceptor {
 }
 
 private object ErrorWrappingSqlInterceptor: SqlInterceptor {
-    override fun <T> invoke(
+    override fun invoke(
         sql: String?,
         attributes: SqlExecutor.Attributes,
         preparator: SqlPreparator?,
-        code: (SqlPreparator?) -> T,
-    ): T {
+        code: (SqlPreparator?) -> Int?,
+    ): Int? {
         return try {
             code(preparator)
         } catch (e: SQLException) {
