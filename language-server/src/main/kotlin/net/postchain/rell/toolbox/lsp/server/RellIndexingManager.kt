@@ -163,6 +163,7 @@ class RellIndexingManager(
             parentSrcFolder != null -> parentSrcFolder
             else -> null
         }
+
         return sourceFolder?.toURI() ?: workspaceFolder.toURI()
     }
 
@@ -175,13 +176,16 @@ class RellIndexingManager(
         while (currentPath.parent != null && depth < MAX_DEPTH) {
             depth++
             val srcDirectory = currentPath.resolveSibling("src")
-            if (Files.exists(srcDirectory) && Files.isDirectory(srcDirectory)) {
+            if (srcDirectory.isValid(path)) {
                 return srcDirectory.toFile()
             }
             currentPath = currentPath.parent
         }
         return null
     }
+
+    private fun Path.isValid(other: Path) =
+        Files.exists(this) && Files.isDirectory(this) && other.startsWith(this)
 
     private fun doSingleFileIndex(fileUri: URI): WorkspaceIndexer {
         val sourceDirUri = findSourceDirURI(fileUri)
@@ -212,8 +216,6 @@ class RellIndexingManager(
         }
     }
 
-    // TODO: Revisit how we get the indexer. Would this approach work if the have two indexer active where one
-    // is indexed from from a child folder from the other indexer.
     fun getIndexerFor(fileUri: URI): WorkspaceIndexer = getIndexerForOrNull(fileUri) ?: doSingleFileIndex(fileUri)
 
     fun getIndexerForFolderOrNull(fileUri: URI): WorkspaceIndexer? {
@@ -225,7 +227,9 @@ class RellIndexingManager(
 
     fun getIndexerForOrNull(fileUri: URI): WorkspaceIndexer? {
         for (indexer in indexers.entries) {
-            if (fileUri.path.trimEnd('/').startsWith(indexer.key.path?.trimEnd('/') ?: continue)) {
+            val filePath = fileUri.path.trimEnd('/')
+            val indexerPath = indexer.key.path?.trimEnd('/') ?: continue
+            if (filePath.startsWith(indexerPath)) {
                 return indexer.value
             }
         }
