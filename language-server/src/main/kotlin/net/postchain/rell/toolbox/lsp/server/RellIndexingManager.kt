@@ -47,7 +47,7 @@ class RellIndexingManager(
         val newIndexers = workspaceFolderUris.flatMap { workspaceFolder ->
             val indexRoots = IndexRoot.findIndexRoots(workspaceFolder)
             if (indexRoots.isEmpty()) {
-                listOf(doIndex(findSourceDirURI(workspaceFolder), workspaceFolder))
+                listOf(doIndex(WorkspaceDirectoryResolver.findSourceDirURI(workspaceFolder), workspaceFolder))
             } else {
                 indexRoots.map { indexRoot ->
                     doIndex(indexRoot.sourceRootUri, indexRoot.chromiaConfigDirUri)
@@ -118,8 +118,8 @@ class RellIndexingManager(
     }
 
     private fun doSingleFileIndex(fileUri: URI): WorkspaceIndexer {
-        val sourceDirUri = findSourceDirURI(fileUri)
-        val projectRootUri = findProjectRootURI(sourceDirUri)
+        val sourceDirUri = WorkspaceDirectoryResolver.findSourceDirURI(fileUri)
+        val projectRootUri = WorkspaceDirectoryResolver.findProjectRootURI(sourceDirUri)
 
         val (linterOptions, formatterOptions) = getLinterAndFormatterOptions(sourceDirUri)
 
@@ -240,7 +240,7 @@ class RellIndexingManager(
         val indexRoots = IndexRoot.findIndexRoots(newFolderUri)
 
         val newIndexers = if (indexRoots.isEmpty()) {
-            listOf(doIndex(findSourceDirURI(newFolderUri), newFolderUri))
+            listOf(doIndex(WorkspaceDirectoryResolver.findSourceDirURI(newFolderUri), newFolderUri))
         } else {
             indexRoots.map { indexRoot ->
                 doIndex(indexRoot.sourceRootUri, indexRoot.chromiaConfigDirUri)
