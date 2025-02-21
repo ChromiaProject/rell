@@ -107,6 +107,7 @@ class GtxConfigTest: BaseGtxTest() {
         chkVersion("0.14.4", "OK")
         chkVersion("0.14.5", "OK")
         chkVersion("0.14.6", "OK")
+        chkVersion("0.14.7", "OK")
 
         chkVersion("0.15.0", "OK")
     }
@@ -143,7 +144,7 @@ class GtxConfigTest: BaseGtxTest() {
         chkVersion("0.11.1", err)
         chkVersion("0.12.1", err)
         chkVersion("0.13.16", err)
-        chkVersion("0.14.7", err)
+        chkVersion("0.14.8", err)
         chkVersion("0.15.1", err)
         chkVersion("1.0.0", err)
     }
