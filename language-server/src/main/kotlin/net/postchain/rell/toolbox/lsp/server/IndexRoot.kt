@@ -15,16 +15,16 @@ class IndexRoot(val chromiaConfigPath: Path, val sourceRootPath: Path) {
     }
 
     companion object {
-        fun indexRootsFactory(workspaceFolderUri: URI): List<IndexRoot> {
+        fun findIndexRoots(workspaceFolderUri: URI): List<IndexRoot> {
             val workspacePath = Paths.get(workspaceFolderUri)
 
             val chromiaConfigFiles = findChromiaConfigFiles(workspacePath)
             return chromiaConfigFiles.map {
-                indexRootFactory(it)
+                fromChromiaConfig(it)
             }
         }
 
-        fun indexRootFactory(chromiaConfigPath: Path): IndexRoot =
+        fun fromChromiaConfig(chromiaConfigPath: Path): IndexRoot =
             IndexRoot(chromiaConfigPath, findSourceRootPath(chromiaConfigPath))
 
 

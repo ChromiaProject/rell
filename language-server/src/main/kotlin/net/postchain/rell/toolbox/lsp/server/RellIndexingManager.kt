@@ -45,7 +45,7 @@ class RellIndexingManager(
 
     fun runIndexers() {
         val newIndexers = workspaceFolderUris.flatMap { workspaceFolder ->
-            val indexRoots = IndexRoot.indexRootsFactory(workspaceFolder)
+            val indexRoots = IndexRoot.findIndexRoots(workspaceFolder)
             if (indexRoots.isEmpty()) {
                 listOf(doIndex(findSourceDirURI(workspaceFolder), workspaceFolder))
             } else {
@@ -69,7 +69,7 @@ class RellIndexingManager(
 
     fun indexFromRoots(chromiaConfigFiles: List<URI>) {
         val newIndexers =
-            chromiaConfigFiles.map { IndexRoot.indexRootFactory(it.toPath()) }.map { indexRoot ->
+            chromiaConfigFiles.map { IndexRoot.fromChromiaConfig(it.toPath()) }.map { indexRoot ->
                 doIndex(indexRoot.sourceRootUri, indexRoot.chromiaConfigDirUri)
             }.associateBy { it.workspaceUri }
 
@@ -237,7 +237,7 @@ class RellIndexingManager(
         indexer.projectRootUri?.path?.trimEnd('/') == deletedFolderUri.path.trimEnd('/')
 
     private fun folderRenameOnIndexerProjectRoot(indexer: WorkspaceIndexer, newFolderUri: URI) {
-        val indexRoots = IndexRoot.indexRootsFactory(newFolderUri)
+        val indexRoots = IndexRoot.findIndexRoots(newFolderUri)
 
         val newIndexers = if (indexRoots.isEmpty()) {
             listOf(doIndex(findSourceDirURI(newFolderUri), newFolderUri))
