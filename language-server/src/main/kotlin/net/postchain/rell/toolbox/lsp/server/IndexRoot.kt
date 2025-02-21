@@ -25,7 +25,7 @@ class IndexRoot(val chromiaConfigPath: Path, val sourceRootPath: Path) {
         }
 
         fun fromChromiaConfig(chromiaConfigPath: Path): IndexRoot =
-            IndexRoot(chromiaConfigPath, WorkspaceDirectoryResolver.findSourceRootPath(chromiaConfigPath))
+            IndexRoot(chromiaConfigPath, WorkspaceDirectoryResolver.findSourceDirPathFromConfig(chromiaConfigPath))
 
 
         private fun findChromiaConfigFiles(workspacePath: Path): List<Path> {

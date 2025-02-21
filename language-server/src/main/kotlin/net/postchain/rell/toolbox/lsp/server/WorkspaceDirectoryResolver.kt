@@ -31,7 +31,7 @@ object WorkspaceDirectoryResolver {
         return sourceFolder?.toURI() ?: workspaceFolder.toURI()
     }
 
-    fun findSourceRootPath(chromiaModelPath: Path): Path {
+    fun findSourceDirPathFromConfig(chromiaModelPath: Path): Path {
         val configSourcePath = ChromiaModelProvider.loadChromiaModelFromFile(chromiaModelPath)?.compile?.source
         return if (configSourcePath != null && configSourcePath.exists()) {
             configSourcePath.normalize()
@@ -40,7 +40,7 @@ object WorkspaceDirectoryResolver {
         }
     }
 
-    fun findProjectRootURI(sourceDirUri: URI): URI? {
+    fun findProjectRootUriFromChild(sourceDirUri: URI): URI? {
         val parentDir = File(sourceDirUri).parentFile ?: return null
         val grandParentDir = parentDir.parentFile ?: return null
 

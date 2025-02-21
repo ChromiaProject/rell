@@ -6,8 +6,6 @@ import net.postchain.rell.toolbox.testing.testData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
-import java.net.URI
-import java.nio.file.Path
 
 class WorkspaceDirectoryResolverTest {
 
@@ -80,7 +78,7 @@ class WorkspaceDirectoryResolverTest {
             }
         }
 
-        val sourcePath = WorkspaceDirectoryResolver.findSourceRootPath(testDataBuilder.chromiaConfigFile.toPath())
+        val sourcePath = WorkspaceDirectoryResolver.findSourceDirPathFromConfig(testDataBuilder.chromiaConfigFile.toPath())
         val expectedPath = testDataBuilder.workspaceFolder.resolve(customSourcePath).toPath().normalize()
 
         assertThat(sourcePath).isEqualTo(expectedPath)
@@ -100,7 +98,7 @@ class WorkspaceDirectoryResolverTest {
             }
         }
 
-        val sourcePath = WorkspaceDirectoryResolver.findSourceRootPath(testDataBuilder.chromiaConfigFile.toPath())
+        val sourcePath = WorkspaceDirectoryResolver.findSourceDirPathFromConfig(testDataBuilder.chromiaConfigFile.toPath())
         val expectedPath = testDataBuilder.workspaceFolder.resolve("src").toPath()
 
         assertThat(sourcePath).isEqualTo(expectedPath)
@@ -112,7 +110,7 @@ class WorkspaceDirectoryResolverTest {
             addWorkspaceFile("src/main.rell", "module;")
         }
 
-        val projectRootUri = WorkspaceDirectoryResolver.findProjectRootURI(testDataBuilder.sourceFolderUri)
+        val projectRootUri = WorkspaceDirectoryResolver.findProjectRootUriFromChild(testDataBuilder.sourceFolderUri)
         val expectedUri = testDataBuilder.workspaceFolder.toURI()
 
         assertThat(projectRootUri).isEqualTo(expectedUri)
@@ -126,7 +124,7 @@ class WorkspaceDirectoryResolverTest {
         }
 
         val sourceUri = testDataBuilder.workspaceFolder.resolve("project/src").toURI()
-        val projectRootUri = WorkspaceDirectoryResolver.findProjectRootURI(sourceUri)
+        val projectRootUri = WorkspaceDirectoryResolver.findProjectRootUriFromChild(sourceUri)
         val expectedUri = testDataBuilder.workspaceFolder.toURI()
 
         assertThat(projectRootUri).isEqualTo(expectedUri)
@@ -139,7 +137,7 @@ class WorkspaceDirectoryResolverTest {
         }
         testDataBuilder.chromiaConfigFile.delete()
 
-        val projectRootUri = WorkspaceDirectoryResolver.findProjectRootURI(testDataBuilder.sourceFolderUri)
+        val projectRootUri = WorkspaceDirectoryResolver.findProjectRootUriFromChild(testDataBuilder.sourceFolderUri)
 
         assertThat(projectRootUri).isEqualTo(null)
     }

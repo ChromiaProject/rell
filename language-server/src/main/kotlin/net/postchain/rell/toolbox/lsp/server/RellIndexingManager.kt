@@ -119,7 +119,7 @@ class RellIndexingManager(
 
     private fun doSingleFileIndex(fileUri: URI): WorkspaceIndexer {
         val sourceDirUri = WorkspaceDirectoryResolver.findSourceDirURI(fileUri)
-        val projectRootUri = WorkspaceDirectoryResolver.findProjectRootURI(sourceDirUri)
+        val projectRootUri = WorkspaceDirectoryResolver.findProjectRootUriFromChild(sourceDirUri)
 
         val (linterOptions, formatterOptions) = getLinterAndFormatterOptions(sourceDirUri)
 
