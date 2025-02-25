@@ -22,12 +22,10 @@
         <dependency>
             <groupId>net.postchain.rell</groupId>
             <artifactId>rell-gtx</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>net.postchain.rell</groupId>
             <artifactId>rell-api-gtx</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>

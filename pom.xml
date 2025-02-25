@@ -143,6 +143,38 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Rell BOM -->
+            <dependency>
+                <groupId>net.postchain.rell</groupId>
+                <artifactId>rell-api-base</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.postchain.rell</groupId>
+                <artifactId>rell-api-gtx</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.postchain.rell</groupId>
+                <artifactId>rell-api-shell</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.postchain.rell</groupId>
+                <artifactId>rell-base</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.postchain.rell</groupId>
+                <artifactId>rell-gtx</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.postchain.rell</groupId>
+                <artifactId>rell-tools</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>net.postchain</groupId>
                 <artifactId>postchain</artifactId>
@@ -157,6 +189,7 @@
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
+
             <!-- Only needed to parse a database URL in CLI tools - consider removing. -->
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>

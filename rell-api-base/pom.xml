@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+  ~ Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
   -->
 
 <project
@@ -22,7 +22,6 @@
         <dependency>
             <groupId>net.postchain.rell</groupId>
             <artifactId>rell-base</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
