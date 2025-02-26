@@ -94,7 +94,7 @@ class RellWorkspaceManager(
     fun didSave(fileUri: URI) {
         val contents = documentManager.getOpenDocument(fileUri)
         if (contents == null) {
-            logger.error { "The document $fileUri has not been opened." }
+            logger.warn { "The document $fileUri has not been opened." }
             return
         }
         val indexer = indexingManager.getIndexerFor(fileUri)
