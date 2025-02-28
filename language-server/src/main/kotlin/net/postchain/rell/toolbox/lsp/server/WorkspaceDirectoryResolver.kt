@@ -52,7 +52,6 @@ object WorkspaceDirectoryResolver {
         }
     }
 
-
     private fun findSrcParentDirectory(uri: URI): File? {
         if (!uri.path.endsWith(".rell")) return null
 
@@ -72,5 +71,4 @@ object WorkspaceDirectoryResolver {
 
     private fun Path.isValid(other: Path) =
         Files.exists(this) && Files.isDirectory(this) && other.startsWith(this)
-
 }

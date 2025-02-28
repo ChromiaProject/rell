@@ -78,7 +78,8 @@ class WorkspaceDirectoryResolverTest {
             }
         }
 
-        val sourcePath = WorkspaceDirectoryResolver.findSourceDirPathFromConfig(testDataBuilder.chromiaConfigFile.toPath())
+        val chromiaConfigPath = testDataBuilder.chromiaConfigFile.toPath()
+        val sourcePath = WorkspaceDirectoryResolver.findSourceDirPathFromConfig(chromiaConfigPath)
         val expectedPath = testDataBuilder.workspaceFolder.resolve(customSourcePath).toPath().normalize()
 
         assertThat(sourcePath).isEqualTo(expectedPath)
@@ -98,7 +99,8 @@ class WorkspaceDirectoryResolverTest {
             }
         }
 
-        val sourcePath = WorkspaceDirectoryResolver.findSourceDirPathFromConfig(testDataBuilder.chromiaConfigFile.toPath())
+        val chromiaConfigPath = testDataBuilder.chromiaConfigFile.toPath()
+        val sourcePath = WorkspaceDirectoryResolver.findSourceDirPathFromConfig(chromiaConfigPath)
         val expectedPath = testDataBuilder.workspaceFolder.resolve("src").toPath()
 
         assertThat(sourcePath).isEqualTo(expectedPath)
