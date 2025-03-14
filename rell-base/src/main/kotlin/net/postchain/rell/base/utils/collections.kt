@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils
@@ -9,6 +9,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory
 import net.postchain.rell.base.runtime.utils.toGtv
 import org.apache.commons.collections4.IterableUtils
+import org.apache.commons.collections4.ListUtils
 import java.util.*
 
 // Values are restricted to Any, because Guava immutable collections don't allow null values.
@@ -192,6 +193,10 @@ fun <T> List<T>.countLastWhile(predicate: (T) -> Boolean): Int {
 }
 
 fun <T> List<T>.dropView(n: Int): List<T> = subList(n, size)
+
+fun <T: Any> List<T>.partition(size: Int): List<List<T>> {
+    return ListUtils.partition(this, size).toImmList()
+}
 
 fun <T, R: Any> Iterable<T>.partitionMap(f: (T) -> Pair<R, Boolean>): Pair<List<R>, List<R>> {
     val first = mutableListOf<R>()

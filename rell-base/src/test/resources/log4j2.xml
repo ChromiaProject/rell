@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="INFO" shutdownHook="disable">
+<!--
+  ~ Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+  -->
+
+<Configuration shutdownHook="disable">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %c{1} - %msg%n" />
