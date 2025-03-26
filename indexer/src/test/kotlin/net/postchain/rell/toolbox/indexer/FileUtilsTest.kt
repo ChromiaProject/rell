@@ -47,7 +47,7 @@ class FileUtilsTest {
         assertThat(uris).hasSize(2)
         assertThat(uris.map { it.path }).contains(file1.toURI().path)
         assertThat(uris.map { it.path }).contains(file2.toURI().path)
-//        assertThat(uris.all { uri -> uri.toString().startsWith("file:/") }).isTrue()
+        assertThat(uris.all { uri -> uri.toString().startsWith("file:/") }).isTrue()
     }
 
     @Test
@@ -76,7 +76,7 @@ class FileUtilsTest {
         assertThat(uris.map { it.path }).contains(file2.toURI().path)
         assertThat(uris.map { it.path }).contains(file3.toURI().path)
 
-//        assertThat(uris.all { uri -> uri.toString().startsWith("file:/") }).isTrue()
+        assertThat(uris.all { uri -> uri.toString().startsWith("file:/") }).isTrue()
     }
 
     @Test
