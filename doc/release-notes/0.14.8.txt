@@ -1,0 +1,6 @@
+RELEASE NOTES 0.14.8 (2025-03-27)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Compiler: 0.10.9 compatibility
+
+Rell compiler and interpreter now support language version 0.10.9. In the past, the oldest supported version was 0.10.10.
