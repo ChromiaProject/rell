@@ -240,18 +240,6 @@ class WorkspaceIndexer(
         }
     }
 
-    // Rename and Move file
-    fun updateFileUriResourceMap(oldFileUri: URI, newFileUri: URI) {
-        val resource = fileUriResourceMap[oldFileUri]
-        if (resource != null) {
-            fileUriResourceMap[newFileUri] = resource
-            removeFileUriResourceMap(oldFileUri)
-        } else {
-            logger.warn { "Could not find resource for $oldFileUri. Re-parsing file..." }
-            updateFileUriResourceMap(newFileUri)
-        }
-    }
-
     private fun isValidFileUri(fileUri: URI): Boolean {
         if (isGitScheme(fileUri)) {
             logger.info { "Skipping indexing of file $fileUri because it is a git file" }

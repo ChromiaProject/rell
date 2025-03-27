@@ -68,28 +68,4 @@ class WorkspaceIndexerUpdateIndexTest {
             prevUriResourceMap[rellFileUri]!!.parseTree.children.size
         )
     }
-
-    @Test
-    fun `updateFileUriResourceMap updates uri of existing resource`() {
-        val sourceFolder = testDataBuilder.sourceFolder
-        val workspaceIndexer =
-            WorkspaceIndexer(
-                testDataBuilder.sourceFolderUri,
-                rellLinter,
-                linterOptions,
-                formattingStyleLinter,
-                formatterOptions
-            )
-        workspaceIndexer.initialFileIndexBuild()
-        val prevUriResourceMap = workspaceIndexer.fileUriResourceMap.toMap()
-
-        val oldUri = testDataBuilder.sourceFile("rell_file.rell").toURI()
-        val newUri = testDataBuilder.sourceFolder.resolve("renamed_rell_file.rell").toURI()
-        workspaceIndexer.updateFileUriResourceMap(oldUri, newUri)
-        val updateFileUriResourceMap = workspaceIndexer.fileUriResourceMap
-
-        assertThat(updateFileUriResourceMap.size).isEqualTo(prevUriResourceMap.size)
-        assertThat(updateFileUriResourceMap[oldUri]).isNull()
-        assertThat(updateFileUriResourceMap[newUri]).isEqualTo(prevUriResourceMap[oldUri])
-    }
 }
