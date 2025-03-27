@@ -1,11 +1,9 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.expr
 
-import com.google.common.collect.Multimap
-import net.postchain.rell.base.compiler.ast.S_CallArgument
 import net.postchain.rell.base.compiler.ast.S_CallArguments
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.*
@@ -32,8 +30,6 @@ import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMultimap
-import net.postchain.rell.base.utils.toMutableMultimap
 
 class C_MemberLink(
     val base: V_Expr,

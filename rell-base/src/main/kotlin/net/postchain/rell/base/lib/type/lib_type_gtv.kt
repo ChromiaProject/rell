@@ -14,8 +14,10 @@ import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
-import net.postchain.rell.base.utils.*
-import java.lang.IllegalArgumentException
+import net.postchain.rell.base.utils.PostchainGtvUtils
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.immMapOf
+import net.postchain.rell.base.utils.toIntExactOrNull
 import java.math.BigInteger
 
 object Lib_Type_Gtv {

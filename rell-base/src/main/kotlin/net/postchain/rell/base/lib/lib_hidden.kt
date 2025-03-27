@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib
@@ -20,7 +20,6 @@ import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
 import net.postchain.rell.base.utils.LazyPosString
-import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.checkEquals
 
 object Lib_RellHidden {

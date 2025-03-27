@@ -4,7 +4,6 @@
 
 package net.postchain.rell.gtx
 
-import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.gtx.testutils.BaseGtxTest
 import org.junit.Test
 

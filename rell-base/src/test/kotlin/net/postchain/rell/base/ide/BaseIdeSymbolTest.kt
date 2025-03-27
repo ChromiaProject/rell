@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.ide
@@ -12,9 +12,10 @@ import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.base.compiler.base.utils.readAstEx
 import net.postchain.rell.base.compiler.parser.RellTokenInput
 import net.postchain.rell.base.compiler.parser.RellTokenizer
-import net.postchain.rell.base.compiler.parser.S_Grammar
+import net.postchain.rell.base.compiler.parser.RellTokens
 import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.model.R_ModuleName
@@ -114,7 +115,7 @@ abstract class BaseIdeSymbolTest: BaseRellTest() {
     private fun getModuleName(sourceDir: C_SourceDir, file: C_SourcePath): R_ModuleName {
         val sourceFile = sourceDir.file(file)
         sourceFile ?: throw IllegalArgumentException(file.str())
-        val ast = sourceFile.readAst()
+        val ast = sourceFile.readAstEx(tst.compatibilityVer)
         val res = IdeApi.getModuleName(file, ast)
         return res ?: throw IllegalArgumentException(file.str())
     }
@@ -271,14 +272,14 @@ abstract class BaseIdeSymbolTest: BaseRellTest() {
 
             val syms = mutableMapOf<S_Pos, String>()
 
-            val tokenizer = S_Grammar.tokenizer
+            val tokenizer = RellTokenizer()
             val tp = tokenizer.tokenProducer(parserPath, code)
 
             while (true) {
                 val tm = tp.nextToken() ?: break
                 val ti = tm.input as RellTokenInput
                 val m = ti.match
-                if (ti.token.pattern == RellTokenizer.IDENTIFIER || ti.token.pattern == "$") syms[m.pos] = m.text
+                if (ti.token.pattern == RellTokens.IDENTIFIER || ti.token.pattern == "$") syms[m.pos] = m.text
             }
 
             return syms.toImmMap()

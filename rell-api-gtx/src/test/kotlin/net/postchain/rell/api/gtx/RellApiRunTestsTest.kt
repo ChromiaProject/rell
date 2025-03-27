@@ -5,13 +5,9 @@
 package net.postchain.rell.api.gtx
 
 import net.postchain.gtv.GtvFactory
-import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.testutils.Rt_TestPrinter
-import net.postchain.rell.base.testutils.SqlTestUtils
-import net.postchain.rell.base.utils.toImmList
 import org.junit.Test
-import kotlin.test.assertEquals
 
 class RellApiRunTestsTest: BaseRellApiRunTestsTest() {
     @Test fun testRunTestsBasic() {

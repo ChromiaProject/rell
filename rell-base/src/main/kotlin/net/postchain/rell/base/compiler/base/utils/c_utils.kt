@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.utils
@@ -14,6 +14,7 @@ import net.postchain.rell.base.compiler.base.def.C_SysAttribute
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.lib.C_LibUtils
 import net.postchain.rell.base.compiler.base.module.C_ModuleKey
+import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.compiler.parser.RellTokenizerException
 import net.postchain.rell.base.compiler.parser.S_Grammar
 import net.postchain.rell.base.compiler.vexpr.V_Expr
@@ -433,33 +434,43 @@ object C_Parser {
 
     val REPL_NULL_POS: S_Pos = S_BasicPos(REPL_PARSER_PATH, 0, 1, 1)
 
-    fun parse(filePath: C_SourcePath, idePath: IdeFilePath, sourceCode: String): S_RellFile {
+    fun parse(
+        filePath: C_SourcePath,
+        idePath: IdeFilePath,
+        sourceCode: String,
+        version: R_LangVersion = RellVersions.VERSION,
+    ): S_RellFile {
         val parserPath = C_ParserFilePath(filePath, idePath)
-        val res = parse0(parserPath, sourceCode, S_Grammar.rootParser)
+        val res = parse0(parserPath, sourceCode, version, S_Grammar.rootParser)
         val ast = res.getAst()
         return ast
     }
 
     fun parseRepl(code: String): S_ReplCommand {
-        val res = parse0(REPL_PARSER_PATH, code, S_Grammar.replParser)
+        val res = parse0(REPL_PARSER_PATH, code, RellVersions.VERSION, S_Grammar.replParser)
         val ast = res.getAst()
         return ast
     }
 
     fun checkEofErrorRepl(code: String): C_Error? {
-        val res = parse0(REPL_PARSER_PATH, code, S_Grammar.replParser)
+        val res = parse0(REPL_PARSER_PATH, code, RellVersions.VERSION, S_Grammar.replParser)
         return when (res) {
             is C_SuccessParserResult -> null
             is C_ErrorParserResult -> if (res.eof) res.error else null
         }
     }
 
-    private fun <T> parse0(filePath: C_ParserFilePath, sourceCode: String, parser: Parser<T>): C_ParserResult<T> {
+    private fun <T> parse0(
+        filePath: C_ParserFilePath,
+        sourceCode: String,
+        version: R_LangVersion,
+        parser: Parser<T>,
+    ): C_ParserResult<T> {
         // The syntax error position returned by the parser library is misleading: if there is an error in the middle
         // of an operation, it returns the position of the beginning of the operation.
         // Following workaround handles this by tracking the position of the farthest reached token (seems to work fine).
 
-        val tokenProd = S_Grammar.tokenizer.tokenProducer(filePath, sourceCode)
+        val tokenProd = RellTokenizer(version).tokenProducer(filePath, sourceCode)
 
         return try {
             val ast = parseToEnd(tokenProd, parser)

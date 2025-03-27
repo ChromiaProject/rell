@@ -1,14 +1,11 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.gtx
 
 import net.postchain.gtv.GtvBigInteger
-import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.GtvFactory.gtv
-import net.postchain.gtv.GtvInteger
-import net.postchain.gtv.GtvString
 import net.postchain.rell.base.lang.type.DecimalTest
 import net.postchain.rell.base.lib.LibBlockTransactionTest
 import net.postchain.rell.gtx.testutils.BaseGtxTest

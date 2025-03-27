@@ -32,7 +32,7 @@ object RellVersions {
 
     const val MODULE_SYSTEM_VERSION_STR = "0.10.0"
 
-    private val MIN_COMPATIBILITY_VERSION = R_LangVersion.of("0.10.10")
+    private val MIN_COMPATIBILITY_VERSION = R_LangVersion.of("0.10.9")
 
     val MIN_COMPILER_VERSION: R_LangVersion by lazy { R_LangVersion.of("0.13.11") }
 

@@ -682,9 +682,8 @@ private class SourceCodeConfig(rellNode: Map<String, Gtv>) {
                 .mapValues { (k, v) -> C_TextSourceFile(k, v) }
                 .toImmMap()
 
-
-        dir = C_SourceDir.mapDir(fileMap)
         version = getCompatibilityVersion(rellNode, source.version)
+        dir = C_SourceDir.mapDir(fileMap)
     }
 
     private fun getCompatibilityVersion(rellNode: Map<String, Gtv>, sourceVersion: R_LangVersion): R_LangVersion? {

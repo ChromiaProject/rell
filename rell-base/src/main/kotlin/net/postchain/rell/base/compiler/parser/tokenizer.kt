@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.parser
@@ -15,12 +15,13 @@ import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
 import net.postchain.rell.base.lib.type.Lib_DecimalMath
 import net.postchain.rell.base.lib.type.Rt_BigIntegerValue
 import net.postchain.rell.base.lib.type.Rt_DecimalValue
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.utils.CommonUtils
-import net.postchain.rell.base.utils.toImmSet
+import net.postchain.rell.base.utils.*
 import java.math.BigInteger
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 sealed class RellTokenizerException(
     @JvmField val pos: S_Pos,
@@ -36,29 +37,27 @@ class RellTokenizerScanException(pos: S_Pos, code: String, msg: String, eof: Boo
 // Referenced in Eclipse.
 class RellTokenizerDecodingException(pos: S_Pos, code: String, msg: String): RellTokenizerException(pos, code, msg, false)
 
-class RellTokenizer(tokensEx: List<RellToken>) {
-    val tkIdentifier: RellToken
-    val tkInteger: RellToken
-    val tkBigInteger: RellToken
-    val tkDecimal: RellToken
-    val tkString: RellToken
-    val tkByteArray: RellToken
+class RellTokens private constructor(version: R_LangVersion) {
+    val all: List<RellToken> = S_Grammar.rellTokens.toImmList()
+    val keywords: List<RellToken>
+    val delims: List<RellToken>
 
-    val tkKeywords: Map<String, RellToken>
-    val tkDelims: List<RellToken>
-
-    private val maxDelimLen: Int
-
-    private val tokenSet = tokensEx.map { it.token }.toImmSet()
+    val identifier: RellToken
+    val integer: RellToken
+    val bigInteger: RellToken
+    val decimal: RellToken
+    val string: RellToken
+    val byteArray: RellToken
 
     init {
-        require(tokensEx.isNotEmpty()) { "The tokens list should not be empty" }
+        val enabled = all.filter { it.isEnabled(version) }.toImmList()
+        require(enabled.isNotEmpty()) { "The tokens list should not be empty" }
 
         val generals = mutableMapOf<String, RellToken>()
         val keywords = mutableMapOf<String, RellToken>()
         val delims = mutableMapOf<String, RellToken>()
 
-        for (token in tokensEx) {
+        for (token in enabled) {
             val p = token.pattern
             if (isGeneralToken(p)) {
                 require(p !in generals) { "Duplicate token: '$p'" }
@@ -74,17 +73,61 @@ class RellTokenizer(tokensEx: List<RellToken>) {
             }
         }
 
-        tkIdentifier = generals.getValue(IDENTIFIER)
-        tkInteger = generals.getValue(INTEGER)
-        tkBigInteger = generals.getValue(BIG_INTEGER)
-        tkDecimal = generals.getValue(DECIMAL)
-        tkString = generals.getValue(STRING)
-        tkByteArray = generals.getValue(BYTEARRAY)
+        identifier = generals.getValue(IDENTIFIER)
+        integer = generals.getValue(INTEGER)
+        bigInteger = generals.getValue(BIG_INTEGER)
+        decimal = generals.getValue(DECIMAL)
+        string = generals.getValue(STRING)
+        byteArray = generals.getValue(BYTEARRAY)
 
-        tkKeywords = keywords.toMap()
-        tkDelims = delims.values.toList().sortedBy { -it.pattern.length }
-        maxDelimLen = delims.keys.maxOf { it.length }
+        this.keywords = keywords.values.toImmList()
+        this.delims = delims.values.sortedBy { -it.pattern.length }.toImmList()
     }
+
+    companion object {
+        const val IDENTIFIER = "<IDENTIFIER>"
+        const val INTEGER = "<INTEGER>"
+        const val BIG_INTEGER = "<BIGINTEGER>"
+        const val DECIMAL = "<DECIMAL>"
+        const val STRING = "<STRING>"
+        const val BYTEARRAY = "<BYTEARRAY>"
+
+        val DEFAULT: RellTokens = RellTokens(RellVersions.VERSION)
+
+        fun get(version: R_LangVersion): RellTokens {
+            return if (version == RellVersions.VERSION) DEFAULT else RellTokens(version)
+        }
+
+        private fun isGeneralToken(s: String) = s.matches(Regex("<[A-Z0-9_]+>"))
+    }
+}
+
+private class RellTokenizerSetup private constructor(version: R_LangVersion) {
+    val tokens = RellTokens.get(version)
+    val tokenSet = tokens.all.map { it.token }.toImmSet()
+
+    val keywords = tokens.keywords.associateBy { it.pattern }.toImmMap()
+
+    val maxDelimLen: Int = tokens.delims.maxOf { it.pattern.length }
+
+    companion object {
+        private val versionMap = ConcurrentHashMap<R_LangVersion, RellTokenizerSetup>()
+
+        fun get(version: R_LangVersion): RellTokenizerSetup {
+            var res = versionMap[version]
+            if (res == null) {
+                // On race condition (unlikely), will build a redundant instance and discard it - that's fine.
+                val tokens = RellTokenizerSetup(version)
+                res = versionMap.putIfAbsent(version, tokens) ?: tokens
+            }
+            return res
+        }
+    }
+}
+
+class RellTokenizer(version: R_LangVersion = RellVersions.VERSION) {
+    private val setup = RellTokenizerSetup.get(version)
+    private val tokens = setup.tokens
 
     fun tokenProducer(filePath: C_ParserFilePath, input: String): RellTokenProducer {
         return RellTokenProducerImpl(filePath, input)
@@ -111,23 +154,23 @@ class RellTokenizer(tokensEx: List<RellToken>) {
             k == 'x' && (seq.afterCur() == '\'' || seq.afterCur() == '"') -> {
                 val s = scanByteArrayLiteral(seq)
                 val pos = seq.startPos()
-                val tk = seq.tokenRec(tkByteArray, s)
+                val tk = seq.tokenRec(tokens.byteArray, s)
                 decodeByteArray(pos, tk.text) // Fail early - will throw an exception if the token is invalid.
                 tk
             }
             R_Name.isNameStart(k) -> {
                 scanWhileTrue(seq) { R_Name.isNamePart(it) }
                 val s = seq.text(0, 0)
-                val tk = tkKeywords.getOrDefault(s, tkIdentifier)
+                val tk = setup.keywords.getOrDefault(s, tokens.identifier)
                 seq.tokenRec(tk, s)
             }
             isDelim(k) -> {
-                val s = seq.lookahead(maxDelimLen)
+                val s = seq.lookahead(setup.maxDelimLen)
                 scanDelimiter(seq, s)
             }
             k == '\'' || k == '"' -> {
                 val s = scanStringLiteral(seq)
-                seq.tokenRec(tkString, s)
+                seq.tokenRec(tokens.string, s)
             }
             else -> throw seq.err("lex:token", "Syntax error")
         }
@@ -267,7 +310,7 @@ class RellTokenizer(tokensEx: List<RellToken>) {
     private fun makeInteger(seq: CharSeq): TokenRec {
         val pos = seq.startPos()
         val s = seq.text(0, 0)
-        val tk = seq.tokenRec(tkInteger, s)
+        val tk = seq.tokenRec(tokens.integer, s)
         decodeInteger(pos, tk.text) // Fail early - will throw an exception if the number is invalid.
         return tk
     }
@@ -275,7 +318,7 @@ class RellTokenizer(tokensEx: List<RellToken>) {
     private fun makeBigInteger(seq: CharSeq): TokenRec {
         val pos = seq.startPos()
         val s = seq.text(0, 0)
-        val tk = seq.tokenRec(tkBigInteger, s)
+        val tk = seq.tokenRec(tokens.bigInteger, s)
         decodeBigInteger(pos, tk.text) // Fail early - will throw an exception if the number is invalid.
         return tk
     }
@@ -283,7 +326,7 @@ class RellTokenizer(tokensEx: List<RellToken>) {
     private fun makeDecimal(seq: CharSeq): TokenRec {
         val pos = seq.startPos()
         val s = seq.text(0, 0)
-        val tk = seq.tokenRec(tkDecimal, s)
+        val tk = seq.tokenRec(tokens.decimal, s)
         decodeDecimal(pos, tk.text) // Fail early - will throw an exception if the number is invalid.
         return tk
     }
@@ -379,7 +422,7 @@ class RellTokenizer(tokensEx: List<RellToken>) {
     }
 
     private fun scanDelimiter(seq: CharSeq, s: String): TokenRec {
-        for (tk in tkDelims) {
+        for (tk in tokens.delims) {
             if (s.startsWith(tk.pattern)) {
                 for (c in tk.pattern) {
                     seq.next()
@@ -421,37 +464,18 @@ class RellTokenizer(tokensEx: List<RellToken>) {
                 return null
             }
 
-            val match = rec.tokenMatch(tokenIndex, tokenSet)
+            val match = rec.tokenMatch(tokenIndex, setup.tokenSet)
             ++tokenIndex
             return match
         }
     }
 
     companion object {
-        const val IDENTIFIER = "<IDENTIFIER>"
-        const val INTEGER = "<INTEGER>"
-        const val BIG_INTEGER = "<BIGINTEGER>"
-        const val DECIMAL = "<DECIMAL>"
-        const val STRING = "<STRING>"
-        const val BYTEARRAY = "<BYTEARRAY>"
-
         private const val MAX_BIG_INTEGER_LITERAL_LENGTH = 1000
         private const val MAX_DECIMAL_LITERAL_LENGTH = 1000
 
         private val BIG_MIN_INTEGER = BigInteger.valueOf(Long.MIN_VALUE)
         private val BIG_MAX_INTEGER = BigInteger.valueOf(Long.MAX_VALUE)
-
-        private fun isGeneralToken(s: String) = s.matches(Regex("<[A-Z0-9_]+>"))
-
-        private fun isDigit(c: Char?) = c != null && c >= '0' && c <= '9'
-
-        // Kotlin complains to replace char comparisons with range checks. Tested, with range checks it's a bit slower
-        // (up to 10-15%). Negligible, but keeping the old code, as it has more obvious performance. Range checks rely
-        // on some implicit optimizations (Kotlin compiler or JVM), apparently.
-        @Suppress("ConvertTwoComparisonsToRangeCheck")
-        private fun isHexDigit(c: Char) = isDigit(c) || c >= 'A' && c <= 'F' || c >= 'a' && c <= 'f'
-
-        private fun isDelim(c: Char) = "~!@#$%^&*()-=+[]{}|;:,.<>/?".contains(c)
 
         fun decodeName(pos: S_Pos, s: String): R_Name {
             val rName = R_Name.ofOpt(s)
@@ -687,3 +711,13 @@ private class TokenRec(
         return TokenMatch(token.token, index, rellInput, offset, length, row, col)
     }
 }
+
+private fun isDelim(c: Char) = "~!@#$%^&*()-=+[]{}|;:,.<>/?".contains(c)
+
+private fun isDigit(c: Char?) = c != null && c >= '0' && c <= '9'
+
+// Kotlin complains to replace char comparisons with range checks. Tested, with range checks it's a bit slower
+// (up to 10-15%). Negligible, but keeping the old code, as it has more obvious performance. Range checks rely
+// on some implicit optimizations (Kotlin compiler or JVM), apparently.
+@Suppress("ConvertTwoComparisonsToRangeCheck")
+private fun isHexDigit(c: Char) = isDigit(c) || c >= 'A' && c <= 'F' || c >= 'a' && c <= 'f'

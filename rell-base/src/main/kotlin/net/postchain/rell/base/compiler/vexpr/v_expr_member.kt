@@ -1,10 +1,9 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.vexpr
 
-import net.postchain.rell.base.compiler.ast.S_CallArgument
 import net.postchain.rell.base.compiler.ast.S_CallArguments
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.module
@@ -102,8 +102,8 @@ class C_ModuleReader(
 }
 
 private class C_ModuleDirTree(
-        private val readerCtx: C_ModuleReaderContext,
-        private val sourceDir: C_SourceDir,
+    private val readerCtx: C_ModuleReaderContext,
+    private val sourceDir: C_SourceDir,
 ) {
     private val rootDir = DirNode(C_SourcePath.EMPTY, R_ModuleName.EMPTY)
 
@@ -180,8 +180,8 @@ private class C_ModuleDirTree(
     private abstract inner class TreeNode(val path: C_SourcePath)
 
     private inner class DirNode(
-            path: C_SourcePath,
-            val moduleName: R_ModuleName
+        path: C_SourcePath,
+        val moduleName: R_ModuleName,
     ): TreeNode(path) {
         private val subDirs = mutableMapOf<R_Name, DirNode>()
         private val subFiles = mutableMapOf<String, FileNode>()
@@ -332,8 +332,9 @@ private class C_ModuleDirTree(
         fun getModuleSource() = moduleSourceLazy
 
         private fun calcAst(): S_RellFile? {
+            val version = readerCtx.msgCtx.globalCtx.compilerOptions.compatibility
             return try {
-                sourceFile.readAst()
+                sourceFile.readAstEx(version)
             } catch (e: C_Error) {
                 readerCtx.msgCtx.error(e)
                 null

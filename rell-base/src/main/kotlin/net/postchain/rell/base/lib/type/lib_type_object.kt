@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.type
@@ -24,7 +24,6 @@ import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.checkEquals
-import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.immListOf
 
 object Lib_Type_Object {

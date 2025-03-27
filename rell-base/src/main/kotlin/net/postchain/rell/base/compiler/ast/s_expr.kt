@@ -1,10 +1,9 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.ast
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.*
@@ -22,7 +21,6 @@ import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.immMultimapOf
 import net.postchain.rell.base.utils.toImmMultimap
 import net.postchain.rell.base.utils.toImmSet
-import net.postchain.rell.base.utils.toMutableMultimap
 
 abstract class S_Expr(val startPos: S_Pos) {
     abstract fun compile(ctx: C_ExprContext, hint: C_ExprHint = C_ExprHint.DEFAULT): C_Expr

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.parser
@@ -10,7 +10,10 @@ import com.github.h0tk3y.betterParse.parser.Parser
 import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.model.R_KeyIndexKind
+import net.postchain.rell.base.model.R_LangVersion
+import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.expr.R_AtCardinality
+import net.postchain.rell.base.model.expr.R_AtWhatSort
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 import kotlin.reflect.KProperty
@@ -21,7 +24,7 @@ object S_Keywords {
 }
 
 object S_Grammar {
-    private val rellTokens = arrayListOf<RellToken>()
+    private val rellTokens0 = mutableListOf<RellToken>()
 
     private val LPAR by relltok("(")
     private val RPAR by relltok(")")
@@ -102,6 +105,7 @@ object S_Grammar {
     private val QUERY by relltok("query")
     private val RECORD by relltok("record")
     private val RETURN by relltok("return")
+    private val SORT by relltok("sort", until = "0.10.10")
     private val STRUCT by relltok("struct")
     private val TRUE by relltok("true")
     private val UPDATE by relltok("update")
@@ -111,18 +115,16 @@ object S_Grammar {
     private val WHEN by relltok("when")
     private val WHILE by relltok("while")
 
-    private val NUMBER by relltok(RellTokenizer.INTEGER) // Must be exactly INT for Eclipse coloring, but then Xtext assumes it's a decimal Integer
-    private val BIG_INTEGER by relltok(RellTokenizer.BIG_INTEGER)
-    private val DECIMAL by relltok(RellTokenizer.DECIMAL)
-    private val BYTES by relltok(RellTokenizer.BYTEARRAY)
-    private val STRING by relltok(RellTokenizer.STRING) // Must be exactly STRING for Eclipse coloring
-    private val ID by relltok(RellTokenizer.IDENTIFIER)
+    private val NUMBER by relltok(RellTokens.INTEGER) // Must be exactly INT for Eclipse coloring, but then Xtext assumes it's a decimal Integer
+    private val BIG_INTEGER by relltok(RellTokens.BIG_INTEGER)
+    private val DECIMAL by relltok(RellTokens.DECIMAL)
+    private val BYTES by relltok(RellTokens.BYTEARRAY)
+    private val STRING by relltok(RellTokens.STRING) // Must be exactly STRING for Eclipse coloring
+    private val ID by relltok(RellTokens.IDENTIFIER)
 
     private val LR_PAR = TokenPair(LPAR, RPAR)
     private val LR_CURL = TokenPair(LCURL, RCURL)
     private val LR_BRACK = TokenPair(LBRACK, RBRACK)
-
-    val tokenizer: RellTokenizer by lazy { RellTokenizer(rellTokens) }
 
     private val _commaSeparatedParsers = mutableListOf<Parser<*>>()
 
@@ -213,7 +215,11 @@ object S_Grammar {
     private val annotationArg by annotationArgValue or annotationArgName
     private val annotationArgs by commaSeparatedZeroMany(annotationArg) map { it.items }
 
-    private val annotation by AT * name * optional(annotationArgs) map {
+    private val annotationNameName by name
+    private val annotationNameSort by legacyRule(SORT map { S_Name(it.pos, R_Name.of(it.text)) })
+    private val annotationName by legacyRule(annotationNameName or annotationNameSort, annotationNameName)
+
+    private val annotation by AT * annotationName * optional(annotationArgs) map {
         (at, name, args) ->
         G_Node(S_Annotation(name, args ?: immListOf()), at)
     }
@@ -421,12 +427,25 @@ object S_Grammar {
         S_AtExprWhat_Simple(dot.pos, path)
     }
 
-    private val atExprWhatComplexItem by zeroOrMore(annotation) * optional(nameNode * -ASSIGN) * expressionRef map {
-        (annotations, name, expr) ->
-        val annotations2 = annotations.map { it.value }
-        val modifiers = S_Modifiers(annotations2)
+    private val atExprWhatSort by legacyRule(
+        optional(MINUS) * SORT map {
+            (minus, kw) ->
+            val sort = if (minus == null) R_AtWhatSort.ASC else R_AtWhatSort.DESC
+            S_PosValue(kw.pos, sort)
+        }
+    )
+
+    private val atExprWhatModifiers by legacyRule(
+        zeroOrMore(annotation) * optional(atExprWhatSort),
+        zeroOrMore(annotation) map { G_Tuples.tuple(it, null) },
+    )
+
+    private val atExprWhatComplexItem by atExprWhatModifiers * optional(nameNode * -ASSIGN) * expressionRef map {
+        (modifiers, name, expr) ->
+        val (annotations, sort) = modifiers
+        val sModifiers = S_Modifiers(annotations.map { it.value })
         val firstToken = annotations.firstOrNull()?.firstToken ?: name?.firstToken
-        S_AtExprWhatComplexField(name?.value, expr, modifiers, firstToken?.comment)
+        S_AtExprWhatComplexField(name?.value, expr, sModifiers, sort, firstToken?.comment)
     }
 
     private val atExprWhatComplex by commaSeparatedOneMany(atExprWhatComplexItem) map {
@@ -883,6 +902,8 @@ object S_Grammar {
         S_RellFile(header, defs)
     }
 
+    val rellTokens: List<RellToken> = rellTokens0.toImmList()
+
     private fun <T> getTupleSingleField(list: S_CommaSeparatedList<S_GenericTupleAttr<T>>): T? {
         val first = list.items.first()
         val isSingle = list.items.size == 1 && !list.trailingComma && first.name == null
@@ -923,12 +944,20 @@ object S_Grammar {
         return parser
     }
 
-    private fun relltok(s: String) = RellTokenProp(s)
+    // A workaround to hide legacy grammar rules from tools, like IDE grammar generators. Legacy rules use conditional
+    // keywords (which depend on the configured language version), what's not supported by IDEs, because they use
+    // statically generaged grammars.
+    // IDE support of the legacy syntax is not needed - it's needed only in the interpreter for backward compatibility.
+    private fun <T> legacyRule(innerParser: Parser<T>, reducedParser: Parser<T>? = null): Parser<T> {
+        return LegacyCombinator(innerParser, reducedParser)
+    }
 
-    private class RellTokenProp(private val pattern: String) {
+    private fun relltok(s: String, until: String? = null) = RellTokenProp(s, until = until?.let { R_LangVersion.of(it) })
+
+    private class RellTokenProp(private val pattern: String, private val until: R_LangVersion?) {
         operator fun provideDelegate(thisRef: S_Grammar, property: KProperty<*>): RellToken {
-            val ex = RellToken(property.name, pattern)
-            rellTokens.add(ex)
+            val ex = RellToken(property.name, pattern, until = until)
+            rellTokens0.add(ex)
             return ex
         }
     }

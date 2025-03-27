@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.misc
@@ -137,5 +137,24 @@ class VersionControlTest: BaseRellTest() {
 
         chkVerRtExpr("integer.from_gtv($gtv)", "0.11.0", "gtv_err:type:[integer]:INTEGER:BIGINTEGER", "int[123]")
         chkVerRtExpr("decimal.from_gtv($gtv)", "0.11.0", "gtv_err:type:[decimal]:STRING:BIGINTEGER", "dec[123]")
+    }
+
+    @Test fun testSortKeyword() {
+        chkLegacyKw("sort", "OK")
+
+        tst.compatibilityVer("0.10.10")
+        chkLegacyKw("sort", "OK")
+
+        tst.compatibilityVer("0.10.9")
+        chkLegacyKw("sort", "ct_err:syntax")
+    }
+
+    @Suppress("SameParameterValue")
+    private fun chkLegacyKw(kw: String, exp: String) {
+        chkCompile("function $kw() {}", exp)
+        chkCompile("struct $kw {}", exp)
+        chkCompile("enum $kw {}", exp)
+        chkCompile("function f($kw: boolean) {}", exp)
+        chkCompile("function f() { val $kw = 123; }", exp)
     }
 }

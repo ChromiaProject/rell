@@ -1,14 +1,14 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils.grammar
 
-import net.postchain.rell.base.compiler.parser.S_Grammar
+import net.postchain.rell.base.compiler.parser.RellTokens
 
 fun main() {
-    val tokenizer = S_Grammar.tokenizer
-    for (t in tokenizer.tkKeywords.values.sortedBy { it.pattern }) {
+    val tokens = RellTokens.DEFAULT
+    for (t in tokens.keywords.sortedBy { it.pattern }) {
         println(t.pattern)
     }
 }

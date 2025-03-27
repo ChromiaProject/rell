@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.fn
@@ -20,7 +20,6 @@ import net.postchain.rell.base.utils.associateNotNullValues
 import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.doc.DocFunctionParamComments
 import net.postchain.rell.base.utils.ide.IdeCompletion
-import net.postchain.rell.base.utils.immMultimapOf
 
 abstract class C_SubprogramHeader(
     val params: C_FormalParameters,

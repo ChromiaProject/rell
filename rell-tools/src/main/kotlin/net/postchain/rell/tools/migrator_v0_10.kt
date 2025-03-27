@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.tools
@@ -7,7 +7,7 @@ package net.postchain.rell.tools
 import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
-import net.postchain.rell.base.compiler.parser.S_Grammar
+import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.utils.checkEquals
 import picocli.CommandLine
 import java.io.File
@@ -106,7 +106,7 @@ private fun tokenize(text: String): List<TokenReplace> {
     val sourcePath = C_SourcePath.parse("?")
     val idePath = IdeSourcePathFilePath(sourcePath)
     val parserPath = C_ParserFilePath(sourcePath, idePath)
-    val prod = S_Grammar.tokenizer.tokenProducer(parserPath, text)
+    val prod = RellTokenizer().tokenProducer(parserPath, text)
 
     val res = mutableListOf<TokenReplace>()
     while (true) {

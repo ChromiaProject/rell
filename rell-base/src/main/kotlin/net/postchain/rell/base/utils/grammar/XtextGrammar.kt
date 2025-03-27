@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils.grammar
@@ -7,7 +7,7 @@ package net.postchain.rell.base.utils.grammar
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.ParserReference
 import net.postchain.rell.base.compiler.parser.RellToken
-import net.postchain.rell.base.compiler.parser.S_Grammar
+import net.postchain.rell.base.compiler.parser.RellTokens
 import net.postchain.rell.base.utils.LateInit
 import net.postchain.rell.base.utils.capitalizeEx
 import net.postchain.rell.base.utils.toLowerCaseEx
@@ -26,30 +26,33 @@ fun main() {
     generateTerminals()
 }
 
+private val RELL_TOKENS = RellTokens.DEFAULT
+private val TOP_PARSERS = GrammarUtils.getParsers()
+
 private fun generateTerminals() {
-    val tokenizer = S_Grammar.tokenizer
+    val tokens = RELL_TOKENS
 
     val text = """
             terminal ML_COMMENT: '/*' -> '*/';
             terminal SL_COMMENT: '//' !('\n'|'\r')* ('\r'? '\n')?;
             terminal WS: (' '|'\t'|'\r'|'\n')+;
 
-            terminal ${tokenizer.tkIdentifier.name}: ('A'..'Z'|'a'..'z'|'_') ('A'..'Z'|'a'..'z'|'_'|'0'..'9')*;
+            terminal ${tokens.identifier.name}: ('A'..'Z'|'a'..'z'|'_') ('A'..'Z'|'a'..'z'|'_'|'0'..'9')*;
 
             terminal DECNUM: ('0'..'9')+;
             terminal EXPONENT: ('E'|'e') ('+'|'-')? DECNUM ;
-            terminal ${tokenizer.tkDecimal.name}: DECNUM? '.' DECNUM EXPONENT? | DECNUM EXPONENT ;
+            terminal ${tokens.decimal.name}: DECNUM? '.' DECNUM EXPONENT? | DECNUM EXPONENT ;
 
             terminal HEXDIG: '0'..'9'|'A'..'F'|'a'..'f';
             terminal COMMON_INT: DECNUM | '0' 'x' HEXDIG+;
-            terminal ${tokenizer.tkBigInteger.name}: COMMON_INT 'L';
-            terminal ${tokenizer.tkInteger.name}: COMMON_INT;
+            terminal ${tokens.bigInteger.name}: COMMON_INT 'L';
+            terminal ${tokens.integer.name}: COMMON_INT;
 
-            terminal ${tokenizer.tkByteArray.name}: 'x' (('\'' (HEXDIG HEXDIG)* '\'') | ('"' (HEXDIG HEXDIG)* '"'));
+            terminal ${tokens.byteArray.name}: 'x' (('\'' (HEXDIG HEXDIG)* '\'') | ('"' (HEXDIG HEXDIG)* '"'));
 
             terminal STRCHAR: '\t' | '\\' ('b'|'t'|'n'|'f'|'r'|'"'|"'"|'\\' | 'u' HEXDIG HEXDIG HEXDIG HEXDIG);
             terminal STRBAD: '\\' | '\u0000' .. '\u001F';
-            terminal ${tokenizer.tkString.name}: '"' ( STRCHAR | !('"'|STRBAD) )*  '"' | "'" ( STRCHAR | !("'"|STRBAD) )* "'";
+            terminal ${tokens.string.name}: '"' ( STRCHAR | !('"'|STRBAD) )*  '"' | "'" ( STRCHAR | !("'"|STRBAD) )* "'";
     """.trimIndent()
 
     println(text.trim())
@@ -68,12 +71,10 @@ fun generateXtextActions(): Map<String, XtextActionEx> {
 }
 
 private object XtextNontermGen {
-    private val tokenizer = S_Grammar.tokenizer
+    private val literalTokens = (RELL_TOKENS.keywords + RELL_TOKENS.delims).associateBy { it.name }.toMap()
+    private val specialTokens = listOf(RELL_TOKENS.string, RELL_TOKENS.byteArray).map { it.name }
 
-    private val literalTokens = (tokenizer.tkKeywords.values + tokenizer.tkDelims).map { Pair(it.name, it) }.toMap()
-    private val specialTokens = listOf(tokenizer.tkString, tokenizer.tkByteArray).map { it.name }
-
-    private val kParsers = GrammarUtils.getParsers()
+    private val kParsers = TOP_PARSERS
 
     private val xNonterms = mutableMapOf<String, XtextNonterm>()
     private val xTokenNonterms = mutableMapOf<String, XtextNonterm>()
@@ -238,7 +239,7 @@ private object XtextNontermGen {
 }
 
 private object GramExprGen {
-    private val parsers = GrammarUtils.getParsers()
+    private val parsers = TOP_PARSERS
     private val nonterms = MapUtils.invertMap(parsers).toMap()
 
     fun createGramExpr(parser: Any): GramExpr {
@@ -275,6 +276,7 @@ private object GramExprGen {
                 if (parser.innerParser is SeparatedCombinator<*, *>) {
                     createGramExprSub(parser.innerParser)
                 } else {
+                    @Suppress("UNCHECKED_CAST")
                     GramExpr_Map(createGramExprSub(parser.innerParser), parser.transform as (Any) -> Any)
                 }
             }

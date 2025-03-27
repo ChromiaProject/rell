@@ -1,17 +1,13 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.ast
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.lib.C_LibUtils
-import net.postchain.rell.base.compiler.base.modifier.C_AtSummarizationKind
-import net.postchain.rell.base.compiler.base.modifier.C_ModifierFields
-import net.postchain.rell.base.compiler.base.modifier.C_ModifierTargetType
-import net.postchain.rell.base.compiler.base.modifier.C_ModifierValues
+import net.postchain.rell.base.compiler.base.modifier.*
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.V_AtWhatFieldFlags
 import net.postchain.rell.base.compiler.vexpr.V_ConstantValueEvalContext
@@ -21,14 +17,16 @@ import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
-import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDeclaration_AtVariable
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
-import net.postchain.rell.base.utils.ide.IdeCompletion
+import net.postchain.rell.base.utils.foldSimple
 import net.postchain.rell.base.utils.ide.IdeLocalSymbolLink
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.immSetOf
+import net.postchain.rell.base.utils.toImmList
 
 sealed class S_AtExprFrom(val startPos: S_Pos) {
     abstract fun compile(ctx: C_ExprContext, fromCtx: C_AtFromContext): C_AtFrom
@@ -218,6 +216,7 @@ class S_AtExprWhatComplexField(
     val attr: S_Name?,
     val expr: S_Expr,
     val modifiers: S_Modifiers,
+    val sort: S_PosValue<R_AtWhatSort>?,
     val comment: S_Comment?,
 )
 
@@ -280,10 +279,21 @@ class S_AtExprWhat_Complex(
         field.modifiers.compile(ctx.nsCtx, mods)
 
         val omit = modOmit.hasValue()
-        val sort = modSort.posValue()
+        val sort = modSort.posValue() ?: field.sort
         val summ = modSumm.posValue()
 
         summ?.value?.restrictions?.access(ctx.msgCtx, summ.pos)
+
+        if (field.sort != null) {
+            val ann = if (field.sort.value.asc) C_Annotations.SORT else C_Annotations.SORT_DESC
+            ctx.msgCtx.warning(field.sort.pos, "at:what:sort:deprecated:$ann",
+                    "Deprecated sort syntax; use @$ann annotation instead")
+
+            if (modSort.value() != null) {
+                ctx.msgCtx.error(field.sort.pos, "at:what:sort:specified_by_kw_and_ann",
+                        "Sorting is specified by annotation and keyword at the same time")
+            }
+        }
 
         val flags = V_AtWhatFieldFlags(
             omit = omit,

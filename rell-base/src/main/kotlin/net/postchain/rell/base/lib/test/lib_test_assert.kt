@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib.test
@@ -16,7 +16,6 @@ import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.immListOf
-import java.lang.RuntimeException
 
 private const val FAILURE_SNAME = "failure"
 private val FAILURE_QNAME = Lib_RellTest.NAMESPACE_NAME.add(FAILURE_SNAME)

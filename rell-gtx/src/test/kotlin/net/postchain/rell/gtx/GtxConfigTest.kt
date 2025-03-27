@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 
 class GtxConfigTest: BaseGtxTest() {
     @Test fun testLegacyUnsupportedVersion() {
-        chkLegacy("v0.10", "ERR:Unsupported language version: 0.10.4 (minimum supported version: 0.10.10)")
+        chkLegacy("v0.10", "ERR:Unsupported language version: 0.10.4 (minimum supported version: 0.10.9)")
     }
 
     @Test fun testLegacyWrongVersionFormat() {
@@ -77,6 +77,7 @@ class GtxConfigTest: BaseGtxTest() {
     }
 
     @Test fun testSourcesVersionOK() {
+        chkVersion("0.10.9", "OK")
         chkVersion("0.10.10", "OK")
         chkVersion("0.10.11", "OK")
 
@@ -113,7 +114,7 @@ class GtxConfigTest: BaseGtxTest() {
     }
 
     @Test fun testSourcesVersionUnsupported() {
-        val err = "ERR:Unsupported language version: %s (minimum supported version: 0.10.10)"
+        val err = "ERR:Unsupported language version: %s (minimum supported version: 0.10.9)"
         chkVersion("0.6.0", err)
         chkVersion("0.6.1", err)
         chkVersion("0.7.0", err)
@@ -130,7 +131,6 @@ class GtxConfigTest: BaseGtxTest() {
         chkVersion("0.10.6", err)
         chkVersion("0.10.7", err)
         chkVersion("0.10.8", err)
-        chkVersion("0.10.9", err)
     }
 
     @Test fun testSourcesVersionUnknown() {

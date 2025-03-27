@@ -1,12 +1,14 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.parser
 
 import com.github.h0tk3y.betterParse.lexer.*
 import com.github.h0tk3y.betterParse.parser.*
+import com.github.h0tk3y.betterParse.utils.Tuple2
 import net.postchain.rell.base.compiler.ast.*
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.expr.R_AtCardinality
 
 class G_Node<out T>(val value: T, val firstToken: RellTokenMatch)
@@ -82,8 +84,14 @@ class G_BaseExprTail_At(
 class RellToken(
     val name: String,
     val pattern: String,
+    val until: R_LangVersion?,
 ): Parser<RellTokenMatch> {
     val token: Token = LiteralToken(null, pattern)
+
+    fun isEnabled(version: R_LangVersion): Boolean {
+        if (until != null && version >= until) return false
+        return true
+    }
 
     override fun tryParse(tokens: TokenMatchesSequence, fromPosition: Int): ParseResult<RellTokenMatch> {
         val match = tokens[fromPosition]
@@ -97,7 +105,7 @@ class RellToken(
             t == token -> RellParsedValue(rellInput.match, match.nextPosition)
             t.ignored -> this.tryParse(tokens, match.nextPosition)
             rellInput.isValidToken(token) -> MismatchedToken(token, match)
-            else -> throw IllegalArgumentException("Token $this not in lexer tokens")
+            else -> throw IllegalArgumentException("Token $name ($pattern) not in lexer tokens")
         }
     }
 }
@@ -127,4 +135,15 @@ class RellTokenInput(
 interface RellTokenProducer: TokenProducer {
     /** The maximum reached token position. */
     fun getEndPos(): S_Pos
+}
+
+internal class LegacyCombinator<T>(
+    val innerParser: Parser<T>,
+    val reducedParser: Parser<T>?,
+): Parser<T> {
+    override fun tryParse(tokens: TokenMatchesSequence, fromPosition: Int) = innerParser.tryParse(tokens, fromPosition)
+}
+
+internal object G_Tuples {
+    fun <T1, T2> tuple(t1: T1, t2: T2) = Tuple2(t1, t2)
 }

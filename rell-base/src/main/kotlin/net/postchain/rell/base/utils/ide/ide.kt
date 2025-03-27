@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils.ide
@@ -121,7 +121,7 @@ object IdeApi {
         val actualOptions = C_IdeCompletionsUtils.getCompilerOptions(sourceDir, filePath, pos, options)
         actualOptions ?: return immMultimapOf()
 
-        val ast = sourceFile.readAst()
+        val ast = sourceFile.readAstEx(options.compatibility)
         val (moduleName, _) = C_ModuleUtils.getModuleInfo(filePath, ast)
         moduleName ?: return immMultimapOf()
 

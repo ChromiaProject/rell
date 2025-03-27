@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.atexpr
@@ -12,20 +12,20 @@ abstract class AtExprBasicBaseTest: AtExprBaseTest() {
     private val fromCompany = impFrom("company")
 
     override fun objInserts() = listOf(
-            Ins.company(100, "Facebook"),
-            Ins.company(200, "Apple"),
-            Ins.company(300, "Amazon"),
-            Ins.company(400, "Microsoft"),
-            Ins.company(500, "Google"),
+        Ins.company(100, "Facebook"),
+        Ins.company(200, "Apple"),
+        Ins.company(300, "Amazon"),
+        Ins.company(400, "Microsoft"),
+        Ins.company(500, "Google"),
 
-            Ins.user(10, 100, "Mark", "Zuckerberg"),
-            Ins.user(20, 200, "Steve", "Jobs"),
-            Ins.user(21, 200, "Steve", "Wozniak"),
-            Ins.user(30, 300, "Jeff", "Bezos"),
-            Ins.user(40, 400, "Bill", "Gates"),
-            Ins.user(41, 400, "Paul", "Allen"),
-            Ins.user(50, 500, "Sergey", "Brin"),
-            Ins.user(51, 500, "Larry", "Page")
+        Ins.user(10, 100, "Mark", "Zuckerberg"),
+        Ins.user(20, 200, "Steve", "Jobs"),
+        Ins.user(21, 200, "Steve", "Wozniak"),
+        Ins.user(30, 300, "Jeff", "Bezos"),
+        Ins.user(40, 400, "Bill", "Gates"),
+        Ins.user(41, 400, "Paul", "Allen"),
+        Ins.user(50, 500, "Sergey", "Brin"),
+        Ins.user(51, 500, "Larry", "Page"),
     )
 
     private fun initDataUserCompany() {
@@ -238,25 +238,25 @@ abstract class AtExprBasicBaseTest: AtExprBaseTest() {
         tst.strictToString = false
         initDataUserCompany()
 
-        chk("'' + $fromUser @* {} ( .firstName )", "[Mark, Steve, Steve, Jeff, Bill, Paul, Sergey, Larry]")
-        chk("'' + $fromUser @* {} ( @sort .firstName )", "[Bill, Jeff, Larry, Mark, Paul, Sergey, Steve, Steve]")
-        chk("'' + $fromUser @* {} ( @sort_desc .firstName )", "[Steve, Steve, Sergey, Paul, Mark, Larry, Jeff, Bill]")
+        chk("$fromUser @* {} ( .firstName )", "[Mark, Steve, Steve, Jeff, Bill, Paul, Sergey, Larry]")
+        chk("$fromUser @* {} ( @sort .firstName )", "[Bill, Jeff, Larry, Mark, Paul, Sergey, Steve, Steve]")
+        chk("$fromUser @* {} ( @sort_desc .firstName )", "[Steve, Steve, Sergey, Paul, Mark, Larry, Jeff, Bill]")
 
-        chk("'' + $fromUser @* { .company.name == 'Apple' } ( @sort _=.firstName, @sort _=.lastName )", "[(Steve,Jobs), (Steve,Wozniak)]")
-        chk("'' + $fromUser @* { .company.name == 'Apple' } ( @sort _=.firstName, @sort_desc _=.lastName )", "[(Steve,Wozniak), (Steve,Jobs)]")
+        chk("$fromUser @* { .company.name == 'Apple' } ( @sort _=.firstName, @sort _=.lastName )", "[(Steve,Jobs), (Steve,Wozniak)]")
+        chk("$fromUser @* { .company.name == 'Apple' } ( @sort _=.firstName, @sort_desc _=.lastName )", "[(Steve,Wozniak), (Steve,Jobs)]")
 
-        chk("'' + $fromUser @* {} ( @sort _=.company.name, _=.lastName )",
+        chk("$fromUser @* {} ( @sort _=.company.name, _=.lastName )",
                 "[(Amazon,Bezos), (Apple,Jobs), (Apple,Wozniak), (Facebook,Zuckerberg), (Google,Brin), (Google,Page), " +
                         "(Microsoft,Gates), (Microsoft,Allen)]")
 
-        chk("'' + $fromUser @* {} ( @sort _=.company.name, @sort _=.lastName )",
+        chk("$fromUser @* {} ( @sort _=.company.name, @sort _=.lastName )",
                 "[(Amazon,Bezos), (Apple,Jobs), (Apple,Wozniak), (Facebook,Zuckerberg), (Google,Brin), (Google,Page), " +
                         "(Microsoft,Allen), (Microsoft,Gates)]")
 
-        chk("'' + (u: $fromUser) @* {} ( @sort_desc u )",
+        chk("(u: $fromUser) @* {} ( @sort_desc u )",
                 "[user[51], user[50], user[41], user[40], user[30], user[21], user[20], user[10]]")
 
-        chk("'' + (u: $fromUser) @* {} ( @sort_desc _=.company, _=u )",
+        chk("(u: $fromUser) @* {} ( @sort_desc _=.company, _=u )",
                 "[(company[500],user[50]), (company[500],user[51]), (company[400],user[40]), (company[400],user[41]), " +
                         "(company[300],user[30]), (company[200],user[20]), (company[200],user[21]), (company[100],user[10])]")
     }
@@ -270,9 +270,65 @@ abstract class AtExprBasicBaseTest: AtExprBaseTest() {
         chk("$fromUser @* {} ( @sort @sort_desc .firstName )", "ct_err:modifier:bad_combination:ann:sort,ann:sort_desc")
         chk("$fromUser @* {} ( @sort_desc @sort .firstName )", "ct_err:modifier:bad_combination:ann:sort_desc,ann:sort")
 
-        chk("'' + $fromUser @* {} ( @sort() .firstName )", "[Bill, Jeff, Larry, Mark, Paul, Sergey, Steve, Steve]")
+        chk("$fromUser @* {} ( @sort() .firstName )", "[Bill, Jeff, Larry, Mark, Paul, Sergey, Steve, Steve]")
         chk("$fromUser @* {} ( @sort(123) .firstName )", "ct_err:ann:sort:args:1")
         chk("$fromUser @* {} ( @sort('desc') .firstName )", "ct_err:ann:sort:args:1")
+    }
+
+    @Test fun testSortLegacy() {
+        tst.strictToString = false
+        initDataUserCompany()
+
+        tst.compatibilityVer("0.10.9")
+
+        chk("$fromUser @* { .company.name == 'Apple' } ( @sort _=.firstName, sort _=.lastName )", "[(Steve,Jobs), (Steve,Wozniak)]")
+        chk("$fromUser @* { .company.name == 'Apple' } ( @sort _=.firstName, -sort _=.lastName )", "[(Steve,Wozniak), (Steve,Jobs)]")
+
+        chk("$fromUser @* {} ( @sort _=.company.name, sort _=.lastName )",
+                "[(Amazon,Bezos), (Apple,Jobs), (Apple,Wozniak), (Facebook,Zuckerberg), (Google,Brin), (Google,Page), " +
+                        "(Microsoft,Allen), (Microsoft,Gates)]")
+
+        chk("$fromUser @* {} ( .firstName )", "[Mark, Steve, Steve, Jeff, Bill, Paul, Sergey, Larry]")
+
+        chk("$fromUser @* {} ( sort .firstName )", "[Bill, Jeff, Larry, Mark, Paul, Sergey, Steve, Steve]")
+        chkWarn("at:what:sort:deprecated:sort")
+
+        chk("$fromUser @* {} ( -sort .firstName )", "[Steve, Steve, Sergey, Paul, Mark, Larry, Jeff, Bill]")
+        chkWarn("at:what:sort:deprecated:sort_desc")
+
+        chk("$fromUser @* {} ( @sort sort .firstName )", "ct_err:at:what:sort:specified_by_kw_and_ann")
+        chk("$fromUser @* {} ( @sort_desc sort .firstName )", "ct_err:at:what:sort:specified_by_kw_and_ann")
+        chk("$fromUser @* {} ( @sort -sort .firstName )", "ct_err:at:what:sort:specified_by_kw_and_ann")
+        chk("$fromUser @* {} ( @sort_desc -sort .firstName )", "ct_err:at:what:sort:specified_by_kw_and_ann")
+    }
+
+    @Test fun testSortLegacyVersionControl() {
+        tst.strictToString = false
+        initDataUserCompany()
+
+        chkSortLegacy("@sort", "@sort_desc")
+        chkSortLegacyErr()
+
+        tst.compatibilityVer("0.10.10")
+        chkSortLegacy("@sort", "@sort_desc")
+        chkSortLegacyErr()
+
+        tst.compatibilityVer("0.10.9")
+        chkSortLegacy("@sort", "@sort_desc")
+        chkSortLegacy("sort", "-sort")
+    }
+
+    private fun chkSortLegacy(asc: String, desc: String) {
+        chk("$fromUser @* {} ( .firstName )", "[Mark, Steve, Steve, Jeff, Bill, Paul, Sergey, Larry]")
+        chk("$fromUser @* {} ( $asc .firstName )", "[Bill, Jeff, Larry, Mark, Paul, Sergey, Steve, Steve]")
+        chk("$fromUser @* {} ( $desc .firstName )", "[Steve, Steve, Sergey, Paul, Mark, Larry, Jeff, Bill]")
+        chk("$fromUser @* { .company.name == 'Apple' } ( $asc _=.firstName, $asc _=.lastName )", "[(Steve,Jobs), (Steve,Wozniak)]")
+        chk("$fromUser @* { .company.name == 'Apple' } ( $asc _=.firstName, $desc _=.lastName )", "[(Steve,Wozniak), (Steve,Jobs)]")
+    }
+
+    private fun chkSortLegacyErr() {
+        chk("$fromUser @* {} ( sort .firstName )", "ct_err:unknown_name:sort")
+        chk("$fromUser @* {} ( -sort .firstName )", "ct_err:unknown_name:sort")
     }
 
     @Test fun testNullLiteral() {

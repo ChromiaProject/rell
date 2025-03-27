@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.def
@@ -20,7 +20,6 @@ import net.postchain.rell.base.model.R_Struct
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.immMapOf
-import net.postchain.rell.base.utils.toImmMap
 import net.postchain.rell.base.utils.toImmMultimap
 
 class C_StructGlobalFunction(private val struct: R_Struct): C_GlobalFunction() {

@@ -1,11 +1,13 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.compiler.base.utils
 
 import net.postchain.rell.base.compiler.ast.S_RellFile
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.ide.IdeFilePath
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
@@ -95,8 +97,18 @@ class C_SourcePath private constructor(parts: List<String>): Comparable<C_Source
 
 abstract class C_SourceFile {
     abstract fun idePath(): IdeFilePath
-    abstract fun readAst(): S_RellFile
     abstract fun readText(): String
+
+    /**
+     * @param version Compatibility version: needed mostly for the compiler to support 0.10.9, which is the oldest
+     * supported version with grammar changes (uses the obsolete `sort` keyword). Non-compiler implementations
+     * (like IDE) may ignore this parameter, if supporting old syntax versions is not required.
+     */
+    abstract fun readAst(version: R_LangVersion = RellVersions.VERSION): S_RellFile
+}
+
+internal fun C_SourceFile.readAstEx(version: R_LangVersion? = null): S_RellFile {
+    return readAst(version ?: RellVersions.VERSION)
 }
 
 abstract class C_SourceDir {
@@ -139,13 +151,16 @@ abstract class C_SourceDir {
     }
 }
 
-class C_TextSourceFile(private val path: C_SourcePath, private val text: String): C_SourceFile() {
+class C_TextSourceFile(
+    private val path: C_SourcePath,
+    private val text: String,
+): C_SourceFile() {
     private val idePath: IdeFilePath = IdeSourcePathFilePath(path)
 
     override fun idePath(): IdeFilePath = idePath
 
-    override fun readAst(): S_RellFile {
-        return C_Parser.parse(path, idePath, text)
+    override fun readAst(version: R_LangVersion): S_RellFile {
+        return C_Parser.parse(path, idePath, text, version)
     }
 
     override fun readText() = text
@@ -263,9 +278,9 @@ private class C_DiskSourceDir(private val dir: File): C_SourceDir() {
 
         override fun idePath() = idePath
 
-        override fun readAst(): S_RellFile {
+        override fun readAst(version: R_LangVersion): S_RellFile {
             val text = readText()
-            return C_Parser.parse(sourcePath, idePath, text)
+            return C_Parser.parse(sourcePath, idePath, text, version)
         }
 
         override fun readText() = file.readText()
@@ -325,15 +340,18 @@ private class C_CachedSourceDir(private val sourceDir: C_SourceDir): C_SourceDir
 
     private class C_CachedSourceFile(private val file: C_SourceFile): C_SourceFile() {
         private val idePath = CachedField { file.idePath() }
-        private val ast = CachedField { file.readAst() }
         private val text = CachedField { file.readText() }
+        private val astMap = mutableMapOf<R_LangVersion, CachedField<S_RellFile>>()
 
         override fun idePath(): IdeFilePath {
             return idePath.get()
         }
 
-        override fun readAst(): S_RellFile {
-            return ast.get()
+        override fun readAst(version: R_LangVersion): S_RellFile {
+            val field = astMap.computeIfAbsent(version) {
+                CachedField { file.readAst(it) }
+            }
+            return field.get()
         }
 
         override fun readText(): String {
