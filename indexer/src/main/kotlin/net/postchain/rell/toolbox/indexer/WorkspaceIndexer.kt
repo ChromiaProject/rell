@@ -221,7 +221,7 @@ class WorkspaceIndexer(
             runLinter(resource, fileContent)
 
             fileUriResourceMap[fileUri] = resource
-            resourceFactory.updateFileMap(fileMap, fileUri)
+            resourceFactory.updateFileMap(fileMap, fileUri, fileContent)
             resource
         }
     }

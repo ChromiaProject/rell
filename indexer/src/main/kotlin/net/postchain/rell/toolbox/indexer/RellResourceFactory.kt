@@ -53,8 +53,8 @@ class RellResourceFactory(
         )
     }
 
-    fun updateFileMap(fileMap: MutableMap<C_SourcePath, C_SourceFile>, fileUri: URI, fileContent: String? = null) {
-        val (sourcePath, sourceFile) = buildCSourceFile(fileUri, fileContent ?: File(fileUri).readText())
+    fun updateFileMap(fileMap: MutableMap<C_SourcePath, C_SourceFile>, fileUri: URI, fileContent: String) {
+        val (sourcePath, sourceFile) = buildCSourceFile(fileUri, fileContent)
         fileMap[sourcePath] = sourceFile
     }
 
