@@ -221,7 +221,7 @@ class WorkspaceIndexer(
             runLinter(resource, fileContent)
 
             fileUriResourceMap[fileUri] = resource
-            resourceFactory.updateFileMap(fileMap, fileUri)
+            resourceFactory.updateFileMap(fileMap, fileUri, fileContent)
             resource
         }
     }
@@ -237,18 +237,6 @@ class WorkspaceIndexer(
             runLinter(resource, fileContent)
             fileUriResourceMap[fileUri] = resource
             resourceFactory.updateFileMap(fileMap, fileUri, fileContent)
-        }
-    }
-
-    // Rename and Move file
-    fun updateFileUriResourceMap(oldFileUri: URI, newFileUri: URI) {
-        val resource = fileUriResourceMap[oldFileUri]
-        if (resource != null) {
-            fileUriResourceMap[newFileUri] = resource
-            removeFileUriResourceMap(oldFileUri)
-        } else {
-            logger.warn { "Could not find resource for $oldFileUri. Re-parsing file..." }
-            updateFileUriResourceMap(newFileUri)
         }
     }
 
