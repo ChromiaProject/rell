@@ -60,7 +60,7 @@ class RellIndexingManagerTest : WorkspaceManagerTestBase() {
 
     @Test
     fun `Index orphan rell files (without chromia yml config)`() {
-        val testDataBuilder = testData(workspace.resolve("with_config")) {
+        testData(workspace.resolve("with_config")) {
             addFile(rellFilePath, rellFileContent)
         }
         val orphanDir = workspace.resolve("orphan_rell")
