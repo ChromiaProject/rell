@@ -718,7 +718,7 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
     }
 
     fun format(xAtExprWhatCmplxItem: RuleX_AtExprWhatComplexItemContext, doc: FormattableDocument) {
-        val itemAnnotations = xAtExprWhatCmplxItem.ruleX_Annotation()
+        val itemAnnotations = xAtExprWhatCmplxItem.ruleX_AtExprWhatModifiers().ruleX_Annotation()
         itemAnnotations.forEach { xAnnotation ->
             doc.append(xAnnotation) { it.oneSpace() }
             doc.format(xAnnotation.ruleX_AnnotationArgs())

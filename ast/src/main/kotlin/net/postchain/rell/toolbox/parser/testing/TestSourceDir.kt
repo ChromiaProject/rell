@@ -6,6 +6,7 @@ import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.utils.ide.IdeDirApi.mapDir
 import net.postchain.rell.base.utils.ide.IdeDirApi.parseSourcePath
 import net.postchain.rell.base.utils.ide.IdeFilePath
@@ -43,7 +44,7 @@ class TestSourceFile(
         return idePath
     }
 
-    override fun readAst(): S_RellFile {
+    override fun readAst(version: R_LangVersion): S_RellFile {
         val errorCollector = SyntaxErrorCollector()
         val parser = parser.parserFor(text, errorListeners = listOf(errorCollector))
         val root = parser.ruleX_RootParser()

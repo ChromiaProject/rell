@@ -2,6 +2,7 @@ package net.postchain.rell.toolbox.compiler
 
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.utils.ide.IdeFilePath
 
 class AstSourceFile private constructor(
@@ -14,7 +15,7 @@ class AstSourceFile private constructor(
         return ideFilePath
     }
 
-    override fun readAst(): S_RellFile {
+    override fun readAst(version: R_LangVersion): S_RellFile {
         return ast
     }
 
