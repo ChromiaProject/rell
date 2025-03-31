@@ -489,7 +489,11 @@ X_CommaSeparated_17
    ;
 
 X_AtExprWhatComplexItem
-   : {X_AtExprWhatComplexItem} (a+=X_Annotation)* (b=X_NameNode '=')? c=X_ExpressionRef
+   : {X_AtExprWhatComplexItem} a=X_AtExprWhatModifiers (b=X_NameNode '=')? c=X_ExpressionRef
+   ;
+
+X_AtExprWhatModifiers
+   : {X_AtExprWhatModifiers} (a+=X_Annotation)*
    ;
 
 X_AtExprModifiers

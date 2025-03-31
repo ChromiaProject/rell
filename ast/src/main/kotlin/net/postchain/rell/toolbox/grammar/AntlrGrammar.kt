@@ -11,7 +11,7 @@ import com.github.h0tk3y.betterParse.combinators.SeparatedCombinator
 import com.github.h0tk3y.betterParse.combinators.SkipParser
 import com.github.h0tk3y.betterParse.grammar.ParserReference
 import net.postchain.rell.base.compiler.parser.RellToken
-import net.postchain.rell.base.compiler.parser.S_Grammar
+import net.postchain.rell.base.compiler.parser.RellTokens
 import net.postchain.rell.base.utils.LateInit
 import net.postchain.rell.base.utils.grammar.GrammarUtils
 import org.apache.commons.collections4.MapUtils
@@ -25,8 +25,12 @@ fun main() {
     generateFooter()
 }
 
+private val RELL_TOKENS = RellTokens.DEFAULT
+private val TOP_PARSERS = GrammarUtils.getParsers()
+
 private fun generateHeader() {
-    val tokenizer = S_Grammar.tokenizer
+    val tokens = RELL_TOKENS
+
     val text = """
         {
           parserClass="net.postchain.rellide.jetbrains.language.parser.RellParser"
@@ -53,15 +57,15 @@ private fun generateHeader() {
             ML_COMMENT="regexp:/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/"
 
             WS="regexp:[ \t\r\n]+"
-            ${tokenizer.tkIdentifier.name}='regexp:[a-zA-Z_][a-zA-Z_0-9]*'
+            ${tokens.identifier.name}='regexp:[a-zA-Z_][a-zA-Z_0-9]*'
             DECNUM="regexp:[0-9]+"
             HEXDIGNUM="regexp:0\s*x\s*[0-9A-Fa-f]+"
             DECIMAL="regexp:[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?"
             HEXDIG="regexp:[0-9A-Fa-f]"
-            ${tokenizer.tkByteArray.name}="regexp:x(('([_0-9a-fA-F][_0-9a-fA-F])*')|(\"([_0-9a-fA-F][_0-9a-fA-F])*\"))"
+            ${tokens.byteArray.name}="regexp:x(('([_0-9a-fA-F][_0-9a-fA-F])*')|(\"([_0-9a-fA-F][_0-9a-fA-F])*\"))"
             STRBAD="regexp:\\|'\u0000' .. '\u001F'"
             STRING_NOT_CLOSED="regexp:(\"(\t|\\[btnfr\"\'\\]|\\u[0-9A-Fa-f]{4}|[^\"\\\u0000-\u001F])*)|('(\t|\\[btnfr\"\'\\]|\\u[0-9A-Fa-f]{4}|[^\'\\\u0000-\u001F])*)"
-            ${tokenizer.tkString.name}="regexp:(\"(\t|\\[btnfr\"\'\\]|\\u[0-9A-Fa-f]{4}|[^\"\\\u0000-\u001F])*\")|('(\t|\\[btnfr\"\'\\]|\\u[0-9A-Fa-f]{4}|[^\'\\\u0000-\u001F])*\')"
+            ${tokens.string.name}="regexp:(\"(\t|\\[btnfr\"\'\\]|\\u[0-9A-Fa-f]{4}|[^\"\\\u0000-\u001F])*\")|('(\t|\\[btnfr\"\'\\]|\\u[0-9A-Fa-f]{4}|[^\'\\\u0000-\u001F])*\')"
           ]
         }
     """.trimIndent()
@@ -70,11 +74,11 @@ private fun generateHeader() {
 }
 
 private fun generateFooter() {
-    val tokenizer = S_Grammar.tokenizer
+    val tokens = RELL_TOKENS
     val text = """
         COMMON_INT ::= HEXDIGNUM | DECNUM;
-        ${tokenizer.tkBigInteger.name} ::= COMMON_INT 'L';
-        ${tokenizer.tkInteger.name} ::= COMMON_INT;
+        ${tokens.bigInteger.name} ::= COMMON_INT 'L';
+        ${tokens.integer.name} ::= COMMON_INT;
 
         STRCHAR ::= '\t' | '\\' ('b'|'t'|'n'|'f'|'r'|'"'|"'"|'\\' | 'u' HEXDIG HEXDIG HEXDIG HEXDIG)
         
@@ -91,29 +95,29 @@ private fun generateFooter() {
 }
 
 private fun generateTerminals() {
-    val tokenizer = S_Grammar.tokenizer
+    val tokens = RELL_TOKENS
 
     val text = """
             terminal ML_COMMENT: '/*' -> '*/';
             terminal SL_COMMENT: '//' !('\n'|'\r')* ('\r'? '\n')?;
             terminal WS: (' '|'\t'|'\r'|'\n')+;
 
-            terminal ${tokenizer.tkIdentifier.name}: ('A'..'Z'|'a'..'z'|'_') ('A'..'Z'|'a'..'z'|'_'|'0'..'9')*;
+            terminal ${tokens.identifier.name}: ('A'..'Z'|'a'..'z'|'_') ('A'..'Z'|'a'..'z'|'_'|'0'..'9')*;
 
             terminal DECNUM: ('0'..'9')+;
             terminal EXPONENT: ('E'|'e') ('+'|'-')? DECNUM ;
-            terminal ${tokenizer.tkDecimal.name}: DECNUM? '.' DECNUM EXPONENT? | DECNUM EXPONENT ;
+            terminal ${tokens.decimal.name}: DECNUM? '.' DECNUM EXPONENT? | DECNUM EXPONENT ;
 
             terminal HEXDIG: '0'..'9'|'A'..'F'|'a'..'f';
             terminal COMMON_INT: DECNUM | '0' 'x' HEXDIG+;
-            terminal ${tokenizer.tkBigInteger.name}: COMMON_INT 'L';
-            terminal ${tokenizer.tkInteger.name}: COMMON_INT;
+            terminal ${tokens.bigInteger.name}: COMMON_INT 'L';
+            terminal ${tokens.integer.name}: COMMON_INT;
 
-            terminal ${tokenizer.tkByteArray.name}: 'x' (('\'' (HEXDIG HEXDIG)* '\'') | ('"' (HEXDIG HEXDIG)* '"'));
+            terminal ${tokens.byteArray.name}: 'x' (('\'' (HEXDIG HEXDIG)* '\'') | ('"' (HEXDIG HEXDIG)* '"'));
 
             terminal STRCHAR: '\t' | '\\' ('b'|'t'|'n'|'f'|'r'|'"'|"'"|'\\' | 'u' HEXDIG HEXDIG HEXDIG HEXDIG);
             terminal STRBAD: '\\' | '\u0000' .. '\u001F';
-            terminal ${tokenizer.tkString.name}: '"' ( STRCHAR | !('"'|STRBAD) )*  '"' | "'" ( STRCHAR | !("'"|STRBAD) )* "'";
+            terminal ${tokens.string.name}: '"' ( STRCHAR | !('"'|STRBAD) )*  '"' | "'" ( STRCHAR | !("'"|STRBAD) )* "'";
     """.trimIndent()
 
     println(text.trim())
@@ -132,13 +136,10 @@ fun generateAntlrActions(): Map<String, AntlrActionEx> {
 }
 
 private object AntlrNontermGen {
-    private val tokenizer = S_Grammar.tokenizer
+    private val literalTokens = (RELL_TOKENS.keywords + RELL_TOKENS.delims).associateBy { it.name }.toMap()
+    private val specialTokens = listOf(RELL_TOKENS.string, RELL_TOKENS.byteArray).map { it.name }
 
-    val a = ";"
-    private val literalTokens = (tokenizer.tkKeywords.values + tokenizer.tkDelims).map { Pair(it.name, it) }.toMap()
-    private val specialTokens = listOf(tokenizer.tkString, tokenizer.tkByteArray).map { it.name }
-
-    private val kParsers = GrammarUtils.getParsers()
+    private val kParsers = TOP_PARSERS
 
     private val xNonterms = mutableMapOf<String, AntlrNonterm>()
     private val xTokenNonterms = mutableMapOf<String, AntlrNonterm>()

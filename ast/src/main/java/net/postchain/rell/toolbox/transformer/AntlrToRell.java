@@ -81,6 +81,7 @@ public final class AntlrToRell {
     private static final RellcTransformer TRANS_XCOMMA_SEPARATED_20 = RellcUtils.transformer("X_CommaSeparated_20");
     private static final RellcTransformer TRANS_XAT_EXPR_WHERE = RellcUtils.transformer("X_AtExprWhere");
     private static final RellcTransformer TRANS_XAT_EXPR_WHAT_SIMPLE = RellcUtils.transformer("X_AtExprWhatSimple");
+    private static final RellcTransformer TRANS_XAT_EXPR_WHAT_MODIFIERS = RellcUtils.transformer("X_AtExprWhatModifiers");
     private static final RellcTransformer TRANS_XAT_EXPR_WHAT_COMPLEX_ITEM = RellcUtils.transformer("X_AtExprWhatComplexItem");
     private static final RellcTransformer TRANS_XCOMMA_SEPARATED_17 = RellcUtils.transformer("X_CommaSeparated_17");
     private static final RellcTransformer TRANS_XCOMMA_SEPARATED_18 = RellcUtils.transformer("X_CommaSeparated_18");
@@ -653,8 +654,13 @@ public final class AntlrToRell {
                 Object tup = RellcUtils.tuple(var_0, var_1);
                 return TRANS_XAT_EXPR_WHAT_SIMPLE.transform(ctx, node, tup);
             }
-            case RULE_ruleX_AtExprWhatComplexItem: {
+            case RULE_ruleX_AtExprWhatModifiers: {
                 Object var_0 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_AnnotationContext.class));
+                Object tup = RellcUtils.tuple(var_0);
+                return TRANS_XAT_EXPR_WHAT_MODIFIERS.transform(ctx, node, tup);
+            }
+            case RULE_ruleX_AtExprWhatComplexItem: {
+                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_AtExprWhatModifiersContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_NameNodeContext.class, 0));
                 Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionRefContext.class, 0));
                 Object tup = RellcUtils.tuple(var_0, var_1, var_2);

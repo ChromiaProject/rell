@@ -135,6 +135,7 @@ ruleX_KeywordModifier0:
 ruleX_Modifier_0: 'abstract';
 ruleX_Modifier_1: 'override';
 
+
 // Rule X_Annotation
 ruleX_Annotation:
 	ruleX_tkAT
@@ -967,8 +968,7 @@ ruleX_CommaSeparated_17:
 
 // Rule X_AtExprWhatComplexItem
 ruleX_AtExprWhatComplexItem:
-	ruleX_Annotation
-	*
+	ruleX_AtExprWhatModifiers
 	(
 		ruleX_NameNode
 		'='
@@ -976,6 +976,11 @@ ruleX_AtExprWhatComplexItem:
 	ruleX_ExpressionRef
 ;
 
+// Rule X_AtExprWhatModifiers
+ruleX_AtExprWhatModifiers:
+	ruleX_Annotation
+	*
+;
 
 // Rule X_AtExprOffset
 ruleX_AtExprOffset:
