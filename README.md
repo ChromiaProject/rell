@@ -1,65 +1,63 @@
-## Language Guide
+## Language Info
 
-[Modules](doc/guide/modules.rst)
+Introduction: https://docs.chromia.com/rell/rell-intro
 
-[General Language Features](doc/guide/general.rst)
+Library RellDoc (beta): https://docs.chromia.com/pages/rell/index.html
 
-[Database Operations](doc/guide/database.rst)
+Release notes (detailed changelog): https://gitlab.com/chromaway/rell/-/tree/dev/doc/release-notes
 
-[Library](doc/guide/library.rst)
+## Build and Run
 
-## Build
+Requirements:
+- Java 21
+- Maven
 
-To build a distribution archive (w/o running unit tests):
+Build (w/o unit tests - they require database setup):
 
- ```
- mvn clean install -DskipTests -Pdistro
- ```
-
-## Command Line Interpreter / Shell
-
-Run `rell.sh`:
-
+```shell
+mvn clean install -DskipTests -Pdistro
 ```
-Rell 0.10.4 (2021-06-25T08:30:27+0000)
+
+### Run Rell shell (REPL):
+
+```shell
+work/rell.sh
+```
+
+Example:
+
+```text
+Rell 0.15.0-SNAPSHOT
 Type '\q' to quit or '\?' for help.
 >>> 2+2
 4
+>>> range(10) @* {} (@sum $)
+45
+>>>
 ```
 
-To execute an operation without a database connection:
+### Run a program:
 
-```
-./rell.sh -d SOURCE_DIRECTORY MODULE_NAME OPERATION_NAME [ARGS...]
-```
+Create a file `hello.rell`:
 
-To create database tables (**drops all existing tables**):
+```rell
+module;
 
-```
-./rell.sh -d SOURCE_DIRECTORY --db-url JDBC_URL --resetdb MODULE_NAME
-```
-
-To execute an operation with a database connection (using existing tables):
-
-```
-./rell.sh -d SOURCE_DIRECTORY --db-url JDBC_URL MODULE_NAME OPERATION_NAME [ARGS...]
+function main() {
+    print('Hello, world!');
+}
 ```
 
-Argument `--db-properties` can be used istead of `--db-url` in the above examples.
+Run it (specify the parent directory of `hello.rell` via `-d`):
 
-## Run a Multi-Chain Postchain Node (Run.XML)
-
-Runs a Postchain node with one or multiple blockchains. The configuration is specified
-in the Run.XML format. This utility is used by the `Run As` - `Rell Postchain App` command in the Eclipse IDE.
-
+```shell
+work/rell.sh -d . hello main
 ```
-./multirun.sh
 
-Usage: RellRunConfigLaunch [-d=SOURCE_DIR] RUN_CONFIG
-Launch a run config
-      RUN_CONFIG   Run config file
-  -d, --source-dir=SOURCE_DIR
-                   Rell source code directory (default: current directory)
+Output:
+
+```text
+Hello, world!
 ```
 
 ## Running Unit Tests
@@ -77,10 +75,9 @@ Database connection configuration for tests is taken from the file `src/test/res
 
 **WARNING**: Unit tests drop all existing tables in the specified database, so make sure you specify a right database.
 
-To run unit tests in IntelliJ, select the `net.postchain.rell` package (or an individual tests class) and press
-Ctrl-Shift-F10 (or right click and choose "Run 'Tests in 'net.postchain.rell''").
+To run unit tests in IntelliJ, launch the `All_tests` configuration (`work/All_tests.run.xml`).
 
-## Generating rell grammar test snippets
+## Generating Rell grammar test snippets
 
 ### Using IntelliJ:
 1. Create run configuration from `work/Test_snippets.run.xml` file
@@ -88,11 +85,11 @@ Ctrl-Shift-F10 (or right click and choose "Run 'Tests in 'net.postchain.rell''")
 
 Archive will be created in `user.home` directory, with name `testsources-<RELL_VERSION>.zip`
 
-**Do not run snippet generation using Maven, currently it's not supported** 
+**Do not run snippet generation using Maven, currently it's not supported**
 
 ## Copyright & License information
 
-Copyright (c) 2017-2021 ChromaWay AB. All rights reserved.
+Copyright (c) 2017-2025 ChromaWay AB. All rights reserved.
 
 This software can used either under terms of commercial license
 obtained from ChromaWay AB, or, alternatively, under the terms
