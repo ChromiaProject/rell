@@ -583,9 +583,7 @@ object S_Grammar {
         S_WhenExprCase(cond, expr)
     }
 
-    private val whenExprCases by separatedTerms(whenExprCase, oneOrMore(SEMI), false) * zeroOrMore(SEMI) map {
-        (cases, _) -> cases
-    }
+    private val whenExprCases by separatedTerms(whenExprCase, SEMI, false) * -optional(SEMI)
 
     private val whenExpr by WHEN * optional(-LPAR * expressionRef * -RPAR) * -LCURL * whenExprCases * -RCURL map {
         (pos, expr, cases) ->
@@ -668,7 +666,7 @@ object S_Grammar {
         S_IfStatement(pos.pos, expr, trueStmt, falseStmt)
     }
 
-    private val whenStmtCase by whenCondition * -ARROW * statementRef * zeroOrMore(SEMI) map {
+    private val whenStmtCase by whenCondition * -ARROW * statementRef * -optional(SEMI) map {
         (cond, stmt) ->
         S_WhenStatementCase(cond, stmt)
     }

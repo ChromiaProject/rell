@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.expr
@@ -151,8 +151,9 @@ class WhenTest: BaseRellTest() {
     @Test fun testExprSemicolon() {
         chkWhen("integer", "= when(a) { 1 -> 'A'; else -> 'B' };", "1" to "text[A]", "2" to "text[B]")
         chkWhen("integer", "= when(a) { 1 -> 'A'; else -> 'B'; };", "1" to "text[A]", "2" to "text[B]")
-        chkWhen("integer", "= when(a) { 1 -> 'A'; else -> 'B';; };", "1" to "text[A]", "2" to "text[B]")
-        chkWhen("integer", "= when(a) { 1 -> 'A';; else -> 'B';; };", "1" to "text[A]", "2" to "text[B]")
+        chkWhen("integer", "= when(a) { 1 -> 'A';; else -> 'B' };", "1" to "ct_err:syntax")
+        chkWhen("integer", "= when(a) { 1 -> 'A'; else -> 'B';; };", "1" to "ct_err:syntax")
+        chkWhen("integer", "= when(a) { 1 -> 'A';; else -> 'B';; };", "1" to "ct_err:syntax")
     }
 
     @Test fun testExprElseNotInEnd() {
@@ -214,13 +215,20 @@ class WhenTest: BaseRellTest() {
         chkWhen("integer", "{ when(a) { 0 -> return 'A'; 1 -> return 'B'; else -> return '?' } }", "0" to "ct_err:syntax")
         chkWhen("integer", "{ when(a) { 0 -> return 'A'; 1 -> return 'B'; else -> return '?'; } }",
                 "0" to "text[A]", "1" to "text[B]", "2" to "text[?]")
-        chkWhen("integer", "{ when(a) { 0 -> return 'A';;; 1 -> return 'B';;; else -> return '?';;; } }",
-                "0" to "text[A]", "1" to "text[B]", "2" to "text[?]")
-        chkWhen("integer", "{ when(a) { 0 -> return 'A'; 1 -> return 'B' else -> return '?'; } }", "0" to "ct_err:syntax")
-        chkWhen("integer", "{ when(a) { 0 -> return 'A'; 1 -> { return 'B'; } else -> return '?'; } }",
-                "0" to "text[A]", "1" to "text[B]", "2" to "text[?]")
-        chkWhen("integer", "{ when(a) { 0 -> return 'A'; 1 -> { return 'B'; };;; else -> return '?'; } }",
-                "0" to "text[A]", "1" to "text[B]", "2" to "text[?]")
+
+        // One extra semicolon must be supported for compatibility reasons - used in existing apps.
+        chkWhen("integer", "{ when(a) { 0 -> return 'A';; } return 'B'; }", "0" to "text[A]", "1" to "text[B]")
+        chkWhen("integer", "{ when(a) { 0 -> return 'A';;; } return 'B'; }", "0" to "ct_err:syntax")
+        chkWhen("integer", "{ when(a) { 0 -> return 'A'; else -> return 'B';; } }", "0" to "text[A]", "1" to "text[B]")
+        chkWhen("integer", "{ when(a) { 0 -> return 'A'; else -> return 'B';;; } }", "0" to "ct_err:syntax")
+
+        chkWhen("integer", "{ when(a) { 0 -> { return 'A'; } } return 'B'; }", "0" to "text[A]", "1" to "text[B]")
+        chkWhen("integer", "{ when(a) { 0 -> { return 'A'; }; } return 'B'; }", "0" to "text[A]", "1" to "text[B]")
+        chkWhen("integer", "{ when(a) { 0 -> { return 'A'; };; } return 'B'; }", "0" to "ct_err:syntax")
+
+        chkWhen("integer", "{ when(a) { 0 -> return 'A'; else -> { return 'B'; } } }", "0" to "text[A]", "1" to "text[B]")
+        chkWhen("integer", "{ when(a) { 0 -> return 'A'; else -> { return 'B'; }; } }", "0" to "text[A]", "1" to "text[B]")
+        chkWhen("integer", "{ when(a) { 0 -> return 'A'; else -> { return 'B'; };; } }", "0" to "ct_err:syntax")
     }
 
     @Test fun testAtExpr() {
