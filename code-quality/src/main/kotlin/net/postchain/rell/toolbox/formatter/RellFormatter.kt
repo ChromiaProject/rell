@@ -89,6 +89,9 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         doc.surround(xFunctionDef) { it.setNewLines(2) }
         doc.prepend(xFunctionDef.ruleX_QualifiedName()) { it.oneSpace() }
         doc.append(xFunctionDef.ruleX_QualifiedName()) { it.noSpace() }
+
+        xFunctionDef.ruleX_FormalParameters() ?: return
+
         formatBracePairWithoutSpace(xFunctionDef.ruleX_FormalParameters(), doc, BracePairTypes.PARENTHESES)
         formatType(xFunctionDef, doc)
         val lineSeparate = lineSeparateArguments(xFunctionDef, BracePairTypes.PARENTHESES)
