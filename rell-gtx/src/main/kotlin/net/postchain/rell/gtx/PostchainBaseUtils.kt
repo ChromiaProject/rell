@@ -4,7 +4,6 @@
 
 package net.postchain.rell.gtx
 
-import net.postchain.StorageBuilder
 import net.postchain.base.configuration.BlockchainConfigurationData
 import net.postchain.base.data.DatabaseAccess
 import net.postchain.base.data.DatabaseAccessFactory
@@ -19,10 +18,9 @@ import net.postchain.rell.base.utils.Bytes32
 import net.postchain.rell.base.utils.PostchainGtvUtils
 import net.postchain.rell.base.utils.toImmMap
 import net.postchain.rell.base.utils.toIntExact
+import java.sql.Connection
 
 object PostchainBaseUtils {
-    val DATABASE_VERSION: Int = StorageBuilder.getCurrentDbVersion()
-
     fun getBlockchainConfigHashVersion(config: Gtv): Int {
         return BlockchainConfigurationData.merkleHashVersion(config).toIntExact()
     }
@@ -34,7 +32,11 @@ object PostchainBaseUtils {
     }
 
     fun createDatabaseAccess(): DatabaseAccess {
-        return DatabaseAccessFactory.createDatabaseAccess(DatabaseAccessFactory.POSTGRES_DRIVER_CLASS)
+        return DatabaseAccessFactory.createDatabaseAccessWithDefaultDriver()
+    }
+
+    fun initializeApp(dbAccess: DatabaseAccess, con: Connection) {
+        dbAccess.initializeAppWithCurrentDbVersion(con)
     }
 
     fun createModuleArgsSource(app: R_App, configGtv: Gtv, compilerOptions: C_CompilerOptions): Rt_ModuleArgsSource {

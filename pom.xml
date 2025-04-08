@@ -27,7 +27,7 @@
     </modules>
 
     <properties>
-        <postchain.version>3.29.0</postchain.version>
+        <postchain.version>3.30.0</postchain.version>
         <dist-classifier>dist</dist-classifier>
 
         <kotlin.version>2.0.0</kotlin.version>

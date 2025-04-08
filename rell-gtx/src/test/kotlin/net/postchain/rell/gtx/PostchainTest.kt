@@ -27,7 +27,7 @@ class PostchainTest: BaseResourcefulTest() {
         SqlUtils.dropAll(SqlTestUtils.createSqlExecutor(con), true)
         chkTables(con, "")
 
-        sqlAccess().initializeApp(con, PostchainBaseUtils.DATABASE_VERSION)
+        PostchainBaseUtils.initializeApp(sqlAccess(), con)
 
         chkTables(con,
                 "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
@@ -38,7 +38,7 @@ class PostchainTest: BaseResourcefulTest() {
                 "peerinfos(host:text,port:int4,pub_key:bytea,timestamp:timestamp)"
         )
 
-        sqlAccess().initializeApp(con, PostchainBaseUtils.DATABASE_VERSION)
+        PostchainBaseUtils.initializeApp(sqlAccess(), con)
 
         chkTables(con,
                 "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
@@ -54,7 +54,7 @@ class PostchainTest: BaseResourcefulTest() {
         val con = resource(SqlTestUtils.createSqlConnection())
         SqlUtils.dropAll(SqlTestUtils.createSqlExecutor(con), true)
         val sa = sqlAccess()
-        sa.initializeApp(con, PostchainBaseUtils.DATABASE_VERSION)
+        PostchainBaseUtils.initializeApp(sa, con)
 
         chkTables(con,
                 "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
@@ -82,7 +82,7 @@ class PostchainTest: BaseResourcefulTest() {
                 "peerinfos(host:text,port:int4,pub_key:bytea,timestamp:timestamp)"
         )
 
-        sa.initializeApp(con, PostchainBaseUtils.DATABASE_VERSION)
+        PostchainBaseUtils.initializeApp(sa, con)
 
         chkTables(con,
                 "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
@@ -131,7 +131,7 @@ class PostchainTest: BaseResourcefulTest() {
 
         val postchainTables = createAndDumpTables(con) {
             val sqlAccess = PostchainBaseUtils.createDatabaseAccess()
-            sqlAccess.initializeApp(con, PostchainBaseUtils.DATABASE_VERSION)
+            PostchainBaseUtils.initializeApp(sqlAccess, con)
         }
 
         val ignoredTables = listOf(
@@ -156,7 +156,7 @@ class PostchainTest: BaseResourcefulTest() {
 
         val postchainTables = createAndDumpTables(con) {
             val sqlAccess = PostchainBaseUtils.createDatabaseAccess()
-            sqlAccess.initializeApp(con, PostchainBaseUtils.DATABASE_VERSION)
+            PostchainBaseUtils.initializeApp(sqlAccess, con)
 
             val blockchainRid = BlockchainRid(RellTestUtils.strToRidHex("DEADBEEF").hexStringToByteArray())
             val eCtx: EContext = BaseEContext(con, chainId, sqlAccess)

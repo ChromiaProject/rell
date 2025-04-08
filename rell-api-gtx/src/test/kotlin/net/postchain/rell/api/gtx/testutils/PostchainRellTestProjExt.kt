@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.api.gtx.testutils
@@ -31,7 +31,7 @@ object PostchainRellTestProjExt: RellTestProjExt() {
     override fun initSysAppTables(sqlExec: SqlExecutor) {
         val sqlAccess = PostchainBaseUtils.createDatabaseAccess()
         sqlExec.connection { con ->
-            sqlAccess.initializeApp(con, PostchainBaseUtils.DATABASE_VERSION)
+            PostchainBaseUtils.initializeApp(sqlAccess, con)
         }
     }
 
