@@ -331,4 +331,18 @@ class RellIndexingManagerTest : WorkspaceManagerTestBase() {
 
         assertDoesNotThrow { indexer.findAffectedFiles(outsideFileUri) }
     }
+
+    @Test
+    fun `handleFileChange handles non-existing dirty file`() {
+        val testData = testData(workspace) {
+            addMainFile(rellFileContent)
+        }
+
+        initializeWorkspace()
+        val nonExistingDirtyFile = testData.workspaceFolder.resolve("not_on_disk.rell").toURI()
+        val indexer = indexingManager.getIndexerFor(nonExistingDirtyFile)
+
+        assertDoesNotThrow { indexingManager.handleFileChanges(listOf(nonExistingDirtyFile), listOf(), true) }
+        assertThat(indexer.fileUriResourceMap[nonExistingDirtyFile]).isNull()
+    }
 }
