@@ -17,6 +17,7 @@ import net.postchain.rell.base.sql.SqlUtils
 import net.postchain.rell.base.testutils.BaseResourcefulTest
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.SqlTestUtils
+import net.postchain.rell.gtx.testutils.RellGtxTester
 import org.junit.Test
 import java.sql.Connection
 import kotlin.test.assertEquals
@@ -130,7 +131,7 @@ class PostchainTest: BaseResourcefulTest() {
         }
 
         val postchainTables = createAndDumpTables(con) {
-            val sqlAccess = PostchainBaseUtils.createDatabaseAccess()
+            val sqlAccess = RellGtxTester.createDatabaseAccess()
             PostchainBaseUtils.initializeApp(sqlAccess, con)
         }
 
@@ -155,7 +156,7 @@ class PostchainTest: BaseResourcefulTest() {
         }
 
         val postchainTables = createAndDumpTables(con) {
-            val sqlAccess = PostchainBaseUtils.createDatabaseAccess()
+            val sqlAccess = RellGtxTester.createDatabaseAccess()
             PostchainBaseUtils.initializeApp(sqlAccess, con)
 
             val blockchainRid = BlockchainRid(RellTestUtils.strToRidHex("DEADBEEF").hexStringToByteArray())
@@ -229,5 +230,5 @@ class PostchainTest: BaseResourcefulTest() {
         assertEquals(rExpected, actual.sorted())
     }
 
-    private fun sqlAccess(): DatabaseAccess = PostchainBaseUtils.createDatabaseAccess()
+    private fun sqlAccess(): DatabaseAccess = RellGtxTester.createDatabaseAccess()
 }

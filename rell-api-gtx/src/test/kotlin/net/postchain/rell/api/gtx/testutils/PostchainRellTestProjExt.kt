@@ -29,7 +29,7 @@ object PostchainRellTestProjExt: RellTestProjExt() {
     }
 
     override fun initSysAppTables(sqlExec: SqlExecutor) {
-        val sqlAccess = PostchainBaseUtils.createDatabaseAccess()
+        val sqlAccess = RellApiGtxUtils.createDatabaseAccess()
         sqlExec.connection { con ->
             PostchainBaseUtils.initializeApp(sqlAccess, con)
         }

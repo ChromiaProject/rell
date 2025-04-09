@@ -4,6 +4,8 @@
 
 package net.postchain.rell.api.gtx
 
+import net.postchain.base.data.DatabaseAccess
+import net.postchain.base.data.DatabaseAccessFactory
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.rell.api.base.RellApiCompile
@@ -40,6 +42,10 @@ object RellApiGtxUtils {
         }
     }
 
+    fun createDatabaseAccess(): DatabaseAccess {
+        return DatabaseAccessFactory.createDatabaseAccessWithDefaultDriver()
+    }
+
     fun <T> runWithSqlManager(
         dbUrl: String?,
         sqlLog: Boolean,
@@ -68,7 +74,7 @@ object RellApiGtxUtils {
         code: (SqlManager) -> T,
     ): T {
         con.autoCommit = true
-        PostchainBaseUtils.createDatabaseAccess().checkCollation(con, suppressError = false)
+        createDatabaseAccess().checkCollation(con, suppressError = false)
 
         if (schema != null) {
             prepareSchema(con, schema)

@@ -6,7 +6,6 @@ package net.postchain.rell.gtx
 
 import net.postchain.base.configuration.BlockchainConfigurationData
 import net.postchain.base.data.DatabaseAccess
-import net.postchain.base.data.DatabaseAccessFactory
 import net.postchain.common.exception.UserMistake
 import net.postchain.gtv.Gtv
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
@@ -29,10 +28,6 @@ object PostchainBaseUtils {
         val version = getBlockchainConfigHashVersion(config)
         val hash = PostchainGtvUtils.hashCalculator.hash(config, version)
         return Bytes32(hash)
-    }
-
-    fun createDatabaseAccess(): DatabaseAccess {
-        return DatabaseAccessFactory.createDatabaseAccessWithDefaultDriver()
     }
 
     fun initializeApp(dbAccess: DatabaseAccess, con: Connection) {

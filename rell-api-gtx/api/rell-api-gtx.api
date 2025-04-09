@@ -86,6 +86,7 @@ synthetic class net/postchain/rell/api/gtx/RellApiGtxInternal$runTests$1$testCtx
 
 public final class net/postchain/rell/api/gtx/RellApiGtxUtils {
 	public static final field INSTANCE Lnet/postchain/rell/api/gtx/RellApiGtxUtils;
+	public final fun createDatabaseAccess ()Lnet/postchain/base/data/DatabaseAccess;
 	public final fun extractDatabaseSchema (Ljava/lang/String;)Ljava/lang/String;
 	public final fun genBlockchainConfigTemplateNoRell ([BLnet/postchain/rell/api/base/RellApiCompile$Config;)Lnet/postchain/gtv/Gtv;
 	public final fun prepareSchema (Ljava/sql/Connection;Ljava/lang/String;)V

@@ -27,6 +27,10 @@
             <groupId>net.postchain.rell</groupId>
             <artifactId>rell-api-base</artifactId>
         </dependency>
+        <dependency>
+            <groupId>net.postchain</groupId>
+            <artifactId>postchain-base</artifactId>
+        </dependency>
 
         <!-- Only needed to parse a database URL in CLI tools - consider removing. -->
         <dependency>

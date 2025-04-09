@@ -12,7 +12,7 @@ import net.postchain.rell.gtx.testutils.BaseGtxTest
 import org.junit.Test
 import java.math.BigInteger
 
-class GtxTest : BaseGtxTest() {
+class GtxTest: BaseGtxTest() {
     @Test fun testObject() {
         def("object foo { x: integer = 123; s: text = 'Hello'; }")
         chk("foo.x", "123")

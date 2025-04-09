@@ -150,7 +150,7 @@ class Rt_PostchainUnitTestBlockRunner(
     }
 
     private fun createEContext(con: Connection, bcCtx: BlockchainContext): EContext {
-        val dbAccess = PostchainBaseUtils.createDatabaseAccess()
+        val dbAccess = RellApiGtxUtils.createDatabaseAccess()
         return BaseEContext(con, bcCtx.chainID, dbAccess)
     }
 }

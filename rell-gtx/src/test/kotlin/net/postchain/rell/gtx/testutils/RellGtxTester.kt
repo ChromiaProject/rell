@@ -8,6 +8,8 @@ import net.postchain.base.BaseBlockEContext
 import net.postchain.base.BaseEContext
 import net.postchain.base.BaseTxEContext
 import net.postchain.base.TxEventSink
+import net.postchain.base.data.DatabaseAccess
+import net.postchain.base.data.DatabaseAccessFactory
 import net.postchain.common.BlockchainRid
 import net.postchain.common.exception.UserMistake
 import net.postchain.common.hexStringToByteArray
@@ -55,7 +57,7 @@ class RellGtxTester(
 
         val gtxModule = createGtxModule(moduleCode)
 
-        val dbAccess = PostchainBaseUtils.createDatabaseAccess()
+        val dbAccess = createDatabaseAccess()
         sqlExec.connection { con ->
             val ctx = BaseEContext(con, chainId, dbAccess)
             dbAccess.initializeBlockchain(ctx, bRid)
@@ -183,7 +185,7 @@ class RellGtxTester(
         init()
         val res = tstCtx.sqlMgr().execute(tx) { sqlExec ->
             sqlExec.connection { con ->
-                val dbAccess = PostchainBaseUtils.createDatabaseAccess()
+                val dbAccess = createDatabaseAccess()
                 val ctx = BaseEContext(con, chainId, dbAccess)
                 code(ctx)
             }
@@ -295,4 +297,10 @@ class RellGtxTester(
         val moduleArgs: Map<String, String>,
         val extraModuleConfig: Map<String, String>,
     )
+
+    companion object {
+        fun createDatabaseAccess(): DatabaseAccess {
+            return DatabaseAccessFactory.createDatabaseAccessWithDefaultDriver()
+        }
+    }
 }

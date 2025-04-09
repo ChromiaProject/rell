@@ -16,7 +16,7 @@ object PostchainSqlInitProjExt: SqlInitProjExt() {
         val chainId = exeCtx.sqlCtx.mainChainMapping().chainId
         val bcRid = BlockchainRid(exeCtx.appCtx.chainCtx.blockchainRid.toByteArray())
 
-        val sqlAccess = PostchainBaseUtils.createDatabaseAccess()
+        val sqlAccess = RellApiGtxUtils.createDatabaseAccess()
         exeCtx.sysSqlExec.connection { con ->
             PostchainBaseUtils.initializeApp(sqlAccess, con)
             val eCtx: EContext = BaseEContext(con, chainId, sqlAccess)
