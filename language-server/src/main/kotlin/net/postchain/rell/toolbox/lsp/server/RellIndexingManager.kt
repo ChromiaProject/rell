@@ -290,8 +290,8 @@ class RellIndexingManager(
     private fun handleDirtyFiles(dirtyFiles: List<URI>, updateAffectedFiles: Boolean, affectedUris: MutableSet<URI>) {
         dirtyFiles.forEach { uri ->
             getIndexerFor(uri).let { indexer ->
-                indexer.updateFileUriResourceMap(uri)
-                if (updateAffectedFiles) {
+                val updatedResource = indexer.updateFileUriResourceMap(uri)
+                if (updateAffectedFiles && updatedResource != null) {
                     affectedUris.addAll(indexer.findAffectedFiles(uri))
                 }
             }
