@@ -18,6 +18,7 @@ sentry {
     org = "chromaway-ab-za"
     projectName = "rell-toolbox"
     authToken = System.getenv("SENTRY_AUTH_TOKEN")
+    System.setProperty("sentry.release", "${project.version}")
 }
 
 dependencies {
