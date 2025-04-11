@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.testutils
@@ -81,6 +81,7 @@ abstract class BaseRellTest(
 
     fun resetSqlBuffer() = tst.resetSqlBuffer()
     fun chkSql(vararg expected: String) = tst.chkSql(*expected)
+    fun chkSqlRegex(vararg expected: String) = tst.chkSqlRegex(*expected)
     fun chkSqlCtr(expected: Int) = tst.chkSqlCtr(expected)
 
     fun chkTests(testModule: String, expected: String) = tst.chkTests(testModule, expected)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.runtime
@@ -52,6 +52,7 @@ class Rt_ChainSqlMapping(val chainId: Long) {
 
     val rowidTable = fullName(SqlConstants.ROWID_GEN)
     val rowidFunction = fullName(SqlConstants.MAKE_ROWID)
+    val rowidsFunction = fullName(SqlConstants.MAKE_ROWIDS)
     val blocksTable = fullName(SqlConstants.BLOCKS_TABLE)
     val transactionsTable = fullName(SqlConstants.TRANSACTIONS_TABLE)
     val metaEntitiesTable = fullName("sys.classes")

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.expr
@@ -287,11 +287,40 @@ class CreateTest: BaseRellTest(useSql = true) {
 
         chkSqlCtr(0)
         chkOp("val c = create data( range(2500) @* {} (struct<data>($)) ); print(c.size());", "OK")
-        chkSqlCtr(3)
+        chkSqlCtr(4)
 
         val expSum = 3123750
         chk("2499*2500/2", "int[$expSum]")
         chk("data @{} ( @sum 1, @sum .x )", "(int[2500],int[$expSum])")
+    }
+
+    @Test fun testListOfStructFastRowid() {
+        tst.sqlInsertFastRowidCountThreshold = 3
+        def("entity data { x: integer; }")
+
+        chkSql()
+        chkOp("create data(range(1) @* {} (struct<data>(100+$)) );")
+        chkSqlRegex(*SLOW_ROWID_REGEX)
+
+        chkOp("create data(range(2) @* {} (struct<data>(100+$)) );")
+        chkSqlRegex(*SLOW_ROWID_REGEX)
+
+        chkOp("create data(range(3) @* {} (struct<data>(100+$)) );")
+        chkSqlRegex(*FAST_ROWID_REGEX)
+
+        chkOp("create data(range(4) @* {} (struct<data>(100+$)) );")
+        chkSqlRegex(*FAST_ROWID_REGEX)
+    }
+
+    @Test fun testListOfStructFastRowidDefaultThreshold() {
+        def("entity data { x: integer; }")
+
+        chkSql()
+        chkOp("create data(range(9) @* {} (struct<data>(100+$)) );")
+        chkSqlRegex(*SLOW_ROWID_REGEX)
+
+        chkOp("create data(range(10) @* {} (struct<data>(100+$)) );")
+        chkSqlRegex(*FAST_ROWID_REGEX)
     }
 
     @Test fun testListOfStructVersionControl() {
@@ -299,5 +328,70 @@ class CreateTest: BaseRellTest(useSql = true) {
         val err = "VER:feature:create_list_of_structs"
         chkVerCt("function f() { create data(list<struct<data>>()); }", "0.13.5", err)
         chkVerCt("function f() { create data(list<struct<mutable data>>()); }", "0.13.5", err)
+    }
+
+    @Test fun testRollbackRowidSingleInsert() {
+        tstCtx.useSql = true
+        tst.strictToString = false
+        def("entity data { v: integer; }")
+        def("function insert_one(v: integer, ok: boolean) { create data(v); require(ok); }")
+
+        chkOp("insert_one(1000, true);")
+        chk("data @* {} (_=.rowid, _=.v)", "[(1,1000)]")
+
+        chkOp("insert_one(1001, false);", "req_err:null")
+        chk("data @* {} (_=.rowid, _=.v)", "[(1,1000)]")
+
+        chkOp("insert_one(1002, true);")
+        chk("data @* {} (_=.rowid, _=.v)", "[(1,1000), (2,1002)]")
+    }
+
+    @Test fun testRollbackRowidMultiInsertSlowMode() {
+        tst.sqlInsertFastRowidCountThreshold = 100
+        chkRollbackRowidMultiInsert(SLOW_ROWID_REGEX)
+    }
+
+    @Test fun testRollbackRowidMultiInsertFastMode() {
+        tst.sqlInsertFastRowidCountThreshold = 3
+        chkRollbackRowidMultiInsert(FAST_ROWID_REGEX)
+    }
+
+    private fun chkRollbackRowidMultiInsert(sqlRegex: Array<String>) {
+        tstCtx.useSql = true
+        tst.strictToString = false
+
+        def("entity data { x: integer; }")
+        def("""
+            function insert_many(n: integer, x0: integer, ok: boolean) {
+                create data(range(n) @*{} (struct<data>(x0 + $)));
+                require(ok);
+            }
+        """)
+
+        resetSqlBuffer()
+        chkOp("insert_many(3, 1000, true);")
+        chkSqlRegex(*sqlRegex)
+        chk("data @* {} (_=.rowid, _=.x)", "[(1,1000), (2,1001), (3,1002)]")
+
+        resetSqlBuffer()
+        chkOp("insert_many(10, 2000, false);", "req_err:null")
+        chkSqlRegex(*sqlRegex)
+        chk("data @* {} (_=.rowid, _=.x)", "[(1,1000), (2,1001), (3,1002)]")
+
+        resetSqlBuffer()
+        chkOp("insert_many(3, 3000, true);")
+        chkSqlRegex(*sqlRegex)
+        chk("data @* {} (_=.rowid, _=.x)", "[(1,1000), (2,1001), (3,1002), (4,3000), (5,3001), (6,3002)]")
+    }
+
+    companion object {
+        private val SLOW_ROWID_REGEX = arrayOf(
+            """\QINSERT INTO "c0.data"("rowid", "x") VALUES ("c0.make_rowid"(), ?)\E.*""",
+        )
+
+        private val FAST_ROWID_REGEX = arrayOf(
+            """\QSELECT "c0.make_rowids"(?)\E""",
+            """\QINSERT INTO "c0.data"("rowid", "x") VALUES (?, ?), (?, ?), (?, ?)\E.*""",
+        )
     }
 }

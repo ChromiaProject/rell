@@ -12,10 +12,7 @@ import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.lib.type.R_OperationType
-import net.postchain.rell.base.model.expr.R_AttributeDefaultValueExpr
-import net.postchain.rell.base.model.expr.R_CreateExpr
-import net.postchain.rell.base.model.expr.R_CreateExprAttr
-import net.postchain.rell.base.model.expr.R_Expr
+import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_DefinitionContext
 import net.postchain.rell.base.runtime.Rt_ExecutionContext
@@ -132,11 +129,13 @@ class R_ObjectDefinition(
             R_CreateExprAttr(it, expr)
         }
 
-        val createAttrs = createExprAttrs.map { it.attr }
-        val createRecord = createExprAttrs.map { it.evaluate(frame) }
-        val createValues = R_CreateExpr.CreateValues(createAttrs, immListOf(createRecord))
+        val insertAttrs = createExprAttrs.map { it.attr }
+        val insertValues = createExprAttrs.map { it.evaluate(frame) }
+        val insertRowid = ParameterizedSql.generate { it.append(0L) }
+        val insertRow = R_CreateExpr.InsertRow(insertRowid, insertValues)
+        val insertData = R_CreateExpr.InsertData(insertAttrs, immListOf(insertRow))
 
-        val sql = R_CreateExpr.buildSql(frame.defCtx.sqlCtx, rEntity, createValues, "0")
+        val sql = R_CreateExpr.buildSql(frame.defCtx.sqlCtx, rEntity, insertData)
         sql.execute(frame.sysSqlExec)
     }
 

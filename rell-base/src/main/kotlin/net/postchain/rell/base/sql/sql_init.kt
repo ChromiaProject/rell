@@ -177,6 +177,11 @@ private class SqlInitPlanner private constructor(
     }
 
     private fun processFunctions(functions: Set<String>) {
+        val (rowidsFn, rowidsSql) = SqlGen.genFunctionMakeRowids(sqlCtx.mainChainMapping())
+        if (rowidsFn !in functions) {
+            initCtx.step(ORD_TABLES, "Create function: '$rowidsFn'", SqlStepAction_ExecSql(rowidsSql))
+        }
+
         for ((name, sql) in SqlGen.RELL_SYS_FUNCTIONS) {
             if (name !in functions) {
                 initCtx.step(ORD_TABLES, "Create function: '$name'", SqlStepAction_ExecSql(sql))

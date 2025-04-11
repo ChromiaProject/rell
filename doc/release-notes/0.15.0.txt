@@ -1,3 +1,10 @@
 RELEASE NOTES 0.15.0 (202?-??-??)
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. SQL: Faster multi-row inserts
+
+Multi-row create expressions now work much faster due to a faster rowid allocation:
+
+    create MyEntity(list<struct<MyEntity>>)
+
+Details: instead of allocating a rowid value for each row, a range of rowids is allocated at once.

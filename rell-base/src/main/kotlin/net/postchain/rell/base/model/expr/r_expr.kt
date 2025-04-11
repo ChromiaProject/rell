@@ -328,21 +328,20 @@ class R_CreateExprAttr(val attr: R_Attribute, private val expr: R_Expr) {
 }
 
 sealed class R_CreateExpr(type: R_Type, private val rEntity: R_EntityDefinition): R_Expr(type) {
-    protected abstract fun evaluateValues(frame: Rt_CallFrame): CreateValues
+    protected abstract fun evaluateData(frame: Rt_CallFrame): InsertData
     protected abstract fun evaluateResult(entities: List<Rt_Value>): Rt_Value
 
     final override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         frame.checkDbUpdateAllowed()
 
-        val allValues = evaluateValues(frame)
+        val allValues = evaluateData(frame)
         val allRows = mutableListOf<List<Rt_Value>>()
 
         val valuesPages = splitValues(frame.appCtx.globalCtx, allValues)
 
         for (page in valuesPages) {
             val sqlCtx = frame.defCtx.sqlCtx
-            val rowidFunc = sqlCtx.mainChainMapping().rowidFunction
-            val rtSql = buildSql(sqlCtx, rEntity, page, "\"$rowidFunc\"()")
+            val rtSql = buildSql(sqlCtx, rEntity, page)
             val rtSel = SqlSelect(rtSql, immListOf(rEntity.type))
             val rows = rtSel.execute(frame.userSqlExec)
             allRows.addAll(rows)
@@ -353,24 +352,30 @@ sealed class R_CreateExpr(type: R_Type, private val rEntity: R_EntityDefinition)
         return res
     }
 
-    private fun splitValues(globalCtx: Rt_GlobalContext, values: CreateValues): List<CreateValues> {
-        if (values.records.isEmpty()) {
+    private fun splitValues(globalCtx: Rt_GlobalContext, values: InsertData): List<InsertData> {
+        if (values.rows.isEmpty()) {
             return immListOf()
         } else if (values.attrs.isEmpty()) {
             return immListOf(values)
         }
 
         val recordsPerPage = max(globalCtx.sqlUpdatePortionSize / values.attrs.size, 1)
-        val pages = ListUtils.partition(values.records, recordsPerPage)
-        return pages.map { CreateValues(values.attrs, it) }
+        val pages = ListUtils.partition(values.rows, recordsPerPage)
+        return pages.map { InsertData(values.attrs, it) }
     }
 
     companion object {
+        fun buildDefaultRowidSql(sqlCtx: Rt_SqlContext): ParameterizedSql {
+            val rowidFunc = sqlCtx.mainChainMapping().rowidFunction
+            return ParameterizedSql.generate { b ->
+                b.append("\"$rowidFunc\"()")
+            }
+        }
+
         fun buildSql(
             sqlCtx: Rt_SqlContext,
             rEntity: R_EntityDefinition,
-            values: CreateValues,
-            rowidExpr: String,
+            values: InsertData,
         ): ParameterizedSql {
             val b = SqlBuilder()
 
@@ -390,10 +395,10 @@ sealed class R_CreateExpr(type: R_Type, private val rEntity: R_EntityDefinition)
 
             b.append(" VALUES ")
 
-            b.append(values.records, ", ") { record ->
+            b.append(values.rows, ", ") { row ->
                 b.append("(")
-                b.append(rowidExpr)
-                b.append(record, "") { value ->
+                b.append(row.rowidSql)
+                b.append(row.values, "") { value ->
                     b.append(", ")
                     b.append(value)
                 }
@@ -454,10 +459,12 @@ sealed class R_CreateExpr(type: R_Type, private val rEntity: R_EntityDefinition)
         }
     }
 
-    class CreateValues(val attrs: List<R_Attribute>, val records: List<List<Rt_Value>>) {
+    class InsertRow(val rowidSql: ParameterizedSql, val values: List<Rt_Value>)
+
+    class InsertData(val attrs: List<R_Attribute>, val rows: List<InsertRow>) {
         init {
-            for (rec in records) {
-                checkEquals(rec.size, attrs.size)
+            for (row in rows) {
+                checkEquals(row.values.size, attrs.size)
             }
         }
     }
@@ -467,10 +474,12 @@ class R_RegularCreateExpr(
     rEntity: R_EntityDefinition,
     val attrs: List<R_CreateExprAttr>,
 ): R_CreateExpr(rEntity.type, rEntity) {
-    override fun evaluateValues(frame: Rt_CallFrame): CreateValues {
+    override fun evaluateData(frame: Rt_CallFrame): InsertData {
         val resAttrs = attrs.map { it.attr }
-        val record = attrs.map { it.evaluate(frame) }
-        return CreateValues(resAttrs, immListOf(record))
+        val rowidSql = buildDefaultRowidSql(frame.sqlCtx)
+        val values = attrs.map { it.evaluate(frame) }
+        val row = InsertRow(rowidSql, values)
+        return InsertData(resAttrs, immListOf(row))
     }
 
     override fun evaluateResult(entities: List<Rt_Value>): Rt_Value {
@@ -484,11 +493,13 @@ class R_StructCreateExpr(
     private val structType: R_StructType,
     private val structExpr: R_Expr,
 ): R_CreateExpr(rEntity.type, rEntity) {
-    override fun evaluateValues(frame: Rt_CallFrame): CreateValues {
+    override fun evaluateData(frame: Rt_CallFrame): InsertData {
         val structValue = structExpr.evaluate(frame).asStruct()
         val attrs = structType.struct.attributesList
-        val record = attrs.indices.map { structValue.get(it) }
-        return CreateValues(attrs, immListOf(record))
+        val rowidSql = buildDefaultRowidSql(frame.sqlCtx)
+        val values = attrs.indices.map { structValue.get(it) }
+        val row = InsertRow(rowidSql, values)
+        return InsertData(attrs, immListOf(row))
     }
 
     override fun evaluateResult(entities: List<Rt_Value>): Rt_Value {
@@ -503,14 +514,45 @@ class R_StructListCreateExpr(
     private val resultListType: R_ListType,
     private val listExpr: R_Expr,
 ): R_CreateExpr(resultListType, rEntity) {
-    override fun evaluateValues(frame: Rt_CallFrame): CreateValues {
+    override fun evaluateData(frame: Rt_CallFrame): InsertData {
         val listValue = listExpr.evaluate(frame).asList()
         val attrs = structType.struct.attributesList
-        val records = listValue.map {
-            val structValue = it.asStruct()
-            attrs.indices.map { i -> structValue.get(i) }
+        val rowidGen = getRowidGenerator(frame, listValue.size)
+        val rows = listValue.mapIndexed { index, value ->
+            val structValue = value.asStruct()
+            val rowidSql = rowidGen(index)
+            val values = attrs.indices.map { i -> structValue.get(i) }
+            InsertRow(rowidSql, values)
         }
-        return CreateValues(attrs, records)
+        return InsertData(attrs, rows)
+    }
+
+    private fun getRowidGenerator(frame: Rt_CallFrame, count: Int): (Int) -> ParameterizedSql {
+        if (count < frame.defCtx.globalCtx.sqlInsertFastRowidCountThreshold) {
+            val resSql = buildDefaultRowidSql(frame.sqlCtx)
+            return { resSql }
+        }
+
+        val sql = ParameterizedSql.generate { b ->
+            val rowidsFn = frame.sqlCtx.mainChainMapping().rowidsFunction
+            b.append("""SELECT "$rowidsFn"(""")
+            b.append(count.toLong())
+            b.append(")")
+        }
+
+        var firstRowidVar: Long? = null
+        sql.executeQuery(frame.userSqlExec) { row ->
+            firstRowidVar = row.getLong(1)
+        }
+
+        val firstRowid = firstRowidVar!!
+        check(firstRowid > 0) { "$count $firstRowid" }
+
+        return { index ->
+            ParameterizedSql.generate {
+                it.append(firstRowid + index)
+            }
+        }
     }
 
     override fun evaluateResult(entities: List<Rt_Value>): Rt_Value {

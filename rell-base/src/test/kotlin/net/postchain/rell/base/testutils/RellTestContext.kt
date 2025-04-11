@@ -10,7 +10,9 @@ import net.postchain.rell.base.sql.*
 import java.io.Closeable
 import java.sql.Connection
 import java.util.*
+import java.util.regex.Pattern
 import kotlin.test.assertEquals
+import kotlin.test.fail
 
 class RellTestContext(
     val projExt: RellTestProjExt = BaseRellTestProjExt,
@@ -162,6 +164,20 @@ class RellTestContext(
 
     fun chkSql(expected: List<String>) {
         assertEquals(expected, sqlStats.sqls.toList())
+        sqlStats.sqls.clear()
+    }
+
+    fun chkSqlRegex(expected: List<String>) {
+        val actual = sqlStats.sqls.toList()
+        val match = actual.size == expected.size && actual.withIndex().all { (i, act) ->
+            Pattern.matches(expected[i], act)
+        }
+
+        if (!match) {
+            assertEquals(expected, actual) // Throw with a message
+            fail() // Make sure it fails
+        }
+
         sqlStats.sqls.clear()
     }
 

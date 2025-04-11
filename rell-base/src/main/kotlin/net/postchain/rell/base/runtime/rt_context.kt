@@ -22,9 +22,10 @@ class Rt_GlobalContext(
     val outPrinter: Rt_Printer,
     val logPrinter: Rt_Printer,
     val logSqlErrors: Boolean = false,
-    val sqlUpdatePortionSize: Int = 1000, // Experimental maximum is 2^15
     val typeCheck: Boolean = false,
     val wrapFunctionCallErrors: Boolean = true,
+    val sqlUpdatePortionSize: Int = 1000, // Experimental maximum is 2^15
+    val sqlInsertFastRowidCountThreshold: Int = 10,
 ) {
     private val rellVersion = Rt_RellVersion.getInstance()
 

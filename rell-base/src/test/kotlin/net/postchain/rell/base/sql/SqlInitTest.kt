@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.sql
@@ -653,6 +653,7 @@ class SqlInitTest: BaseSqlInitTest() {
 
         val expectedFuns = listOf(
             "c0.make_rowid",
+            "c0.make_rowids",
             "rell_biginteger_from_text",
             "rell_biginteger_power",
             "rell_bytea_substr1",

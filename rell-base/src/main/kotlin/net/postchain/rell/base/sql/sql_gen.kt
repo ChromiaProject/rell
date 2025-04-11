@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.sql
@@ -150,6 +150,21 @@ object SqlGen {
             CREATE FUNCTION "$func"() RETURNS BIGINT AS
             'UPDATE "$table" SET last_value = last_value + 1 RETURNING last_value'
             LANGUAGE SQL;
+        """.trimIndent()
+    }
+
+    fun genFunctionMakeRowids(chainMapping: Rt_ChainSqlMapping): Pair<String, String> {
+        val table = chainMapping.rowidTable
+        val name = chainMapping.rowidsFunction
+        return name to """
+            CREATE FUNCTION "$name"(n BIGINT) RETURNS BIGINT AS $$
+            DECLARE v BIGINT;
+            BEGIN
+                IF n <= 0 OR n >= 1000000000 THEN RAISE EXCEPTION '$name: n = %', n; END IF;
+                UPDATE "$table" SET last_value = last_value + n RETURNING last_value INTO v;
+                RETURN v - n + 1;
+            END;
+            $$ LANGUAGE PLPGSQL;
         """.trimIndent()
     }
 

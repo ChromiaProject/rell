@@ -40,7 +40,8 @@ class RellCodeTester(
     var wrapInit = false
     var strictToString = true
     var opContext: Rt_OpContext = Rt_NullOpContext
-    var sqlUpdatePortionSize = 1000
+    var sqlUpdatePortionSize = DEFAULT_GLOBAL_CONTEXT.sqlUpdatePortionSize
+    var sqlInsertFastRowidCountThreshold = DEFAULT_GLOBAL_CONTEXT.sqlInsertFastRowidCountThreshold
     var replModule: String? = null
     var typeCheck: Boolean = true
     var wrapFunctionCallErrors = true
@@ -314,6 +315,10 @@ class RellCodeTester(
         tstCtx.chkSql(expected.toList())
     }
 
+    fun chkSqlRegex(vararg expected: String) {
+        tstCtx.chkSqlRegex(expected.toList())
+    }
+
     fun chkSqlCtr(expected: Int) {
         tstCtx.chkSqlCtr(expected)
     }
@@ -427,13 +432,14 @@ class RellCodeTester(
         val compilerOptions = compilerOptions()
 
         return Rt_GlobalContext(
-                compilerOptions,
-                outPrinter,
-                logPrinter,
-                logSqlErrors = true,
-                sqlUpdatePortionSize = sqlUpdatePortionSize,
-                typeCheck = typeCheck,
-                wrapFunctionCallErrors = wrapFunctionCallErrors,
+            compilerOptions,
+            outPrinter,
+            logPrinter,
+            logSqlErrors = true,
+            typeCheck = typeCheck,
+            wrapFunctionCallErrors = wrapFunctionCallErrors,
+            sqlUpdatePortionSize = sqlUpdatePortionSize,
+            sqlInsertFastRowidCountThreshold = sqlInsertFastRowidCountThreshold,
         )
     }
 
@@ -510,5 +516,13 @@ class RellCodeTester(
             val height = map[rid]
             return height
         }
+    }
+
+    companion object {
+        private val DEFAULT_GLOBAL_CONTEXT = Rt_GlobalContext(
+            C_CompilerOptions.DEFAULT,
+            outPrinter = Rt_NopPrinter,
+            logPrinter = Rt_NopPrinter,
+        )
     }
 }
