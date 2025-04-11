@@ -104,7 +104,7 @@ object GrammarUtils {
             check(parser !is LegacyCombinator<*>)
 
             when (parser) {
-                is RellToken -> {}
+                is RellToken -> check(parser.isEnabled(RellVersions.VERSION)) { parser.name }
                 is ParserReference<*> -> {
                     check(parser.parser in topMap)
                 }

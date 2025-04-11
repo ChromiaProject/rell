@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lib
@@ -116,16 +116,25 @@ object Lib_Crypto {
 
             function("eth_ecrecover", result = "byte_array", pure = true, since = "0.10.6") {
                 comment("""
-                    Calculates an Ethereum public key from a signature and hash.
-                    @return a byte array representing the public key.
+                    Calculate Ethererum public key from a signature and a hash.
+
+                    Does almost the same as the Solidity `ecrecover(...)` function, but isn't its strict equivalent.
+
+                    How this function differs from the Solidity one:
+
+                    - takes `rec_id` instead of `v`, where `rec_id` = `v` - 27
+                    - other parameters (`r`, `s`, `hash`) are the same, but in a different order
+                    - returns a 64-byte public key, not a 20-byte address; the address is the last 20 bytes of
+                      `keccak256(...)` of the public key
+
+                    @return 64-byte public key
+                    @see `eth_sign()`
                 """)
-                param(name = "r", type = "byte_array", comment = "The first component of the Ethereum signature.")
-                param(name = "s", type = "byte_array", comment = "The second component of the Ethereum signature.")
-                param(name = "rec_id", type = "integer") {
-                    comment("The recovery identifier used for signature recovery.")
-                }
+                param(name = "r", type = "byte_array", comment = "The first component of the Ethereum signature")
+                param(name = "s", type = "byte_array", comment = "The second component of the Ethereum signature")
+                param(name = "rec_id", type = "integer", comment = "The recovery identifier, normally 0 or 1")
                 param(name = "data_hash", type = "byte_array") {
-                    comment("The byte array representing the hash that was signed.")
+                    comment("The byte array representing the hash that was signed")
                 }
                 body { a, b, c, d ->
                     val r = a.asByteArray()
@@ -153,6 +162,7 @@ object Lib_Crypto {
                     Takes a hash and a private key and returns values `r`, `s`,
                     and `rec_id` that are accepted by `eth_ecrecover`.
                     @return tuple containing the ethereum signature components.
+                    @see `eth_ecrecover()`
                 """)
                 param(name = "data_hash", type = "byte_array") {
                     comment("The byte array representing the hash to be signed.")
