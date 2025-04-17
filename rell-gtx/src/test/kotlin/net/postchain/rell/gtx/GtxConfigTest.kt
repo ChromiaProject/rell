@@ -5,7 +5,9 @@
 package net.postchain.rell.gtx
 
 import net.postchain.common.exception.UserMistake
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.testutils.RellTestUtils
+import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.gtx.testutils.BaseGtxTest
 import org.apache.commons.lang3.StringUtils
 import org.junit.Test
@@ -148,6 +150,50 @@ class GtxConfigTest: BaseGtxTest() {
         chkVersion("0.14.9", err)
         chkVersion("0.15.1", err)
         chkVersion("1.0.0", err)
+    }
+
+    @Test fun testSourcesVersionAllOK() {
+        val validVers = RellVersions.SUPPORTED_VERSIONS.filter { it >= R_LangVersion.of("0.10.9") }
+        for (version in validVers) {
+            chkVersion(version.str(), "OK")
+        }
+    }
+
+    @Test fun testSourcesVersionAllUnknown() {
+        val unknownVers = calcUnknownVersions()
+        for (ver in unknownVers) {
+            chkVersion(ver.str(), "ERR:Unknown version: %s")
+        }
+    }
+
+    // Make sure expected unknown versions are calculated correctly.
+    @Test fun testCalcUnknownVersions() {
+        val expected = listOf("0.5.0", "0.6.2", "0.7.1", "0.8.1", "0.9.2", "0.10.12", "0.11.1", "0.12.1", "0.13.16")
+        val actual = calcUnknownVersions()
+            .filter { it <= R_LangVersion.of("0.14.8") }
+            .map { it.str() }
+        assertEquals(expected, actual)
+    }
+
+    private fun calcUnknownVersions(): List<R_LangVersion> {
+        return RellVersions.SUPPORTED_VERSIONS
+            .flatMap { ver ->
+                ver.parts().indices.flatMap { i ->
+                    listOf(-1, 1).mapNotNull { d -> calcAdjacentVersion(ver, i, d) }
+                }
+            }
+            .filter { it !in RellVersions.SUPPORTED_VERSIONS }
+            .toSet()
+            .sorted()
+    }
+
+    private fun calcAdjacentVersion(ver: R_LangVersion, i: Int, d: Int): R_LangVersion? {
+        val parts = ver.parts()
+        val v = parts[i] + d
+        return if (v < 0) null else {
+            val parts2 = parts.take(i) + listOf(v) + parts.drop(i + 1).map { 0 }
+            R_LangVersion.of(parts2)
+        }
     }
 
     @Test fun testSourcesWithBadVersion() {

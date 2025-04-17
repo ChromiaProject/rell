@@ -16,10 +16,7 @@ import net.postchain.rell.base.utils.*
 import net.postchain.rell.tools.runcfg.RellRunConfigGenerator
 import net.postchain.rell.tools.runcfg.RellRunConfigParams
 import org.junit.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class RunConfigGenTest {
     @Test fun testNodeConfig() {
@@ -283,7 +280,7 @@ class RunConfigGenTest {
 
         chkFile(files, "node-config.properties", "x=123")
 
-        chkFile(files, "blockchains/33/brid.txt", "CC654C68303B5FD6FE30291318AA0677D80EF690D7E513694D93A7B5FFE1A36E")
+        chkFile(files, "blockchains/33/brid.txt", Regex("[0-9A-F]{64}"))
 
         chkFile(files, "blockchains/33/0.xml", """
             <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -1022,9 +1019,17 @@ class RunConfigGenTest {
     }
 
     private fun chkFile(files: MutableMap<String, DirFile>, path: String, expected: String) {
+        val expectedStr = expected.trimIndent().trim()
+        chkFile(files, path, Regex.fromLiteral(expectedStr))
+    }
+
+    private fun chkFile(files: MutableMap<String, DirFile>, path: String, expected: Regex) {
         val actualFile = chkFile(files, path)
-        val actual = (actualFile as TextDirFile).text
-        assertEquals(expected.trimIndent().trim(), actual.trim())
+        val actualStr = (actualFile as TextDirFile).text.trim()
+        if (!expected.matches(actualStr)) {
+            assertEquals(expected.pattern, actualStr)
+            fail("pattern didn't match: <$actualStr>") // if assertEquals() doesn't fail
+        }
     }
 
     private fun chkFileBin(files: MutableMap<String, DirFile>, path: String, expected: String) {

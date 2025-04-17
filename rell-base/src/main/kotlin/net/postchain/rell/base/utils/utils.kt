@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.utils
@@ -86,6 +86,7 @@ class VersionNumber(items: List<Int>): Comparable<VersionNumber> {
     val items = items.toImmList()
 
     init {
+        require(items.isNotEmpty())
         for (v in this.items) require(v >= 0) { "wrong version: ${this.items}" }
     }
 

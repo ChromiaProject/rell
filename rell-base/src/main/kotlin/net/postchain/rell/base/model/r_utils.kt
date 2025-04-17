@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.model
@@ -212,6 +212,7 @@ class R_LangVersion(private val ver: VersionNumber): Comparable<R_LangVersion> {
         require(ver.items.size == 3) { "invalid version: $ver" }
     }
 
+    fun parts(): List<Int> = ver.items
     fun str(): String = ver.str()
 
     override fun compareTo(other: R_LangVersion) = ver.compareTo(other.ver)
@@ -223,6 +224,10 @@ class R_LangVersion(private val ver: VersionNumber): Comparable<R_LangVersion> {
         fun of(s: String): R_LangVersion {
             val ver = VersionNumber.of(s)
             return R_LangVersion(ver)
+        }
+
+        fun of(parts: List<Int>): R_LangVersion {
+            return R_LangVersion(VersionNumber(parts))
         }
     }
 }
