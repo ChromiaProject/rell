@@ -77,9 +77,12 @@ class RellWorkspaceService(
                             }
                         }
                     }
-
                 }
             }
+        }
+
+        if (!shouldProcessChanges(dirtyFiles, deletedFiles, dirtyFolders, createdChromiaConfig)) {
+            return
         }
 
         requestManager.runWrite {
@@ -90,8 +93,20 @@ class RellWorkspaceService(
         }
     }
 
+    private fun shouldProcessChanges(
+        dirtyFiles: List<URI>,
+        deletedFiles: List<URI>,
+        dirtyFolders: List<URI>,
+        createdChromiaConfig: List<URI>
+    ): Boolean {
+        return dirtyFiles.isNotEmpty() ||
+            deletedFiles.isNotEmpty() ||
+            dirtyFolders.isNotEmpty() ||
+            createdChromiaConfig.isNotEmpty()
+    }
+
     override fun symbol(params: WorkspaceSymbolParams):
-            CompletableFuture<Either<List<SymbolInformation>, List<WorkspaceSymbol>>> {
+        CompletableFuture<Either<List<SymbolInformation>, List<WorkspaceSymbol>>> {
         return CompletableFuture.completedFuture(
             Either.forRight(symbolService.getWorkspaceSymbols(params.query, indexingManager.getAllIndexers()))
         )
