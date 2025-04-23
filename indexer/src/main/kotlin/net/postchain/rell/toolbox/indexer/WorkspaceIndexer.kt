@@ -56,9 +56,12 @@ class WorkspaceIndexer(
             ignoreReportingUris = chromiaModelProvider.resolveIgnoreReportingUris(workspaceUri)
 
             if (shouldReindex(newModel, oldModel)) {
-                indexingStateNotifier(IndexingState.BEGIN)
-                initialFileIndexBuild(reindex = true)
-                indexingStateNotifier(IndexingState.END)
+                try {
+                    indexingStateNotifier(IndexingState.BEGIN)
+                    initialFileIndexBuild(reindex = true)
+                } finally {
+                    indexingStateNotifier(IndexingState.END)
+                }
             } else {
                 if (shouldRunLinter(ignoreReportingUris, oldIgnoreReportingUris)) {
                     runLinter()
