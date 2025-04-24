@@ -6,6 +6,7 @@ import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer
 import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
+import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsPublisher
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.net.URI
+import java.util.concurrent.CompletableFuture
 
 open class WorkspaceManagerTestBase {
     protected lateinit var workspaceManager: RellWorkspaceManager
@@ -34,6 +36,11 @@ open class WorkspaceManagerTestBase {
     protected val completionSymbolService = RellCompletionSymbolService(RellSymbolService())
     protected val documentManager = RellDocumentManager()
     protected val diagnosticsManager = RellDiagnosticsManager()
+    protected val diagnosticsPublisher = object : DiagnosticsPublisher(null, CompletableFuture.completedFuture(null)) {
+        override fun publishDiagnostics(uri: URI, issues: List<RellIssue>) {
+            diagnostics[uri] = issues
+        }
+    }
 
     protected val rellLinter = RellLinter()
     protected val formattingStyleLinter = FormattingStyleLinter()
@@ -79,9 +86,9 @@ open class WorkspaceManagerTestBase {
         notifications.clear()
     }
 
-    protected fun populateDiagnostics(uri: URI, issues: List<RellIssue>) {
-        diagnostics[uri] = issues
-    }
+//    protected fun populateDiagnostics(uri: URI, issues: List<RellIssue>) {
+//        diagnostics[uri] = issues
+//    }
 
     protected fun populateNotifications(type: NotificationType, message: String) {
         notifications.add(type to message)
@@ -89,11 +96,11 @@ open class WorkspaceManagerTestBase {
 
     protected fun initializeWorkspace(workspace: File = this.workspace) {
         val workspaceFolders = listOf(WorkspaceFolder(workspace.toURI().toString(), TEST_WORKSPACE_NAME))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics, ::populateNotifications)
+        workspaceManager.initialize(workspaceFolders, diagnosticsPublisher, ::populateNotifications)
     }
 
     protected fun initializeWorkspaces(workspaces: List<File>) {
         val workspaceFolders = workspaces.map { WorkspaceFolder(it.toURI().toString(), TEST_WORKSPACE_NAME) }
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics, ::populateNotifications)
+        workspaceManager.initialize(workspaceFolders, diagnosticsPublisher, ::populateNotifications)
     }
 }

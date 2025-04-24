@@ -17,7 +17,7 @@ import net.postchain.rell.toolbox.lsp.TestClient
 import net.postchain.rell.toolbox.lsp.TestClientServerLauncher
 import net.postchain.rell.toolbox.lsp.TestServerModule
 import net.postchain.rell.toolbox.lsp.createTextDocumentItem
-import net.postchain.rell.toolbox.lsp.includeDefinition.LspIncludeDefinitionProvider
+import net.postchain.rell.toolbox.lsp.includeDefinition.LspSystemPropertiesProvider
 import net.postchain.rell.toolbox.testing.TestDataBuilder
 import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.DefinitionParams
@@ -55,7 +55,7 @@ class RellLanguageServerTest {
     private lateinit var indexingManager: RellIndexingManager
     private lateinit var documentManager: RellDocumentManager
     private lateinit var testClient: TestClient
-    private lateinit var lspIncludeDefinitionProvider: LspIncludeDefinitionProvider
+    private lateinit var lspIncludeDefinitionProvider: LspSystemPropertiesProvider
     private lateinit var testWorkspaceFolder: File
     private val serverModule = TestServerModule()
     private val testFilePath = "new_file.rell"
@@ -221,7 +221,7 @@ class RellLanguageServerTest {
     ) {
         serverModule.stopKoinGlobalContext()
         val koinApp = serverModule.startKoin(false)
-        val lspIncludeDefinitionProvider = koinApp.koin.get<LspIncludeDefinitionProvider>()
+        val lspSystemPropertiesProvider = koinApp.koin.get<LspSystemPropertiesProvider>()
         val clientServerLauncher = TestClientServerLauncher(koinApp)
         clientServerLauncher.launch()
         clientServerLauncher.initializeServer(testWorkspaceFolder.toURI())
@@ -256,7 +256,7 @@ class RellLanguageServerTest {
         val referenceParams = createReferenceParams(file, pos)
         val response = server.textDocumentService.references(referenceParams)
 
-        assertThat(lspIncludeDefinitionProvider.getIncludeDefinition()).isFalse()
+        assertThat(lspSystemPropertiesProvider.getIncludeDefinition()).isFalse()
         assertThat(response.get()!!).containsExactlyInAnyOrder(
             Location(
                 file.toURI().toString(),

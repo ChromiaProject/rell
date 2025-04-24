@@ -4,9 +4,9 @@ import com.google.gson.JsonObject
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.toolbox.common.RellAbout
 import net.postchain.rell.toolbox.common.RellVersionInfo
-import net.postchain.rell.toolbox.indexer.RellIssue
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
-import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsConverter
+import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsPublisher
+import net.postchain.rell.toolbox.lsp.includeDefinition.LspSystemPropertiesProvider
 import net.postchain.rell.toolbox.lsp.template.CreateNewProjectParams
 import net.postchain.rell.toolbox.lsp.template.NewProjectTemplate
 import net.postchain.rell.toolbox.lsp.template.NewProjectTemplateService
@@ -21,7 +21,6 @@ import org.eclipse.lsp4j.InitializeResult
 import org.eclipse.lsp4j.InitializedParams
 import org.eclipse.lsp4j.MessageParams
 import org.eclipse.lsp4j.MessageType
-import org.eclipse.lsp4j.PublishDiagnosticsParams
 import org.eclipse.lsp4j.Registration
 import org.eclipse.lsp4j.RegistrationParams
 import org.eclipse.lsp4j.RelativePattern
@@ -34,7 +33,6 @@ import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware
 import org.eclipse.lsp4j.services.LanguageServer
 import java.io.File
-import java.net.URI
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
@@ -49,6 +47,7 @@ class RellLanguageServer(
     private val textDocumentService: RellTextDocumentService,
     private val workspaceService: RellWorkspaceService,
     private val indexingManager: RellIndexingManager,
+    private val lspSystemPropertiesProvider: LspSystemPropertiesProvider,
 ) : LanguageServer, LanguageClientAware {
 
     private val logger = KotlinLogging.logger {}
@@ -56,6 +55,7 @@ class RellLanguageServer(
     private lateinit var languageClient: LanguageClient
     private lateinit var initializeParams: InitializeParams
     val initialized = CompletableFuture<InitializedParams>()
+    private lateinit var diagnosticsPublisher: DiagnosticsPublisher
 
     override fun getTextDocumentService() = textDocumentService
     override fun getWorkspaceService() = workspaceService
@@ -82,7 +82,7 @@ class RellLanguageServer(
         languageClient.logMessage(message)
 
         return requestManager.runWrite {
-            workspaceManager.initialize(workspaceFolders, ::publishDiagnostics, ::sendNotification)
+            workspaceManager.initialize(workspaceFolders, diagnosticsPublisher, ::sendNotification)
             result
         }
     }
@@ -111,16 +111,6 @@ class RellLanguageServer(
 
     override fun initialized(params: InitializedParams) {
         initialized.complete(params)
-    }
-
-    private fun publishDiagnostics(uri: URI, issues: List<RellIssue>) {
-        initialized.thenAccept { _ ->
-            val publishDiagnosticsParams = PublishDiagnosticsParams()
-            publishDiagnosticsParams.uri = uri.toString()
-            publishDiagnosticsParams.diagnostics = DiagnosticsConverter.toDiagnostics(issues)
-
-            languageClient.publishDiagnostics(publishDiagnosticsParams)
-        }
     }
 
     private fun sendNotification(type: NotificationType, message: String) {
@@ -180,6 +170,7 @@ class RellLanguageServer(
 
     override fun connect(client: LanguageClient) {
         languageClient = client
+        diagnosticsPublisher = DiagnosticsPublisher(client, initialized, lspSystemPropertiesProvider.getIssueCaching())
         workspaceService.connect(client)
     }
 

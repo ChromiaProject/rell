@@ -3,10 +3,10 @@ package net.postchain.rell.toolbox.lsp.server
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import net.postchain.rell.toolbox.indexer.RellIssue
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
+import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsPublisher
 import net.postchain.rell.toolbox.lsp.editing.CodeActionService
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.lsp.hover.formatDocSymbol
@@ -50,7 +50,7 @@ class RellWorkspaceManager(
 
     fun initialize(
         workspaceFolders: List<WorkspaceFolder>,
-        diagnosticsPublisher: (uri: URI, List<RellIssue>) -> Unit,
+        diagnosticsPublisher: DiagnosticsPublisher,
         notificationPublisher: (type: NotificationType, message: String) -> Unit
     ) {
         diagnosticsManager.setDiagnosticsPublisher(diagnosticsPublisher)
