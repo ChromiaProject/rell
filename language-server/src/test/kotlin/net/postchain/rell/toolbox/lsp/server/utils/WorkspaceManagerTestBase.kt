@@ -86,10 +86,6 @@ open class WorkspaceManagerTestBase {
         notifications.clear()
     }
 
-//    protected fun populateDiagnostics(uri: URI, issues: List<RellIssue>) {
-//        diagnostics[uri] = issues
-//    }
-
     protected fun populateNotifications(type: NotificationType, message: String) {
         notifications.add(type to message)
     }
