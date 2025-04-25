@@ -63,10 +63,20 @@ class RellWorkspaceService(
 
             when {
                 uri.isRellFile() -> {
-                    if (change.type == FileChangeType.Deleted) {
-                        deletedFiles.add(uri)
-                    } else {
-                        dirtyFiles.add(uri)
+                    when (change.type) {
+                        FileChangeType.Created -> {
+                            dirtyFiles.add(uri)
+                        }
+
+                        FileChangeType.Changed -> {
+                            if (indexingManager.resourceHasChanged(uri)) {
+                                dirtyFiles.add(uri)
+                            }
+                        }
+
+                        FileChangeType.Deleted -> {
+                            deletedFiles.add(uri)
+                        }
                     }
                 }
 

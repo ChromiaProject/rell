@@ -3,6 +3,7 @@ package net.postchain.rell.toolbox.lsp.server
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.indexer.calculateChecksum
 import net.postchain.rell.toolbox.indexer.findRellFilesInWorkspace
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
@@ -333,6 +334,14 @@ class RellIndexingManager(
                     nestedProjects.joinToString() +
                     "\n Consider restructuring the project directories to avoid nested configurations."
             )
+        }
+    }
+
+    fun resourceHasChanged(fileUri: URI): Boolean {
+        return try {
+            calculateChecksum(fileUri) != getResource(fileUri)?.checksum
+        } catch (_: Exception) {
+            true
         }
     }
 }
