@@ -3,13 +3,14 @@ package net.postchain.rell.toolbox.lsp.server
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.toolbox.indexer.RellIssue
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsPublisher
 import java.net.URI
 
 class RellDiagnosticsManager {
-    private lateinit var diagnosticsPublisher: (uri: URI, List<RellIssue>) -> Unit
+    private lateinit var diagnosticsPublisher: DiagnosticsPublisher
     private lateinit var notificationPublisher: (type: NotificationType, message: String) -> Unit
 
-    fun setDiagnosticsPublisher(publisher: (uri: URI, List<RellIssue>) -> Unit) {
+    fun setDiagnosticsPublisher(publisher: DiagnosticsPublisher) {
         diagnosticsPublisher = publisher
     }
 
@@ -39,12 +40,14 @@ class RellDiagnosticsManager {
 
     private fun publishDiagnostics(issues: Map<URI, List<RellIssue>>) {
         issues.forEach { (uri, issueList) ->
-            diagnosticsPublisher(uri, issueList)
+            diagnosticsPublisher.publishDiagnostics(uri, issueList)
         }
     }
 
     fun clearDiagnostics(fileUri: URI) {
-        diagnosticsPublisher(fileUri, listOf())
+        if (::diagnosticsPublisher.isInitialized) {
+            diagnosticsPublisher.publishDiagnostics(fileUri, listOf())
+        }
     }
 
     fun clearDiagnostics(fileUris: List<URI>) {

@@ -11,7 +11,7 @@ enum class RellIssueSeverity {
     ERROR
 }
 
-class RellIssue(
+data class RellIssue(
     val message: String?,
     val code: String,
     val severity: RellIssueSeverity,

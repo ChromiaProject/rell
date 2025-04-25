@@ -7,8 +7,8 @@ import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer
 import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
-import net.postchain.rell.toolbox.lsp.includeDefinition.DefaultLspIncludeDefinitionProvider
-import net.postchain.rell.toolbox.lsp.includeDefinition.LspIncludeDefinitionProvider
+import net.postchain.rell.toolbox.lsp.includeDefinition.DefaultLspSystemPropertiesProvider
+import net.postchain.rell.toolbox.lsp.includeDefinition.LspSystemPropertiesProvider
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
@@ -39,7 +39,7 @@ val serverModule = module {
     singleOf(::RellLanguageServerTerminator)
     singleOf(::CapabilitiesProvider)
     singleOf(::RellSemanticTokensManager)
-    single<LspIncludeDefinitionProvider> { DefaultLspIncludeDefinitionProvider() }
+    single<LspSystemPropertiesProvider> { DefaultLspSystemPropertiesProvider() }
     singleOf(::RellTestRunner)
     singleOf(::RellLanguageServer)
     singleOf(::RellFormattingManager)

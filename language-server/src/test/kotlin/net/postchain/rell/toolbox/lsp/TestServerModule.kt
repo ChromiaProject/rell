@@ -1,5 +1,6 @@
 package net.postchain.rell.toolbox.lsp
 
+import net.postchain.rell.toolbox.indexer.RellIssue
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
@@ -7,7 +8,7 @@ import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer
 import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
-import net.postchain.rell.toolbox.lsp.includeDefinition.LspIncludeDefinitionProvider
+import net.postchain.rell.toolbox.lsp.includeDefinition.LspSystemPropertiesProvider
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
@@ -24,7 +25,7 @@ import net.postchain.rell.toolbox.lsp.server.RellRequestManager
 import net.postchain.rell.toolbox.lsp.server.RellTextDocumentService
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceService
-import net.postchain.rell.toolbox.lsp.server.utils.TestLspIncludeDefinitionProvider
+import net.postchain.rell.toolbox.lsp.server.utils.TestLspSystemPropertiesProvider
 import net.postchain.rell.toolbox.lsp.symbols.RellCompletionSymbolService
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import net.postchain.rell.toolbox.lsp.template.NewProjectTemplateService
@@ -40,10 +41,10 @@ import org.koin.dsl.module
 
 class TestServerModule {
 
-    fun startKoin(includeDefinition: Boolean = true): KoinApplication {
+    fun startKoin(includeDefinition: Boolean = true, issueCaching: Boolean = false): KoinApplication {
         return startKoin {
             modules(
-                serverModule(includeDefinition)
+                serverModule(includeDefinition, issueCaching)
             )
         }
     }
@@ -52,7 +53,7 @@ class TestServerModule {
         GlobalContext.stopKoin()
     }
 
-    private fun serverModule(includeDefinition: Boolean) = module {
+    private fun serverModule(includeDefinition: Boolean, issueCaching: Boolean) = module {
         singleOf(::RellSymbolService)
         singleOf(::RellCompletionSymbolService)
         singleOf(::NewProjectTemplateService)
@@ -68,8 +69,8 @@ class TestServerModule {
         singleOf(::RellLanguageServerTerminator)
         singleOf(::CapabilitiesProvider)
         singleOf(::RellSemanticTokensManager)
-        single<LspIncludeDefinitionProvider> {
-            TestLspIncludeDefinitionProvider(includeDefinition)
+        single<LspSystemPropertiesProvider> {
+            TestLspSystemPropertiesProvider(includeDefinition, issueCaching)
         }
         singleOf(::RellTestRunner)
         singleOf(::RellLanguageServer)
