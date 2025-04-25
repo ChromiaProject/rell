@@ -2,7 +2,7 @@ package net.postchain.rell.toolbox.lsp.server
 
 import com.google.gson.JsonObject
 import net.postchain.rell.toolbox.lsp.editing.CodeActionTitles
-import net.postchain.rell.toolbox.lsp.includeDefinition.LspIncludeDefinitionProvider
+import net.postchain.rell.toolbox.lsp.includeDefinition.LspSystemPropertiesProvider
 import net.postchain.rell.toolbox.lsp.tokens.RellSemanticTokensManager
 import org.eclipse.lsp4j.CodeAction
 import org.eclipse.lsp4j.CodeActionParams
@@ -46,7 +46,7 @@ class RellTextDocumentService(
     private val semanticTokensManager: RellSemanticTokensManager,
     private val formattingManager: RellFormattingManager,
     private val indexingManager: RellIndexingManager,
-    private val lspIncludeDefinitionProvider: LspIncludeDefinitionProvider
+    private val lspSystemPropertiesProvider: LspSystemPropertiesProvider
 ) : TextDocumentService {
     override fun didOpen(params: DidOpenTextDocumentParams) {
         val textDocument = params.textDocument
@@ -159,7 +159,7 @@ class RellTextDocumentService(
                 workspaceManager.getReferenceLocations(
                     fileUri,
                     params.position,
-                    lspIncludeDefinitionProvider.getIncludeDefinition()
+                    lspSystemPropertiesProvider.getIncludeDefinition()
                 )
             } else {
                 null

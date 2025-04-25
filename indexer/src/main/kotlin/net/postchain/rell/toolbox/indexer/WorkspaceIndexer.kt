@@ -269,8 +269,8 @@ class WorkspaceIndexer(
     }
 
     fun findAffectedFiles(fileUri: URI): Set<URI> {
+        val changedFileResource: Resource = fileUriResourceMap[fileUri] ?: return emptySet()
         val shallowCopy = fileUriResourceMap.toMutableMap()
-        val changedFileResource: Resource = fileUriResourceMap[fileUri]!!
         shallowCopy.remove(fileUri)
         val filesToUpdate: MutableSet<URI> = mutableSetOf(fileUri)
 

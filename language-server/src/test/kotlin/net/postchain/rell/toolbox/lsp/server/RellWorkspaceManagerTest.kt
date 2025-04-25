@@ -290,7 +290,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
             addFile(rellFilePath, rellFileContent)
         }
         val singleRellFileUri = testDataBuilder.sourceFile(rellFilePath).toURI()
-        workspaceManager.initialize(listOf(), ::populateDiagnostics, ::populateNotifications)
+        workspaceManager.initialize(listOf(), diagnosticsPublisher, ::populateNotifications)
 
         val indexer = indexingManager.getIndexerFor(singleRellFileUri)
 
@@ -574,7 +574,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         val localLinkFile = testDataBuilder.sourceFile(localLinkFilePath)
 
         val workspaceFolders = listOf(WorkspaceFolder(tempDir.toURI().toString(), TEST_WORKSPACE_NAME))
-        workspaceManager.initialize(workspaceFolders, ::populateDiagnostics, ::populateNotifications)
+        workspaceManager.initialize(workspaceFolders, diagnosticsPublisher, ::populateNotifications)
         workspaceManager.didOpen(localLinkFile.toURI(), 1, localLinkFile.readText())
 
         val candidate = workspaceManager.getDefinitionLocations(
