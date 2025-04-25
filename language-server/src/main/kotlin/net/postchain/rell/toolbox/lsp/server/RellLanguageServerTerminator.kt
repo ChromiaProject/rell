@@ -5,7 +5,8 @@ import kotlin.system.exitProcess
 
 class RellLanguageServerTerminator(
     private val requestManager: RellRequestManager,
-    private val indexCachingService: RellIndexCachingService
+    private val indexCachingService: RellIndexCachingService,
+    private val workspaceService: RellWorkspaceService
 ) {
 
     private var hasBeenShutdown = false
@@ -13,6 +14,7 @@ class RellLanguageServerTerminator(
         hasBeenShutdown = true
         requestManager.shutdown()
         indexCachingService.shutdown()
+        workspaceService.shutdown()
     }
 
     fun exit() {

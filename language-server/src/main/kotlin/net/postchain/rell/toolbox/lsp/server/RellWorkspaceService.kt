@@ -1,10 +1,13 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import net.postchain.rell.toolbox.indexer.IndexingState
+import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.indexer.calculateChecksum
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import org.eclipse.lsp4j.DidChangeConfigurationParams
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams
 import org.eclipse.lsp4j.FileChangeType
+import org.eclipse.lsp4j.FileEvent
 import org.eclipse.lsp4j.ProgressParams
 import org.eclipse.lsp4j.SymbolInformation
 import org.eclipse.lsp4j.WorkDoneProgressBegin
@@ -27,9 +30,14 @@ class RellWorkspaceService(
     private val symbolService: RellSymbolService,
 ) : WorkspaceService, LanguageClientAware {
     private lateinit var languageClient: LanguageClient
+    private lateinit var fileEventsBatcher: FileEventsBatcher
+    private lateinit var fileEventsProcessor: FileEventsProcessor
 
     override fun connect(client: LanguageClient) {
         this.languageClient = client
+
+        fileEventsBatcher = FileEventsBatcher()
+        fileEventsProcessor = FileEventsProcessor(fileEventsBatcher, this::processFileChangeEvents)
     }
 
     override fun didChangeConfiguration(params: DidChangeConfigurationParams) {
@@ -39,13 +47,18 @@ class RellWorkspaceService(
     }
 
     override fun didChangeWatchedFiles(params: DidChangeWatchedFilesParams) {
+        fileEventsBatcher.addChanges(params.changes)
+    }
+
+    private fun processFileChangeEvents(changes: List<FileEvent>) {
         val dirtyFiles = mutableListOf<URI>()
         val deletedFiles = mutableListOf<URI>()
         val dirtyFolders = mutableListOf<URI>()
         val deletedFolders = mutableListOf<URI>()
         val createdChromiaConfig = mutableListOf<URI>()
+        val configFilesToProcess = mutableListOf<Pair<URI, WorkspaceIndexer>>()
 
-        for (change in params.changes) {
+        for (change in changes) {
             val uri = parseFileUri(change.uri) ?: continue
 
             when {
@@ -64,10 +77,7 @@ class RellWorkspaceService(
                 else -> {
                     val indexer = indexingManager.getIndexerForConfigFile(uri)
                     if (indexer != null && indexer.isConfigFile(uri)) {
-                        requestManager.runWrite {
-                            indexer.updateConfig(uri, ::handleIndexingState)
-                            diagnosticsManager.reportDiagnostics(indexer)
-                        }
+                        configFilesToProcess.add(uri to indexer)
                     } else {
                         if (change.type == FileChangeType.Deleted) {
                             deletedFolders.add(uri)
@@ -78,6 +88,13 @@ class RellWorkspaceService(
                         }
                     }
                 }
+            }
+        }
+
+        for ((uri, indexer) in configFilesToProcess) {
+            requestManager.runWrite {
+                indexer.updateConfig(uri, ::handleIndexingState)
+                diagnosticsManager.reportDiagnostics(indexer)
             }
         }
 
@@ -125,6 +142,15 @@ class RellWorkspaceService(
         if (state == IndexingState.END) {
             val endIndexingProgress = ProgressParams(Either.forLeft(token), Either.forLeft(WorkDoneProgressEnd()))
             languageClient.notifyProgress(endIndexingProgress)
+        }
+    }
+
+    fun shutdown() {
+        if (this::fileEventsBatcher.isInitialized) {
+            fileEventsBatcher.shutdown()
+        }
+        if (this::fileEventsProcessor.isInitialized) {
+            fileEventsProcessor.shutdown()
         }
     }
 }
