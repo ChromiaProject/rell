@@ -10,8 +10,6 @@ import org.junit.jupiter.api.Test
 import java.net.URI
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
-import net.postchain.rell.toolbox.lsp.server.FileEventsBatcher
-import net.postchain.rell.toolbox.lsp.server.FileEventsProcessor
 
 class FileEventsProcessorTest {
     private lateinit var batcher: FileEventsBatcher

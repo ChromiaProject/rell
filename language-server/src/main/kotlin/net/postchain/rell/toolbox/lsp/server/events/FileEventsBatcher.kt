@@ -1,4 +1,4 @@
-package net.postchain.rell.toolbox.lsp.server
+package net.postchain.rell.toolbox.lsp.server.events
 
 import org.eclipse.lsp4j.FileEvent
 import java.util.concurrent.ConcurrentLinkedQueue

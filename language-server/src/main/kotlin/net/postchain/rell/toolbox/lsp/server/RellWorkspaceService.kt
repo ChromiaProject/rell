@@ -2,7 +2,6 @@ package net.postchain.rell.toolbox.lsp.server
 
 import net.postchain.rell.toolbox.indexer.IndexingState
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
-import net.postchain.rell.toolbox.indexer.calculateChecksum
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import org.eclipse.lsp4j.DidChangeConfigurationParams
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams
@@ -21,6 +20,8 @@ import org.eclipse.lsp4j.services.WorkspaceService
 import java.io.File
 import java.net.URI
 import java.util.concurrent.CompletableFuture
+import net.postchain.rell.toolbox.lsp.server.events.FileEventsBatcher
+import net.postchain.rell.toolbox.lsp.server.events.FileEventsProcessor
 
 class RellWorkspaceService(
     private val workspaceManager: RellWorkspaceManager,
