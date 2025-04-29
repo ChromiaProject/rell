@@ -17,9 +17,6 @@ class DiagnosticsPublisherTest {
 
     private lateinit var mockClient: LanguageClient
     private lateinit var publisherWithInitialized: DiagnosticsPublisher
-    private lateinit var publisherWithoutInitialized: DiagnosticsPublisher
-    private lateinit var publisherWithoutClient: DiagnosticsPublisher
-    private lateinit var publisherWithoutCaching: DiagnosticsPublisher
     private lateinit var initialized: CompletableFuture<Any>
 
     private val testUri = URI("file:///test/file.rell")
@@ -28,11 +25,7 @@ class DiagnosticsPublisherTest {
     fun setup() {
         mockClient = mockk<LanguageClient>(relaxed = true)
         initialized = CompletableFuture.completedFuture(Any())
-
         publisherWithInitialized = DiagnosticsPublisher(mockClient, initialized)
-        publisherWithoutInitialized = DiagnosticsPublisher(mockClient, null)
-        publisherWithoutClient = DiagnosticsPublisher(null, initialized)
-        publisherWithoutCaching = DiagnosticsPublisher(mockClient, initialized, checkCacheBeforeSend = false)
     }
 
     @Test
@@ -64,6 +57,7 @@ class DiagnosticsPublisherTest {
 
     @Test
     fun `when caching disabled publishDiagnostics should send diagnostics when issues haven't changed`() {
+        val publisherWithoutCaching = DiagnosticsPublisher(mockClient, initialized, checkCacheBeforeSend = false)
         val issues = listOf(createTestIssue("Error 1"), createTestIssue("Error 2"))
 
         publisherWithoutCaching.publishDiagnostics(testUri, issues)
@@ -124,6 +118,7 @@ class DiagnosticsPublisherTest {
 
     @Test
     fun `publishDiagnostics should not publish when initialized is null`() {
+        val publisherWithoutInitialized = DiagnosticsPublisher(mockClient, null)
         val issues = listOf(createTestIssue("Error 1"))
 
         publisherWithoutInitialized.publishDiagnostics(testUri, issues)
@@ -133,6 +128,7 @@ class DiagnosticsPublisherTest {
 
     @Test
     fun `publishDiagnostics should not publish when client is null`() {
+        val publisherWithoutClient = DiagnosticsPublisher(null, initialized)
         val issues = listOf(createTestIssue("Error 1"))
 
         publisherWithoutClient.publishDiagnostics(testUri, issues)

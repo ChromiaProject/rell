@@ -8,7 +8,9 @@ interface LspSystemPropertiesProvider {
 class DefaultLspSystemPropertiesProvider : LspSystemPropertiesProvider {
     private val includeDefinition: Boolean =
         System.getProperty("LspIncludeDefinition", "true").toBoolean()
+    private val issueCaching: Boolean =
+        System.getProperty("LspIssueCaching", "true").toBoolean()
 
     override fun getIncludeDefinition() = includeDefinition
-    override fun getIssueCaching() = System.getProperty("LspIssueCaching", "true").toBoolean()
+    override fun getIssueCaching() = issueCaching
 }
