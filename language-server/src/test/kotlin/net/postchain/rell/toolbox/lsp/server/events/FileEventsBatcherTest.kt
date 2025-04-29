@@ -3,7 +3,6 @@ package net.postchain.rell.toolbox.lsp.server.events
 import assertk.assertThat
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
-import net.postchain.rell.toolbox.lsp.server.FileEventsBatcher
 import org.eclipse.lsp4j.FileChangeType
 import org.eclipse.lsp4j.FileEvent
 import org.junit.jupiter.api.AfterEach
