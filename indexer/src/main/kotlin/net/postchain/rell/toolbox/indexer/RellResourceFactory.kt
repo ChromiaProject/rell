@@ -74,6 +74,7 @@ class RellResourceFactory(
         val symbolInfo = compilationResult?.symbolInfos ?: mapOf()
         val locationInfo = createLocationInfo(symbolInfo)
         val tokenStream = parseResult.parser.tokenStream as RellCommonTokenStream
+        val checksum = calculateChecksum(fileContent)
 
         return Resource(
             parseResult.parseTree,
@@ -88,7 +89,7 @@ class RellResourceFactory(
             symbolInfo,
             symbolInfo.asSequence().filter { it.value.defId != null }.associate { it.value.defId!! to it.key },
             locationInfo,
-            null,
+            checksum,
             tokenStream
         )
     }

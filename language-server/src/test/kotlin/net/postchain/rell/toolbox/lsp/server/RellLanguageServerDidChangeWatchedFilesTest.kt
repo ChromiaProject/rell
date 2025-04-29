@@ -154,7 +154,9 @@ class RellLanguageServerDidChangeWatchedFilesTest {
             )
         }.toURI()
 
-        val rellFileUri = testDataBuilder.sourceFile(rellFilePath).toURI()
+        val rellFile = testDataBuilder.sourceFile(rellFilePath)
+        rellFile.appendText("\n")
+        val rellFileUri = rellFile.toURI()
         val fileEvent = FileEvent(configFileUri.toString(), FileChangeType.Created)
         val rellFileUpdate = FileEvent(rellFileUri.toString(), FileChangeType.Changed)
         val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEvent, rellFileUpdate))
@@ -235,12 +237,33 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         clientServerLauncher.initializeServer(testDataBuilder.sourceFolderUri)
         val indexer = indexingManager.indexers[testDataBuilder.sourceFolderUri]!!
 
+        testDataBuilder.sourceFile(rellFile).appendText("\n")
         val fileEvent = FileEvent(newFileUri.toString(), FileChangeType.Changed)
         val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEvent))
         server.workspaceService.didChangeWatchedFiles(didChangeParams)
         await().until { testClient.diagnostics.isNotEmpty() }
 
         assertThat(testClient.diagnostics.keys).containsOnly(newFileUri.toString())
+        assertThat(indexer.fileUriResourceMap.keys).containsOnly(newFileUri)
+    }
+
+    @Test
+    fun `when file change event sent but content is the same, file not recompiled`() {
+        val rellFile = "new_file.rell"
+        val testDataBuilder = testData(tempDir) {
+            emptyRellModule(rellFile)
+        }
+        val newFileUri = testDataBuilder.sourceFile(rellFile).toURI()
+        clientServerLauncher.initializeServer(testDataBuilder.sourceFolderUri)
+        val indexer = indexingManager.indexers[testDataBuilder.sourceFolderUri]!!
+
+        println(testClient.diagnostics)
+        val fileEvent = FileEvent(newFileUri.toString(), FileChangeType.Changed)
+        val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEvent))
+        server.workspaceService.didChangeWatchedFiles(didChangeParams)
+        Thread.sleep(3000)
+
+        assertThat(testClient.diagnostics).isEmpty()
         assertThat(indexer.fileUriResourceMap.keys).containsOnly(newFileUri)
     }
 
