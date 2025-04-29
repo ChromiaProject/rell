@@ -66,4 +66,19 @@ class FileEventsBatcherTest {
         val secondBatch = batcher.nextChanges()
         assertThat(secondBatch).isEqualTo(listOf(event2, event3))
     }
+
+    @Test
+    fun `multiple calls are batched into one correctly`() {
+        val event1 = FileEvent(URI("file:///test1.rell").toString(), FileChangeType.Created)
+        val event2 = FileEvent(URI("file:///test2.rell").toString(), FileChangeType.Created)
+        val event3 = FileEvent(URI("file:///test3.rell").toString(), FileChangeType.Created)
+
+        batcher.addChanges(listOf(event1))
+        batcher.addChanges(listOf(event2))
+        batcher.addChanges(listOf(event3))
+        TimeUnit.MILLISECONDS.sleep(150)
+
+        val batched = batcher.nextChanges()
+        assertThat(batched).isEqualTo(listOf(event1, event2, event3))
+    }
 }
