@@ -201,8 +201,8 @@ public final class net/postchain/rell/api/base/RellConfigGen$Companion {
 
 final class net/postchain/rell/api/base/RellModuleSources {
 	public fun <init> (Ljava/util/List;Ljava/util/Map;)V
-	public final fun getFiles ()Ljava/util/Map;
-	public final fun getModules ()Ljava/util/List;
+	public final fun getFiles ()Lkotlinx/collections/immutable/ImmutableMap;
+	public final fun getModules ()Lkotlinx/collections/immutable/ImmutableList;
 }
 
 final class net/postchain/rell/api/base/TermGtvNode : net/postchain/rell/api/base/GtvNode {

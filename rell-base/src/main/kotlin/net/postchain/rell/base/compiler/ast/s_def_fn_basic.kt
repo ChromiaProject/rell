@@ -75,7 +75,9 @@ class S_FunctionDefinition(
             else -> C_FunctionCompiler_Regular(base)
         }
 
-        val ideCompsLate = C_LateInit(C_CompilerPass.VALIDATION, immMultimapOf<String, IdeCompletion>())
+        // TODO COLLECTIONS_REFACTORING
+        val ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>> =
+            C_LateInit(C_CompilerPass.VALIDATION, immMultimapOf<String, IdeCompletion>())
 
         val defCtx = compiler.cDefBase.defCtx(ctx)
         compiler.compile(defCtx, ideCompsLate)

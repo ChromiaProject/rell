@@ -6,6 +6,7 @@ package net.postchain.rell.base.utils.ide
 
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
@@ -73,10 +74,8 @@ enum class IdeSymbolCategory(@JvmField val code: String) {
 class IdeSymbolId(
     private val category: IdeSymbolCategory,
     private val name: String,
-    members: List<Pair<IdeSymbolCategory, R_Name>> = immListOf(),
+    private val members: ImmList<Pair<IdeSymbolCategory, R_Name>> = immListOf(),
 ) {
-    private val members = members.toImmList()
-
     fun encode(): String {
         val path = listOf(category to name) + members.map { it.first to it.second.str }
         return path.joinToString(".") { "${it.first.code}[${it.second}]" }

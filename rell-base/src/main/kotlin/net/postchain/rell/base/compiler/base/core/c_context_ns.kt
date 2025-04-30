@@ -23,6 +23,7 @@ import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.immListOfNotNull
 import net.postchain.rell.base.utils.immMultimapOf
 import net.postchain.rell.base.utils.nounWithArticle
 import net.postchain.rell.base.utils.toImmList
@@ -74,7 +75,9 @@ class C_NamespaceContext(
     }
 
     override fun ideCompletionsScope(): C_IdeCompletionsScope {
-        val late = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
+        // TODO COLLECTIONS_REFACTORING
+        val late: C_LateInit<Multimap<String, IdeCompletion>> =
+            C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
         executor.onPass(C_CompilerPass.COMPLETIONS) {
             val completions = scope.ideCompletions(globalCtx.compilerOptions)
             late.set(completions)
@@ -234,7 +237,7 @@ class C_CommonDefinitionBase(
             defName: R_DefinitionName,
             member: Pair<IdeSymbolCategory, R_Name>?,
         ): IdeSymbolId {
-            return IdeSymbolId(defType.ideCategory, defName.qualifiedName, listOfNotNull(member))
+            return IdeSymbolId(defType.ideCategory, defName.qualifiedName, immListOfNotNull(member))
         }
 
         fun ideDef(

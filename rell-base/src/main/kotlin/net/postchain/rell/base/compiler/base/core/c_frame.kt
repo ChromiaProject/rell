@@ -238,7 +238,8 @@ class C_BlockScopeBuilder(
             val parentScope = ideParentCompletionsScopeProvider.ideCompletionsScope()
             val list = ideCompletionsList.toImmList()
 
-            val late = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
+            // TODO COLLECTIONS_REFACTORING
+            val late: C_LateInit<Multimap<String, IdeCompletion>> = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
             fnCtx.executor.onPass(C_CompilerPass.COMPLETIONS) {
                 late.set(C_BlockEntry.ideCompletions(list))
             }

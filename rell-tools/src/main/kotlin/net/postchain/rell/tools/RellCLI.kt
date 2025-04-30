@@ -194,7 +194,7 @@ private fun createBlockRunner(args: RellCliArgsEx, sourceDir: C_SourceDir, app: 
     val compileConfig = RellApiCompile.Config.Builder()
         .cliEnv(RellCliEnv.NULL)
         .build()
-    val blockRunnerStrategy = Rt_DynamicBlockRunnerStrategy(sourceDir, keyPair, blockRunnerModules, compileConfig)
+    val blockRunnerStrategy = Rt_DynamicBlockRunnerStrategy(sourceDir, keyPair, blockRunnerModules.toImmList(), compileConfig)
 
     return Rt_PostchainUnitTestBlockRunner(keyPair, blockRunnerConfig, blockRunnerStrategy)
 }
@@ -334,8 +334,8 @@ private fun findEntryPoint(app: R_App, moduleName: R_ModuleName, routineName: R_
                 transactionIid = -1,
                 blockHeight = -1,
                 opIndex = -1,
-                signers = listOf(),
-                allOperations = listOf()
+                signers = immListOf(),
+                allOperations = immListOf()
         )
         eps.add(RellEntryPoint_Operation(op, opCtx))
     }

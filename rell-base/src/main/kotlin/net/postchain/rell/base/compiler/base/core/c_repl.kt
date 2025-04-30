@@ -23,20 +23,13 @@ private const val REPL_NAME = "<REPL>"
 private val REPL_POS_RANGE = S_PosRange(C_Parser.REPL_NULL_POS, C_Parser.REPL_NULL_POS)
 
 class C_ExtReplCommand(
-    extModules: List<C_ExtModule>,
-    extMembers: List<C_ExtModuleMember>,
+    private val extModules: ImmList<C_ExtModule>,
+    private val extMembers: ImmList<C_ExtModuleMember>,
     private val currentModuleName: R_ModuleName?,
-    statements: List<S_Statement>,
-    preModules: Map<C_ModuleKey, C_PrecompiledModule>,
-    newModuleHeaders: Map<R_ModuleName, C_ModuleHeader>,
+    private val statements: ImmList<S_Statement>,
+    private val preModules: ImmMap<C_ModuleKey, C_PrecompiledModule>,
+    val newModuleHeaders: ImmMap<R_ModuleName, C_ModuleHeader>,
 ) {
-    private val extModules = extModules.toImmList()
-    private val extMembers = extMembers.toImmList()
-    private val statements = statements.toImmList()
-    private val preModules = preModules.toImmMap()
-
-    val newModuleHeaders = newModuleHeaders.toImmMap()
-
     fun compile(appCtx: C_AppContext, codeState: ReplCodeState): C_LateGetter<ReplCode> {
         val extCompiler = C_ExtModuleCompiler(appCtx, extModules, preModules)
         extCompiler.compileModules()

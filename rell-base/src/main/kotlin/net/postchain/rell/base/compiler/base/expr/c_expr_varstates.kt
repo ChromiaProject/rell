@@ -281,7 +281,8 @@ private class C_VarValueDelta private constructor(
 
         fun make(nulled: C_VarNulled? = null): C_VarValueDelta {
             return if (nulled == null) EMPTY else {
-                val map = immMapOf(immListOf<C_VarPathItem>() to nulled)
+                // TODO COLLECTIONS_REFACTORING
+                val map: Map<List<C_VarPathItem>, C_VarNulled> = immMapOf(immListOf<C_VarPathItem>() to nulled)
                 C_VarValueDelta(map)
             }
         }

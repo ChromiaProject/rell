@@ -46,7 +46,9 @@ abstract class C_GlobalFunction {
         args: S_CallArguments,
         resTypeHint: C_TypeHint,
     ): V_GlobalFunctionCall {
-        val completionsLate = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
+        // TODO COLLECTIONS_REFACTORING
+        val completionsLate: C_LateInit<Multimap<String, IdeCompletion>> =
+            C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
         ctx.executor.onPass(C_CompilerPass.COMPLETIONS) {
             val completions = ideGetParameterCompletions()
             completionsLate.set(completions)

@@ -72,7 +72,9 @@ class S_OperationDefinition(
         ctx.nsBuilder.addOperation(cDefBase.nsMemBase(modDeprecated), cName, cOperation)
         ctx.mntBuilder.addOperation(cName, rOperation)
 
-        val ideCompsLate = C_LateInit(C_CompilerPass.VALIDATION, immMultimapOf<String, IdeCompletion>())
+        // TODO COLLECTIONS_REFACTORING
+        val ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>> =
+            C_LateInit(C_CompilerPass.VALIDATION, immMultimapOf<String, IdeCompletion>())
 
         ctx.executor.onPass(C_CompilerPass.MEMBERS) {
             val header = compileHeader(defCtx, cName, cOperation, rOperation.mirrorStructs)
@@ -209,7 +211,9 @@ class S_QueryDefinition(
         ctx.nsBuilder.addQuery(cDefBase.nsMemBase(modDeprecated), cName, cQuery)
         ctx.mntBuilder.addQuery(cName, rQuery)
 
-        val ideCompsLate = C_LateInit(C_CompilerPass.VALIDATION, immMultimapOf<String, IdeCompletion>())
+        // TODO COLLECTIONS_REFACTORING
+        val ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>> =
+            C_LateInit(C_CompilerPass.VALIDATION, immMultimapOf<String, IdeCompletion>())
 
         ctx.executor.onPass(C_CompilerPass.MEMBERS) {
             val header = compileHeader(defCtx, cName, cQuery, ideCompsLate)

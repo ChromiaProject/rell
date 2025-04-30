@@ -24,6 +24,7 @@ import net.postchain.rell.base.model.stmt.*
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_TypeParamsResolver
 import net.postchain.rell.base.mtype.M_Types
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.doc.DocDeclaration_Variable
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
@@ -239,9 +240,8 @@ class C_TupleVarDeclarator(
     ctx: C_StmtContext,
     mutable: Boolean,
     private val pos: S_Pos,
-    subDeclarators: List<C_VarDeclarator>,
+    private val subDeclarators: ImmList<C_VarDeclarator>,
 ): C_VarDeclarator(ctx, mutable) {
-    private val subDeclarators = subDeclarators.toImmList()
     private val hintType = M_Types.tuple(subDeclarators.map { it.getHintType() })
 
     override fun getHintType() = hintType

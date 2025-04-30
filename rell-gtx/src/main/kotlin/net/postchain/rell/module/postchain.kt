@@ -151,7 +151,7 @@ private class RellGTXOperation(
                 transactionIid = ctx.txIID,
                 blockHeight = blockHeight,
                 opIndex = data.opIndex,
-                signers = data.signers.map { it.toBytes() }.toImmList(),
+                signers = data.signers.mapToImmList { it.toBytes() },
                 allOperations = data.operations.toImmList(),
             )
 

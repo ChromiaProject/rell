@@ -11,6 +11,7 @@ import net.postchain.rell.base.lib.Lib_OpContext
 import net.postchain.rell.base.runtime.Rt_OpContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.Bytes
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.toImmList
 
 abstract class Rt_PostchainTxContext {
@@ -39,12 +40,9 @@ class Rt_PostchainOpContext(
     private val transactionIid: Long,
     private val blockHeight: Long,
     private val opIndex: Int,
-    signers: List<Bytes>,
-    allOperations: List<OpData>
+    private val signers: ImmList<Bytes>,
+    private val allOperations: ImmList<OpData>
 ): Rt_OpContext() {
-    private val signers = signers.toImmList()
-    private val allOperations = allOperations.toImmList()
-
     override fun exists() = true
     override fun lastBlockTime() = lastBlockTime
     override fun transactionIid() = transactionIid

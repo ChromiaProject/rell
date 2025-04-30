@@ -19,6 +19,7 @@ import net.postchain.rell.base.utils.TypedKey
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immSetOf
+import net.postchain.rell.base.utils.mapToImmList
 
 abstract class S_Statement(val startPos: S_Pos, val endPos: S_Pos) {
     private val modifiedVars = TypedKey<Set<R_Name>>()
@@ -96,7 +97,7 @@ class S_TupleVarDeclarator(
     val subDeclarators: List<S_VarDeclarator>,
 ): S_VarDeclarator() {
     override fun compile(ctx: C_StmtContext, mutable: Boolean, hasExpr: Boolean, comment: S_Comment?): C_VarDeclarator {
-        val cSubDeclarators = subDeclarators.map {
+        val cSubDeclarators = subDeclarators.mapToImmList {
             it.compile(ctx, mutable, hasExpr, comment)
         }
         return C_TupleVarDeclarator(ctx, mutable, pos, cSubDeclarators)

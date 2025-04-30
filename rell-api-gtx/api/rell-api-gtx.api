@@ -164,7 +164,7 @@ public abstract class net/postchain/rell/api/gtx/Rt_BlockRunnerStrategy {
 }
 
 public final class net/postchain/rell/api/gtx/Rt_DynamicBlockRunnerStrategy : net/postchain/rell/api/gtx/Rt_BlockRunnerStrategy {
-	public fun <init> (Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Lnet/postchain/rell/base/utils/BytesKeyPair;Ljava/util/List;Lnet/postchain/rell/api/base/RellApiCompile$Config;)V
+	public fun <init> (Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Lnet/postchain/rell/base/utils/BytesKeyPair;Lkotlinx/collections/immutable/ImmutableList;Lnet/postchain/rell/api/base/RellApiCompile$Config;)V
 	public fun getGtvConfig ()Lnet/postchain/gtv/Gtv;
 	public fun getPrecompiledApp ()Lnet/postchain/rell/base/utils/RellGtxModuleApp;
 }
@@ -184,7 +184,7 @@ public final class net/postchain/rell/api/gtx/Rt_StaticBlockRunnerStrategy : net
 final class net/postchain/rell/api/gtx/Rt_UnitTestPostchainTxContextFactory : net/postchain/rell/gtx/Rt_PostchainTxContextFactory {
 	public fun <init> ()V
 	public fun createTxContext (Lnet/postchain/core/TxEContext;)Lnet/postchain/rell/gtx/Rt_PostchainTxContext;
-	public final fun getEvents ()Ljava/util/List;
+	public final fun getEvents ()Lkotlinx/collections/immutable/ImmutableList;
 }
 
 private final class net/postchain/rell/api/gtx/Rt_UnitTestPostchainTxContextFactory$Rt_UnitTestPostchainTxContext : net/postchain/rell/gtx/Rt_PostchainTxContext {

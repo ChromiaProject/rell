@@ -168,11 +168,9 @@ class Rt_StaticBlockRunnerStrategy(private val gtvConfig: Gtv): Rt_BlockRunnerSt
 class Rt_DynamicBlockRunnerStrategy(
     private val sourceDir: C_SourceDir,
     private val keyPair: BytesKeyPair,
-    modules: List<R_ModuleName>?,
+    private val modules: ImmList<R_ModuleName>?,
     private val compileConfig: RellApiCompile.Config,
 ): Rt_BlockRunnerStrategy() {
-    private val modules = modules?.toImmList()
-
     private val lazyConfig: Pair<Gtv, RellGtxModuleApp> by lazy {
         try {
             createConfig()

@@ -20,7 +20,12 @@ fun Int.toGtv(): Gtv = GtvFactory.gtv(this.toLong())
 fun Long.toGtv(): Gtv = GtvFactory.gtv(this)
 fun String.toGtv(): Gtv = GtvFactory.gtv(this)
 fun BlockchainRid.toGtv(): Gtv = GtvFactory.gtv(this.data)
+
+@JvmName("listOfGtvToGtv")
 fun List<Gtv>.toGtv(): Gtv = GtvFactory.gtv(this)
+
+@JvmName("listOfStringToGtv")
+fun List<String>.toGtv(): Gtv = GtvFactory.gtv(this.map { it.toGtv() })
 fun Map<String, Gtv>.toGtv(): Gtv = GtvFactory.gtv(this)
 
 class RellInterpreterCrashException(message: String): RuntimeException(message)

@@ -39,14 +39,14 @@ object C_ModuleUtils {
             return Pair(null, false)
         }
 
-        var nameParts = parts.subList(0, n - 1)
+        var nameParts: List<String> = parts.subList(0, n - 1).toImmList()
         var directory = false
 
         if (tail == MODULE_FILE || ast.header == null) {
             directory = true
         } else {
             val tailName = tail.substring(0, tail.length - FILE_SUFFIX.length)
-            nameParts = nameParts + listOf(tailName)
+            nameParts += tailName
         }
 
         val rNames = nameParts.mapNotNull { R_Name.ofOpt(it) }

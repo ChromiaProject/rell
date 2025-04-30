@@ -51,8 +51,8 @@ class S_ReplCommand(steps: List<S_ReplStep>, expr: S_Expr?) {
             midCompiler.compileModule(currentModuleName, null)
         }
 
-        val extMembers = midCompiler.compileReplMembers(moduleName, midMembers)
-        val extModules = midCompiler.getExtModules()
+        val extMembers = midCompiler.compileReplMembers(moduleName, midMembers).toImmList()
+        val extModules = midCompiler.getExtModules().toImmList()
 
         val newModuleHeaders = midModules.associate { it.moduleName to it.compiledHeader }.toImmMap()
 

@@ -286,7 +286,7 @@ internal object RellApiGtxInternal {
         val mainModules = when {
             appModules == null -> null
             config.activateTestDependencies -> (appModules + RellApiBaseUtils.getMainModules(app)).toSet().toImmList()
-            else -> appModules
+            else -> appModules.toImmList()
         }
 
         val gtvCompileConfig = RellApiCompile.Config.Builder(config.compileConfig)

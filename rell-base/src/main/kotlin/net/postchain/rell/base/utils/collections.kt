@@ -4,13 +4,26 @@
 
 package net.postchain.rell.base.utils
 
-import com.google.common.collect.*
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
-import net.postchain.rell.base.runtime.utils.toGtv
+import com.google.common.collect.ImmutableMultimap
+import com.google.common.collect.ImmutableMultiset
+import com.google.common.collect.LinkedHashMultiset
+import com.google.common.collect.LinkedListMultimap
+import com.google.common.collect.Multimap
+import com.google.common.collect.Multiset
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.mutate
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.toPersistentList
+import kotlinx.collections.immutable.toPersistentMap
+import kotlinx.collections.immutable.toPersistentSet
 import org.apache.commons.collections4.IterableUtils
 import org.apache.commons.collections4.ListUtils
 import java.util.*
+import kotlin.collections.ArrayList
 
 // Values are restricted to Any, because Guava immutable collections don't allow null values.
 
@@ -26,7 +39,7 @@ class ListVsMap<K: Any> private constructor(private val entries: List<Map.Entry<
             val entries = map.entries.toImmList()
             val list = entries.map { it.value }.toImmList()
             val listVsMap = ListVsMap(entries)
-            return Pair(list, listVsMap)
+            return list to listVsMap
         }
     }
 }
@@ -108,20 +121,9 @@ fun <T, K: Any, V: Any> Iterable<T>.associateNotNullValues(f: (T) -> Pair<K, V?>
     }.toImmMap()
 }
 
-fun <T, R> Iterable<T>.mapView(op: (T) -> R): Iterable<R> = Iterables.transform(this, op)
+fun <T, R> Iterable<T>.mapView(op: (T) -> R): Iterable<R> = asSequence().map(op).asIterable()
 
-fun <T> Iterable<T>.foldSimple(op: (T, T) -> T): T {
-    val iter = iterator()
-    check(iter.hasNext())
-
-    var res = iter.next()
-    while (iter.hasNext()) {
-        val item = iter.next()
-        res = op(res, item)
-    }
-
-    return res
-}
+inline fun <T> Iterable<T>.foldSimple(op: (T, T) -> T): T = reduce(op)
 
 fun <T: Any> Iterable<T>.separated(block: (T, T) -> T): List<T> {
     val res = mutableListOf<T>()
@@ -161,7 +163,7 @@ fun <T: Any> List<T>.mapOrSame(f: (T) -> T): List<T> {
         res?.add(v2)
     }
 
-    return if (res == null) this else res.toImmList()
+    return res?.toImmList() ?: this
 }
 
 fun <T: Any> List<T>.mapIndexedOrSame(f: (Int, T) -> T): List<T> {
@@ -171,7 +173,7 @@ fun <T: Any> List<T>.mapIndexedOrSame(f: (Int, T) -> T): List<T> {
         val v = this[i]
         val v2 = f(i, v)
         if (res == null && v2 !== v) {
-            res = ArrayList<T>(this.size)
+            res = ArrayList(this.size)
             for (j in 0 until i) {
                 res.add(this[j])
             }
@@ -179,7 +181,7 @@ fun <T: Any> List<T>.mapIndexedOrSame(f: (Int, T) -> T): List<T> {
         res?.add(v2)
     }
 
-    return if (res == null) this else res.toImmList()
+    return res?.toImmList() ?: this
 }
 
 fun <T> List<T>.countWhile(predicate: (T) -> Boolean): Int {
@@ -256,36 +258,56 @@ fun <K: Any, V: Any> Map<K, V>.unionNoConflicts(m: Map<K, V>): Map<K, V> {
     return res.toImmMap()
 }
 
-fun <T: Any> immListOf(vararg values: T): List<T> = ImmutableList.copyOf(values)
-fun <T: Any> immListOfNotNull(value: T?): List<T> = if (value == null) immListOf() else immListOf(value)
-fun <T: Any> Iterable<T>.toImmList(): List<T> = ImmutableList.copyOf(this)
-fun <T: Any> Array<T>.toImmList(): List<T> = ImmutableList.copyOf(this)
+typealias ImmList<E> = ImmutableList<E>
 
-fun <T: Any> immSetOf(): Set<T> = ImmutableSet.of()
-fun <T: Any> immSetOf(vararg values: T): Set<T> = ImmutableSet.copyOf(values)
-fun <T: Any> Iterable<T>.toImmSet(): Set<T> = ImmutableSet.copyOf(this)
-fun <T: Any> Array<T>.toImmSet(): Set<T> = ImmutableSet.copyOf(this)
+fun <T: Any> immListOf(): ImmList<T> = persistentListOf()
+fun <T: Any> immListOf(vararg values: T): ImmList<T> = persistentListOf(*values)
+fun <T: Any> immListOfNotNull(value: T?): ImmList<T> = if (value == null) immListOf() else immListOf(value)
+fun <T: Any> Iterable<T>.toImmList(): ImmList<T> = toPersistentList()
+fun <T: Any> Array<T>.toImmList(): ImmList<T> = toPersistentList()
 
-fun <K: Any, V: Any> immMapOf(vararg entries: Pair<K, V>): Map<K, V> = mapOf(*entries).toImmMap()
-
-fun <K: Any, V: Any> immMapOfNotNullValues(vararg entries: Pair<K, V?>): Map<K, V> {
-    val res = mutableMapOf<K, V>()
-    for ((k, v) in entries) {
-        if (v != null) res[k] = v
-    }
-    return res.toImmMap()
+inline fun <T, R> Iterable<T>.mapToImmList(transform: (T) -> R): ImmList<R> = persistentListOf<R>().mutate {
+    mapTo(it, transform)
 }
 
-fun <K: Any, V: Any> Map<K, V>.toImmMap(): Map<K, V> = ImmutableMap.copyOf(this)
-fun <K: Any, V: Any> Iterable<Pair<K, V>>.toImmMap(): Map<K, V> = toMap().toImmMap()
-fun <K: Any, V: Any> Array<out Pair<K, V>>.toImmMap(): Map<K, V> = toMap().toImmMap()
+inline fun <T, R> Array<out T>.mapToImmList(transform: (T) -> R): ImmList<R> = persistentListOf<R>().mutate {
+    mapTo(it, transform)
+}
 
-fun <K: Any, V: Any> immMultimapOf(): Multimap<K, V> = ImmutableMultimap.of()
+
+typealias ImmSet<E> = ImmutableSet<E>
+
+fun <T: Any> immSetOf(): ImmSet<T> = persistentSetOf()
+fun <T: Any> immSetOf(vararg values: T): ImmSet<T> = persistentSetOf(*values)
+fun <T: Any> Iterable<T>.toImmSet(): ImmSet<T> = toPersistentSet()
+fun <T: Any> Array<T>.toImmSet(): ImmSet<T> = toPersistentSet()
+
+
+typealias ImmMap<K, V> = ImmutableMap<K, V>
+
+fun <K: Any, V: Any> immMapOf(vararg entries: Pair<K, V>): ImmMap<K, V> = mapOf(*entries).toImmMap()
+
+fun <K: Any, V: Any> immMapOfNotNullValues(vararg entries: Pair<K, V?>): ImmMap<K, V> {
+    return persistentMapOf<K, V>().mutate {
+        for ((k, v) in entries) {
+            if (v != null) it[k] = v
+        }
+    }
+}
+
+fun <K: Any, V: Any> Map<K, V>.toImmMap(): ImmMap<K, V> = toPersistentMap()
+fun <K: Any, V: Any> Iterable<Pair<K, V>>.toImmMap(): ImmMap<K, V> = toMap().toImmMap()
+fun <K: Any, V: Any> Array<out Pair<K, V>>.toImmMap(): ImmMap<K, V> = toMap().toImmMap()
+
+
+typealias ImmMultimap<K, V> = ImmutableMultimap<K, V>
+
+fun <K: Any, V: Any> immMultimapOf(): ImmMultimap<K, V> = ImmutableMultimap.of()
 fun <K: Any, V: Any> mutableMultimapOf(): Multimap<K, V> = LinkedListMultimap.create()
-fun <K: Any, V: Any> Multimap<K, V>.toImmMultimap(): Multimap<K, V> = ImmutableMultimap.copyOf(this)
+fun <K: Any, V: Any> Multimap<K, V>.toImmMultimap(): ImmMultimap<K, V> = ImmutableMultimap.copyOf(this)
 fun <K: Any, V: Any> Multimap<K, V>.toMutableMultimap(): Multimap<K, V> = LinkedListMultimap.create(this)
 
-fun <T, K: Any, V: Any> Iterable<T>.toImmMultimap(fn: (T) -> Pair<K, V>): Multimap<K, V> {
+fun <T, K: Any, V: Any> Iterable<T>.toImmMultimap(fn: (T) -> Pair<K, V>): ImmMultimap<K, V> {
     val m = mutableMultimapOf<K, V>()
     for (e in this) {
         val (key, value) = fn(e)
@@ -294,11 +316,11 @@ fun <T, K: Any, V: Any> Iterable<T>.toImmMultimap(fn: (T) -> Pair<K, V>): Multim
     return m.toImmMultimap()
 }
 
-fun <T: Any, K: Any> Iterable<T>.toImmMultimapKey(fn: (T) -> K): Multimap<K, T> {
+fun <T: Any, K: Any> Iterable<T>.toImmMultimapKey(fn: (T) -> K): ImmMultimap<K, T> {
     return this.toImmMultimap { fn(it) to it }
 }
 
-fun <K: Any, V: Any> Iterable<Pair<K, V>>.toImmMultimap(): Multimap<K, V> {
+fun <K: Any, V: Any> Iterable<Pair<K, V>>.toImmMultimap(): ImmMultimap<K, V> {
     val m = mutableMultimapOf<K, V>()
     for ((k, v) in this) {
         m.put(k, v)
@@ -306,7 +328,7 @@ fun <K: Any, V: Any> Iterable<Pair<K, V>>.toImmMultimap(): Multimap<K, V> {
     return m.toImmMultimap()
 }
 
-fun <K: Any, V: Any> Map<K, Iterable<V>>.toImmMultimap(): Multimap<K, V> {
+fun <K: Any, V: Any> Map<K, Iterable<V>>.toImmMultimap(): ImmMultimap<K, V> {
     val map = mutableMultimapOf<K, V>()
     for ((k, v) in this) {
         map.putAll(k, v)
@@ -314,14 +336,14 @@ fun <K: Any, V: Any> Map<K, Iterable<V>>.toImmMultimap(): Multimap<K, V> {
     return map.toImmMultimap()
 }
 
-fun <K: Any, V: Any> Multimap<K, V>.toImmMapOfList(): Map<K, List<V>> {
-    return this.asMap()
-        .mapValues { it.value.toImmList() }
-        .toImmMap()
-}
 
 fun <T: Any> mutableMultisetOf(): Multiset<T> = LinkedHashMultiset.create()
-fun <T: Any> Multiset<T>.toImmMultiset(): Multiset<T> = ImmutableMultiset.copyOf(this)
+
+
+typealias ImmMultiset<E> = ImmutableMultiset<E>
+
+fun <T: Any> Multiset<T>.toImmMultiset(): ImmMultiset<T> = ImmutableMultiset.copyOf(this)
+
 
 fun <K, V> MutableMap<K, V>.putAllAbsent(map: Map<K, V>) {
     for ((key, value) in map) {
@@ -338,12 +360,18 @@ fun <T> queueOf(vararg values: T): Queue<T> {
 }
 
 fun <T> Iterable<T>.toPair(): Pair<T, T> {
-    val iter = this.iterator()
-    val first = iter.next()
-    val second = iter.next()
-    check(!iter.hasNext())
-    return first to second
-}
+    return when (this) {
+        is List -> {
+            checkEquals(size, 2) { "Expected a list of size 2, but $size." }
+            this[0] to this[1]
+        }
 
-// Needs to be in a different file than List<Gtv>.toGtv() because of a name conflict...
-fun List<String>.toGtv(): Gtv = GtvFactory.gtv(this.map { it.toGtv() })
+        else -> {
+            val iter = this.iterator()
+            val first = iter.next()
+            val second = iter.next()
+            check(!iter.hasNext()) { "Iterable has more than two elements." }
+            first to second
+        }
+    }
+}
