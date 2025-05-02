@@ -392,11 +392,6 @@
             <url>https://gitlab.com/api/v4/projects/32294340/packages/maven</url>
         </repository>
         <repository>
-            <id>jcentral</id>
-            <name>bintray</name>
-            <url>https://jcenter.bintray.com</url>
-        </repository>
-        <repository>
             <id>etherjar</id>
             <url>https://maven.emrld.io</url>
         </repository>
