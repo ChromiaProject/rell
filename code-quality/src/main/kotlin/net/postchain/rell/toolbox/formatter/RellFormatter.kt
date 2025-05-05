@@ -57,7 +57,6 @@ import net.postchain.rell.toolbox.parser.RellParser.RuleX_UpdateStmtContext
 import net.postchain.rell.toolbox.parser.RellParser.RuleX_UpdateTargetAtContext
 import net.postchain.rell.toolbox.parser.RellParser.RuleX_VarStmtContext
 import net.postchain.rell.toolbox.parser.RellParser.RuleX_WhenConditionExprContext
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_WhenExprCasesContext
 import net.postchain.rell.toolbox.parser.RellParser.RuleX_WhenExprContext
 import net.postchain.rell.toolbox.parser.RellParser.RuleX_WhenStmtContext
 import net.postchain.rell.toolbox.parser.RellParser.RuleX_WhileStmtContext
@@ -409,20 +408,20 @@ class RellFormatter(parser: RellParser, source: String, formatterRequest: Format
         doc.prepend(openingCurly) { it.oneSpace() }
         val closingCurly = tokenFor(xWhenExpr, "}")
         doc.prepend(closingCurly) { it.newLine() }
-        doc.format(xWhenExpr.ruleX_WhenExprCases())
+        xWhenExpr.ruleX_WhenExprCase()?.forEach { whenCase ->
+            doc.format(whenCase)
+        }
     }
 
-    fun format(xWhenExprCases: RuleX_WhenExprCasesContext, doc: FormattableDocument) {
-        for (whenCase in xWhenExprCases.ruleX_WhenExprCase()) {
-            doc.prepend(whenCase) { it.newLine() }
-            doc.append(whenCase.ruleX_WhenCondition()) {
-                it.oneSpace()
-                it.highPriority()
-            }
-            doc.format(whenCase.ruleX_WhenCondition())
-            doc.prepend(whenCase.ruleX_ExpressionRef()) { it.oneSpace() }
-            doc.format(whenCase.ruleX_ExpressionRef())
+    fun format(whenCase: RellParser.RuleX_WhenExprCaseContext, doc: FormattableDocument) {
+        doc.prepend(whenCase) { it.newLine() }
+        doc.append(whenCase.ruleX_WhenCondition()) {
+            it.oneSpace()
+            it.highPriority()
         }
+        doc.format(whenCase.ruleX_WhenCondition())
+        doc.prepend(whenCase.ruleX_ExpressionRef()) { it.oneSpace() }
+        doc.format(whenCase.ruleX_ExpressionRef())
     }
 
     fun format(xWhenCondExpr: RuleX_WhenConditionExprContext, doc: FormattableDocument) {

@@ -1265,24 +1265,18 @@ ruleX_WhenExpr:
 		')'
 	)?
 	'{'
-	ruleX_WhenExprCases
+	ruleX_WhenExprCase
+	(
+		';'
+		ruleX_WhenExprCase
+	)*
+	';'?
 	'}'
 ;
 
 // Rule X_tkWHEN
 ruleX_tkWHEN:
 	'when'
-;
-
-// Rule X_WhenExprCases
-ruleX_WhenExprCases:
-	ruleX_WhenExprCase
-	(
-		';'+
-		ruleX_WhenExprCase
-	)*
-	ruleX_tkSEMI
-	*
 ;
 
 // Rule X_WhenExprCase
@@ -1769,8 +1763,7 @@ ruleX_WhenStmtCase:
 	ruleX_WhenCondition
 	'->'
 	ruleX_StatementRef
-	ruleX_tkSEMI
-	*
+	ruleX_tkSEMI?
 ;
 
 // Rule X_WhileStmt
