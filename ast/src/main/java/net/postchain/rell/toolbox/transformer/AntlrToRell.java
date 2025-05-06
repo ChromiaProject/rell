@@ -124,7 +124,6 @@ public final class AntlrToRell {
     private static final RellcTransformer TRANS_XWHEN_CONDITION_EXPR = RellcUtils.transformer("X_WhenConditionExpr");
     private static final RellcTransformer TRANS_XWHEN_CONDITION_ELSE = RellcUtils.transformer("X_WhenConditionElse");
     private static final RellcTransformer TRANS_XWHEN_EXPR_CASE = RellcUtils.transformer("X_WhenExprCase");
-    private static final RellcTransformer TRANS_XWHEN_EXPR_CASES = RellcUtils.transformer("X_WhenExprCases");
     private static final RellcTransformer TRANS_XWHEN_EXPR = RellcUtils.transformer("X_WhenExpr");
     private static final RellcTransformer TRANS_XUNARY_EXPR = RellcUtils.transformer("X_UnaryExpr");
     private static final RellcTransformer TRANS_XBINARY_OPERATOR_0 = RellcUtils.transformer("X_BinaryOperator_0");
@@ -920,17 +919,11 @@ public final class AntlrToRell {
                 Object tup = RellcUtils.tuple(var_0, var_1);
                 return TRANS_XWHEN_EXPR_CASE.transform(ctx, node, tup);
             }
-            case RULE_ruleX_WhenExprCases: {
-                Object var_0 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_WhenExprCaseContext.class));
-                Object var_1 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_tkSEMIContext.class));
-                Object tup = RellcUtils.tuple(var_0, var_1);
-                return TRANS_XWHEN_EXPR_CASES.transform(ctx, node, tup);
-            }
             case RULE_ruleX_WhenExpr: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkWHENContext.class, 0));
                 // Manual fix: generator used RuleX_tkLPARContext instead of RuleX_ExpressionRefContext
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionRefContext.class, 0));
-                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_WhenExprCasesContext.class, 0));
+                Object var_2 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_WhenExprCaseContext.class));
                 Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XWHEN_EXPR.transform(ctx, node, tup);
             }
@@ -1288,8 +1281,7 @@ public final class AntlrToRell {
             case RULE_ruleX_WhenStmtCase: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_WhenConditionContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_StatementRefContext.class, 0));
-                Object var_2 = RellcUtils.processList(ctx, node.getRuleContexts(RuleX_tkSEMIContext.class));
-                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
+                Object tup = RellcUtils.tuple(var_0, var_1);
                 return TRANS_XWHEN_STMT_CASE.transform(ctx, node, tup);
             }
             case RULE_ruleX_WhenStmt: {

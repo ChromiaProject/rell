@@ -645,15 +645,11 @@ X_tkIF
    ;
 
 X_WhenExpr
-   : {X_WhenExpr} a=X_tkWHEN ('(' b=X_ExpressionRef ')')? '{' c=X_WhenExprCases '}'
+   : {X_WhenExpr} a=X_tkWHEN ('(' b=X_ExpressionRef ')')? '{' c+=X_WhenExprCase (';' c+=X_WhenExprCase)* (';')? '}'
    ;
 
 X_tkWHEN
    : {X_Token} 'when'
-   ;
-
-X_WhenExprCases
-   : {X_WhenExprCases} a+=X_WhenExprCase ((';')+ a+=X_WhenExprCase)* (b+=X_tkSEMI)*
    ;
 
 X_WhenExprCase
@@ -671,10 +667,6 @@ X_WhenConditionExpr
 
 X_WhenConditionElse
    : {X_WhenConditionElse} 'else'
-   ;
-
-X_tkSEMI
-   : {X_Token} ';'
    ;
 
 X_BinaryExprOperand
@@ -798,6 +790,10 @@ X_tkASSIGN
    : {X_Token} '='
    ;
 
+X_tkSEMI
+   : {X_Token} ';'
+   ;
+
 X_FunctionBodyFull
    : {X_FunctionBodyFull} a=X_BlockStmt
    ;
@@ -894,7 +890,7 @@ X_WhenStmt
    ;
 
 X_WhenStmtCase
-   : {X_WhenStmtCase} a=X_WhenCondition '->' b=X_StatementRef (c+=X_tkSEMI)*
+   : {X_WhenStmtCase} a=X_WhenCondition '->' b=X_StatementRef (';')?
    ;
 
 X_WhileStmt
