@@ -87,15 +87,13 @@ class RellTextDocumentService(
 
     override fun semanticTokensFull(params: SemanticTokensParams): CompletableFuture<SemanticTokens> {
         val uri = parseFileUri(params.textDocument.uri) ?: return CompletableFuture.completedFuture(SemanticTokens())
-
-        return requestManager.runRead {
-            val resource = indexingManager.getResource(uri)
-            if (uri.isRellFile() && resource != null) {
-                SemanticTokens(semanticTokensManager.getRelativeSemanticTokens(resource))
-            } else {
-                SemanticTokens()
-            }
+        val resource = indexingManager.getResource(uri)
+        val semanticTokens = if (uri.isRellFile() && resource != null) {
+            SemanticTokens(semanticTokensManager.getRelativeSemanticTokens(resource))
+        } else {
+            SemanticTokens()
         }
+        return CompletableFuture.completedFuture(semanticTokens)
     }
 
     override fun definition(params: DefinitionParams):

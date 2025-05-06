@@ -103,22 +103,18 @@ class RellWorkspaceService(
         }
 
         for ((uri, indexer) in configFilesToProcess) {
-            requestManager.runWrite {
-                indexer.updateConfig(uri, ::handleIndexingState)
-                diagnosticsManager.reportDiagnostics(indexer)
-            }
+            indexer.updateConfig(uri, ::handleIndexingState)
+            diagnosticsManager.reportDiagnostics(indexer)
         }
 
         if (!shouldProcessChanges(dirtyFiles, deletedFiles, dirtyFolders, createdChromiaConfig)) {
             return
         }
 
-        requestManager.runWrite {
-            workspaceManager.didCreateChromiaConfig(createdChromiaConfig)
-            workspaceManager.didChangeFolders(dirtyFolders, deletedFolders)
-            workspaceManager.didChangeFiles(dirtyFiles, deletedFiles, updateAffectedFiles = true)
-            languageClient.refreshSemanticTokens()
-        }
+        workspaceManager.didCreateChromiaConfig(createdChromiaConfig)
+        workspaceManager.didChangeFolders(dirtyFolders, deletedFolders)
+        workspaceManager.didChangeFiles(dirtyFiles, deletedFiles, updateAffectedFiles = true)
+        languageClient.refreshSemanticTokens()
     }
 
     private fun shouldProcessChanges(
