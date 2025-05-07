@@ -6,6 +6,7 @@ import io.fury.serializer.Serializer
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
+import net.postchain.rell.base.utils.toImmList
 
 class IdeSymbolIdSerializer(fury: Fury?) : Serializer<IdeSymbolId>(fury, IdeSymbolId::class.java) {
     private val regex = Regex("""(\w+)\[([^]]+)]""")
@@ -34,7 +35,7 @@ class IdeSymbolIdSerializer(fury: Fury?) : Serializer<IdeSymbolId>(fury, IdeSymb
         val (category, name) = decodeCategoryAndName(parts)
         val members = decodeMembers(parts)
 
-        return IdeSymbolId(category, name, members)
+        return IdeSymbolId(category, name, members.toImmList())
     }
 
     private fun extractParts(defIdEncoded: String): List<Pair<String, String>> {
