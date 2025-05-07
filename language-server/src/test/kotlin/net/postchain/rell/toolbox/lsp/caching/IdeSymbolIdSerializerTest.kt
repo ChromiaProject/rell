@@ -7,6 +7,7 @@ import assertk.assertions.isNotNull
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
+import net.postchain.rell.base.utils.toImmList
 import org.junit.jupiter.api.Test
 
 class IdeSymbolIdSerializerTest {
@@ -20,7 +21,7 @@ class IdeSymbolIdSerializerTest {
             listOf(
                 Pair(IdeSymbolCategory.PARAMETER, R_Name.of("dummyParameter")),
                 Pair(IdeSymbolCategory.ATTRIBUTE, R_Name.of("dummyAttribute"))
-            )
+            ).toImmList()
         )
 
         val symIdAsBytes = fury.serialize(ideSymbolId)
