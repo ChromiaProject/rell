@@ -71,7 +71,11 @@ object Lib_Type_Text {
             }
 
             function("empty", result = "boolean", pure = true, since = SINCE0) {
-                comment("Returns true if the text is empty, otherwise returns false.")
+                comment("""
+                    Returns true if this text is empty, false otherwise.
+
+                    `x.empty()` is equivalent to `x.size() == 0`.
+                """)
                 dbFunctionTemplate("text.empty", 1, "(LENGTH(#0) = 0)")
                 body { text ->
                     val s = text.asString()
@@ -82,7 +86,7 @@ object Lib_Type_Text {
             function("size", result = "integer", pure = true, since = SINCE0) {
                 alias("len", C_MessageType.ERROR, since = SINCE0)
                 dbFunctionSimple("text.size", "LENGTH")
-                comment("Returns the number of characters in the text.")
+                comment("Returns the number of characters in this text.")
                 body { text ->
                     val s = text.asString()
                     Rt_IntValue.get(s.length.toLong())
@@ -92,7 +96,7 @@ object Lib_Type_Text {
             function("upper_case", result = "text", pure = true, since = "0.9.0") {
                 alias("upperCase", C_MessageType.ERROR, since = SINCE0)
                 dbFunctionSimple("text.upper_case", "UPPER")
-                comment("Returns a new text with all characters converted to uppercase.")
+                comment("Returns the text obtained by converting all alphabetic characters in this text to upper case.")
                 body { text ->
                     val s = text.asString()
                     Rt_TextValue.get(s.toUpperCase())
@@ -102,7 +106,7 @@ object Lib_Type_Text {
             function("lower_case", result = "text", pure = true, since = "0.9.0") {
                 alias("lowerCase", C_MessageType.ERROR, since = SINCE0)
                 dbFunctionSimple("text.lower_case", "LOWER")
-                comment("Returns a new text with all characters converted to lowercase.")
+                comment("Returns the text obtained by converting all alphabetic characters in this text to lower case.")
                 body { text ->
                     val s = text.asString()
                     Rt_TextValue.get(s.toLowerCase())
@@ -112,11 +116,12 @@ object Lib_Type_Text {
             function("compare_to", result = "integer", pure = true, since = "0.9.0") {
                 alias("compareTo", C_MessageType.ERROR, since = SINCE0)
                 comment("""
-                    Compares this text to another text.
-                    @return the value 0 if equal, a negative number if less than `other`,
-                    or a value greater than 0 if greater than `other`.
+                    Compares this text to another text lexicographically, based on the Unicode value of each character
+                    in each text object.
+                    @return `0` if this text and `other` are equal, a negative integer if lexicographically less than
+                    `other`, and a positive integer if lexicographically greater than `other`.
                 """)
-                param("other", type = "text", comment = "The text to compare to.")
+                param("other", type = "text", comment = "the text to compare against this text")
                 body { text, other ->
                     val s1 = text.asString()
                     val s2 = other.asString()
@@ -125,8 +130,16 @@ object Lib_Type_Text {
             }
 
             function("contains", result = "boolean", pure = true, since = SINCE0) {
-                comment("Returns true if this text contains the specified substring, otherwise returns false.")
-                param("text", type = "text", comment = "The substring to search for.")
+                comment("""
+                    Checks if this text contains the specified substring.
+
+                    Note that for all texts `t`, `t.contains('')` is true, and for all texts `u` and `v` such
+                    that `u == v`, `u.contains(v)` is true.
+
+                    `t.contains(u)` is equivalent to `t.index_of(u) >= 0`.
+                    @return true if this text contains the specified substring, false otherwise
+                """)
+                param("text", type = "text", comment = "the substring for which to search")
                 dbFunctionTemplate("text.contains", 2, "(STRPOS(#0, #1) > 0)")
                 body { text, substring ->
                     val s1 = text.asString()
@@ -137,8 +150,14 @@ object Lib_Type_Text {
 
             function("starts_with", result = "boolean", pure = true, since = "0.9.0") {
                 alias("startsWith", C_MessageType.ERROR, since = SINCE0)
-                comment("Returns true if this text starts with the specified prefix, otherwise returns false.")
-                param("prefix", type = "text", comment = "The prefix to check.")
+                comment("""
+                    Checks if this text starts with the specified prefix.
+
+                    Note that for all texts `t`, `t.starts_with('')` is true, and for all texts `u` and `v` such
+                    that `u == v`, `u.starts_with(v)` is true.
+                    @return true if this text starts with the specified prefix, false otherwise
+                """)
+                param("prefix", type = "text", comment = "the prefix to check")
                 dbFunctionTemplate("text.starts_with", 2, "(LEFT(#0, LENGTH(#1)) = #1)")
                 body { text, prefix ->
                     val s1 = text.asString()
@@ -149,8 +168,14 @@ object Lib_Type_Text {
 
             function("ends_with", result = "boolean", pure = true, since = "0.9.0") {
                 alias("endsWith", C_MessageType.ERROR, since = SINCE0)
-                comment("Returns true if this text ends with the specified suffix, otherwise returns false.")
-                param("suffix", type = "text", comment = "The suffix to check.")
+                comment("""
+                    Checks if this text ends with the specified suffix.
+
+                    Note that for all texts `t`, `t.ends_with('')` is true, and for all texts `u` and `v` such
+                    that `u == v`, `u.ends_with(v)` is true.
+                    @return true if this text ends with the specified suffix, false otherwise
+                """)
+                param("suffix", type = "text", comment = "the suffix to check")
                 dbFunctionTemplate("text.ends_with", 2, "(RIGHT(#0, LENGTH(#1)) = #1)")
                 body { text, suffix ->
                     val s1 = text.asString()
@@ -161,13 +186,43 @@ object Lib_Type_Text {
 
             function("format", result = "text", pure = true, since = SINCE0) {
                 comment("""
-                    Uses this string as a format string and returns a string obtained
-                    by substituting the specified arguments. Uses `java.lang.String.format` internally.
+                    Uses this text as a format string and returns the text obtained by substituting the specified
+                    arguments.
+
+                    Supports many of the format specifiers found in other programming languages, including:
+
+                    - `%s` for `text`
+                    - `%d` for `integer`s and `big_integer`s in decimal (base 10) representation
+                    - `%o` for `integer`s and `big_integer`s in octal (base 8) representation
+                    - `%x` for `integer`s and `big_integer`s in hexadecimal (base 16) representation
+                    - `%f` for `decimal`
+                    - `%b` for `boolean`s (output in lower-case, i.e. `true` and `false`)
+                    - `%B` for `boolean`s (output in upper-case, i.e. `TRUE` and `FALSE`)
+
+                    Examples:
+
+                    - `'My integer is %d.'.format(123)` returns `'My integer is 123.'`.
+                    - `'See you...%10s.'.format('later')` returns `'See you...     later.'`.
+                    - `'Earnings: daily=%f, weekly=%f, monthly=%f.'.format(312.45, 534.78, 2199.67)` returns
+                        `'Earnings: daily=312.450000, weekly=534.780000, monthly=2199.670000.'`.
+                    - `''%d %o %x'.format(14, 14, 14)'` returns `'14 16 e'`.
+
+                    If any format specifier is incompatible with the type of its corresponding argument, or if there are
+                    more specifiers requiring substitution than there are arguments, all format specifiers are left
+                    unsubstituted in the output text.
+
+                    All format specifiers are also left unsubstituted in the output text when any argument is `null`,
+                    except when it matches the specifier is `%s`, in which case the text `'null'` is substituted
+                    (assuming the other arguments and specifiers are correctly matched).
+
+                    If there are more arguments than format specifiers, the extra arguments are ignored, but matched
+                    arguments are still substituted (assuming they match correctly).
+
+                    @return formatted text
                 """)
                 param("args", type = "anything", arity = L_ParamArity.ZERO_MANY) {
                     comment("""
-                        Arguments referenced by the format specifiers in the format string.
-                        If there are more arguments than format specifiers, the extra arguments are ignored.
+                        Arguments referenced by the format specifiers in this format string.
                         The number of arguments is variable and may be zero.
                    """)
                 }
@@ -186,10 +241,11 @@ object Lib_Type_Text {
 
             function("replace", result = "text", pure = true, since = SINCE0) {
                 comment("""
-                    Returns a new text resulting from replacing all occurrences of old text in this text with new text.
+                    Returns the text obtained by replacing all occurrences of the substring `old_value` in this text
+                    with `new_value`.
                 """)
-                param("old_value", type = "text", comment = "The substring to be replaced.")
-                param("new_value", type = "text", comment = "The replacement substring.")
+                param("old_value", type = "text", comment = "the substring to be replaced")
+                param("new_value", type = "text", comment = "the replacement substring")
                 dbFunctionTemplate("text.replace", 3, "REPLACE(#0, #1, #2)")
                 body { text, old, new ->
                     val s1 = text.asString()
@@ -200,8 +256,18 @@ object Lib_Type_Text {
             }
 
             function("split", result = "list<text>", pure = true, since = SINCE0) {
-                comment("Splits this text around matches of the given delimiter.")
-                param("delimiter", type = "text", comment = "The delimiter to split the text by.")
+                comment("""
+                    Splits this text around matches of the given delimiter.
+
+                    Examples:
+
+                    - `'the cow jumped over the moon'.split(' ')` returns `['the', 'cow', 'jumped', 'over', 'the', 'moon']`.
+                    - `'giggling'.split('g')` returns `['', 'i', '', 'lin', '']`.
+                    - `'espresso'.split('a')` returns `['espresso']`.
+
+                    @return a `list<text>` which is the result of splitting this text at each occurrence of `delimiter`
+                """)
+                param("delimiter", type = "text", comment = "the delimiter on which to split")
                 body { text, delimiter ->
                     val s1 = text.asString()
                     val s2 = delimiter.asString()
@@ -212,7 +278,8 @@ object Lib_Type_Text {
             }
 
             function("trim", result = "text", pure = true, since = SINCE0) {
-                comment("Returns a new text with leading and trailing whitespace removed.")
+                // TODO: document which characters count as whitespace.
+                comment("Returns text matching this one, but with leading and trailing whitespace removed.")
                 //dbFunction(Db_SysFunction.template("text.trim", 1, "TRIM(#0, ' '||CHR(9)||CHR(10)||CHR(13))"))
                 body { text ->
                     val s = text.asString()
@@ -266,8 +333,11 @@ object Lib_Type_Text {
 
             function("char_at", result = "integer", pure = true, since = "0.9.0") {
                 alias("charAt", C_MessageType.ERROR, since = SINCE0)
-                comment("Get a 16-bit code of a character at the specified index.")
-                param("index", type = "integer", comment = "The index of the character.")
+                comment("""
+                    Retrieves the 16-bit code of the character at the specified index within this text.
+                    @throws exception if `index` is greater than or equal to the size of this text
+                """)
+                param("index", type = "integer", comment = "the index of the character")
                 dbFunctionTemplate("text.char_at", 2, "ASCII(${SqlConstants.FN_TEXT_GETCHAR}(#0, (#1)::INT))")
                 body { text, index ->
                     val s = text.asString()
@@ -286,10 +356,11 @@ object Lib_Type_Text {
             function("index_of", result = "integer", pure = true, since = "0.9.0") {
                 alias("indexOf", C_MessageType.ERROR, since = SINCE0)
                 comment("""
-                    Returns the position of the first occurrence of the specified substring within this text,
-                    or -1 if the text is not found.
+                    Search for the first occurrence of the specified substring within this text.
+                    @return the index of the first occurrence of the substring within this text, or `-1` if
+                    the substring does not occur in this text
                 """)
-                param("text", type = "text", comment = "The substring to search for.")
+                param("text", type = "text", comment = "the substring for which to search")
                 dbFunctionTemplate("text.index_of", 2, "(STRPOS(#0, #1) - 1)")
                 body { text, substring ->
                     val s1 = text.asString()
@@ -304,8 +375,8 @@ object Lib_Type_Text {
                     starting at the specified index, or -1 if the text is not found.
                 """)
                 alias("indexOf", C_MessageType.ERROR, since = SINCE0)
-                param("text", type = "text", comment = "The substring to search for.")
-                param("start", type = "integer", comment = "The index to start the search from.")
+                param("text", type = "text", comment = "the substring for which to search")
+                param("start", type = "integer", comment = "the index from which to start the search")
                 body { text, substring, start ->
                     val s1 = text.asString()
                     val s2 = substring.asString()
@@ -327,7 +398,7 @@ object Lib_Type_Text {
                     Returns the index within this text of the last occurrence of the specified string,
                     or -1 if not found.
                 """)
-                param("text", type = "text", comment = "The substring to search for.")
+                param("text", type = "text", comment = "the substring for which to search")
                 body { text, substring ->
                     val s1 = text.asString()
                     val s2 = substring.asString()
@@ -341,8 +412,8 @@ object Lib_Type_Text {
                     starting from the specified startIndex, or -1 if not found.
                 """)
                 alias("lastIndexOf", C_MessageType.ERROR, since = SINCE0)
-                param("text", type = "text", comment = "The substring to search for.")
-                param("max", type = "integer", comment = "The index to search before.")
+                param("text", type = "text", comment = "the substring for which to search")
+                param("max", type = "integer", comment = "the index from which to start the reverse-search")
                 body { text, substring, max ->
                     val s1 = text.asString()
                     val s2 = substring.asString()
@@ -385,8 +456,8 @@ object Lib_Type_Text {
             }
 
             function("sub", result = "text", pure = true, since = SINCE0) {
-                comment("Returns a substring of this text starting from the specified index.")
-                param("start", type = "integer", comment = "The starting index of the substring.")
+                comment("""Returns a substring of this text starting from the specified index (inclusive).""")
+                param("start", type = "integer", comment = "the starting index of the substring")
                 dbFunctionTemplate("text.sub/1", 2, "${SqlConstants.FN_TEXT_SUBSTR1}(#0, (#1)::INT)")
                 body { text, start ->
                     val s = text.asString()
@@ -400,8 +471,8 @@ object Lib_Type_Text {
                     Returns a substring of this text from the specified start index (inclusive)
                     to the specified end index (exclusive).
                 """)
-                param("start", type = "integer", comment = "The start index of the substring.")
-                param("end", type = "integer", comment = "The end index of the substring.")
+                param("start", type = "integer", comment = "the start index of the substring")
+                param("end", type = "integer", comment = "the end index of the substring")
                 dbFunctionTemplate("text.sub/2", 3, "${SqlConstants.FN_TEXT_SUBSTR2}(#0, (#1)::INT, (#2)::INT)")
                 body { text, start, end ->
                     val s = text.asString()
@@ -413,7 +484,7 @@ object Lib_Type_Text {
 
             function("to_bytes", result = "byte_array", pure = true, since = "0.9.0") {
                 alias("encode", C_MessageType.ERROR, since = SINCE0)
-                comment("Converts the text to UTF-8 encoded bytes.")
+                comment("Converts this text to an array of UTF-8 encoded bytes.")
                 body { text ->
                     val s = text.asString()
                     val byteArray = s.toByteArray(CHARSET)

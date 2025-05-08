@@ -44,8 +44,11 @@ object Lib_Crypto {
 
         namespace("crypto", since = "0.10.6") {
             function("sha256", result = "byte_array", since = "0.10.6") {
-                comment("Calculates an SHA-256 hash of a byte array and returns a byte array.")
-                param(name = "input", type = "byte_array", comment = "The byte array to be hashed.")
+                comment("""
+                    Calculates the SHA-256 digest (hash) of the given byte array.
+                    @return the SHA-256 digest as a byte array of length 32
+                """)
+                param(name = "input", type = "byte_array", comment = "the data to digest")
                 bodyRaw(Sha256)
             }
 

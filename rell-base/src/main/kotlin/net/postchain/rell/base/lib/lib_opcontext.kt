@@ -55,7 +55,12 @@ object Lib_OpContext {
         // the function is used in existing code.
         function("is_signer", result = "boolean", since = "0.6.0") {
             deprecated(newName = "op_context.is_signer", error = false)
-            param("pubkey", type = "byte_array")
+            comment("""
+                Check if a given public key is a signer of the current transaction; i.e. if it's in the list of signers
+                returned by `op_context.get_signers()`.
+                @return `true` if the given public key is found, `false` otherwise
+            """)
+            param("pubkey", type = "byte_array", comment = "the public key to check")
             validate { ctx -> checkCtx(ctx.exprCtx, ctx.callPos, allowTest = true) }
             bodyContext { ctx, a ->
                 val bytes = a.asByteArray().toBytes()
@@ -127,8 +132,12 @@ object Lib_OpContext {
             }
 
             function("is_signer", result = "boolean", since = "0.10.4") {
-                comment("Checks if the provided public key is one of the signers of the current transaction.")
-                param("pubkey", type = "byte_array", comment = "The public key to check.")
+                comment("""
+                    Check if a given public key is a signer of the current transaction; i.e. if it's in the list of
+                    signers returned by `op_context.get_signers()`.
+                    @return `true` if the given public key is found, `false` otherwise
+                """)
+                param("pubkey", type = "byte_array", comment = "the public key to check")
                 validate(::checkCtx)
                 bodyContext { ctx, a ->
                     val bytes = a.asByteArray().toBytes()

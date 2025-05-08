@@ -88,8 +88,12 @@ object Lib_Math {
     }
 
     private fun defFnAbs(d: Ld_NamespaceBodyDsl, type: String, fn: C_SysFunctionBody, since: String) {
-        d.function("abs", type, since = since, comment = "Gets the absolute value of a $type.") {
-            param("a", type, comment = "The $type for which to calculate the absolute value.")
+        d.function("abs", type, since = since, comment = """
+                Returns the absolute value of a $type value; i.e. the value itself if it's positive or its negation if
+                it's negative.
+                @return the absolute value of the argument
+            """) {
+            param("a", type, comment = "the $type for which to determine an absolute value")
             bodyRaw(fn)
         }
     }
@@ -101,15 +105,21 @@ object Lib_Math {
         fnMax: C_SysFunctionBody,
         since: String,
     ) {
-        d.function("min", type, since = since, comment = "Determines the smaller of two $type values.") {
-            param("a", type, comment = "The first $type to compare.")
-            param("b", type, comment = "The second $type to compare.")
+        d.function("min", type, since = since, comment = """
+                Returns the lesser of two $type values; i.e. `a` if `a < b`, or `b` otherwise.
+                @return the lesser of `a` and `b`
+            """) {
+            param("a", type, comment = "the first $type to compare")
+            param("b", type, comment = "the second $type to compare")
             bodyRaw(fnMin)
         }
 
-        d.function("max", type, since = since, comment = "Identifies the larger of two $type values.") {
-            param("a", type, comment = "The first $type to compare.")
-            param("b", type, comment = "The second $type to compare.")
+        d.function("max", type, since = since, comment = """
+                Returns the greater of two $type values; i.e. `a` if `a > b`, or `b` otherwise.
+                @return the greater of `a` and `b`
+            """) {
+            param("a", type, comment = "the first $type to compare")
+            param("b", type, comment = "the second $type to compare")
             bodyRaw(fnMax)
         }
     }
