@@ -1,0 +1,20 @@
+module;
+
+entity parent {
+    first_name: text;
+    grand_father;
+}
+
+entity child {
+    parent;
+    name;
+}
+
+entity grand_father {
+    email: text;
+}
+
+entity orphan {
+    name;
+}
+

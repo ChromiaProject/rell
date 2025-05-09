@@ -1,0 +1,51 @@
+module;
+namespace ns1 {
+    namespace ns2 {
+        entity employee {
+            first_name: text;
+            last_name: text;
+            age: integer;
+            personal_email: text;
+            work_email: text;
+            work_phone: text;
+            active: boolean;
+            ns3.department;
+        }
+    }
+}
+
+namespace ns3 {
+    entity department {
+        name: text;
+        waste_level;
+    }
+}
+
+entity waste_level {
+    name: text;
+}
+
+enum shirt_size {
+    small,
+    medium,
+    large
+}
+
+namespace ns4 {
+    entity some {
+        name;
+        last_name: text;
+        age: integer;
+        employee: ns1.ns2.employee;
+        department: ns3.department;
+        my_enum: shirt_size;
+        salary: decimal;
+        active: boolean;
+        meta: json;
+        pubkey;
+        tuid;
+        image: byte_array;
+        some_big_number: big_integer;
+        some_row_id: rowid;
+    }
+}

@@ -1,0 +1,140 @@
+module;
+
+import mod1: main;
+
+function get_entity_id(name: text): integer {
+    val all_entities: map<text, integer> = ['main:waste_level': 0, 'main:ns3.department': 1, 'main:ns1.ns2.employee': 2, 'main:ns4.some': 3];
+    return all_entities[name];
+}
+
+function seed_main_waste_level(existing_data: map<integer, gtv>, batch_size: integer = 1000) {
+    val ref_data = '[]';
+    val json_data_without_ref = '[["xCAYt"],["a"],["aSo"],["OaKMhnW"],["taAan"],["QsiIC"],["j"],["TR"],["QP"],["JyDDo"]]';
+    val json_data = resolve_refs(existing_data, json_data_without_ref, ref_data);
+    val records = list<struct<mod1.waste_level>>.from_gtv(gtv.from_json(json_data));
+    var batch = list<struct<mod1.waste_level>>();
+    var persisted = list<mod1.waste_level>();
+    
+    var count = 0;
+    for (r in records) {
+        batch.add(r);
+        count++;
+        if (count % batch_size == 0) {
+            persisted.add_all(create mod1.waste_level(batch));
+            batch.clear();
+        }
+    }
+    if (count % batch_size != 0) {
+        persisted.add_all(create mod1.waste_level(batch));
+    }
+    
+    existing_data[get_entity_id(rell.meta(mod1.waste_level).full_name)] = persisted.to_gtv();
+}
+
+function seed_main_ns3_department(existing_data: map<integer, gtv>, batch_size: integer = 1000) {
+    val ref_data = '[[0,0],[0,8],[0,0],[0,5],[0,6]]';
+    val json_data_without_ref = '[["Information Technology","%REF"],["Quality Assurance","%REF"],["Product Management","%REF"],["Purchasing / Sourcing","%REF"],["Quality Assurance","%REF"]]';
+    val json_data = resolve_refs(existing_data, json_data_without_ref, ref_data);
+    val records = list<struct<mod1.ns3.department>>.from_gtv(gtv.from_json(json_data));
+    var batch = list<struct<mod1.ns3.department>>();
+    var persisted = list<mod1.ns3.department>();
+    
+    var count = 0;
+    for (r in records) {
+        batch.add(r);
+        count++;
+        if (count % batch_size == 0) {
+            persisted.add_all(create mod1.ns3.department(batch));
+            batch.clear();
+        }
+    }
+    if (count % batch_size != 0) {
+        persisted.add_all(create mod1.ns3.department(batch));
+    }
+    
+    existing_data[get_entity_id(rell.meta(mod1.ns3.department).full_name)] = persisted.to_gtv();
+}
+
+function seed_main_ns1_ns2_employee(existing_data: map<integer, gtv>, batch_size: integer = 1000) {
+    val ref_data = '[[1,2],[1,3],[1,1],[1,1],[1,4],[1,0],[1,3],[1,4],[1,3],[1,0]]';
+    val json_data_without_ref = '[["Casie","Dickens",26,"rico.larson.lld@flatley-bogan.test","the.hon.raquel.lesch@paucek.test","574.235.2531",false,"%REF"],["Rachal","Conn",28,"mr.lina.miller@gibson.example","melinda.botsford@hills.example","383-042-4937",true,"%REF"],["Al","Wuckert",25,"jena.reynolds@anderson.test","angel.pfannerstill@greenholt.example","229-927-8721",true,"%REF"],["Latrina","Runolfsson",43,"gov.ming.ruecker@sawayn-heller.example","ronni.feil.sr@harris.test","(977) 793 1855",true,"%REF"],["Antonio","Emmerich",64,"lenny.hayes.iii@kreiger.example","neville.hoppe@corkery.example","520-844-0237",true,"%REF"],["Nelda","O\'Keefe",45,"pres.nikki.mayer@ratke-hermann.example","dustin.lubowitz@towne.example","8530060326",false,"%REF"],["Carleen","Schamberger",42,"codi.jerde@satterfield.example","dominic.konopelski@torp-roob.example","494-280-4166",false,"%REF"],["Lavonna","Kris",60,"yuriko.o\'hara@dubuque-turner.test","cruz.bahringer.i@lowe-schmeler.test","100 457 0977",false,"%REF"],["Chad","Leuschke",37,"clement.volkman@smitham.example","mr.rico.hodkiewicz@zieme-bernhard.test","471.725.3756",true,"%REF"],["Huong","O\'Reilly",27,"garret.kirlin@ortiz-schiller.test","mariann.reynolds@ankunding.test","916.430.4177",false,"%REF"]]';
+    val json_data = resolve_refs(existing_data, json_data_without_ref, ref_data);
+    val records = list<struct<mod1.ns1.ns2.employee>>.from_gtv(gtv.from_json(json_data));
+    var batch = list<struct<mod1.ns1.ns2.employee>>();
+    var persisted = list<mod1.ns1.ns2.employee>();
+    
+    var count = 0;
+    for (r in records) {
+        batch.add(r);
+        count++;
+        if (count % batch_size == 0) {
+            persisted.add_all(create mod1.ns1.ns2.employee(batch));
+            batch.clear();
+        }
+    }
+    if (count % batch_size != 0) {
+        persisted.add_all(create mod1.ns1.ns2.employee(batch));
+    }
+    
+    existing_data[get_entity_id(rell.meta(mod1.ns1.ns2.employee).full_name)] = persisted.to_gtv();
+}
+
+function seed_main_ns4_some(existing_data: map<integer, gtv>, batch_size: integer = 1000) {
+    val ref_data = '[[2,0],[1,0],[2,3],[1,0],[2,0],[1,1],[2,6],[1,0],[2,4],[1,2],[2,6],[1,3],[2,4],[1,3],[2,2],[1,0],[2,1],[1,2],[2,3],[1,2]]';
+    val json_data_without_ref = '[["LiipBoI",-633,"%REF","%REF","small",43.383567830314632374211214482784271240234375,true,"{\"id\": 1845119030603709265}","7fe28d9f509eff1e243215ccdd89948a7a32c4cad0d82d1df82fbc7bd2248b","XsTlG","a0fdc482aa688160eb27cae03d56ad3ddd0623e98ee4db",903,261748],["oiMt",-468,"%REF","%REF","small",29.9601515687472783611156046390533447265625,true,"{\"id\": 7471855242431887971}","98e465244666153ab13d","DEoGp","fd55596a0bb2e73823b122193e849fbbc0fea8090ec74da8db68",-215,138923],["XugsXH",360,"%REF","%REF","medium",-156.4243367429653517319820821285247802734375,false,"{\"id\": -4947008148009405166}","34df3ebaaee3c4b0","ieKct","4e48a526cb1372f0db96af8c035d1a04547c9bde8773",-376,730682],["d",377,"%REF","%REF","large",-613.643717124255772432661615312099456787109375,true,"{\"id\": -8104997024927745153}","01de56ed4879","UERZUoTR","608eb5a62e3ad27ed2d827fd1591f2a89ff8ff2a7fb9663905472649",-892,635450],["hsHBv",-110,"%REF","%REF","large",75.34833910678935353644192218780517578125,false,"{\"id\": -2184003698025109945}","2ba1ad2d00b5604b5ed9b79f59a6f6552c1392d560ea12","qobVEsT","9c29d837",729,493040],["l",-981,"%REF","%REF","large",-772.7455911161041512968949973583221435546875,true,"{\"id\": 5793743666353282674}","bba800d5e50813d402db5ee1394709c9c32001e8","rEXpCIZ","d8862979021a3ba392a82340531e352aea4a3bbbfbec17896a0253791dca",-40,136526],["n",697,"%REF","%REF","large",696.05557914307564715272746980190277099609375,false,"{\"id\": -6440029493261550851}","381995bc1415e6dd1dfa5cb982b6669d3131365750642b26aaedd3d6","z","2bdfb4f3b347a159c344e6d88aea",-866,842874],["VQZyzFG",773,"%REF","%REF","small",33.52746852049267545226030051708221435546875,true,"{\"id\": -8534880566208760799}","7472e681017d4aee982d6c459a70dfb9","mOfSH","72192cf851ef8c2c42f072",-47,441789],["wSXDiVlWhf",632,"%REF","%REF","large",-327.09256450978909924742765724658966064453125,false,"{\"id\": 197862232269327561}","a0d3f023","hWtZsucyYs","d3927f49ec",-591,619106],["uznRsbSWJ",-585,"%REF","%REF","large",937.57735663236644541029818356037139892578125,false,"{\"id\": -6527269788895081261}","77c519a9b927e4b0a66ed177","dTee","20b290fe5f7537feb1aaa79f165e",745,966965]]';
+    val json_data = resolve_refs(existing_data, json_data_without_ref, ref_data);
+    val records = list<struct<mod1.ns4.some>>.from_gtv(gtv.from_json(json_data));
+    var batch = list<struct<mod1.ns4.some>>();
+    var persisted = list<mod1.ns4.some>();
+    
+    var count = 0;
+    for (r in records) {
+        batch.add(r);
+        count++;
+        if (count % batch_size == 0) {
+            persisted.add_all(create mod1.ns4.some(batch));
+            batch.clear();
+        }
+    }
+    if (count % batch_size != 0) {
+        persisted.add_all(create mod1.ns4.some(batch));
+    }
+    
+    existing_data[get_entity_id(rell.meta(mod1.ns4.some).full_name)] = persisted.to_gtv();
+}
+
+operation seed_data(batch_size: integer = 1000) {
+    val existing_data = map<integer, gtv>();
+    seed_main_waste_level(existing_data, batch_size);
+    seed_main_ns3_department(existing_data, batch_size);
+    seed_main_ns1_ns2_employee(existing_data, batch_size);
+    seed_main_ns4_some(existing_data, batch_size);
+}
+
+struct iteration_state {
+    mutable current: integer;
+    data: list<integer>;
+}    
+
+// TODO: Evaluate data.size() operation for 10_000 records, or if we should add size to itteration_state
+function text_insert_rowid(value: text, state: iteration_state): text {
+    val value_with_rowid = if (state.current < state.data.size())
+        value + state.data[state.current]
+    else
+        value;
+    state.current++;
+    return value_with_rowid;
+}
+
+function resolve_refs(existing_data: map<integer, gtv>, json_data: text, ref_data: text): text {
+    val ref_gtv = list<(integer, integer)>.from_gtv(gtv.from_json(ref_data));
+    val replacements: list<integer> = [];
+    for (ref in ref_gtv) {
+        val rowids = list<integer>.from_gtv(existing_data[ref[0]]);
+        replacements.add(rowids[ref[1]]);
+    }
+    val parts = json_data.split('"%REF"');
+    val state = iteration_state(current = 0, data = replacements);
+    return parts.join_to_text(' ', '', '', null, '', text_insert_rowid(*, state));
+}
+
