@@ -17,6 +17,8 @@ chromia-build-tools = "0.5.1"
 fury-core = "0.4.1"
 system-stubs-jupiter = "2.1.7"
 sentry-log4j2 = '7.16.0'
+kotlin-faker = "1.16.0"
+json-schema-validator = "1.5.6"
 
 [libraries]
 rell-base = { module = "net.postchain.rell:rell-base", version.ref = "rell" }
@@ -40,6 +42,10 @@ koin-logger = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin
 jackson = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-yml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+
+kotlin-faker = { module = "io.github.serpro69:kotlin-faker", version.ref = "kotlin-faker" }
+
+json-schema-validator = { module = "com.networknt:json-schema-validator", version.ref = "json-schema-validator" }
 
 antlr = { module = "org.antlr:antlr4", version.ref = "antlr" }
 antlr-runtime = { module = "org.antlr:antlr4-runtime", version.ref = "antlr" }

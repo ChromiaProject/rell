@@ -1,0 +1,15 @@
+module;
+
+entity house {
+  index street;
+  number: integer;
+  key street, number;
+  number_of_rooms: integer;
+  number_of_floors: integer;
+  key floor_area: integer;
+  index number_of_rooms, floor_area;
+}
+
+entity street {
+    name;
+}

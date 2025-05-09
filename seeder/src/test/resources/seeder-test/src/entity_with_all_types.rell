@@ -1,0 +1,23 @@
+module;
+
+entity employee {
+    age: integer;
+    active: boolean;
+    salary: big_integer;
+    weight: decimal;
+    name: text;
+    photo: byte_array;
+    row_count: rowid;
+    meta: json;
+    type;
+    address;
+}
+
+entity address {
+   name;
+}
+
+enum type {
+    full_time,
+    freelancer
+}

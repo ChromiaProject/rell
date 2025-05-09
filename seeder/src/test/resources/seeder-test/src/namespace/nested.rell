@@ -1,0 +1,48 @@
+module;
+
+entity product_with_constraints {
+    product_id: integer;
+    name: text;
+    sku: text;
+    barcode: text;
+    key product_id;
+    index name;
+    index sku;
+    index barcode;
+}
+
+namespace ecommerce {
+    entity shop {
+        shop_id: integer;
+        name: text;
+        key shop_id;
+    }
+
+    namespace product {
+        entity shop_product {
+            product_id: integer;
+            shop: shop;
+            name: text;
+            price: decimal;
+            key product_id;
+            index shop;
+        }
+
+        entity order_item {
+            order: shop_order;
+            product: shop_product;
+            quantity: integer;
+            price: decimal;
+            key order, product;
+            index order;
+        }
+    }
+    entity shop_order {
+        order_id: integer;
+        shop: shop;
+        customer_name: text;
+        total_amount: decimal;
+        key order_id;
+        index shop;
+    }
+}

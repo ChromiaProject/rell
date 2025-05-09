@@ -1,0 +1,92 @@
+module;
+
+entity player {
+    pubkey;
+    username: text;
+    level: integer;
+    health: integer;
+    max_health: integer;
+    experience: integer;
+    inventory;
+    is_online: boolean = true;
+}
+
+entity npc {
+    name: text;
+    role: text; // e.g., "merchant", "quest giver", "enemy"
+    level: integer;
+    dialogue: text; // Dialogue text
+    is_hostile: boolean = false;
+}
+
+// Entity for items in the game (e.g., weapons, potions)
+entity item {
+    name: text;
+    type: item_type;
+    rarity: rarity_level;
+    description: text;
+    value: integer;
+    // Value in in-game currency
+}
+
+// Enum for item types
+enum item_type {
+    weapon,
+    armor,
+    consumable,
+    material,
+    quest_item
+}
+
+enum rarity_level {
+    common,
+    uncommon,
+    rare,
+    epic,
+    legendary
+}
+
+entity quest {
+    title: text;
+    description: text;
+    level_requirement: integer;
+    reward: item; // Single reward item
+    is_completed: boolean = false;
+}
+
+entity location {
+    name: text;
+    description: text;
+    biome: biome_type; // Link to biome type
+    has_enemies: boolean = false;
+}
+
+// Enum for types of biomes (e.g., forest, desert, etc.)
+enum biome_type {
+    forest,
+    desert,
+    mountain,
+    ocean,
+    urban,
+    cave
+}
+
+entity inventory {
+    gold: integer = 0;
+}
+
+entity inventory_item {
+    inventory;
+    item;
+}
+
+entity enemy {
+    name: text;
+    health: integer;
+    damage: integer;
+    level: integer;
+}
+
+entity loot_table {
+    enemy;
+}
