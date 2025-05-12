@@ -16,22 +16,61 @@ import java.util.*
 object Lib_Type_Range {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("range", rType = R_RangeType, since = "0.6.0") {
-            comment("An integer range of values")
+            comment("""
+                A range of integer values. Ranges represent arithmetic sequences with defined start and end points, and
+                a constant difference between consecutive elements. Ranges can be empty or contain any natural number of
+                elements.
+
+                Range is a subtype of `iterable<integer>`.
+                @see iterable for inherited values and methods
+            """)
             parent(type = "iterable<integer>")
 
             constructor(pure = true, since = "0.6.0") {
-                comment("Construct a new range of values in steps of 1 from 0 to `end`")
-                param("end", "integer", comment = "End value (exclusive) for this range.")
+                comment("""
+                    Construct a range, starting at `0` (inclusive), ending at `end` (exclusive), with a step size of `1`.
+
+                    Examples:
+
+                    - `list(range(0))` returns `[]`.
+                    - `list(range(1))` returns `[0]`.
+                    - `list(range(2))` returns `[0, 1]`.
+                    - `list(range(10))` returns `[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]`.
+
+                    Note that `range(x)` is equivalent to `range(0, x, 1)`.
+                    @throws exception if `end < 0`
+                """)
+                param("end", "integer", comment = "end value (exclusive) for this range")
                 body { a ->
                     calcRange(0, a.asInteger(), 1)
                 }
             }
 
             constructor(pure = true, since = "0.6.0") {
-                comment("Constructs a new range with specified `start`, `end` and `step` size.")
-                param("start", "integer", comment = "Start value for this range (inclusive).")
-                param("end", "integer", comment = "End value for this range (exclusive).")
-                param("step", "integer", arity = L_ParamArity.ZERO_ONE, comment = "Step size.")
+                comment("""
+                    Construct a range, starting at `start` (inclusive), ending at `end` (exclusive), with a "step size"
+                    (i.e. difference between consecutive values) of `step`.
+
+                    If `start > end`, then `step` must be negative. Conversely, if `start < end`, the `step` must be
+                    positive. `step` cannot be `0`.
+
+                    Examples:
+
+                    - `list(range(1, 23, 3))` returns `[1, 4, 7, 10, 13, 16, 19, 22]`.
+                    - `list(range(20, 1, -2))` returns `[20, 18, 16, 14, 12, 10, 8, 6, 4, 2]`.
+                    - `list(range(-2, -8, -1))` returns `[-2, -3, -4, -5, -6, -7]`.
+                    - `list(range(3, 3, 7))` returns `[]`. Indeed, for all `x`, and for all `y != 0`, `range(x, x, y)`
+                    returns `[]`.
+
+                    Note that `range(0, x, 1)` is equivalent to `range(x)`.
+                    @throws exception when:
+                    - `step == 0`
+                    - `start > end` and `step > 0`
+                    - `start < end` and `step < 0`
+                """)
+                param("start", "integer", comment = "start value for this range (inclusive)")
+                param("end", "integer", comment = "end value for this range (exclusive)")
+                param("step", "integer", arity = L_ParamArity.ZERO_ONE, comment = "step size for this range")
                 bodyOpt2 { a, b, c ->
                     calcRange(a.asInteger(), b.asInteger(), c?.asInteger() ?: 1)
                 }
