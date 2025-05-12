@@ -62,33 +62,53 @@ object Lib_Type_ByteArray {
             parent(type = "iterable<integer>")
 
             constructor(since = SINCE0) {
-                comment("Creates a byte_array from a hexadecimal string.")
-                param("hex", type = "text", comment = "The hexadecimal string.")
+                comment("Construct a byte array from a hexadecimal string.")
+                param("hex", type = "text", comment = "the hexadecimal string")
                 bodyRaw(FromHex)
             }
 
             constructor(since = SINCE0) {
-                comment("Creates a byte_array from a list of integers.")
+                comment("Construct a byte_array from a list of integers.")
                 deprecated(newName = "byte_array.from_list")
-                param("list", type = "list<integer>", comment = "The list of integers.")
+                param("list", type = "list<integer>", comment = "the list of integers")
                 bodyRaw(FromList)
             }
 
             staticFunction("from_list", result = "byte_array", since = "0.9.0") {
-                comment("Creates a byte_array from a list of integers.")
-                param("list", type = "list<integer>", comment = "The list of integers.")
+                comment("""
+                    Create a `byte_array` from a list of integers.
+
+                    The inverse of `byte_array.to_list()`.
+
+                    All integers in the passed list are treated as single-byte values, i.e. they must be in the range
+                    `0 <= x < 256`, and therefore the returned `byte_array` will be equal in size to the passed list.
+                    @throws exception if any element in the list is less than zero or greater than 255
+                """)
+                param("list", type = "list<integer>", comment = "the list of integers")
                 bodyRaw(FromList)
             }
 
             staticFunction("from_hex", result = "byte_array", since = "0.9.0") {
-                comment("Creates a byte_array from a hexadecimal string.")
-                param("value", type = "text", comment = "The hexadecimal string.")
+                comment("""
+                    Create a byte array from a hexadecimal string.
+
+                    The given hexadecimal string must have even length, since two hexadecimal characters encode one
+                    byte.
+                    @throws exception if `value` has odd length or contains invalid characters
+                """)
+                param("value", type = "text", comment = "the hexadecimal string")
                 bodyRaw(FromHex)
             }
 
             staticFunction("from_base64", result = "byte_array", since = "0.9.0") {
-                comment("Creates a byte_array from a Base64 string.")
-                param("value", type = "text", comment = "The Base64 string.")
+                comment("""
+                    Create a byte array from a base-64 string.
+
+                    Valid base-64 strings may include the characters `a-z`, `A-Z`, `0-9`, `+` and `/` as significant
+                    characters, and '=' as padding.
+                    @throws exception if `value` contains invalid characters
+                """)
+                param("value", type = "text", comment = "the base-64 string")
                 body { value ->
                     val s = value.asString()
                     val bytes = Rt_Utils.wrapErr("fn:byte_array.from_base64") {
@@ -99,7 +119,11 @@ object Lib_Type_ByteArray {
             }
 
             function("empty", "boolean", pure = true, since = SINCE0) {
-                comment("Returns true if the byte_array is empty, otherwise returns false.")
+                comment("""
+                    Returns `true` if this `byte_array` is empty, `false` otherwise.
+
+                    `x.empty()` is equivalent to `x.size() == 0`.
+                """)
                 dbFunctionTemplate("byte_array.empty", 1, "(LENGTH(#0) = 0)")
                 body { array ->
                     val byteArray = array.asByteArray()
@@ -108,7 +132,7 @@ object Lib_Type_ByteArray {
             }
 
             function("size", "integer", pure = true, since = SINCE0) {
-                comment("Returns the number of bytes.")
+                comment("Returns the number of bytes in this `byte_array`.")
                 alias("len", C_MessageType.ERROR, since = SINCE0)
                 dbFunctionTemplate("byte_array.size", 1, "LENGTH(#0)")
                 body { array ->
@@ -127,7 +151,13 @@ object Lib_Type_ByteArray {
 
             function("to_list", "list<integer>", pure = true, since = "0.9.0") {
                 alias("toList", C_MessageType.ERROR, since = SINCE0)
-                comment("Converts the byte_array to a list of integers.")
+                comment("""
+                    Converts this `byte_array` to a list of integers.
+
+                    The inverse of `byte_array.from_list(list<integer>)`.
+
+                    Each byte in the array is converted to a single integer `0 <= x < 256` in the returned list.
+                """)
                 body { a ->
                     val ba = a.asByteArray()
                     val list = MutableList<Rt_Value>(ba.size) { Rt_IntValue.get(ba[it].toLong() and 0xFF) }
@@ -136,8 +166,20 @@ object Lib_Type_ByteArray {
             }
 
             function("repeat", "byte_array", pure = true, since = "0.11.0") {
-                comment("Repeats the byte_array 'n' times.")
-                param("n", "integer", comment = "The number of times to repeat the byte_array.")
+                comment("""
+                    Repeats this byte_array `n` times.
+
+                    Examples:
+                    - `x'1234abcd'.repeat(3)` returns `x'1234abcd1234abcd1234abcd'`
+                    - `x''.repeat(3)` returns `x''`
+                    - `x'1234abcd'.repeat(0)` returns `x''`
+
+                    @throws exception when:
+                    - `n` is negative
+                    - `n` is greater than `(2^31)-1`
+                    - the resulting byte array has size greater than `(2^31)-1`
+                """)
+                param("n", "integer", comment = "the number of times to repeat this byte_array")
                 body { a, b ->
                     val bs = a.asByteArray()
                     val n = b.asInteger()
@@ -151,7 +193,7 @@ object Lib_Type_ByteArray {
             }
 
             function("reversed", "byte_array", pure = true, since = "0.11.0") {
-                comment("Returns a reversed copy of the byte_array.")
+                comment("Returns a reversed copy of this `byte_array`.")
                 body { a ->
                     val bs = a.asByteArray()
                     if (bs.size <= 1) a else {
@@ -163,8 +205,11 @@ object Lib_Type_ByteArray {
             }
 
             function("sub", "byte_array", pure = true, since = SINCE0) {
-                comment("Returns a sub-array of the byte_array from the specified start index.")
-                param("start", "integer", comment = "The start index of the sub-array.")
+                comment("""
+                    Returns a sub-array of this byte array starting from the specified index (inclusive).
+                    @throws exception if the `start` index is out of range
+                """)
+                param("start", "integer", comment = "the start index of the sub-array")
                 dbFunctionTemplate("byte_array.sub/1", 2, "${SqlConstants.FN_BYTEA_SUBSTR1}(#0, (#1)::INT)")
                 body { a, b ->
                     val ba = a.asByteArray()
@@ -174,9 +219,15 @@ object Lib_Type_ByteArray {
             }
 
             function("sub", "byte_array", pure = true, since = SINCE0) {
-                comment("Returns a sub-array of the byte_array from the specified start index to the end index.")
-                param("start", "integer", comment = "The start index of the sub-array.")
-                param("end", "integer", comment = "The end index of the sub-array.")
+                comment("""
+                    Returns a sub-array of this byte array from the specified start index (inclusive)
+                    to the specified end index (exclusive).
+                    @throws exception when:
+                    - the `start` or `end` indexes are out of range
+                    - the `start` index is greater than the `end` index
+                """)
+                param("start", "integer", comment = "the start index of the sub-array")
+                param("end", "integer", comment = "the end index of the sub-array")
                 dbFunctionTemplate("byte_array.sub/2", 3, "${SqlConstants.FN_BYTEA_SUBSTR2}(#0, (#1)::INT, (#2)::INT)")
                 body { a, b, c ->
                     val ba = a.asByteArray()
@@ -187,7 +238,11 @@ object Lib_Type_ByteArray {
             }
 
             function("to_hex", "text", pure = true, since = "0.9.0") {
-                comment("Returns a hexadecimal representation of the byte_array.")
+                comment("""
+                    Returns a hexadecimal `text` representation of this `byte_array`.
+
+                    Inverse of `byte_array.from_hex(text)`.
+                """)
                 dbFunctionTemplate("byte_array.to_hex", 1, "ENCODE(#0, 'HEX')")
                 body { a ->
                     val ba = a.asByteArray()
@@ -197,7 +252,11 @@ object Lib_Type_ByteArray {
             }
 
             function("to_base64", "text", pure = true, since = "0.9.0") {
-                comment("Returns a Base64 representation of the byte_array.")
+                comment("""
+                    Returns a base-64 `text` representation of this `byte_array`.
+
+                    Inverse of `byte_array.from_base64(text)`.
+                """)
                 dbFunctionTemplate("byte_array.to_base64", 1, "ENCODE(#0, 'BASE64')")
                 body { a ->
                     val ba = a.asByteArray()
@@ -207,7 +266,10 @@ object Lib_Type_ByteArray {
             }
 
             function("sha256", "byte_array", since = "0.10.0") {
-                comment("Returns the SHA256 digest of the byte_array.")
+                comment("""
+                    Calculates the SHA-256 digest (hash) of this byte array.
+                    @return a SHA-256 digest as a byte array of length 32
+                """)
                 bodyRaw(Lib_Crypto.Sha256)
             }
         }
