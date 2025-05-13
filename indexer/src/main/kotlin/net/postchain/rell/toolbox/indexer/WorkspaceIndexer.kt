@@ -102,7 +102,8 @@ class WorkspaceIndexer(
         }
 
         for (fileUri in dirtyFiles) {
-            fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileMap)
+            val fileContent = sources[fileUri] ?: continue
+            fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileContent, fileMap)
         }
 
         for (source in sources) {
