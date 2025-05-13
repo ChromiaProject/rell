@@ -18,8 +18,9 @@ object Lib_Type_Set {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("set", since = SINCE0) {
             comment("""
-                Represents a mutable set of elements. The set is a hash-set with an iteration order
-                determined by the order the elements was first added to the set.
+                A mutable set of elements of type `T`, where `T` is immutable. Subtype of `collection<T>`. Implemented
+                as a hash-set, with iteration order determined by the order in which the elements were added.
+                @see collection for inherited values and methods
             """)
             generic("T", subOf = "immutable")
             parent("collection<T>")
@@ -27,7 +28,7 @@ object Lib_Type_Set {
             rType { t -> R_SetType(t) }
 
             constructor(pure = true, since = SINCE0) {
-                comment("Constructs an empty set.")
+                comment("Construct a new empty set.")
                 bodyMeta {
                     val elementType = fnBodyMeta.typeArg("T")
                     val rKind = R_CollectionKind_Set(R_SetType(elementType))
@@ -38,9 +39,9 @@ object Lib_Type_Set {
             }
 
             constructor(pure = true, since = SINCE0) {
-                comment("Constructs a set from the elements of the provided iterable.")
+                comment("Construct a new set by copying the values from another iterable.")
                 param("values", type = "iterable<-T>") {
-                    comment("The iterable containing elements to include in the set.")
+                    comment("an iterable containing values with which to initialize this set")
                 }
                 bodyMeta {
                     val elementType = fnBodyMeta.typeArg("T")

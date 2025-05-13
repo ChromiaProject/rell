@@ -195,7 +195,7 @@ object Lib_Type_Text {
                     - `%d` for `integer`s and `big_integer`s in decimal (base 10) representation
                     - `%o` for `integer`s and `big_integer`s in octal (base 8) representation
                     - `%x` for `integer`s and `big_integer`s in hexadecimal (base 16) representation
-                    - `%f` for `decimal`
+                    - `%f` for `decimal` (supports precision, e.g. `%.2f` for two decimal places)
                     - `%b` for `boolean`s (output in lower-case, i.e. `true` and `false`)
                     - `%B` for `boolean`s (output in upper-case, i.e. `TRUE` and `FALSE`)
 
