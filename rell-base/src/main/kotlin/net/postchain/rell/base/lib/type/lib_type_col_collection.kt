@@ -24,17 +24,24 @@ object Lib_Type_Collection {
 
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("collection", abstract = true, hidden = true, since = SINCE0) {
+            comment("""
+                A generic type for mutable ordered collections of elements. Subtype of `iterable<T>`. Supports many
+                standard operations such add insertion, removal, lookup and sorting.
+            """)
             generic("T")
             parent("iterable<T>")
 
             function("to_text", "text", since = "0.9.0") {
-                comment("Converts the collection to a text representation.")
+                comment("Returns a textual representation of this collection.")
                 alias("str", since = SINCE0)
                 bodyRaw(AnyFns.ToText_NoDb)
             }
 
             function("empty", "boolean", pure = true, since = SINCE0) {
-                comment("Checks if the collection is empty.")
+                comment("""
+                    Check if this collection is empty.
+                    @return `true` if this collection is empty, `false` otherwise
+                """)
                 body { self ->
                     val col = self.asCollection()
                     Rt_BooleanValue.get(col.isEmpty())
@@ -42,7 +49,7 @@ object Lib_Type_Collection {
             }
 
             function("size", "integer", pure = true, since = SINCE0) {
-                comment("Returns the size of the collection.")
+                comment("Get the size (number of elements) of this collection.")
                 alias("len", deprecated = C_MessageType.ERROR, since = SINCE0)
                 body { self ->
                     val col = self.asCollection()
@@ -51,8 +58,11 @@ object Lib_Type_Collection {
             }
 
             function("contains", "boolean", pure = true, since = SINCE0) {
-                comment("Checks if the collection contains a specific element.")
-                param("value", "T", comment = "The element to check for.")
+                comment("""
+                    Check if this collection contains the given element.
+                    @return `true` if this collection contains the given element, `false` otherwise
+                """)
+                param("value", "T", comment = "the element to look up")
                 body { self, value ->
                     val col = self.asCollection()
                     Rt_BooleanValue.get(col.contains(value))
@@ -60,9 +70,12 @@ object Lib_Type_Collection {
             }
 
             function("contains_all", "boolean", pure = true, since = "0.9.0") {
-                comment("Checks if the collection contains all elements of another collection.")
+                comment("""
+                    Check if this collection contains all elements of another collection.
+                    @return `true` if this collection contains all elements of the given collection, `false` otherwise
+                """)
                 alias("containsAll", deprecated = C_MessageType.ERROR, since = SINCE0)
-                param("values", type = "collection<-T>", comment = "The collection to check against.")
+                param("values", type = "collection<-T>", comment = "the collection to check against")
                 body { self, values ->
                     val col1 = self.asCollection()
                     val col2 = values.asCollection()
@@ -72,11 +85,13 @@ object Lib_Type_Collection {
 
             function("add", "boolean", since = SINCE0) {
                 comment("""
-                    Adds an element to the collection.
-                    @return `true` if the element was added, and `false` if the collection does not allow duplicates
-                    and the element is already contained in the collection.
+                    Append an element to the end of this collection.
+
+                    The element is not added if this collection does not allow duplicates and the element is already
+                    contained in this collection.
+                    @return `true` if the element was added, `false` otherwise
                 """)
-                param("value", "T", comment = "The element to add.")
+                param("value", "T", comment = "the element to add")
                 body { self, value ->
                     val col = self.asCollection()
                     Rt_BooleanValue.get(col.add(value))
@@ -85,12 +100,14 @@ object Lib_Type_Collection {
 
             function("add_all", "boolean", since = "0.9.0") {
                 comment("""
-                    Adds all elements from another collection to this collection.
-                    @return `true` if any of the specified elements was added to the collection,
-                    `false` if the collection was not modified.
+                    Add all elements from another collection to the end of this collection.
+
+                    If this collection does not allow duplicates, then only those elements not already contained in this
+                    collection are added.
+                    @return `true` if any elements were added to this collection, `false` if it was not modified
                 """)
                 alias("addAll", deprecated = C_MessageType.ERROR, since = SINCE0)
-                param("values", type = "collection<-T>", comment = "The collection to add elements from.")
+                param("values", type = "collection<-T>", comment = "the collection of elements to add")
                 body { self, values ->
                     val col = self.asCollection()
                     Rt_BooleanValue.get(col.addAll(values.asCollection()))
@@ -99,11 +116,11 @@ object Lib_Type_Collection {
 
             function("remove", "boolean", since = SINCE0) {
                 comment("""
-                    Removes an element from the collection.
-                    @return `true` if the element has been successfully removed;
-                    `false` if it was not present in the collection.
+                    Remove an element from this collection.
+                    @return `true` if the element was successfully removed, `false` if it was not present in the
+                    collection
                 """)
-                param("value", "T", comment = "The element to remove.")
+                param("value", "T", comment = "the element to remove")
                 body { self, value ->
                     val col = self.asCollection()
                     Rt_BooleanValue.get(col.remove(value))
@@ -112,12 +129,11 @@ object Lib_Type_Collection {
 
             function("remove_all", "boolean", since = "0.9.0") {
                 comment("""
-                    Removes all elements from the collection that are present in another collection.
-                    @return `true` if any of the specified elements was removed from the collection,
-                    `false` if the collection was not modified.
+                    Remove all elements in another collection from this collection.
+                    @return `true` if any elements were removed from this collection, `false` if it was not modified
                 """)
                 alias("removeAll", deprecated = C_MessageType.ERROR, since = SINCE0)
-                param("values", type = "collection<-T>", comment = "The collection containing elements to remove.")
+                param("values", type = "collection<-T>", comment = "the collection of elements to remove")
                 body { self, values ->
                     val col1 = self.asCollection()
                     val col2 = values.asCollection()
@@ -126,7 +142,10 @@ object Lib_Type_Collection {
             }
 
             function("clear", "unit", since = SINCE0) {
-                comment("Clears the collection.")
+                comment("""
+                    Clear this collection; i.e. remove all its elements. Immediately after this method returns, this
+                    collection is empty.
+                """)
                 body { self ->
                     val col = self.asCollection()
                     col.clear()
@@ -135,7 +154,10 @@ object Lib_Type_Collection {
             }
 
             function("sorted", "list<T>", pure = true, since = "0.8.0") {
-                comment("Returns a new sorted list of elements from the collection.")
+                comment("""
+                    Sorts the elements of this collection into a list. This collection is not modified.
+                    @return a sorted list containing the same elements as this collection
+                """)
                 bodyMeta {
                     val valueType = fnBodyMeta.typeArg("T")
                     val comparator = getSortComparator(this, valueType)
