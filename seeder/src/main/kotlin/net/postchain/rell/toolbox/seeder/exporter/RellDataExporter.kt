@@ -26,7 +26,7 @@ class RellDataExporter : BaseDataExporter() {
          * RECOMMENDED ACTION:
          * Ensure this module is not imported in any production blockchain modules.
          * 
-         */    
+         */
         """.trimIndent()
     }
 
@@ -70,13 +70,15 @@ class RellDataExporter : BaseDataExporter() {
             }
 
             // Seed data operation
-            writer.write(generateSeedDataOperation(data))
+            writer.write(generateSeedDataOperation(data, outputFile.nameWithoutExtension))
             writer.write("\n\n")
 
             // Helper functions
             writer.write("${iterationStateStructString()}\n\n")
             writer.write("${textInsertRowidFunctionString()}\n\n")
             writer.write("${resolveRefFunctionString()}\n\n")
+            writer.write("${resolveTransactionFunctionString()}\n\n")
+            writer.write("${resolveBlockFunctionString()}\n")
         }
     }
 
@@ -124,7 +126,9 @@ class RellDataExporter : BaseDataExporter() {
             |function seed_$functionName(existing_data: map<integer, gtv>, batch_size: integer = $DEFAULT_BATCH_SIZE) {
             |    val ref_data = '$refData';
             |    val json_data_without_ref = '$jsonData';
-            |    val json_data = resolve_refs(existing_data, json_data_without_ref, ref_data);
+            |    val json_data_resolved_ref = resolve_refs(existing_data, json_data_without_ref, ref_data);
+            |    val json_data_resolved_tx = resolve_tx(json_data_resolved_ref);
+            |    val json_data = resolve_block(json_data_resolved_tx);
             |    val records = list<struct<$simpleEntityName>>.from_gtv_pretty(gtv.from_json(json_data));
             |    var batch = list<struct<$simpleEntityName>>();
             |    var persisted = list<$simpleEntityName>();
@@ -152,13 +156,14 @@ class RellDataExporter : BaseDataExporter() {
         return functionName
     }
 
-    private fun generateSeedDataOperation(data: GeneratedData): String {
+    private fun generateSeedDataOperation(data: GeneratedData, fileName: String): String {
         val seedCalls = data.entityData.keys.joinToString("\n    ") { entityName ->
             val functionName = getFunctionName(entityName)
             "seed_$functionName(existing_data, batch_size);"
         }
 
         return """
+            |@mount("$fileName.seed_data")
             |operation seed_data(batch_size: integer = $DEFAULT_BATCH_SIZE) {
             |    val existing_data = map<integer, gtv>();
             |    $seedCalls
@@ -192,13 +197,13 @@ class RellDataExporter : BaseDataExporter() {
             |struct iteration_state {
             |    mutable current: integer;
             |    data: list<integer>;
-            |}    
+            |}
         """.trimMargin()
     }
 
+    // TODO: Evaluate data.size() operation for 10_000 records, or if we should add size to itteration_state
     private fun textInsertRowidFunctionString(): String {
         return """
-            |// TODO: Evaluate data.size() operation for 10_000 records, or if we should add size to itteration_state
             |function text_insert_rowid(value: text, state: iteration_state): text {
             |    val value_with_rowid = if (state.current < state.data.size())
             |        value + state.data[state.current]
@@ -222,6 +227,26 @@ class RellDataExporter : BaseDataExporter() {
         |    val parts = json_data.split('"%REF"');
         |    val state = iteration_state(current = 0, data = replacements);
         |    return parts.join_to_text(' ', '', '', null, '', text_insert_rowid(*, state));
+        |}
+        """.trimMargin()
+    }
+
+    private fun resolveTransactionFunctionString(): String {
+        return """
+        |function resolve_tx(json_data: text): text {
+        |    val tx = op_context.transaction;
+        |    val tx_as_text = tx.to_gtv().to_json().to_text();
+        |    return json_data.replace('"%TX_ENTITY"', tx_as_text);
+        |}
+        """.trimMargin()
+    }
+
+    private fun resolveBlockFunctionString(): String {
+        return """
+        |function resolve_block(json_data: text): text {
+        |    val block = op_context.transaction.block;
+        |    val block_as_text = block.to_gtv().to_json().to_text();
+        |    return json_data.replace('"%BLOCK_ENTITY"', block_as_text);
         |}
         """.trimMargin()
     }

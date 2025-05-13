@@ -10,6 +10,7 @@ import net.postchain.rell.base.lib.type.R_IntegerType
 import net.postchain.rell.base.lib.type.R_JsonType
 import net.postchain.rell.base.lib.type.R_RowidType
 import net.postchain.rell.base.lib.type.R_TextType
+import net.postchain.rell.base.model.R_EnumType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.associateNotNullValues
 import net.postchain.rell.toolbox.seeder.Attribute
@@ -70,6 +71,7 @@ class InitialConfigGenerator {
             is R_ByteArrayType -> AttributeConfig.ByteArrayConfig() // Default handling
             is R_RowidType -> AttributeConfig.Range(1, 1000)
             is R_JsonType -> AttributeConfig.DataPatternConfig("random.json")
+            is R_EnumType -> AttributeConfig.DataPatternConfig("random.enum")
             else -> null // Skipping generating default generator for other types
         }
     }

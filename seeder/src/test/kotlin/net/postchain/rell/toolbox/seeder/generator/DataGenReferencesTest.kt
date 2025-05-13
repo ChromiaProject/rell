@@ -288,4 +288,78 @@ class DataGenReferencesTest {
         assertThat(fieldNonReferenceData.map { it.isReference }).containsOnly(false)
         assertThat(fieldNonReferenceData.map { it.entityReferenceType }).containsOnly(null)
     }
+
+    // TODO: If a user defines a entity attribute as `key transaction`, we can't have a count higher than 1.
+    //  Consider if we want to add this check in the config parser or somewhere else. For better UX
+    @Test
+    fun `should handle field of type system transaction entity`() {
+        val entityName = "entity_name"
+        val fieldName = "transaction" // System entity
+
+        val testDataBuilder = testData(tempDir) {
+            addModule(
+                moduleName.replace(".", "/"),
+                """
+                module;
+                entity $entityName {
+                    $fieldName;
+                }
+                """.trimIndent()
+            )
+        }
+
+        val configFilePath = configFile(tempDir) {
+            configuration {
+                module(moduleName) {
+                    entity(entityName) { count(5) }
+                }
+            }
+        }
+
+        val schema = schemaReader.readSchema(testDataBuilder.sourceFolder)
+        val config = configParser.parseConfiguration(configFilePath, schema)
+
+        val result = dataGenerator.generate(schema, config)
+
+        val entityData = result.entityData["$moduleName:$entityName"]!!
+        val fieldReferenceData = entityData.map { it.fields[fieldName]!! }
+
+        assertThat(fieldReferenceData.map { it.value }).containsOnly("%TX_ENTITY")
+    }
+
+    @Test
+    fun `should handle field of type system block entity`() {
+        val entityName = "entity_name"
+        val fieldName = "block" // System entity
+
+        val testDataBuilder = testData(tempDir) {
+            addModule(
+                moduleName.replace(".", "/"),
+                """
+                module;
+                entity $entityName {
+                    $fieldName;
+                }
+                """.trimIndent()
+            )
+        }
+
+        val configFilePath = configFile(tempDir) {
+            configuration {
+                module(moduleName) {
+                    entity(entityName) { count(5) }
+                }
+            }
+        }
+
+        val schema = schemaReader.readSchema(testDataBuilder.sourceFolder)
+        val config = configParser.parseConfiguration(configFilePath, schema)
+
+        val result = dataGenerator.generate(schema, config)
+
+        val entityData = result.entityData["$moduleName:$entityName"]!!
+        val fieldReferenceData = entityData.map { it.fields[fieldName]!! }
+
+        assertThat(fieldReferenceData.map { it.value }).containsOnly("%BLOCK_ENTITY")
+    }
 }
