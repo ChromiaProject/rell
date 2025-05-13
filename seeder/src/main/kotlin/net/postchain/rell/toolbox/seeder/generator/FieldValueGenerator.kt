@@ -116,10 +116,12 @@ class FieldValueGenerator(
         ctx: DataGeneratorContext,
         existingEntityData: Map<String, List<EntityRecord>>,
     ): FieldValue<Any>? {
-        return if (ctx.attribute.isReference) {
-            generateReferenceValue(ctx, existingEntityData)
-        } else {
-            FieldValue(generatePrimitiveValue(ctx))
+        // Transaction check needs to be before isReference, because transaction is also a reference
+        return when {
+            ctx.attribute.type.name == "transaction" -> FieldValue("%TX_ENTITY")
+            ctx.attribute.type.name == "block" -> FieldValue("%BLOCK_ENTITY")
+            ctx.attribute.isReference -> generateReferenceValue(ctx, existingEntityData)
+            else -> FieldValue(generatePrimitiveValue(ctx))
         }
     }
 

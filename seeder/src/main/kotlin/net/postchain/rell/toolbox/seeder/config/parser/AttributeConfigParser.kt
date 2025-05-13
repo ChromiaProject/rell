@@ -12,6 +12,7 @@ import net.postchain.rell.toolbox.seeder.config.Distribution
 import net.postchain.rell.toolbox.seeder.generator.pattern.DataPatternGenerator
 import net.postchain.rell.toolbox.seeder.generator.pattern.FakerGeneratorFactory
 import java.math.BigInteger
+import net.postchain.rell.base.model.R_EnumType
 
 class AttributeConfigParser {
     fun createAttributeConfig(
@@ -55,6 +56,7 @@ class AttributeConfigParser {
             attribute.type is R_BigIntegerType && generator.type is R_IntegerType -> true
             attribute.type is R_DecimalType && generator.type is R_IntegerType -> true
             attribute.type is R_JsonType && generator.identifier == "random.json" -> true
+            attribute.type is R_EnumType && generator.identifier == "random.enum" -> true
             else -> false
         }
     }
