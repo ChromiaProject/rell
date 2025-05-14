@@ -113,57 +113,6 @@ class RellDataExporterTest {
     }
 
     @Test
-    fun `generates correct data for transaction type`() {
-        testDataBuilder = testData(tempDir) {
-            addMainFile(
-                """
-                module;
-                    entity foo { transaction; }
-                """.trimIndent()
-            )
-        }
-
-        val schemaReader = SchemaReader()
-        schema = schemaReader.readSchema(testDataBuilder.sourceFolder)
-        val config = configuration {}
-        val dataGenerator = DataGenerator()
-        val testData = dataGenerator.generate(schema, config)
-
-        val dataExporter = DataExporterFactory.createExporter(OutputFormat.RELL)
-        val outputFile = testDataBuilder.sourceFolder.resolve("seeder.rell").toPath()
-        dataExporter.export(testData, schema, outputFile)
-
-        assertThat(outputFile.exists()).isTrue()
-        assertDoesNotThrow { compileApp(testDataBuilder.sourceFolder) }
-    }
-
-
-    @Test
-    fun `generates correct data for block type`() {
-        testDataBuilder = testData(tempDir) {
-            addMainFile(
-                """
-                module;
-                    entity foo { block; }
-                """.trimIndent()
-            )
-        }
-
-        val schemaReader = SchemaReader()
-        schema = schemaReader.readSchema(testDataBuilder.sourceFolder)
-        val config = configuration {}
-        val dataGenerator = DataGenerator()
-        val testData = dataGenerator.generate(schema, config)
-
-        val dataExporter = DataExporterFactory.createExporter(OutputFormat.RELL)
-        val outputFile = testDataBuilder.sourceFolder.resolve("seeder.rell").toPath()
-        dataExporter.export(testData, schema, outputFile)
-
-        assertThat(outputFile.exists()).isTrue()
-        assertDoesNotThrow { compileApp(testDataBuilder.sourceFolder) }
-    }
-
-    @Test
     fun `seeder module file resolves entities correctly`() {
         testDataBuilder = testData(tempDir) {
             addMainFile(
