@@ -164,7 +164,6 @@ class RellDataExporter : BaseDataExporter() {
         }
 
         return """
-            |@mount("$fileName.seed_data")
             |operation seed_data(batch_size: integer = $DEFAULT_BATCH_SIZE) {
             |    val existing_data = map<integer, gtv>();
             |    $seedCalls
