@@ -13,12 +13,7 @@ import net.postchain.rell.base.mtype.M_Types
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_TupleComparator
 import net.postchain.rell.base.runtime.utils.toGtv
-import net.postchain.rell.base.utils.CommonUtils
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.checkEquals
-import net.postchain.rell.base.utils.mapIndexedToImmList
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.*
 
 class R_TupleType(val fields: ImmList<R_TupleField>): R_Type(calcName(fields)) {
     val virtualType = R_VirtualTupleType(this)

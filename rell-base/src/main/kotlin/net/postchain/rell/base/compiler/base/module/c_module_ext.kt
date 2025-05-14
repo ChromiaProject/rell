@@ -16,13 +16,8 @@ import net.postchain.rell.base.compiler.base.namespace.C_UserNsProtoBuilder
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.R_EnumDefinition
 import net.postchain.rell.base.model.R_ModuleName
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.ImmMap
-import net.postchain.rell.base.utils.associateToImmMap
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
-import net.postchain.rell.base.utils.immMultimapOf
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMultimap
 
 data class C_ExtChainName(val name: String) {
     fun toExtChain(appCtx: C_AppContext): C_ExternalChain = appCtx.addExternalChain(name)

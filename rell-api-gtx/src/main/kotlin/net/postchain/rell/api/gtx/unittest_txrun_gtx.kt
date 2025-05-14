@@ -37,7 +37,6 @@ import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.SqlInterceptor
 import net.postchain.rell.base.sql.SqlUtils.withSavepoint
 import net.postchain.rell.base.utils.*
-import net.postchain.rell.gtx.PostchainBaseUtils
 import net.postchain.rell.gtx.Rt_PostchainTxContext
 import net.postchain.rell.gtx.Rt_PostchainTxContextFactory
 import net.postchain.rell.module.RellPostchainModuleEnvironment

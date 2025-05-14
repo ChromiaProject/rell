@@ -8,12 +8,7 @@ import com.google.common.collect.Sets
 import net.postchain.rell.base.compiler.base.core.C_VarId
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.ImmMap
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.immMapOf
-import net.postchain.rell.base.utils.startsWith
-import net.postchain.rell.base.utils.toImmMap
+import net.postchain.rell.base.utils.*
 
 enum class C_VarChanged {
     YES,

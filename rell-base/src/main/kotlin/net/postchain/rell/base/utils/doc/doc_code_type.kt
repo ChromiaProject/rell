@@ -8,7 +8,6 @@ import net.postchain.rell.base.lmodel.L_TypeDefDocCodeStrategy
 import net.postchain.rell.base.mtype.M_TypeVariance
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
-import net.postchain.rell.base.utils.toImmList
 
 sealed class DocType {
     abstract fun genCode(b: DocCode.Builder, nullable: Boolean = false)

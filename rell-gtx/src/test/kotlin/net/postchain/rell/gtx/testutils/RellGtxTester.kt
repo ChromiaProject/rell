@@ -28,7 +28,6 @@ import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.sql.SqlExecutor
 import net.postchain.rell.base.testutils.*
 import net.postchain.rell.base.utils.CommonUtils
-import net.postchain.rell.gtx.PostchainBaseUtils
 import net.postchain.rell.module.RellPostchainModuleEnvironment
 import net.postchain.rell.module.RellPostchainModuleFactory
 import kotlin.test.assertEquals

@@ -6,13 +6,8 @@ package net.postchain.rell.base.compiler.base.utils
 
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.model.R_LangVersion
-import net.postchain.rell.base.utils.CommonUtils
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.RellVersions
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeFilePath
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
 import org.apache.commons.lang3.StringUtils
 import java.io.File
 import java.util.*

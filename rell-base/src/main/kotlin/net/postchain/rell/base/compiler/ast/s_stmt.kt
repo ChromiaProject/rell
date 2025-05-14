@@ -14,13 +14,9 @@ import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.stmt.*
-import net.postchain.rell.base.utils.MutableTypedKeyMap
-import net.postchain.rell.base.utils.TypedKey
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import net.postchain.rell.base.utils.immSetOf
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmSet
 
 abstract class S_Statement(val startPos: S_Pos, val endPos: S_Pos) {
     private val modifiedVars = TypedKey<Set<R_Name>>()

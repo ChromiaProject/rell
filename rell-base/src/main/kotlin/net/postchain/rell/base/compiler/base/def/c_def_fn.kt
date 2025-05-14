@@ -19,13 +19,9 @@ import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget_RegularUserFunction
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.ImmMultimap
-import net.postchain.rell.base.utils.LazyPosString
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.ide.IdeCompletion
-import net.postchain.rell.base.utils.immMultimapOf
-import net.postchain.rell.base.utils.toImmMultimap
 
 abstract class C_GlobalFunction {
     open fun getFunctionDefinition(): R_FunctionDefinition? = null

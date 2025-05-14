@@ -20,7 +20,8 @@ import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
-import net.postchain.rell.base.sql.*
+import net.postchain.rell.base.sql.SqlManager
+import net.postchain.rell.base.sql.SqlUtils
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.gtx.Rt_PostchainOpContext
 import net.postchain.rell.gtx.Rt_PostchainTxContext

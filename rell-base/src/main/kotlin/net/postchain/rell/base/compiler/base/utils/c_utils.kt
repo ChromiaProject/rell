@@ -7,7 +7,10 @@ package net.postchain.rell.base.compiler.base.utils
 import com.github.h0tk3y.betterParse.lexer.TokenMatchesSequence
 import com.github.h0tk3y.betterParse.lexer.TokenProducer
 import com.github.h0tk3y.betterParse.parser.*
-import net.postchain.rell.base.compiler.ast.*
+import net.postchain.rell.base.compiler.ast.S_BasicPos
+import net.postchain.rell.base.compiler.ast.S_Pos
+import net.postchain.rell.base.compiler.ast.S_RellFile
+import net.postchain.rell.base.compiler.ast.S_ReplCommand
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.C_AttrUtils
 import net.postchain.rell.base.compiler.base.def.C_SysAttribute
@@ -26,7 +29,9 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.*
-import net.postchain.rell.base.utils.doc.*
+import net.postchain.rell.base.utils.doc.DocDeclaration
+import net.postchain.rell.base.utils.doc.DocDeclaration_Entity
+import net.postchain.rell.base.utils.doc.DocModifiers
 import net.postchain.rell.base.utils.ide.IdeFilePath
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import java.util.*

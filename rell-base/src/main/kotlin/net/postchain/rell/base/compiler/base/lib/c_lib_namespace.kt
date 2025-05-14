@@ -13,13 +13,8 @@ import net.postchain.rell.base.compiler.base.utils.C_RFullNamePath
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
-import net.postchain.rell.base.utils.immMapOf
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.mapValuesToImmMap
-import net.postchain.rell.base.utils.mutableMultimapOf
-import net.postchain.rell.base.utils.toImmMap
-import net.postchain.rell.base.utils.toImmSet
 
 class C_LibNamespace private constructor(
     private val namePath: C_RFullNamePath,

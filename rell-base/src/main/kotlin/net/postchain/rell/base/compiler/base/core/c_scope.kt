@@ -12,12 +12,8 @@ import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMemberTag
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.model.R_Name
-import net.postchain.rell.base.utils.Getter
-import net.postchain.rell.base.utils.ImmMultimap
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
-import net.postchain.rell.base.utils.immMultimapOf
-import net.postchain.rell.base.utils.mutableMultimapOf
-import net.postchain.rell.base.utils.toImmMultimap
 
 class C_ScopeBuilder {
     private val scope: C_Scope

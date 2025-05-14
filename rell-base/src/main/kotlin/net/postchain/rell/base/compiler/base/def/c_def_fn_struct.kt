@@ -16,12 +16,8 @@ import net.postchain.rell.base.compiler.base.utils.C_IdeCompletionsUtils
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.compiler.vexpr.V_StructExpr
 import net.postchain.rell.base.model.R_Struct
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.ImmMultimap
-import net.postchain.rell.base.utils.LazyPosString
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
-import net.postchain.rell.base.utils.immMapOf
-import net.postchain.rell.base.utils.toImmMultimap
 
 class C_StructGlobalFunction(private val struct: R_Struct): C_GlobalFunction() {
     override fun compileCall0(

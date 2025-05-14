@@ -20,18 +20,14 @@ import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lib.type.V_ObjectExpr
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.LazyPosString
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
-import net.postchain.rell.base.utils.filterToImmList
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeCompletionParam
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
 
 class C_NsEntry(val name: R_Name, val member: C_NamespaceMember) {
     fun addToNamespace(nsBuilder: C_NamespaceBuilder) {

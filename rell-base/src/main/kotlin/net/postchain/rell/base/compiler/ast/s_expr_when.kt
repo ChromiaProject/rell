@@ -17,12 +17,7 @@ import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.lib.type.Rt_BooleanValue
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.immSetOf
-import net.postchain.rell.base.utils.mapIndexedToImmList
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
+import net.postchain.rell.base.utils.*
 
 class C_WhenChooserDetailsBuilder(
     val keyExpr: V_Expr?,

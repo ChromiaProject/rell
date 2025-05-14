@@ -10,15 +10,11 @@ import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.mtype.*
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocCode
 import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.futures.FcFuture
-import net.postchain.rell.base.utils.mapNotNullToImmList
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
 
 sealed class L_AbstractTypeDef {
     abstract fun getMTypeOrNull(): M_Type?

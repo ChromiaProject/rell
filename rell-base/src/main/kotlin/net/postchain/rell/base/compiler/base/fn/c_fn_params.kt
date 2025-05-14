@@ -16,18 +16,12 @@ import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_ParameterDefaultValue
 import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.associateByToImmMap
-import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDeclaration
 import net.postchain.rell.base.utils.doc.DocFunctionParam
 import net.postchain.rell.base.utils.doc.DocFunctionParamComments
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
 
 class C_FormalParameter(
     val name: C_Name,

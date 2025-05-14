@@ -16,15 +16,9 @@ import net.postchain.rell.base.model.stmt.R_IterableAdapter
 import net.postchain.rell.base.model.stmt.R_IterableAdapter_Direct
 import net.postchain.rell.base.mtype.M_TypeUtils
 import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolId
-import net.postchain.rell.base.utils.immMultimapOf
-import net.postchain.rell.base.utils.mapIndexedToImmList
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMultimap
-import net.postchain.rell.base.utils.toImmSet
 
 abstract class S_Expr(val startPos: S_Pos) {
     abstract fun compile(ctx: C_ExprContext, hint: C_ExprHint = C_ExprHint.DEFAULT): C_Expr

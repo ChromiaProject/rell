@@ -5,7 +5,9 @@
 package net.postchain.rell.base.runtime.utils
 
 import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.sql.*
+import net.postchain.rell.base.sql.SqlExecutor
+import net.postchain.rell.base.sql.SqlInterceptor
+import net.postchain.rell.base.sql.SqlPreparator
 import java.sql.SQLException
 
 object Rt_SqlManagerUtils {

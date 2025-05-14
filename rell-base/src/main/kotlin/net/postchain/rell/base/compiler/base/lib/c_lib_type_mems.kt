@@ -13,12 +13,7 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_TypeParam
 import net.postchain.rell.base.mtype.M_TypeSet
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.filterToImmList
-import net.postchain.rell.base.utils.flatMapToImmList
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.mapValuesToImmMap
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.*
 
 class C_TypeMemberReplacement(
     val selfType: M_Type?,

@@ -16,7 +16,6 @@ import net.postchain.rell.base.runtime.Rt_ModuleArgsSource
 import net.postchain.rell.base.utils.Bytes32
 import net.postchain.rell.base.utils.PostchainGtvUtils
 import net.postchain.rell.base.utils.mapKeysToImmMap
-import net.postchain.rell.base.utils.toImmMap
 import net.postchain.rell.base.utils.toIntExact
 import java.sql.Connection
 

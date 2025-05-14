@@ -16,14 +16,9 @@ import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.*
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.immMapOf
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmList
 
 private val INVALID_MODULE_SYMBOL_INFO = C_IdeSymbolInfo.UNKNOWN
 

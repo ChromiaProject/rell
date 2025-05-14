@@ -22,11 +22,7 @@ import net.postchain.rell.base.model.expr.R_BlockCheckExpr
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.expr.R_StackTraceExpr
 import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.ImmSet
-import net.postchain.rell.base.utils.immSetOf
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmSet
+import net.postchain.rell.base.utils.*
 
 class V_ExprInfo(
     val type: R_Type,

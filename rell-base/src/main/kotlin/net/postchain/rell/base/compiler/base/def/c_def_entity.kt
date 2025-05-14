@@ -14,14 +14,10 @@ import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.associateByToImmMap
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import net.postchain.rell.base.utils.mapValuesToImmMap
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMultimap
 
 private class C_EntityAttributeClause(
     private val defCtx: C_DefinitionContext,

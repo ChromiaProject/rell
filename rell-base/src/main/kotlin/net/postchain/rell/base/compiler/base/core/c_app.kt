@@ -13,14 +13,7 @@ import net.postchain.rell.base.compiler.base.namespace.C_NsAsm_ModuleAssembler
 import net.postchain.rell.base.compiler.base.namespace.C_NsAsm_ReplAssembler
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.ImmMap
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.putAllAbsent
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
-import net.postchain.rell.base.utils.toImmSet
+import net.postchain.rell.base.utils.*
 import org.apache.commons.collections4.SetUtils
 import java.util.concurrent.atomic.AtomicLong
 

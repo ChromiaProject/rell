@@ -14,11 +14,7 @@ import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_UpdateStatementWhat
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.checkEquals
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
+import net.postchain.rell.base.utils.*
 import java.util.*
 
 enum class S_BinaryOp(val code: String, val op: C_BinOp) {

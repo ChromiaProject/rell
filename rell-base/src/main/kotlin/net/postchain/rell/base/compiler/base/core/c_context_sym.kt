@@ -7,7 +7,9 @@ package net.postchain.rell.base.compiler.base.core
 import net.postchain.rell.base.compiler.ast.S_BasicPos
 import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_Pos
-import net.postchain.rell.base.compiler.base.utils.*
+import net.postchain.rell.base.compiler.base.utils.C_LateGetter
+import net.postchain.rell.base.compiler.base.utils.C_MessageManager
+import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.model.R_DefinitionName
 import net.postchain.rell.base.model.R_Name

@@ -9,12 +9,7 @@ import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.parser.Parser
 import com.github.h0tk3y.betterParse.parser.parseToEnd
 import net.postchain.rell.base.mtype.*
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.mapIndexedToImmList
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
-import net.postchain.rell.base.utils.toImmSet
+import net.postchain.rell.base.utils.*
 
 object MTestParser {
     fun parseType(code: String, scope: MTestScope): M_Type {

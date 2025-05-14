@@ -20,12 +20,7 @@ import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_ExprStatement
 import net.postchain.rell.base.runtime.Rt_CommonError
 import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.LazyPosString
-import net.postchain.rell.base.utils.LazyString
-import net.postchain.rell.base.utils.foldSimple
-import net.postchain.rell.base.utils.immMapOf
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.*
 
 object C_ExprUtils {
     val ERROR_R_EXPR = errorRExpr()

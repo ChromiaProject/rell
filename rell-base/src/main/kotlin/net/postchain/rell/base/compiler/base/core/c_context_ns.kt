@@ -17,18 +17,12 @@ import net.postchain.rell.base.compiler.base.modifier.C_ModifierValue
 import net.postchain.rell.base.compiler.base.namespace.*
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.immListOfNotNull
-import net.postchain.rell.base.utils.immMultimapOf
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.nounWithArticle
-import net.postchain.rell.base.utils.toImmList
 
 class C_NamespaceContext(
     val modCtx: C_ModuleContext,

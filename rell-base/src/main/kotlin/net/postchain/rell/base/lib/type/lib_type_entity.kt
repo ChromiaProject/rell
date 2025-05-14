@@ -24,12 +24,8 @@ import net.postchain.rell.base.model.R_EntityType
 import net.postchain.rell.base.model.R_Struct
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
-import net.postchain.rell.base.utils.CommonUtils
-import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmList
 
 object Lib_Type_Entity {
     val NAMESPACE = Ld_NamespaceDsl.make {

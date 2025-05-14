@@ -15,7 +15,8 @@ import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_TupleType
 import net.postchain.rell.base.model.Rt_TupleValue
-import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.Rt_Exception
+import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.PostchainGtvUtils
 import net.postchain.rell.base.utils.checkEquals
