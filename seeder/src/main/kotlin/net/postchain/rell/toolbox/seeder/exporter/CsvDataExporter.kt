@@ -8,7 +8,7 @@ import java.io.FileWriter
 import java.nio.file.Path
 
 class CsvDataExporter : BaseDataExporter() {
-    override fun export(data: GeneratedData, schema: RellSchema, outputPath: Path) {
+    override fun export(data: GeneratedData, schema: RellSchema, outputPath: Path, mountName: String) {
         // For CSV, we'll create a directory and export each entity to a separate file
         val outputFile = outputPath.toFile()
         val outputDir = if (outputFile.isDirectory) {

@@ -6,7 +6,7 @@ import java.io.FileWriter
 import java.nio.file.Path
 
 class SqlDataExporter : BaseDataExporter() {
-    override fun export(data: GeneratedData, schema: RellSchema, outputPath: Path) {
+    override fun export(data: GeneratedData, schema: RellSchema, outputPath: Path, mountName: String) {
         val outputFile = prepareOutputFile(outputPath)
         FileWriter(outputFile).use { writer ->
             for ((entityName, records) in data.entityData) {

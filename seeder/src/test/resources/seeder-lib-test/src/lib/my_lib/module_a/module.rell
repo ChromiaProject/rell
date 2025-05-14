@@ -1,0 +1,3 @@
+module;
+
+entity user {name;}

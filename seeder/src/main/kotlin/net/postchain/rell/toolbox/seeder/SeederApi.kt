@@ -13,12 +13,22 @@ import java.nio.file.Path
 
 object SeederApi {
     fun generateDefaultConfigurations(params: InitialConfigurationParams) {
-        val rellSchema = SchemaReader().readSchema(params.sourceDir, params.modules, params.rellVersion)
+        val rellSchema = SchemaReader().readSchema(
+            params.sourceDir,
+            params.modules,
+            params.rellVersion,
+            params.isLibrary
+        )
         InitialConfigGenerator().generate(rellSchema, params.outputPath)
     }
 
     fun generate(params: SeederParams) {
-        val rellSchema = SchemaReader().readSchema(params.sourceDir, params.modules, params.rellVersion)
+        val rellSchema = SchemaReader().readSchema(
+            params.sourceDir,
+            params.modules,
+            params.rellVersion,
+            params.isLibrary
+        )
 
         val configuration = params.seederConfig?.let {
             ConfigurationParser().parseConfiguration(it, rellSchema)
@@ -27,7 +37,7 @@ object SeederApi {
         val generatedData = DataGenerator().generate(rellSchema, configuration)
         val dataExporter = DataExporterFactory.createExporter(OutputFormat.RELL)
 
-        dataExporter.export(generatedData, rellSchema, params.outputPath)
+        dataExporter.export(generatedData, rellSchema, params.outputPath, params.mountName)
     }
 }
 
@@ -36,7 +46,9 @@ class SeederParams(
     val outputPath: Path,
     val modules: List<String>?,
     val rellVersion: R_LangVersion,
-    val seederConfig: Path?
+    val seederConfig: Path?,
+    val isLibrary: Boolean,
+    val mountName: String,
 ) {
 
     class Builder {
@@ -45,6 +57,8 @@ class SeederParams(
         private var modules: List<String>? = null
         private var rellVersion: R_LangVersion = RellVersions.VERSION
         private var seederConfig: Path? = null
+        private var isLibrary: Boolean = false
+        private var mountName: String? = null
 
         fun sourceDir(file: File) = apply { sourceDir = file }
 
@@ -56,11 +70,16 @@ class SeederParams(
 
         fun rootConfig(path: Path?) = apply { seederConfig = path }
 
+        fun isLibrary(isLibrary: Boolean) = apply { this.isLibrary = isLibrary }
+
+        fun mountName(mountName: String) = apply { this.mountName = mountName }
+
         fun build(): SeederParams {
             requireNotNull(sourceDir) { "sourceDir must be set" }
             requireNotNull(outputPath) { "outputPath must be set" }
+            requireNotNull(mountName) { "mountName must be set" }
 
-            return SeederParams(sourceDir!!, outputPath!!, modules, rellVersion, seederConfig)
+            return SeederParams(sourceDir!!, outputPath!!, modules, rellVersion, seederConfig, isLibrary, mountName!!)
         }
     }
 }
@@ -69,13 +88,15 @@ class InitialConfigurationParams(
     val sourceDir: File,
     val outputPath: Path,
     val modules: List<String>?,
-    val rellVersion: R_LangVersion
+    val rellVersion: R_LangVersion,
+    val isLibrary: Boolean,
 ) {
     class Builder {
         private var sourceDir: File? = null
         private var outputPath: Path? = null
         private var modules: List<String>? = null
         private var rellVersion: R_LangVersion = RellVersions.VERSION
+        private var isLibrary: Boolean = false
 
         fun sourceDir(file: File) = apply { sourceDir = file }
 
@@ -85,11 +106,13 @@ class InitialConfigurationParams(
 
         fun rellVersion(version: String) = apply { rellVersion = R_LangVersion.of(version) }
 
+        fun isLibrary(isLibrary: Boolean) = apply { this.isLibrary = isLibrary }
+
         fun build(): InitialConfigurationParams {
             requireNotNull(sourceDir) { "sourceDir must be set" }
             requireNotNull(outputPath) { "outputPath must be set" }
 
-            return InitialConfigurationParams(sourceDir!!, outputPath!!, modules, rellVersion)
+            return InitialConfigurationParams(sourceDir!!, outputPath!!, modules, rellVersion, isLibrary)
         }
     }
 }

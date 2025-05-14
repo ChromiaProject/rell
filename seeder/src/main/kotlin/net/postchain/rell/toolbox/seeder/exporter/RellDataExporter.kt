@@ -54,10 +54,11 @@ class RellDataExporter : BaseDataExporter() {
 
     private val importsMap = mutableMapOf<String, String>()
 
-    override fun export(data: GeneratedData, schema: RellSchema, outputPath: Path) {
+    override fun export(data: GeneratedData, schema: RellSchema, outputPath: Path, mountName: String) {
         val outputFile = prepareOutputFile(outputPath)
         FileWriter(outputFile).use { writer ->
             writer.write("$seederModuleWarning\n")
+            writer.write("@mount(\"$mountName\")\n")
             writer.write("module;\n\n")
 
             generateImports(data, schema, writer)

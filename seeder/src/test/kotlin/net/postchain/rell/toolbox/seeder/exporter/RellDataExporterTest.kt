@@ -16,6 +16,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.io.path.exists
+import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.readText
 
 // TODO: We do not have a handling if a user uses predefined value generator with %REF as a value
@@ -54,7 +55,58 @@ class RellDataExporterTest {
 
         val dataExporter = DataExporterFactory.createExporter(OutputFormat.RELL)
         val outputFile = testDataBuilder.sourceFolder.resolve("seeder.rell").toPath()
-        dataExporter.export(testData, schema, outputFile)
+        dataExporter.export(testData, schema, outputFile, outputFile.nameWithoutExtension)
+
+        assertThat(outputFile.exists()).isTrue()
+        assertDoesNotThrow { compileApp(testDataBuilder.sourceFolder) }
+    }
+
+    @Test
+    fun `generates correct data for transaction type`() {
+        testDataBuilder = testData(tempDir) {
+            addMainFile(
+                """
+                module;
+                    entity foo { transaction; }
+                """.trimIndent()
+            )
+        }
+
+        val schemaReader = SchemaReader()
+        schema = schemaReader.readSchema(testDataBuilder.sourceFolder)
+        val config = configuration {}
+        val dataGenerator = DataGenerator()
+        val testData = dataGenerator.generate(schema, config)
+
+        val dataExporter = DataExporterFactory.createExporter(OutputFormat.RELL)
+        val outputFile = testDataBuilder.sourceFolder.resolve("seeder.rell").toPath()
+        dataExporter.export(testData, schema, outputFile, outputFile.nameWithoutExtension)
+
+        assertThat(outputFile.exists()).isTrue()
+        assertDoesNotThrow { compileApp(testDataBuilder.sourceFolder) }
+    }
+
+
+    @Test
+    fun `generates correct data for block type`() {
+        testDataBuilder = testData(tempDir) {
+            addMainFile(
+                """
+                module;
+                    entity foo { block; }
+                """.trimIndent()
+            )
+        }
+
+        val schemaReader = SchemaReader()
+        schema = schemaReader.readSchema(testDataBuilder.sourceFolder)
+        val config = configuration {}
+        val dataGenerator = DataGenerator()
+        val testData = dataGenerator.generate(schema, config)
+
+        val dataExporter = DataExporterFactory.createExporter(OutputFormat.RELL)
+        val outputFile = testDataBuilder.sourceFolder.resolve("seeder.rell").toPath()
+        dataExporter.export(testData, schema, outputFile, outputFile.nameWithoutExtension)
 
         assertThat(outputFile.exists()).isTrue()
         assertDoesNotThrow { compileApp(testDataBuilder.sourceFolder) }
@@ -146,7 +198,7 @@ class RellDataExporterTest {
 
         val dataExporter = DataExporterFactory.createExporter(OutputFormat.RELL)
         val outputFile = testDataBuilder.sourceFolder.resolve("seeder.rell").toPath()
-        dataExporter.export(testData, schema, outputFile)
+        dataExporter.export(testData, schema, outputFile, outputFile.nameWithoutExtension)
 
         val fileContent = outputFile.readText()
 
@@ -193,7 +245,7 @@ class RellDataExporterTest {
 
         val dataExporter = DataExporterFactory.createExporter(OutputFormat.RELL)
         val outputFile = testDataBuilder.sourceFolder.resolve("seeder.rell").toPath()
-        dataExporter.export(testData, schema, outputFile)
+        dataExporter.export(testData, schema, outputFile, outputFile.nameWithoutExtension)
 
         val fileContent = outputFile.readText()
 
@@ -248,7 +300,7 @@ class RellDataExporterTest {
 
         val dataExporter = DataExporterFactory.createExporter(OutputFormat.RELL)
         val outputFile = testDataBuilder.sourceFolder.resolve("seeder.rell").toPath()
-        dataExporter.export(testData, schema, outputFile)
+        dataExporter.export(testData, schema, outputFile, outputFile.nameWithoutExtension)
 
         val fileContent = outputFile.readText()
 
@@ -284,7 +336,7 @@ class RellDataExporterTest {
 
         val dataExporter = DataExporterFactory.createExporter(OutputFormat.RELL)
         val outputFile = testDataBuilder.sourceFolder.resolve("seeder.rell").toPath()
-        dataExporter.export(testData, schema, outputFile)
+        dataExporter.export(testData, schema, outputFile, outputFile.nameWithoutExtension)
 
         val fileContent = outputFile.readText()
 
@@ -328,7 +380,7 @@ class RellDataExporterTest {
 
         val dataExporter = DataExporterFactory.createExporter(OutputFormat.RELL)
         val outputFile = testDataBuilder.sourceFolder.resolve("seeder.rell").toPath()
-        dataExporter.export(testData, schema, outputFile)
+        dataExporter.export(testData, schema, outputFile, outputFile.nameWithoutExtension)
 
         val fileContent = outputFile.readText()
 
@@ -383,7 +435,7 @@ class RellDataExporterTest {
 
         val dataExporter = DataExporterFactory.createExporter(OutputFormat.RELL)
         val outputFile = testDataBuilder.sourceFolder.resolve("seeder.rell").toPath()
-        dataExporter.export(testData, schema, outputFile)
+        dataExporter.export(testData, schema, outputFile, outputFile.nameWithoutExtension)
 
         assertDoesNotThrow { compileApp(testDataBuilder.sourceFolder) }
     }

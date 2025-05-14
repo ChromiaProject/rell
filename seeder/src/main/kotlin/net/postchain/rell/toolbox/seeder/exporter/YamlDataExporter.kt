@@ -12,7 +12,7 @@ class YamlDataExporter : BaseDataExporter() {
         enable(SerializationFeature.INDENT_OUTPUT)
     }
 
-    override fun export(data: GeneratedData, schema: RellSchema, outputPath: Path) {
+    override fun export(data: GeneratedData, schema: RellSchema, outputPath: Path, mountName: String) {
         val outputFile = prepareOutputFile(outputPath)
         objectMapper.writeValue(outputFile, data.entityData)
     }

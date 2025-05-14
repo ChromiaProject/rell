@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.io.path.absolutePathString
+import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.readText
 
 class SeederTest {
@@ -46,7 +47,7 @@ class SeederTest {
         val dataExporter = DataExporterFactory.createExporter(OutputFormat.RELL)
 //        val outputFile = File("seeder.rell").toPath()
         val outputFile = tempDir.resolve("seeder.rell").toPath()
-        dataExporter.export(data, schema, outputFile)
+        dataExporter.export(data, schema, outputFile, outputFile.nameWithoutExtension)
 
         println(outputFile.readText())
 
