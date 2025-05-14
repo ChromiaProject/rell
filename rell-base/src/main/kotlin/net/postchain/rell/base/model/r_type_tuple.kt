@@ -14,12 +14,13 @@ import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_TupleComparator
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.mapIndexedToImmList
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
-import java.util.*
 
-class R_TupleType(fields: List<R_TupleField>): R_Type(calcName(fields)) {
-    val fields = fields.toImmList()
+class R_TupleType(val fields: ImmList<R_TupleField>): R_Type(calcName(fields)) {
     val virtualType = R_VirtualTupleType(this)
 
     init {
@@ -52,7 +53,7 @@ class R_TupleType(fields: List<R_TupleField>): R_Type(calcName(fields)) {
         )
     }
 
-    override fun explicitComponentTypes() = fields.map { it.type }.toImmList()
+    override fun explicitComponentTypes() = fields.mapToImmList { it.type }
 
     override fun isAssignableFrom(type: R_Type): Boolean {
         if (type !is R_TupleType) return false
@@ -72,7 +73,7 @@ class R_TupleType(fields: List<R_TupleField>): R_Type(calcName(fields)) {
         if (other !is R_TupleType) return null
         if (fields.size != other.fields.size) return null
 
-        val resFields = fields.mapIndexed { i, field ->
+        val resFields = fields.mapIndexedToImmList { i, field ->
             val otherField = other.fields[i]
             if (field.name != otherField.name) return null
 
@@ -118,12 +119,12 @@ class R_TupleType(fields: List<R_TupleField>): R_Type(calcName(fields)) {
         }
 
         fun create(fields: List<R_Type>): R_TupleType {
-            val fieldsList = fields.mapIndexed { i, type -> R_TupleField(i, null, type) }
+            val fieldsList = fields.mapIndexedToImmList { i, type -> R_TupleField(i, null, type) }
             return R_TupleType(fieldsList)
         }
 
         fun createNamed(vararg fields: Pair<String?, R_Type>): R_TupleType {
-            val fieldsList = fields.mapIndexed { i, (name, type) ->
+            val fieldsList = fields.mapIndexedToImmList { i, (name, type) ->
                 val rIdeName = name?.let { s -> R_IdeName(R_Name.of(s), C_IdeSymbolInfo.MEM_TUPLE_ATTR) }
                 R_TupleField(i, rIdeName, type)
             }
@@ -149,7 +150,7 @@ class R_TupleField(val index: Int, val name: R_IdeName?, val type: R_Type) {
     }
 
     override fun equals(other: Any?): Boolean = other === this || (other is R_TupleField && name == other.name && type == other.type)
-    override fun hashCode() = Objects.hash(name, type)
+    override fun hashCode() = java.util.Objects.hash(name, type)
 
     fun toMetaGtv() = mapOf(
         "name" to (name?.rName?.str?.toGtv() ?: GtvNull),

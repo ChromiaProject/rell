@@ -20,6 +20,7 @@ import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_MountName
 import net.postchain.rell.base.utils.ide.IdeModuleInfo
 import net.postchain.rell.base.utils.ide.IdeOutlineTreeBuilder
+import net.postchain.rell.base.utils.mapNotNullToImmList
 import net.postchain.rell.base.utils.toImmSet
 
 class S_ModuleHeader(
@@ -63,7 +64,7 @@ class S_RellFile(
 
     fun compile(ctx: S_FileContext): C_MidModuleFile {
         val defCtx = ctx.createDefinitionContext()
-        val members = definitions.mapNotNull { it.compile(defCtx) }
+        val members = definitions.mapNotNullToImmList { it.compile(defCtx) }
         return C_MidModuleFile(ctx.path, members, startPos, defCtx.symCtx)
     }
 

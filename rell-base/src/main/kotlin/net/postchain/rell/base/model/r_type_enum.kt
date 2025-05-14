@@ -17,7 +17,7 @@ import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.doc.DocCode
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmSet
 import org.jooq.impl.SQLDataType
 
@@ -26,7 +26,7 @@ class R_EnumType(val enum: R_EnumDefinition): R_Type(enum.appLevelName, enum.cDe
         checkEquals(enum.type, null) // during initialization
     }
 
-    val values: List<Rt_Value> = enum.attrs.map { Rt_EnumValue(this, it) }.toImmList()
+    val values: List<Rt_Value> = enum.attrs.mapToImmList { Rt_EnumValue(this, it) }
     val valuesSet: Set<Rt_Value> = values.toImmSet()
 
     fun getValueOrNull(index: Int): Rt_Value? {

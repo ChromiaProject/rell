@@ -12,6 +12,7 @@ import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.LazyString
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.mapToImmList
 
 abstract class R_FunctionCallTarget {
     abstract fun call(callCtx: Rt_CallContext, baseValue: Rt_Value?, values: List<Rt_Value>): Rt_Value
@@ -61,7 +62,7 @@ class R_FunctionCallTarget_Operation(
 ): R_FunctionCallTarget() {
     override fun call(callCtx: Rt_CallContext, baseValue: Rt_Value?, values: List<Rt_Value>): Rt_Value {
         checkEquals(baseValue, null)
-        val gtvArgs = values.map { it.type().rtToGtv(it, false) }
+        val gtvArgs = values.mapToImmList { it.type().rtToGtv(it, false) }
         return Rt_TestOpValue(op.mountName, gtvArgs)
     }
 

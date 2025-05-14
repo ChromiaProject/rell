@@ -6,8 +6,9 @@ package net.postchain.rell.base.utils.doc
 
 import net.postchain.rell.base.lmodel.L_TypeDefDocCodeStrategy
 import net.postchain.rell.base.mtype.M_TypeVariance
-import net.postchain.rell.base.utils.Nullable
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.toImmList
 
 sealed class DocType {
     abstract fun genCode(b: DocCode.Builder, nullable: Boolean = false)
@@ -23,13 +24,13 @@ sealed class DocType {
         fun raw(s: String): DocType = DocType_Raw(s)
         fun name(name: String): DocType = DocType_Simple(name)
         fun nullable(valueType: DocType): DocType = DocType_Nullable(valueType)
-        fun function(resultType: DocType, paramTypes: List<DocType>): DocType = DocType_Function(resultType, paramTypes)
+        fun function(resultType: DocType, paramTypes: ImmList<DocType>): DocType = DocType_Function(resultType, paramTypes)
 
-        fun tuple(fieldTypes: List<DocType>, fieldNames: List<Nullable<String>>): DocType {
+        fun tuple(fieldTypes: ImmList<DocType>, fieldNames: ImmList<String?>): DocType {
             return DocType_Tuple(fieldTypes, fieldNames)
         }
 
-        fun generic(docCodeStrategy: L_TypeDefDocCodeStrategy, args: List<DocTypeSet>): DocType {
+        fun generic(docCodeStrategy: L_TypeDefDocCodeStrategy, args: ImmList<DocTypeSet>): DocType {
             return DocType_Generic(docCodeStrategy, args)
         }
     }
@@ -93,7 +94,7 @@ private class DocType_Nullable(private val valueType: DocType): DocType() {
 
 private class DocType_Function(
     private val resultType: DocType,
-    private val paramTypes: List<DocType>,
+    private val paramTypes: ImmList<DocType>,
 ): DocType() {
     override fun genCode(b: DocCode.Builder, nullable: Boolean) {
         if (nullable) {
@@ -116,8 +117,8 @@ private class DocType_Function(
 }
 
 private class DocType_Tuple(
-    private val fieldTypes: List<DocType>,
-    private val fieldNames: List<Nullable<String>>,
+    private val fieldTypes: ImmList<DocType>,
+    private val fieldNames: ImmList<String?>,
 ): DocType() {
     init {
         checkEquals(fieldNames.size, fieldTypes.size)
@@ -129,8 +130,8 @@ private class DocType_Tuple(
         for ((i, fieldType) in fieldTypes.withIndex()) {
             if (i > 0) b.sep(", ")
             val name = fieldNames[i]
-            if (name.value != null) {
-                b.raw(name.value)
+            if (name != null) {
+                b.raw(name)
                 b.sep(": ")
             }
             fieldType.genCode(b)
@@ -142,7 +143,7 @@ private class DocType_Tuple(
 
 private class DocType_Generic(
     private val docCodeStrategy: L_TypeDefDocCodeStrategy,
-    private val args: List<DocTypeSet>,
+    private val args: ImmList<DocTypeSet>,
 ): DocType() {
     override fun genCode(b: DocCode.Builder, nullable: Boolean) {
         val docArgs = args.map { arg ->

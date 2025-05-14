@@ -17,9 +17,10 @@ import net.postchain.rell.base.model.R_FrameBlock
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_VarPtr
 import net.postchain.rell.base.model.expr.R_ColAtParam
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmMultimap
 
 class C_AtFrom_Iterable(
@@ -58,34 +59,31 @@ class C_AtFrom_Iterable(
     override fun getAllExprs() = immListOf(item.vExpr)
     override fun innerExprCtx() = innerExprCtx
 
-    override fun makeDefaultWhatFields(ctx: C_ExprContext): List<V_DbAtWhatField> {
+    override fun makeDefaultWhatFields(ctx: C_ExprContext): ImmList<V_DbAtWhatField> {
         val vExpr = compilePlaceholderRef(ctx, pos)
         val field = V_DbAtWhatField(ctx.appCtx, null, vExpr.type, vExpr, V_AtWhatFieldFlags.DEFAULT, null)
         return immListOf(field)
     }
 
-    override fun findMembers(ctx: C_ExprContext, name: C_Name): List<C_AtFromMember> {
+    override fun findMembers(ctx: C_ExprContext, name: C_Name): ImmList<C_AtFromMember> {
         val base = C_AtFromBase_Iterable(ctx, name.pos)
         val selfType = base.vItemExpr.type
         val members = ctx.typeMgr.getValueMembers(selfType, name.rName)
-        return members.map { C_AtFromMember(base, selfType, it, false) }.toImmList()
+        return members.mapToImmList { C_AtFromMember(base, selfType, it, false) }
     }
 
-    override fun findImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): List<C_AtFromImplicitAttr> {
+    override fun findImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): ImmList<C_AtFromImplicitAttr> {
         val base = C_AtFromBase_Iterable(ctx, name.pos)
         val selfType = base.vItemExpr.type
         val members = ctx.typeMgr.getAtImplicitAttrsByName(selfType, name.rName)
-        return members
-            .map { C_AtFromImplicitAttr(base, selfType, it) }
-            .toImmList()
+        return members.mapToImmList { C_AtFromImplicitAttr(base, selfType, it) }
     }
 
-    override fun findImplicitAttributesByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): List<C_AtFromImplicitAttr> {
+    override fun findImplicitAttributesByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): ImmList<C_AtFromImplicitAttr> {
         val base = C_AtFromBase_Iterable(ctx, pos)
         val selfType = base.vItemExpr.type
         return ctx.typeMgr.getAtImplicitAttrsByType(selfType, type)
-            .map { C_AtFromImplicitAttr(base, selfType, it) }
-            .toImmList()
+            .mapToImmList { C_AtFromImplicitAttr(base, selfType, it) }
     }
 
     override fun ideCompletions(): Multimap<String, IdeCompletion> {

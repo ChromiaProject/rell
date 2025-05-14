@@ -153,12 +153,11 @@ class S_Name(val pos: S_Pos, private val rName: R_Name): S_Node() {
                 "map" to "0.11.0",
             )
             .mapKeys { R_Name.of(it.key) }
-            .mapValues {
+            .mapValuesToImmMap {
                 val name = it.key.str
                 val restrictions = C_FeatureRestrictions.make(it.value, name, "Name '$name' is")
                 C_ReservedName(restrictions, null)
             }
-            .toImmMap()
 
         private const val NEW_KWS_SINCE = "0.13.12"
 
@@ -189,8 +188,7 @@ class S_Name(val pos: S_Pos, private val rName: R_Name): S_Node() {
                 "yield" to NEW_KWS_SINCE,
             )
             .mapKeys { R_Name.of(it.key) }
-            .mapValues { C_ReservedName(null, RellVersions.parse(it.value)) }
-            .toImmMap()
+            .mapValuesToImmMap { C_ReservedName(null, RellVersions.parse(it.value)) }
 
         private val RESERVED_NAMES: Map<R_Name, C_ReservedName> = OLD_KEYWORDS.unionNoConflicts(NEW_KEYWORDS)
 
@@ -208,9 +206,7 @@ class S_Name(val pos: S_Pos, private val rName: R_Name): S_Node() {
     }
 }
 
-class S_QualifiedName(parts: List<S_Name>): S_Node() {
-    val parts = parts.toImmList()
-
+class S_QualifiedName(val parts: ImmList<S_Name>): S_Node() {
     init {
         check(this.parts.isNotEmpty())
     }
@@ -220,7 +216,7 @@ class S_QualifiedName(parts: List<S_Name>): S_Node() {
 
     constructor(name: S_Name): this(immListOf(name))
 
-    fun add(name: S_Name) = S_QualifiedName(parts + name)
+    fun add(name: S_Name) = S_QualifiedName((parts + name).toImmList())
 
     fun str() = parts.joinToString(".")
     override fun toString() = str()

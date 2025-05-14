@@ -10,11 +10,13 @@ import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.mtype.*
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.doc.DocCode
 import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.futures.FcFuture
+import net.postchain.rell.base.utils.mapNotNullToImmList
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 
@@ -33,9 +35,7 @@ class L_TypeDefFlags(
     val hidden: Boolean,
 )
 
-class L_TypeDefMembers(members: List<L_TypeDefMember>) {
-    val all = members.toImmList()
-
+class L_TypeDefMembers(val all: ImmList<L_TypeDefMember>) {
     val docMembers: Map<String, DocDefinition> by lazy {
         all
             .groupBy { it.symName }
@@ -47,7 +47,7 @@ class L_TypeDefMembers(members: List<L_TypeDefMember>) {
 
     fun replaceTypeParams(map: Map<M_TypeParam, M_TypeSet>): L_TypeDefMembers {
         val replace = ReplaceState(map)
-        val resAll = all.mapNotNull { member ->
+        val resAll = all.mapNotNullToImmList { member ->
             replaceTypeParamsCache(replace, member)
         }
         return L_TypeDefMembers(resAll)
@@ -128,9 +128,7 @@ class L_TypeDefMember_Alias(
     }
 }
 
-class L_TypeDefParent(val typeDef: L_TypeDef, args: List<M_Type>) {
-    val args = args.toImmList()
-
+class L_TypeDefParent(val typeDef: L_TypeDef, val args: ImmList<M_Type>) {
     init {
         checkEquals(this.args.size, typeDef.mGenericType.params.size)
     }
@@ -162,7 +160,7 @@ class L_TypeDef(
                 parent.typeDef.allMembers.replaceTypeParams(typeArgs)
             }
 
-            val allMems = members.all + parentMembers.all
+            val allMems = (members.all + parentMembers.all).toImmList()
             L_TypeDefMembers(allMems)
         }
     }

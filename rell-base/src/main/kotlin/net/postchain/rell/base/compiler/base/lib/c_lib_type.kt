@@ -21,6 +21,7 @@ import net.postchain.rell.base.mtype.M_GenericType
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_TypeParamsResolver
 import net.postchain.rell.base.mtype.M_TypeSets
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.doc.DocCode
@@ -64,8 +65,8 @@ sealed class C_LibType(val mType: M_Type) {
             rType: R_Type,
             doc: DocCode,
             constructorFn: C_GlobalFunction? = null,
-            staticMembers: List<C_TypeStaticMember> = immListOf(),
-            valueMembers: Lazy<List<C_TypeValueMember>> = lazyOf(immListOf()),
+            staticMembers: ImmList<C_TypeStaticMember> = immListOf(),
+            valueMembers: Lazy<ImmList<C_TypeValueMember>> = lazyOf(immListOf()),
         ): C_LibType {
             val docCodeStrategy = L_TypeDefDocCodeStrategy { doc }
             val mType = L_TypeUtils.makeMType(rType, null, docCodeStrategy)
@@ -75,8 +76,8 @@ sealed class C_LibType(val mType: M_Type) {
         fun make(
             mType: M_Type,
             constructorFn: C_GlobalFunction? = null,
-            staticMembers: List<C_TypeStaticMember> = immListOf(),
-            valueMembers: Lazy<List<C_TypeValueMember>> = lazyOf(immListOf()),
+            staticMembers: ImmList<C_TypeStaticMember> = immListOf(),
+            valueMembers: Lazy<ImmList<C_TypeValueMember>> = lazyOf(immListOf()),
         ): C_LibType {
             return C_LibType_MType(
                 mType,
@@ -90,14 +91,19 @@ sealed class C_LibType(val mType: M_Type) {
             typeDef: C_LibTypeDef,
             vararg args: R_Type,
             constructorFn: C_GlobalFunction? = null,
-            valueMembers: Lazy<List<C_TypeValueMember>> = lazyOf(immListOf()),
+            valueMembers: Lazy<ImmList<C_TypeValueMember>> = lazyOf(immListOf()),
         ): C_LibType {
             checkEquals(args.size, typeDef.mGenericType.params.size) {
                 "Wrong number of type arguments for '${typeDef.typeName}'"
             }
             val mArgs = args.map { it.mType }
             val lType = L_Type.make(typeDef.lTypeDef, mArgs)
-            return C_LibType_TypeDef(typeDef, lType, extraConstructor = constructorFn, extraValueMembers = valueMembers)
+            return C_LibType_TypeDef(
+                typeDef,
+                lType,
+                extraConstructor = constructorFn,
+                extraValueMembers = valueMembers,
+            )
         }
     }
 }
@@ -105,8 +111,8 @@ sealed class C_LibType(val mType: M_Type) {
 private class C_LibType_MType(
     mType: M_Type,
     private val constructorFn: C_GlobalFunction?,
-    staticMembers: List<C_TypeStaticMember>,
-    valueMembers: Lazy<List<C_TypeValueMember>>,
+    staticMembers: ImmList<C_TypeStaticMember>,
+    valueMembers: Lazy<ImmList<C_TypeValueMember>>,
 ): C_LibType(mType) {
     private val staticMembers: C_LibTypeMembers<C_TypeStaticMember> = C_LibTypeMembers.simple(staticMembers)
 
@@ -124,7 +130,7 @@ private class C_LibType_TypeDef(
     private val typeDef: C_LibTypeDef,
     private val lType: L_Type,
     private val extraConstructor: C_GlobalFunction?,
-    private val extraValueMembers: Lazy<List<C_TypeValueMember>>,
+    private val extraValueMembers: Lazy<ImmList<C_TypeValueMember>>,
 ): C_LibType(lType.mType) {
     private val constructorLazy: C_GlobalFunction? by lazy {
         C_LibTypeAdapter.makeConstructor(lType, typeDef.constructors)
@@ -180,8 +186,8 @@ class C_LibTypeItem<T>(
 )
 
 class C_LibTypeConstructors(
-    val constructors: List<C_LibTypeItem<L_Constructor>>,
-    val specialConstructors: List<C_LibTypeItem<C_SpecialLibGlobalFunctionBody>>,
+    val constructors: ImmList<C_LibTypeItem<L_Constructor>>,
+    val specialConstructors: ImmList<C_LibTypeItem<C_SpecialLibGlobalFunctionBody>>,
 )
 
 class C_LibTypeBody(
@@ -200,9 +206,10 @@ class C_LibTypeDef(
 
     private val mType0: M_Type? = if (mGenericType.params.isEmpty()) mGenericType.getType() else null
 
-    val mType: M_Type get() {
-        return checkNotNull(mType0) { "Not a simple type: ${mGenericType.strCode()}" }
-    }
+    val mType: M_Type
+        get() {
+            return checkNotNull(mType0) { "Not a simple type: ${mGenericType.strCode()}" }
+        }
 
     val constructors = body.constructors
     val rawConstructor = body.rawConstructor

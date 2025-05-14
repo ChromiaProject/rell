@@ -7,8 +7,10 @@ package net.postchain.rell.base.compiler.base.utils
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.ide.IdeFilePath
+import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 import org.apache.commons.lang3.StringUtils
@@ -21,18 +23,16 @@ class IdeSourcePathFilePath(val path: C_SourcePath): IdeFilePath() {
     override fun toString() = path.str()
 }
 
-class C_SourcePath private constructor(parts: List<String>): Comparable<C_SourcePath> {
-    val parts = parts.toImmList()
-
+class C_SourcePath private constructor(val parts: ImmList<String>): Comparable<C_SourcePath> {
     private val str = parts.joinToString("/")
 
-    fun add(path: C_SourcePath) = C_SourcePath(parts + path.parts)
+    fun add(path: C_SourcePath) = C_SourcePath((parts + path.parts).toImmList())
 
     fun add(part: String): C_SourcePath {
         if (!validate(part)) {
             throw errBadPath(part)
         }
-        return C_SourcePath(parts + part)
+        return C_SourcePath((parts + part).toImmList())
     }
 
     fun parent() = C_SourcePath(parts.subList(0, parts.size - 1))
@@ -44,7 +44,7 @@ class C_SourcePath private constructor(parts: List<String>): Comparable<C_Source
     override fun toString() = str()
 
     companion object {
-        val EMPTY = C_SourcePath(listOf())
+        val EMPTY = C_SourcePath(immListOf())
 
         fun of(): C_SourcePath = EMPTY
 
@@ -53,14 +53,14 @@ class C_SourcePath private constructor(parts: List<String>): Comparable<C_Source
                 val str = parts.joinToString("/")
                 throw errBadPath(str)
             }
-            return C_SourcePath(parts)
+            return C_SourcePath(parts.toImmList())
         }
 
         fun ofOpt(parts: List<String>): C_SourcePath? {
             if (!validate(parts)) {
                 return null
             }
-            return C_SourcePath(parts)
+            return C_SourcePath(parts.toImmList())
         }
 
         fun parse(path: String): C_SourcePath {
@@ -69,7 +69,7 @@ class C_SourcePath private constructor(parts: List<String>): Comparable<C_Source
         }
 
         fun parseOpt(path: String): C_SourcePath? {
-            val parts = StringUtils.splitPreserveAllTokens(path, "/\\").toList()
+            val parts = StringUtils.splitPreserveAllTokens(path, "/\\").toImmList()
             if (parts.isEmpty()) {
                 return null
             }

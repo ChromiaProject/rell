@@ -15,7 +15,12 @@ import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_SqlContext
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.filterNotNullToImmList
+import net.postchain.rell.base.utils.flatMapToImmList
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 
 class Db_AtFromItem(
@@ -63,7 +68,7 @@ class RedDb_AtExprFrom(
             exprs.add(expr)
         }
 
-        val validExprs = exprs.filterNotNull()
+        val validExprs = exprs.filterNotNullToImmList()
         val expr = if (validExprs.isEmpty()) {
             null
         } else {
@@ -93,10 +98,8 @@ class Rt_AtWhatItem_RExpr(private val frame: Rt_CallFrame, private val rExpr: R_
 class Rt_AtWhatItem_Evaluator(
         private val evaluator: Db_ComplexAtWhatEvaluator,
         private val frame: Rt_CallFrame,
-        values: List<Rt_AtWhatItem>
+        private val values: ImmList<Rt_AtWhatItem>
 ): Rt_AtWhatItem() {
-    private val values = values.toImmList()
-
     private val resultLazy: Rt_Value by lazy {
         evaluator.evaluate(frame, this.values)
     }
@@ -171,15 +174,12 @@ abstract class Db_ComplexAtWhatEvaluator {
 }
 
 class Db_AtWhatValue_Complex(
-    subWhatValues: List<Db_AtWhatValue>,
-    rExprs: List<R_Expr>,
-    items: List<Pair<Boolean, Int>>,
+    private val subWhatValues: ImmList<Db_AtWhatValue>,
+    private val rExprs: ImmList<R_Expr>,
+    private val items: ImmList<Pair<Boolean, Int>>,
     private val evaluator: Db_ComplexAtWhatEvaluator,
 ): Db_AtWhatValue() {
-    private val subWhatValues = subWhatValues.toImmList()
-    private val rawTypes = this.subWhatValues.flatMap { it.rawTypes() }.toImmList()
-    private val rExprs = rExprs.toImmList()
-    private val items = items.toImmList()
+    private val rawTypes = this.subWhatValues.flatMapToImmList { it.rawTypes() }
 
     init {
         items.forEach { (db, i) ->
@@ -194,7 +194,7 @@ class Db_AtWhatValue_Complex(
     }
 
     override fun combiner(frame: Rt_CallFrame): Rt_AtWhatCombiner {
-        val subCombiners = subWhatValues.map { it.combiner(frame) }.toImmList()
+        val subCombiners = subWhatValues.mapToImmList { it.combiner(frame) }
         val dbValueCount = subCombiners.sumOf { it.dbValueCount }
         return Rt_AtWhatCombiner_Complex(frame, subCombiners, dbValueCount)
     }
@@ -209,13 +209,13 @@ class Db_AtWhatValue_Complex(
         override fun combine(dbValues: List<Rt_Value>): Rt_AtWhatItem {
             var rVals = rValues
             if (rVals == null) {
-                rVals = rExprs.map { Rt_AtWhatItem_RExpr(frame, it) }.toImmList()
+                rVals = rExprs.mapToImmList { Rt_AtWhatItem_RExpr(frame, it) }
                 rValues = rVals
             }
 
             val dbValues2 = combineValues(subCombiners, dbValues)
 
-            val allValues = items.map { (db, i) ->
+            val allValues = items.mapToImmList { (db, i) ->
                 if (db) dbValues2[i] else rVals[i]
             }
 
@@ -224,9 +224,7 @@ class Db_AtWhatValue_Complex(
     }
 }
 
-class Db_AtWhatValue_ToStruct(private val rStruct: R_Struct, exprs: List<Db_Expr>): Db_AtWhatValue() {
-    private val exprs = exprs.toImmList()
-
+class Db_AtWhatValue_ToStruct(private val rStruct: R_Struct, private val exprs: ImmList<Db_Expr>): Db_AtWhatValue() {
     override fun rawTypes() = exprs.map { it.type }
 
     override fun toRedExprs(frame: Rt_CallFrame): List<RedDb_Expr> {
@@ -266,7 +264,7 @@ class RedDb_AtExprBase(
     private val selWhat: List<Db_AtWhatValue>,
     private val resultTypes: List<R_Type>,
 ) {
-    private val fromEntities = from.map { it.atEntity }.toImmList()
+    private val fromEntities = from.mapToImmList { it.atEntity }
 
     fun execute(frame: Rt_CallFrame, extras: Rt_AtExprExtras): List<List<Rt_Value>> {
         val rtSql = buildSql(frame.sqlCtx, extras)
@@ -408,7 +406,7 @@ class RedDb_AtExprBase(
 
         private fun translateWhat(ctx: SqlGenContext, redWhat: List<RedDb_AtWhatField>): List<ParameterizedSql> {
             val res = redWhat.filter { !it.flags.omit }.map { translateExpr(ctx, it.expr) }
-            return if (res.isNotEmpty()) res else listOf(ParameterizedSql("0", listOf()))
+            return if (res.isNotEmpty()) res else listOf(ParameterizedSql("0", immListOf()))
         }
 
         private fun translateGroupBy(ctx: SqlGenContext, redWhat: List<RedDb_AtWhatField>): List<ParameterizedSql> {
@@ -474,11 +472,9 @@ class RedDb_AtExprBase(
 }
 
 class Db_AtExprFrom(
-    from: List<Db_AtFromItem>,
+    private val from: ImmList<Db_AtFromItem>,
     private val block: R_FrameBlock? = null,
 ) {
-    private val from = from.toImmList()
-
     init {
         val fromEntities = Lists.transform(this.from) { it.atEntity }
         R_DbAtEntity.checkList(fromEntities)
@@ -493,14 +489,12 @@ class Db_AtExprFrom(
 
 class Db_AtExprBase(
     private val from: Db_AtExprFrom,
-    what: List<Db_AtWhatField>,
+    private val what: ImmList<Db_AtWhatField>,
     private val where: Db_Expr?,
     private val isMany: Boolean,
 ) {
-    private val what = what.toImmList()
-
-    private val selWhat = what.filter { !it.flags.omit }.map { it.value }.toImmList()
-    private val resultTypes = selWhat.flatMap { it.rawTypes() }.toImmList()
+    private val selWhat = what.filter { !it.flags.omit }.mapToImmList { it.value }
+    private val resultTypes = selWhat.flatMapToImmList { it.rawTypes() }
 
     fun toRedFrom(frame: Rt_CallFrame): RedDb_AtExprFrom {
         val redItems = from.toRedItems(frame)

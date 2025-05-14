@@ -11,6 +11,7 @@ import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.toImmMap
 
@@ -52,7 +53,7 @@ object C_DocUtils {
         return if (deprecated == null) null else DocModifier.deprecated(deprecated.error)
     }
 
-    fun getAllComments(rApp: R_App): Map<String, String> {
+    fun getAllComments(rApp: R_App): ImmMap<String, String> {
         val map = mutableMapOf<String, String>()
         val set = mutableSetOf<DocDefinition>()
         for (module in rApp.modules.sortedBy { it.name }) {

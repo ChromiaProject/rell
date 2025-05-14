@@ -15,7 +15,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.PostchainGtvUtils
 import net.postchain.rell.base.utils.checkEquals
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.mapToImmList
 import org.junit.Test
 import java.math.BigInteger
 import java.security.MessageDigest
@@ -566,7 +566,7 @@ class LibCryptoTest: BaseRellTest() {
         val gtv = loadJsonResource("/lib_crypto_key_testcases_python.json")
         checkEquals(gtv.asArray().size, 256)
         return gtv.asArray()
-            .map { obj ->
+            .mapToImmList { obj ->
                 val tc = PyKeyTestCase(
                     sk = getBytes(obj, "sk"),
                     pk1 = getBytes(obj, "pk1"),
@@ -580,7 +580,6 @@ class LibCryptoTest: BaseRellTest() {
                 checkEquals(tc.pk2.length, 33 * 2)
                 tc
             }
-            .toImmList()
     }
 
     private fun loadJsonResource(path: String): Gtv {

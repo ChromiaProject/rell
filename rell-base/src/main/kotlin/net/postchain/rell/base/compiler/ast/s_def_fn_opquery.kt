@@ -32,7 +32,7 @@ import net.postchain.rell.base.utils.ide.IdeSymbolKind
 class S_OperationDefinition(
     base: S_DefinitionBase,
     val name: S_Name,
-    val params: List<S_FormalParameter>,
+    val params: ImmList<S_FormalParameter>,
     val body: S_Statement,
 ): S_BasicDefinition(base) {
     override fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
@@ -72,9 +72,7 @@ class S_OperationDefinition(
         ctx.nsBuilder.addOperation(cDefBase.nsMemBase(modDeprecated), cName, cOperation)
         ctx.mntBuilder.addOperation(cName, rOperation)
 
-        // TODO COLLECTIONS_REFACTORING
-        val ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>> =
-            C_LateInit(C_CompilerPass.VALIDATION, immMultimapOf<String, IdeCompletion>())
+        val ideCompsLate = C_LateInit(C_CompilerPass.VALIDATION, immMultimapOf<String, IdeCompletion>())
 
         ctx.executor.onPass(C_CompilerPass.MEMBERS) {
             val header = compileHeader(defCtx, cName, cOperation, rOperation.mirrorStructs)
@@ -140,7 +138,7 @@ class S_OperationDefinition(
         defCtx: C_DefinitionContext,
         rOperation: R_OperationDefinition,
         header: C_OperationHeader,
-        ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>,
+        ideCompsLate: C_LateInit<ImmMultimap<String, IdeCompletion>>,
     ) {
         val statementVars = processStatementVars()
         val fnCtx = C_FunctionContext(defCtx, rOperation.appLevelName, null, statementVars)
@@ -211,9 +209,7 @@ class S_QueryDefinition(
         ctx.nsBuilder.addQuery(cDefBase.nsMemBase(modDeprecated), cName, cQuery)
         ctx.mntBuilder.addQuery(cName, rQuery)
 
-        // TODO COLLECTIONS_REFACTORING
-        val ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>> =
-            C_LateInit(C_CompilerPass.VALIDATION, immMultimapOf<String, IdeCompletion>())
+        val ideCompsLate = C_LateInit(C_CompilerPass.VALIDATION, immMultimapOf<String, IdeCompletion>())
 
         ctx.executor.onPass(C_CompilerPass.MEMBERS) {
             val header = compileHeader(defCtx, cName, cQuery, ideCompsLate)
@@ -231,7 +227,7 @@ class S_QueryDefinition(
         defCtx: C_DefinitionContext,
         cName: C_Name,
         cQuery: C_QueryGlobalFunction,
-        ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>,
+        ideCompsLate: C_LateInit<ImmMultimap<String, IdeCompletion>>,
     ): C_QueryHeader {
         val header = C_FunctionUtils.compileQueryHeader(defCtx, cName, params, retType, body, comment, ideCompsLate)
         cQuery.setHeader(header)

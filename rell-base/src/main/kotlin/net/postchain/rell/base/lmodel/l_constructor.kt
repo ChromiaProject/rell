@@ -8,9 +8,9 @@ import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.mtype.M_TypeParam
+import net.postchain.rell.base.utils.associateByToImmMap
 import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSymbol
-import net.postchain.rell.base.utils.toImmMap
 
 class L_ConstructorHeader(
     val typeParams: List<M_TypeParam>,
@@ -31,7 +31,7 @@ class L_Constructor(
     val pure: Boolean,
 ) {
     val docMembers: Map<String, DocDefinition> by lazy {
-        header.params.associateBy { it.name.str }.toImmMap()
+        header.params.associateByToImmMap { it.name.str }
     }
 
     fun strCode(): String {

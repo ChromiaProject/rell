@@ -9,7 +9,7 @@ import net.postchain.rell.base.compiler.base.module.C_ModuleKey
 import net.postchain.rell.base.utils.LateInit
 import net.postchain.rell.base.utils.ListVsMap
 import net.postchain.rell.base.utils.immListOfNotNull
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.mapToImmList
 
 object C_NsRes_ResultMaker {
     fun make(modules: Map<C_ModuleKey, C_NsImp_Namespace>): Map<C_ModuleKey, C_Namespace> {
@@ -27,7 +27,7 @@ object C_NsRes_ResultMaker {
 
     private fun make0(impList: List<C_NsImp_Namespace>): List<C_Namespace> {
         val maker = C_NsRes_InternalMaker()
-        val nsList = impList.map { impNs -> maker.makeModule(impNs) }.toImmList()
+        val nsList = impList.mapToImmList { impNs -> maker.makeModule(impNs) }
         return nsList
     }
 }
@@ -71,7 +71,7 @@ private class C_NsRes_InternalMaker {
 
     private fun makeDef(directDef: C_NsImp_Def?, importDefs: Collection<C_NsImp_Def>): C_NamespaceEntry {
         val directMember = if (directDef == null) null else makeMember0(directDef)
-        val importMembers = importDefs.map { makeMember0(it) }
+        val importMembers = importDefs.mapToImmList { makeMember0(it) }
         return C_NamespaceEntry(immListOfNotNull(directMember), importMembers)
     }
 

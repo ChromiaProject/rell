@@ -14,6 +14,7 @@ import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.model.R_Attribute
 import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.toImmList
 
 interface C_CallTypeHints {
@@ -61,7 +62,7 @@ class C_CallArgument(val index: Int, val name: C_Name?, val value: C_CallArgumen
             ctx: C_ExprContext,
             args: List<S_CallArgument>,
             typeHints: C_CallTypeHints,
-        ): List<C_CallArgumentHandle> {
+        ): ImmList<C_CallArgumentHandle> {
             val res = mutableListOf<C_CallArgumentHandle>()
             var positional = true
 

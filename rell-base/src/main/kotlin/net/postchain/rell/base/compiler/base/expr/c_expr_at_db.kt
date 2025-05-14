@@ -62,10 +62,9 @@ class C_AtFrom_Entities(
     outerExprCtx: C_ExprContext,
     fromCtx: C_AtFromContext,
     fromBlock: R_FrameBlock?,
-    items: List<C_AtFromItem_Entity>,
+    private val items: ImmList<C_AtFromItem_Entity>,
 ): C_AtFrom(outerExprCtx, fromCtx, fromBlock) {
-    private val items = items.toImmList()
-    private val entities = this.items.map { it.atEntity }.toImmList()
+    private val entities = this.items.mapToImmList { it.atEntity }
 
     private val innerExprCtx = outerExprCtx.copy(blkCtx = innerBlkCtx, atCtx = innerAtCtx)
 
@@ -88,11 +87,11 @@ class C_AtFrom_Entities(
         }
     }
 
-    override fun getAllExprs() = items.flatMap { it.getExprs() }
+    override fun getAllExprs() = items.flatMapToImmList { it.getExprs() }
     override fun innerExprCtx() = innerExprCtx
 
-    override fun makeDefaultWhatFields(ctx: C_ExprContext): List<V_DbAtWhatField> {
-        return items.map {
+    override fun makeDefaultWhatFields(ctx: C_ExprContext): ImmList<V_DbAtWhatField> {
+        return items.mapToImmList {
             val atEntity = it.atEntity
             val name = if (entities.size == 1) null else R_IdeName(atEntity.alias, C_IdeSymbolInfo.MEM_TUPLE_ATTR)
             val vExpr = atEntity.toVExpr(ctx, atEntity.declPos, isOuter = it.isOuter(), isAmbiguous = false)
@@ -100,35 +99,39 @@ class C_AtFrom_Entities(
         }
     }
 
-    override fun findMembers(ctx: C_ExprContext, name: C_Name): List<C_AtFromMember> {
-        return items.flatMap { item ->
+    override fun findMembers(ctx: C_ExprContext, name: C_Name): ImmList<C_AtFromMember> {
+        return items.flatMapToImmList { item ->
             val isOuter = item.isOuter()
             val base = C_AtFromBase_Entity(item.atEntity, isOuter)
             val selfType = item.atEntity.rEntity.type
             val members = ctx.typeMgr.getValueMembers(selfType, name.rName)
             members.map { C_AtFromMember(base, selfType, it, isOuter) }
-        }.toImmList()
+        }
     }
 
-    override fun findImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): List<C_AtFromImplicitAttr> {
+    override fun findImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): ImmList<C_AtFromImplicitAttr> {
         return findContextAttrs { rEntity ->
             ctx.typeMgr.getAtImplicitAttrsByName(rEntity.type, name.rName)
         }
     }
 
-    override fun findImplicitAttributesByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): List<C_AtFromImplicitAttr> {
+    override fun findImplicitAttributesByType(
+        ctx: C_ExprContext,
+        pos: S_Pos,
+        type: R_Type,
+    ): ImmList<C_AtFromImplicitAttr> {
         return findContextAttrs { rEntity ->
             ctx.typeMgr.getAtImplicitAttrsByType(rEntity.type, type)
         }
     }
 
-    private fun findContextAttrs(getter: (R_EntityDefinition) -> List<C_AtTypeImplicitAttr>): List<C_AtFromImplicitAttr> {
-        return items.flatMap { item ->
+    private fun findContextAttrs(getter: (R_EntityDefinition) -> List<C_AtTypeImplicitAttr>): ImmList<C_AtFromImplicitAttr> {
+        return items.flatMapToImmList { item ->
             val atEntity = item.atEntity
             val base = C_AtFromBase_Entity(atEntity, item.isOuter())
             val members = getter(atEntity.rEntity)
             members.map { C_AtFromImplicitAttr(base, atEntity.rEntity.type, it) }
-        }.toImmList()
+        }
     }
 
     override fun ideCompletions(): Multimap<String, IdeCompletion> {
@@ -373,11 +376,9 @@ class C_DbAtWhatValue_Simple(private val dbExpr: Db_Expr): C_DbAtWhatValue() {
 }
 
 class C_DbAtWhatValue_Complex(
-    vExprs: List<V_Expr>,
+    val vExprs: ImmList<V_Expr>,
     private val evaluator: Db_ComplexAtWhatEvaluator,
 ): C_DbAtWhatValue() {
-    private val vExprs = vExprs.toImmList()
-
     override fun toDbWhatTop(appCtx: C_AppContext, field: V_DbAtWhatField): Db_AtWhatValue {
         V_AtUtils.checkNoWhatModifiersDb(appCtx.msgCtx, field)
         return toDbWhatSub()
@@ -398,7 +399,7 @@ class C_DbAtWhatValue_Complex(
             }
         }
 
-        return Db_AtWhatValue_Complex(dbExprs, rExprs, items, evaluator)
+        return Db_AtWhatValue_Complex(dbExprs.toImmList(), rExprs.toImmList(), items.toImmList(), evaluator)
     }
 }
 

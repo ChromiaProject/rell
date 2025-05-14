@@ -20,6 +20,7 @@ import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immSetOf
 import net.postchain.rell.base.utils.mapToImmList
+import net.postchain.rell.base.utils.toImmSet
 
 abstract class S_Statement(val startPos: S_Pos, val endPos: S_Pos) {
     private val modifiedVars = TypedKey<Set<R_Name>>()
@@ -139,7 +140,7 @@ class S_VarStatement(
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
         val declaredVars = mutableSetOf<R_Name>()
         declarator.discoverVars(declaredVars)
-        return C_StatementVars(declaredVars, immSetOf())
+        return C_StatementVars(declaredVars.toImmSet(), immSetOf())
     }
 }
 
@@ -351,7 +352,7 @@ class S_IfStatement(
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
         val trueVars = trueStmt.discoverVars(map)
         val falseVars = if (falseStmt != null) falseStmt.discoverVars(map) else C_StatementVars.EMPTY
-        return C_StatementVars(setOf(), trueVars.modified + falseVars.modified)
+        return C_StatementVars(immSetOf(), (trueVars.modified + falseVars.modified).toImmSet())
     }
 
     override fun returnsValue(): Boolean? {
@@ -402,7 +403,7 @@ class S_WhenStatement(
             val caseVars = case.stmt.discoverVars(map)
             modified.addAll(caseVars.modified)
         }
-        return C_StatementVars(immSetOf(), modified)
+        return C_StatementVars(immSetOf(), modified.toImmSet())
     }
 
     override fun returnsValue(): Boolean? {
@@ -462,7 +463,7 @@ class S_WhileStatement(
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
         val bodyVars = stmt.discoverVars(map)
-        return C_StatementVars(setOf(), bodyVars.modified)
+        return C_StatementVars(immSetOf(), bodyVars.modified)
     }
 
     override fun returnsValue() = stmt.returnsValue()

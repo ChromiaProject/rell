@@ -12,7 +12,6 @@ import net.postchain.rell.base.runtime.Rt_OpContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.Bytes
 import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.toImmList
 
 abstract class Rt_PostchainTxContext {
     abstract fun emitEvent(type: String, data: Gtv)

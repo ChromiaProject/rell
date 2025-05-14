@@ -270,14 +270,10 @@ class R_Module(
 }
 
 class R_AppSqlDefs(
-        entities: List<R_EntityDefinition>,
-        objects: List<R_ObjectDefinition>,
-        topologicalEntities: List<R_EntityDefinition>
+        val entities: ImmList<R_EntityDefinition>,
+        val objects: ImmList<R_ObjectDefinition>,
+        val topologicalEntities: ImmList<R_EntityDefinition>
 ) {
-    val entities = entities.toImmList()
-    val objects = objects.toImmList()
-    val topologicalEntities = topologicalEntities.toImmList()
-
     init {
         checkEquals(this.topologicalEntities.size, this.entities.size)
     }
@@ -289,31 +285,24 @@ class R_AppSqlDefs(
     }
 
     companion object {
-        val EMPTY = R_AppSqlDefs(listOf(), listOf(), listOf())
+        val EMPTY = R_AppSqlDefs(immListOf(), immListOf(), immListOf())
     }
 }
 
 class R_App(
     val valid: Boolean,
     val uid: R_AppUid,
-    modules: List<R_Module>,
-    operations: Map<R_MountName, R_OperationDefinition>,
-    queries: Map<R_MountName, R_QueryDefinition>,
-    constants: List<R_GlobalConstantDefinition>,
-    moduleArgs: Map<R_ModuleName, R_StructDefinition>,
+    val modules: ImmList<R_Module>,
+    val operations: ImmMap<R_MountName, R_OperationDefinition>,
+    val queries: ImmMap<R_MountName, R_QueryDefinition>,
+    val constants: ImmList<R_GlobalConstantDefinition>,
+    val moduleArgs: ImmMap<R_ModuleName, R_StructDefinition>,
     val functionExtensions: R_FunctionExtensionsTable,
     val externalChainsRoot: R_ExternalChainsRoot,
-    externalChains: List<R_ExternalChainRef>,
+    val externalChains: ImmList<R_ExternalChainRef>,
     val sqlDefs: R_AppSqlDefs,
 ) {
-    val modules = modules.toImmList()
-    val operations = operations.toImmMap()
-    val queries = queries.toImmMap()
-    val constants = constants.toImmList()
-    val moduleArgs = moduleArgs.toImmMap()
-    val externalChains = externalChains.toImmList()
-
-    val moduleMap = this.modules.associateBy { it.name }.toImmMap()
+    val moduleMap = this.modules.associateByToImmMap { it.name }
 
     init {
         for ((i, c) in this.constants.withIndex()) {

@@ -11,7 +11,6 @@ import net.postchain.rell.base.utils.LazyString
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
-import java.util.*
 
 internal object FcInternals {
     fun <T> valueFuture(value: T): FcFuture<T> {

@@ -17,6 +17,7 @@ import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.doc.DocDeclaration_AtVariable
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
@@ -26,6 +27,8 @@ import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.immSetOf
+import net.postchain.rell.base.utils.mapIndexedToImmList
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 
 sealed class S_AtExprFrom(val startPos: S_Pos) {
@@ -80,7 +83,7 @@ class S_AtExprFrom_Complex(
         }
 
         if (entities.isNotEmpty()) {
-            return C_AtFrom_Entities(ctx, fromCtx, rFromBlock, entities)
+            return C_AtFrom_Entities(ctx, fromCtx, rFromBlock, entities.toImmList())
         }
 
         if (iterables.size > 1 && iterables.any { it.vExpr.type.isNotError() }) {
@@ -258,7 +261,7 @@ class S_AtExprWhat_Complex(
         if (aggrFields.isNotEmpty()) {
             for ((i, field) in noAggrFields) {
                 val code = "at:what:no_aggr:$i"
-                val anns = C_AtSummarizationKind.values().joinToString(", ") { "@${it.annotation}" }
+                val anns = C_AtSummarizationKind.entries.joinToString(", ") { "@${it.annotation}" }
                 val msg = "Either none or all what-expressions must be annotated with one of: $anns"
                 ctx.msgCtx.error(field.vExpr.pos, code, msg)
             }
@@ -706,13 +709,12 @@ class S_AtExpr(
     }
 
     private fun compileAtResult(whatFields: List<V_DbAtWhatField>): C_AtExprResult {
-        val selFieldsIndexes = whatFields.withIndex().filter { !it.value.flags.omit }.map { it.index }.toImmList()
+        val selFieldsIndexes = whatFields.withIndex().filter { !it.value.flags.omit }.mapToImmList { it.index }
         val selFields = selFieldsIndexes.map { whatFields[it] }
 
         val groupFieldsIndexes = whatFields.withIndex()
                 .filter { it.value.summarization?.isGroup() ?: false }
-                .map { it.index }
-                .toImmList()
+                .mapToImmList { it.index }
 
         val hasAggregateFields = whatFields.any { !(it.summarization?.isGroup() ?: true) }
 
@@ -733,7 +735,7 @@ class S_AtExpr(
         return if (selFields.size == 1 && selFields[0].name == null) {
             R_AtExprRowDecoder_Simple to selFields[0].resultType
         } else if (selFields.isNotEmpty()) {
-            val tupleFields = selFields.mapIndexed { i, field -> R_TupleField(i, field.name, field.resultType) }
+            val tupleFields = selFields.mapIndexedToImmList { i, field -> R_TupleField(i, field.name, field.resultType) }
             val type = R_TupleType(tupleFields)
             R_AtExprRowDecoder_Tuple(type) to type
         } else {
@@ -759,9 +761,9 @@ class S_AtExpr(
 
         val WHERE_VAR_STATES_SWITCH = C_FeatureSwitch("0.14.0", false)
 
-        fun findWhereContextAttrsByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): List<C_AtFromImplicitAttr> {
+        fun findWhereContextAttrsByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): ImmList<C_AtFromImplicitAttr> {
             return if (type == R_BooleanType) {
-                listOf()
+                immListOf()
             } else {
                 ctx.findWhereAttributesByType(pos, type)
             }

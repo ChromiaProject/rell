@@ -8,6 +8,8 @@ import com.google.common.collect.Sets
 import net.postchain.rell.base.compiler.base.core.C_VarId
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.immMapOf
 import net.postchain.rell.base.utils.startsWith
@@ -39,7 +41,7 @@ enum class C_VarNulled {
 
 class C_VarStateKey(
     val varId: C_VarId,
-    val path: List<C_VarPathItem> = immListOf(),
+    val path: ImmList<C_VarPathItem> = immListOf(),
     val isFull: Boolean = true,
 ) {
     fun nameMsg(): String {
@@ -225,7 +227,7 @@ private class C_VarStatesDelta_Impl(
 }
 
 private class C_VarValueDelta private constructor(
-    private val map: Map<List<C_VarPathItem>, C_VarNulled>,
+    private val map: ImmMap<ImmList<C_VarPathItem>, C_VarNulled>,
 ) {
     fun getNulled(path: List<C_VarPathItem>): C_VarNulled? {
         var res = map[path]
@@ -275,14 +277,13 @@ private class C_VarValueDelta private constructor(
     companion object {
         val EMPTY = C_VarValueDelta(immMapOf())
 
-        fun make(map: Map<List<C_VarPathItem>, C_VarNulled>): C_VarValueDelta {
+        fun make(map: ImmMap<ImmList<C_VarPathItem>, C_VarNulled>): C_VarValueDelta {
             return if (map.isEmpty()) EMPTY else C_VarValueDelta(map)
         }
 
         fun make(nulled: C_VarNulled? = null): C_VarValueDelta {
             return if (nulled == null) EMPTY else {
-                // TODO COLLECTIONS_REFACTORING
-                val map: Map<List<C_VarPathItem>, C_VarNulled> = immMapOf(immListOf<C_VarPathItem>() to nulled)
+                val map = immMapOf(immListOf<C_VarPathItem>() to nulled)
                 C_VarValueDelta(map)
             }
         }

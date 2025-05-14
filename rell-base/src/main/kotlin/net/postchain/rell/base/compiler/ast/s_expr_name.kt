@@ -13,7 +13,7 @@ import net.postchain.rell.base.compiler.vexpr.V_ConstantValueExpr
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.model.R_EnumType
 import net.postchain.rell.base.model.R_NullType
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.filterToImmList
 
 class S_NameExpr(val qName: S_QualifiedName): S_Expr(qName.pos) {
     override fun asName() = qName
@@ -177,9 +177,8 @@ class S_AttrExpr(pos: S_Pos, private val name: S_Name): S_Expr(pos) {
         private fun findMembers(ctx: C_ExprContext, hint: C_ExprHint, name: C_Name): List<C_AtContextMember> {
             val members = ctx.blkCtx.lookupAtMembers(ctx, name)
             return members
-                .filter { if (hint.callable) it.isCallable() else it.isValue() }
+                .filterToImmList { if (hint.callable) it.isCallable() else it.isValue() }
                 .ifEmpty { members }
-                .toImmList()
         }
     }
 }

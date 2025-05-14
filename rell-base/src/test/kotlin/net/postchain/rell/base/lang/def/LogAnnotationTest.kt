@@ -7,6 +7,7 @@ package net.postchain.rell.base.lang.def
 import net.postchain.rell.base.lib.LibBlockTransactionTest
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.Rt_TestOpContext
+import net.postchain.rell.base.utils.immListOf
 import org.junit.Test
 
 class LogAnnotationTest: BaseRellTest(useSql = true) {
@@ -102,5 +103,5 @@ class LogAnnotationTest: BaseRellTest(useSql = true) {
         chkCompile("@log entity foo { index transaction: integer; }", "ct_err:entity:attr:type_diff:[transaction]:[integer]")
     }
 
-    private fun opContext() = Rt_TestOpContext(-1, 444, -1, -1, listOf(), listOf())
+    private fun opContext() = Rt_TestOpContext(-1, 444, -1, -1, immListOf(), immListOf())
 }

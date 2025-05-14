@@ -83,7 +83,7 @@ class Rt_GlobalConstants(
     private val moduleArgsSource: Rt_ModuleArgsSource,
     oldState: State,
 ) {
-    private val constantSlots = appCtx.app.constants.map { ConstantSlot(it.constId) }.toImmList()
+    private val constantSlots = appCtx.app.constants.mapToImmList { ConstantSlot(it.constId) }
 
     private val moduleArgsSlots = appCtx.app.moduleArgs.keys
         .map { it to ModuleArgsSlot(it) }
@@ -139,8 +139,8 @@ class Rt_GlobalConstants(
 
     fun dump(): State {
         return State(
-            constants = constantSlots.map { it.dump() }.toImmList(),
-            moduleArgs = moduleArgsSlots.mapValues { it.value.dump() }.toImmMap()
+            constants = constantSlots.mapToImmList { it.dump() },
+            moduleArgs = moduleArgsSlots.mapValuesToImmMap { it.value.dump() },
         )
     }
 

@@ -84,7 +84,7 @@ private fun runApp(args: CommonArgs) {
 
     // Make sure that all sources compile before trying to start a node.
     for (chain in rellAppConf.config.chains) {
-        val modules = chain.modules.toList()
+        val modules = chain.modules.toImmList()
         val modSel = C_CompilerModuleSelection(modules)
         RellToolsUtils.compileApp(rellAppConf.sourceDir, modSel, true, C_CompilerOptions.DEFAULT)
     }
@@ -165,8 +165,8 @@ private fun runTests(args: CommonArgs, matcher: UnitTestMatcher, targetChains: C
     val tChains = sortedChains.mapNotNull { chain ->
         val (_, config) = chain.configs.maxByOrNull { it.key }!!
         if (config.appModule == null) null else {
-            val modules = listOf(config.appModule)
-            val testModules = (modules.toSet() + config.testModules.toSet()).toList()
+            val modules = immListOf(config.appModule)
+            val testModules = (modules.toSet() + config.testModules.toSet()).toImmList()
             val modSel = C_CompilerModuleSelection(modules, testModules)
             val rApp = RellToolsUtils.compileApp(rellAppConf.sourceDir, modSel, true, compilerOptions)
             TestChain(chain, rApp, config.gtvConfig)

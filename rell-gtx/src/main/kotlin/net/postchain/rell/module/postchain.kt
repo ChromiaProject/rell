@@ -362,7 +362,7 @@ private class RellPostchainModule(
         defCtx: Rt_DefinitionContext,
         rQuery: R_QueryDefinition,
         gtvArgs: Gtv,
-    ): List<Rt_Value> {
+    ): ImmList<Rt_Value> {
         gtvArgs is GtvDictionary
         val params = rQuery.params()
 
@@ -613,7 +613,7 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
         val compilerOptions = getCompilerOptions(sourceCfg.version)
 
         fun compile(): C_CompilationResult {
-            return C_Compiler.compile(sourceDir, modules, compilerOptions)
+            return C_Compiler.compile(sourceDir, modules.toImmList(), compilerOptions)
         }
 
         private fun getModuleNames(rellNode: Map<String, Gtv>): List<R_ModuleName> {
@@ -679,8 +679,7 @@ private class SourceCodeConfig(rellNode: Map<String, Gtv>) {
                     if (source.files) CommonUtils.readFileText(s) else s
                 }
                 .mapKeys { (k, _) -> parseSourcePath(k) }
-                .mapValues { (k, v) -> C_TextSourceFile(k, v) }
-                .toImmMap()
+                .mapValuesToImmMap { (k, v) -> C_TextSourceFile(k, v) }
 
         version = getCompatibilityVersion(rellNode, source.version)
         dir = C_SourceDir.mapDir(fileMap)
@@ -741,7 +740,7 @@ private class SourceCodeConfig(rellNode: Map<String, Gtv>) {
         return ver
     }
 
-    private fun getSourceCodes(rellNode: Map<String, Gtv>, ver: R_LangVersion?, files: Boolean): List<SourceCode> {
+    private fun getSourceCodes(rellNode: Map<String, Gtv>, ver: R_LangVersion?, files: Boolean): ImmList<SourceCode> {
         val res = mutableListOf<SourceCode>()
 
         val key = if (files) RellGtxConfigConstants.FILES_KEY else RellGtxConfigConstants.SOURCES_KEY

@@ -10,10 +10,10 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyString
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
 
 object R_SysFunctionUtils {
     fun call(callCtx: Rt_CallContext, fn: R_SysFunction, nameMsg: LazyString?, values: List<Rt_Value>): Rt_Value {
@@ -69,12 +69,9 @@ class R_FullFunctionCall(
     returnType: R_Type,
     private val target: R_FunctionCallTarget,
     private val callPos: R_FilePos,
-    args: List<R_Expr>,
-    mapping: List<Int>,
+    private val args: ImmList<R_Expr>,
+    private val mapping: ImmList<Int>,
 ): R_FunctionCall(returnType) {
-    private val args = args.toImmList()
-    private val mapping = mapping.toImmList()
-
     init {
         checkEquals(this.mapping.sorted(), this.args.indices.toList())
     }
@@ -90,9 +87,7 @@ class R_FullFunctionCall(
 
 class R_PartialArgMapping(val wild: Boolean, val index: Int)
 
-class R_PartialCallMapping(val exprCount: Int, val wildCount: Int, args: List<R_PartialArgMapping>) {
-    val args = args.toImmList()
-
+class R_PartialCallMapping(val exprCount: Int, val wildCount: Int, val args: ImmList<R_PartialArgMapping>) {
     init {
         check(exprCount >= 0)
         check(wildCount >= 0)
@@ -106,10 +101,8 @@ class R_PartialFunctionCall(
     returnType: R_Type,
     private val target: R_FunctionCallTarget,
     private val mapping: R_PartialCallMapping,
-    args: List<R_Expr>,
+    private val args: ImmList<R_Expr>,
 ): R_FunctionCall(returnType) {
-    private val args = args.toImmList()
-
     init {
         checkEquals(this.args.size, mapping.exprCount)
     }

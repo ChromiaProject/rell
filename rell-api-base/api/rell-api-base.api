@@ -200,7 +200,7 @@ public final class net/postchain/rell/api/base/RellConfigGen$Companion {
 }
 
 final class net/postchain/rell/api/base/RellModuleSources {
-	public fun <init> (Ljava/util/List;Ljava/util/Map;)V
+	public fun <init> (Lkotlinx/collections/immutable/ImmutableList;Lkotlinx/collections/immutable/ImmutableMap;)V
 	public final fun getFiles ()Lkotlinx/collections/immutable/ImmutableMap;
 	public final fun getModules ()Lkotlinx/collections/immutable/ImmutableList;
 }

@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.fn
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.*
@@ -16,6 +15,7 @@ import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.R_CtErrorType
 import net.postchain.rell.base.model.R_GlobalConstantId
+import net.postchain.rell.base.utils.ImmMultimap
 import net.postchain.rell.base.utils.associateNotNullValues
 import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.doc.DocFunctionParamComments
@@ -34,7 +34,7 @@ object C_FunctionUtils {
         retType: S_Type?,
         body: S_FunctionBody?,
         comment: S_Comment?,
-        ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>,
+        ideCompsLate: C_LateInit<ImmMultimap<String, IdeCompletion>>,
     ): C_UserFunctionHeader {
         val explicitRetType = if (retType == null) null else (retType.compileOpt(defCtx) ?: R_CtErrorType)
         val bodyRetType = if (body == null) R_UnitType else null
@@ -65,7 +65,7 @@ object C_FunctionUtils {
         retType: S_Type?,
         body: S_FunctionBody,
         comment: S_Comment?,
-        ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>,
+        ideCompsLate: C_LateInit<ImmMultimap<String, IdeCompletion>>,
     ): C_QueryHeader {
         val rRetType = if (retType == null) null else (retType.compileOpt(defCtx) ?: R_CtErrorType)
         val rawHeader = compileCommonHeader(defCtx, simpleName.pos, params, comment, defCtx.globalCtx.compilerOptions.gtv)

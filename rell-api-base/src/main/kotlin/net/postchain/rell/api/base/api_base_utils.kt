@@ -12,6 +12,7 @@ import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.utils.mapToImmList
 import java.io.File
 
 object RellApiBaseUtils {
@@ -76,7 +77,7 @@ object RellApiBaseUtils {
     }
 
     fun getMainModules(app: R_App): List<R_ModuleName> {
-        return app.modules.filter { !it.test && !it.abstract && !it.external }.map { it.name }
+        return app.modules.filter { !it.test && !it.abstract && !it.external }.mapToImmList { it.name }
     }
 }
 

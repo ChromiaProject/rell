@@ -208,20 +208,15 @@ object C_ReplCompiler {
 
 class C_ReplAppState(
     val nsAsmState: C_NsAsm_ReplState,
-    moduleHeaders: Map<R_ModuleName, C_ModuleHeader>,
-    modules: Map<C_ModuleKey, C_PrecompiledModule>,
+    val moduleHeaders: ImmMap<R_ModuleName, C_ModuleHeader>,
+    val modules: ImmMap<C_ModuleKey, C_PrecompiledModule>,
     val sysDefs: C_SystemDefs?,
     val sqlDefs: R_AppSqlDefs,
     val mntTables: C_MountTables,
-    constants: List<R_GlobalConstantDefinition>,
-    moduleArgs: Map<R_ModuleName, R_StructDefinition>,
+    val constants: ImmList<R_GlobalConstantDefinition>,
+    val moduleArgs: ImmMap<R_ModuleName, R_StructDefinition>,
     val functionExtensions: C_FunctionExtensionsTable,
 ) {
-    val moduleHeaders = moduleHeaders.toImmMap()
-    val modules = modules.toImmMap()
-    val constants = constants.toImmList()
-    val moduleArgs = moduleArgs.toImmMap()
-
     companion object {
         val EMPTY = C_ReplAppState(
             C_NsAsm_ReplState.EMPTY,
@@ -244,4 +239,4 @@ class C_ReplDefsState(val appState: C_ReplAppState) {
 }
 
 class C_ReplSuccess(val app: R_App, val defsState: C_ReplDefsState, val code: ReplCode)
-class C_ReplResult(val success: C_ReplSuccess?, messages: List<C_Message>): C_AbstractResult(messages)
+class C_ReplResult(val success: C_ReplSuccess?, messages: ImmList<C_Message>): C_AbstractResult(messages)

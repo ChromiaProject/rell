@@ -14,10 +14,12 @@ import net.postchain.rell.base.model.R_VirtualStructType
 import net.postchain.rell.base.model.expr.R_DestinationExpr
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.expr.R_MemberCalculator_VirtualStructAttr
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.mapToImmList
 
 object Lib_Type_VirtualStruct {
-    fun getValueMembers(type: R_VirtualStructType): List<C_TypeValueMember> {
-        return type.innerType.struct.attributesList.map { attr ->
+    fun getValueMembers(type: R_VirtualStructType): ImmList<C_TypeValueMember> {
+        return type.innerType.struct.attributesList.mapToImmList { attr ->
             val virtualType = S_VirtualType.virtualMemberType(attr.type)
             val mem = C_MemberAttr_VirtualStructAttr(virtualType, attr, type)
             C_TypeValueMember_BasicAttr(mem)

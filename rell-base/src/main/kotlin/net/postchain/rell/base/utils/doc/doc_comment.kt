@@ -9,17 +9,16 @@ import java.util.regex.Pattern
 
 class DocComment(
     val description: String,
-    val tags: Map<DocCommentTag, List<DocCommentItem>>,
+    val tags: ImmMap<DocCommentTag, ImmList<DocCommentItem>>,
 ) {
-    private val itemMap: Map<ItemKey, List<DocCommentItem>> by lazy {
+    private val itemMap: ImmMap<ItemKey, List<DocCommentItem>> by lazy {
         tags
             .flatMap { tag ->
-                tag.value.map { item -> ItemKey(tag.key, item.key) to item }
+                tag.value.mapToImmList { item -> ItemKey(tag.key, item.key) to item }
             }
             .toImmMultimap()
             .asMap()
-            .mapValues { it.value.toImmList() }
-            .toImmMap()
+            .mapValuesToImmMap { it.value.toImmList() }
     }
 
     init {
@@ -155,7 +154,7 @@ object DocCommentParser {
     private val TAG_PATTERN = Pattern.compile("^\\s*(?:[*] )?@([A-Za-z0-9_]+)(?=\\s|$)", Pattern.MULTILINE)
     private val KEY_PATTERN = Pattern.compile("^\\s*(\\S+)(\\s|$)")
 
-    private val BUILTIN_TAGS: Map<String, DocCommentTag> = DocCommentTag.ALL.associateBy { it.code }.toImmMap()
+    private val BUILTIN_TAGS: Map<String, DocCommentTag> = DocCommentTag.ALL.associateByToImmMap { it.code }
 
     fun parse(
         text: String,
@@ -302,7 +301,7 @@ class DocCommentBuilder(private val errorTracker: DocCommentErrorTracker) {
     }
 
     fun build(): DocComment {
-        val resTags = mutableMapOf<DocCommentTag, List<DocCommentItem>>()
+        val resTags = mutableMapOf<DocCommentTag, ImmList<DocCommentItem>>()
 
         for (tag in DocCommentTag.ALL) {
             val items = tags.asMap()[tag]?.toImmList()

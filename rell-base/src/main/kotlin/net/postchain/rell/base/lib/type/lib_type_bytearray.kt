@@ -160,7 +160,7 @@ object Lib_Type_ByteArray {
                 """)
                 body { a ->
                     val ba = a.asByteArray()
-                    val list = MutableList<Rt_Value>(ba.size) { Rt_IntValue.get(ba[it].toLong() and 0xFF) }
+                    val list = MutableList(ba.size) { Rt_IntValue.get(ba[it].toLong() and 0xFF) }
                     Rt_ListValue(LIST_OF_INTEGER, list)
                 }
             }

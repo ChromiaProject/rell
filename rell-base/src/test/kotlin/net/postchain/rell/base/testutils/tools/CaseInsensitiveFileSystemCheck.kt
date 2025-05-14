@@ -11,6 +11,7 @@ import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.immListOf
 import java.io.File
 
 /*
@@ -127,7 +128,7 @@ private fun chkRellImport(srcDir: File, module: String, expected: String) {
     val cDir = C_SourceDir.uncachedDiskDir(srcDir)
     writeFile(File(srcDir, "main.rell"), "module; import $module;")
 
-    val modSel = C_CompilerModuleSelection(listOf(R_ModuleName.of("main")))
+    val modSel = C_CompilerModuleSelection(immListOf(R_ModuleName.of("main")))
     val actual = RellTestUtils.processApp(cDir, modSel = modSel) { "OK" }
     checkEquals(actual, expected)
 }

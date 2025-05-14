@@ -15,10 +15,11 @@ import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.associateByToImmMap
 import net.postchain.rell.base.utils.doc.*
-import net.postchain.rell.base.utils.queueOf
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
 
 class C_MidModuleContext(
     val msgCtx: C_MessageContext,
@@ -52,20 +53,18 @@ class C_MidModule(
     val mountName: R_MountName,
     val header: C_MidModuleHeader?,
     val compiledHeader: C_ModuleHeader,
-    files: List<C_MidModuleFile>,
+    private val files: ImmList<C_MidModuleFile>,
     val isDirectory: Boolean,
     val isTestDependency: Boolean,
     val isSelected: Boolean,
 ) {
-    private val files = files.toImmList()
-
     val startPos = header?.pos ?: files.firstOrNull()?.startPos
     val isTest = header?.test ?: false
 
-    fun filePaths() = files.map { it.path }.toImmList()
+    fun filePaths() = files.mapToImmList { it.path }
 
     fun compile(ctx: C_MidModuleContext): C_ExtModule {
-        val extFiles = files.map { it.compile(ctx) }
+        val extFiles = files.mapToImmList { it.compile(ctx) }
         return C_ExtModule(this, ctx.extChain, extFiles)
     }
 
@@ -74,16 +73,14 @@ class C_MidModule(
 
 class C_MidModuleFile(
     val path: C_SourcePath,
-    members: List<C_MidModuleMember>,
+    val members: ImmList<C_MidModuleMember>,
     val startPos: S_Pos?,
     private val symCtx: C_SymbolContext,
 ) {
-    val members = members.toImmList()
-
     fun compile(ctx: C_MidModuleContext): C_ExtModuleFile {
         val modifierCtx = C_ModifierContext(ctx.msgCtx, symCtx)
         val memCtx = C_MidMemberContext(ctx, modifierCtx, ctx.extChain)
-        val extMembers = members.map { it.compile(memCtx) }
+        val extMembers = members.mapToImmList { it.compile(memCtx) }
         return C_ExtModuleFile(path, extMembers, symCtx)
     }
 
@@ -134,10 +131,8 @@ class C_MidModuleMember_Namespace(
     private val qualifiedName: List<NamePart>,
     private val comment: S_Comment?,
     private val posRange: S_PosRange,
-    members: List<C_MidModuleMember>,
+    private val members: ImmList<C_MidModuleMember>,
 ): C_MidModuleMember() {
-    private val members = members.toImmList()
-
     override fun compile(ctx: C_MidMemberContext): C_ExtModuleMember {
         val lastName = qualifiedName.lastOrNull()?.ideName?.name
         val mods = C_ModifierValues(C_ModifierTargetType.NAMESPACE, name = lastName)
@@ -158,9 +153,9 @@ class C_MidModuleMember_Namespace(
         val extChainName = ctx.externalChain(modExternal.value())
 
         val subCtx = C_MidMemberContext(ctx.modCtx, ctx.modifierCtx, extChainName)
-        val subMembers = members.map { it.compile(subCtx) }
+        val subMembers = members.mapToImmList { it.compile(subCtx) }
 
-        val ideQualifiedName = if (qualifiedName.isEmpty()) null else C_IdeQualifiedName(qualifiedName.map { it.ideName })
+        val ideQualifiedName = if (qualifiedName.isEmpty()) null else C_IdeQualifiedName(qualifiedName.mapToImmList { it.ideName })
 
         return C_ExtModuleMember_Namespace(
             ideQualifiedName,
@@ -200,13 +195,13 @@ class C_MidModuleCompiler(
     private val symCtxProvider: C_SymbolContextProvider,
     midModules: List<C_MidModule>,
 ) {
-    private val midModulesMap = midModules.associateBy { it.moduleName }.toImmMap()
+    private val midModulesMap = midModules.associateByToImmMap { it.moduleName }
 
     private val modImporter = C_MidModuleImporter_Impl()
 
     private var done = false
     private val compiledModules = mutableSetOf<C_ExtModuleKey>()
-    private val moduleQueue = queueOf<Pair<C_MidModule, C_ExtChainName?>>()
+    private val moduleQueue = ArrayDeque<Pair<C_MidModule, C_ExtChainName?>>()
     private val extModules = mutableListOf<C_ExtModule>()
 
     fun compileModule(moduleName: R_ModuleName, extChain: C_ExtChainName?) {
@@ -222,7 +217,7 @@ class C_MidModuleCompiler(
         val symCtx = symCtxProvider.getNopSymbolContext()
         val modifierCtx = C_ModifierContext(msgCtx, symCtx)
         val memberCtx = C_MidMemberContext(moduleCtx, modifierCtx, null)
-        val res = members.map { it.compile(memberCtx) }.toImmList()
+        val res = members.mapToImmList { it.compile(memberCtx) }
 
         processQueue()
         return res
@@ -257,7 +252,7 @@ class C_MidModuleCompiler(
 
     private fun processQueue() {
         while (moduleQueue.isNotEmpty()) {
-            val (midModule, extChain) = moduleQueue.remove()
+            val (midModule, extChain) = moduleQueue.removeFirst()
             processModule(midModule, extChain)
         }
     }

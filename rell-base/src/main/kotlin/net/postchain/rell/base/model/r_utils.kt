@@ -6,7 +6,9 @@ package net.postchain.rell.base.model
 
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.VersionNumber
+import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 import org.apache.commons.lang3.StringUtils
 import java.util.*
@@ -31,7 +33,6 @@ class R_StackPos(val def: R_DefinitionId, val file: R_FilePos) {
 
 sealed class R_GenericQualifiedName<T: R_GenericQualifiedName<T>>(parts: List<R_Name>): Comparable<T> {
     val parts = parts.toImmList()
-
     private val str = parts.joinToString(".")
 
     fun str() = str
@@ -91,17 +92,17 @@ class R_QualifiedName(parts: List<R_Name>): R_GenericQualifiedName<R_QualifiedNa
     val last: R_Name = this.parts.last()
 
     override fun self() = this
-    override fun create(parts: List<R_Name>) = R_QualifiedName(parts)
+    override fun create(parts: List<R_Name>) = R_QualifiedName(parts.toImmList())
 
     fun replaceLast(name: R_Name): R_QualifiedName {
         if (name == last) return this
-        val resParts = parts.subList(0, parts.size - 1) + listOf(name)
+        val resParts = (parts.subList(0, parts.size - 1) + listOf(name)).toImmList()
         return R_QualifiedName(resParts)
     }
 
     companion object {
         fun of(s: String): R_QualifiedName = requireNotNull(ofOpt(s)) { s }
-        fun ofOpt(s: String): R_QualifiedName? = qNameOfOpt0(s, null) { R_QualifiedName(it) }
+        fun ofOpt(s: String): R_QualifiedName? = qNameOfOpt0(s, null) { R_QualifiedName(it.toImmList()) }
         fun of(vararg parts: R_Name): R_QualifiedName = R_QualifiedName(parts.toImmList())
     }
 }
@@ -120,10 +121,10 @@ class R_ModuleName private constructor(parts: List<R_Name>): R_GenericQualifiedN
     }
 
     companion object {
-        val EMPTY = R_ModuleName(listOf())
+        val EMPTY = R_ModuleName(immListOf())
         fun of(parts: List<R_Name>) = if (parts.isEmpty()) EMPTY else R_ModuleName(parts)
-        fun of(s: String) = qNameOf0(s, EMPTY) { R_ModuleName(it) }
-        fun ofOpt(s: String) = qNameOfOpt0(s, EMPTY) { R_ModuleName(it) }
+        fun of(s: String) = qNameOf0(s, EMPTY) { R_ModuleName(it.toImmList()) }
+        fun ofOpt(s: String) = qNameOfOpt0(s, EMPTY) { R_ModuleName(it.toImmList()) }
     }
 }
 
@@ -132,7 +133,7 @@ class R_MountName(parts: List<R_Name>): R_GenericQualifiedName<R_MountName>(part
     override fun create(parts: List<R_Name>) = R_MountName(parts)
 
     companion object {
-        val EMPTY = R_MountName(listOf())
+        val EMPTY = R_MountName(immListOf())
         fun of(s: String) = qNameOf0(s, EMPTY) { R_MountName(it) }
         fun ofOpt(s: String) = qNameOfOpt0(s, EMPTY) { R_MountName(it) }
     }
@@ -226,7 +227,7 @@ class R_LangVersion(private val ver: VersionNumber): Comparable<R_LangVersion> {
             return R_LangVersion(ver)
         }
 
-        fun of(parts: List<Int>): R_LangVersion {
+        fun of(parts: ImmList<Int>): R_LangVersion {
             return R_LangVersion(VersionNumber(parts))
         }
     }

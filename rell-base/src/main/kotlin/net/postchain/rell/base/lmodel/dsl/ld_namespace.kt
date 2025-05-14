@@ -340,7 +340,7 @@ class Ld_NamespaceBuilder(
         val subBuilder = Ld_NamespaceBuilder(oldNs)
 
         if (namespaceName.size() > 1) {
-            val subQualifiedName = R_QualifiedName(namespaceName.parts.drop(1))
+            val subQualifiedName = R_QualifiedName(namespaceName.parts.drop(1).toImmList())
             subBuilder.namespace0(subQualifiedName, block)
         } else {
             block(subBuilder)
@@ -497,7 +497,7 @@ class Ld_NamespaceBuilder(
             simpleName = simpleName,
             result = result,
             pure = pure,
-            outerTypeParams = immSetOf(),
+            outerTypeParams = setOf(),
             block = block,
         )
 

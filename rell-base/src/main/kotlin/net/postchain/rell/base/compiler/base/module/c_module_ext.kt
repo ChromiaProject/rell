@@ -16,6 +16,9 @@ import net.postchain.rell.base.compiler.base.namespace.C_UserNsProtoBuilder
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.R_EnumDefinition
 import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmMap
+import net.postchain.rell.base.utils.associateToImmMap
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.immMultimapOf
 import net.postchain.rell.base.utils.toImmList
@@ -28,19 +31,16 @@ data class C_ExtChainName(val name: String) {
 class C_ExtModule(
     val midModule: C_MidModule,
     val chain: C_ExtChainName?,
-    files: List<C_ExtModuleFile>,
+    private val files: ImmList<C_ExtModuleFile>,
 ) {
-    private val files = files.toImmList()
-
     fun compileFiles(modCtx: C_ModuleContext) = files.map { it.compile(modCtx) }
 }
 
 class C_ExtModuleFile(
     private val path: C_SourcePath,
-    members: List<C_ExtModuleMember>,
+    private val members: ImmList<C_ExtModuleMember>,
     private val symCtx: C_SymbolContext,
 ) {
-    private val members = members.toImmList()
     private val ideCompletions = mutableListOf<C_LateGetter<Multimap<String, IdeCompletion>>>()
 
     fun compile(modCtx: C_ModuleContext): C_CompiledRellFile {
@@ -141,13 +141,11 @@ class C_ExtModuleMember_Import(
 class C_ExtModuleMember_Namespace(
     private val qualifiedName: C_IdeQualifiedName?,
     private val posRange: S_PosRange,
-    members: List<C_ExtModuleMember>,
+    private val members: ImmList<C_ExtModuleMember>,
     private val mount: C_MountAnnotationValue?,
     private val extChainName: C_ExtChainName?,
     private val deprecated: C_Deprecated?,
 ): C_ExtModuleMember() {
-    private val members = members.toImmList()
-
     override fun compile0(mntCtx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
         val subMntCtx = createSubMountContext(mntCtx)
 
@@ -211,11 +209,11 @@ class C_ExtModuleMember_Namespace(
 class C_ExtModuleCompiler(
     private val appCtx: C_AppContext,
     extModules: List<C_ExtModule>,
-    preModules: Map<C_ModuleKey, C_PrecompiledModule>,
+    preModules: ImmMap<C_ModuleKey, C_PrecompiledModule>,
 ) {
     private val bases = extModules.map { compileModuleBasis(it) }
 
-    val modProvider = C_ModuleProvider(bases.associate { it.module.key to it.module }, preModules)
+    val modProvider = C_ModuleProvider(bases.associateToImmMap { it.module.key to it.module }, preModules)
 
     private var done = false
 

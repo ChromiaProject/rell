@@ -18,7 +18,8 @@ import net.postchain.rell.base.compiler.vexpr.V_AttributeDefaultValueExpr
 import net.postchain.rell.base.compiler.vexpr.V_CreateExprAttr
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmMap
 import net.postchain.rell.base.utils.toImmSet
 
@@ -31,12 +32,9 @@ class C_CreateContext(
 }
 
 class C_CreateAttributes(
-        explicitAttrs: List<V_CreateExprAttr>,
-        implicitAttrs: List<V_CreateExprAttr>
-) {
-    val explicitAttrs = explicitAttrs.toImmList()
-    val implicitAttrs = implicitAttrs.toImmList()
-}
+    val explicitAttrs: ImmList<V_CreateExprAttr>,
+    val implicitAttrs: ImmList<V_CreateExprAttr>
+)
 
 class C_AttrArgument(val index: Int, val name: C_Name?, val vExpr: V_Expr)
 class C_AttrMatch(val attr: R_Attribute, val vExpr: V_Expr)
@@ -58,7 +56,7 @@ object C_AttributeResolver {
             ctx.msgCtx.error(pos, "create:unmatched_args", "Not all arguments matched to attributes")
         }
 
-        val explicitAttrs = matchedAttrs.values.map {
+        val explicitAttrs = matchedAttrs.values.mapToImmList {
             V_CreateExprAttr(it.attr, it.vExpr)
         }
 
@@ -93,11 +91,11 @@ object C_AttributeResolver {
             pos: S_Pos,
             attributes: Map<*, R_Attribute>,
             attrExprs: List<V_CreateExprAttr>
-    ): List<V_CreateExprAttr> {
+    ): ImmList<V_CreateExprAttr> {
         val provided = attrExprs.map { it.attr.name }.toSet()
         return attributes.values
                 .filter { it.hasExpr && it.name !in provided }
-                .map {
+                .mapToImmList {
                     val vExpr = V_AttributeDefaultValueExpr(ctx.exprCtx, pos, it, ctx.filePos, ctx.initFrameGetter)
                     V_CreateExprAttr(it, vExpr)
                 }

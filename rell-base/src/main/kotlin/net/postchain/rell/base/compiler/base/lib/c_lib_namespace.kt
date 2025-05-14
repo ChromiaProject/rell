@@ -15,6 +15,8 @@ import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.immMapOf
+import net.postchain.rell.base.utils.mapToImmList
+import net.postchain.rell.base.utils.mapValuesToImmMap
 import net.postchain.rell.base.utils.mutableMultimapOf
 import net.postchain.rell.base.utils.toImmMap
 import net.postchain.rell.base.utils.toImmSet
@@ -128,8 +130,7 @@ class C_LibNamespace private constructor(
             done = true
 
             val resNamespaces = namespaces
-                .mapValues { it.value.build() }
-                .toImmMap()
+                .mapValuesToImmMap { it.value.build() }
 
             val memberFactory = C_LibNsMemberFactory(basePath)
             val fnMembers = functions.asMap().mapValues { (name, cases) ->
@@ -137,7 +138,7 @@ class C_LibNamespace private constructor(
             }
 
             val resMembers = fnMembers + members
-            return C_LibNamespace(basePath, resNamespaces.toImmMap(), resMembers.toImmMap())
+            return C_LibNamespace(basePath, resNamespaces, resMembers.toImmMap())
         }
 
         private fun createFunctionMember(
@@ -147,7 +148,7 @@ class C_LibNamespace private constructor(
         ): C_NamespaceMember {
             val fullName = basePath.fullName(simpleName)
             val naming = C_MemberNaming.makeFullName(fullName)
-            val libCases = cases.map { it.libCase }
+            val libCases = cases.mapToImmList { it.libCase }
             val fn = C_LibFunctionUtils.makeGlobalFunction(naming, libCases)
 
             val ideInfo = libCases.first().ideInfo

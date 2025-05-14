@@ -84,7 +84,7 @@ class RellCodeTester(
         chainDependencies[name] = TestChainDependency(bcRid, height)
     }
 
-    fun chainDependencies() = chainDependencies.mapValues { (_, v) -> Pair(v.rid, v.height) }.toImmMap()
+    fun chainDependencies() = chainDependencies.mapValuesToImmMap { (_, v) -> v.rid to v.height }
 
     fun postInitOp(code: String) {
         checkNotInited()
@@ -376,8 +376,7 @@ class RellCodeTester(
     private fun runTests(): String {
         val res = processWithTestRunnerCtx { testCtx ->
             val testFns = UnitTestRunner.getTestFunctions(testCtx.app, UnitTestMatcher.ANY)
-                    .map { UnitTestCase(UnitTestRunnerChain("foo", 123), it) }
-                    .toImmList()
+                    .mapToImmList { UnitTestCase(UnitTestRunnerChain("foo", 123), it) }
 
             val testRes = UnitTestRunnerResults(testCtx.printPrettyLargeValues)
             UnitTestRunner.runTests(testCtx, testFns, testRes)

@@ -22,7 +22,10 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.BytesKeyPair
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 import java.util.*
 
@@ -350,8 +353,8 @@ object Lib_Type_Block {
     }
 
     private fun newOps(ops: List<Rt_Value>): Rt_Value {
-        val rawOps = ops.map { asTestOp(it).toRaw() }
-        val tx = RawTestTxValue(rawOps, listOf())
+        val rawOps = ops.mapToImmList { asTestOp(it).toRaw() }
+        val tx = RawTestTxValue(rawOps, immListOf())
         return Rt_TestBlockValue(listOf(tx))
     }
 
@@ -363,8 +366,8 @@ object Lib_Type_Block {
 
     private fun addOps(self: Rt_Value, ops: List<Rt_Value>): Rt_Value {
         val block = asTestBlock(self)
-        val rawOps = ops.map { asTestOp(it).toRaw() }
-        val tx = RawTestTxValue(rawOps, listOf())
+        val rawOps = ops.mapToImmList { asTestOp(it).toRaw() }
+        val tx = RawTestTxValue(rawOps, immListOf())
         block.addTx(tx)
         return self
     }
@@ -622,7 +625,7 @@ private object Lib_Type_Op {
                         val rtName = sv.get(0)
                         val rtArgs = sv.get(1).asList()
                         val mountName = R_MountName.of(rtName.asString())
-                        val gtvArgs = rtArgs.map { it.asGtv() }
+                        val gtvArgs = rtArgs.mapToImmList { it.asGtv() }
                         Rt_TestOpValue(mountName, gtvArgs)
                     }
                 }
@@ -726,7 +729,7 @@ private object Lib_Type_Op {
 
     private fun newOp(nameArg: Rt_Value, tailArgs: List<Rt_Value>): Rt_Value {
         val nameStr = nameArg.asString()
-        val args = tailArgs.map { it.asGtv() }
+        val args = tailArgs.mapToImmList { it.asGtv() }
 
         val name = R_MountName.ofOpt(nameStr)
         Rt_Utils.check(name != null && !name.isEmpty()) {
@@ -787,7 +790,7 @@ private object Lib_Nop {
         return makeValue(gtv)
     }
 
-    private fun makeValue(arg: Gtv) = Rt_TestOpValue(MOUNT_NAME, listOf(arg))
+    private fun makeValue(arg: Gtv) = Rt_TestOpValue(MOUNT_NAME, immListOf(arg))
 }
 
 class Rt_TestBlockValue(txs: List<RawTestTxValue>): Rt_Value() {
@@ -845,7 +848,7 @@ class Rt_TestTxValue(
 
     fun copy() = Rt_TestTxValue(ops, signers)
 
-    fun toRaw() = RawTestTxValue(ops, signers)
+    fun toRaw() = RawTestTxValue(ops.toImmList(), signers.toImmList())
 
     companion object {
         private val VALUE_TYPE = Rt_LibValueType.of("TEST_TX")
@@ -864,9 +867,7 @@ class Rt_TestTxValue(
     }
 }
 
-class Rt_TestOpValue(private val name: R_MountName, args: List<Gtv>): Rt_Value() {
-    val args = args.toImmList()
-
+class Rt_TestOpValue(private val name: R_MountName, val args: ImmList<Gtv>): Rt_Value() {
     val nameValue: Rt_Value by lazy {
         Rt_TextValue.get(name.str())
     }
@@ -904,18 +905,13 @@ class Rt_TestOpValue(private val name: R_MountName, args: List<Gtv>): Rt_Value()
 }
 
 class RawTestTxValue(
-    ops: List<RawTestOpValue>,
-    signers: List<BytesKeyPair>,
+    val ops: ImmList<RawTestOpValue>,
+    val signers: ImmList<BytesKeyPair>,
 ) {
-    val ops = ops.toImmList()
-    val signers = signers.toImmList()
-
     override fun toString() = Rt_TestTxValue.toString(ops)
 }
 
-class RawTestOpValue(val name: R_MountName, args: List<Gtv>) {
-    val args = args.toImmList()
-
+class RawTestOpValue(val name: R_MountName, val args: ImmList<Gtv>) {
     override fun toString() = Rt_TestOpValue.toString(name, args)
 }
 

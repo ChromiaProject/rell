@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.namespace
 
-import com.google.common.collect.Multimap
 import com.google.common.collect.Sets
 import net.postchain.rell.base.compiler.ast.S_ExactImportTargetItem
 import net.postchain.rell.base.compiler.ast.S_Pos
@@ -44,7 +43,7 @@ interface C_NsAsm_ComponentAssembler: C_NsAsm_BasicAssembler {
         aliasPair: Pair<C_NameHandle, DocSymbolTransformer>?,
     )
 
-    fun addWildcardImport(module: C_ModuleKey, pathHands: List<C_NameHandle>)
+    fun addWildcardImport(module: C_ModuleKey, pathHands: ImmList<C_NameHandle>)
 }
 
 interface C_NsAsm_ModuleAssembler: C_NsAsm_BasicAssembler {
@@ -75,25 +74,19 @@ interface C_NsAsm_AppAssembler {
 
 class C_NsAsm_Module(val rawNs: C_NsAsm_RawNamespace, val impNs: C_NsImp_Namespace, val ns: C_Namespace)
 
-class C_NsAsm_App(val newReplState: C_NsAsm_ReplState, modules: Map<C_ModuleKey, C_NsAsm_Module>) {
-    val modules = modules.toImmMap()
-
-    companion object { val EMPTY = C_NsAsm_App(C_NsAsm_ReplState.EMPTY, mapOf()) }
+class C_NsAsm_App(val newReplState: C_NsAsm_ReplState, val modules: ImmMap<C_ModuleKey, C_NsAsm_Module>) {
+    companion object { val EMPTY = C_NsAsm_App(C_NsAsm_ReplState.EMPTY, immMapOf()) }
 }
 
 sealed class C_NsAsm_ReplState {
     companion object { val EMPTY: C_NsAsm_ReplState = C_NsAsm_InternalReplState.EMPTY }
 }
 
-class C_NsAsm_WildcardImport(val module: C_ModuleKey, path: List<C_Name>, val names: C_NsAsm_WildcardImportNames) {
-    val path = path.toImmList()
-}
+class C_NsAsm_WildcardImport(val module: C_ModuleKey, val path: ImmList<C_Name>, val names: C_NsAsm_WildcardImportNames)
 
 class C_NsAsm_ExactImport(val module: C_ModuleKey, val qName: C_QualifiedName)
 
-class C_NsAsm_WildcardImportNames(executor: C_CompilerExecutor, pathHands: List<C_NameHandle>) {
-    private val pathHands = pathHands.toImmList()
-
+class C_NsAsm_WildcardImportNames(executor: C_CompilerExecutor, private val pathHands: ImmList<C_NameHandle>) {
     private var ideInfoDefined = false
 
     init {
@@ -135,8 +128,8 @@ class C_NsAsm_ExactImportNames(
         ideInfoDefined = true
 
         val fullIdeInfos = qNameHand.parts.indices
-            .map { ideInfos.getOrNull(it) ?: C_IdeSymbolInfo.UNKNOWN }
-            .toImmList()
+            .mapToImmList { ideInfos.getOrNull(it) ?: C_IdeSymbolInfo.UNKNOWN }
+
         qNameHand.setIdeInfo(fullIdeInfos)
 
         if (alias != null) {
@@ -171,14 +164,10 @@ class C_NsAsm_ExactImportNames(
 }
 
 class C_NsAsm_Namespace(
-    defs: Map<R_Name, C_NsAsm_Def>,
-    importDefs: Multimap<R_Name, C_NsAsm_Def>,
-    wildcardImports: List<C_NsAsm_WildcardImport>,
+    val defs: ImmMap<R_Name, C_NsAsm_Def>,
+    val importDefs: ImmMultimap<R_Name, C_NsAsm_Def>,
+    val wildcardImports: ImmList<C_NsAsm_WildcardImport>,
 ) {
-    val defs = defs.toImmMap()
-    val importDefs = importDefs.toImmMultimap()
-    val wildcardImports = wildcardImports.toImmList()
-
     companion object { val EMPTY = C_NsAsm_Namespace(immMapOf(), immMultimapOf(), immListOf()) }
 }
 
@@ -375,16 +364,16 @@ private class C_NsAsm_InternalComponentAssembler(
         addEntry(alias, C_DeclarationType.IMPORT, mutDef, C_NsAsm_Identity_ExactImport(imp))
     }
 
-    override fun addWildcardImport(module: C_ModuleKey, pathHands: List<C_NameHandle>) {
+    override fun addWildcardImport(module: C_ModuleKey, pathHands: ImmList<C_NameHandle>) {
         checkCanModify()
-        val path = pathHands.map { it.name }.toImmList()
+        val path = pathHands.mapToImmList { it.name }
         val names = C_NsAsm_WildcardImportNames(executor, pathHands)
         wildcardImports.add(C_NsAsm_RawWildcardImport(module, path, names, stamp))
     }
 
     fun assemble(): C_NsAsm_RawNamespace {
         finish()
-        val resEntries = entries.map { it.assemble() }
+        val resEntries = entries.mapToImmList { it.assemble() }
         val resWildcardImports = wildcardImports.toImmList()
         return C_NsAsm_RawNamespace(resEntries, resWildcardImports)
     }
@@ -437,7 +426,7 @@ private class C_NsAsm_InternalReplAssembler(
         }
 
         val newNs = newRawNs.assemble(immListOf())
-        val impModules = modules.mapValues { (_, v) -> v.impNs }.toImmMap()
+        val impModules = modules.mapValuesToImmMap { (_, v) -> v.impNs }
         val newImpNs = C_NsImp_ImportsProcessor.process(msgCtx, newNs, impModules)
         val combinedImpNs = mergeReplNamespace(oldState.impNs, newImpNs)
 
@@ -447,7 +436,7 @@ private class C_NsAsm_InternalReplAssembler(
 
     private fun mergeReplNamespace(oldNs: C_NsImp_Namespace, newNs: C_NsImp_Namespace): C_NsImp_Namespace {
         val directNames = Sets.union(oldNs.directDefs.keys, newNs.directDefs.keys)
-        val directDefs = directNames.associateWith {
+        val directDefs = directNames.associateWithToImmList {
             val oldDef = oldNs.directDefs[it]
             val newDef = newNs.directDefs[it]
             mergeReplDef(oldDef, newDef)
@@ -457,7 +446,7 @@ private class C_NsAsm_InternalReplAssembler(
         importDefs.putAll(oldNs.importDefs)
         importDefs.putAll(newNs.importDefs)
 
-        return C_NsImp_Namespace(directDefs, importDefs)
+        return C_NsImp_Namespace(directDefs, importDefs.toImmMultimap())
     }
 
     private fun mergeReplDef(oldDef: C_NsImp_Def?, newDef: C_NsImp_Def?): C_NsImp_Def {
@@ -483,12 +472,9 @@ private class C_NsAsm_InternalReplAssembler(
 private class C_NsAsm_RawModule(val rawNs: C_NsAsm_RawNamespace, val ns: C_NsAsm_Namespace)
 
 class C_NsAsm_RawNamespace(
-    entries: List<C_NsAsm_RawEntry>,
-    wildcardImports: List<C_NsAsm_RawWildcardImport>,
+    val entries: ImmList<C_NsAsm_RawEntry>,
+    val wildcardImports: ImmList<C_NsAsm_RawWildcardImport>,
 ) {
-    val entries = entries.toImmList()
-    val wildcardImports = wildcardImports.toImmList()
-
     fun addToDefs(b: C_ModuleDefsBuilder) {
         for (entry in entries) {
             entry.def.addToDefs(b)
@@ -496,8 +482,8 @@ class C_NsAsm_RawNamespace(
     }
 
     fun filterByStamp(stamp: R_AppUid): C_NsAsm_RawNamespace {
-        val resEntries = entries.mapNotNull { it.filterByStamp(stamp) }
-        val resWildcards = wildcardImports.filter { it.stamp == stamp}
+        val resEntries = entries.mapNotNullToImmList { it.filterByStamp(stamp) }
+        val resWildcards = wildcardImports.filterToImmList { it.stamp == stamp}
         return C_NsAsm_RawNamespace(resEntries, resWildcards)
     }
 
@@ -515,9 +501,9 @@ class C_NsAsm_RawNamespace(
         }
 
         val rawImports = makeUnique(wildcardImports)
-        val resImports = rawImports.map { it.assemble() }
+        val resImports = rawImports.mapToImmList { it.assemble() }
 
-        return C_NsAsm_Namespace(defs, immMultimapOf(), resImports)
+        return C_NsAsm_Namespace(defs.toImmMap(), immMultimapOf(), resImports)
     }
 
     private fun makeUnique(imports: List<C_NsAsm_RawWildcardImport>): List<C_NsAsm_RawWildcardImport> {
@@ -532,7 +518,7 @@ class C_NsAsm_RawNamespace(
 
     private data class ImportKey(val module: C_ModuleKey, val path: List<R_Name>)
 
-    companion object { val EMPTY = C_NsAsm_RawNamespace(listOf(), listOf()) }
+    companion object { val EMPTY = C_NsAsm_RawNamespace(immListOf(), immListOf()) }
 }
 
 class C_NsAsm_RawEntry(
@@ -556,12 +542,10 @@ class C_NsAsm_RawEntry(
 
 class C_NsAsm_RawWildcardImport(
         val module: C_ModuleKey,
-        path: List<C_Name>,
+        val path: ImmList<C_Name>,
         private val names: C_NsAsm_WildcardImportNames,
         val stamp: R_AppUid
 ) {
-    val path = path.toImmList()
-
     fun assemble() = C_NsAsm_WildcardImport(module, path, names)
 }
 
@@ -755,7 +739,7 @@ private class C_NsAsm_InternalAppAssembler(
 
         val modules = moduleAsms.mapValues { (_, v) -> v.assemble() }
         val nsModules = modules.mapValues { (_, v) -> v.ns }
-        val preImpModules = preModules.mapValues { (_, v) -> v.asmModule.impNs }.toImmMap()
+        val preImpModules = preModules.mapValuesToImmMap { (_, v) -> v.asmModule.impNs }
         val impModules = C_NsImp_ImportsProcessor.process(msgCtx, nsModules, preImpModules)
 
         val resModules = C_NsRes_ResultMaker.make(impModules)
@@ -774,7 +758,7 @@ private class C_NsAsm_InternalAppAssembler(
             rawModules: Map<C_ModuleKey, C_NsAsm_RawModule>,
             impModules: Map<C_ModuleKey, C_NsImp_Namespace>,
             resModules: Map<C_ModuleKey, C_Namespace>
-    ): Map<C_ModuleKey, C_NsAsm_Module> {
+    ): ImmMap<C_ModuleKey, C_NsAsm_Module> {
         checkEquals(impModules.keys, rawModules.keys)
         checkEquals(resModules.keys, rawModules.keys)
         checkEquals(Sets.intersection(rawModules.keys, preModules.keys), setOf<C_ModuleKey>())
@@ -830,7 +814,7 @@ private class C_NsAsm_ConflictsProcessor(
         for (entry in ns.entries) {
             addEntry(map, entry, checkSysDefs)
         }
-        return C_NsAsm_RawNamespace(map.values.toList(), ns.wildcardImports)
+        return C_NsAsm_RawNamespace(map.values.toImmList(), ns.wildcardImports)
     }
 
     private fun addEntry(map: MutableMap<String, C_NsAsm_RawEntry>, entry: C_NsAsm_RawEntry, checkSysDefs: Boolean) {
@@ -874,7 +858,7 @@ private data class C_NsAsm_NamespaceKey(val container: C_ContainerKey, val path:
     }
 
     fun toDefPath(): C_DefinitionPath {
-        return C_DefinitionPath(container.defModuleName(), path.parts.map { it.str })
+        return C_DefinitionPath(container.defModuleName(), path.parts.mapToImmList { it.str })
     }
 }
 
@@ -959,7 +943,7 @@ private object C_NsAsm_Utils {
             }
         }
 
-        return C_NsAsm_RawNamespace(entries, ns.wildcardImports)
+        return C_NsAsm_RawNamespace(entries.toImmList(), ns.wildcardImports)
     }
 
     private fun mergeNamespaceDefs(
@@ -972,8 +956,8 @@ private object C_NsAsm_Utils {
             return entry
         }
 
-        val nsEntries = list.flatMap { it.ns.entries }
-        val wildcardImports = list.flatMap { it.ns.wildcardImports }
+        val nsEntries = list.flatMapToImmList { it.ns.entries }
+        val wildcardImports = list.flatMapToImmList { it.ns.wildcardImports }
         val mergedNs = C_NsAsm_RawNamespace(nsEntries, wildcardImports)
 
         val mergedIdeInfo = mergeIdeInfos(list)
@@ -993,8 +977,8 @@ private object C_NsAsm_Utils {
     }
 
     fun concatNamespaces(nss: List<C_NsAsm_RawNamespace>): C_NsAsm_RawNamespace {
-        val entries = nss.flatMap { it.entries }
-        val wildcardImports = nss.flatMap { it.wildcardImports }
+        val entries = nss.flatMapToImmList { it.entries }
+        val wildcardImports = nss.flatMapToImmList { it.wildcardImports }
         return C_NsAsm_RawNamespace(entries, wildcardImports)
     }
 
@@ -1032,6 +1016,6 @@ private object C_NsAsm_Utils {
             }
             entries.add(entry2)
         }
-        return C_NsAsm_RawNamespace(entries, ns.wildcardImports)
+        return C_NsAsm_RawNamespace(entries.toImmList(), ns.wildcardImports)
     }
 }

@@ -20,6 +20,8 @@ import net.postchain.rell.base.model.R_FunctionBase
 import net.postchain.rell.base.model.R_FunctionDefinition
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmSet
 
@@ -177,7 +179,7 @@ private class C_OverrideConflictsProcessor(private val msgCtx: C_MessageContext)
     private fun collectImportOverrides(
             import: C_ImportDescriptor,
             visitedModules: MutableSet<C_ContainerKey>
-    ): List<C_OverrideEntry> {
+    ): ImmList<C_OverrideEntry> {
         val res = mutableListOf<C_OverrideEntry>()
 
         val allModules = C_AbstractUtils.collectImportedModules(import, visitedModules, false)
@@ -187,7 +189,7 @@ private class C_OverrideConflictsProcessor(private val msgCtx: C_MessageContext)
             }
         }
 
-        return res.groupBy { it.abstract }.values.map { it[0] }.toImmList()
+        return res.groupBy { it.abstract }.values.mapToImmList { it[0] }
     }
 
     private fun collectDirectOverrides(

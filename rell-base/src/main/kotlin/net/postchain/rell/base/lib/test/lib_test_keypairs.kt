@@ -108,8 +108,7 @@ object Lib_Test_KeyPairs {
     private fun keyPairToStruct(rType: R_Type, keyPair: BytesKeyPair): Rt_Value {
         val structType = rType as R_StructType
         val attrs = listOf(keyPair.pub, keyPair.priv)
-            .map { Rt_ByteArrayValue.get(it.toByteArray()) }
-            .toMutableList<Rt_Value>()
+            .mapTo(mutableListOf()) { Rt_ByteArrayValue.get(it.toByteArray()) }
         return Rt_StructValue(structType, attrs)
     }
 }

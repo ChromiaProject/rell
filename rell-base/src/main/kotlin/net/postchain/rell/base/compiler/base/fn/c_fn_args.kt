@@ -17,7 +17,9 @@ import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.R_PartialArgMapping
 import net.postchain.rell.base.model.expr.R_PartialCallMapping
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyString
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -25,21 +27,16 @@ import net.postchain.rell.base.utils.toImmList
 
 class C_EffectivePartialArguments(
     private val callParams: C_FunctionCallParameters,
-    exprArgs: List<V_Expr>,
-    wildArgs: List<R_Type>,
-    mapping: List<C_ArgMatchParamArg>,
+    val exprArgs: ImmList<V_Expr>,
+    val wildArgs: ImmList<R_Type>,
+    private val mapping: ImmList<C_ArgMatchParamArg>,
 ) {
-    val exprArgs = exprArgs.toImmList()
-    val wildArgs = wildArgs.toImmList()
-
-    private val mapping = mapping.toImmList()
-
     fun toRMapping(msgCtx: C_MessageContext): R_PartialCallMapping {
         C_FunctionUtils.checkParamRestrictions(msgCtx, mapping) { param ->
             callParams.list[param.index].restrictions
         }
 
-        val combinedArgs = mapping.map { R_PartialArgMapping(it.wild, it.index) }
+        val combinedArgs = mapping.mapToImmList { R_PartialArgMapping(it.wild, it.index) }
         return R_PartialCallMapping(exprArgs.size, wildArgs.size, combinedArgs)
     }
 }
@@ -55,9 +52,9 @@ sealed class C_AbstractCallArguments(private val argHands: List<C_CallArgumentHa
 sealed class C_FullCallArguments(
     protected val ctx: C_ExprContext,
     val rawArgs: C_CallArguments,
-    argHands: List<C_CallArgumentHandle>,
+    argHands: ImmList<C_CallArgumentHandle>,
 ): C_AbstractCallArguments(argHands) {
-    abstract fun compileSimpleArgs(functionName: LazyString): List<V_Expr>
+    abstract fun compileSimpleArgs(functionName: LazyString): ImmList<V_Expr>
 
     abstract fun compileComplexArgs(
         callInfo: C_FunctionCallInfo,
@@ -158,16 +155,16 @@ object C_FunctionCallArgsUtils {
 
 private class C_FullCallArguments_Impl(
     ctx: C_ExprContext,
-    rawArgs: List<C_CallArgumentHandle>,
+    rawArgs: ImmList<C_CallArgumentHandle>,
     args: C_CallArguments,
 ): C_FullCallArguments(ctx, args, rawArgs) {
-    override fun compileSimpleArgs(functionName: LazyString): List<V_Expr> {
+    override fun compileSimpleArgs(functionName: LazyString): ImmList<V_Expr> {
         val named = rawArgs.named.firstOrNull()
         if (named != null) {
             C_Errors.errNamedArgsNotSupported(ctx.msgCtx, functionName, named.name)
         }
 
-        return rawArgs.positional.map {
+        return rawArgs.positional.mapToImmList {
             when (it.value) {
                 is C_CallArgumentValue_Expr -> it.value.vExpr
                 is C_CallArgumentValue_Wildcard -> throw IllegalStateException()
@@ -188,7 +185,7 @@ private class C_FullCallArguments_Impl(
         }
 
         val exprs = C_InternalFnArgsUtils.makeExprArgs(ctx, callInfo, callParams, matching)
-        val mapping = matching.mapping.map { it.index }
+        val mapping = matching.mapping.mapToImmList { it.index }
         return V_FunctionCallArgs(exprs, mapping, matching.exprsToParams)
     }
 }
@@ -214,7 +211,7 @@ private class C_PartialCallArguments_Impl(
         }
 
         val exprArgs = C_InternalFnArgsUtils.makeExprArgs(ctx, callInfo, callParams, matching)
-        val wildArgs = matching.wildArgs.map { callParams.list[it.index].type }
+        val wildArgs = matching.wildArgs.mapToImmList { callParams.list[it.index].type }
 
         val res = C_EffectivePartialArguments(callParams, exprArgs, wildArgs, matching.mapping)
         return if (errWatcher.hasNewErrors()) null else res
@@ -232,7 +229,7 @@ private class C_PartialCallArguments_Impl(
 }
 
 private object C_ArgsListProcessor {
-    fun processArgs(ctx: C_ExprContext, rawArgs: List<C_CallArgumentHandle>): C_AbstractCallArguments? {
+    fun processArgs(ctx: C_ExprContext, rawArgs: ImmList<C_CallArgumentHandle>): C_AbstractCallArguments? {
         val args = rawArgs.map { it.toCallArgument() }
 
         val wildArgs = args.filter {
@@ -327,8 +324,8 @@ private object C_InternalFnArgsUtils {
         callInfo: C_FunctionCallInfo,
         callParams: C_FunctionCallParameters,
         matching: C_ArgMatching,
-    ): List<V_Expr> {
-        return matching.exprArgs.map { arg ->
+    ): ImmList<V_Expr> {
+        return matching.exprArgs.mapToImmList { arg ->
             val param = callParams.list[arg.param.index]
             when (arg) {
                 is C_ArgMatchArg_Expr -> {

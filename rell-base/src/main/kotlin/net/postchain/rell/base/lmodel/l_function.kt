@@ -86,7 +86,7 @@ abstract class L_CommonFunctionHeader(
     val params: List<L_FunctionParam>,
 ) {
     private val paramsMap: Map<R_Name, L_FunctionParam> by lazy {
-        params.associateBy { it.name }.toImmMap()
+        params.associateByToImmMap { it.name }
     }
 
     fun getParam(name: R_Name): L_FunctionParam? {
@@ -156,15 +156,14 @@ class L_FunctionParamsMatch(
         adapters ?: return null
 
         val resParams = actualParams
-            .mapIndexed { i, lParam -> lParam.replaceMParam(m.actualHeader.params[i]) }
-            .toImmList()
+            .mapIndexedToImmList { i, lParam -> lParam.replaceMParam(m.actualHeader.params[i]) }
 
         val actualHeader = L_FunctionHeader(m.actualHeader, resParams)
 
         return L_FunctionHeaderMatch(
             actualHeader,
             adapters = adapters,
-            typeArgs = m.typeArgs.mapKeys { R_Name.of(it.key) }.toImmMap(),
+            typeArgs = m.typeArgs.mapKeysToImmMap { R_Name.of(it.key) },
         )
     }
 }
@@ -187,7 +186,7 @@ class L_Function(
     val body: L_FunctionBody,
 ) {
     val docMembers: Map<String, DocDefinition> by lazy {
-        header.params.associateBy { it.name.str }.toImmMap()
+        header.params.associateByToImmMap { it.name.str }
     }
 
     fun strCode(actualName: R_QualifiedName = fullName.qualifiedName): String {

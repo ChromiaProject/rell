@@ -4,24 +4,22 @@
 
 package net.postchain.rell.base.mtype
 
+import net.postchain.rell.base.utils.mapIndexedToImmList
 import net.postchain.rell.base.utils.mapNotNullAllOrNull
-import net.postchain.rell.base.utils.toImmList
 import java.util.*
 
 sealed class M_Type_Composite(private val componentCount: Int): M_Type() {
     protected abstract val canonicalArgs: List<M_TypeSet>
 
     private val varianceArgs: List<M_TypeSet> by lazy {
-        canonicalArgs
-            .mapIndexed { i, arg ->
-                val variance = getTypeArgVariance(i)
-                when (variance) {
-                    M_TypeVariance.NONE -> arg
-                    M_TypeVariance.IN -> arg.allSuperTypes()
-                    M_TypeVariance.OUT -> arg.allSubTypes()
-                }
+        canonicalArgs.mapIndexedToImmList { i, arg ->
+            val variance = getTypeArgVariance(i)
+            when (variance) {
+                M_TypeVariance.NONE -> arg
+                M_TypeVariance.IN -> arg.allSuperTypes()
+                M_TypeVariance.OUT -> arg.allSubTypes()
             }
-            .toImmList()
+        }
     }
 
     protected abstract fun equalsComposite0(other: M_Type_Composite): Boolean

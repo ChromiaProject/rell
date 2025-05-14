@@ -22,21 +22,20 @@ import net.postchain.rell.base.model.expr.R_BlockCheckExpr
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.expr.R_StackTraceExpr
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.immSetOf
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmSet
 
 class V_ExprInfo(
     val type: R_Type,
-    subExprs: List<V_Expr>,
+    val subExprs: ImmList<V_Expr>,
     val hasDbModifications: Boolean = false,
     val canBeDbExpr: Boolean = true,
     val dependsOnDbAtEntity: Boolean = false,
-    dependsOnAtExprs: Set<R_AtExprId> = immSetOf(),
+    val dependsOnAtExprs: ImmSet<R_AtExprId> = immSetOf(),
 ) {
-    val subExprs = subExprs.toImmList()
-    val dependsOnAtExprs = dependsOnAtExprs.toImmSet()
-
     companion object {
         fun simple(
             type: R_Type,
@@ -68,7 +67,7 @@ class V_ExprInfo(
             val canBeDb = !depsOnDbAtEnt || (canBeDbExpr && subExprs.all { it.info.canBeDbExpr })
             return V_ExprInfo(
                     type = type,
-                    subExprs = subExprs,
+                    subExprs = subExprs.toImmList(),
                     hasDbModifications = hasDbModifications || subExprs.any { it.info.hasDbModifications },
                     canBeDbExpr = canBeDb,
                     dependsOnDbAtEntity = depsOnDbAtEnt,

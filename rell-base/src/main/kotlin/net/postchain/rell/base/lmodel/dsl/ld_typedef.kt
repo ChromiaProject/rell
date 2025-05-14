@@ -24,7 +24,7 @@ class Ld_TypeDefParent(private val typeName: Ld_FullName, private val args: List
         Ld_Exception.check(typeDef.abstract) {
             "type_parent_not_abstract:$typeName" to "Parent type is not abstract: $typeName"
         }
-        val mArgs = args.map { it.finish(ctx) }.toImmList()
+        val mArgs = args.mapToImmList { it.finish(ctx) }
         return L_TypeDefParent(typeDef, mArgs)
     }
 }
@@ -60,8 +60,8 @@ private class Ld_TypeDefMember_Constructor(
         val docDeclaration = DocDeclaration_TypeConstructor(
             hdr.simpleName,
             L_TypeUtils.docTypeParams(lConstructor.header.typeParams),
-            lConstructor.header.params.map { it.name.str }.toImmList(),
-            lConstructor.header.params.map { it.docSymbol.declaration }.toImmList(),
+            lConstructor.header.params.mapToImmList { it.name.str },
+            lConstructor.header.params.mapToImmList { it.docSymbol.declaration },
             deprecated = lConstructor.deprecated,
             pure = lConstructor.pure,
         )
@@ -225,7 +225,7 @@ class Ld_TypeDef(
         // Members must be computed in a separate future, not blocking the type def, because they may depend on this
         // type recursively.
         val membersF = ctx.fcExec.future().compute {
-            val lMembers = members.flatMap { it.finish(subTypeCtx, fullName) }.toImmList()
+            val lMembers = members.flatMapToImmList { it.finish(subTypeCtx, fullName) }
             L_TypeDefMembers(lMembers)
         }
 

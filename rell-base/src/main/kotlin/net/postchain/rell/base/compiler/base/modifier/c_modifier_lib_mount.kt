@@ -7,6 +7,7 @@ package net.postchain.rell.base.compiler.base.modifier
 import net.postchain.rell.base.compiler.base.core.C_MessageContext
 import net.postchain.rell.base.model.R_MountName
 import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.utils.toImmList
 import org.apache.commons.lang3.StringUtils
 
 object C_Annotation_Mount {
@@ -96,7 +97,7 @@ class C_MountPath private constructor(
             return null
         }
 
-        val combined = base + path
+        val combined = (base + path).toImmList()
         if (!tail) {
             return R_MountName(combined)
         }
@@ -107,7 +108,7 @@ class C_MountPath private constructor(
             return null
         }
 
-        val full = combined + target.name
+        val full = (combined + target.name).toImmList()
         return R_MountName(full)
     }
 

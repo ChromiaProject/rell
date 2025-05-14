@@ -14,6 +14,7 @@ import net.postchain.rell.base.runtime.Rt_CallContext
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_RellVersionProperty
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf
@@ -21,7 +22,7 @@ import net.postchain.rell.base.utils.immListOf
 // Not a normal library, only provides queries that are not bound to a namespace, but are accessible via their mount names.
 
 object Lib_SysQueries {
-    fun createQueries(executor: C_CompilerExecutor): List<R_QueryDefinition> {
+    fun createQueries(executor: C_CompilerExecutor): ImmList<R_QueryDefinition> {
         return immListOf(
             C_Utils.createSysQuery(executor, "get_rell_version", R_TextType, SysQueryFns.GetRellVersion),
             C_Utils.createSysQuery(executor, "get_postchain_version", R_TextType, SysQueryFns.GetPostchainVersion),

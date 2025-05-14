@@ -11,10 +11,12 @@ import net.postchain.rell.base.model.R_TupleField
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_VirtualTupleType
 import net.postchain.rell.base.model.expr.R_MemberCalculator_VirtualTupleAttr
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.mapIndexedToImmList
 
 object Lib_Type_VirtualTuple {
-    fun getValueMembers(type: R_VirtualTupleType): List<C_TypeValueMember> {
-        return type.innerType.fields.mapIndexed { idx, field ->
+    fun getValueMembers(type: R_VirtualTupleType): ImmList<C_TypeValueMember> {
+        return type.innerType.fields.mapIndexedToImmList { idx, field ->
             val virtualType = S_VirtualType.virtualMemberType(field.type)
             val mem = C_TypeValueMember_VirtualTupleAttr(virtualType, idx, field)
             C_TypeValueMember_BasicAttr(mem)

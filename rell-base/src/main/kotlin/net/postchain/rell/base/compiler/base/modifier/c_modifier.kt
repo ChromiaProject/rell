@@ -171,7 +171,7 @@ class C_ModifierValues(
     fun fix(): C_FixedModifierValues {
         check(!fixed)
         fixed = true
-        return C_FixedModifierValues_Impl(target, mods)
+        return C_FixedModifierValues_Impl(target, mods.toImmMap())
     }
 }
 
@@ -182,10 +182,8 @@ sealed class C_FixedModifierValues {
 
 private class C_FixedModifierValues_Impl(
     private val target: C_ModifierTarget,
-    mods: Map<C_ModifierKey, C_ModifierValueEntry<*>>,
+    private val mods: ImmMap<C_ModifierKey, C_ModifierValueEntry<*>>,
 ): C_FixedModifierValues() {
-    private val mods = mods.toImmMap()
-
     override fun compileKeyword(ctx: C_ModifierContext, kw: C_Name, kind: S_KeywordModifierKind): DocModifier? {
         val key = C_ModifierKey_Keyword.of(kind)
         val link = C_ModifierLink(key, kw, target)
@@ -205,7 +203,7 @@ private class C_FixedModifierValues_Impl(
         nameHand.setIdeInfo(ideInfo)
 
         return if (!ctx.symCtx.docSymbolFactory.isEnabled) null else {
-            val docArgs = args.map { it.docArg() }.toImmList()
+            val docArgs = args.mapToImmList { it.docArg() }
             DocModifier_Annotation(nameHand.rName, docArgs)
         }
     }
@@ -225,9 +223,7 @@ private class C_FixedModifierValues_Impl(
     }
 }
 
-class C_ModifierField<T: Any>(mods: List<C_Modifier<T>>) {
-    val mods = mods.toImmList()
-
+class C_ModifierField<T: Any>(val mods: ImmList<C_Modifier<T>>) {
     init {
         val modKeys = this.mods.map { it.key }.toImmSet()
         checkEquals(modKeys.size, this.mods.size)
@@ -256,7 +252,7 @@ class C_ModifierField<T: Any>(mods: List<C_Modifier<T>>) {
         }
 
         fun <T: Any> choiceAnnotations(anns: Map<String, T>): C_ModifierField<T> {
-            val mods = anns.map {
+            val mods = anns.mapToImmList {
                 val modKey = C_ModifierKey_Annotation.of(it.key)
                 val evaluator = C_ModifierEvaluator_Const.of(it.value)
                 C_Modifier(modKey, hidden = false, evaluator)

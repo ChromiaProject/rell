@@ -16,9 +16,13 @@ import net.postchain.rell.base.model.stmt.R_IterableAdapter
 import net.postchain.rell.base.model.stmt.R_IterableAdapter_Direct
 import net.postchain.rell.base.mtype.M_TypeUtils
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.immMultimapOf
+import net.postchain.rell.base.utils.mapIndexedToImmList
+import net.postchain.rell.base.utils.mapToImmList
+import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMultimap
 import net.postchain.rell.base.utils.toImmSet
 
@@ -381,14 +385,14 @@ class S_TupleExpr(
         // ID needs to be allocaed in advance, before processing sub-expressions (for correct numbering).
         val tupleIdeId = ctx.defCtx.tupleIdeId()
 
-        val cFields = fields.map {
+        val cFields = fields.mapToImmList {
             val nameHand = it.name?.compile(ctx, def = true)
             C_TupleField(nameHand, it.value, it.comment)
         }
 
         checkNameConflicts(ctx, cFields)
 
-        val vExprs = cFields.mapIndexed { index, field ->
+        val vExprs = cFields.mapIndexedToImmList { index, field ->
             val fieldTypeHint = hint.typeHint.getTupleFieldHint(index)
             val fieldExprHint = C_ExprHint(fieldTypeHint)
             field.sExpr.compileSafe(ctx, fieldExprHint).vExpr()
@@ -418,8 +422,8 @@ class S_TupleExpr(
     private fun compile0(
         ctx: C_ExprContext,
         tupleIdeId: IdeSymbolId,
-        fields: List<C_TupleField>,
-        vExprs: List<V_Expr>,
+        fields: ImmList<C_TupleField>,
+        vExprs: ImmList<V_Expr>,
     ): V_Expr {
         for ((i, vExpr) in vExprs.withIndex()) {
             C_Utils.checkUnitType(fields[i].sExpr.startPos, vExpr.type) {
@@ -427,7 +431,7 @@ class S_TupleExpr(
             }
         }
 
-        val rFields = vExprs.mapIndexed { i, vExpr ->
+        val rFields = vExprs.mapIndexedToImmList { i, vExpr ->
             val field = fields[i]
             val rType = vExpr.type
             val fieldName = compileFieldName(ctx.symCtx, tupleIdeId, field.nameHand, rType, field.comment)
@@ -512,7 +516,7 @@ class S_ListLiteralExpr(pos: S_Pos, val exprs: List<S_Expr>): S_Expr(pos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val rHintElemType = getHintElemType(hint.typeHint)
         val elemHint = C_ExprHint(C_TypeHint.ofType(rHintElemType))
-        val vExprs = exprs.map { it.compile(ctx, elemHint).vExpr() }
+        val vExprs = exprs.mapToImmList { it.compile(ctx, elemHint).vExpr() }
 
         val listType = ctx.msgCtx.consumeError { compileType(vExprs, rHintElemType) }
         listType ?: return C_ExprUtils.errorExpr(ctx, startPos)
@@ -570,7 +574,7 @@ class S_MapLiteralExpr(startPos: S_Pos, val entries: List<Pair<S_Expr, S_Expr>>)
         val rHintKeyValueTypes = getHintKeyValueType(hint.typeHint)
         val keyHint = C_ExprHint(C_TypeHint.ofType(rHintKeyValueTypes?.key))
         val valueHint = C_ExprHint(C_TypeHint.ofType(rHintKeyValueTypes?.value))
-        val vEntries = entries.map { (key, value) ->
+        val vEntries = entries.mapToImmList { (key, value) ->
             val vKeyExpr = key.compile(ctx, keyHint).vExpr()
             val vValueExpr = value.compile(ctx, valueHint).vExpr()
             vKeyExpr to vValueExpr
@@ -694,7 +698,7 @@ class S_CallArgument(
 }
 
 class S_CallArguments(
-    val list: List<S_CallArgument>,
+    val list: ImmList<S_CallArgument>,
     val posRange: S_PosRange,
 )
 

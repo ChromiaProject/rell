@@ -20,11 +20,13 @@ import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lib.type.V_ObjectExpr
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
+import net.postchain.rell.base.utils.filterToImmList
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeCompletionParam
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
@@ -62,7 +64,7 @@ enum class C_NamespaceMemberTag {
     ;
 
     val list = immListOf(this)
-    val notList: List<C_NamespaceMemberTag> by lazy { values().filter { it != this }.toImmList() }
+    val notList by lazy { entries.filterToImmList { it != this } }
 
     companion object {
         val MIRRORABLE = immListOf(TYPE, CALLABLE, OBJECT)
@@ -563,10 +565,7 @@ private class C_NamespaceMember_GlobalConstant(
     override fun getDocDefinition0() = cDef.rDef
 }
 
-class C_SysNsProto(entries: List<C_NsEntry>, entities: List<C_NsEntry>) {
-    val entries = entries.toImmList()
-    val entities = entities.toImmList()
-
+class C_SysNsProto(val entries: ImmList<C_NsEntry>, val entities: ImmList<C_NsEntry>) {
     fun toNamespace(): C_Namespace {
         return C_NsEntry.createNamespace(entries)
     }
@@ -668,7 +667,7 @@ class C_SysNsProtoBuilder {
     fun build(): C_SysNsProto {
         check(!completed)
         completed = true
-        return C_SysNsProto(entries, entities)
+        return C_SysNsProto(entries.toImmList(), entities.toImmList())
     }
 }
 
@@ -704,7 +703,7 @@ class C_UserNsProtoBuilder(private val assembler: C_NsAsm_ComponentAssembler) {
         assembler.addExactImport(alias, module, qNameHand, aliasPair)
     }
 
-    fun addWildcardImport(module: C_ModuleKey, path: List<C_NameHandle>) {
+    fun addWildcardImport(module: C_ModuleKey, path: ImmList<C_NameHandle>) {
         assembler.addWildcardImport(module, path)
     }
 

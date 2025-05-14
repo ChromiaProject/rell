@@ -14,6 +14,7 @@ import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.mtype.M_FunctionHeader
 import net.postchain.rell.base.utils.doc.DocComment
+import net.postchain.rell.base.utils.mapToImmList
 
 interface Ld_FunctionMaker: Ld_CommonFunctionMaker {
     fun alias(name: String, deprecated: C_MessageType?, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit)
@@ -120,7 +121,7 @@ class Ld_FunctionHeader(
         val mResultType = resultType.finish(subCtx)
         val (lParams, funComment) = Ld_FunctionParam.finish(subCtx, fullName, params, funMemberHeader)
 
-        val mParams = lParams.map { it.mParam }
+        val mParams = lParams.mapToImmList { it.mParam }
         val mHeader = M_FunctionHeader(lTypeParams.list, mResultType, mParams)
 
         val lHeader = L_FunctionHeader(mHeader, lParams)

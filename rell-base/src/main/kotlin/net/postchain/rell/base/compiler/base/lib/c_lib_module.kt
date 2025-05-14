@@ -7,7 +7,7 @@ package net.postchain.rell.base.compiler.base.lib
 import net.postchain.rell.base.lmodel.L_Module
 import net.postchain.rell.base.lmodel.dsl.Ld_ModuleConfig
 import net.postchain.rell.base.lmodel.dsl.Ld_ModuleDsl
-import net.postchain.rell.base.utils.toImmMap
+import net.postchain.rell.base.utils.associateByToImmMap
 
 class C_LibModule(
     val lModule: L_Module,
@@ -15,7 +15,7 @@ class C_LibModule(
     val namespace: C_LibNamespace,
     val extensionTypes: List<C_LibTypeExtension>,
 ) {
-    private val typeDefsByName = typeDefs.associateBy { it.typeName }.toImmMap()
+    private val typeDefsByName = typeDefs.associateByToImmMap { it.typeName }
 
     fun getTypeDef(name: String): C_LibTypeDef {
         return typeDefsByName.getValue(name)

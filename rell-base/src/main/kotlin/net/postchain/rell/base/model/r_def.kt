@@ -24,9 +24,8 @@ import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 
-sealed class R_KeyIndex(attribs: List<R_Name>) {
-    val attribs = attribs.toImmList()
-    val strAttribs = attribs.map { it.str }.toImmList()
+sealed class R_KeyIndex(val attribs: ImmList<R_Name>) {
+    val strAttribs = attribs.mapToImmList { it.str }
 
     fun toMetaGtv(): Gtv {
         return mapOf(
@@ -35,8 +34,8 @@ sealed class R_KeyIndex(attribs: List<R_Name>) {
     }
 }
 
-class R_Key(attribs: List<R_Name>): R_KeyIndex(attribs)
-class R_Index(attribs: List<R_Name>): R_KeyIndex(attribs)
+class R_Key(attribs: ImmList<R_Name>): R_KeyIndex(attribs)
+class R_Index(attribs: ImmList<R_Name>): R_KeyIndex(attribs)
 
 class R_EntityFlags(
         val isObject: Boolean,
@@ -48,14 +47,10 @@ class R_EntityFlags(
 )
 
 class R_EntityBody(
-        keys: List<R_Key>,
-        indexes: List<R_Index>,
-        attributes: Map<R_Name, R_Attribute>
-) {
-    val keys = keys.toImmList()
-    val indexes = indexes.toImmList()
-    val attributes = attributes.toImmMap()
-}
+        val keys: ImmList<R_Key>,
+        val indexes: ImmList<R_Index>,
+        val attributes: ImmMap<R_Name, R_Attribute>
+)
 
 class R_ExternalEntity(val chain: R_ExternalChainRef, val metaCheck: Boolean)
 
@@ -80,8 +75,8 @@ class R_EntityDefinition(
     val indexes: List<R_Index> get() = bodyLate.get().indexes
     val attributes: Map<R_Name, R_Attribute> get() = bodyLate.get().attributes
 
-    val strAttributes: Map<String, R_Attribute> by lazy {
-        attributes.mapKeys { it.key.str }.toImmMap()
+    val strAttributes: ImmMap<String, R_Attribute> by lazy {
+        attributes.mapKeysToImmMap { it.key.str }
     }
 
     fun setBody(body: R_EntityBody) {
@@ -113,7 +108,7 @@ class R_EntityDefinition(
     override fun getDocMembers0() = strAttributes
 
     companion object {
-        private val ERROR_BODY = R_EntityBody(keys = listOf(), indexes = listOf(), attributes = mapOf())
+        private val ERROR_BODY = R_EntityBody(keys = immListOf(), indexes = immListOf(), attributes = immMapOf())
     }
 }
 
@@ -163,7 +158,7 @@ class R_Struct(
     val flags: R_StructFlags get() = flagsLate.get()
 
     val strAttributes: Map<String, R_Attribute> by lazy {
-        attributes.mapKeys { it.key.str }.toImmMap()
+        attributes.mapKeysToImmMap { it.key.str }
     }
 
     val type = R_StructType(this)
@@ -277,7 +272,7 @@ class R_EnumDefinition(
 ): R_Definition(base) {
     val type = R_EnumType(this)
 
-    private val attrMap = attrs.associateBy { it.name }.toImmMap()
+    private val attrMap = attrs.associateByToImmMap { it.name }
 
     fun attr(name: String): R_EnumAttr? {
         return attrMap[name]

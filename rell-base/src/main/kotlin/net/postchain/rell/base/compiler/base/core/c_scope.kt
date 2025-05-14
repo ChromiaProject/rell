@@ -13,6 +13,7 @@ import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.Getter
+import net.postchain.rell.base.utils.ImmMultimap
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.immMultimapOf
 import net.postchain.rell.base.utils.mutableMultimapOf
@@ -62,7 +63,7 @@ class C_Scope(
         return res
     }
 
-    fun ideCompletions(compilerOptions: C_CompilerOptions): Multimap<String, IdeCompletion> {
+    fun ideCompletions(compilerOptions: C_CompilerOptions): ImmMultimap<String, IdeCompletion> {
         val res = mutableMultimapOf<String, IdeCompletion>()
         val set = mutableSetOf<Pair<R_Name, C_NamespaceEntry>>()
         var scope: C_Scope? = this

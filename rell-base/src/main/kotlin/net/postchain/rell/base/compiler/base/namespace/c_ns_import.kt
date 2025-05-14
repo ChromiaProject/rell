@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.namespace
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.base.core.C_DefinitionName
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.compiler.base.core.C_MessageContext
@@ -16,11 +15,8 @@ import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.*
 import java.util.*
 
-class C_NsImp_Namespace(directDefs: Map<R_Name, C_NsImp_Def>, importDefs: Multimap<R_Name, C_NsImp_Def>) {
-    val directDefs = directDefs.toImmMap()
-    val importDefs = importDefs.toImmMultimap()
-
-    companion object { val EMPTY = C_NsImp_Namespace(mapOf(), immMultimapOf()) }
+class C_NsImp_Namespace(val directDefs: ImmMap<R_Name, C_NsImp_Def>, val importDefs: ImmMultimap<R_Name, C_NsImp_Def>) {
+    companion object { val EMPTY = C_NsImp_Namespace(immMapOf(), immMultimapOf()) }
 }
 
 sealed class C_NsImp_Def
@@ -91,9 +87,7 @@ private class C_NsImp_InternalImportsProcessor(
             processNamespace(ns)
         }
 
-        val impList = asmList
-                .map { nsStates.getValue(it).getNamespace() }
-                .toImmList()
+        val impList = asmList.mapToImmList { nsStates.getValue(it).getNamespace() }
 
         return impList
     }
@@ -283,13 +277,13 @@ private class C_NsImp_NamespaceConverter {
     }
 
     private fun convertNamespace(impNs: C_NsImp_Namespace): C_NsAsm_Namespace {
-        val defs = impNs.directDefs.mapValues { (_, v) -> convertDef(v) }
+        val defs = impNs.directDefs.mapValuesToImmMap { (_, v) -> convertDef(v) }
 
         val importDefs = impNs.importDefs.asMap()
                 .mapValues { (_, v) -> v.map { convertDef(it) } }
                 .toImmMultimap()
 
-        return C_NsAsm_Namespace(defs, importDefs, listOf())
+        return C_NsAsm_Namespace(defs, importDefs, immListOf())
     }
 
     private fun convertDef(def: C_NsImp_Def): C_NsAsm_Def {
@@ -347,7 +341,7 @@ private class C_NsImp_ImportResolver(
             ideInfos.add(res.value.ideInfo)
         }
 
-        val target = C_NsImp_QNameRes(ns, ideInfos)
+        val target = C_NsImp_QNameRes(ns, ideInfos.toImmList())
         return C_NsImp_Result(target)
     }
 
@@ -457,7 +451,7 @@ private class C_NsImp_ImportResolver(
             heteroRes: C_RecursionSafeResult<C_Name, C_NsImp_NameRes<T>>
     ): C_NsImp_Result<T> {
         return if (heteroRes.value != null) {
-            val ideInfos = nsIdeInfos + immListOf(heteroRes.value.ideInfo)
+            val ideInfos = (nsIdeInfos + immListOf(heteroRes.value.ideInfo)).toImmList()
             C_NsImp_Result(heteroRes.value.value, ideInfos)
         } else {
             C_NsImp_Result.error(nsIdeInfos) {
@@ -551,18 +545,14 @@ private class C_NsImp_ImportResolver(
 
 private class C_NsImp_NameRes<T>(val value: T, val ideInfo: C_IdeSymbolInfo)
 
-private class C_NsImp_QNameRes<T>(val value: T, ideInfos: List<C_IdeSymbolInfo>) {
-    val ideInfos = ideInfos.toImmList()
-}
+private class C_NsImp_QNameRes<T>(val value: T, val ideInfos: ImmList<C_IdeSymbolInfo>)
 
 private class C_NsImp_Result<T> private constructor(
         val value: T?,
-        ideInfos: List<C_IdeSymbolInfo>,
+        val ideInfos: ImmList<C_IdeSymbolInfo>,
         val error: Getter<C_Error>
 ) {
-    val ideInfos = ideInfos.toImmList()
-
-    constructor(value: T, ideInfos: List<C_IdeSymbolInfo>): this(value, ideInfos, { throw IllegalStateException("error: no error") })
+    constructor(value: T, ideInfos: ImmList<C_IdeSymbolInfo>): this(value, ideInfos, { throw IllegalStateException("error: no error") })
     constructor(target: C_NsImp_QNameRes<T>): this(target.value, target.ideInfos)
 
     fun <R> castType(): C_NsImp_Result<R> {
@@ -579,6 +569,6 @@ private class C_NsImp_Result<T> private constructor(
     }
 
     companion object {
-        fun <T> error(ideInfos: List<C_IdeSymbolInfo>, error: Getter<C_Error>) = C_NsImp_Result<T>(null, ideInfos, error)
+        fun <T> error(ideInfos: List<C_IdeSymbolInfo>, error: Getter<C_Error>) = C_NsImp_Result<T>(null, ideInfos.toImmList(), error)
     }
 }

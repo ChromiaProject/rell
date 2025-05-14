@@ -20,7 +20,9 @@ import net.postchain.rell.base.lib.type.R_MapType
 import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 
 class C_ExtendableFunctionDescriptor(
@@ -35,19 +37,15 @@ class C_ExtendableFunctionDescriptor(
 class C_FunctionExtensions(
     val uid: R_ExtendableFunctionUid,
     val base: R_FunctionExtension?,
-    extensions: List<R_FunctionExtension>,
+    val extensions: ImmList<R_FunctionExtension>,
 ) {
-    val extensions = extensions.toImmList()
-
     fun toR(): R_FunctionExtensions {
         val allExts = if (base == null) extensions else (extensions + listOf(base)).toImmList()
         return R_FunctionExtensions(uid, allExts)
     }
 }
 
-class C_FunctionExtensionsTable(list: List<C_FunctionExtensions>) {
-    val list = list.toImmList()
-
+class C_FunctionExtensionsTable(val list: ImmList<C_FunctionExtensions>) {
     init {
         for ((i, c) in this.list.withIndex()) {
             checkEquals(c.uid.id, i)
@@ -55,7 +53,7 @@ class C_FunctionExtensionsTable(list: List<C_FunctionExtensions>) {
     }
 
     fun toR(): R_FunctionExtensionsTable {
-        val rList = list.map { it.toR() }
+        val rList = list.mapToImmList { it.toR() }
         return R_FunctionExtensionsTable(rList)
     }
 }
@@ -133,7 +131,7 @@ class C_ExtendableFunctionCompiler(oldState: C_FunctionExtensionsTable?) {
     fun compileExtensions(): C_FunctionExtensionsTable {
         check(!done)
         done = true
-        val list = fns.map { it.compile() }
+        val list = fns.mapToImmList { it.compile() }
         return C_FunctionExtensionsTable(list)
     }
 

@@ -6,8 +6,8 @@ package net.postchain.rell.api.gtx
 
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.runtime.Rt_Exception
+import net.postchain.rell.base.utils.associateToImmMap
 import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -279,8 +279,7 @@ class RellApiRunTestsOnSqlTest: BaseRellApiRunTestsTest() {
         }
 
         val map = tests
-            .associate { it.name to TestInfo(it.name, it.initSqls.toImmList(), it.bodySqls.toImmList()) }
-            .toImmMap()
+            .associateToImmMap { it.name to TestInfo(it.name, it.initSqls.toImmList(), it.bodySqls.toImmList()) }
 
         for (test in map.values) {
             chkInitSqls(test)

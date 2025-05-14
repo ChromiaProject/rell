@@ -14,7 +14,9 @@ import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.expr.R_AtCardinality
 import net.postchain.rell.base.model.expr.R_AtWhatSort
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 import kotlin.reflect.KProperty
 
@@ -138,7 +140,7 @@ object S_Grammar {
     private val name by nameNode map { it.value }
 
     private val qualifiedNameNode by separatedTerms(nameNode, DOT, false) map { nameNodes ->
-        val sNames = nameNodes.map { it.value }
+        val sNames = nameNodes.mapToImmList { it.value }
         G_Node(S_QualifiedName(sNames), nameNodes.first().firstToken)
     }
 
@@ -936,7 +938,7 @@ object S_Grammar {
     private inline fun <reified T> commaSeparatedOneMany0(item: Parser<T>): Parser<S_CommaSeparatedValues<T>> {
         val parser = separatedTerms(item, COMMA, false) * optional(COMMA) map {
             (items, comma) ->
-            S_CommaSeparatedValues(items, comma != null)
+            S_CommaSeparatedValues(items.toImmList(), comma != null)
         }
         _commaSeparatedParsers.add(parser)
         return parser
@@ -944,7 +946,7 @@ object S_Grammar {
 
     // A workaround to hide legacy grammar rules from tools, like IDE grammar generators. Legacy rules use conditional
     // keywords (which depend on the configured language version), what's not supported by IDEs, because they use
-    // statically generaged grammars.
+    // statically generated grammars.
     // IDE support of the legacy syntax is not needed - it's needed only in the interpreter for backward compatibility.
     private fun <T> legacyRule(innerParser: Parser<T>, reducedParser: Parser<T>? = null): Parser<T> {
         return LegacyCombinator(innerParser, reducedParser)
@@ -977,12 +979,12 @@ private class AnnotatedDef(
 
 private class AtExprMods(val limit: S_Expr?, val offset: S_Expr?)
 
-private class S_CommaSeparatedValues<T>(val items: List<T>, val trailingComma: Boolean)
+private class S_CommaSeparatedValues<T>(val items: ImmList<T>, val trailingComma: Boolean)
 
 private class S_CommaSeparatedList<T>(
     val startPos: S_Pos,
     val endPos: S_Pos,
-    val items: List<T>,
+    val items: ImmList<T>,
     val trailingComma: Boolean,
 ) {
     val posRange: S_PosRange get() = S_PosRange(startPos, endPos)

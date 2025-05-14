@@ -13,25 +13,24 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlExecutor
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmMap
+import net.postchain.rell.base.utils.associateToImmMap
 import net.postchain.rell.base.utils.chainToIterable
+import net.postchain.rell.base.utils.flatMapToImmList
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
 
 data class SqlTableAlias(val entity: R_EntityDefinition, val exprId: R_AtExprId, val str: String)
 class SqlTableJoin(val attr: R_Attribute, val alias: SqlTableAlias)
 
-class SqlFromInfo(entities: Map<R_AtEntityId, SqlFromEntity>) {
-    val entities = entities.toImmMap()
-}
+class SqlFromInfo(val entities: ImmMap<R_AtEntityId, SqlFromEntity>)
 
 class SqlFromEntity(
     val alias: SqlTableAlias,
     val isOuter: Boolean,
-    joins: List<SqlFromJoin>,
-) {
-    val joins = joins.toImmList()
-}
+    val joins: ImmList<SqlFromJoin>,
+)
 
 class SqlFromJoin(val baseAlias: SqlTableAlias, val attr: String, val alias: SqlTableAlias)
 
@@ -91,10 +90,10 @@ class SqlGenContext private constructor(
     }
 
     fun getFromInfo(): SqlFromInfo {
-        val entities = fromItems.associate {
+        val entities = fromItems.associateToImmMap {
             val entityId = it.atEntity.id
             val tbl = entityAliasMap.getValue(entityId)
-            val joins = tbl.subAliases.entries.flatMap { (alias, map) ->
+            val joins = tbl.subAliases.entries.flatMapToImmList { (alias, map) ->
                 map.values.map { tblJoin -> SqlFromJoin(alias, tblJoin.attr.sqlMapping, tblJoin.alias) }
             }
             entityId to SqlFromEntity(tbl.alias, it.isOuter, joins)
@@ -181,13 +180,11 @@ class SqlBuilder {
         }
     }
 
-    fun build(): ParameterizedSql = ParameterizedSql(sqlBuf.toString(), paramsBuf.toList())
+    fun build(): ParameterizedSql = ParameterizedSql(sqlBuf.toString(), paramsBuf.toImmList())
 }
 
-class ParameterizedSql(val sql: String, params: List<Rt_Value>) {
-    val params = params.toImmList()
-
-    constructor(): this("", listOf())
+class ParameterizedSql(val sql: String, val params: ImmList<Rt_Value>) {
+    constructor(): this("", immListOf())
 
     fun isEmpty() = sql.isEmpty() && params.isEmpty()
 
@@ -229,9 +226,7 @@ class ParameterizedSql(val sql: String, params: List<Rt_Value>) {
     }
 }
 
-class SqlArgs(values: List<Rt_Value>) {
-    private val values = values.toImmList()
-
+class SqlArgs(private val values: ImmList<Rt_Value>) {
     fun bind(params: PreparedStatementParams) {
         for ((i, value) in values.withIndex()) {
             val type = value.type()

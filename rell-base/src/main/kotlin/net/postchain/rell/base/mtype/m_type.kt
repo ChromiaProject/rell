@@ -5,7 +5,7 @@
 package net.postchain.rell.base.mtype
 
 
-import net.postchain.rell.base.utils.Nullable
+import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmSet
 import java.util.*
 
@@ -17,10 +17,10 @@ object M_Types {
 
     fun param(param: M_TypeParam): M_Type = M_Type_Param.make(param)
     fun capture(set: M_TypeSet_Many): M_Type = M_Type_Capture.make(set)
-    fun function(result: M_Type, params: List<M_Type>): M_Type = M_FunctionTypeUtils.makeType(result, params)
+    fun function(result: M_Type, params: List<M_Type>): M_Type = M_FunctionTypeUtils.makeType(result, params.toImmList())
     fun nullable(valueType: M_Type): M_Type = M_NullableTypeUtils.makeType(valueType)
     fun tuple(types: List<M_Type>): M_Type = M_TupleTypeUtils.makeType(types)
-    fun tuple(types: List<M_Type>, names: List<Nullable<String>>): M_Type = M_TupleTypeUtils.makeType(types, names)
+    fun tuple(types: List<M_Type>, names: List<String?>): M_Type = M_TupleTypeUtils.makeType(types, names)
 }
 
 abstract class M_Type {

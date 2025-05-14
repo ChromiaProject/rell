@@ -18,6 +18,7 @@ import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.doc.DocComment
 
@@ -48,7 +49,7 @@ class C_QueryGlobalFunction(val rQuery: R_QueryDefinition): C_GlobalFunction() {
     override fun compileCall0(
         ctx: C_ExprContext,
         name: LazyPosString,
-        args: List<S_CallArgument>,
+        args: ImmList<S_CallArgument>,
         resTypeHint: C_TypeHint,
     ): V_GlobalFunctionCall {
         val header = headerLate.get()

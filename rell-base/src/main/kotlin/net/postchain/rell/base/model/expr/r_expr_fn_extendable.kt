@@ -12,8 +12,8 @@ import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_CallContext
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
-import net.postchain.rell.base.utils.toImmList
 
 class R_ExtendableFunctionUid(val id: Int, private val name: String) {
     // No equals/hashCode on purpose.
@@ -25,17 +25,13 @@ class R_FunctionExtension(val fnBase: R_FunctionBase) {
 }
 
 class R_FunctionExtensions(
-        val uid: R_ExtendableFunctionUid,
-        extensions: List<R_FunctionExtension>,
+    val uid: R_ExtendableFunctionUid,
+    val extensions: ImmList<R_FunctionExtension>,
 ) {
-    val extensions = extensions.toImmList()
-
     override fun toString() = uid.toString()
 }
 
-class R_FunctionExtensionsTable(list: List<R_FunctionExtensions>) {
-    private val list = list.toImmList()
-
+class R_FunctionExtensionsTable(private val list: ImmList<R_FunctionExtensions>) {
     init {
         for ((i, c) in this.list.withIndex()) {
             checkEquals(c.uid.id, i)

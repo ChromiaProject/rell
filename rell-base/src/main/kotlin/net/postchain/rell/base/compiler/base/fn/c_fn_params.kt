@@ -16,12 +16,16 @@ import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_ParameterDefaultValue
 import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.associateByToImmMap
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.doc.DocDeclaration
 import net.postchain.rell.base.utils.doc.DocFunctionParam
 import net.postchain.rell.base.utils.doc.DocFunctionParamComments
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 
@@ -71,12 +75,11 @@ class C_FormalParameter(
     }
 }
 
-class C_FormalParameters(list: List<C_FormalParameter>) {
-    val list = list.toImmList()
-    val map = list.associateBy { it.name.str }.toMap().toImmMap()
+class C_FormalParameters(val list: ImmList<C_FormalParameter>) {
+    val map = list.associateByToImmMap { it.name.str }
 
     val callParameters by lazy {
-        val params = this.list.map { it.toCallParameter() }
+        val params = this.list.mapToImmList { it.toCallParameter() }
         C_FunctionCallParameters(params)
     }
 
@@ -90,11 +93,11 @@ class C_FormalParameters(list: List<C_FormalParameter>) {
     }
 
     val docParams: List<DocFunctionParam> by lazy {
-        this.list.map { it.docParam }.toImmList()
+        this.list.mapToImmList { it.docParam }
     }
 
     val docParamDeclarations: List<DocDeclaration> by lazy {
-        this.list.map { it.docDeclaration }.toImmList()
+        this.list.mapToImmList { it.docDeclaration }
     }
 
     fun compile(frameCtx: C_FrameContext): C_ActualParameters {
@@ -120,11 +123,11 @@ class C_FormalParameters(list: List<C_FormalParameter>) {
         }
 
         val stmtCtx = C_StmtContext.createRoot(blkCtx).updateVarStates(varStates)
-        return C_ActualParameters(stmtCtx, rParams, rParamVars)
+        return C_ActualParameters(stmtCtx, rParams.toImmList(), rParamVars.toImmList())
     }
 
     companion object {
-        val EMPTY = C_FormalParameters(listOf())
+        val EMPTY = C_FormalParameters(immListOf())
 
         fun compile(
             defCtx: C_DefinitionContext,
@@ -147,7 +150,7 @@ class C_FormalParameters(list: List<C_FormalParameter>) {
                 }
             }
 
-            return C_FormalParameters(cParams)
+            return C_FormalParameters(cParams.toImmList())
         }
 
         private fun checkGtvParam(msgCtx: C_MessageContext, param: C_FormalParameter) {
@@ -158,10 +161,11 @@ class C_FormalParameters(list: List<C_FormalParameter>) {
     }
 }
 
-class C_ActualParameters(val stmtCtx: C_StmtContext, rParams: List<R_FunctionParam>, rParamVars: List<R_ParamVar>) {
-    val rParams = rParams.toImmList()
-    val rParamVars = rParamVars.toImmList()
-
+class C_ActualParameters(
+    val stmtCtx: C_StmtContext,
+    val rParams: ImmList<R_FunctionParam>,
+    val rParamVars: ImmList<R_ParamVar>,
+) {
     init {
         checkEquals(this.rParamVars.size, this.rParams.size)
     }

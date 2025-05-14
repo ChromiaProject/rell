@@ -9,6 +9,8 @@ import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.testutils.RellTestUtils
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapToImmList
 import org.junit.Test
 import java.io.File
 import kotlin.test.assertEquals
@@ -51,14 +53,14 @@ class CliSnippetsTest {
     }
 
     private fun chkModule(module: String) {
-        val modules = listOf(R_ModuleName.of(module))
-        val modSel = C_CompilerModuleSelection(modules, listOf())
+        val modules = immListOf(R_ModuleName.of(module))
+        val modSel = C_CompilerModuleSelection(modules, immListOf())
         chkModules(modSel)
     }
 
     private fun chkTestModules(vararg modules: String) {
-        val modNames = modules.map { R_ModuleName.of(it) }
-        val modSel = C_CompilerModuleSelection(listOf(), modNames)
+        val modNames = modules.mapToImmList { R_ModuleName.of(it) }
+        val modSel = C_CompilerModuleSelection(immListOf(), modNames)
         chkModules(modSel)
     }
 

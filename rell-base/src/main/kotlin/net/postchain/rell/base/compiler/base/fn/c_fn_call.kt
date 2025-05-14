@@ -120,8 +120,7 @@ class C_FunctionCallInfo(
     fun functionNameCode() = functionName?.value ?: "?"
 }
 
-class C_FunctionCallParameters(list: List<C_FunctionCallParameter>) {
-    val list = list.toImmList()
+class C_FunctionCallParameters(val list: ImmList<C_FunctionCallParameter>) {
     val typeHints: C_CallTypeHints = C_FunctionCallParametersTypeHints(this.list)
 
     val bindParams: C_ArgMatchParams = let {
@@ -131,7 +130,7 @@ class C_FunctionCallParameters(list: List<C_FunctionCallParameter>) {
 
     companion object {
         fun fromTypes(types: List<R_Type>): C_FunctionCallParameters {
-            val params = types.mapIndexed { index, rType ->
+            val params = types.mapIndexedToImmList { index, rType ->
                 C_FunctionCallParameter(null, rType, index, null, C_MemberRestrictions.NULL)
             }
             return C_FunctionCallParameters(params)
@@ -153,13 +152,12 @@ class C_FunctionCallParameter(
     }
 }
 
-private class C_FunctionCallParametersTypeHints(params: List<C_FunctionCallParameter>): C_CallTypeHints {
-    private val list = params.toImmList()
+private class C_FunctionCallParametersTypeHints(private val params: ImmList<C_FunctionCallParameter>): C_CallTypeHints {
     private val map = params.filter { it.name != null }.map { it.name!! to it }.toImmMap()
 
     override fun getTypeHint(index: Int?, name: R_Name?): C_TypeHint {
         val byName = if (name != null) map[name] else null
-        val byIndex = if (index != null && index >= 0 && index < list.size) list[index] else null
+        val byIndex = if (index != null && index >= 0 && index < params.size) params[index] else null
         val param = byName ?: byIndex
         return C_TypeHint.ofType(param?.type)
     }

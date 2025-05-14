@@ -8,6 +8,7 @@ import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_DefinitionName
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.immMapOf
 import net.postchain.rell.base.utils.toImmMap
@@ -43,7 +44,7 @@ object DocUtils {
 
 class DocFunctionParamComments(
     val functionComment: DocComment?,
-    val paramComments: Map<R_Name, DocComment>,
+    val paramComments: ImmMap<R_Name, DocComment>,
 ) {
     companion object {
         val NULL = DocFunctionParamComments(null, immMapOf())
@@ -66,7 +67,7 @@ class DocFunctionParamComments(
             rawParamComments: Map<R_Name, DocComment>,
             params: List<R_Name>,
             errorTracker: DocCommentErrorTracker,
-        ): Map<R_Name, DocComment> {
+        ): ImmMap<R_Name, DocComment> {
             val resComments = mutableMapOf<R_Name, DocComment>()
 
             for (param in params) {

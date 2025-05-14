@@ -22,9 +22,11 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_IterableAdapter
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.mapNotNullToImmList
+import net.postchain.rell.base.utils.mapToImmList
 
 class C_AtContext(
     val parent: C_AtContext?,
@@ -88,20 +90,20 @@ abstract class C_AtFrom(
 
     val innerAtCtx = C_AtContext(fromCtx.parentAtCtx, atExprId, this is C_AtFrom_Entities)
 
-    abstract fun getAllExprs(): List<V_Expr>
+    abstract fun getAllExprs(): ImmList<V_Expr>
 
     abstract fun innerExprCtx(): C_ExprContext
-    abstract fun makeDefaultWhatFields(ctx: C_ExprContext): List<V_DbAtWhatField>
-    abstract fun findMembers(ctx: C_ExprContext, name: C_Name): List<C_AtFromMember>
-    abstract fun findImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): List<C_AtFromImplicitAttr>
-    abstract fun findImplicitAttributesByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): List<C_AtFromImplicitAttr>
+    abstract fun makeDefaultWhatFields(ctx: C_ExprContext): ImmList<V_DbAtWhatField>
+    abstract fun findMembers(ctx: C_ExprContext, name: C_Name): ImmList<C_AtFromMember>
+    abstract fun findImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): ImmList<C_AtFromImplicitAttr>
+    abstract fun findImplicitAttributesByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): ImmList<C_AtFromImplicitAttr>
     abstract fun ideCompletions(): Multimap<String, IdeCompletion>
 
     abstract fun compile(details: C_AtDetails): V_Expr
     abstract fun compileJoin(details: C_AtDetails, isOuter: Boolean): C_AtFromItem
 
     protected fun compileColWhat(details: C_AtDetails, what: List<V_DbAtWhatField>): V_ColAtWhat {
-        val colFields = what.map { it.toColField() }
+        val colFields = what.mapToImmList { it.toColField() }
         val sorting = compileColSorting(what)
 
         val extras = R_ColAtWhatExtras(
@@ -115,10 +117,10 @@ abstract class C_AtFrom(
         return V_ColAtWhat(colFields, extras)
     }
 
-    private fun compileColSorting(cFields: List<V_DbAtWhatField>): List<IndexedValue<Comparator<Rt_Value>>> {
+    private fun compileColSorting(cFields: List<V_DbAtWhatField>): ImmList<IndexedValue<Comparator<Rt_Value>>> {
         val sorting = cFields
                 .withIndex()
-                .mapNotNull { (i, f) ->
+                .mapNotNullToImmList { (i, f) ->
                     val sort = f.flags.sort
                     if (sort == null) null else {
                         val type = f.resultType
@@ -131,7 +133,6 @@ abstract class C_AtFrom(
                         }
                     }
                 }
-                .toImmList()
         return sorting
     }
 }
@@ -246,13 +247,10 @@ class C_AtExprResult(
     val recordType: R_Type,
     val resultType: R_Type,
     val rowDecoder: R_AtExprRowDecoder,
-    selectedFields: List<Int>,
-    groupFields: List<Int>,
+    val selectedFields: ImmList<Int>,
+    val groupFields: ImmList<Int>,
     val hasAggregateFields: Boolean,
 ) {
-    val selectedFields = selectedFields.toImmList()
-    val groupFields = groupFields.toImmList()
-
     companion object {
         fun calcResultType(recordType: R_Type, cardinality: R_AtCardinality): R_Type {
             return if (cardinality.many) {

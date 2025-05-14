@@ -6,6 +6,8 @@ package net.postchain.rell.base.utils
 
 import jakarta.xml.bind.DatatypeConverter
 import java.io.File
+import kotlin.math.max
+import kotlin.math.min
 
 object CommonUtils {
     val IS_UNIT_TEST: Boolean = Thread.currentThread().stackTrace.any { it.className.startsWith("org.junit.runners.") }
@@ -20,14 +22,14 @@ object CommonUtils {
         }
 
         val parts = (s + partSize - 1) / partSize
-        val res = (0 until parts).map { lst.subList(it * partSize, Math.min((it + 1) * partSize, s)) }
+        val res = (0 until parts).map { lst.subList(it * partSize, min((it + 1) * partSize, s)) }
         return res
     }
 
     fun <T: Comparable<T>> compareLists(l1: List<T>, l2: List<T>): Int {
         val n1 = l1.size
         val n2 = l2.size
-        for (i in 0 until Math.min(n1, n2)) {
+        for (i in 0 until min(n1, n2)) {
             val c = l1[i].compareTo(l2[i])
             if (c != 0) {
                 return c
@@ -37,9 +39,11 @@ object CommonUtils {
     }
 
     /** Invokes the key getter strictly one time for each item (builds list of pairs (item, key), then sorts). */
-    fun <T, K: Comparable<K>> sortedByCopy(data: Collection<T>, keyGetter: (T) -> K): List<T> {
-        val pairs = data.map { Pair(it, keyGetter(it)) }.sortedBy { it.second }
-        return pairs.map { it.first }
+    inline fun <T, K: Comparable<K>> sortedByCopy(data: Collection<T>, keyGetter: (T) -> K): ImmList<T> {
+        return data
+            .map { it to keyGetter(it) }
+            .sortedBy { it.second }
+            .mapToImmList { it.first }
     }
 
     fun readFileText(path: String): String {
@@ -72,7 +76,7 @@ object CommonUtils {
         return if (homeDir.isDirectory) homeDir else null
     }
 
-    fun <T: Any> chainToList(first: T?, nextGetter: (T) -> T?): List<T> {
+    fun <T> chainToList(first: T?, nextGetter: (T) -> T?): ImmList<T> {
         if (first == null) return immListOf()
 
         val res = mutableListOf<T>()
@@ -85,28 +89,19 @@ object CommonUtils {
         return res.toImmList()
     }
 
-    fun <T: Any> concatLists(list1: List<T>, list2: List<T>): List<T> {
-        return when {
-            list2.isEmpty() -> list1
-            list1.isEmpty() -> list2
-            else -> (list1 + list2).toImmList()
-        }
-    }
-
     fun tableToStrings(table: List<List<String>>): List<String> {
         val widths = mutableListOf<Int>()
 
         for (row in table) {
             for ((i, cell) in row.withIndex()) {
                 if (widths.size <= i) widths.add(0)
-                widths[i] = Math.max(widths[i], cell.length)
+                widths[i] = max(widths[i], cell.length)
             }
         }
 
         return table.map { row ->
-            row
-                    .mapIndexed { i, cell -> if (i == row.size - 1) cell else cell.padEnd(widths[i]) }
-                    .joinToString("   ")
+            row.mapIndexed { i, cell -> if (i == row.size - 1) cell else cell.padEnd(widths[i]) }
+                .joinToString("   ")
         }
     }
 

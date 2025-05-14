@@ -6,7 +6,10 @@ package net.postchain.rell.base.runtime
 
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 import java.util.*
 
@@ -125,7 +128,7 @@ class Rt_CallFrame(
 
     fun dumpState(): Rt_CallFrameState {
         checkEquals(curBlock.uid, rFrame.rootBlock.uid)
-        val valuesList = values.map { Optional.ofNullable(it) }.toList()
+        val valuesList = values.mapToImmList { Optional.ofNullable(it) }
         return Rt_CallFrameState(valuesList)
     }
 
@@ -156,10 +159,8 @@ class Rt_CallFrame(
     }
 }
 
-class Rt_CallFrameState(values: List<Optional<Rt_Value>>) {
-    val values = values.toImmList()
-
+class Rt_CallFrameState(val values: ImmList<Optional<Rt_Value>>) {
     companion object {
-        val EMPTY = Rt_CallFrameState(listOf())
+        val EMPTY = Rt_CallFrameState(immListOf())
     }
 }

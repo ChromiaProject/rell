@@ -19,6 +19,8 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.immSetOf
+import net.postchain.rell.base.utils.mapIndexedToImmList
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 
@@ -43,9 +45,9 @@ class C_WhenChooserDetails(b: C_WhenChooserDetailsBuilder) {
     val variableCases = b.variableCases.toImmList()
     val elseCase = b.elseCase
     val full = b.fullCoverage
-    val caseVarStatesDeltas = (0 until b.caseVarStatesDeltas.size).map {
+    val caseVarStatesDeltas = (0 until b.caseVarStatesDeltas.size).mapToImmList {
         b.caseVarStatesDeltas.getValue(it)
-    }.toImmList()
+    }
     val elseVarStatesDelta = b.elseVarStatesDelta
 
     fun toVDetails() = V_WhenChooserDetails(
@@ -219,7 +221,7 @@ class S_WhenExpr(
     }
 
     private fun compileExprs(ctx: C_ExprContext, caseStates: List<C_VarStatesDelta>): Pair<R_Type, List<V_Expr>> {
-        val vRawExprs = cases.mapIndexed { i, case ->
+        val vRawExprs = cases.mapIndexedToImmList { i, case ->
             case.expr.compileWithVarStates(ctx, caseStates[i]).vExpr()
         }
 

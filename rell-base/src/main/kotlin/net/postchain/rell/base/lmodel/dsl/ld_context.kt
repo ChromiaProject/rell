@@ -61,8 +61,7 @@ class Ld_ModuleContext(
                     "any" to M_Types.ANY,
                     "null" to M_Types.NULL,
                 )
-                .mapValues { L_MTypeDef(it.value) }
-                .toImmMap()
+                .mapValuesToImmMap { L_MTypeDef(it.value) }
     }
 }
 

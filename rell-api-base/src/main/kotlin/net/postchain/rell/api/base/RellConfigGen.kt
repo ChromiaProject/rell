@@ -76,8 +76,8 @@ class RellConfigGen(
 
     private fun getModuleSources(): RellModuleSources {
         return RellApiBaseInternal.catchCommonError {
-            val fileMap = getModuleFiles(sourceDir, moduleFiles)
-            val strModules = modules.map { it.str() }
+            val fileMap = getModuleFiles(sourceDir, moduleFiles).toImmMap()
+            val strModules = modules.mapToImmList { it.str() }
             RellModuleSources(strModules, fileMap)
         }
     }
@@ -176,10 +176,7 @@ class RellConfigGen(
     }
 }
 
-private class RellModuleSources(modules: List<String>, files: Map<String, String>) {
-    val modules = modules.toImmList()
-    val files = files.toImmMap()
-}
+private class RellModuleSources(val modules: ImmList<String>, val files: ImmMap<String, String>)
 
 private sealed class GtvNode(val path: String?) {
     abstract fun type(): GtvType

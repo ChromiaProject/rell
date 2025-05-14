@@ -20,6 +20,7 @@ import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.SqlManager
 import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.RellVersions
+import net.postchain.rell.base.utils.immListOf
 
 object RellTestUtils {
     const val RELL_VER = RellVersions.VERSION_STR
@@ -44,7 +45,7 @@ object RellTestUtils {
         errPos: Boolean = false,
         options: C_CompilerOptions = DEFAULT_COMPILER_OPTIONS,
         outMessages: MutableList<C_Message>? = null,
-        modSel: C_CompilerModuleSelection = C_CompilerModuleSelection(listOf(R_ModuleName.EMPTY), listOf()),
+        modSel: C_CompilerModuleSelection = C_CompilerModuleSelection(immListOf(R_ModuleName.EMPTY), immListOf()),
         extraLibMod: C_LibModule? = null,
         processor: (T_App) -> String,
     ): String {

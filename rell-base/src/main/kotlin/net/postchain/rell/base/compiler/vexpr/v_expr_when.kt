@@ -12,22 +12,18 @@ import net.postchain.rell.base.compiler.base.expr.C_VarStatesDelta
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmMap
 
 class V_WhenChooserDetails(
     val keyExpr: V_Expr?,
     val keyVarStatesDelta: C_VarStatesDelta,
-    constantCases: Map<Rt_Value, Int>,
-    variableCases: List<IndexedValue<V_Expr>>,
+    val constantCases: ImmMap<Rt_Value, Int>,
+    val variableCases: ImmList<IndexedValue<V_Expr>>,
     val elseCase: IndexedValue<S_Pos>?,
     val full: Boolean,
-    caseVarStatesDeltas: List<C_VarStatesDelta>,
+    val caseVarStatesDeltas: ImmList<C_VarStatesDelta>,
 ) {
-    val constantCases = constantCases.toImmMap()
-    val variableCases = variableCases.toImmList()
-    val caseVarStatesDeltas = caseVarStatesDeltas.toImmList()
-
     fun makeChooser(): R_WhenChooser {
         if (keyExpr == null) {
             val keyExpr = R_ConstantValueExpr.makeBool(true)

@@ -10,9 +10,10 @@ import net.postchain.gtv.GtvType
 import net.postchain.rell.base.model.R_FunctionParam
 import net.postchain.rell.base.runtime.GtvToRtContext
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.PostchainGtvUtils
 import net.postchain.rell.base.utils.checkEquals
-import net.postchain.rell.base.utils.toImmMap
+import net.postchain.rell.base.utils.mapValuesToImmMap
 
 object GtvTestUtils {
     fun decodeGtvStr(s: String) = PostchainGtvUtils.jsonToGtv(s)
@@ -83,9 +84,7 @@ object GtvTestUtils {
         return GtvFactory.gtv(map)
     }
 
-    fun moduleArgsToMap(moduleArgs: Map<String, String>): Map<String, Gtv> {
-        return moduleArgs
-            .mapValues { (_, v) -> decodeGtvStr(v) }
-            .toImmMap()
+    fun moduleArgsToMap(moduleArgs: Map<String, String>): ImmMap<String, Gtv> {
+        return moduleArgs.mapValuesToImmMap { (_, v) -> decodeGtvStr(v) }
     }
 }

@@ -23,8 +23,10 @@ import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapToImmList
 
 object Lib_Type_Object {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -53,9 +55,9 @@ object Lib_Type_Object {
         }
     }
 
-    fun getMemberValues(type: R_ObjectType): List<C_TypeValueMember> {
+    fun getMemberValues(type: R_ObjectType): ImmList<C_TypeValueMember> {
         val rObject = type.rObject
-        return rObject.rEntity.attributes.values.map { C_TypeValueMember_ObjectAttr(rObject, it) }
+        return rObject.rEntity.attributes.values.mapToImmList { C_TypeValueMember_ObjectAttr(rObject, it) }
     }
 
     private class C_TypeValueMember_ObjectAttr(
@@ -193,7 +195,7 @@ private class V_SpecialMemberFunctionCall_ObjectToStruct(
 
     private fun createWhatValue(dbEntityExpr: Db_TableExpr): Db_AtWhatValue {
         val rEntity = objectType.rObject.rEntity
-        val dbExprs = rEntity.attributes.values.map {
+        val dbExprs = rEntity.attributes.values.mapToImmList {
             C_EntityAttrRef.create(rEntity, it).createDbContextAttrExpr(dbEntityExpr)
         }
         return Db_AtWhatValue_ToStruct(struct, dbExprs)
@@ -215,8 +217,8 @@ private object ObjectUtils {
         whatField: Db_AtWhatField,
         resType: R_Type
     ): R_Expr {
-        val from = Db_AtExprFrom(listOf(Db_AtFromItem(atEntity, false, null, null)))
-        val what = listOf(whatField)
+        val from = Db_AtExprFrom(immListOf(Db_AtFromItem(atEntity, false, null, null)))
+        val what = immListOf(whatField)
         val atBase = Db_AtExprBase(from, what, null, isMany = false)
         return R_ObjectAttrExpr(resType, rObject, atBase)
     }

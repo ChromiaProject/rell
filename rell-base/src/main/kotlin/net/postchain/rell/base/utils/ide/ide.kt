@@ -39,12 +39,9 @@ class IdeModuleInfo(
 )
 
 class IdeCompilationResult(
-    messages: List<C_Message>,
-    symbolInfos: Map<S_Pos, IdeSymbolInfo>,
-) {
-    @JvmField val messages = messages.toImmList()
-    @JvmField val symbolInfos = symbolInfos.toImmMap()
-}
+    @JvmField val messages: ImmList<C_Message>,
+    @JvmField val symbolInfos: ImmMap<S_Pos, IdeSymbolInfo>,
+)
 
 data class IdeCompletionParam(
     val name: String,
@@ -126,7 +123,7 @@ object IdeApi {
         moduleName ?: return immMultimapOf()
 
         return try {
-            val cRes = C_Compiler.compile(sourceDir, listOf(moduleName), actualOptions)
+            val cRes = C_Compiler.compile(sourceDir, immListOf(moduleName), actualOptions)
             cRes.ideCompletions
         } catch (e: Exception) {
             immMultimapOf()
@@ -138,7 +135,7 @@ object IdeApi {
         modules: List<R_ModuleName>,
         options: C_CompilerOptions,
     ): IdeCompilationResult {
-        val res = C_Compiler.compile(sourceDir, modules, options)
+        val res = C_Compiler.compile(sourceDir, modules.toImmList(), options)
         return IdeCompilationResult(res.messages, res.ideSymbolInfos)
     }
 
@@ -147,7 +144,7 @@ object IdeApi {
         modules: List<R_ModuleName>,
         options: C_CompilerOptions,
     ): Map<String, String> {
-        val res = C_Compiler.compile(sourceDir, modules, options)
+        val res = C_Compiler.compile(sourceDir, modules.toImmList(), options)
         res.app ?: return immMapOf()
         return C_DocUtils.getAllComments(res.app)
     }

@@ -22,6 +22,7 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.R_MemberCalculator
 import net.postchain.rell.base.model.expr.R_MemberCalculator_Error
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.doc.DocException
 import net.postchain.rell.base.utils.doc.DocSymbol
@@ -37,7 +38,7 @@ abstract class BaseLTest {
 
     protected fun chkDefs(mod: L_Module, vararg expected: String) {
         val defs = mod.namespace.getAllDefs()
-        val exp = expected.toImmList()
+        val exp = expected.toList()
         val act = defs.map { it.strCode() }
         assertEquals(exp, act)
     }
@@ -126,7 +127,7 @@ abstract class BaseLTest {
                 override fun compileCall(
                     ctx: C_ExprContext,
                     name: LazyPosString,
-                    args: List<S_Expr>
+                    args: ImmList<S_Expr>
                 ): V_Expr {
                     return C_ExprUtils.errorVExpr(ctx, name.pos)
                 }
@@ -135,7 +136,7 @@ abstract class BaseLTest {
 
         fun makeTypeCon(): C_SpecialLibGlobalFunctionBody {
             return object: C_SpecialLibGlobalFunctionBody() {
-                override fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: List<S_Expr>): V_Expr {
+                override fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: ImmList<S_Expr>): V_Expr {
                     args.forEach { it.compile(ctx) }
                     return C_ExprUtils.errorVExpr(ctx, name.pos)
                 }
@@ -148,7 +149,7 @@ abstract class BaseLTest {
                     ctx: C_ExprContext,
                     callCtx: C_LibFuncCaseCtx,
                     selfType: R_Type,
-                    args: List<V_Expr>,
+                    args: ImmList<V_Expr>,
                 ): V_SpecialMemberFunctionCall {
                     return makeTypeFunCall(ctx)
                 }

@@ -8,9 +8,13 @@ import net.postchain.rell.base.compiler.base.core.C_CompilationResult
 import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.*
+import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.ide.IdeCodeSnippet
 import net.postchain.rell.base.utils.ide.IdeSnippetMessage
+import net.postchain.rell.base.utils.immMapOf
+import net.postchain.rell.base.utils.mapKeysToImmMap
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmMap
 import java.io.File
 import java.io.FileOutputStream
@@ -40,7 +44,7 @@ object TestSnippetsRecorder {
         if (!ENABLED) return
 
         val files = sourceDirToMap(sourceDir)
-        val messages = res.messages.map { IdeSnippetMessage(it.pos.str(), it.type, it.code, it.text) }
+        val messages = res.messages.mapToImmList { IdeSnippetMessage(it.pos.str(), it.type, it.code, it.text) }
         val parsing = makeParsing(files)
         val comments = makeComments(res)
 
@@ -60,10 +64,10 @@ object TestSnippetsRecorder {
         }
     }
 
-    private fun sourceDirToMap(sourceDir: C_SourceDir): Map<String, String> {
+    private fun sourceDirToMap(sourceDir: C_SourceDir): ImmMap<String, String> {
         val map = mutableMapOf<C_SourcePath, String>()
         sourceDirToMap0(sourceDir, C_SourcePath.EMPTY, map)
-        return map.mapKeys { (k, _) -> k.str() }.toImmMap()
+        return map.mapKeysToImmMap { (k, _) -> k.str() }
     }
 
     private fun sourceDirToMap0(sourceDir: C_SourceDir, path: C_SourcePath, map: MutableMap<C_SourcePath, String>) {
@@ -80,7 +84,7 @@ object TestSnippetsRecorder {
         }
     }
 
-    private fun makeParsing(files: Map<String, String>): Map<String, List<IdeSnippetMessage>> {
+    private fun makeParsing(files: Map<String, String>): ImmMap<String, List<IdeSnippetMessage>> {
         val res = mutableMapOf<String, List<IdeSnippetMessage>>()
 
         for ((file, code) in files) {
@@ -98,8 +102,8 @@ object TestSnippetsRecorder {
         return res.toImmMap()
     }
 
-    private fun makeComments(cRes: C_CompilationResult): Map<String, String> {
-        return cRes.app?.let { C_DocUtils.getAllComments(it) } ?: mapOf()
+    private fun makeComments(cRes: C_CompilationResult): ImmMap<String, String> {
+        return cRes.app?.let { C_DocUtils.getAllComments(it) } ?: immMapOf()
     }
 
     private fun addSnippet(snippetFilePath: String, snippet: IdeCodeSnippet) {

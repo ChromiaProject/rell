@@ -130,9 +130,7 @@ object GrammarUtils {
 
         val replacer = Replacer(replacements)
 
-        return parsers
-            .mapValues { replacer.replace(it.value) }
-            .toImmMap()
+        return parsers.mapValuesToImmMap { replacer.replace(it.value) }
     }
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
@@ -187,7 +185,7 @@ object GrammarUtils {
         private val started = mutableSetOf<Parser<*>>()
         private val finished = mutableMapOf<Parser<*>, Parser<*>>()
         private val refs = mutableMapOf<Parser<*>, ParserRef>()
-        private val newRefs = queueOf<Parser<*>>()
+        private val newRefs = ArrayDeque<Parser<*>>()
 
         fun replace(parser: Parser<*>): Parser<*> {
             val res = replacePrivate(parser)
@@ -197,7 +195,7 @@ object GrammarUtils {
 
         private fun processRefs() {
             while (newRefs.isNotEmpty()) {
-                val parser = newRefs.remove()
+                val parser = newRefs.removeFirst()
                 val ref = refs.getValue(parser)
                 val target = replacePrivate(parser)
                 ref.set(target)

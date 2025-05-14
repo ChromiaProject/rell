@@ -79,13 +79,11 @@ class C_Statement(
 }
 
 class C_BlockCode(
-    rStmts: List<R_Statement>,
+    val rStmts: ImmList<R_Statement>,
     val alwaysReturns: Boolean,
     val guardBlock: Boolean,
     val varStatesDelta: C_VarStatesDelta,
 ) {
-    val rStmts = rStmts.toImmList()
-
     fun createProto(): C_BlockCodeProto {
         return C_BlockCodeProto(varStatesDelta)
     }
@@ -150,7 +148,7 @@ class C_BlockCodeBuilder(
     fun build(): C_BlockCode {
         check(!build)
         build = true
-        return C_BlockCode(rStmts, alwaysReturns, afterGuardBlock, varStatesDelta)
+        return C_BlockCode(rStmts.toImmList(), alwaysReturns, afterGuardBlock, varStatesDelta)
     }
 }
 

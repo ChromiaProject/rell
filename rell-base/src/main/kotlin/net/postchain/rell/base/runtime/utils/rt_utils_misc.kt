@@ -30,6 +30,6 @@ class Rt_ValueRecursionDetector {
     }
 
     private class ValueSet {
-        val set = Collections.newSetFromMap(IdentityHashMap<Rt_Value, Boolean>())
+        val set: MutableCollection<Rt_Value> = Collections.newSetFromMap(IdentityHashMap())
     }
 }

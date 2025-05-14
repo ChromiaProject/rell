@@ -141,7 +141,7 @@ abstract class C_LibFuncCase<CallT: V_FunctionCall>(
             }
         }
 
-        fun ideGetParameterCompletions(cases: List<C_LibFuncCase<*>>): Multimap<String, IdeCompletion> {
+        fun ideGetParameterCompletions(cases: List<C_LibFuncCase<*>>): ImmMultimap<String, IdeCompletion> {
             val res = mutableMultimapOf<String, IdeCompletion>()
             for (case in cases) {
                 res.putAll(case.ideGetParameterCompletions())
@@ -167,7 +167,7 @@ abstract class C_LibPartialCallTarget<CallT: V_FunctionCall>(
 }
 
 abstract class C_LibPartialCallTargetMatch<CallT: V_FunctionCall>(val exact: Boolean) {
-    abstract fun parameters(): List<C_FunctionCallParameter>?
+    abstract fun parameters(): ImmList<C_FunctionCallParameter>?
     abstract fun compileCall(ctx: C_ExprContext, args: C_EffectivePartialArguments): CallT
 }
 
@@ -233,7 +233,7 @@ private class C_LibMatchParams(
     fun effectiveArgs(ctx: C_ExprContext): V_FunctionCallArgs {
         checkRestrictions(ctx)
 
-        val exprs = args.mapIndexed { i, arg ->
+        val exprs = args.mapIndexedToImmList { i, arg ->
             var expr = arg.unwrap()
             expr = adapters[i].adaptExpr(ctx, expr)
 
@@ -242,7 +242,7 @@ private class C_LibMatchParams(
             expr
         }
 
-        val paramsToExprs = argMatching.mapping.map { it.index }
+        val paramsToExprs = argMatching.mapping.mapToImmList { it.index }
         return V_FunctionCallArgs(exprs, paramsToExprs, argMatching.exprsToParams)
     }
 
@@ -263,11 +263,9 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
     protected val restrictions: C_MemberRestrictions,
 ): C_LibFuncCase<CallT>(ideInfo) {
     override val argIdeInfos: Map<R_Name, C_IdeSymbolInfo> by lazy {
-        lFunction.header.params
-            .associate {
-                it.name to C_IdeSymbolInfo.direct(IdeSymbolKind.EXPR_CALL_ARG, null, null, it.docSymbol)
-            }
-            .toImmMap()
+        lFunction.header.params.associateToImmMap {
+            it.name to C_IdeSymbolInfo.direct(IdeSymbolKind.EXPR_CALL_ARG, null, null, it.docSymbol)
+        }
     }
 
     protected abstract fun getFullName(selfType: R_Type): LazyString
@@ -391,13 +389,13 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
         val argMatching = matcherRes.matching
         argMatching ?: return null
 
-        val paramIndexes = argMatching.mapping.map { it.param.index }
+        val paramIndexes = argMatching.mapping.mapToImmList { it.param.index }
 
         // A list-based cache to not convert same parameter multiple times (can happen for vararg parameters).
         val simpleParams = MutableList<L_FunctionParam?>(header.lHeader.params.size) { null }
 
         val actualParams = argMatching.mapping
-            .map {
+            .mapToImmList {
                 val i = it.param.index
                 simpleParams.computeIfAbsent(i) {
                     val lParam = header.lHeader.params[i]
@@ -405,9 +403,8 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
                     lParam.replaceMParam(mParam)
                 }
             }
-            .toImmList()
 
-        val mActualParams = actualParams.map { it.mParam }.toImmList()
+        val mActualParams = actualParams.mapToImmList { it.mParam }
 
         val mMatch = M_FunctionParamsMatch(header.mHeader, paramIndexes, mActualParams)
         return L_FunctionParamsMatch(mMatch, actualParams, argMatching)
@@ -668,8 +665,7 @@ private class C_MemberLibFuncCase(
 
         val outerTypeArgTypes = outerTypeArgs
             .mapKeys { R_Name.of(it.key.name) }
-            .mapValues { it.value.captureType() }
-            .toImmMap()
+            .mapValuesToImmMap { it.value.captureType() }
 
         return C_GenericFuncCaseCtx(outerTypeArgTypes, specificHeader)
     }
@@ -900,7 +896,7 @@ private abstract class C_LibPartialCallTarget_Common<CallT: V_FunctionCall>(
         exact: Boolean,
         private val params: List<L_FunctionParam>,
     ): C_LibPartialCallTargetMatch<CallT>(exact) {
-        override fun parameters(): List<C_FunctionCallParameter>? {
+        override fun parameters(): ImmList<C_FunctionCallParameter>? {
             return params.withIndex().mapNotNullAllOrNull { (i, param) ->
                 val rType = L_TypeUtils.getRType(param.type)
                 if (rType == null) null else C_FunctionCallParameter(

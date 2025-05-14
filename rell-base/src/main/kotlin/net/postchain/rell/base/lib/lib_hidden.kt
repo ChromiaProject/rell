@@ -19,6 +19,7 @@ import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.checkEquals
 
@@ -110,7 +111,7 @@ object Lib_RellHidden {
 private object C_SysFn_TypeOf: C_SpecialLibGlobalFunctionBody() {
     override fun paramCount() = 1 .. 1
 
-    override fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: List<S_Expr>): V_Expr {
+    override fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: ImmList<S_Expr>): V_Expr {
         checkEquals(1, args.size)
 
         val arg = args[0]
@@ -128,7 +129,7 @@ private object C_SysFn_TypeOf: C_SpecialLibGlobalFunctionBody() {
 private object C_SysFn_GetNulled: C_SpecialLibGlobalFunctionBody() {
     override fun paramCount() = 1 .. 1
 
-    override fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: List<S_Expr>): V_Expr {
+    override fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: ImmList<S_Expr>): V_Expr {
         checkEquals(1, args.size)
 
         val arg = args[0]

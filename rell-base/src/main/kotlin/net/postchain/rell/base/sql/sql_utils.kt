@@ -123,7 +123,7 @@ object SqlUtils {
     fun recordsExist(sqlExec: SqlExecutor, sqlCtx: Rt_SqlContext, entity: R_EntityDefinition): Boolean {
         val table = entity.sqlMapping.table(sqlCtx)
         val sql = """SELECT "${SqlConstants.ROWID_COLUMN}" FROM "$table" LIMIT 1;"""
-        var res: Boolean = false
+        var res = false
         sqlExec.executeQuery(sql, {}) { res = true }
         return res
     }

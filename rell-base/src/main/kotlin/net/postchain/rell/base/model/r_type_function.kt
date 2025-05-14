@@ -10,13 +10,13 @@ import net.postchain.rell.base.mtype.M_Types
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_ValueRecursionDetector
 import net.postchain.rell.base.runtime.utils.toGtv
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 import java.util.*
 
-class R_FunctionType(params: List<R_Type>, val result: R_Type): R_Type(calcName(params, result)) {
-    val params = params.toImmList()
-
+class R_FunctionType(val params: ImmList<R_Type>, val result: R_Type): R_Type(calcName(params, result)) {
     val callParameters by lazy { C_FunctionCallParameters.fromTypes(this.params) }
 
     private val isError = result.isError() || params.any { it.isError() }
@@ -98,7 +98,7 @@ class Rt_FunctionValue(
 
         val resExprValues = exprValues + newArgs
 
-        val resArgMappings = mapping.args.map { m1 ->
+        val resArgMappings = mapping.args.mapToImmList { m1 ->
             if (m1.wild) {
                 val m2 = newMapping.args[m1.index]
                 if (m2.wild) m2 else R_PartialArgMapping(false, mapping.exprCount + m2.index)

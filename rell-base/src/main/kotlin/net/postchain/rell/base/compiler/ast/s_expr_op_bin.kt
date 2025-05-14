@@ -14,6 +14,7 @@ import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_UpdateStatementWhat
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
@@ -251,7 +252,7 @@ sealed class C_BinOp_Common: C_BinOp() {
     }
 
     protected open fun adaptOperands0(ctx: C_ExprContext, left: V_Expr, right: V_Expr): Pair<V_Expr, V_Expr> {
-        val res = promoteNumeric(ctx, listOf(left, right))
+        val res = promoteNumeric(ctx, immListOf(left, right))
         checkEquals(res.size, 2)
         return res[0] to res[1]
     }
@@ -278,11 +279,11 @@ sealed class C_BinOp_Common: C_BinOp() {
 
     companion object {
         fun promoteNumeric(ctx: C_ExprContext, left: V_Expr, right: V_Expr): Pair<V_Expr, V_Expr> {
-            val res = promoteNumeric(ctx, listOf(left, right))
+            val res = promoteNumeric(ctx, immListOf(left, right))
             return Pair(res[0], res[1])
         }
 
-        fun promoteNumeric(ctx: C_ExprContext, values: List<V_Expr>): List<V_Expr> {
+        fun promoteNumeric(ctx: C_ExprContext, values: ImmList<V_Expr>): ImmList<V_Expr> {
             val resType = values.fold(values.firstOrNull()?.type) { type, value ->
                 if (type == null) null else commonNumericType(type, value.type)
             }

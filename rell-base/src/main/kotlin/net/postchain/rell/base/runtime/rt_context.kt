@@ -353,8 +353,7 @@ class Rt_ExecutionContext(
         return r
     }
 
-    var emittedEvents: List<Rt_Value> = state?.emittedEvents ?: immListOf()
-        set(value) { field = value.toImmList() }
+    var emittedEvents: ImmList<Rt_Value> = state?.emittedEvents ?: immListOf()
 
     val testBlockClock: Rt_TestBlockClock = Rt_TestBlockClock(state?.testBlockClock ?: Rt_TestBlockClock.DEFAULT_STATE)
 

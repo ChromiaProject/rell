@@ -19,14 +19,10 @@ import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.*
 
 class V_FunctionCallArgs(
-    exprs: List<V_Expr>,
-    paramsToExprs: List<Int>,
-    exprsToParams: List<Int>,
+    val exprs: ImmList<V_Expr>,
+    val paramsToExprs: ImmList<Int>,
+    val exprsToParams: ImmList<Int>,
 ) {
-    val exprs = exprs.toImmList()
-    val paramsToExprs = paramsToExprs.toImmList()
-    val exprsToParams = exprsToParams.toImmList()
-
     init {
         checkEquals(this.paramsToExprs.size, this.exprs.size)
         checkEquals(this.exprsToParams.size, this.exprs.size)
@@ -41,7 +37,7 @@ class V_FunctionCallArgs(
 
         fun positional(args: List<V_Expr>): V_FunctionCallArgs {
             val mapping = args.indices.toImmList()
-            return V_FunctionCallArgs(args, mapping, mapping)
+            return V_FunctionCallArgs(args.toImmList(), mapping, mapping)
         }
     }
 }
@@ -96,16 +92,14 @@ sealed class V_CommonFunctionCall(
     protected val pos: S_Pos,
     val returnType: R_Type,
     protected val target: V_FunctionCallTarget,
-    args: List<V_Expr>,
+    val args: ImmList<V_Expr>,
 ) {
-    val args = args.toImmList()
-
     abstract fun varStatesDelta(): C_VarStatesDelta
     abstract fun globalConstantRestriction(): V_GlobalConstantRestriction?
 
     fun canBeDbExpr() = target.canBeDb()
 
-    protected abstract fun rCall0(rTarget: R_FunctionCallTarget, rArgExprs: List<R_Expr>): R_FunctionCall
+    protected abstract fun rCall0(rTarget: R_FunctionCallTarget, rArgExprs: ImmList<R_Expr>): R_FunctionCall
 
     protected abstract fun callTarget(
         callCtx: Rt_CallContext,
@@ -116,7 +110,7 @@ sealed class V_CommonFunctionCall(
 
     fun rCall(): R_FunctionCall {
         val rTarget = target.toRTarget()
-        val rArgExprs = args.map { it.toRExpr() }
+        val rArgExprs = args.mapToImmList { it.toRExpr() }
         return rCall0(rTarget, rArgExprs)
     }
 
@@ -138,7 +132,7 @@ sealed class V_CommonFunctionCall(
             }
         }
 
-        val allExprs = listOfNotNull(base) + args
+        val allExprs = (listOfNotNull(base) + args).toImmList()
         return C_DbAtWhatValue_Complex(allExprs, evaluator)
     }
 }
@@ -167,7 +161,7 @@ class V_CommonFunctionCall_Full(
         return rTarget.call(subCallCtx, baseValue, values2)
     }
 
-    override fun rCall0(rTarget: R_FunctionCallTarget, rArgExprs: List<R_Expr>): R_FunctionCall {
+    override fun rCall0(rTarget: R_FunctionCallTarget, rArgExprs: ImmList<R_Expr>): R_FunctionCall {
         return R_FullFunctionCall(returnType, rTarget, callFilePos, rArgExprs, callArgs.paramsToExprs)
     }
 
@@ -181,13 +175,13 @@ class V_CommonFunctionCall_Partial(
     pos: S_Pos,
     returnType: R_Type,
     target: V_FunctionCallTarget,
-    args: List<V_Expr>,
+    args: ImmList<V_Expr>,
     private val mapping: R_PartialCallMapping,
 ): V_CommonFunctionCall(pos, returnType, target, args) {
     override fun varStatesDelta(): C_VarStatesDelta = C_VarStatesDelta.forExpressions(args)
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("partial_call", null)
 
-    override fun rCall0(rTarget: R_FunctionCallTarget, rArgExprs: List<R_Expr>): R_FunctionCall {
+    override fun rCall0(rTarget: R_FunctionCallTarget, rArgExprs: ImmList<R_Expr>): R_FunctionCall {
         return R_PartialFunctionCall(returnType, rTarget, mapping, rArgExprs)
     }
 

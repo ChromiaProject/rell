@@ -11,6 +11,7 @@ import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.model.R_DefinitionName
 import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.mapValuesNotNull
@@ -190,7 +191,7 @@ class C_SymbolContextManager(
     }
 
     class Finish(
-        val symbolInfos: Map<S_Pos, IdeSymbolInfo>,
+        val symbolInfos: ImmMap<S_Pos, IdeSymbolInfo>,
     )
 
     private inner class C_SymbolContextProviderImpl: C_SymbolContextProvider {

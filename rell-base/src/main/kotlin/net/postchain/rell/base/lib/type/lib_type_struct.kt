@@ -21,9 +21,10 @@ import net.postchain.rell.base.runtime.GtvToRtContext
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.PostchainGtvUtils
 import net.postchain.rell.base.utils.doc.DocCode
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.mapToImmList
 
 object Lib_Type_Struct {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -178,14 +179,14 @@ object Lib_Type_Struct {
         }
     }
 
-    fun getValueMembers(struct: R_Struct): List<C_TypeValueMember> {
-        return struct.attributesList.map {
+    fun getValueMembers(struct: R_Struct): ImmList<C_TypeValueMember> {
+        return struct.attributesList.mapToImmList {
             val mem = C_MemberAttr_RegularStructAttr(it, struct)
             C_TypeValueMember_BasicAttr(mem)
-        }.toImmList()
+        }
     }
 
-    fun decodeOperation(v: Rt_Value): Pair<R_MountName, List<Gtv>> {
+    fun decodeOperation(v: Rt_Value): Pair<R_MountName, ImmList<Gtv>> {
         val sv = v.asStruct()
 
         val structType = sv.type()
@@ -195,7 +196,7 @@ object Lib_Type_Struct {
         }
 
         val rtArgs = structType.struct.attributesList.map { sv.get(it.index) }
-        val gtvArgs = rtArgs.map { it.type().rtToGtv(it, false) }
+        val gtvArgs = rtArgs.mapToImmList { it.type().rtToGtv(it, false) }
 
         return op.mountName to gtvArgs
     }

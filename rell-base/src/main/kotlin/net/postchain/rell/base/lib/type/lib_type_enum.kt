@@ -15,7 +15,8 @@ import net.postchain.rell.base.model.R_EnumAttr
 import net.postchain.rell.base.model.R_EnumType
 import net.postchain.rell.base.model.expr.Db_SysFunction
 import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.mapToImmList
 
 object Lib_Type_Enum {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -105,16 +106,14 @@ object Lib_Type_Enum {
         }
     }
 
-    fun getStaticMembers(type: R_EnumType): List<C_TypeStaticMember> {
+    fun getStaticMembers(type: R_EnumType): ImmList<C_TypeStaticMember> {
         val defPath = type.enum.cDefName.toPath()
-        return type.enum.attrs
-            .map { attr ->
-                val defName = defPath.subName(attr.rName)
-                val prop = C_NamespaceProperty_RtValue(type.getValue(attr), type, C_EnumValueVarId(type, attr))
-                val restrictions = C_MemberRestrictions.NULL
-                C_TypeStaticMember.makeProperty(defName, attr.rName, prop, type, attr.ideInfo, restrictions)
-            }
-            .toImmList()
+        return type.enum.attrs.mapToImmList { attr ->
+            val defName = defPath.subName(attr.rName)
+            val prop = C_NamespaceProperty_RtValue(type.getValue(attr), type, C_EnumValueVarId(type, attr))
+            val restrictions = C_MemberRestrictions.NULL
+            C_TypeStaticMember.makeProperty(defName, attr.rName, prop, type, attr.ideInfo, restrictions)
+        }
     }
 
     private data class C_EnumValueVarId(private val enumType: R_EnumType, private val attr: R_EnumAttr): C_VarId() {

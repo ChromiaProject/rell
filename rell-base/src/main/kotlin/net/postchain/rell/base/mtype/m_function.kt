@@ -67,17 +67,17 @@ class M_FunctionParam(
 }
 
 class M_FunctionHeader(
-    val typeParams: List<M_TypeParam>,
+    val typeParams: ImmList<M_TypeParam>,
     val resultType: M_Type,
-    val params: List<M_FunctionParam>,
+    val params: ImmList<M_FunctionParam>,
 ) {
     init {
         checkTypeParams()
         checkParams()
     }
 
-    private val simpleParams: List<M_FunctionParam> by lazy {
-        params.map { it.toSimpleParam() }.toImmList()
+    private val simpleParams: ImmList<M_FunctionParam> by lazy {
+        params.mapToImmList { it.toSimpleParam() }
     }
 
     private fun checkTypeParams() {
@@ -145,11 +145,11 @@ class M_FunctionHeader(
         val paramIndexes = matchArgsCount(nArgs)
         paramIndexes ?: return null
 
-        val actualParams = paramIndexes.map { simpleParams[it] }.toImmList()
+        val actualParams = paramIndexes.mapToImmList { simpleParams[it] }
         return M_FunctionParamsMatch(this, paramIndexes, actualParams)
     }
 
-    private fun matchArgsCount(nArgs: Int): List<Int>? {
+    private fun matchArgsCount(nArgs: Int): ImmList<Int>? {
         val resParams = mutableListOf<Int>()
         var argsLeft = nArgs
 
@@ -193,8 +193,8 @@ class M_FunctionHeader(
 
 class M_FunctionParamsMatch(
     private val header: M_FunctionHeader,
-    val paramIndexes: List<Int>,
-    val actualParams: List<M_FunctionParam>,
+    val paramIndexes: ImmList<Int>,
+    val actualParams: ImmList<M_FunctionParam>,
 ) {
     init {
         checkEquals(paramIndexes.size, actualParams.size)
@@ -262,10 +262,10 @@ class M_FunctionParamsMatch(
             return null
         }
 
-        val resTypeArgs = typeArgs.mapKeys { it.key.name }
+        val resTypeArgs = typeArgs.mapKeysToImmMap { it.key.name }
 
-        val fullParams = paramIndexes.map { replacedHeader.params[it] }.toImmList()
-        val unresolved = header.typeParams.filter { it !in typeArgs }.toImmList()
+        val fullParams = paramIndexes.mapToImmList { replacedHeader.params[it] }
+        val unresolved = header.typeParams.filterToImmList { it !in typeArgs }
 
         val actualHeader = M_FunctionHeader(
             unresolved,
@@ -277,15 +277,15 @@ class M_FunctionParamsMatch(
     }
 
     private class M_FunTypeParamsMatch(
-        val typeArgs: Map<String, M_Type>,
+        val typeArgs: ImmMap<String, M_Type>,
         val actualHeader: M_FunctionHeader,
     )
 }
 
 class M_FunctionHeaderMatch(
-    val typeArgs: Map<String, M_Type>,
+    val typeArgs: ImmMap<String, M_Type>,
     val actualHeader: M_FunctionHeader,
-    val conversions: List<M_Conversion>,
+    val conversions: ImmList<M_Conversion>,
 ) {
     init {
         checkEquals(conversions.size, actualHeader.params.size)

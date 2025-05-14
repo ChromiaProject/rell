@@ -11,16 +11,21 @@ import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.sql.SqlConstants
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmMap
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.immMapOf
+import net.postchain.rell.base.utils.mapToImmList
+import net.postchain.rell.base.utils.mapValuesToImmMap
 import net.postchain.rell.base.utils.mutableMultimapOf
 import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
 
 private class C_MountConflictsProcessor(private val chain: String?, private val currentStamp: R_AppUid) {
     fun processConflicts(
             msgCtx: C_MessageContext,
             allEntries: List<C_MntEntry>,
             errorsEntries: MutableSet<C_MntEntry>
-    ): List<C_MntEntry> {
+    ): ImmList<C_MntEntry> {
         val map = mutableMultimapOf<R_MountName, C_MntEntry>()
         for (entry in allEntries) {
             map.put(entry.mountName, entry)
@@ -74,13 +79,13 @@ class C_MntEntry(
         private val SYSTEM_MOUNT_NAMES = let {
             // "block" and "transaction" are reserved mount names for backwards compatibility reasons
             val all = SqlConstants.SYSTEM_OBJECTS + listOf("block", "transaction")
-            all.map { R_MountName.of(it) }.toImmList()
+            all.mapToImmList { R_MountName.of(it) }
         }
 
         private val SYSTEM_MOUNT_PREFIX = R_MountName.of("sys")
 
         fun processMountConflicts(msgCtx: C_MessageContext, stamp: R_AppUid, mntTables: C_MountTables): C_MountTables {
-            val resChains = mntTables.chains.mapValues { (chain, t) ->
+            val resChains = mntTables.chains.mapValuesToImmMap { (chain, t) ->
                 val nullableChain = if (chain == "") null else chain
 
                 val entities = processSystemMountConflicts(msgCtx, stamp, t.entities)
@@ -171,17 +176,15 @@ class C_MountTablesBuilder(private val stamp: R_AppUid) {
     private fun chainBuilder(chain: String) = chains.computeIfAbsent(chain) { C_ChainMountTablesBuilder(stamp) }
 
     fun build(): C_MountTables {
-        val resChains = chains.mapValues { (_, v) ->
+        val resChains = chains.mapValuesToImmMap { (_, v) ->
             C_ChainMountTables(v.entities.build(), v.operations.build(), v.queries.build())
         }
         return C_MountTables(resChains)
     }
 }
 
-class C_MountTables(chains: Map<String, C_ChainMountTables>) {
-    val chains = chains.toImmMap()
-
-    companion object { val EMPTY = C_MountTables(mapOf()) }
+class C_MountTables(val chains: ImmMap<String, C_ChainMountTables>) {
+    companion object { val EMPTY = C_MountTables(immMapOf()) }
 }
 
 class C_ChainMountTables(val entities: C_MntTable, val operations: C_MntTable, val queries: C_MntTable)
@@ -214,12 +217,10 @@ class C_MntTableBuilder(private val stamp: R_AppUid) {
     fun build(): C_MntTable {
         check(!finished)
         finished = true
-        return C_MntTable(entries)
+        return C_MntTable(entries.toImmList())
     }
 }
 
-class C_MntTable(entries: List<C_MntEntry>) {
-    val entries = entries.toImmList()
-
-    companion object { val EMPTY = C_MntTable(listOf()) }
+class C_MntTable(val entries: ImmList<C_MntEntry>) {
+    companion object { val EMPTY = C_MntTable(immListOf()) }
 }

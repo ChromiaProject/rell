@@ -30,9 +30,7 @@ class C_Name private constructor(val pos: S_Pos, val rName: R_Name) {
     }
 }
 
-class C_QualifiedName(parts: List<C_Name>) {
-    val parts = parts.toImmList()
-
+class C_QualifiedName(val parts: ImmList<C_Name>) {
     init {
         check(this.parts.isNotEmpty())
     }
@@ -42,10 +40,10 @@ class C_QualifiedName(parts: List<C_Name>) {
 
     constructor(name: C_Name): this(immListOf(name))
 
-    fun add(name: C_Name) = C_QualifiedName(parts + name)
+    fun add(name: C_Name) = C_QualifiedName((parts + name).toImmList())
     fun parentPath() = parts.dropLast(1).toImmList()
-    fun toRName() = R_QualifiedName(parts.map { it.rName })
-    fun toPath() = C_RNamePath.of(parts.map { it.rName })
+    fun toRName() = R_QualifiedName(parts.mapToImmList { it.rName })
+    fun toPath() = C_RNamePath.of(parts.mapToImmList { it.rName })
     fun toLazyPosString() = LazyPosString.of(last.pos) { str() }
 
     fun str() = parts.joinToString(".")
@@ -60,17 +58,15 @@ class C_IdeName(val name: C_Name, val ideInfo: C_IdeSymbolInfo) {
     override fun toString() = name.toString()
 }
 
-class C_IdeQualifiedName(parts: List<C_IdeName>) {
-    val parts = parts.toImmList()
-
+class C_IdeQualifiedName(val parts: ImmList<C_IdeName>) {
     init {
         check(this.parts.isNotEmpty())
     }
 
     val last = this.parts.last()
 
-    fun toCQualifiedName() = C_QualifiedName(parts.map { it.name })
-    fun toPath() = C_RNamePath.of(parts.map { it.name.rName })
+    fun toCQualifiedName() = C_QualifiedName(parts.mapToImmList { it.name })
+    fun toPath() = C_RNamePath.of(parts.mapToImmList { it.name.rName })
 
     fun str() = parts.joinToString(".") { it.name.str }
     override fun toString() = str()
@@ -97,9 +93,8 @@ sealed class C_IdeSymbolInfo {
     }
 
     companion object {
-        private val KIND_MAP = IdeSymbolKind.values()
-            .associateWith { C_IdeSymbolInfo_Direct(IdeSymbolInfo.get(it)) }
-            .toImmMap()
+        private val KIND_MAP = IdeSymbolKind.entries
+            .associateWithToImmMap { C_IdeSymbolInfo_Direct(IdeSymbolInfo.get(it)) }
 
         val UNKNOWN = get(IdeSymbolKind.UNKNOWN)
         val MEM_TUPLE_ATTR = get(IdeSymbolKind.MEM_TUPLE_ATTR)
@@ -302,11 +297,11 @@ class C_QualifiedNameHandle(parts: List<C_NameHandle>) {
     val first: C_NameHandle get() = this.parts.first()
 
     val cName: C_QualifiedName by lazy {
-        C_QualifiedName(this.parts.map { it.name })
+        C_QualifiedName(this.parts.mapToImmList { it.name })
     }
 
     val rName: R_QualifiedName by lazy {
-        R_QualifiedName(this.parts.map { it.rName })
+        R_QualifiedName(this.parts.mapToImmList { it.rName })
     }
 
     constructor(name: C_NameHandle): this(immListOf(name))
@@ -410,7 +405,7 @@ private class C_NameContext_Active(
         extra.link = link
     }
 
-    private fun finish0(): Map<S_Pos, IdeSymbolInfo> {
+    private fun finish0(): ImmMap<S_Pos, IdeSymbolInfo> {
         finishExtra()
 
         val res = mutableMapOf<S_Pos, IdeSymbolInfo>()
@@ -527,7 +522,7 @@ private class C_NameContext_Active(
         }
     }
 
-    fun finish(): Map<S_Pos, IdeSymbolInfo> {
+    fun finish(): ImmMap<S_Pos, IdeSymbolInfo> {
         return finish0()
     }
 }
@@ -541,7 +536,7 @@ class C_NameContextManager(
     private val activeNameCtx0 = C_NameContext_Active(msgMgr, opts)
     val activeNameCtx: C_NameContext = activeNameCtx0
 
-    fun finish(): Map<S_Pos, IdeSymbolInfo> {
+    fun finish(): ImmMap<S_Pos, IdeSymbolInfo> {
         return activeNameCtx0.finish()
     }
 }

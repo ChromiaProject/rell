@@ -5,6 +5,7 @@
 package net.postchain.rell.base.mtype.utils
 
 import net.postchain.rell.base.mtype.*
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmSet
 
 class MTestScope private constructor(
@@ -64,7 +65,7 @@ class MTestScope private constructor(
             }
 
             val mParent = if (parent == null) null else {
-                val mParentArgs = parent.second.map { arg ->
+                val mParentArgs = parent.second.mapToImmList { arg ->
                     val param = mParams.first { it.name == arg }
                     M_Types.param(param)
                 }

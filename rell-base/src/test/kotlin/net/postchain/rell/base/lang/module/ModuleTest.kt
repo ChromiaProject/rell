@@ -12,6 +12,7 @@ import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestUtils
+import net.postchain.rell.base.utils.mapToImmList
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -518,8 +519,8 @@ class ModuleTest: BaseRellTest() {
     }
 
     private fun evalCompileAllModules(sourceDir: C_SourceDir, modules: List<String>, testModules: List<String>): String {
-        val modules2 = modules.map { R_ModuleName.of(it) }
-        val testModules2 = testModules.map { R_ModuleName.of(it) }
+        val modules2 = modules.mapToImmList { R_ModuleName.of(it) }
+        val testModules2 = testModules.mapToImmList { R_ModuleName.of(it) }
         val modSel = C_CompilerModuleSelection(modules2, testModules2)
 
         val res = try {

@@ -20,6 +20,7 @@ import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.testutils.VirtualTestUtils
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.PostchainGtvUtils
 import org.junit.Test
@@ -165,7 +166,7 @@ class CLibFunctionTypeExtTest: BaseCLibTest() {
                 override fun compileCall(
                     ctx: C_ExprContext,
                     name: LazyPosString,
-                    args: List<S_Expr>
+                    args: ImmList<S_Expr>
                 ): V_Expr {
                     ctx.msgCtx.error(name.pos, "test_error:${name.str}", "Test error")
                     return C_ExprUtils.errorVExpr(ctx, name.pos)
@@ -176,7 +177,7 @@ class CLibFunctionTypeExtTest: BaseCLibTest() {
                     ctx: C_ExprContext,
                     callCtx: C_LibFuncCaseCtx,
                     selfType: R_Type,
-                    args: List<V_Expr>,
+                    args: ImmList<V_Expr>,
                 ): V_SpecialMemberFunctionCall {
                     ctx.msgCtx.error(callCtx.linkPos, "test_error:${callCtx.qualifiedNameMsg()}", "Test error")
                     return BaseLTest.makeTypeFunCall(ctx)

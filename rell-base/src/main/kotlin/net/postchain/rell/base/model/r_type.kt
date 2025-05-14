@@ -19,11 +19,11 @@ import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyString
 import net.postchain.rell.base.utils.doc.DocCode
 import net.postchain.rell.base.utils.immListOf
 import org.jooq.DataType
-import java.util.*
 
 class R_GtvCompatibility(val fromGtv: Boolean, val toGtv: Boolean)
 
@@ -144,7 +144,7 @@ abstract class R_Type(
 
     private val lazyHashCode: Int by lazy {
         val h0 = hashCode0()
-        Objects.hash(javaClass, h0)
+        java.util.Objects.hash(javaClass, h0)
     }
 
     protected abstract fun equals0(other: R_Type): Boolean
@@ -206,8 +206,8 @@ abstract class R_Type(
         return str()
     }
 
-    open fun explicitComponentTypes(): List<R_Type> = immListOf()
-    open fun componentTypes(): List<R_Type> = explicitComponentTypes()
+    open fun explicitComponentTypes(): ImmList<R_Type> = immListOf()
+    open fun componentTypes(): ImmList<R_Type> = explicitComponentTypes()
 
     open fun isAssignableFrom(type: R_Type): Boolean = type == this
     protected open fun calcCommonType(other: R_Type): R_Type? = null

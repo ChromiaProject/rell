@@ -10,10 +10,12 @@ import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
+import net.postchain.rell.base.utils.associateToImmMap
 import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapNotNullToImmList
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 
@@ -67,11 +69,10 @@ class L_Namespace(members: List<L_NamespaceMember>) {
     }
 
     private val typeExtensions = this.members
-        .mapNotNull { (it as? L_NamespaceMember_TypeExtension)?.typeExt }
-        .toImmList()
+        .mapNotNullToImmList { (it as? L_NamespaceMember_TypeExtension)?.typeExt }
 
     val docMembers: Map<String, DocDefinition> by lazy {
-        membersMap.entries.associate { it.key.str to it.value }.toImmMap()
+        membersMap.entries.associateToImmMap { it.key.str to it.value }
     }
 
     fun getDef(qName: R_QualifiedName): L_NamespaceMember {

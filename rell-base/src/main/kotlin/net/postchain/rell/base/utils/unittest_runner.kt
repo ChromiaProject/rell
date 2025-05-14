@@ -515,7 +515,7 @@ class UnitTestMatcher private constructor(private val patterns: List<Pattern>) {
         val ANY = make(listOf("*"))
 
         fun make(patterns: List<String>): UnitTestMatcher {
-            val patterns2 = patterns.map { globToPattern(it) }.toImmList()
+            val patterns2 = patterns.mapToImmList { globToPattern(it) }
             return UnitTestMatcher(patterns2)
         }
 

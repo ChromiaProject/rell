@@ -12,6 +12,7 @@ import net.postchain.rell.base.runtime.Rt_SqlContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 
 sealed class R_UpdateTarget {
@@ -46,7 +47,7 @@ class R_UpdateTarget_Simple(
     companion object {
         fun getFromItems(entity: R_DbAtEntity, extraEntities: List<R_DbAtEntity>): List<RedDb_AtFromItem> {
             val allEntities = listOf(entity) + extraEntities
-            return allEntities.map { RedDb_AtFromItem(it, null, false) }.toImmList()
+            return allEntities.mapToImmList { RedDb_AtFromItem(it, null, false) }
         }
 
         fun executeCommon(

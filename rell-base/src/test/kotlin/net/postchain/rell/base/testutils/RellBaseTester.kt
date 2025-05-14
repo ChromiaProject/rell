@@ -207,11 +207,11 @@ abstract class RellBaseTester(
     }
 
     fun moduleSelection(appModules: List<R_ModuleName>?, testModules: List<R_ModuleName> = listOf()) {
-        moduleSelection(C_CompilerModuleSelection(appModules, testModules))
+        moduleSelection(C_CompilerModuleSelection(appModules?.toImmList(), testModules.toImmList()))
     }
 
-    private fun mainModules() = (mainModules ?: listOf("")).map { R_ModuleName.of(it) }
-    private fun testModules() = (testModules ?: listOf()).map { R_ModuleName.of(it) }
+    private fun mainModules() = (mainModules ?: listOf("")).mapToImmList { R_ModuleName.of(it) }
+    private fun testModules() = (testModules ?: listOf()).mapToImmList { R_ModuleName.of(it) }
 
     private fun moduleSelection(): C_CompilerModuleSelection {
         return modSelection ?: C_CompilerModuleSelection(mainModules(), testModules())

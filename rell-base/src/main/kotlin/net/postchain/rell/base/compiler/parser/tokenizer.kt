@@ -50,7 +50,7 @@ class RellTokens private constructor(version: R_LangVersion) {
     val byteArray: RellToken
 
     init {
-        val enabled = all.filter { it.isEnabled(version) }.toImmList()
+        val enabled = all.filterToImmList { it.isEnabled(version) }
         require(enabled.isNotEmpty()) { "The tokens list should not be empty" }
 
         val generals = mutableMapOf<String, RellToken>()
@@ -106,7 +106,7 @@ private class RellTokenizerSetup private constructor(version: R_LangVersion) {
     val tokens = RellTokens.get(version)
     val tokenSet = tokens.all.map { it.token }.toImmSet()
 
-    val keywords = tokens.keywords.associateBy { it.pattern }.toImmMap()
+    val keywords = tokens.keywords.associateByToImmMap { it.pattern }
 
     val maxDelimLen: Int = tokens.delims.maxOf { it.pattern.length }
 

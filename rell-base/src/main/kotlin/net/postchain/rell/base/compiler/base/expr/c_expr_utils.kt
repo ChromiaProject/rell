@@ -20,10 +20,12 @@ import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_ExprStatement
 import net.postchain.rell.base.runtime.Rt_CommonError
 import net.postchain.rell.base.runtime.Rt_Exception
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.LazyString
 import net.postchain.rell.base.utils.foldSimple
 import net.postchain.rell.base.utils.immMapOf
+import net.postchain.rell.base.utils.toImmList
 
 object C_ExprUtils {
     val ERROR_R_EXPR = errorRExpr()
@@ -55,7 +57,7 @@ object C_ExprUtils {
         return makeDbBinaryExpr(R_BooleanType, R_BinaryOp_Eq, dbOp, left, right)
     }
 
-    fun makeDbBinaryExprChain(type: R_Type, rOp: R_BinaryOp, dbOp: Db_BinaryOp, exprs: List<Db_Expr>): Db_Expr {
+    fun makeDbBinaryExprChain(type: R_Type, rOp: R_BinaryOp, dbOp: Db_BinaryOp, exprs: ImmList<Db_Expr>): Db_Expr {
         return exprs.foldSimple { left, right -> makeDbBinaryExpr(type, rOp, dbOp, left, right) }
     }
 
@@ -64,14 +66,14 @@ object C_ExprUtils {
         return V_BinaryExpr(ctx, pos, vOp, left, right, C_ExprVarStatesDelta.EMPTY)
     }
 
-    fun createSysCallRExpr(type: R_Type, fn: R_SysFunction, args: List<R_Expr>, nameMsg: LazyPosString): R_Expr {
+    fun createSysCallRExpr(type: R_Type, fn: R_SysFunction, args: ImmList<R_Expr>, nameMsg: LazyPosString): R_Expr {
         return createSysCallRExpr(type, fn, args, nameMsg.pos, nameMsg.lazyStr)
     }
 
-    fun createSysCallRExpr(type: R_Type, fn: R_SysFunction, args: List<R_Expr>, pos: S_Pos, nameMsg: LazyString): R_Expr {
+    fun createSysCallRExpr(type: R_Type, fn: R_SysFunction, args: ImmList<R_Expr>, pos: S_Pos, nameMsg: LazyString): R_Expr {
         val rCallTarget: R_FunctionCallTarget = R_FunctionCallTarget_SysGlobalFunction(fn, nameMsg)
         val filePos = pos.toFilePos()
-        val rCall: R_FunctionCall = R_FullFunctionCall(type, rCallTarget, filePos, args, args.indices.toList())
+        val rCall: R_FunctionCall = R_FullFunctionCall(type, rCallTarget, filePos, args, args.indices.toImmList())
         val rCallExpr: R_Expr = R_FunctionCallExpr(type, null, rCall, false)
         return R_StackTraceExpr(rCallExpr, filePos)
     }

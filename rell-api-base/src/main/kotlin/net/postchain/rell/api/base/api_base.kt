@@ -48,8 +48,8 @@ object RellApiCompile {
         testModules: List<String> = immListOf(),
     ): R_App {
         val cSourceDir = C_SourceDir.diskDir(sourceDir)
-        val rAppModules = appModules?.map { R_ModuleName.of(it) }?.toImmList()
-        val rTestModules = testModules.map { R_ModuleName.of(it) }.toImmList()
+        val rAppModules = appModules?.mapToImmList { R_ModuleName.of(it) }
+        val rTestModules = testModules.mapToImmList { R_ModuleName.of(it) }
 
         val options = RellApiBaseInternal.makeCompilerOptions(config)
         val (_, rApp) = RellApiBaseInternal.compileApp(config, options, cSourceDir, rAppModules, rTestModules)
@@ -284,7 +284,7 @@ object RellApiBaseInternal {
         appModules: List<R_ModuleName>?,
         testModules: List<R_ModuleName>,
     ): C_CompilerModuleSelection {
-        return C_CompilerModuleSelection(appModules, testModules, testSubModules = config.includeTestSubModules, appSubModules = config.includeAppSubModules)
+        return C_CompilerModuleSelection(appModules?.toImmList(), testModules.toImmList(), testSubModules = config.includeTestSubModules, appSubModules = config.includeAppSubModules)
     }
 
     private fun validateAllModuleArgs(
@@ -295,8 +295,7 @@ object RellApiBaseInternal {
     ) {
         val expectedArgs = app.moduleMap
             .filterValues { it.moduleArgs != null }
-            .mapValues { it.value.moduleArgs!! }
-            .toImmMap()
+            .mapValuesToImmMap { it.value.moduleArgs!! }
 
         val defaultValuesSupported = Rt_GtvModuleArgsSource.DEFAULT_VALUES_SWITCH.isActive(compilerOptions)
         val missingModules = expectedArgs

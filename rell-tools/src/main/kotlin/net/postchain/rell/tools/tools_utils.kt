@@ -18,6 +18,7 @@ import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.runtime.Rt_RellVersion
 import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.RellVersions
+import net.postchain.rell.base.utils.immListOfNotNull
 import picocli.CommandLine
 import java.io.File
 import kotlin.system.exitProcess
@@ -58,7 +59,7 @@ object RellToolsUtils: KLogging() {
         compilerOptions: C_CompilerOptions
     ): R_App {
         val cSourceDir = RellApiBaseUtils.createSourceDir(sourceDir)
-        val modSel = C_CompilerModuleSelection(listOfNotNull(moduleName))
+        val modSel = C_CompilerModuleSelection(immListOfNotNull(moduleName))
         val res = compileApp(cSourceDir, modSel, quiet, compilerOptions)
         return res
     }

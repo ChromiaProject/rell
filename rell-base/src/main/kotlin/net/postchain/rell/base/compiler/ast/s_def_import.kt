@@ -16,19 +16,22 @@ import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.*
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.immMapOf
+import net.postchain.rell.base.utils.mapToImmList
+import net.postchain.rell.base.utils.toImmList
 
 private val INVALID_MODULE_SYMBOL_INFO = C_IdeSymbolInfo.UNKNOWN
 
 class C_ImportModulePathHandle(
-        val moduleName: R_ModuleName,
-        val implicitAlias: C_Name?,
-        private val nameHand: C_QualifiedNameHandle?,
-        private val pathModuleNames: List<R_ModuleName>,
+    val moduleName: R_ModuleName,
+    val implicitAlias: C_Name?,
+    private val nameHand: C_QualifiedNameHandle?,
+    private val pathModuleNames: ImmList<R_ModuleName>,
 ) {
     init {
         checkEquals(pathModuleNames.size, nameHand?.parts?.size ?: 0)
@@ -125,11 +128,11 @@ class S_ImportModulePath(
 
     private fun makeModuleNameDetails(base: List<R_Name>, path: List<R_Name>): ModuleNameDetails {
         val moduleName = R_ModuleName.of(base + path)
-        val pathNames = path.indices.map { R_ModuleName.of(base + path.subList(0, it + 1)) }
+        val pathNames = path.indices.mapToImmList { R_ModuleName.of(base + path.subList(0, it + 1)) }
         return ModuleNameDetails(moduleName, pathNames)
     }
 
-    private class ModuleNameDetails(val moduleName: R_ModuleName, val pathModuleNames: List<R_ModuleName>)
+    private class ModuleNameDetails(val moduleName: R_ModuleName, val pathModuleNames: ImmList<R_ModuleName>)
 }
 
 class C_ImportAlias(val explicit: C_Name?, val implicit: C_Name?, val anonymous: C_Name?) {
@@ -446,7 +449,7 @@ object S_WildcardImportTarget: S_ImportTarget() {
 
         override fun addToNamespace(ctx: C_MountContext, def: C_ImportDefinition, module: C_ModuleDescriptor) {
             val nsBuilder = getNsBuilder(ctx, explicitAlias, aliasIdeDef.refInfo)
-            nsBuilder.addWildcardImport(module.key, listOf())
+            nsBuilder.addWildcardImport(module.key, immListOf())
         }
     }
 }

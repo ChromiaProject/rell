@@ -13,8 +13,10 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immSetOf
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 
 class V_ErrorExpr(
@@ -72,7 +74,7 @@ class V_TupleExpr(
         exprCtx: C_ExprContext,
         pos: S_Pos,
         private val tupleType: R_TupleType,
-        private val exprs: List<V_Expr>
+        private val exprs: ImmList<V_Expr>
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(tupleType, exprs, canBeDbExpr = false)
 
@@ -168,7 +170,7 @@ class V_StructExpr(
     }
 
     override fun toDbExprWhat0(): C_DbAtWhatValue {
-        val exprs = allAttrs.map { it.expr }
+        val exprs = allAttrs.mapToImmList { it.expr }
 
         val evaluator = object: Db_ComplexAtWhatEvaluator() {
             override fun evaluate(frame: Rt_CallFrame, values: List<Rt_AtWhatItem>): Rt_Value {

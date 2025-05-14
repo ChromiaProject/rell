@@ -198,11 +198,11 @@ private object C_LibTypeAdapterInternal {
         typeParams: List<M_TypeParam>,
         mSpecificType: M_Type?,
         naming: C_MemberNaming,
-    ): List<C_LibFuncCase<V_GlobalFunctionCall>> {
+    ): ImmList<C_LibFuncCase<V_GlobalFunctionCall>> {
         // Trying with and without validation. If there are no constructors when validation is enabled, take all
         // constructors that don't pass the validation, as they will be validated again when called anyway.
         for (validate in listOf(true, false)) {
-            val cases = constructors.constructors.mapNotNull { con ->
+            val cases = constructors.constructors.mapNotNullToImmList { con ->
                 constructorToCase(
                     lTypeDef.fullName,
                     con,
@@ -236,7 +236,7 @@ private object C_LibTypeAdapterInternal {
         val mHeader = M_FunctionHeader(
             typeParams = (outerTypeParams + con.header.typeParams).toImmList(),
             resultType = selfType,
-            params = con.header.params.map { it.mParam }.toImmList(),
+            params = con.header.params.mapToImmList { it.mParam },
         )
 
         var header = L_FunctionHeader(mHeader, params = con.header.params)
@@ -256,8 +256,7 @@ private object C_LibTypeAdapterInternal {
 
         val outerTypeArgTypes = outerTypeArgs
             .mapKeys { R_Name.of(it.key.name) }
-            .mapValues { it.value.captureType() }
-            .toImmMap()
+            .mapValuesToImmMap { it.value.captureType() }
 
         val flags = L_FunctionFlags(isPure = con.pure, isStatic = false)
         val function = L_Function(typeName, header, flags, con.body)
@@ -281,7 +280,7 @@ private class C_LibTypeBodyBuilder(
     private val namingFactory: (R_Name) -> C_MemberNaming,
     private val typeDef: L_TypeDef?,
 ) {
-    private val defPath = C_DefinitionPath(typeName.moduleName, typeName.qualifiedName.parts.map { it.str })
+    private val defPath = C_DefinitionPath(typeName.moduleName, typeName.qualifiedName.parts.mapToImmList { it.str })
 
     private val valueMembers = mutableListOf<C_TypeValueMember>()
     private val staticMembers = mutableListOf<C_TypeStaticMember>()
@@ -369,7 +368,7 @@ private class C_LibTypeBodyBuilder(
         val cFunctions = valueFunctions.asMap().entries
             .map { (name, mems) ->
                 val naming = namingFactory(name)
-                val cases = mems.map { m ->
+                val cases = mems.mapToImmList { m ->
                     val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_FUNCTION_SYSTEM, doc = m.docSymbol)
                     C_LibFuncCaseUtils.makeMemberCase(m.member, ideInfo, naming, m.restrictions)
                 }
@@ -385,7 +384,7 @@ private class C_LibTypeBodyBuilder(
         val cFunctions = staticFunctions.asMap().entries.map { (simpleName, mems) ->
             val defName = defPath.subName(simpleName)
             val naming = namingFactory(simpleName)
-            val cases = mems.map { m ->
+            val cases = mems.mapToImmList { m ->
                 C_LibAdapter.convertFunctionCase(m.member, naming, m.docSymbol, m.restrictions)
             }
             val cFn = C_LibFunctionUtils.makeGlobalFunction(naming, cases)

@@ -13,6 +13,7 @@ import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmMultimapKey
 import org.apache.commons.lang3.StringUtils
 import java.io.File
@@ -136,9 +137,9 @@ private class ReposCompiler {
 
         val sourceDir = C_SourceDir.diskDir(runInfo.srcDir)
 
-        val modules = listOf(R_ModuleName.of(runInfo.module))
+        val modules = immListOf(R_ModuleName.of(runInfo.module))
         val modSel = if (runInfo.test) {
-            C_CompilerModuleSelection(listOf(), modules)
+            C_CompilerModuleSelection(immListOf(), modules)
         } else {
             C_CompilerModuleSelection(modules, modules)
         }

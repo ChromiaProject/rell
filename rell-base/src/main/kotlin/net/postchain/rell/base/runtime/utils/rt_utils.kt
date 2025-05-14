@@ -14,6 +14,7 @@ import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.runtime.*
+import kotlin.math.min
 
 fun Boolean.toGtv(): Gtv = GtvFactory.gtv(this)
 fun Int.toGtv(): Gtv = GtvFactory.gtv(this.toLong())
@@ -26,15 +27,16 @@ fun List<Gtv>.toGtv(): Gtv = GtvFactory.gtv(this)
 
 @JvmName("listOfStringToGtv")
 fun List<String>.toGtv(): Gtv = GtvFactory.gtv(this.map { it.toGtv() })
+
 fun Map<String, Gtv>.toGtv(): Gtv = GtvFactory.gtv(this)
 
 class RellInterpreterCrashException(message: String): RuntimeException(message)
 
 class Rt_Comparator<T>(private val getter: (Rt_Value) -> T, private val comparator: Comparator<T>): Comparator<Rt_Value> {
-    override fun compare(o1: Rt_Value?, o2: Rt_Value?): Int {
-        if (o1 == null || o1 == Rt_NullValue) {
-            return if (o2 == null || o2 == Rt_NullValue) 0 else -1
-        } else if (o2 == null || o2 == Rt_NullValue) {
+    override fun compare(o1: Rt_Value, o2: Rt_Value): Int {
+        if (o1 == Rt_NullValue) {
+            return if (o2 == Rt_NullValue) 0 else -1
+        } else if (o2 == Rt_NullValue) {
             return 1
         } else {
             val v1 = getter(o1)
@@ -46,18 +48,18 @@ class Rt_Comparator<T>(private val getter: (Rt_Value) -> T, private val comparat
 
     companion object {
         fun <T: Comparable<T>> create(getter: (Rt_Value) -> T): Comparator<Rt_Value> {
-            return Rt_Comparator(getter, Comparator { x, y -> x.compareTo(y) })
+            return Rt_Comparator(getter) { x, y -> x.compareTo(y) }
         }
     }
 }
 
 class Rt_ListComparator(private val elemComparator: Comparator<Rt_Value>): Comparator<Rt_Value> {
-    override fun compare(o1: Rt_Value?, o2: Rt_Value?): Int {
-        val l1 = o1!!.asList()
-        val l2 = o2!!.asList()
+    override fun compare(a: Rt_Value, b: Rt_Value): Int {
+        val l1 = a.asList()
+        val l2 = b.asList()
         val n1 = l1.size
         val n2 = l2.size
-        for (i in 0 until Math.min(n1, n2)) {
+        for (i in 0 until min(n1, n2)) {
             val c = elemComparator.compare(l1[i], l2[i])
             if (c != 0) {
                 return c
@@ -68,9 +70,9 @@ class Rt_ListComparator(private val elemComparator: Comparator<Rt_Value>): Compa
 }
 
 class Rt_TupleComparator(private val elemComparators: List<Comparator<Rt_Value>>): Comparator<Rt_Value> {
-    override fun compare(o1: Rt_Value?, o2: Rt_Value?): Int {
-        val t1 = o1!!.asTuple()
-        val t2 = o2!!.asTuple()
+    override fun compare(a: Rt_Value, b: Rt_Value): Int {
+        val t1 = a.asTuple()
+        val t2 = b.asTuple()
         for (i in 0 until elemComparators.size) {
             val c = elemComparators[i].compare(t1[i], t2[i])
             if (c != 0) {

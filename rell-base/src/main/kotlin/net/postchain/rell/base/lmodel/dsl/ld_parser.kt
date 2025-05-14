@@ -8,7 +8,7 @@ import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.parseToEnd
 import com.github.h0tk3y.betterParse.parser.Parser
 import net.postchain.rell.base.mtype.*
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.mapToImmList
 
 object Ld_Parser {
     fun parseType(code: String): Ld_Type {
@@ -20,7 +20,7 @@ object Ld_Parser {
         return when (type) {
             is M_AstType_Name -> Ld_Type_Name(Ld_FullName.parse(type.name), pos)
             is M_AstType_Generic -> {
-                val args = type.args.map { convertTypeSet(it, pos) }.toImmList()
+                val args = type.args.mapToImmList { convertTypeSet(it, pos) }
                 Ld_Type_Generic(Ld_FullName.parse(type.name), args, pos)
             }
             is M_AstType_Function -> {

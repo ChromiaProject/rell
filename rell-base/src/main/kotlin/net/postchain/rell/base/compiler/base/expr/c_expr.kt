@@ -15,9 +15,10 @@ import net.postchain.rell.base.compiler.vexpr.V_ValueMemberExpr
 import net.postchain.rell.base.model.R_DefinitionMeta
 import net.postchain.rell.base.model.R_FunctionType
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.utils.ImmList
 
 class C_ExprHint(val typeHint: C_TypeHint, val callable: Boolean = false) {
-    fun memberTags(): List<C_NamespaceMemberTag>  {
+    fun memberTags(): ImmList<C_NamespaceMemberTag> {
         return if (callable) C_NamespaceMemberTag.CALLABLE.list else C_NamespaceMemberTag.CALLABLE.notList
     }
 

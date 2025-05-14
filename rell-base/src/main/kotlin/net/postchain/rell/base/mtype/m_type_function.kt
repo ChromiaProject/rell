@@ -4,26 +4,25 @@
 
 package net.postchain.rell.base.mtype
 
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.mapToImmList
 
 object M_FunctionTypeUtils {
-    fun makeType(resultType: M_Type, paramTypes: List<M_Type>): M_Type {
+    fun makeType(resultType: M_Type, paramTypes: ImmList<M_Type>): M_Type {
         return M_Type_Function_Internal(resultType, paramTypes)
     }
 }
 
 sealed class M_Type_Function(
     val resultType: M_Type,
-    paramTypes: List<M_Type>
-): M_Type_Composite(paramTypes.size + 1) {
-    val paramTypes = paramTypes.toImmList()
-}
+    val paramTypes: ImmList<M_Type>,
+): M_Type_Composite(paramTypes.size + 1)
 
 private class M_Type_Function_Internal(
     resultType: M_Type,
-    paramTypes: List<M_Type>,
+    paramTypes: ImmList<M_Type>,
 ): M_Type_Function(resultType, paramTypes) {
-    override val canonicalArgs: List<M_TypeSet> = (listOf(resultType) + paramTypes).map { M_TypeSets.one(it) }.toImmList()
+    override val canonicalArgs: List<M_TypeSet> = (listOf(resultType) + paramTypes).mapToImmList { M_TypeSets.one(it) }
 
     override fun strCode(): String {
         val paramsStr = paramTypes.joinToString(",", "(", ")") { it.strCode() }
@@ -42,7 +41,7 @@ private class M_Type_Function_Internal(
     override fun newInstance(newArgs: List<M_TypeSet>): M_Type_Composite {
         check(newArgs.isNotEmpty())
         val newResultType = newArgs[0].canonicalOutType()
-        val newParamTypes = newArgs.drop(1).map { it.canonicalInType() }
+        val newParamTypes = newArgs.drop(1).mapToImmList { it.canonicalInType() }
         return M_Type_Function_Internal(newResultType, newParamTypes)
     }
 

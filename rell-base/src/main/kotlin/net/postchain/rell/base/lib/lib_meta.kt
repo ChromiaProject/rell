@@ -21,6 +21,7 @@ import net.postchain.rell.base.runtime.GtvRtConversion
 import net.postchain.rell.base.runtime.GtvRtConversion_None
 import net.postchain.rell.base.runtime.Rt_LibValueType
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.checkEquals
 
@@ -108,7 +109,7 @@ private abstract class C_SysFn_BaseMeta(private val resultType: R_Type): C_Speci
 
     protected abstract fun getResultValue(meta: R_DefinitionMeta): Rt_Value?
 
-    final override fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: List<S_Expr>): V_Expr {
+    final override fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: ImmList<S_Expr>): V_Expr {
         checkEquals(1, args.size)
 
         val arg = args[0]
@@ -134,7 +135,7 @@ private object C_SysFn_Meta: C_SysFn_BaseMeta(R_RellMetaType) {
 private object C_SysFn_Meta_CurrentModule: C_SpecialLibGlobalFunctionBody() {
     override fun paramCount() = 0 .. 0
 
-    override fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: List<S_Expr>): V_Expr {
+    override fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: ImmList<S_Expr>): V_Expr {
         checkEquals(args.size, 0)
         val meta = ctx.modCtx.getModuleDefMeta()
         val value = Rt_RellMetaValue(meta)

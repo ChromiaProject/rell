@@ -16,9 +16,11 @@ import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.mtype.M_ParamArity
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.countWhile
 import net.postchain.rell.base.utils.filterNotNullAllOrNull
+import net.postchain.rell.base.utils.mapNotNullToImmList
 import net.postchain.rell.base.utils.toImmList
 
 class C_ArgMatchParam(
@@ -79,11 +81,11 @@ class C_ArgMatcherResult(
 )
 
 class C_ArgMatching(
-    val exprArgs: List<C_ArgMatchArg>,
-    val wildArgs: List<C_ArgMatchParam>,
-    val mapping: List<C_ArgMatchParamArg>,
+    val exprArgs: ImmList<C_ArgMatchArg>,
+    val wildArgs: ImmList<C_ArgMatchParam>,
+    val mapping: ImmList<C_ArgMatchParamArg>,
 ) {
-    val exprsToParams: List<Int>
+    val exprsToParams: ImmList<Int>
 
     init {
         checkEquals(mapping.size, exprArgs.size + wildArgs.size)
@@ -98,7 +100,7 @@ class C_ArgMatching(
         exprsToParams = checkNotNull(list.filterNotNullAllOrNull())
     }
 
-    fun <T: Any> valuesToParams(values: List<T>): List<T> {
+    fun <T> valuesToParams(values: List<T>): List<T> {
         checkEquals(values.size, mapping.size)
         return mapping.map {
             check(!it.wild)
@@ -106,7 +108,7 @@ class C_ArgMatching(
         }
     }
 
-    fun <T: Any> paramsToValues(params: List<T>): List<T> {
+    fun <T> paramsToValues(params: List<T>): List<T> {
         checkEquals(params.size, mapping.size)
         checkEquals(wildArgs.size, 0)
         return exprsToParams.map { params[it] }
@@ -292,12 +294,12 @@ object C_ArgMatcher {
 
             val resMappings = finalMappings.filterNotNullAllOrNull()
             val matching = if (!valid || namedArgError || resMappings == null) null else {
-                C_ArgMatching(exprArgs.toImmList(), wildArgs.toImmList(), resMappings.toImmList())
+                C_ArgMatching(exprArgs.toImmList(), wildArgs.toImmList(), resMappings)
             }
 
             val paramValues = finalMappings
                 .filterNotNull()
-                .mapNotNull { m ->
+                .mapNotNullToImmList { m ->
                     if (m.wild) null else {
                         val arg = exprArgs[m.index]
                         when (arg) {
@@ -306,7 +308,6 @@ object C_ArgMatcher {
                         }
                     }
                 }
-                .toImmList()
 
             return C_ArgMatcherResult(matching, paramValues)
         }

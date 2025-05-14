@@ -21,6 +21,7 @@ import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.runtime.Rt_CallContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.LazyString
+import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toBytes
 
 object Lib_OpContext {
@@ -79,7 +80,7 @@ object Lib_OpContext {
                     body { a ->
                         val (mountName, gtvArgs) = Lib_Type_Struct.decodeOperation(a)
                         val nameValue = Rt_TextValue.get(mountName.str())
-                        val rtArgs = gtvArgs.map<Gtv, Rt_Value> { Rt_GtvValue.get(it) }.toMutableList()
+                        val rtArgs = gtvArgs.mapTo(mutableListOf()) { Rt_GtvValue.get(it) }
                         val argsValue = Rt_ListValue(Lib_Type_Gtv.LIST_OF_GTV_TYPE, rtArgs)
                         val attrs = mutableListOf(nameValue, argsValue)
                         Rt_StructValue(Lib_Rell.GTX_OPERATION_STRUCT_TYPE, attrs)
@@ -183,7 +184,7 @@ object Lib_OpContext {
 
     fun transactionRExpr(ctx: C_NamespacePropertyContext, pos: S_Pos): R_Expr {
         val type = ctx.modCtx.sysDefsCommon.transactionEntity.type
-        return C_ExprUtils.createSysCallRExpr(type, FnTransaction(type), listOf(), pos, TRANSACTION_FN_LAZY)
+        return C_ExprUtils.createSysCallRExpr(type, FnTransaction(type), immListOf(), pos, TRANSACTION_FN_LAZY)
     }
 
     private fun transactionExpr(ctx: C_NamespacePropertyContext, pos: S_Pos): V_Expr {

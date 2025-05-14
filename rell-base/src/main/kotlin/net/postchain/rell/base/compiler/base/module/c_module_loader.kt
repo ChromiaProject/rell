@@ -11,6 +11,8 @@ import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_MountName
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.futures.FcFuture
 import net.postchain.rell.base.utils.futures.FcFutures
@@ -37,10 +39,8 @@ class C_ModuleLoader(
     symCtxProvider: C_SymbolContextProvider,
     executor: C_CompilerExecutor,
     sourceDir: C_SourceDir,
-    preModuleHeaders: Map<R_ModuleName, C_ModuleHeader>,
+    private val preModuleHeaders: ImmMap<R_ModuleName, C_ModuleHeader>,
 ) {
-    private val preModuleHeaders = preModuleHeaders.toImmMap()
-
     val readerCtx = C_ModuleReaderContext(S_AppContext(msgCtx, symCtxProvider, C_ImportModuleLoaderImpl(), executor))
     private val moduleReader = C_ModuleReader(readerCtx, sourceDir)
 
@@ -52,7 +52,7 @@ class C_ModuleLoader(
 
     private var done = false
 
-    fun finish(): List<C_MidModule> {
+    fun finish(): ImmList<C_MidModule> {
         check(!done)
         done = true
         fcMgr.finish()
@@ -301,7 +301,7 @@ private class C_LoaderModule(
     val mountName: R_MountName,
     private val parentName: R_ModuleName?,
     private val header: C_SourceModuleHeader?,
-    private val files: List<C_MidModuleFile>,
+    private val files: ImmList<C_MidModuleFile>,
     private val isDirectory: Boolean,
     private val isTestDependency: Boolean,
     private val docPos: DocSourcePos,

@@ -17,6 +17,7 @@ import net.postchain.rell.base.compiler.base.modifier.C_ModifierValue
 import net.postchain.rell.base.compiler.base.namespace.*
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
@@ -25,6 +26,7 @@ import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.immListOfNotNull
 import net.postchain.rell.base.utils.immMultimapOf
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.nounWithArticle
 import net.postchain.rell.base.utils.toImmList
 
@@ -75,9 +77,7 @@ class C_NamespaceContext(
     }
 
     override fun ideCompletionsScope(): C_IdeCompletionsScope {
-        // TODO COLLECTIONS_REFACTORING
-        val late: C_LateInit<Multimap<String, IdeCompletion>> =
-            C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
+        val late = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
         executor.onPass(C_CompilerPass.COMPLETIONS) {
             val completions = scope.ideCompletions(globalCtx.compilerOptions)
             late.set(completions)
@@ -110,18 +110,16 @@ class C_DefinitionName(val module: C_DefinitionModuleName, val qualifiedName: C_
     }
 
     fun toPath() = C_DefinitionPath(module, qualifiedName.parts)
-    fun parentPath() = C_DefinitionPath(module, qualifiedName.parts.dropLast(1))
+    fun parentPath() = C_DefinitionPath(module, qualifiedName.parts.dropLast(1).toImmList())
 
     fun str(): String = "${module.str()}:${qualifiedName.parts.joinToString(".")}"
 
     override fun toString() = str()
 }
 
-class C_DefinitionPath(val module: C_DefinitionModuleName, path: List<String>) {
-    val path = path.toImmList()
-
-    constructor(module: String, path: List<String>): this(C_DefinitionModuleName(module), path)
-    constructor(module: R_ModuleName, path: List<String>): this(C_DefinitionModuleName(module), path)
+class C_DefinitionPath(val module: C_DefinitionModuleName, val path: ImmList<String>) {
+    constructor(module: String, path: ImmList<String>): this(C_DefinitionModuleName(module), path)
+    constructor(module: R_ModuleName, path: ImmList<String>): this(C_DefinitionModuleName(module), path)
 
     fun isEmpty(): Boolean = module.module.isEmpty() && module.chain == null && path.isEmpty()
 
@@ -318,7 +316,7 @@ private class C_NamePath(private val nodes: List<C_NameNode>) {
     }
 
     private fun getQualifiedName(n: Int = nodes.size): C_QualifiedName {
-        val names = nodes.asSequence().take(n).map { it.name }.toList()
+        val names = nodes.asSequence().take(n).mapToImmList { it.name }
         return C_QualifiedName(names)
     }
 }

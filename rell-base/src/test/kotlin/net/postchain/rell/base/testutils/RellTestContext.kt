@@ -7,7 +7,6 @@ package net.postchain.rell.base.testutils
 import net.postchain.common.BlockchainRid
 import net.postchain.rell.base.runtime.utils.Rt_SqlManagerUtils
 import net.postchain.rell.base.sql.*
-import java.io.Closeable
 import java.sql.Connection
 import java.util.*
 import java.util.regex.Pattern
@@ -17,7 +16,7 @@ import kotlin.test.fail
 class RellTestContext(
     val projExt: RellTestProjExt = BaseRellTestProjExt,
     useSql: Boolean = true,
-): Closeable {
+): AutoCloseable {
     class BlockBuilder(private val chainId: Long) {
         private val list = mutableListOf<String>()
 
@@ -43,7 +42,7 @@ class RellTestContext(
 
     private var inited = false
     private var destroyed = false
-    private var sqlResource: AutoCloseable? = null
+    private var sqlResource: Connection? = null
     private var sqlMgrHolder: SqlMgrHolder? = null
     private val sqlStats = TestSqlStats()
 

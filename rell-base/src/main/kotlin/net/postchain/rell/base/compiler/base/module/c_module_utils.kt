@@ -39,7 +39,7 @@ object C_ModuleUtils {
             return Pair(null, false)
         }
 
-        var nameParts: List<String> = parts.subList(0, n - 1).toImmList()
+        var nameParts: List<String> = parts.subList(0, n - 1)
         var directory = false
 
         if (tail == MODULE_FILE || ast.header == null) {
@@ -49,7 +49,7 @@ object C_ModuleUtils {
             nameParts += tailName
         }
 
-        val rNames = nameParts.mapNotNull { R_Name.ofOpt(it) }
+        val rNames = nameParts.mapNotNullToImmList { R_Name.ofOpt(it) }
         if (rNames.size != nameParts.size) {
             return Pair(null, false)
         }
@@ -520,10 +520,10 @@ sealed class C_ModuleSource(protected val appCtx: S_AppContext, val moduleName: 
     abstract fun docPos(): DocSourcePos
 
     protected abstract fun compileHeader0(): C_SourceModuleHeader?
-    protected abstract fun compile0(modCtx: S_ModuleContext): List<C_MidModuleFile>
+    protected abstract fun compile0(modCtx: S_ModuleContext): ImmList<C_MidModuleFile>
 
     fun compileHeader(): C_SourceModuleHeader? = compiledHeader
-    fun compile(): List<C_MidModuleFile> = compiledFiles
+    fun compile(): ImmList<C_MidModuleFile> = compiledFiles
 }
 
 class C_FileModuleSource(
@@ -541,9 +541,9 @@ class C_FileModuleSource(
         return file.compileHeader(modifierCtx)
     }
 
-    override fun compile0(modCtx: S_ModuleContext): List<C_MidModuleFile> {
+    override fun compile0(modCtx: S_ModuleContext): ImmList<C_MidModuleFile> {
         val compiled = file.compile(modCtx)
-        return listOf(compiled)
+        return immListOf(compiled)
     }
 }
 
@@ -573,8 +573,8 @@ class C_DirModuleSource(
         return mainFile.compileHeader(modifierCtx)
     }
 
-    override fun compile0(modCtx: S_ModuleContext): List<C_MidModuleFile> {
-        return files.map { it.compile(modCtx) }.toImmList()
+    override fun compile0(modCtx: S_ModuleContext): ImmList<C_MidModuleFile> {
+        return files.mapToImmList { it.compile(modCtx) }
     }
 }
 

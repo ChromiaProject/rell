@@ -9,6 +9,7 @@ import net.postchain.gtv.GtvFactory
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.utils.Bytes32
 import net.postchain.rell.base.utils.RellVersions
+import net.postchain.rell.base.utils.associateByToImmMap
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 
@@ -126,7 +127,7 @@ object RunConfigParser {
             }
         }
 
-        val headersMap = headers.map { it.name to it }.toMap().toImmMap()
+        val headersMap = headers.associateByToImmMap { it.name }
         val resChains = mutableMapOf<String, Rcfg_Chain>()
 
         for (header in headers.sortedBy { it.iid }) {

@@ -11,6 +11,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.GtvTestUtils
 import net.postchain.rell.base.testutils.Rt_TestOpContext
 import net.postchain.rell.base.utils.hexStringToBytes
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 import org.junit.Test
 
@@ -248,8 +249,8 @@ class LibOpContextTest: BaseRellTest() {
                 signers: List<String> = listOf(),
                 ops: List<String> = listOf()
         ): Rt_OpContext {
-            val signers2 = signers.map { it.hexStringToBytes() }
-            val ops2 = ops.map { parseOperation(it) }
+            val signers2 = signers.mapToImmList { it.hexStringToBytes() }
+            val ops2 = ops.mapToImmList { parseOperation(it) }
             return Rt_TestOpContext(
                     lastBlockTime = lastBlockTime,
                     transactionIid = transactionIid,

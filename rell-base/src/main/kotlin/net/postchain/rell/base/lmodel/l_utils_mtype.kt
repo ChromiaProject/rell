@@ -112,7 +112,7 @@ object L_TypeUtils {
         val rFields = mType.fieldTypes.indices.mapNotNullAllOrNull { i ->
             val rFieldType = getRType(mType.fieldTypes[i])
             if (rFieldType == null) null else {
-                val mName = mType.fieldNames[i].value
+                val mName = mType.fieldNames[i]
                 val rName = if (mName == null) null else R_IdeName(R_Name.of(mName), C_IdeSymbolInfo.MEM_TUPLE_ATTR)
                 R_TupleField(i, rName, rFieldType)
             }
@@ -189,12 +189,12 @@ object L_TypeUtils {
 
     private fun docTypeFunction(mType: M_Type_Function): DocType {
         val resultType = docType(mType.resultType)
-        val paramTypes = mType.paramTypes.map { docType(it) }
+        val paramTypes = mType.paramTypes.mapToImmList { docType(it) }
         return DocType.function(resultType, paramTypes)
     }
 
     private fun docTypeTuple(mType: M_Type_Tuple): DocType {
-        val fieldTypes = mType.fieldTypes.map { docType(it) }
+        val fieldTypes = mType.fieldTypes.mapToImmList { docType(it) }
         return DocType.tuple(fieldTypes, mType.fieldNames)
     }
 
@@ -210,17 +210,15 @@ object L_TypeUtils {
     fun docFunctionHeader(mHeader: M_FunctionHeader): DocFunctionHeader {
         val docTypeParams = docTypeParams(mHeader.typeParams)
         val docResultType = docType(mHeader.resultType)
-        val docParams = mHeader.params.map { docFunctionParam(it) }.toImmList()
+        val docParams = mHeader.params.mapToImmList { docFunctionParam(it) }
         return DocFunctionHeader(docTypeParams, docResultType, docParams)
     }
 
     fun docTypeParams(mTypeParams: List<M_TypeParam>): List<DocTypeParam> {
-        return mTypeParams
-            .map {
-                val docBounds = docTypeSet(it.bounds)
-                DocTypeParam(it.name, it.variance, docBounds)
-            }
-            .toImmList()
+        return mTypeParams.mapToImmList {
+            val docBounds = docTypeSet(it.bounds)
+            DocTypeParam(it.name, it.variance, docBounds)
+        }
     }
 
     fun docFunctionParam(mParam: M_FunctionParam): DocFunctionParam {
@@ -253,7 +251,7 @@ private sealed class C_MGenericTypeAddon(
     }
 
     fun docType(args: List<M_TypeSet>): DocType {
-        val docArgs = args.map { L_TypeUtils.docTypeSet(it) }
+        val docArgs = args.mapToImmList { L_TypeUtils.docTypeSet(it) }
         return DocType.generic(docCodeStrategy, docArgs)
     }
 }

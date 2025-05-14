@@ -242,7 +242,7 @@ object C_Utils {
             .toImmMap()
 
         appCtx.executor.onPass(C_CompilerPass.MEMBERS) {
-            setEntityBody(entity, R_EntityBody(listOf(), listOf(), rAttrMap))
+            setEntityBody(entity, R_EntityBody(immListOf(), immListOf(), rAttrMap))
         }
 
         return entity
@@ -327,12 +327,12 @@ object C_Utils {
         simpleName: String,
         type: R_Type,
         fn: R_SysFunction,
-        params: List<R_FunctionParam> = emptyList()
+        params: ImmList<R_FunctionParam> = immListOf(),
     ): R_QueryDefinition {
         val moduleName = RELL_MODULE_NAME
         val moduleKey = R_ModuleKey(moduleName, null)
         val qName = C_StringQualifiedName.of(simpleName)
-        val mountName = R_MountName(moduleName.parts + R_Name.of(simpleName))
+        val mountName = R_MountName((moduleName.parts + R_Name.of(simpleName)).toImmList())
 
         val cDefBase = createDefBase(
             C_DefinitionType.QUERY,
@@ -515,14 +515,14 @@ object C_Parser {
 object C_GraphUtils {
     fun <T: Any> findCycles(graph: Map<T, Collection<T>>): List<List<T>> {
         val graphEx = graph.mapValues { vert ->
-            vert.value.map { 0 to it }.toImmList()
+            vert.value.mapToImmList { 0 to it }
         }
 
         val cyclesEx = findCyclesEx(graphEx)
 
-        return cyclesEx.map { cycle ->
-            cycle.map { it.second }.toImmList()
-        }.toImmList()
+        return cyclesEx.mapToImmList { cycle ->
+            cycle.mapToImmList { it.second }
+        }
     }
 
     /** Returns some, not all cycles (at least one cycle for each cyclic vertex). */
@@ -741,7 +741,7 @@ private class C_DirectLateGetter<T>(private val init: C_LateInit<T>): C_LateGett
 
 private class C_ListLateGetter<T: Any>(private val getters: List<C_LateGetter<T>>): C_LateGetter<List<T>>() {
     private val lazyValue: List<T> by lazy {
-        getters.map { it.get() }.toImmList()
+        getters.mapToImmList { it.get() }
     }
 
     override fun get(): List<T> = lazyValue
@@ -815,9 +815,9 @@ class C_LateInit<T>(val pass: C_CompilerPass, fallback: T) {
     }
 }
 
-class C_ListBuilder<T: Any>(proto: List<T> = immListOf()) {
+class C_ListBuilder<T>(proto: List<T> = immListOf()) {
     private val list = proto.toMutableList()
-    private var commit: List<T>? = null
+    private var commit: ImmList<T>? = null
 
     val size: Int get() = list.size
 
@@ -826,7 +826,7 @@ class C_ListBuilder<T: Any>(proto: List<T> = immListOf()) {
         list.add(value)
     }
 
-    fun commit(): List<T> {
+    fun commit(): ImmList<T> {
         if (commit == null) {
             commit = list.toImmList()
         }

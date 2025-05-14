@@ -17,13 +17,13 @@ import net.postchain.rell.base.model.stmt.R_Statement
 import net.postchain.rell.base.model.stmt.R_StatementResult_Return
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.toGtv
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.associateByToImmMap
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
 
 class R_FunctionParam(
     val name: R_Name,
@@ -51,7 +51,7 @@ sealed class R_RoutineDefinition(
 
     override fun getDocMembers0(): Map<String, DocDefinition> {
         val params = params()
-        return params.associateBy { it.name.str }.toImmMap()
+        return params.associateByToImmMap { it.name.str }
     }
 }
 
@@ -132,22 +132,18 @@ class R_OperationDefinition(
 
 sealed class R_QueryBody(
     val retType: R_Type,
-    params: List<R_FunctionParam>,
+    val params: ImmList<R_FunctionParam>,
 ) {
-    val params = params.toImmList()
-
     abstract fun call(defCtx: Rt_DefinitionContext, args: List<Rt_Value>, stack: Rt_CallStack?): Rt_Value
 }
 
 class R_UserQueryBody(
     retType: R_Type,
-    params: List<R_FunctionParam>,
-    paramVars: List<R_ParamVar>,
+    params: ImmList<R_FunctionParam>,
+    private val paramVars: ImmList<R_ParamVar>,
     private val body: R_Statement,
     private val frame: R_CallFrame,
 ): R_QueryBody(retType, params) {
-    private val paramVars = paramVars.toImmList()
-
     override fun call(defCtx: Rt_DefinitionContext, args: List<Rt_Value>, stack: Rt_CallStack?): Rt_Value {
         val rtFrame = frame.createRtFrame(defCtx, stack, null)
 
@@ -171,7 +167,7 @@ class R_UserQueryBody(
     }
 }
 
-class R_SysQueryBody(retType: R_Type, params: List<R_FunctionParam>, private val fn: R_SysFunction): R_QueryBody(retType, params) {
+class R_SysQueryBody(retType: R_Type, params: ImmList<R_FunctionParam>, private val fn: R_SysFunction): R_QueryBody(retType, params) {
     override fun call(defCtx: Rt_DefinitionContext, args: List<Rt_Value>, stack: Rt_CallStack?): Rt_Value {
         val callCtx = Rt_CallContext(defCtx, stack, dbUpdateAllowed = false)
         return fn.call(callCtx, args)

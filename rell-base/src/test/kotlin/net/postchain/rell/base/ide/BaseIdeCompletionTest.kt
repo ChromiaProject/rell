@@ -16,6 +16,7 @@ import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.ide.IdeCompletion
+import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmMultimap
 import kotlin.test.assertEquals
 
@@ -84,7 +85,7 @@ abstract class BaseIdeCompletionTest: BaseRellTest() {
         val options = C_IdeCompletionsUtils.getCompilerOptions(sourceDir, path, pos, baseOptions)
         checkNotNull(options)
 
-        val modSel = C_CompilerModuleSelection(listOf(R_ModuleName.EMPTY))
+        val modSel = C_CompilerModuleSelection(immListOf(R_ModuleName.EMPTY))
         val cRes = RellTestUtils.compileApp(sourceDir, modSel, options, tst.extraMod)
 
         val actualErr = if (cRes.errors.isEmpty()) "n/a" else RellTestUtils.msgsToString(cRes.errors)

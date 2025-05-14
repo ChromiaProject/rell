@@ -45,7 +45,7 @@ private fun main0(args: RellInterpreterCliArgs) {
         throw RellCliExitException(0)
     }
 
-    val extraOptions = args.extraOptions.map { parseExtraOptionCli(it) }.toImmList()
+    val extraOptions = args.extraOptions.mapToImmList { parseExtraOptionCli(it) }
     val compilerOptions = getCompilerOptions(extraOptions)
     val argsEx = RellCliArgsEx(args, compilerOptions)
 
@@ -138,13 +138,13 @@ private fun runSingleModuleTests(args: RellCliArgsEx, app: R_App, module: R_Modu
 
 private fun runMultiModuleTests(args: RellCliArgsEx, modules: List<String>) {
     val rModules = if (modules.isEmpty()) {
-        listOf(R_ModuleName.EMPTY)
+        immListOf(R_ModuleName.EMPTY)
     } else {
-        modules.map { R_ModuleName.ofOpt(it) ?: throw RellCliBasicException("Invalid module name: '$it'") }
+        modules.mapToImmList { R_ModuleName.ofOpt(it) ?: throw RellCliBasicException("Invalid module name: '$it'") }
     }
 
     val sourceDir = RellApiBaseUtils.createSourceDir(args.raw.sourceDir)
-    val modSel = C_CompilerModuleSelection(listOf(), rModules)
+    val modSel = C_CompilerModuleSelection(immListOf(), rModules)
     val app = RellToolsUtils.compileApp(sourceDir, modSel, args.raw.quiet, C_CompilerOptions.DEFAULT)
 
     val testFns = UnitTestRunner.getTestFunctions(app, UnitTestMatcher.ANY)
@@ -190,11 +190,11 @@ private fun createBlockRunner(args: RellCliArgsEx, sourceDir: C_SourceDir, app: 
         dbInitLogLevel = RellPostchainModuleEnvironment.DEFAULT_DB_INIT_LOG_LEVEL,
     )
 
-    val blockRunnerModules = RellApiBaseUtils.getMainModules(app)
+    val blockRunnerModules = RellApiBaseUtils.getMainModules(app).toImmList()
     val compileConfig = RellApiCompile.Config.Builder()
         .cliEnv(RellCliEnv.NULL)
         .build()
-    val blockRunnerStrategy = Rt_DynamicBlockRunnerStrategy(sourceDir, keyPair, blockRunnerModules.toImmList(), compileConfig)
+    val blockRunnerStrategy = Rt_DynamicBlockRunnerStrategy(sourceDir, keyPair, blockRunnerModules, compileConfig)
 
     return Rt_PostchainUnitTestBlockRunner(keyPair, blockRunnerConfig, blockRunnerStrategy)
 }

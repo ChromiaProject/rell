@@ -227,7 +227,7 @@ private fun sqlInit(sqlMgr: SqlManager, cs: List<CharInfo>) {
         """
         )
 
-        for (part in cs.partition(5_000)) {
+        for (part in cs.chunked(5_000)) {
             val sql = ParameterizedSql.generate { b ->
                 b.append("INSERT INTO chars(code, b, s) VALUES ")
                 b.append(part, ", ") { ci ->

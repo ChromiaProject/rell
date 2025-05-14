@@ -92,9 +92,7 @@ class C_CallFrameProto(val size: Int, val rootBlockScope: C_BlockScope) {
 
 class C_BlockScopeVar(val localVar: C_LocalVar, val ideInfo: C_IdeSymbolInfo)
 
-class C_BlockScope(variables: Map<R_Name, C_BlockScopeVar>) {
-    val localVars = variables.toImmMap()
-
+class C_BlockScope(val localVars: ImmMap<R_Name, C_BlockScopeVar>) {
     companion object { val EMPTY = C_BlockScope(immMapOf()) }
 }
 
@@ -111,7 +109,7 @@ sealed class C_BlockEntry {
     }
 
     companion object {
-        fun ideCompletions(entries: List<Pair<String, C_BlockEntry>>): Multimap<String, IdeCompletion> {
+        fun ideCompletions(entries: List<Pair<String, C_BlockEntry>>): ImmMultimap<String, IdeCompletion> {
             return entries
                 .mapNotNull { (name, entry) ->
                     val completion = entry.ideCompletion()
@@ -238,8 +236,7 @@ class C_BlockScopeBuilder(
             val parentScope = ideParentCompletionsScopeProvider.ideCompletionsScope()
             val list = ideCompletionsList.toImmList()
 
-            // TODO COLLECTIONS_REFACTORING
-            val late: C_LateInit<Multimap<String, IdeCompletion>> = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
+            val late = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
             fnCtx.executor.onPass(C_CompilerPass.COMPLETIONS) {
                 late.set(C_BlockEntry.ideCompletions(list))
             }
@@ -260,7 +257,7 @@ class C_BlockScopeBuilder(
                     it.key to value
                 }
                 .filter { it.second != null }
-                .associate { it.first to it.second!! }
+                .associateToImmMap { it.first to it.second!! }
         return C_BlockScope(variables)
     }
 }
@@ -280,9 +277,9 @@ sealed class C_BlockContext(
     abstract fun lookupEntry(name: R_Name): C_BlockEntryResolution?
     abstract fun lookupLocalVar(name: R_Name): C_LocalVarRef?
     abstract fun lookupAtPlaceholder(): C_BlockEntryResolution?
-    abstract fun lookupAtMembers(ctx: C_ExprContext, name: C_Name): List<C_AtContextMember>
-    abstract fun lookupAtImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): List<C_AtFromImplicitAttr>
-    abstract fun lookupAtImplicitAttributesByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): List<C_AtFromImplicitAttr>
+    abstract fun lookupAtMembers(ctx: C_ExprContext, name: C_Name): ImmList<C_AtContextMember>
+    abstract fun lookupAtImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): ImmList<C_AtFromImplicitAttr>
+    abstract fun lookupAtImplicitAttributesByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): ImmList<C_AtFromImplicitAttr>
 
     abstract fun addEntry(
         pos: S_Pos,
@@ -421,7 +418,7 @@ class C_OwnerBlockContext(
         }
     }
 
-    override fun lookupAtMembers(ctx: C_ExprContext, name: C_Name): List<C_AtContextMember> {
+    override fun lookupAtMembers(ctx: C_ExprContext, name: C_Name): ImmList<C_AtContextMember> {
         var block = atFromBlock
 
         val mems = mutableListOf<C_AtContextMember>()
@@ -440,12 +437,12 @@ class C_OwnerBlockContext(
         return mems.toImmList()
     }
 
-    override fun lookupAtImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): List<C_AtFromImplicitAttr> {
+    override fun lookupAtImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): ImmList<C_AtFromImplicitAttr> {
         // Not looking in outer contexts, because for implicit matching only the direct at-expr is considered.
         return atFromBlock?.from?.findImplicitAttributesByName(ctx, name) ?: immListOf()
     }
 
-    override fun lookupAtImplicitAttributesByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): List<C_AtFromImplicitAttr> {
+    override fun lookupAtImplicitAttributesByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): ImmList<C_AtFromImplicitAttr> {
         // Not looking in outer contexts, because for implicit matching only the direct at-expr is considered.
         return atFromBlock?.from?.findImplicitAttributesByType(ctx, pos, type) ?: immListOf()
     }
@@ -511,7 +508,7 @@ class C_OwnerBlockContext(
         return null
     }
 
-    private fun <T: Any> findAllValues(getter: (C_OwnerBlockContext) -> List<T>): List<T> {
+    private fun <T> findAllValues(getter: (C_OwnerBlockContext) -> List<T>): ImmList<T> {
         var ctx: C_OwnerBlockContext? = this
         val res = mutableListOf<T>()
         while (ctx != null) {

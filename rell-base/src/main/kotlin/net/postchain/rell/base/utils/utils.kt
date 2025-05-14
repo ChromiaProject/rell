@@ -5,7 +5,6 @@
 package net.postchain.rell.base.utils
 
 import org.apache.commons.lang3.StringUtils
-import java.util.*
 
 typealias Getter<T> = () -> T
 
@@ -82,9 +81,7 @@ class ThreadLocalContext<T>(private val defaultValue: T? = null) {
     fun getOpt(): T? = local.get()
 }
 
-class VersionNumber(items: List<Int>): Comparable<VersionNumber> {
-    val items = items.toImmList()
-
+class VersionNumber(val items: ImmList<Int>): Comparable<VersionNumber> {
     init {
         require(items.isNotEmpty())
         for (v in this.items) require(v >= 0) { "wrong version: ${this.items}" }
@@ -101,7 +98,7 @@ class VersionNumber(items: List<Int>): Comparable<VersionNumber> {
         fun of(s: String): VersionNumber {
             require(s.matches(Regex("(0|[1-9][0-9]*)([.](0|[1-9][0-9]*))*"))) { "Invalid version format: '$s'" }
             val parts = StringUtils.splitPreserveAllTokens(s, ".")
-            val items = parts.map { it.toInt() }
+            val items = parts.mapToImmList { it.toInt() }
             return VersionNumber(items)
         }
     }

@@ -7,6 +7,8 @@ package net.postchain.rell.base.lmodel
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_TypeParam
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.toImmList
 
@@ -58,4 +60,4 @@ private class L_Type_Generic(private val typeDef: L_TypeDef, val args: List<M_Ty
     override fun getTypeDefOrNull() = typeDef
 }
 
-class L_TypeParams(val list: List<M_TypeParam>, val map: Map<R_Name, M_Type>)
+class L_TypeParams(val list: ImmList<M_TypeParam>, val map: ImmMap<R_Name, M_Type>)

@@ -116,7 +116,7 @@ class S_KeyIndexClause(
             cAttrs.all { it.sAttr.checkMultiAttrKeyIndex(ctx.msgCtx, kind, it.header.rName) }
         }
 
-        val attrNames = cAttrs.map { it.header.rName }
+        val attrNames = cAttrs.mapToImmList { it.header.rName }
 
         when (kind) {
             R_KeyIndexKind.KEY -> ctx.addKey(pos, attrNames)
@@ -625,9 +625,9 @@ class S_StructDefinition(
         }
 
         val cAttributes = entCtx.createStructBody()
-        attrsLate.set(cAttributes.map { it.value }.toImmList())
+        attrsLate.set(cAttributes.mapToImmList { it.value })
 
-        val rAttributes = cAttributes.mapValues { it.value.rAttr }.toImmMap()
+        val rAttributes = cAttributes.mapValuesToImmMap { it.value.rAttr }
         cStruct.structDef.struct.setAttributes(rAttributes)
     }
 
@@ -697,7 +697,7 @@ class S_EnumDefinition(
         private val rAttrs = mutableListOf<R_EnumAttr>()
         private val attrDocDecInits = mutableListOf<Pair<R_Name, C_LateInit<DocDeclaration>>>()
 
-        fun compileAttrs(cDefBase: C_CommonDefinitionBase, attrs: List<S_EnumValue>): List<R_EnumAttr> {
+        fun compileAttrs(cDefBase: C_CommonDefinitionBase, attrs: List<S_EnumValue>): ImmList<R_EnumAttr> {
             for (attr in attrs) {
                 compileAttr(cDefBase, attr)
             }
@@ -732,7 +732,7 @@ class S_EnumDefinition(
             }
         }
 
-        fun finish(rEnum: R_EnumDefinition): List<R_EnumAttr> {
+        fun finish(rEnum: R_EnumDefinition): ImmList<R_EnumAttr> {
             val docType = L_TypeUtils.docType(rEnum.type.mType)
 
             ctx.appCtx.executor.onPass(C_CompilerPass.NAMESPACES) {
@@ -778,10 +778,10 @@ class S_NamespaceDefinition(
         }
 
         val midQualifiedName = nameParts.toImmList()
-        val rPath = C_RNamePath.of(midQualifiedName.map { it.ideName.name.rName })
+        val rPath = C_RNamePath.of(midQualifiedName.mapToImmList { it.ideName.name.rName })
 
         val subCtx = ctx.namespace(rPath)
-        val midMembers = definitions.mapNotNull { it.compile(subCtx) }
+        val midMembers = definitions.mapNotNullToImmList { it.compile(subCtx) }
 
         return C_MidModuleMember_Namespace(modifiers, midQualifiedName, comment, bodyPosRange, midMembers)
     }

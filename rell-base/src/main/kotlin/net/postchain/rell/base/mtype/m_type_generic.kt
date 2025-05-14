@@ -5,7 +5,9 @@
 package net.postchain.rell.base.mtype
 
 import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.mapIndexedToImmList
 import net.postchain.rell.base.utils.toImmList
 import kotlin.math.min
 
@@ -53,9 +55,7 @@ class M_TypeParam(
     }
 }
 
-class M_GenericTypeParent(val genericType: M_GenericType, args: List<M_Type>) {
-    val args = args.toImmList()
-
+class M_GenericTypeParent(val genericType: M_GenericType, val args: ImmList<M_Type>) {
     init {
         checkEquals(this.args.size, genericType.params.size)
     }
@@ -82,12 +82,10 @@ object M_GenericTypeAddon_None: M_GenericTypeAddon()
 
 sealed class M_GenericType(
     val name: String,
-    params: List<M_TypeParam>,
+    val params: ImmList<M_TypeParam>,
     val parent: M_GenericTypeParent?,
     val addon: M_GenericTypeAddon,
 ) {
-    val params = params.toImmList()
-
     abstract val commonType: M_Type
 
     final override fun toString() = strCode()
@@ -119,7 +117,7 @@ sealed class M_GenericType(
             parent: M_GenericTypeParent? = null,
             addon: M_GenericTypeAddon = M_GenericTypeAddon_None,
         ): M_GenericType {
-            return M_InternalGenericType(name, params, parent, addon)
+            return M_InternalGenericType(name, params.toImmList(), parent, addon)
         }
 
         fun checkParamBounds(genType: M_GenericType, param: M_TypeParam, arg: M_TypeSet): Pair<String, String>? {
@@ -137,7 +135,7 @@ sealed class M_GenericType(
 
 private class M_InternalGenericType(
     name: String,
-    params: List<M_TypeParam>,
+    params: ImmList<M_TypeParam>,
     parent: M_GenericTypeParent?,
     addon: M_GenericTypeAddon,
 ): M_GenericType(name, params, parent, addon) {
@@ -165,16 +163,14 @@ sealed class M_Type_Generic(
         checkEquals(typeArgs.size, genericType.params.size)
     }
 
-    val typeArgs: List<M_TypeSet> = typeArgs
-        .mapIndexed { i, arg ->
-            val variance = getTypeArgVariance(i)
-            when (variance) {
-                M_TypeVariance.NONE -> arg
-                M_TypeVariance.IN -> M_TypeSets.one(arg.canonicalInType())
-                M_TypeVariance.OUT -> M_TypeSets.one(arg.canonicalOutType())
-            }
+    val typeArgs: List<M_TypeSet> = typeArgs.mapIndexedToImmList { i, arg ->
+        val variance = getTypeArgVariance(i)
+        when (variance) {
+            M_TypeVariance.NONE -> arg
+            M_TypeVariance.IN -> M_TypeSets.one(arg.canonicalInType())
+            M_TypeVariance.OUT -> M_TypeSets.one(arg.canonicalOutType())
         }
-        .toImmList()
+    }
 }
 
 private class M_Type_Generic_Internal(
@@ -189,7 +185,7 @@ private class M_Type_Generic_Internal(
         M_GenericTypeInternals.newType(genParentType.genericType as M_InternalGenericType, parentArgs)
     }
 
-    private val parentList: List<M_Type_Generic_Internal> = CommonUtils.chainToList(this) { it.parentType }.toImmList()
+    private val parentList: List<M_Type_Generic_Internal> = CommonUtils.chainToList(this) { it.parentType }
 
     private val parentListReversed: List<M_Type_Generic_Internal> by lazy {
         parentList.asReversed()

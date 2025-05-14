@@ -24,8 +24,10 @@ import net.postchain.rell.base.model.expr.Db_ExistsExpr
 import net.postchain.rell.base.model.expr.Db_Expr
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.immListOf
 
 object Lib_Exists {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -59,7 +61,7 @@ object Lib_Exists {
 private class C_SysFn_Exists(private val not: Boolean): C_SpecialLibGlobalFunctionBody() {
     override fun paramCount() = 1 .. 1
 
-    override fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: List<S_Expr>): V_Expr {
+    override fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: ImmList<S_Expr>): V_Expr {
         checkEquals(args.size, 1)
 
         val arg = args[0]
@@ -110,7 +112,7 @@ private class V_ExistsExpr(
 
     override fun toRExpr0(): R_Expr {
         val fn = R_SysFn_Exists(condition, not)
-        val rArgs = listOf(subExpr.toRExpr())
+        val rArgs = immListOf(subExpr.toRExpr())
         return C_ExprUtils.createSysCallRExpr(R_BooleanType, fn, rArgs, name)
     }
 

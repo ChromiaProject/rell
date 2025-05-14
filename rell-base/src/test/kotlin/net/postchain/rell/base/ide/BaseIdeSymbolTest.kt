@@ -54,7 +54,8 @@ abstract class BaseIdeSymbolTest: BaseRellTest() {
     }
 
     protected fun chkSymsType(type: String, vararg expected: String, err: String? = null) {
-        chkSyms("struct __s { __x: $type; }",
+        chkSyms(
+            "struct __s { __x: $type; }",
             "__s=DEF_STRUCT|struct[__s]|-",
             "__x=MEM_STRUCT_ATTR|struct[__s].attr[__x]|-",
             *expected,
@@ -254,13 +255,11 @@ abstract class BaseIdeSymbolTest: BaseRellTest() {
                 }
             }
 
-            return syms
-                    .map {
-                        val ideInfo = cRes.ideSymbolInfos.getValue(it.key)
-                        val symStr = ideInfoToStr(ideInfo, syms)
-                        ActualEntry(it.value, ideInfo, symStr)
-                    }
-                    .toImmList()
+            return syms.mapToImmList {
+                val ideInfo = cRes.ideSymbolInfos.getValue(it.key)
+                val symStr = ideInfoToStr(ideInfo, syms)
+                ActualEntry(it.value, ideInfo, symStr)
+            }
         }
 
         private fun extractSymbols(sourceDir: C_SourceDir, file: C_SourcePath): Map<S_Pos, String> {
@@ -304,7 +303,6 @@ abstract class BaseIdeSymbolTest: BaseRellTest() {
                     val idx = syms.entries.filter { it.value == name }.indexOfFirst { it.key == pos }
                     "local[$name:$idx]"
                 }
-                else -> TODO(link.javaClass.simpleName)
             }
         }
 

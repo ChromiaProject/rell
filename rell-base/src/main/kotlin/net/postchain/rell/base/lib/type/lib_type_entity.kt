@@ -25,8 +25,10 @@ import net.postchain.rell.base.model.R_Struct
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 
 object Lib_Type_Entity {
@@ -59,8 +61,8 @@ object Lib_Type_Entity {
         }
     }
 
-    fun getValueMembers(type: R_EntityType): List<C_TypeValueMember> {
-        return C_EntityAttrRef.getEntityAttrs(type.rEntity).map { C_TypeValueMember_EntityAttr(it) }
+    fun getValueMembers(type: R_EntityType): ImmList<C_TypeValueMember> {
+        return C_EntityAttrRef.getEntityAttrs(type.rEntity).mapToImmList { C_TypeValueMember_EntityAttr(it) }
     }
 
     fun pathToDbExpr(
@@ -112,7 +114,7 @@ object Lib_Type_Entity {
 
         override fun calculator(): R_MemberCalculator {
             val members = CommonUtils.chainToList(this) { it.prev }.asReversed()
-            val path = members.map { it.attrRef }.toImmList()
+            val path = members.mapToImmList { it.attrRef }
             val baseEntity = path.first().rEntity
             val lambda = members.first().cLambda
             return EntityUtils.createCalculator(exprCtx, baseEntity, path, type, memberPos, lambda)
@@ -170,7 +172,7 @@ object Lib_Type_Entity {
             ctx: C_ExprContext,
             callCtx: C_LibFuncCaseCtx,
             selfType: R_Type,
-            args: List<V_Expr>,
+            args: ImmList<V_Expr>,
         ): V_SpecialMemberFunctionCall? {
             if (args.isNotEmpty()) {
                 val errArgs = args.map { null to it.type }
@@ -224,9 +226,9 @@ private object EntityUtils {
         val whereRight = cLambda.compileVarDbExpr()
         val where = C_ExprUtils.makeDbBinaryExprEq(whereLeft, whereRight)
 
-        val what = listOf(whatField)
+        val what = immListOf(whatField)
 
-        val from = Db_AtExprFrom(listOf(Db_AtFromItem(atEntity, false, null, null)))
+        val from = Db_AtExprFrom(immListOf(Db_AtFromItem(atEntity, false, null, null)))
         val atBase = Db_AtExprBase(from, what, where, isMany = false)
         return R_MemberCalculator_DataAttribute(resType, atBase, cLambda.rLambda)
     }
@@ -267,7 +269,7 @@ private class V_SpecialMemberFunctionCall_EntityToStruct(
 
     private fun createWhatValue(dbEntityExpr: Db_TableExpr): C_DbAtWhatValue {
         val rEntity = entityType.rEntity
-        val dbExprs = rEntity.attributes.values.map {
+        val dbExprs = rEntity.attributes.values.mapToImmList {
             C_EntityAttrRef.create(rEntity, it).createDbContextAttrExpr(dbEntityExpr)
         }
         val dbWhatValue = Db_AtWhatValue_ToStruct(struct, dbExprs)

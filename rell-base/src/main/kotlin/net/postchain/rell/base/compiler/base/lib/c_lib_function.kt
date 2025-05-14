@@ -37,13 +37,13 @@ object C_LibFunctionUtils {
 
     fun makeGlobalFunction(
         naming: C_MemberNaming,
-        cases: List<C_LibFuncCase<V_GlobalFunctionCall>>,
+        cases: ImmList<C_LibFuncCase<V_GlobalFunctionCall>>,
     ): C_LibGlobalFunction {
         return C_RegularLibGlobalFunction(naming, cases)
     }
 
     fun makeMemberFunction(
-        cases: List<C_LibFuncCase<V_MemberFunctionCall>>,
+        cases: ImmList<C_LibFuncCase<V_MemberFunctionCall>>,
     ): C_LibMemberFunction {
         return C_RegularLibMemberFunction(cases)
     }
@@ -82,7 +82,7 @@ sealed class C_LibMemberFunction {
 abstract class C_SpecialLibGlobalFunctionBody {
     open fun paramCount(): IntRange? = null
 
-    abstract fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: List<S_Expr>): V_Expr
+    abstract fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: ImmList<S_Expr>): V_Expr
 }
 
 class C_SpecialLibGlobalFunction(
@@ -97,7 +97,7 @@ class C_SpecialLibGlobalFunction(
     override fun compileCall0(
         ctx: C_ExprContext,
         name: LazyPosString,
-        args: List<S_CallArgument>,
+        args: ImmList<S_CallArgument>,
         resTypeHint: C_TypeHint,
     ): V_GlobalFunctionCall {
         restrictions.access(ctx.msgCtx, name.pos)
@@ -114,7 +114,7 @@ class C_SpecialLibGlobalFunction(
             }
         }
 
-        val argExprs = argExprsZ.filterNotNull()
+        val argExprs = argExprsZ.filterNotNullToImmList()
         if (argExprs.size != argExprsZ.size) return C_ExprUtils.errorVGlobalCall(ctx, name.pos)
 
         val argName = args.firstNotNullOfOrNull { it.name }
@@ -146,7 +146,7 @@ abstract class C_SpecialLibMemberFunctionBody {
         ctx: C_ExprContext,
         callCtx: C_LibFuncCaseCtx,
         selfType: R_Type,
-        args: List<V_Expr>,
+        args: ImmList<V_Expr>,
     ): V_SpecialMemberFunctionCall?
 }
 
@@ -198,7 +198,7 @@ class C_SpecialLibMemberFunction(
     private class V_MemberFunctionCall_SpecialLibFunction(
         exprCtx: C_ExprContext,
         ideInfo: C_IdeSymbolInfo,
-        private val vExprs: List<V_Expr>,
+        private val vExprs: ImmList<V_Expr>,
         private val specialCall: V_SpecialMemberFunctionCall,
     ): V_MemberFunctionCall(exprCtx, ideInfo, immMapOf()) {
         override fun vExprs() = vExprs
@@ -218,7 +218,7 @@ class C_SpecialLibMemberFunction(
 
 private class C_RegularLibGlobalFunction(
     private val naming: C_MemberNaming,
-    private val cases: List<C_LibFuncCase<V_GlobalFunctionCall>>,
+    private val cases: ImmList<C_LibFuncCase<V_GlobalFunctionCall>>,
 ): C_LibGlobalFunction() {
     private val defaultCase = cases.first()
 
@@ -231,7 +231,7 @@ private class C_RegularLibGlobalFunction(
     override fun compileCall0(
         ctx: C_ExprContext,
         name: LazyPosString,
-        args: List<S_CallArgument>,
+        args: ImmList<S_CallArgument>,
         resTypeHint: C_TypeHint,
     ): V_GlobalFunctionCall {
         val target = C_FunctionCallTarget_LibGlobalFunction(ctx, name)
@@ -271,7 +271,7 @@ private class C_RegularLibGlobalFunction(
             ctx: C_ExprContext,
             caseCtx: C_LibFuncCaseCtx,
             selfType: R_Type,
-            cases: List<C_LibFuncCase<CallT>>,
+            cases: ImmList<C_LibFuncCase<CallT>>,
             args: C_PartialCallArguments,
             resTypeHint: R_FunctionType?
         ): CallT? {
@@ -281,14 +281,14 @@ private class C_RegularLibGlobalFunction(
 
             val caseTargets = cases.mapNotNull { it.getPartialCallTarget(caseCtx, selfType) }
             if (caseTargets.isEmpty()) {
-                val name = getFunctionNameForMessage(caseCtx, cases.map { it.getSpecificName(selfType) })
+                val name = getFunctionNameForMessage(caseCtx, cases.mapToImmList { it.getSpecificName(selfType) })
                 args.errPartialNotSupportedFn(name)
                 return null
             }
 
             val partMatch = if (resTypeHint == null) {
                 if (caseTargets.size > 1) {
-                    val name = getFunctionNameForMessage(caseCtx, caseTargets.map { it.fullName.value })
+                    val name = getFunctionNameForMessage(caseCtx, caseTargets.mapToImmList { it.fullName.value })
                     ctx.msgCtx.error(args.wildcardPos, C_Errors.msgPartialCallAmbiguous(name))
                     return null
                 }
@@ -305,7 +305,7 @@ private class C_RegularLibGlobalFunction(
                 }
                 if (matches.size != 1) {
                     val targets = if (matches.isEmpty()) caseTargets else matches.map { it.target }
-                    val name = getFunctionNameForMessage(caseCtx, targets.map { it.fullName.value })
+                    val name = getFunctionNameForMessage(caseCtx, targets.mapToImmList { it.fullName.value })
                     ctx.msgCtx.error(args.wildcardPos, C_Errors.msgPartialCallAmbiguous(name))
                     return null
                 }
@@ -319,7 +319,7 @@ private class C_RegularLibGlobalFunction(
             return compileMatch(ctx, caseCtx, args, partMatch)
         }
 
-        private fun getFunctionNameForMessage(caseCtx: C_LibFuncCaseCtx, caseNames: List<String>): String {
+        private fun getFunctionNameForMessage(caseCtx: C_LibFuncCaseCtx, caseNames: ImmList<String>): String {
             val caseName = caseNames.toSet().singleOrNull()
             return caseName ?: caseCtx.qualifiedNameMsg()
         }
@@ -352,7 +352,7 @@ private class C_RegularLibGlobalFunction(
 }
 
 private class C_RegularLibMemberFunction(
-    private val cases: List<C_LibFuncCase<V_MemberFunctionCall>>,
+    private val cases: ImmList<C_LibFuncCase<V_MemberFunctionCall>>,
 ): C_LibMemberFunction() {
     private val defaultCase = cases.first()
 
@@ -392,10 +392,10 @@ private class C_RegularLibMemberFunction(
 
 private class C_LibFunctionParamHints(
     private val selfType: R_Type,
-    private val cases: List<C_LibFuncCase<*>>,
+    private val cases: ImmList<C_LibFuncCase<*>>,
 ): C_CallTypeHints {
-    private val caseHints: List<C_CallTypeHints> by lazy {
-        cases.map { it.getCallTypeHints(selfType) }.toImmList()
+    private val caseHints: ImmList<C_CallTypeHints> by lazy {
+        cases.mapToImmList { it.getCallTypeHints(selfType) }
     }
 
     override fun getTypeHint(index: Int?, name: R_Name?): C_TypeHint {

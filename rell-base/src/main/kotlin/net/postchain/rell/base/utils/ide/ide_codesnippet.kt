@@ -12,7 +12,10 @@ import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.model.R_ModuleName
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmMap
+import net.postchain.rell.base.utils.immMapOf
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmMap
 
 class IdeSnippetMessage(
@@ -45,18 +48,13 @@ class IdeSnippetMessage(
 }
 
 class IdeCodeSnippet(
-    files: Map<String, String>,
+    @JvmField val files: ImmMap<String, String>,
     @JvmField val modules: C_CompilerModuleSelection,
     @JvmField val options: C_CompilerOptions,
-    messages: List<IdeSnippetMessage>,
-    parsing: Map<String, List<IdeSnippetMessage>>,
-    comments: Map<String, String>,
+    @JvmField val messages: ImmList<IdeSnippetMessage>,
+    @JvmField val parsing: ImmMap<String, List<IdeSnippetMessage>>,
+    @JvmField val comments: ImmMap<String, String>,
 ) {
-    @JvmField val files = files.toImmMap()
-    @JvmField val messages = messages.toImmList()
-    @JvmField val parsing = parsing.toImmMap()
-    @JvmField val comments = comments.toImmMap()
-
     val serialized: String by lazy { serialize() }
 
     private fun serialize(): String {
@@ -113,30 +111,30 @@ class IdeCodeSnippet(
             val obj = any as Map<String, Any>
 
             val filesRaw = obj.getValue("files") as Map<Any, Any>
-            val files = filesRaw.map { (k, v) -> k as String to v as String }.toMap()
+            val files = filesRaw.map { (k, v) -> k as String to v as String }.toImmMap()
 
             val modulesRaw = obj.getValue("modules") as Map<Any, Any>
-            val modulesMap = modulesRaw.map { (k, v) -> k as String to v }.toMap()
+            val modulesMap = modulesRaw.map { (k, v) -> k as String to v }.toImmMap()
             val modules = C_CompilerModuleSelection(
-                appModules = (modulesMap.getValue("modules") as List<Any>?)?.map { R_ModuleName.of(it as String) },
-                testModules = (modulesMap.getValue("test_root_modules") as List<Any>).map { R_ModuleName.of(it as String) },
+                appModules = (modulesMap.getValue("modules") as List<Any>?)?.mapToImmList { R_ModuleName.of(it as String) },
+                testModules = (modulesMap.getValue("test_root_modules") as List<Any>).mapToImmList { R_ModuleName.of(it as String) },
                 testSubModules = (modulesMap["test_sub_modules"] as Boolean?) ?: true,
             )
 
             val optionsRaw = obj.getValue("options") as Map<Any, Any>
-            val optionsMap = optionsRaw.map { (k, v) -> k as String to v }.toMap()
+            val optionsMap = optionsRaw.map { (k, v) -> k as String to v }.toImmMap()
             val options = C_CompilerOptions.fromPojoMap(optionsMap)
 
             val messagesRaw = obj.getValue("messages") as List<Any>
-            val messages = messagesRaw.map { IdeSnippetMessage.deserialize(it) }
+            val messages = messagesRaw.mapToImmList { IdeSnippetMessage.deserialize(it) }
 
             val parsingRaw = obj["parsing"] as Map<Any, Any>?
             val parsing = parsingRaw?.map { (k, v) ->
                 k as String to (v as List<Any>).map { IdeSnippetMessage.deserialize(it) }
-            }?.toMap() ?: mapOf()
+            }?.toImmMap() ?: immMapOf()
 
             val commentsRaw = obj["comments"] as Map<Any, Any>?
-            val comments = commentsRaw?.map { (k, v) -> k as String to v as String }?.toMap() ?: mapOf()
+            val comments = commentsRaw?.map { (k, v) -> k as String to v as String }?.toImmMap() ?: immMapOf()
 
             return IdeCodeSnippet(files, modules, options, messages, parsing, comments)
         }

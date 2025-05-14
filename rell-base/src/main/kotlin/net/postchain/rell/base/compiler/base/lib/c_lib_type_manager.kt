@@ -11,12 +11,11 @@ import net.postchain.rell.base.compiler.base.expr.C_TypeValueMember
 import net.postchain.rell.base.compiler.base.expr.C_TypeValueMember_Value
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.flatMapToImmList
+import net.postchain.rell.base.utils.mapNotNullToImmList
 
 class C_LibTypeManager(modules: List<C_LibModule>) {
-    private val allExtensionTypes: List<C_LibTypeExtension> = modules
-        .flatMap { it.extensionTypes }
-        .toImmList()
+    private val allExtensionTypes = modules.flatMapToImmList { it.extensionTypes }
 
     private val typeCache = mutableMapOf<R_Type, C_TypeCacheEntry>()
 
@@ -78,21 +77,19 @@ class C_LibTypeManager(modules: List<C_LibModule>) {
     fun getAtImplicitAttrsByName(selfType: R_Type, attrName: R_Name): List<C_AtTypeImplicitAttr> {
         val members = getValueMembers(selfType, attrName)
         return members
-            .mapNotNull {
+            .mapNotNullToImmList {
                 val mem = it as? C_TypeValueMember_Value
                 if (mem == null) null else C_AtTypeImplicitAttr(mem, mem.valueType)
             }
-            .toImmList()
     }
 
     fun getAtImplicitAttrsByType(selfType: R_Type, attrType: R_Type): List<C_AtTypeImplicitAttr> {
         val members = getValueMembersPrivate(selfType)
         return members.getValues()
-            .mapNotNull {
+            .mapNotNullToImmList {
                 val valueType = (it as? C_TypeValueMember_Value)?.valueType
                 if (valueType != attrType) null else C_AtTypeImplicitAttr(it, valueType)
             }
-            .toImmList()
     }
 
     private fun getCacheEntry(type: R_Type): C_TypeCacheEntry {

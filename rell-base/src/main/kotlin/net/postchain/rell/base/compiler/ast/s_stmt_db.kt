@@ -20,7 +20,8 @@ import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.*
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.mapNotNullToImmList
+import net.postchain.rell.base.utils.mapToImmList
 
 class C_UpdateTarget(val rTarget: R_UpdateTarget, val cFrom: C_AtFrom_Entities)
 
@@ -58,7 +59,7 @@ class S_UpdateTarget_Simple(
         val extraEntities = rAtEntities.subList(1, rAtEntities.size)
 
         val fromCtx = C_AtFromContext(stmtPos, atExprId, null)
-        val fromItems = cAtEntities.map { C_AtFromItem_Entity_Simple(it.declPos, it) }
+        val fromItems = cAtEntities.mapToImmList { C_AtFromItem_Entity_Simple(it.declPos, it) }
         val cFrom = C_AtFrom_Entities(ctx, fromCtx, null, fromItems)
 
         val atCtx = cFrom.innerExprCtx()
@@ -263,12 +264,12 @@ class S_UpdateStatement(
         val attrs = C_AttributeResolver.resolveUpdate(ctx, entity, args)
         val atEntity = target.entity()
 
-        val updAttrs = attrs.mapNotNull { (arg, attr) ->
+        val updAttrs = attrs.mapNotNullToImmList { (arg, attr) ->
             val w = what[arg.index]
             val op = if (w.op == null) S_AssignOp_Eq else w.op.op
             val opCtx = C_BinOpContext(ctx, w.pos)
             op.compileDbUpdate(opCtx, atEntity, attr, arg.vExpr)
-        }.toImmList()
+        }
 
         return updAttrs
     }

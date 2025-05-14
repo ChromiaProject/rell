@@ -17,6 +17,7 @@ import net.postchain.rell.base.mtype.M_Type_Nullable
 import net.postchain.rell.base.mtype.M_Types
 import net.postchain.rell.base.utils.associateNotNullValues
 import net.postchain.rell.base.utils.doc.*
+import net.postchain.rell.base.utils.mapIndexedToImmList
 import net.postchain.rell.base.utils.toImmList
 
 abstract class Ld_CommonFunctionDslImpl(
@@ -277,11 +278,11 @@ class Ld_FunctionParam(
                 DocException.ERROR_TRACKER,
             )
 
-            val lParams = params.mapIndexed { i, param ->
+            val lParams = params.mapIndexedToImmList { i, param ->
                 val hdr = paramHeaders[i]
                 val comment = comments.paramComments[param.name]
                 param.finish(ctx, hdr, comment)
-            }.toImmList()
+            }
 
             return lParams to comments.functionComment
         }

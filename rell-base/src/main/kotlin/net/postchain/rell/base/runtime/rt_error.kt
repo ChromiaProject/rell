@@ -5,12 +5,10 @@
 package net.postchain.rell.base.runtime
 
 import net.postchain.rell.base.model.R_StackPos
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
 
-class Rt_ExceptionInfo(stack: List<R_StackPos>, val extraMessage: String? = null) {
-    val stack = stack.toImmList()
-
+class Rt_ExceptionInfo(val stack: ImmList<R_StackPos>, val extraMessage: String? = null) {
     fun fullMessage(err: Rt_Error): String {
         var res = err.message()
         if (extraMessage != null) {

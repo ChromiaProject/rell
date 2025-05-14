@@ -13,6 +13,10 @@ import net.postchain.rell.base.compiler.base.namespace.C_NsAsm_ModuleAssembler
 import net.postchain.rell.base.compiler.base.namespace.C_NsAsm_ReplAssembler
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmMap
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.putAllAbsent
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
@@ -153,7 +157,7 @@ class C_AppContext(
         val blockEntity = C_Utils.createBlockEntity(this, ref)
         val transactionEntity = C_Utils.createTransactionEntity(this, ref, blockEntity)
 
-        val extSysDefs = C_SystemDefs.create(globalCtx, appUid, blockEntity, transactionEntity, listOf(), extraLibMod)
+        val extSysDefs = C_SystemDefs.create(globalCtx, appUid, blockEntity, transactionEntity, immListOf(), extraLibMod)
         return C_ExternalChain(name, ref, extSysDefs)
     }
 
@@ -182,7 +186,7 @@ class C_AppContext(
         val valid = !msgCtx.messages().any { !it.type.ignorable }
 
         val modules = modulesBuilder.commit()
-        val rModules = modules.map { it.rModule }.toImmList()
+        val rModules = modules.mapToImmList { it.rModule }
 
         val newModuleArgs = rModules
             .mapNotNull {
@@ -192,9 +196,9 @@ class C_AppContext(
 
         val oldSqlDefs = oldReplState.sqlDefs
         val sqlDefs = R_AppSqlDefs(
-                entities = oldSqlDefs.entities + appDefs.entities.map { it.entity },
-                objects = oldSqlDefs.objects + appDefs.objects,
-                topologicalEntities = oldSqlDefs.topologicalEntities + topologicalEntities
+                entities = (oldSqlDefs.entities + appDefs.entities.map { it.entity }).toImmList(),
+                objects = (oldSqlDefs.objects + appDefs.objects).toImmList(),
+                topologicalEntities = (oldSqlDefs.topologicalEntities + topologicalEntities).toImmList()
         )
 
         val rFnExtTable = functionExtTableLazy.toR()
@@ -206,10 +210,10 @@ class C_AppContext(
             operations = appOperationsMap,
             queries = appQueriesMap,
             constants = allConstants.commit(),
-            moduleArgs = oldReplState.moduleArgs + newModuleArgs,
+            moduleArgs = (oldReplState.moduleArgs + newModuleArgs).toImmMap(),
             functionExtensions = rFnExtTable,
             externalChainsRoot = externalChainsRoot,
-            externalChains = externalChains.values.map { it.ref },
+            externalChains = externalChains.values.mapToImmList { it.ref },
             sqlDefs = sqlDefs,
         )
     }
@@ -240,8 +244,8 @@ class C_AppContext(
 
         return C_ReplAppState(
             asmApp.newReplState,
-            resModuleHeaders,
-            resModules,
+            resModuleHeaders.toImmMap(),
+            resModules.toImmMap(),
             sysDefs,
             app.sqlDefs,
             mntTables,
@@ -285,7 +289,7 @@ class C_AppContext(
             graph[entity.entity] = deps
         }
 
-        val entityToPos = entities.filter { it.defPos != null }.map { Pair(it.entity, it.defPos!!) }.toMap()
+        val entityToPos = entities.filter { it.defPos != null }.associate { it.entity to it.defPos!! }
 
         val cycles = C_GraphUtils.findCycles(graph)
         if (cycles.isNotEmpty()) {
@@ -302,7 +306,7 @@ class C_AppContext(
         return res
     }
 
-    private fun <T: R_MountedRoutineDefinition> routinesToMap(list: List<T>): Map<R_MountName, T> {
+    private fun <T: R_MountedRoutineDefinition> routinesToMap(list: List<T>): ImmMap<R_MountName, T> {
         val res = mutableMapOf<R_MountName, T>()
         for (r in list) {
             val name = r.mountName
@@ -324,19 +328,13 @@ class C_AppContext(
 }
 
 class C_AppDefs(
-        entities: List<C_Entity>,
-        objects: List<R_ObjectDefinition>,
-        structs: List<R_Struct>,
-        operations: List<R_OperationDefinition>,
-        queries: List<R_QueryDefinition>
+    val entities: ImmList<C_Entity>,
+    val objects: ImmList<R_ObjectDefinition>,
+    val structs: ImmList<R_Struct>,
+    val operations: ImmList<R_OperationDefinition>,
+    val queries: ImmList<R_QueryDefinition>
 ) {
-    val entities = entities.toImmList()
-    val objects = objects.toImmList()
-    val structs = structs.toImmList()
-    val operations = operations.toImmList()
-    val queries = queries.toImmList()
-
-    companion object { val EMPTY = C_AppDefs(listOf(), listOf(), listOf(), listOf(), listOf()) }
+    companion object { val EMPTY = C_AppDefs(immListOf(), immListOf(), immListOf(), immListOf(), immListOf()) }
 }
 
 interface C_AppDefsAdder {
@@ -379,7 +377,7 @@ private class C_AppDefsBuilder(executor: C_CompilerExecutor): C_AppDefsAdder {
     }
 }
 
-private class C_AppDefsTableBuilder<T: Any, K>(
+private class C_AppDefsTableBuilder<T, K>(
     private val executor: C_CompilerExecutor,
     private val keyGetter: (T) -> K,
 ) {
@@ -394,7 +392,7 @@ private class C_AppDefsTableBuilder<T: Any, K>(
         defs.add(def)
     }
 
-    fun build(): List<T> {
+    fun build(): ImmList<T> {
         check(!build)
         build = true
         return defs.toImmList()

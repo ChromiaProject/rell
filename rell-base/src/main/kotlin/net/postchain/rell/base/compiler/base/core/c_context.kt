@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.core
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.def.*
@@ -65,10 +64,10 @@ class C_MessageContext private constructor(
     }
 }
 
-class C_ModuleProvider(modules: Map<C_ModuleKey, C_Module>, preModules: Map<C_ModuleKey, C_PrecompiledModule>) {
-    private val modules = modules.toImmMap()
-    private val preModules = preModules.toImmMap()
-
+class C_ModuleProvider(
+    private val modules: ImmMap<C_ModuleKey, C_Module>,
+    private val preModules: ImmMap<C_ModuleKey, C_PrecompiledModule>
+) {
     fun getModule(name: R_ModuleName, extChain: C_ExternalChain?): C_ModuleDescriptor? {
         val key = C_ModuleKey(name, extChain)
         return preModules[key]?.descriptor ?: modules[key]?.descriptor
@@ -284,7 +283,7 @@ class C_MountContext(
     val executor = nsCtx.executor
     val mntBuilder = fileCtx.mntBuilder
 
-    private val stringNamespacePath = nsCtx.namespacePath.parts.map { it.str }.toImmList()
+    private val stringNamespacePath = nsCtx.namespacePath.parts.mapToImmList { it.str }
 
     fun checkNotExternal(pos: S_Pos, decType: C_DeclarationType) {
         if (extChain != null) {
@@ -332,7 +331,7 @@ class C_MountContext(
         }
 
         val namePath = qualifiedName?.parts?.map { it.rName } ?: immListOf()
-        val path = mountName.parts + namePath
+        val path = (mountName.parts + namePath).toImmList()
 
         return R_MountName(path)
     }
@@ -566,7 +565,7 @@ class C_FunctionBodyContext(
     val namePos: S_Pos,
     val explicitRetType: R_Type?,
     val formalParams: C_FormalParameters,
-    val ideCompsLate: C_LateInit<Multimap<String, IdeCompletion>>,
+    val ideCompsLate: C_LateInit<ImmMultimap<String, IdeCompletion>>,
 ) {
     val appCtx = defCtx.appCtx
     val executor = defCtx.executor

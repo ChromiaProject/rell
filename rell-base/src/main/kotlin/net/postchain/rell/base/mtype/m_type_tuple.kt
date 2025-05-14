@@ -4,27 +4,26 @@
 
 package net.postchain.rell.base.mtype
 
-import net.postchain.rell.base.utils.Nullable
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 
 object M_TupleTypeUtils {
-    private val NULL_NAMES = (0 .. 50)
-        .map { n ->
-            (0 until n).map { Nullable.of<String>(null) }.toImmList()
-        }
-        .toImmList()
-
-    private fun getNullNames(n: Int): List<Nullable<String>> {
-        check(n > 0) { n }
-        return if (n < NULL_NAMES.size) NULL_NAMES[n] else (0 until n).map { Nullable.of(null) }
+    private val NULL_NAMES: ImmList<ImmList<String?>> = (0 .. 50).mapToImmList { n ->
+        ImmList(n) { null }
     }
 
-    fun <T> makeNames(fields: List<T>, nameGetter: (T) -> String?): List<Nullable<String>> {
+    private fun getNullNames(n: Int): ImmList<String?> {
+        check(n > 0) { n }
+        return if (n < NULL_NAMES.size) NULL_NAMES[n] else (0 until n).mapToImmList { null }
+    }
+
+    fun <T> makeNames(fields: List<T>, nameGetter: (T) -> String?): ImmList<String?> {
         return if (fields.all { nameGetter(it) == null }) {
             getNullNames(fields.size)
         } else {
-            fields.map { Nullable.of(nameGetter(it)) }.toImmList()
+            fields.mapToImmList { nameGetter(it) }
         }
     }
 
@@ -33,18 +32,15 @@ object M_TupleTypeUtils {
         return makeType(types, names)
     }
 
-    fun makeType(types: List<M_Type>, names: List<Nullable<String>>): M_Type {
-        return M_Type_Tuple_Internal(types, names)
+    fun makeType(types: List<M_Type>, names: List<String?>): M_Type {
+        return M_Type_Tuple_Internal(types.toImmList(), names.toImmList())
     }
 }
 
 sealed class M_Type_Tuple(
-    fieldTypes: List<M_Type>,
-    fieldNames: List<Nullable<String>>,
+    val fieldTypes: ImmList<M_Type>,
+    val fieldNames: ImmList<String?>,
 ): M_Type_Composite(fieldTypes.size) {
-    val fieldTypes = fieldTypes.toImmList()
-    val fieldNames = fieldNames.toImmList()
-
     init {
         check(this.fieldTypes.isNotEmpty())
         checkEquals(this.fieldNames.size, this.fieldTypes.size)
@@ -52,14 +48,14 @@ sealed class M_Type_Tuple(
 }
 
 private class M_Type_Tuple_Internal(
-    fieldTypes: List<M_Type>,
-    fieldNames: List<Nullable<String>>,
+    fieldTypes: ImmList<M_Type>,
+    fieldNames: ImmList<String?>,
 ): M_Type_Tuple(fieldTypes, fieldNames) {
-    override val canonicalArgs: List<M_TypeSet> = fieldTypes.map { M_TypeSets.one(it) }.toImmList()
+    override val canonicalArgs: List<M_TypeSet> = fieldTypes.mapToImmList { M_TypeSets.one(it) }
 
     override fun strCode(): String {
         return fieldNames.indices.joinToString(",", "(", ")") { i ->
-            val name = fieldNames[i].value
+            val name = fieldNames[i]
             val typeStr = fieldTypes[i].strCode()
             if (name == null) typeStr else "$name:$typeStr"
         }
@@ -76,7 +72,7 @@ private class M_Type_Tuple_Internal(
 
     override fun newInstance(newArgs: List<M_TypeSet>): M_Type_Composite {
         checkEquals(newArgs.size, fieldNames.size)
-        val newFieldTypes = newArgs.map { it.canonicalOutType() }
+        val newFieldTypes = newArgs.mapToImmList { it.canonicalOutType() }
         return M_Type_Tuple_Internal(newFieldTypes, fieldNames)
     }
 

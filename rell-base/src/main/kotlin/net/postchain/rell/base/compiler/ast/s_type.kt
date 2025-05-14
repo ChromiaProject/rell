@@ -22,7 +22,9 @@ import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapIndexedToImmList
 import net.postchain.rell.base.utils.mapNotNullAllOrNull
+import net.postchain.rell.base.utils.mapToImmList
 
 sealed class S_Type(val pos: S_Pos) {
     protected abstract fun compile0(ctx: C_DefinitionContext): R_Type
@@ -154,7 +156,7 @@ class S_TupleType(pos: S_Pos, private val fields: List<S_GenericTupleAttr<S_Type
 
         val typeIdeId = ctx.tupleIdeId()
 
-        val rFields = fields.mapIndexed { index, (name, type, comment) ->
+        val rFields = fields.mapIndexedToImmList { index, (name, type, comment) ->
             val nameHand = name?.compile(ctx.symCtx, def = true)
 
             val rType = C_Types.checkNotUnit(ctx.msgCtx, type.pos, type.compile(ctx), nameHand?.str) {
@@ -267,7 +269,7 @@ class S_MirrorStructType(pos: S_Pos, val mutable: Boolean, val paramType: S_Type
 
 class S_FunctionType(pos: S_Pos, val params: List<S_Type>, val result: S_Type): S_Type(pos) {
     override fun compile0(ctx: C_DefinitionContext): R_Type {
-        val rParams = params.map {
+        val rParams = params.mapToImmList {
             C_Types.checkNotUnit(ctx.msgCtx, it.pos, it.compile(ctx), null) { "fntype_param" toCodeMsg "parameter" }
         }
 

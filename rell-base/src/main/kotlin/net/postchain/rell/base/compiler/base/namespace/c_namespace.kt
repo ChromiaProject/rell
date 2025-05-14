@@ -77,10 +77,8 @@ enum class C_DeclarationType(val msg: String) {
 
 class C_NamespaceElement(
     val member: C_NamespaceMember,
-    allMembers: List<C_NamespaceMember>,
+    private val allMembers: ImmList<C_NamespaceMember>,
 ) {
-    private val allMembers = allMembers.toImmList()
-
     fun access(msgCtx: C_MessageContext, lazyName: LazyPosString) {
         if (allMembers.size > 1) {
             val nameStr = lazyName.str
@@ -112,12 +110,9 @@ class C_NamespaceElement(
 }
 
 class C_NamespaceEntry(
-    directMembers: List<C_NamespaceMember>,
-    importMembers: List<C_NamespaceMember>,
+    val directMembers: ImmList<C_NamespaceMember>,
+    val importMembers: ImmList<C_NamespaceMember>,
 ) {
-    val directMembers = directMembers.toImmList()
-    val importMembers = importMembers.toImmList()
-
     init {
         check(this.directMembers.isNotEmpty() || this.importMembers.isNotEmpty())
     }
@@ -131,8 +126,8 @@ class C_NamespaceEntry(
     }
 
     private fun element0(langVersion: R_LangVersion?, tags: List<C_NamespaceMemberTag>): C_NamespaceElement? {
-        var members = directMembers.filter { it.hasTag(tags) }
-            .ifEmpty { importMembers.filter { it.hasTag(tags) } }
+        var members = directMembers.filterToImmList { it.hasTag(tags) }
+            .ifEmpty { importMembers.filterToImmList { it.hasTag(tags) } }
 
         if (UNIQUE_ITEMS_SWITCH.isActive(langVersion)) {
             members = members.toSet().toImmList()
@@ -173,9 +168,7 @@ sealed class C_Namespace {
     }
 }
 
-private class C_BasicNamespace(entries: Map<R_Name, C_NamespaceEntry>): C_Namespace() {
-    private val entries = entries.toImmMap()
-
+private class C_BasicNamespace(private val entries: ImmMap<R_Name, C_NamespaceEntry>): C_Namespace() {
     private val docMembersLazy: Map<String, DocDefinition> by lazy {
         entries.entries.associateNotNullValues {
             val members = it.value.directMembers.ifEmpty { it.value.importMembers }
@@ -215,11 +208,11 @@ class C_NamespaceBuilder {
 
     fun build(): C_Namespace {
         val names = directMembers.keySet() + importMembers.keySet()
-        val entries = names.associateWith {
+        val entries = names.associateWithToImmMap {
             val directIts = directMembers.get(it).toImmList()
             val importIts = importMembers.get(it).toImmList()
             C_NamespaceEntry(directIts, importIts)
-        }.toImmMap()
+        }
         return C_BasicNamespace(entries)
     }
 }

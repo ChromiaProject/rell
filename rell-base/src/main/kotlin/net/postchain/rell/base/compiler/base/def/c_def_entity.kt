@@ -14,10 +14,13 @@ import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.associateByToImmMap
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import net.postchain.rell.base.utils.toImmMap
+import net.postchain.rell.base.utils.mapValuesToImmMap
+import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMultimap
 
 private class C_EntityAttributeClause(
@@ -295,20 +298,20 @@ class C_EntityContext(
         }
     }
 
-    fun addKey(pos: S_Pos, attrs: List<R_Name>) {
+    fun addKey(pos: S_Pos, attrs: ImmList<R_Name>) {
         addUniqueKeyIndex(pos, uniqueKeys, attrs, R_KeyIndexKind.KEY)
         keys.add(R_Key(attrs))
     }
 
-    fun addIndex(pos: S_Pos, attrs: List<R_Name>) {
+    fun addIndex(pos: S_Pos, attrs: ImmList<R_Name>) {
         addUniqueKeyIndex(pos, uniqueIndices, attrs, R_KeyIndexKind.INDEX)
         indices.add(R_Index(attrs))
     }
 
     fun createEntityBody(): R_EntityBody {
         val cAttributes = compileAttributes()
-        val rAttributes = cAttributes.mapValues { it.value.rAttr }
-        return R_EntityBody(keys.toList(), indices.toList(), rAttributes)
+        val rAttributes = cAttributes.mapValuesToImmMap { it.value.rAttr }
+        return R_EntityBody(keys.toImmList(), indices.toImmList(), rAttributes)
     }
 
     fun createStructBody(): Map<R_Name, C_CompiledAttribute> {
@@ -328,7 +331,7 @@ class C_EntityContext(
             cAttrs.add(compiledAttr)
         }
 
-        return cAttrs.associateBy { it.rAttr.rName }.toImmMap()
+        return cAttrs.associateByToImmMap { it.rAttr.rName }
     }
 
     private fun <T: R_KeyIndex> keyIndexMap(list: List<T>): Multimap<R_Name, T> {

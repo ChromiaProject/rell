@@ -20,7 +20,7 @@ import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.mapToImmList
 import org.jooq.impl.SQLDataType
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -351,7 +351,7 @@ class Rt_IntValue private constructor(val value: Long): Rt_Value() {
     companion object {
         private const val NVALUES = 1000
 
-        private val VALUES: List<Rt_Value> = (-NVALUES .. NVALUES).map { Rt_IntValue(it.toLong()) }.toImmList()
+        private val VALUES = (-NVALUES .. NVALUES).mapToImmList { Rt_IntValue(it.toLong()) }
 
         val ZERO: Rt_Value = get(0)
 

@@ -5,6 +5,7 @@
 package net.postchain.rell.base.mtype
 
 import net.postchain.rell.base.utils.One
+import net.postchain.rell.base.utils.associateWithToImmMap
 import net.postchain.rell.base.utils.toImmMap
 
 fun interface M_TypeParamMatchHandler {
@@ -17,8 +18,7 @@ data class M_TypeParamMatch(val type: M_Type, val rel: M_TypeMatchRelation) {
 
 class M_TypeParamsResolver(private val params: List<M_TypeParam>) {
     private val refMap: Map<M_TypeParam, MutableSet<M_TypeParamMatch>> = params
-        .associateWith { mutableSetOf<M_TypeParamMatch>() }
-        .toImmMap()
+        .associateWithToImmMap { mutableSetOf() }
 
     fun allParamsMatched(): Boolean {
         return params.all { refMap[it]?.isNotEmpty() ?: false }

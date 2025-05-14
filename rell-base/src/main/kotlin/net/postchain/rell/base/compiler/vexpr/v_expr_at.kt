@@ -16,9 +16,11 @@ import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_IterableAdapter
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.immSetOf
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 
 class V_AtEntityExpr(
@@ -158,7 +160,7 @@ class V_DbAtExprFrom(
     private val block: R_FrameBlock?,
 ) {
     fun toDb(): Db_AtExprFrom {
-        val dbItems = items.map { it.toDb() }
+        val dbItems = items.mapToImmList { it.toDb() }
         return Db_AtExprFrom(dbItems, block)
     }
 }
@@ -174,7 +176,7 @@ class V_AtExprBase(
 
     fun toDbBase(nested: Boolean): Db_AtExprBase {
         val dbFrom = from.toDb()
-        val dbWhat = what.map { it.toDbField(nested) }
+        val dbWhat = what.mapToImmList { it.toDbField(nested) }
         val dbWhere = where?.toDbExpr()
         return Db_AtExprBase(dbFrom, dbWhat, dbWhere, isMany)
     }
@@ -190,7 +192,7 @@ class V_TopDbAtExpr(
     private val internals: R_DbAtExprInternals,
     private val resVarStates: C_ExprVarStatesDelta,
 ): V_Expr(exprCtx, pos) {
-    override fun exprInfo0() = V_ExprInfo(resultType, base.innerExprs() + extras.innerExprs())
+    override fun exprInfo0() = V_ExprInfo(resultType, (base.innerExprs() + extras.innerExprs()).toImmList())
     override fun varStatesDelta0() = resVarStates
 
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("at_expr", null)
@@ -261,11 +263,9 @@ class V_ColAtWhatField(val expr: V_Expr, val flags: R_AtWhatFieldFlags, val summ
 }
 
 class V_ColAtWhat(
-    fields: List<V_ColAtWhatField>,
+    val fields: ImmList<V_ColAtWhatField>,
     val extras: R_ColAtWhatExtras,
 ) {
-    val fields = fields.toImmList()
-
     init {
         checkEquals(extras.fieldCount, fields.size)
     }
@@ -273,7 +273,7 @@ class V_ColAtWhat(
     fun innerExprs(): List<V_Expr> = fields.map { it.expr }
 
     fun toRWhat(): R_ColAtWhat {
-        val rFields = fields.map { it.toRField() }
+        val rFields = fields.mapToImmList { it.toRField() }
         return R_ColAtWhat(rFields, extras)
     }
 }
@@ -292,7 +292,7 @@ class V_ColAtExpr(
     private val resVarStates: C_ExprVarStatesDelta,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0(): V_ExprInfo {
-        val subExprs = from.innerExprs() + what.innerExprs() + listOfNotNull(where) + extras.innerExprs()
+        val subExprs = (from.innerExprs() + what.innerExprs() + listOfNotNull(where) + extras.innerExprs()).toImmList()
         return V_ExprInfo(result.resultType, subExprs)
     }
 

@@ -16,10 +16,12 @@ import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.mtype.M_Type
+import net.postchain.rell.base.utils.associateByToImmMap
 import net.postchain.rell.base.utils.doc.DocDeclaration_StructAttribute
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.futures.FcFuture
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 
@@ -80,16 +82,14 @@ class Ld_Struct(
 
         return ctx.fcExec.future().compute {
             val attributesFuture = ctx.fcExec.future().after(ctx.finishCtxFuture).compute { finishCtx ->
-                val lAttributes = attributes
-                    .map { it.finish(finishCtx.typeCtx, fullName) }
-                    .toImmList()
+                val lAttributes = attributes.mapToImmList { it.finish(finishCtx.typeCtx, fullName) }
 
                 val rAttributes = lAttributes
                     .mapIndexed { i, lAttr -> lAttr.simpleName to finishAttr(fullName.qualifiedName, lAttr, i) }
                     .toImmMap()
                 rStruct.setAttributes(rAttributes)
 
-                lAttributes.associateBy { it.simpleName.str }.toImmMap()
+                lAttributes.associateByToImmMap { it.simpleName.str }
             }
 
             L_Struct(fullName.last, rStruct, attributesFuture)

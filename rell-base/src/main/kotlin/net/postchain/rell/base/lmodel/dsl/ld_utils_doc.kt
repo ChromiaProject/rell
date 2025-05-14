@@ -12,7 +12,7 @@ import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.doc.*
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.mapToImmList
 
 object Ld_DocSymbols {
     fun function(
@@ -29,7 +29,7 @@ object Ld_DocSymbols {
         )
 
         val docHeader = L_TypeUtils.docFunctionHeader(header.mHeader)
-        val docParams = header.params.map { it.docSymbol.declaration }.toImmList()
+        val docParams = header.params.mapToImmList { it.docSymbol.declaration }
         val dec = DocDeclaration_Function(docModifiers, hdr.simpleName, docHeader, docParams)
         return hdr.docSymbol(declaration = dec, comment = comment)
     }

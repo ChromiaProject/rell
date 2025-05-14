@@ -49,28 +49,22 @@ class C_CompiledRellFile(
 
 class C_ImportDescriptor(val pos: S_Pos, val module: C_ModuleDescriptor)
 
-class C_ModuleImportsDescriptor(val key: C_ContainerKey, val name: R_ModuleName, files: List<C_FileImportsDescriptor>) {
-    val files = files.toImmList()
-
+class C_ModuleImportsDescriptor(val key: C_ContainerKey, val name: R_ModuleName, val files: ImmList<C_FileImportsDescriptor>) {
     companion object {
         fun empty(moduleKey: C_ModuleKey) = C_ModuleImportsDescriptor(
                 C_ModuleContainerKey.of(moduleKey),
                 moduleKey.name,
-                listOf()
+                immListOf()
         )
     }
 }
 
 class C_FileImportsDescriptor(
-    imports: List<C_ImportDescriptor>,
-    abstracts: List<C_AbstractFunctionDescriptor>,
-    overrides: List<C_OverrideFunctionDescriptor>,
+    val imports: ImmList<C_ImportDescriptor>,
+    val abstracts: ImmList<C_AbstractFunctionDescriptor>,
+    val overrides: ImmList<C_OverrideFunctionDescriptor>,
 ) {
-    val imports = imports.toImmList()
-    val abstracts = abstracts.toImmList()
-    val overrides = overrides.toImmList()
-
-    companion object { val EMPTY = C_FileImportsDescriptor(listOf(), listOf(), listOf()) }
+    companion object { val EMPTY = C_FileImportsDescriptor(immListOf(), immListOf(), immListOf()) }
 }
 
 class C_ModuleKey(val name: R_ModuleName, val extChain: C_ExternalChain?) {
@@ -168,7 +162,7 @@ object C_ModuleCompiler {
 
         val modName = modCtx.moduleName
 
-        val fileImports = files.map { it.importsDescriptor }
+        val fileImports = files.mapToImmList { it.importsDescriptor }
         val importedModules = fileImports.flatMap { it.imports.map { i -> i.module.name } }.toImmSet()
         val moduleImports = C_ModuleImportsDescriptor(modCtx.containerKey, modName, fileImports)
 

@@ -44,7 +44,7 @@ class ReplCode(
     }
 
     companion object {
-        val ERROR = ReplCode(R_ReplCode(R_CallFrame.ERROR, listOf()), C_ReplCodeState.EMPTY, Rt_ReplCodeState.EMPTY)
+        val ERROR = ReplCode(R_ReplCode(R_CallFrame.ERROR, immListOf()), C_ReplCodeState.EMPTY, Rt_ReplCodeState.EMPTY)
     }
 }
 
@@ -65,9 +65,7 @@ class C_ReplCommandContext(val frameCtx: C_FrameContext, val codeState: ReplCode
     fun setCommand(code: ReplCode) = commandLate.set(code)
 }
 
-class R_ReplCode(private val frame: R_CallFrame, stmts: List<R_Statement>) {
-    private val stmts = stmts.toImmList()
-
+class R_ReplCode(private val frame: R_CallFrame, private val stmts: ImmList<R_Statement>) {
     fun execute(exeCtx: Rt_ExecutionContext, oldState: Rt_ReplCodeState): Rt_ReplCodeState {
         val rtDefCtx = Rt_DefinitionContext(exeCtx, false, R_DefinitionId("", "<console>"))
         val rtFrame = frame.createRtFrame(rtDefCtx, null, oldState.frameState)
@@ -288,7 +286,7 @@ class ReplInterpreter private constructor(
                 "od" to formatCtrl("default text representation (result of to_text())", ReplValueFormat.DEFAULT),
         )
 
-        val map = rawMap.mapKeys { (k, _) -> fullCmd(k) }.toImmMap()
+        val map = rawMap.mapKeysToImmMap { (k, _) -> fullCmd(k) }
 
         private fun fullCmd(rawCmd: String) = "\\$rawCmd"
     }

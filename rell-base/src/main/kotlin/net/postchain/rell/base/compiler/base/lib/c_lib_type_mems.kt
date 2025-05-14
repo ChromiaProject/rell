@@ -13,9 +13,12 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_TypeParam
 import net.postchain.rell.base.mtype.M_TypeSet
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.filterToImmList
+import net.postchain.rell.base.utils.flatMapToImmList
 import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapValuesToImmMap
 import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
 
 class C_TypeMemberReplacement(
     val selfType: M_Type?,
@@ -52,7 +55,8 @@ abstract class C_TypeMember(val optionalName: R_Name?) {
                 val kinds = filteredMembers.map { it.kindMsg() }
                 val listCode = kinds.joinToString(",")
                 val listMsg = kinds.joinToString()
-                msgCtx.error(memberName.pos,
+                msgCtx.error(
+                    memberName.pos,
                     "$scopeCode:ambig:$memberName:[$listCode]",
                     "Name '$memberName' is ambiguous: $listMsg",
                 )
@@ -78,7 +82,7 @@ sealed class C_LibTypeMembers<MemberT: C_TypeMember> {
         }
 
         fun <MemberT: C_TypeMember> simple(members: List<MemberT>): C_LibTypeMembers<MemberT> {
-            return if (members.isEmpty()) empty() else C_LibTypeMembers_Simple(members)
+            return if (members.isEmpty()) empty() else C_LibTypeMembers_Simple(members.toImmList())
         }
 
         fun <MemberT: C_TypeMember> combined(members: Iterable<C_LibTypeMembers<MemberT>>): C_LibTypeMembers<MemberT> {
@@ -104,21 +108,19 @@ sealed class C_LibTypeMembers<MemberT: C_TypeMember> {
     }
 }
 
-private class C_LibTypeMembers_Simple<MemberT: C_TypeMember>(allMembers: List<MemberT>): C_LibTypeMembers<MemberT>() {
-    private val allMembers = allMembers.toImmList()
-
+private class C_LibTypeMembers_Simple<MemberT: C_TypeMember>(
+    private val allMembers: ImmList<MemberT>,
+): C_LibTypeMembers<MemberT>() {
     private val byNameMembers: Map<R_Name, List<MemberT>> by lazy {
         this.allMembers
             .mapNotNull { if (it.optionalName == null) null else (it.optionalName to it) }
-            .groupBy({it.first}, {it.second})
-            .mapValues { it.value.toImmList() }
-            .toImmMap()
+            .groupBy({ it.first }, { it.second })
+            .mapValuesToImmMap { it.value.toImmList() }
     }
 
     private val memberValues: List<MemberT> by lazy {
         this.allMembers
-            .filter { it.isValue() }
-            .toImmList()
+            .filterToImmList { it.isValue() }
     }
 
     override fun isEmpty() = allMembers.isEmpty()
@@ -137,11 +139,11 @@ private class C_LibTypeMembers_Combined<MemberT: C_TypeMember>(
     }
 
     private val allMembersLazy: List<MemberT> by lazy {
-        parts.flatMap { it.getAll() }.toImmList()
+        parts.flatMapToImmList { it.getAll() }
     }
 
     private val memberValuesLazy: List<MemberT> by lazy {
-        parts.flatMap { it.getValues() }.toImmList()
+        parts.flatMapToImmList { it.getValues() }
     }
 
     override fun isEmpty() = false
@@ -149,7 +151,7 @@ private class C_LibTypeMembers_Combined<MemberT: C_TypeMember>(
     override fun getValues() = memberValuesLazy
 
     override fun getByName(name: R_Name): List<MemberT> {
-        return parts.flatMap { it.getByName(name) }.toImmList()
+        return parts.flatMapToImmList { it.getByName(name) }
     }
 }
 

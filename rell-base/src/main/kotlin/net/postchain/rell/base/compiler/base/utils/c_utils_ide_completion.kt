@@ -167,7 +167,7 @@ class C_IdeCompletionsContext(
         scopes.add(C_IdeCompletionsScope(parentScope, getter))
     }
 
-    fun finish(): Multimap<String, IdeCompletion> {
+    fun finish(): ImmMultimap<String, IdeCompletion> {
         check(!finished)
         finished = true
 

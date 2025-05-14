@@ -15,8 +15,8 @@ import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
-import net.postchain.rell.base.utils.toImmList
 import kotlin.math.min
 
 class R_ColAtParam(val type: R_Type, val ptr: R_VarPtr)
@@ -110,16 +110,12 @@ class R_ColAtFieldSummarization_Aggregate_Map(
 class R_ColAtWhatField(val expr: R_Expr, val flags: R_AtWhatFieldFlags, val summarization: R_ColAtFieldSummarization)
 
 class R_ColAtWhatExtras(
-        val fieldCount: Int,
-        selectedFields: List<Int>,
-        groupFields: List<Int>,
-        sorting: List<IndexedValue<Comparator<Rt_Value>>>,
-        val rowDecoder: R_AtExprRowDecoder
+    val fieldCount: Int,
+    val selectedFields: ImmList<Int>,
+    val groupFields: ImmList<Int>,
+    val sorting: ImmList<IndexedValue<Comparator<Rt_Value>>>,
+    val rowDecoder: R_AtExprRowDecoder
 ) {
-    val selectedFields = selectedFields.toImmList()
-    val groupFields = groupFields.toImmList()
-    val sorting = sorting.toImmList()
-
     init {
         val fieldIndices = 0 until fieldCount
         selectedFields.forEach { check(it in fieldIndices) }
@@ -129,11 +125,9 @@ class R_ColAtWhatExtras(
 }
 
 class R_ColAtWhat(
-        fields: List<R_ColAtWhatField>,
+        val fields: ImmList<R_ColAtWhatField>,
         val extras: R_ColAtWhatExtras
 ) {
-    val fields = fields.toImmList()
-
     init {
         checkEquals(extras.fieldCount, fields.size)
     }
@@ -396,9 +390,7 @@ class R_ColAtExpr(
     }
 
     private class RowComparator(private val sorting: List<IndexedValue<Comparator<Rt_Value>>>): Comparator<List<Rt_Value>> {
-        override fun compare(p0: List<Rt_Value>?, p1: List<Rt_Value>?): Int {
-            p0!!
-            p1!!
+        override fun compare(p0: List<Rt_Value>, p1: List<Rt_Value>): Int {
             for ((i, c) in sorting) {
                 val v1 = p0[i]
                 val v2 = p1[i]

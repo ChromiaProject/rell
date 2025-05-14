@@ -18,7 +18,8 @@ import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.mapToImmList
 import org.jooq.impl.SQLDataType
 
 object Lib_Type_Rowid {
@@ -90,7 +91,7 @@ class Rt_RowidValue private constructor(val value: Long): Rt_Value() {
     override fun hashCode() = java.lang.Long.hashCode(value)
 
     companion object {
-        private val VALUES: List<Rt_Value> = (0 .. 1000).map { Rt_RowidValue(it.toLong()) }.toImmList()
+        private val VALUES: ImmList<Rt_Value> = (0 .. 1000).mapToImmList { Rt_RowidValue(it.toLong()) }
 
         val ZERO = VALUES[0]
 

@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.core
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.def.C_MountTables
 import net.postchain.rell.base.compiler.base.def.C_MountTablesBuilder
@@ -50,16 +49,13 @@ enum class C_CompilerPass {
     }
 
     companion object {
-        private val VALUES = values()
+        private val VALUES = entries
 
         val LAST = VALUES[VALUES.size - 1]
     }
 }
 
-class C_StatementVars(declared: Set<R_Name>, modified: Set<R_Name>) {
-    val declared = declared.toImmSet()
-    val modified = modified.toImmSet()
-
+class C_StatementVars(val declared: ImmSet<R_Name>, val modified: ImmSet<R_Name>) {
     companion object {
         val EMPTY = C_StatementVars(immSetOf(), immSetOf())
     }
@@ -81,7 +77,7 @@ class C_StatementVarsBlock {
         }
     }
 
-    fun modified() = modified.toSet()
+    fun modified() = modified.toImmSet()
 }
 
 class C_SystemDefsScope(
@@ -94,12 +90,9 @@ class C_SystemDefsCommon(
     val blockEntity: R_EntityDefinition,
     val transactionEntity: R_EntityDefinition,
     val mntTables: C_MountTables,
-    entities: List<R_EntityDefinition>,
-    queries: List<R_QueryDefinition>,
-) {
-    val entities = entities.toImmList()
-    val queries = queries.toImmList()
-}
+    val entities: ImmList<R_EntityDefinition>,
+    val queries: ImmList<R_QueryDefinition>,
+)
 
 class C_SystemDefs private constructor(
     val common: C_SystemDefsCommon,
@@ -119,10 +112,10 @@ class C_SystemDefs private constructor(
             stamp: R_AppUid,
             blockEntity: R_EntityDefinition,
             transactionEntity: R_EntityDefinition,
-            queries: List<R_QueryDefinition>,
+            queries: ImmList<R_QueryDefinition>,
             extraMod: C_LibModule?,
         ): C_SystemDefs {
-            val sysEntities = listOf(blockEntity, transactionEntity)
+            val sysEntities = immListOf(blockEntity, transactionEntity)
 
             val appScope = createNsScope(globalCtx, sysEntities, extraMod, false)
             val testScope = createNsScope(globalCtx, sysEntities, extraMod, true)
@@ -171,14 +164,11 @@ class C_SystemDefs private constructor(
 }
 
 class C_CompilerModuleSelection(
-    appModules: List<R_ModuleName>?,
-    testModules: List<R_ModuleName> = listOf(),
+    val appModules: ImmList<R_ModuleName>?,
+    val testModules: ImmList<R_ModuleName> = immListOf(),
     val testSubModules: Boolean = true,
     val appSubModules: Boolean = false,
-) {
-    val appModules = appModules?.toImmList()
-    val testModules = testModules.toImmList()
-}
+)
 
 object C_Compiler {
     fun compile(
@@ -186,7 +176,7 @@ object C_Compiler {
         modules: List<R_ModuleName>,
         options: C_CompilerOptions = C_CompilerOptions.DEFAULT,
     ): C_CompilationResult {
-        val modSel = C_CompilerModuleSelection(modules, listOf())
+        val modSel = C_CompilerModuleSelection(modules.toImmList(), immListOf())
         return compile(sourceDir, modSel, options)
     }
 
@@ -235,7 +225,7 @@ object C_Compiler {
             compileMidModules(msgCtx, symCtxProvider, midModules)
         } ?: immListOf()
 
-        val moduleHeaders = midModules.associate { it.moduleName to it.compiledHeader }.toImmMap()
+        val moduleHeaders = midModules.associateToImmMap { it.moduleName to it.compiledHeader }
 
         val appCtx = C_AppContext(
             msgCtx,
@@ -252,7 +242,7 @@ object C_Compiler {
             extCompiler.compileModules()
         } ?: C_LateGetter.const(immMultimapOf())
 
-        val files = extModules.flatMap { it.midModule.filePaths() }.toImmList()
+        val files = extModules.flatMapToImmList { it.midModule.filePaths() }
 
         controller.run()
 
@@ -379,23 +369,18 @@ class C_ComparablePos(sPos: S_Pos): Comparable<C_ComparablePos> {
     }
 }
 
-abstract class C_AbstractResult(messages: List<C_Message>) {
-    val messages = messages.toImmList()
-    val warnings = this.messages.filter { it.type == C_MessageType.WARNING }.toImmList()
-    val errors = this.messages.filter { it.type == C_MessageType.ERROR }.toImmList()
+abstract class C_AbstractResult(val messages: ImmList<C_Message>) {
+    val warnings = this.messages.filterToImmList { it.type == C_MessageType.WARNING }
+    val errors = this.messages.filterToImmList { it.type == C_MessageType.ERROR }
 }
 
 class C_CompilationResult(
     val app: R_App?,
-    messages: List<C_Message>,
-    files: List<C_SourcePath>,
-    ideSymbolInfos: Map<S_Pos, IdeSymbolInfo>,
-    ideCompletions: Multimap<String, IdeCompletion>,
-): C_AbstractResult(messages) {
-    val files = files.toImmList()
-    val ideSymbolInfos = ideSymbolInfos.toImmMap()
-    val ideCompletions = ideCompletions.toImmMultimap()
-}
+    messages: ImmList<C_Message>,
+    val files: ImmList<C_SourcePath>,
+    val ideSymbolInfos: ImmMap<S_Pos, IdeSymbolInfo>,
+    val ideCompletions: ImmMultimap<String, IdeCompletion>,
+): C_AbstractResult(messages)
 
 abstract class C_CompilerExecutor {
     abstract fun checkPass(minPass: C_CompilerPass?, maxPass: C_CompilerPass?)
@@ -418,8 +403,8 @@ abstract class C_CompilerExecutor {
 class C_CompilerController(private val msgCtx: C_MessageContext) {
     val executor: C_CompilerExecutor = ExecutorImpl()
 
-    private val passes = C_CompilerPass.values().associateWith { queueOf<C_PassTask>() }.toImmMap()
-    private var currentPass = C_CompilerPass.values()[0]
+    private val passes = C_CompilerPass.entries.associateWithToImmMap { ArrayDeque<C_PassTask>() }
+    private var currentPass = C_CompilerPass.entries[0]
 
     private var runCalled = false
 
@@ -427,11 +412,11 @@ class C_CompilerController(private val msgCtx: C_MessageContext) {
         check(!runCalled)
         runCalled = true
 
-        for (pass in C_CompilerPass.values()) {
+        for (pass in C_CompilerPass.entries) {
             currentPass = pass
             val queue = passes.getValue(pass)
             while (!queue.isEmpty()) {
-                val task = queue.remove()
+                val task = queue.removeFirst()
                 task.execute()
             }
         }

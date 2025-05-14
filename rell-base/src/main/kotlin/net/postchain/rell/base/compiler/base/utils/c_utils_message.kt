@@ -6,7 +6,8 @@ package net.postchain.rell.base.compiler.base.utils
 
 import com.google.common.math.IntMath
 import net.postchain.rell.base.compiler.ast.S_Pos
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.mapToImmList
 
 enum class C_MessageType(val text: String, val ignorable: Boolean) {
     WARNING("Warning", true),
@@ -26,7 +27,7 @@ class C_Message(
 
 interface C_MessageManager {
     fun isError(): Boolean
-    fun messages(): List<C_Message>
+    fun messages(): ImmList<C_Message>
 
     fun message(message: C_Message)
     fun message(type: C_MessageType, pos: S_Pos, lazyCodeMsg: Lazy<C_CodeMsg>)
@@ -103,8 +104,8 @@ class C_DefaultMessageManager: C_MessageManager {
         }
     }
 
-    override fun messages(): List<C_Message> {
-        return messages.map { it.getMessage() }.toImmList()
+    override fun messages(): ImmList<C_Message> {
+        return messages.mapToImmList { it.getMessage() }
     }
 
     override fun errorWatcher(): C_MessageManager.C_ErrorWatcher = C_ErrorWatcherImpl()

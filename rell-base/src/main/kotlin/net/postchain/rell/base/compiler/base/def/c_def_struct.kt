@@ -145,7 +145,7 @@ object C_StructGraphUtils {
 
     private fun buildStructsInfo(structs: Collection<R_Struct>): C_StructsInfo {
         val declaredStructs = structs.toImmSet()
-        val infoMap = structs.map { Pair(it, calcStructInfo(declaredStructs, it.type)) }.toMap()
+        val infoMap = structs.associateWith { calcStructInfo(declaredStructs, it.type) }
         val graph = infoMap.mapValues { (_, v) -> v.dependencies.toList() }
 
         val mutable = infoMap.filter { (_, v) -> v.directFlags.mutable }.keys

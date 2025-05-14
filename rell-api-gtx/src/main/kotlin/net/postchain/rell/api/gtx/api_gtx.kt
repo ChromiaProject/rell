@@ -63,8 +63,8 @@ object RellApiRunTests {
         testModules: List<String>,
     ): UnitTestRunnerResults {
         val cSourceDir = C_SourceDir.diskDir(sourceDir)
-        val rAppModules = appModules?.map { R_ModuleName.of(it) }?.toImmList()
-        val rTestModules = testModules.map { R_ModuleName.of(it) }.toImmList()
+        val rAppModules = appModules?.mapToImmList { R_ModuleName.of(it) }
+        val rTestModules = testModules.mapToImmList { R_ModuleName.of(it) }
 
         val compileConfig = config.compileConfig
         val options = RellApiGtxInternal.makeRunTestsCompilerOptions(config)

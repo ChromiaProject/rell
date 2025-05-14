@@ -85,12 +85,9 @@ class Rt_TestOpContext(
     private val transactionIid: Long,
     private val blockHeight: Long,
     private val opIndex: Int,
-    signers: List<Bytes>,
-    allOperations: List<Pair<String, List<Gtv>>>
+    private val signers: ImmList<Bytes>,
+    private val allOperations: ImmList<Pair<String, List<Gtv>>>,
 ): Rt_OpContext() {
-    private val signers = signers.toImmList()
-    private val allOperations = allOperations.toImmList()
-
     override fun exists() = true
     override fun lastBlockTime() = lastBlockTime
     override fun transactionIid() = transactionIid

@@ -9,6 +9,9 @@ import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.parser.Parser
 import com.github.h0tk3y.betterParse.parser.parseToEnd
 import net.postchain.rell.base.mtype.*
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.mapIndexedToImmList
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 import net.postchain.rell.base.utils.toImmSet
@@ -267,7 +270,7 @@ private class MsTypeParam(
     }
 
     companion object {
-        fun compileAll(ctx: MsTypeCtx, sParams: List<MsTypeParam>): List<M_TypeParam> {
+        fun compileAll(ctx: MsTypeCtx, sParams: List<MsTypeParam>): ImmList<M_TypeParam> {
             val res = mutableListOf<M_TypeParam>()
             var curCtx = ctx
             for (sParam in sParams) {
@@ -284,7 +287,7 @@ private class MsParentType(private val name: String, private val args: List<MsTy
     fun compile(ctx: MsTypeCtx): M_GenericTypeParent {
         val typeDef = ctx.types.getValue(name)
         val genType = checkNotNull(typeDef.genericType()) { name }
-        val mArgs = args.map { it.compile(ctx).type }
+        val mArgs = args.mapToImmList { it.compile(ctx).type }
         return M_GenericTypeParent(genType, mArgs)
     }
 }
@@ -304,7 +307,7 @@ private class MsTypeDef(
 
 private class MsFunParam(private val annotations: List<String>, private val type: MsType) {
     fun compile(ctx: MsTypeCtx, name: String): M_FunctionParam {
-        val annMap = MsParamAnn.values().map { it.name.lowercase() to it }.toImmMap()
+        val annMap = MsParamAnn.entries.map { it.name.lowercase() to it }.toImmMap()
         val anns = annotations.map { annMap.getValue(it) }.toImmSet()
         val mType = type.compile(ctx)
         return M_FunctionParam(
@@ -327,7 +330,7 @@ private class MsFunHeader(val typeParams: List<MsTypeParam>, val params: List<Ms
         val mTypeParams = MsTypeParam.compileAll(ctx, typeParams)
         val subCtx = ctx.nestedTypeParams(mTypeParams)
         val mResType = result.compile(subCtx)
-        val mParams = params.mapIndexed { i, param ->
+        val mParams = params.mapIndexedToImmList { i, param ->
             val name = ('a' + i).toString()
             param.compile(subCtx, name)
         }

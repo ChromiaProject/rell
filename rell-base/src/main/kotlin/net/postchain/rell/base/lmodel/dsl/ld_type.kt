@@ -7,7 +7,7 @@ package net.postchain.rell.base.lmodel.dsl
 import net.postchain.rell.base.lmodel.L_TypeParams
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.mtype.*
-import net.postchain.rell.base.utils.Nullable
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 
@@ -116,7 +116,7 @@ class Ld_Type_Generic(
 ): Ld_Type() {
     override fun finish(ctx: Ld_TypeFinishContext): M_Type {
         val typeDef = ctx.getTypeDef(typeName, pos)
-        val mArgs = args.map { it.finish(ctx) }.toImmList()
+        val mArgs = args.mapToImmList { it.finish(ctx) }
         val mType = typeDef.mGenericType.getType(mArgs)
         mType.validate()
         return mType
@@ -132,7 +132,7 @@ class Ld_Type_Nullable(private val valueType: Ld_Type): Ld_Type() {
 
 class Ld_Type_Tuple(private val fields: List<Pair<String?, Ld_Type>>): Ld_Type() {
     override fun finish(ctx: Ld_TypeFinishContext): M_Type {
-        val mFieldNames = fields.map { Nullable.of(it.first) }
+        val mFieldNames = fields.map { it.first }
         val mFieldTypes = fields.map { it.second.finish(ctx) }
         return M_Types.tuple(mFieldTypes, mFieldNames)
     }

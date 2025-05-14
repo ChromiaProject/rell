@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.def
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_CallArgument
 import net.postchain.rell.base.compiler.ast.S_CallArguments
 import net.postchain.rell.base.compiler.ast.S_FunctionBody
@@ -20,6 +19,8 @@ import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget_RegularUserFunction
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmMultimap
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.ide.IdeCompletion
@@ -31,12 +32,12 @@ abstract class C_GlobalFunction {
     open fun getAbstractDescriptor(): C_AbstractFunctionDescriptor? = null
     open fun getExtendableDescriptor(): C_ExtendableFunctionDescriptor? = null
     open fun getDefMeta(): R_DefinitionMeta? = null
-    open fun ideGetParameterCompletions(): Multimap<String, IdeCompletion> = immMultimapOf()
+    open fun ideGetParameterCompletions(): ImmMultimap<String, IdeCompletion> = immMultimapOf()
 
     protected abstract fun compileCall0(
         ctx: C_ExprContext,
         name: LazyPosString,
-        args: List<S_CallArgument>,
+        args: ImmList<S_CallArgument>,
         resTypeHint: C_TypeHint,
     ): V_GlobalFunctionCall
 
@@ -46,9 +47,8 @@ abstract class C_GlobalFunction {
         args: S_CallArguments,
         resTypeHint: C_TypeHint,
     ): V_GlobalFunctionCall {
-        // TODO COLLECTIONS_REFACTORING
-        val completionsLate: C_LateInit<Multimap<String, IdeCompletion>> =
-            C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
+        val completionsLate = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
+
         ctx.executor.onPass(C_CompilerPass.COMPLETIONS) {
             val completions = ideGetParameterCompletions()
             completionsLate.set(completions)
@@ -95,7 +95,7 @@ abstract class C_UserGlobalFunction(
     final override fun compileCall0(
         ctx: C_ExprContext,
         name: LazyPosString,
-        args: List<S_CallArgument>,
+        args: ImmList<S_CallArgument>,
         resTypeHint: C_TypeHint,
     ): V_GlobalFunctionCall {
         val header = headerLate.get()
@@ -105,7 +105,7 @@ abstract class C_UserGlobalFunction(
         return C_FunctionUtils.compileRegularCall(callTargetBase, callTarget, args, resTypeHint)
     }
 
-    override fun ideGetParameterCompletions(): Multimap<String, IdeCompletion> {
+    override fun ideGetParameterCompletions(): ImmMultimap<String, IdeCompletion> {
         return rFunction.params()
             .map {
                 val comp = C_IdeCompletionsUtils.makeIdeCompletion(it.docSymbol)

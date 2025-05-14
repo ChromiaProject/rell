@@ -12,8 +12,11 @@ import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.SqlGen
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapToImmList
+import net.postchain.rell.base.utils.toImmList
 import org.apache.commons.collections4.ListUtils
 import java.math.BigDecimal
 import kotlin.math.max
@@ -352,7 +355,7 @@ sealed class R_CreateExpr(type: R_Type, private val rEntity: R_EntityDefinition)
         return res
     }
 
-    private fun splitValues(globalCtx: Rt_GlobalContext, values: InsertData): List<InsertData> {
+    private fun splitValues(globalCtx: Rt_GlobalContext, values: InsertData): ImmList<InsertData> {
         if (values.rows.isEmpty()) {
             return immListOf()
         } else if (values.attrs.isEmpty()) {
@@ -361,7 +364,7 @@ sealed class R_CreateExpr(type: R_Type, private val rEntity: R_EntityDefinition)
 
         val recordsPerPage = max(globalCtx.sqlUpdatePortionSize / values.attrs.size, 1)
         val pages = ListUtils.partition(values.rows, recordsPerPage)
-        return pages.map { InsertData(values.attrs, it) }
+        return pages.mapToImmList { InsertData(values.attrs, it) }
     }
 
     companion object {
@@ -624,7 +627,7 @@ class R_StackTraceExpr(private val subExpr: R_Expr, private val filePos: R_FileP
             } catch (e: Rt_Exception) {
                 throw if (e.info.stack.isNotEmpty()) e else {
                     val stack = frame.stackTrace(filePos)
-                    val info = Rt_ExceptionInfo(extraMessage = e.info.extraMessage, stack = stack)
+                    val info = Rt_ExceptionInfo(extraMessage = e.info.extraMessage, stack = stack.toImmList())
                     Rt_Exception(e.err, info, e)
                 }
             }
