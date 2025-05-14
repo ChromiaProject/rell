@@ -1,0 +1,8 @@
+blockchains:
+  seeder_lib_test:
+    module: lib.my_lib
+    type: library
+compile:
+  rellVersion: 0.14.2
+database:
+  schema: schema_seeder_lib_test

@@ -58,6 +58,7 @@ class SeeederApiTest {
             .sourceDir(testData.sourceFolder)
             .rootConfig(config)
             .outputPath(testData.sourceFolder.toPath())
+            .mountName("blockchain_1")
             .build()
 
         val exception = assertThrows<ConfigurationValidationException> {

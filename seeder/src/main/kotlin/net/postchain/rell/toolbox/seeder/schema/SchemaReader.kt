@@ -10,13 +10,15 @@ class SchemaReader {
     fun readSchema(
         sourceDir: File,
         modules: List<String>? = null,
-        rellVersion: R_LangVersion = RellVersions.VERSION
+        rellVersion: R_LangVersion = RellVersions.VERSION,
+        isLibrary: Boolean = false,
     ): RellSchema {
-        val app = compileApp(sourceDir, modules, rellVersion)
+        val app = compileApp(sourceDir, modules, rellVersion, isLibrary)
         return buildSchema(app)
     }
 
-    private fun compileApp(sourceDir: File, appModules: List<String>?, rellVersion: R_LangVersion): R_App {
+    private fun compileApp(sourceDir: File, appModules: List<String>?, rellVersion: R_LangVersion, isLibrary: Boolean):
+        R_App {
         val conf = RellApiCompile.Config.Builder()
             .moduleArgsMissingError(false)
             .mountConflictError(true)
@@ -25,7 +27,11 @@ class SchemaReader {
             .quiet(true)
             .build()
         return try {
-            RellApiCompile.compileApp(conf, sourceDir, appModules)
+            if (isLibrary) {
+                RellApiCompile.compileApp(conf, sourceDir, null)
+            } else {
+                RellApiCompile.compileApp(conf, sourceDir, appModules)
+            }
         } catch (e: Exception) {
             throw SchemaReaderException("Compilation failed", e)
         }
