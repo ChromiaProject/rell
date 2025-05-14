@@ -71,7 +71,7 @@ dependency-check:
   stage: dependency-check
   interruptible: true
   script:
-    - mvn $MAVEN_CLI_OPTS $MAVEN_CLI_NVD_OPTS --activate-profiles dependency-check verify
+    - mvn $MAVEN_CLI_OPTS $MAVEN_CLI_NVD_OPTS -Pdependency-check verify
   only:
     variables:
       - $RUN_DEPENDENCY_CHECK == "true"

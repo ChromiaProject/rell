@@ -30,8 +30,12 @@
         <postchain.version>3.34.0</postchain.version>
         <dist-classifier>dist</dist-classifier>
 
+        <jacoco.version>0.8.13</jacoco.version>
+
         <kotlin.version>2.0.0</kotlin.version>
         <kotlin.compiler.jvmTarget>21</kotlin.compiler.jvmTarget>
+        <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
+
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
 
@@ -61,7 +65,7 @@
                     <plugin>
                         <groupId>org.owasp</groupId>
                         <artifactId>dependency-check-maven</artifactId>
-                        <version>11.1.0</version>
+                        <version>12.1.1</version>
                         <configuration>
                             <prettyPrint>true</prettyPrint>
                             <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
@@ -89,7 +93,7 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>0.8.10</version>
+                        <version>${jacoco.version}</version>
                         <executions>
                             <execution>
                                 <id>default-prepare-agent</id>
@@ -185,9 +189,16 @@
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers-bom</artifactId>
-                <version>1.17.3</version>
+                <version>1.21.0</version>
                 <scope>import</scope>
                 <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>5.12.2</version>
+                <type>pom</type>
+                <scope>test</scope>
             </dependency>
 
             <!-- Only needed to parse a database URL in CLI tools - consider removing. -->
@@ -202,19 +213,17 @@
     <dependencies>
         <dependency>
             <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-engine</artifactId>
-            <version>1.9.2</version>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-test-junit5</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
+            <artifactId>kotlin-test-junit</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -288,7 +297,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>properties-maven-plugin</artifactId>
-                    <version>1.1.0</version>
+                    <version>1.2.1</version>
                     <executions>
                         <execution>
                             <phase>generate-resources</phase>
@@ -342,11 +351,17 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <args>
+                        <!-- https://youtrack.jetbrains.com/issue/KTIJ-22326 -->
+                        <arg>-Xsuppress-warning=OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE</arg>
+                    </args>
+                </configuration>
             </plugin>
 
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
+                <version>3.14.0</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
@@ -356,7 +371,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.12.4</version>
+                <version>3.5.3</version>
                 <configuration>
                     <excludes>
                         <exclude>**/*IT.java</exclude>
@@ -367,7 +382,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.12.4</version>
+                <version>3.5.3</version>
                 <configuration>
                     <includes>
                         <include>**/*IT.java</include>
