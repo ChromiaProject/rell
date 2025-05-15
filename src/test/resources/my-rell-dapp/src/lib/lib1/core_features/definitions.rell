@@ -1,0 +1,10 @@
+val SUB_CONSTANT: text = "Submodule Constant";
+
+function get_sub_feature_status(): boolean {
+    return true;
+}
+
+object SubObject {
+    id: integer = 1;
+    description: text = "A sub object";
+}

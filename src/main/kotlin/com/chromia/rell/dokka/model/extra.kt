@@ -11,6 +11,7 @@ import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.model.IsVar
 import org.jetbrains.dokka.model.properties.ExtraProperty
+import org.jetbrains.dokka.model.properties.MergeStrategy
 
 object IsStatic : ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsStatic> {
     override val key: ExtraProperty.Key<DFunction, *> = this
@@ -68,7 +69,10 @@ fun DClasslike.isEntity() = this is DClass && this.extra[IsEntity] != null
 
 class IsNamespace(val name: String): ExtraProperty<DPackage> {
     override val key: ExtraProperty.Key<DPackage, *> get() = Companion
-    companion object: ExtraProperty.Key<DPackage, IsNamespace>
+    companion object: ExtraProperty.Key<DPackage, IsNamespace> {
+        override fun mergeStrategyFor(left: IsNamespace, right: IsNamespace) = 
+            MergeStrategy.Replace(left)
+    }
 }
 
 fun DPackage.isNamespace() = this.extra[IsNamespace] != null
@@ -107,7 +111,10 @@ fun DFunction.isExtendable() = this.extra[IsExtendable] != null
 class ExtensionFunctionExtra(val target: DRI): ExtraProperty<DFunction> {
     override val key: ExtraProperty.Key<DFunction, *> get() = Companion
 
-    companion object : ExtraProperty.Key<DFunction, ExtensionFunctionExtra>
+    companion object : ExtraProperty.Key<DFunction, ExtensionFunctionExtra> {
+        override fun mergeStrategyFor(left: ExtensionFunctionExtra, right: ExtensionFunctionExtra) =
+            MergeStrategy.Replace(left)
+    }
 }
 
 fun DFunction.extensionTarget() = this.extra[ExtensionFunctionExtra]?.target
@@ -131,9 +138,11 @@ object IsQuery: ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsQuery> 
 fun DFunction.isQuery() = this.extra[IsQuery] != null
 
 class MountNameExtra(val mountName: R_MountName): ExtraProperty<DFunction> {
-
     override val key: ExtraProperty.Key<DFunction, *> = Companion
-    companion object : ExtraProperty.Key<DFunction, MountNameExtra>
+    companion object : ExtraProperty.Key<DFunction, MountNameExtra> {
+        override fun mergeStrategyFor(left: MountNameExtra, right: MountNameExtra) =
+            MergeStrategy.Replace(left)
+    }
 }
 
 fun DFunction.getMountName() = this.extra[MountNameExtra]?.mountName

@@ -1,0 +1,37 @@
+enum color {
+    RED,
+    GREEN,
+    BLUE
+}
+
+val MY_CONSTANT: integer = 123;
+
+entity user {
+    name: text = "";
+    age: integer = 0;
+}
+
+function get_message(name: text): text {
+    return "Hello, " + name;
+}
+
+operation create_user(name: text, age: integer) {
+    create user ( name = name, age = age );
+}
+
+query get_all_users() {
+    return user @* { };
+}
+
+namespace nested {
+    val NESTED_CONSTANT: boolean = true;
+
+    entity product {
+        sku: text = "";
+        price: decimal = 0.0;
+    }
+
+    function get_product_info(p: product): text {
+        return p.sku + ": $" + p.price;
+    }
+}

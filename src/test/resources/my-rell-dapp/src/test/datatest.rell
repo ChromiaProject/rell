@@ -1,0 +1,18 @@
+@test module;
+
+import ^^.main.{my_name, set_name, user};
+import test.arithmetic.*;
+
+val PI = 1234134.1;
+val Y = X;
+
+function test_add_name() {
+    assert_equals(my_name.name, "World");
+
+    val tx = rell.test.tx(set_name("Bob"));
+    assert_equals(my_name.name, "World");
+    test_foo();
+
+    tx.run();
+    assert_equals(my_name.name, "Bob");
+}

@@ -1,0 +1,11 @@
+namespace child_defs {
+    val CHILD_CONSTANT: boolean = false;
+    enum child_enum {
+        option_a,
+        option_b
+    }
+
+    function get_child_option(): child_enum {
+        return child_enum.option_a;
+    }
+}
