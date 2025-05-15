@@ -17,6 +17,7 @@ class DokkaCommand : CliktCommand() {
     private val source by option().file(mustExist = true, canBeFile = false).default(File("src"))
     private val target by option().file(canBeFile = false).default(File("out"))
     private val modules by option().split(",")
+    private val additionalModules by option().split(",").default(emptyList())
     private val name by option().default("My Rell Dapp")
     private val styles by option().split(",")
     private val assets by option().split(",")
@@ -37,6 +38,7 @@ class DokkaCommand : CliktCommand() {
                 .footerMessage("© ${Calendar.getInstance().get(Calendar.YEAR)} Chromia")
                 .includes(includes)
                 .filteredModules(filteredModules)
+                .additionalModules(additionalModules)
         sourceLink?.let {
             val localDirectory = it.substringBefore('=', "")
             val remoteUrlWithSuffix = it.substringAfter('=')
