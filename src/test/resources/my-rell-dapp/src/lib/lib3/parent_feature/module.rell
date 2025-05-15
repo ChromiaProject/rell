@@ -1,0 +1,12 @@
+namespace parent_namespace {
+    val PARENT_VAL: text = "Parent Value";
+}
+
+object parent_object {
+    id: text = parent_namespace.PARENT_VAL;
+}
+
+struct parent_struct {
+    id: integer;
+    name: text;
+}

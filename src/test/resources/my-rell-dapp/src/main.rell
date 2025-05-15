@@ -1,0 +1,22 @@
+module;
+
+import lib.lib1.*;
+
+entity person {
+    key name: text;
+    index email: text;
+    mutable password: text;
+    mutable user;
+}
+
+object my_name {
+    mutable name = "World";
+    color = color.RED;
+    is_active: boolean = nested.NESTED_CONSTANT;
+}
+
+operation set_name(name) {
+    my_name.name = name;
+}
+
+query hello_world() = "Hello %s!".format(my_name.name);

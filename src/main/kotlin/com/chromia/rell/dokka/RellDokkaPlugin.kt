@@ -1,5 +1,6 @@
 package com.chromia.rell.dokka
 
+import com.chromia.rell.dokka.config.HiddenPackagesRegistry
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.doc.AliasDocTagProvider
 import com.chromia.rell.dokka.moduledocs.rellModuleAndPackageDocumentationTransformer
@@ -30,11 +31,20 @@ class RellDokkaPlugin : DokkaPlugin() {
     @DokkaPluginApiPreview
     override fun pluginApiPreviewAcknowledgement() = PluginApiPreviewAcknowledgement
 
+    private fun initializeHiddenModulesRegistry(context: DokkaContext) {
+        val configuredModules = config(context)?.filteredModules ?: emptyList()
+        if (configuredModules.isNotEmpty()) {
+            HiddenPackagesRegistry.hide(configuredModules)
+        }
+    }
+
     val sourceToDocumentableTranslator by extending {
-        CoreExtensions.sourceToDocumentableTranslator providing {
-            when (config(it)?.system) {
+        CoreExtensions.sourceToDocumentableTranslator providing { context ->
+            initializeHiddenModulesRegistry(context)
+            
+            when (config(context)?.system) {
                 true -> RellSystemLibToDocumentableTranslator
-                else -> RellSourceToDocumentableTranslator(it)
+                else -> RellSourceToDocumentableTranslator(context)
             }
         }
     }
@@ -85,7 +95,7 @@ class RellDokkaPlugin : DokkaPlugin() {
     val rellNavigationPageInstaller by extending {
         with (plugin<DokkaBase>()) {
             htmlPreprocessors providing {context ->
-                RellNavigationPageInstaller(context, config(context)?.filteredModules) } override navigationPageInstaller
+                RellNavigationPageInstaller(context, HiddenPackagesRegistry.packages) } override navigationPageInstaller
         }
     }
 

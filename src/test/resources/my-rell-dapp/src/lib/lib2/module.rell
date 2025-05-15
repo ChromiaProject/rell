@@ -1,0 +1,38 @@
+enum Status {
+    PENDING,
+    APPROVED,
+    REJECTED
+}
+
+val MAX_ITEMS: integer = 100;
+
+entity Order {
+    key id: integer = 0;
+    item_count: integer = 0;
+    mutable status: Status = Status.PENDING;
+}
+
+function calculate_total(price: decimal, quantity: integer): decimal {
+    return price * quantity;
+}
+
+operation approve_order(order_id: integer) {
+    update Order @ { .id == order_id } ( status = Status.APPROVED );
+}
+
+query get_pending_orders() {
+    return Order @* { .status == Status.PENDING };
+}
+
+namespace utils {
+    val TIMEOUT_SECONDS: integer = 60;
+
+    entity LogEntry {
+        key timestamp: integer = 0;
+        message: text = "";
+    }
+
+    function format_log(entry: LogEntry): text {
+        return "[" + entry.timestamp + "] " + entry.message;
+    }
+}
