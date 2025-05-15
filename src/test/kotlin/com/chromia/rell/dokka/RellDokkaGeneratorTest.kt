@@ -2,12 +2,7 @@ package com.chromia.rell.dokka
 
 import assertk.Assert
 import assertk.assertThat
-import assertk.assertions.any
-import assertk.assertions.containsExactlyInAnyOrder
-import assertk.assertions.each
-import assertk.assertions.isNotNull
-import assertk.assertions.isTrue
-import assertk.assertions.startsWith
+import assertk.assertions.*
 import com.chromia.rell.dokka.config.RellDokkaPluginConfigurationBuilder
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -48,9 +43,15 @@ class RellDokkaGeneratorTest {
 
     @Test
     fun `generated main html page should contain included modules and their namespaces`() {
-        val includedModules = listOf("lib.lib1")
+        val additionalModules = listOf("lib.lib1")
+        val entryPointModules = listOf("main")
 
-        val builder = configBuilder(projectRoot.resolve("src"), includedModules).targetFolder(targetFolder)
+        val builder = configBuilder(
+                projectRoot.resolve("src"),
+                entryPointModules,
+                additionalModules
+        ).targetFolder(targetFolder)
+
         RellDokkaGenerator(builder).generate()
 
         val indexHtmlFile = File(targetFolder, "index.html")
@@ -65,15 +66,21 @@ class RellDokkaGeneratorTest {
         }
 
         assertThat(documentedNamespaces).each {
-            it.isFromAllowedModules(includedModules)
+            it.isFromAllowedModules(entryPointModules + additionalModules)
         }
     }
 
     @Test
     fun `generated directory structure contains only folders with names of included modules and their submodules`() {
-        val includedModules = listOf("lib.lib1")
+        val additionalModules = listOf("lib.lib1")
+        val entryPointModules = listOf("main")
 
-        val builder = configBuilder(projectRoot.resolve("src"), includedModules).targetFolder(targetFolder)
+        val builder = configBuilder(
+                projectRoot.resolve("src"),
+                entryPointModules,
+                additionalModules
+        ).targetFolder(targetFolder)
+
         RellDokkaGenerator(builder).generate()
 
         val modelDir = targetFolder.resolve("model")
@@ -86,13 +93,14 @@ class RellDokkaGeneratorTest {
                 ?.toSet() ?: emptySet()
 
         assertThat(actualDirs).each {
-            it.isFromAllowedModules(includedModules)
+            it.isFromAllowedModules(entryPointModules + additionalModules)
         }
     }
 
     @Test
     fun `generated navigation html should contains all definitions from included modules only`() {
-        val includedModules = listOf("main", "lib.lib1")
+        val entryPointModules = listOf("main")
+        val additionalModules = listOf("lib.lib1")
 
         val moduleDeclarations = mapOf(
                 "main" to listOf(
@@ -114,7 +122,12 @@ class RellDokkaGeneratorTest {
                 )
         )
 
-        val builder = configBuilder(projectRoot.resolve("src"), includedModules).targetFolder(targetFolder)
+        val builder = configBuilder(
+                projectRoot.resolve("src"),
+                entryPointModules,
+                additionalModules
+        ).targetFolder(targetFolder)
+
         RellDokkaGenerator(builder).generate()
 
         val navigationHtmlFile = File(targetFolder, "navigation.html")
@@ -161,7 +174,11 @@ class RellDokkaGeneratorTest {
         }
     }
 
-    private fun configBuilder(projectRoot: File, modules: List<String>): RellDokkaPluginConfigurationBuilder {
+    private fun configBuilder(
+            projectRoot: File,
+            modules: List<String>,
+            additionalModules: List<String> = emptyList()
+    ): RellDokkaPluginConfigurationBuilder {
         return RellDokkaPluginConfigurationBuilder(
                 title = "model",
                 modules = modules,
@@ -172,5 +189,6 @@ class RellDokkaGeneratorTest {
                 .includes(listOf())
                 .footerMessage("Footer Message")
                 .filteredModules(listOf())
+                .additionalModules(additionalModules)
     }
 }

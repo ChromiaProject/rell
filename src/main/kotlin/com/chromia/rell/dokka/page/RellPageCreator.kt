@@ -96,7 +96,7 @@ class RellPageCreator(
 
                 if (
                         rellDokkaPluginConfiguration != null &&
-                        (HiddenPackagesRegistry.packages.none { dPackage.packageName.equals(it) })
+                        (HiddenPackagesRegistry.packages.none { dPackage.packageName == it })
                 ) {
 
                     val documentations = dPackage.sourceSets.map { platform ->

@@ -32,9 +32,12 @@ class RellDokkaPlugin : DokkaPlugin() {
     override fun pluginApiPreviewAcknowledgement() = PluginApiPreviewAcknowledgement
 
     private fun initializeHiddenModulesRegistry(context: DokkaContext) {
-        val configuredModules = config(context)?.filteredModules ?: emptyList()
-        if (configuredModules.isNotEmpty()) {
-            HiddenPackagesRegistry.hide(configuredModules)
+        val config = config(context) ?: return
+        with(config) {
+            val modulesToHide = filteredModules.filterNot { it in additionalModules }
+            if (filteredModules.isNotEmpty()) {
+                HiddenPackagesRegistry.hide(modulesToHide)
+            }
         }
     }
 

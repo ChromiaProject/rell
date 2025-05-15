@@ -40,6 +40,7 @@ fun createDappTestSourceSet(
             analysisPlatform = Platform.js,
             includes = includes.map { transformModuleFile(it) }.toSet(),
             externalDocumentationLinks = setOf(systemLibExternalDocumentationLink),
+            dependentSourceSets = setOf(DokkaSourceSetID("main", "dapp")),
             sourceLinks = sourceLinks,
     )
 }

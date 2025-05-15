@@ -7,12 +7,13 @@ import com.chromia.rell.dokka.reflection.getNameByReflection
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellApiCompile.Config
 import net.postchain.rell.base.model.R_App
+import net.postchain.rell.base.model.R_Definition
 import net.postchain.rell.base.model.R_FunctionDefinition
 import net.postchain.rell.base.model.R_Module
 import org.jetbrains.dokka.links.DRI
 import java.io.File
 
-class RellAnalysis(sourceRoot: File, val entryPointModules: List<String>?) {
+class RellAnalysis(sourceRoot: File, entryPointModules: List<String>?, val additionalModules: List<String>? = null) {
 
     private val allFunctions: List<R_FunctionDefinition>
     private val functionsByAppLevelName: Map<String, R_FunctionDefinition>
@@ -31,7 +32,12 @@ class RellAnalysis(sourceRoot: File, val entryPointModules: List<String>?) {
                 .appModuleInTestsError(false)
                 .build()
 
-        val app = RellApiCompile.compileApp(config, sourceRoot, entryPointModules)
+        val modulesToCompile = (entryPointModules.orEmpty() + additionalModules.orEmpty()).distinct()
+
+        val app = RellApiCompile.compileApp(
+                config, sourceRoot,
+                modulesToCompile
+        )
 
         modules = app.modules.filterNot { it.test }
         testModules = app.modules.filter { it.test }
@@ -63,33 +69,38 @@ class RellAnalysis(sourceRoot: File, val entryPointModules: List<String>?) {
 
     fun testModules() = testModules
 
-    fun hiddenPackages(): List<String> {
-        val allModules = modules + testModules
-        val entryPointModuleNames = entryPointModules ?: emptyList()
-
-        return allModules.flatMap { nonEntryPointQualifierFrom(it, entryPointModuleNames) }
-    }
+    fun hiddenPackages(): List<String> =
+            (modules + testModules)
+                    .flatMap(::nonEntryPointQualifierFrom)
+                    .distinct()
 
     private fun nonEntryPointQualifierFrom(
             module: R_Module,
-            entryPointModuleNames: List<String>
     ): List<String> {
-        val definitions = listOf(
-                module.functions.values,
-                module.constants.values,
-                module.objects.values,
-                module.enums.values,
-                module.operations.values,
-                module.queries.values
-        ).flatten()
+        val definitions = module.allDefinitions
 
         return definitions
                 .map { it.defName.appLevelName to it.defName.module }
-                .filterNot { (_, moduleName) -> moduleName in entryPointModuleNames }
+                .filterNot { (_, moduleName) -> shouldExclude(module, moduleName) }
                 .map { (appLevelName, moduleName) ->
                     parseQualifiedName(appLevelName, moduleName)
                 }
     }
+
+    private fun shouldExclude(module: R_Module, moduleName: String) =
+        if (module.test || moduleName.startsWith("lib.")) {
+            additionalModules?.any { moduleName == it } ?: true
+        } else true
+
+    private val R_Module.allDefinitions: List<R_Definition>
+        get() = listOf(
+                functions.values,
+                constants.values,
+                objects.values,
+                enums.values,
+                operations.values,
+                queries.values
+        ).flatten()
 
     private fun parseQualifiedName(appLevelName: String, moduleName: String): String {
         val parts = appLevelName.split(":".toRegex(), limit = 2)

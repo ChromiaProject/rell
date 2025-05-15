@@ -19,7 +19,7 @@ class RellSourceToDocumentableTranslator(context: DokkaContext) : SourceToDocume
     private val rellConfig = configuration<RellDokkaPlugin, RellDokkaPluginConfiguration>(context)
 
     override fun invoke(sourceSet: DokkaConfiguration.DokkaSourceSet, context: DokkaContext): DModule {
-        val rellAnalysis = RellAnalysis(sourceSet.sourceRoots.first(), rellConfig?.modules)
+        val rellAnalysis = RellAnalysis(sourceSet.sourceRoots.first(), rellConfig?.modules, rellConfig?.additionalModules)
 
         val scopeId = sourceSet.sourceSetID.scopeId
         val isTestSource = scopeId == "test"
