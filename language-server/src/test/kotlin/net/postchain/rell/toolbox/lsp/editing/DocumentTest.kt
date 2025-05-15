@@ -7,19 +7,21 @@ import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
 import java.net.URI
 
 internal class DocumentTest {
-
-    private val document = Document(
-        URI(""),
-        0,
-        """
+    private val fileContent = """
             Holabaloo
             this iS my second line.
         
             foUrth linE
         """.trimIndent()
+    private val document = Document(
+        URI(""),
+        0,
+        fileContent
     )
 
     @Test
@@ -33,7 +35,12 @@ internal class DocumentTest {
     }
 
     @Test
-    fun `Get offset of a Position`() {
+    fun `Get offset of a Position`(@TempDir tempDir: File) {
+        val fileUri = tempDir.resolve("test.txt").let {
+            it.writeText(fileContent)
+            it.toURI()
+        }
+        val document = Document(fileUri, 0, fileContent)
         assertThrows<IndexOutOfBoundsException> { document.getOffSet(Position(0, -1)) }
         assertThrows<IndexOutOfBoundsException> { document.getOffSet(Position(3, 12)) }
         assertThat(document.getOffSet(Position(0, 0))).isEqualTo(0)
