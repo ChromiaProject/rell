@@ -7,12 +7,26 @@ import org.antlr.v4.runtime.misc.Interval
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
+import java.io.File
+import java.io.IOException
 import java.net.URI
 
-data class Document(val fileUri: URI, val version: Int, val content: String) {
+data class Document(val fileUri: URI, val version: Int, var content: String) {
 
-    fun getOffSet(position: Position): Int =
-        positionToOffset(content, net.postchain.rell.toolbox.common.Position(position.line, position.character))
+    fun getOffSet(position: Position): Int {
+        return try {
+            positionToOffset(content, net.postchain.rell.toolbox.common.Position(position.line, position.character))
+        } catch (e: IndexOutOfBoundsException) {
+            // HACK: This is a workaround for the case when the file was changed on disk
+            // If the position is out of bounds, we need to read the file again in case file on disk was changed
+            try {
+                content = File(fileUri).readText()
+                positionToOffset(content, net.postchain.rell.toolbox.common.Position(position.line, position.character))
+            } catch (_: IOException) {
+                throw e
+            }
+        }
+    }
 
     fun getPosition(offset: Int): Position = offsetToPosition(content, offset).toLspPosition()
 
