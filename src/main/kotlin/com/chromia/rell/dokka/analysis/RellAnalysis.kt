@@ -13,7 +13,11 @@ import net.postchain.rell.base.model.R_Module
 import org.jetbrains.dokka.links.DRI
 import java.io.File
 
-class RellAnalysis(sourceRoot: File, entryPointModules: List<String>?, val additionalModules: List<String>? = null) {
+class RellAnalysis(
+        sourceRoot: File,
+        val entryPointModules: List<String>?,
+        val additionalModules: List<String>? = null
+) {
 
     private val allFunctions: List<R_FunctionDefinition>
     private val functionsByAppLevelName: Map<String, R_FunctionDefinition>
@@ -88,7 +92,7 @@ class RellAnalysis(sourceRoot: File, entryPointModules: List<String>?, val addit
     }
 
     private fun shouldExclude(module: R_Module, moduleName: String) =
-        if (module.test || moduleName.startsWith("lib.")) {
+        if (module.test || isLibraryModule(moduleName) ) {
             additionalModules?.any { moduleName == it } ?: true
         } else true
 
@@ -101,6 +105,12 @@ class RellAnalysis(sourceRoot: File, entryPointModules: List<String>?, val addit
                 operations.values,
                 queries.values
         ).flatten()
+
+    private fun isLibraryModule(moduleName: String) : Boolean = moduleName.run {
+        startsWith("lib.") && entryPointModules
+                .orEmpty()
+                .none { startsWith(it) }
+    }
 
     private fun parseQualifiedName(appLevelName: String, moduleName: String): String {
         val parts = appLevelName.split(":".toRegex(), limit = 2)
