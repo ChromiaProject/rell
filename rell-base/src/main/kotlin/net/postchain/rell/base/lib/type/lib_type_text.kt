@@ -42,15 +42,23 @@ object Lib_Type_Text {
         alias("tuid", "text", since = SINCE0)
 
         type("text", rType = R_TextType, since = SINCE0) {
-            comment("An immutable data type for representing character strings.")
+            comment("An immutable character string data type.")
 
             staticFunction("from_bytes", result = "text", pure = true, since = "0.9.0") {
-                comment("Creates text from bytes, optionally handling invalid UTF-8 encoding.")
+                comment("""
+                    Create a text representation of the given bytes.
+
+                    By default, an exception is thrown if invalid UTF-8 characters are encountered, however if the
+                    optional parameter `ignore_errors` is provided as `true`, invalid characters are instead replaced
+                    with a placeholder.
+
+                    @throws exception if invalid UTF-8 characters are encountered and `ignore_errors` is `false`
+                """)
                 param("bytes", type = "byte_array", comment = "The byte array to convert to text.")
                 param("ignore_errors", type = "boolean", arity = L_ParamArity.ZERO_ONE) {
                     comment("""
-                        If true, replaces invalid characters with a placeholder;
-                        if false, throws an exception on encountering invalid bytes.
+                        if true, invalid characters are replaced with placeholders; if false, an exception is thrown
+                        (defaults to `false`)
                     """)
                 }
                 bodyOpt1 { bytes, ignoreErrors ->
@@ -289,21 +297,24 @@ object Lib_Type_Text {
 
             function("like", result = "boolean", pure = true, since = "0.10.4") {
                 comment("""
-                    Returns true if this text matches the specified pattern using SQL LIKE syntax.
+                    Matches this text against the specified SQL LIKE pattern.
 
-                    Example:
+                    Use `'_'` to match any single character, and `'%'` to match any sequence of zero or more characters.
+                    The escape sequences `'\\_'`, `'\\%'` and `'\\\\'` match the literal characters `'_'`, `'%'` and
+                    `'\'` respectively.
+
+                    Examples:
 
                     ```rell
-                    val names = ["Alice", "Victor", "Viktor", "Victoria"];
+                    val names = ["Alice", "Victor", "Viktor", "Victoria", "V\\ctor"];
                     print(names @* { .like("Vi_tor") });  // prints [Victor, Viktor]
                     print(names @* { .like("Vic%") }); // prints [Victor, Victoria]
+                    print(names @* { .like("V\\\\c%") }); // prints [V\ctor]
                     ```
+
+                    @see PostgreSQL [Pattern Matching: LIKE](https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE)
                 """)
-                param("pattern", type = "text") {
-                    comment("""
-                        The pattern to match against. `_` means any character and `%` means any number of caracters
-                    """)
-                }
+                param("pattern", type = "text", comment = "the pattern to match against")
                 dbFunctionTemplate("text.like", 2, "((#0) LIKE (#1))")
                 body { text, pattern ->
                     val s = text.asString()
@@ -315,8 +326,20 @@ object Lib_Type_Text {
 
             function("matches", result = "boolean", pure = true, since = SINCE0) {
                 comment("""
-                    Returns true if this text matches the given regular expression.
-                    Uses `java.util.regex.Pattern` internally.
+                    Matches this text against the specified regular expression.
+
+                    Regular expressions use the same syntax as [`java.util.regex.Pattern`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/regex/Pattern.html).
+
+                    Examples:
+
+                    ```rell
+                    val names = ["Alice", "Victor", "Viktor", "Victoria", "V\\ctor"];
+                    print(names @* { .matches("Vi[a-z]tor") });  // prints [Victor, Viktor]
+                    print(names @* { .matches("Vic.*") }); // prints [Victor, Victoria]
+                    print(names @* { .matches("V\\\\c.*") }); // prints [V\ctor]
+                    ```
+
+                    @see Pattern [`java.util.regex.Pattern`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/regex/Pattern.html)
                 """)
                 param("regex", type = "text", comment = "The regular expression to match against.")
                 body { a, b ->
@@ -429,8 +452,21 @@ object Lib_Type_Text {
             }
 
             function("repeat", result = "text", pure = true, since = "0.11.0") {
-                comment("Returns the text repeated `n` times. SQL compatible.")
-                param("n", type = "integer", comment = "The number of times to repeat the text.")
+                comment("""
+                    Repeat this text `n` times. SQL compatible.
+
+                    Examples:
+                    - `'abc'.repeat(3)` returns `'abcabcabc'`
+                    - `''.repeat(3)` returns `''`
+                    - `'abc'.repeat(0)` returns `''`
+
+                    @throws exception when:
+                    - `n` is negative
+                    - `n` is greater than `(2^31)-1`
+                    - the resulting text has size greater than `(2^31)-1`
+                    @return text equal to this text, except repeated `n` times
+                """)
+                param("n", type = "integer", comment = "the number of times to repeat this text")
                 dbFunctionTemplate("text.repeat", 2, "${SqlConstants.FN_TEXT_REPEAT}(#0, (#1)::INT)")
                 body { text, n ->
                     val s = text.asString()
@@ -444,7 +480,15 @@ object Lib_Type_Text {
             }
 
             function("reversed", result = "text", pure = true, since = "0.11.0") {
-                comment("Returns a reversed copy of the text. SQL compatible.")
+                comment("""
+                    Returns a reversed copy of this text. SQL compatible.
+
+                    Examples:
+                    - `''.reversed()` returns `''`
+                    - `'a'.reversed()` returns `'a'`
+                    - `'abc'.reversed()` returns `'cba'`
+                    @return text equal to this text, except the order of the characters is reversed
+                """)
                 dbFunctionTemplate("text.reversed", 1, "REVERSE(#0)")
                 body { text ->
                     val s = text.asString()

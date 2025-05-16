@@ -33,7 +33,7 @@ object Lib_Type_Iterable {
                     - `[1, 2, 3].join_to_text()` returns `'1, 2, 3'`.
                     - `[1, 2, 3].join_to_text('_')` returns `'1_2_3'`.
                     - `[1, 2, 3].join_to_text('*', '(', ')')` returns `'(1*2*3)'`.
-                    - `list<t>().join_to_text('!', '(', ')')` returns `'()'` (where `t` is a valid type).
+                    - `list<T>().join_to_text('!', '(', ')')` returns `'()'` (where `T` is a valid type).
                     - `range(10).join_to_text('', '', '', 5)` returns `'01234...'`.
                     - `range(10).join_to_text('', '', '', 5, 'more')` returns `'01234more'`.
 

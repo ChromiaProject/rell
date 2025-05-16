@@ -21,6 +21,20 @@ import net.postchain.rell.base.utils.mapToImmList
 object Lib_Type_Enum {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("enum", abstract = true, hidden = true, since = "0.7.0") {
+            comment("""
+                An enum is a set of member constants who share a type.
+
+                The declaration `enum example { A, B, C }` defines a type `example`, with three member constants,
+                `example.A`, `example.B` and `example.C`.
+
+                Enum names and member constant names follow the same rules as all identifiers in Rell. However, by
+                convention, enum names use `snake_case`, and member constants use `UPPER_SNAKE_CASE`.
+
+                Examples:
+                - `enum primary_color { RED, BLUE, GREEN }`
+                - `enum error { TIMEOUT, MALFORMED_RESPONSE, NOT_FOUND, UNAUTHORIZED, UNKNOWN }`
+                - `enum cardinal_direction { NORTH, EAST, SOUTH, WEST }`
+            """)
             supertypeStrategySpecial { mType ->
                 L_TypeUtils.getRType(mType) is R_EnumType
             }
@@ -31,7 +45,7 @@ object Lib_Type_Enum {
                 generic("T", subOf = "enum")
 
                 property("name", type = "text", pure = true, since = "0.7.0") {
-                    comment("Gets the name of the enum value.")
+                    comment("Get the declared name of the given enum member constant.")
                     value { a ->
                         val attr = a.asEnum()
                         Rt_TextValue.get(attr.name)
@@ -46,11 +60,26 @@ object Lib_Type_Enum {
                     val attr = a.asEnum()
                     Rt_IntValue.get(attr.value.toLong())
                 }) {
-                    comment("Gets the numeric value of the enum.")
+                    comment("""
+                        Get the ordinal value of an enum member constant.
+
+                        Enum member constants are assigned integer values in the order in which they are declared,
+                        starting with `0`.
+
+                        With the definition `enum example { A, B, C }`, we have:
+                        - `example.A.value` returns `0`
+                        - `example.B.value` returns `1`
+                        - `example.C.value` returns `2`
+                    """)
                 }
 
                 staticFunction("values", result = "list<T>", pure = true, since = "0.7.0") {
-                    comment("Gets all values of the enum.")
+                    comment("""
+                        Get all member constants of this enum as a list, in the order in which they are defined.
+
+                        For example, `primary_color.values()` returns `[RED, BLUE, GREEN]` where `primary_color` is
+                        defined `enum primary_color { RED, BLUE, GREEN }`
+                    """)
                     bodyMeta {
                         val listType = fnBodyMeta.rResultType as R_ListType
                         val enumType = listType.elementType as R_EnumType
@@ -64,8 +93,17 @@ object Lib_Type_Enum {
                 }
 
                 staticFunction("value", result = "T", pure = true, since = "0.7.0") {
-                    comment("Gets the enum value by name. Fails if `name` is not found.")
-                    param("name", type = "text", comment = "The name of the enum value.")
+                    comment("""
+                        Get an enum member constant value by its name.
+
+                        With the definition `enum example { A, B, C }`, we have:
+                        - `example.value("A")` returns `A`
+                        - `example.value("B")` returns `B`
+                        - `example.value("C")` returns `C`
+                        - `example.value("D")` throws an exception
+                        @throws exception if there is no member constant in this enum with the given name
+                    """)
+                    param("name", type = "text", comment = "the name of the enum member constant")
                     bodyMeta {
                         val enumType = fnBodyMeta.rResultType as R_EnumType
                         val enum = enumType.enum
@@ -84,8 +122,18 @@ object Lib_Type_Enum {
                 }
 
                 staticFunction("value", result = "T", pure = true, since = "0.7.0") {
-                    comment("Gets the enum value by ordinal value. Fails if the ordinal is not found.")
-                    param("value", type = "integer", comment = "The ordinal value of the enum to get.")
+                    comment("""
+                        Get an enum member constant by its ordinal value.
+
+                        With the definition `enum example { A, B, C }`, we have:
+                        - `example.value(0)` returns `A`
+                        - `example.value(1)` returns `B`
+                        - `example.value(2)` returns `C`
+                        - `example.value(3)` throws an exception
+                        @throws exception if there is no member constant with the given ordinal value in this enum, i.e.
+                        if `value` is greater than the number of constants defined in this enum
+                    """)
+                    param("value", type = "integer", comment = "the ordinal value of an enum member constant")
                     bodyMeta {
                         val enumType = fnBodyMeta.rResultType as R_EnumType
                         val enum = enumType.enum

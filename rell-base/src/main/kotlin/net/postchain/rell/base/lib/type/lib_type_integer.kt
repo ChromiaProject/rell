@@ -32,18 +32,21 @@ object Lib_Type_Integer {
         alias("timestamp", "integer", since = SINCE0)
 
         type("integer", rType = R_IntegerType, since = SINCE0) {
-            comment("Represents a 64-bit signed integer")
+            comment("""
+                A 64-bit signed integer type, ranging from `-2^63` to `(2^63)-1`, supporting a standard
+                complement of numerical operations.
+            """)
 
             constant("MIN_VALUE", Long.MIN_VALUE, since = SINCE0) {
-                comment("A constant representing the minimum value an integer can have, `-2^63`, or `-9223372036854775808`.")
+                comment("The minimum value an integer can have, `-2^63`, or `-9223372036854775808`.")
             }
             constant("MAX_VALUE", Long.MAX_VALUE, since = SINCE0) {
-                comment("A constant representing the maximum value an integer can have, `(2^63)-1`, or `9223372036854775807`.")
+                comment("The maximum value an integer can have, `(2^63)-1`, or `9223372036854775807`.")
             }
 
             constructor(pure = true, since = SINCE0) {
                 comment("""
-                    Constructs an integer object by parsing a signed text representation of an integer.
+                    Construct an integer object by parsing a signed text representation of an integer.
 
                     Base prefixes are not supported, so one must write e.g. `integer('CAFE', 16)` rather than `integer('0xCAFE')`.
 
@@ -53,7 +56,7 @@ object Lib_Type_Integer {
 
                     @throws exception when:
 
-                    - the text representation is ill-formed
+                    - the textual representation is ill-formed
                     - `radix` is outside the supported range
                 """)
                 param("value", "text", comment = "the text to be parsed")
@@ -67,16 +70,21 @@ object Lib_Type_Integer {
             }
 
             constructor(since = "0.9.1") {
-                comment("Converts a decimal to an integer, rounding towards 0.")
-                param("value", "decimal", comment = "The decimal value to be converted to an integer.")
+                comment("""
+                    Construct an integer from a decimal, with any fractional part truncated (i.e. rounding toward 0).
+                """)
+                param("value", "decimal", comment = "the decimal value to convert to an integer")
                 bodyRaw(Lib_Type_Decimal.ToInteger)
             }
 
             staticFunction("from_text", "integer", pure = true, since = "0.9.0") {
-                comment("Parses a signed string representation of an integer.")
-                param("value", "text", comment = "The string to be parsed.")
+                comment("""
+                    Parse a signed text representation of an integer.
+                    @throws exception if the text is ill-formed
+                """)
+                param("value", "text", comment = "the text to parse")
                 param("radix", "integer", arity = L_ParamArity.ZERO_ONE) {
-                    comment("The radix to be used in interpreting `value`. Defaults to 10 if not provided.")
+                    comment("the radix in which to interpret `value`, defaults to 10")
                 }
                 bodyOpt1 { value, radix ->
                     val r = radix?.asInteger() ?: 10
@@ -86,7 +94,7 @@ object Lib_Type_Integer {
 
             staticFunction("from_hex", "integer", pure = true, since = "0.9.0") {
                 comment("""
-                    Parses an unsigned hexadecimal text representation of an integer.
+                    Parse an unsigned hexadecimal text representation of an integer.
 
                     Base prefixes are not supported, so one must write e.g. `integer.from_hex('CAFE')` rather than
                     `integer.from_hex('0xCAFE')`.
@@ -201,18 +209,19 @@ object Lib_Type_Integer {
 
             function("pow", result = "integer", pure = true, since = "0.13.6") {
                 comment("""
-                    Raises this integer to the power of the given exponent.
-                    Can be used in a database at-expression.
+                    Raise this integer to the power of the given exponent. SQL compatible.
 
-                    1. The exponent cannot be negative.
-                    2. Error on overflow, if the result is out of integer or integer range.
-                    3. Beware that the result of integer.pow() is limited to the 64-bit signed integer range,
-                    so the operation like (2).pow(64) will overflow - use big_integer.pow() to
-                    get a big_integer result, e.g. (2).to_big_integer().pow(64).
-                    4. If the exponent is 0, the result is always 1; if the exponent is 1,
-                    the result is the original value.
+                    Fails on integer overflow; so if results outside integer range are expected, first convert to
+                    `big_integer` (e.g. with `integer.to_big_integer()` or `big_integer(integer)`) and then use
+                    `big_integer.pow()`.
+
+                    Note that:
+                    - the exponent cannot be negative
+                    - if the exponent is 0, the result is 1
+                    - if the exponent is 1, the result is the original value
+                    @throws exception if the result is out of integer range
                 """)
-                param(name = "exponent", type = "integer", comment = "The exponent.")
+                param(name = "exponent", type = "integer", comment = "the exponent")
                 dbFunctionSimple(fnSimpleName, SqlConstants.FN_INTEGER_POWER)
                 body { self, exponent ->
                     val baseValue = self.asInteger()
@@ -238,17 +247,17 @@ object Lib_Type_Integer {
             }
 
             function("to_big_integer", "big_integer", since = "0.12.0") {
-                comment("Converts this integer to a big integer.")
+                comment("Convert this integer to a big integer.")
                 bodyRaw(Lib_Type_BigInteger.FromInteger)
             }
 
             function("to_decimal", "decimal", since = "0.9.1") {
-                comment("Converts this integer to a decimal.")
+                comment("Convert this integer to a decimal.")
                 bodyRaw(Lib_Type_Decimal.FromInteger)
             }
 
             function("to_text", "text", pure = true, since = "0.9.0") {
-                comment("Converts this integer to a base 10 text representation.")
+                comment("Convert this integer to a base-10 text representation.")
                 alias("str", since = SINCE0)
                 dbFunctionCast("int.to_text", "TEXT")
                 body { self ->
@@ -259,7 +268,7 @@ object Lib_Type_Integer {
 
             function("to_text", "text", pure = true, since = "0.9.0") {
                 comment("""
-                    Converts this integer to a text representation with the specified radix.
+                    Convert this integer to a text representation with the specified radix.
 
                     Does not include a base prefix in the output, i.e. `integer(25).to_text(16)` returns `19` rather
                     than `0x19`.
@@ -283,7 +292,7 @@ object Lib_Type_Integer {
             function("to_hex", "text", pure = true, since = SINCE0) {
                 alias("hex", C_MessageType.ERROR, since = SINCE0)
                 comment("""
-                    Converts this integer to hexadecimal text.
+                    Convert this integer to hexadecimal text.
 
                     Does not include a base prefix in the output, i.e. `integer(25).to_hex()` returns `19` rather than
                     `0x19`.
