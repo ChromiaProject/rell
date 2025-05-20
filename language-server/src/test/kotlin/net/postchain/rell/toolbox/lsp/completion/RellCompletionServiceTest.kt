@@ -14,17 +14,18 @@ import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.editing.Document
+import net.postchain.rell.toolbox.lsp.symbols.RellCompletionSymbolService
+import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import net.postchain.rell.toolbox.testing.TestDataBuilder
 import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.CompletionItemKind
 import org.eclipse.lsp4j.InsertTextFormat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.net.URI
-import net.postchain.rell.toolbox.lsp.symbols.RellCompletionSymbolService
-import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 
 class RellCompletionServiceTest {
 
@@ -46,6 +47,7 @@ class RellCompletionServiceTest {
     private val testFile1 = "test/test1.rell"
     private val testFile2 = "test/test2.rell"
     private val testFile3 = "test/test3.rell"
+    private val emptyFile = "empty_file.rell"
 
     @BeforeEach
     fun setup() {
@@ -138,6 +140,7 @@ class RellCompletionServiceTest {
                 impor
                 """.trimIndent()
             )
+            addFile(emptyFile, "")
         }
 
         val rellLinter = RellLinter()
@@ -223,6 +226,21 @@ class RellCompletionServiceTest {
                 it.insertTextFormat
             )
         }.containsAll(*expected)
+    }
+
+    @Test
+    fun `Empty file handled correctly at offset 0`() {
+        val emptyModuleFileUri = testDataBuilder.sourceFile(emptyFile).toURI()
+        val offset = BEGINNING_OF_FILE_OFFSET
+
+        assertDoesNotThrow {
+            completionService.getCompletions(
+                emptyModuleFileUri,
+                offset,
+                indexer,
+                emptyModuleFileUri.toDocument()
+            )
+        }
     }
 
     @Test
