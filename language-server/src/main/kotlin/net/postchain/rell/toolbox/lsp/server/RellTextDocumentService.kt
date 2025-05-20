@@ -1,6 +1,7 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import com.google.gson.JsonObject
+import io.sentry.Sentry
 import net.postchain.rell.toolbox.lsp.editing.CodeActionTitles
 import net.postchain.rell.toolbox.lsp.includeDefinition.LspSystemPropertiesProvider
 import net.postchain.rell.toolbox.lsp.tokens.RellSemanticTokensManager
@@ -103,7 +104,12 @@ class RellTextDocumentService(
 
         return requestManager.runRead {
             if (fileUri.isRellFile()) {
-                workspaceManager.getDefinitionLocations(fileUri, params.position)
+                try {
+                    workspaceManager.getDefinitionLocations(fileUri, params.position)
+                } catch (e: IndexOutOfBoundsException) {
+                    Sentry.captureException(e)
+                    null
+                }
             } else {
                 null
             }
@@ -124,7 +130,12 @@ class RellTextDocumentService(
 
     override fun hover(params: HoverParams): CompletableFuture<Hover> {
         return requestManager.runRead {
-            Hover(workspaceManager.getHoverDocumentation(params))
+            try {
+                Hover(workspaceManager.getHoverDocumentation(params))
+            } catch (e: IndexOutOfBoundsException) {
+                Sentry.captureException(e)
+                Hover()
+            }
         }
     }
 
@@ -214,8 +225,13 @@ class RellTextDocumentService(
     override fun completion(params: CompletionParams): CompletableFuture<Either<List<CompletionItem>, CompletionList>> {
         val fileUri = parseFileUri(params.textDocument.uri)
             ?: return CompletableFuture.completedFuture(Either.forLeft(listOf()))
-        return CompletableFuture.completedFuture(
-            Either.forLeft(workspaceManager.getCompletions(fileUri, params.position))
-        )
+        return try {
+            CompletableFuture.completedFuture(
+                Either.forLeft(workspaceManager.getCompletions(fileUri, params.position))
+            )
+        } catch (e: IndexOutOfBoundsException) {
+            Sentry.captureException(e)
+            CompletableFuture.completedFuture(Either.forLeft(listOf()))
+        }
     }
 }

@@ -11,8 +11,9 @@ import java.net.URI
 
 data class Document(val fileUri: URI, val version: Int, val content: String) {
 
-    fun getOffSet(position: Position): Int =
-        positionToOffset(content, net.postchain.rell.toolbox.common.Position(position.line, position.character))
+    fun getOffSet(position: Position): Int {
+        return positionToOffset(content, net.postchain.rell.toolbox.common.Position(position.line, position.character))
+    }
 
     fun getPosition(offset: Int): Position = offsetToPosition(content, offset).toLspPosition()
 
@@ -23,7 +24,7 @@ data class Document(val fileUri: URI, val version: Int, val content: String) {
         try {
             val (startOffSet, endOffSet) = getStartAndEndOffset(range)
             return offset >= startOffSet && offset <= endOffSet
-        } catch (e: IndexOutOfBoundsException) {
+        } catch (_: IndexOutOfBoundsException) {
             return false
         }
     }

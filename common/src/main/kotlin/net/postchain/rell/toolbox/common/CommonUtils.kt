@@ -3,7 +3,9 @@ package net.postchain.rell.toolbox.common
 fun offsetToPosition(content: String, offset: Int): Position {
     val contentLength = content.length
     if (offset < 0 || offset > contentLength) {
-        throw IndexOutOfBoundsException("Offset $offset is out of bounds for range [0, $contentLength]")
+        throw IndexOutOfBoundsException(
+            "Offset $offset is out of bounds for range [0, $contentLength]"
+        )
     }
     var line = 0
     var column = 0
@@ -41,7 +43,9 @@ fun positionToOffset(content: String, position: Position): Int {
     if (position.line == line && position.character == column) {
         return content.length
     }
-    throw IndexOutOfBoundsException("Position $position out of bounds")
+    throw IndexOutOfBoundsException(
+        "Position $position out of bounds. content length: ${content.length}"
+    )
 }
 
 fun applyTextReplacements(source: String, replacements: List<TextReplacement>): String {

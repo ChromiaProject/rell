@@ -106,8 +106,9 @@ class RellSymbolService {
 
         targetFileUri = URI(workspaceUri.toString() + targetFileUri.toString())
 
-        val pos = indexer.getResource(targetFileUri)!!.userSymbols[symId] as? AntlrPos
-            ?: return mutableListOf()
+        val pos = indexer.getResource(targetFileUri)?.let {
+            it.userSymbols[symId] as? AntlrPos
+        } ?: return mutableListOf()
         val symbolLength = pos.node.text.length
 
         val startPosition = Position(pos.line() - 1, pos.column() - 1)
