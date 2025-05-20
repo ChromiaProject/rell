@@ -4,10 +4,11 @@ import net.postchain.rell.toolbox.lsp.editing.Document
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import java.io.File
 import java.net.URI
+import java.util.concurrent.ConcurrentHashMap
 
 class RellDocumentManager {
 
-    private val openDocuments: MutableMap<URI, Document> = mutableMapOf()
+    private val openDocuments = ConcurrentHashMap<URI, Document>()
 
     fun getOpenDocuments(): Map<URI, Document> = openDocuments
 

@@ -80,7 +80,7 @@ class RellCompletionService(private val rellSymbolService: RellCompletionSymbolS
     }
 
     private fun shouldGetAvailableModules(fileUri: URI, document: Document, resource: Resource, offset: Int): Boolean {
-        val validOffset = if (document.content.length == offset) offset - 1 else offset
+        val validOffset = if (offset != 0 && document.content.length == offset) offset - 1 else offset
         return rellSymbolService.findEnclosingFileOrNamespace(fileUri, document, resource, validOffset) != null
     }
 
