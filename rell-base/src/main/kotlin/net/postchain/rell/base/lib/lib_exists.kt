@@ -13,6 +13,8 @@ import net.postchain.rell.base.compiler.base.lib.C_LibFuncCaseUtils
 import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.compiler.vexpr.V_ExprInfo
+import net.postchain.rell.base.compiler.vexpr.V_UnaryExpr
+import net.postchain.rell.base.compiler.vexpr.V_UnaryOp_IsNull
 import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.lib.type.R_CollectionType
 import net.postchain.rell.base.lib.type.R_MapType
@@ -74,28 +76,25 @@ private class C_SysFn_Exists(private val not: Boolean): C_SpecialLibGlobalFuncti
         }
 
         val vArg = cArg.vExpr()
-        val condition = compileCondition(vArg)
-        if (condition == null) {
-            C_LibFuncCaseUtils.errNoMatch(ctx.msgCtx, name.pos, name.str, listOf(null to vArg.type))
-            return C_ExprUtils.errorVExpr(ctx, name.pos, R_BooleanType)
-        }
-
         val resVarStates = C_ExprVarStatesDelta.forNullCheck(vArg, not)
-        return V_ExistsExpr(ctx, name, vArg, condition, not, resVarStates)
-    }
 
-    private fun compileCondition(arg: V_Expr): R_RequireCondition? {
-        when (C_Types.removeNullable(arg.type)) {
-            is R_CollectionType -> return R_RequireCondition_Collection
-            is R_MapType -> return R_RequireCondition_Map
+        val condition = when (C_Types.removeNullable(vArg.type)) {
+            is R_CollectionType -> R_RequireCondition_Collection
+            is R_MapType -> R_RequireCondition_Map
+            else -> null
         }
 
-        val argN = arg.asNullable().unwrap()
-        if (argN.type is R_NullableType) {
-            return R_RequireCondition_Nullable
+        if (condition != null) {
+            return V_ExistsExpr(ctx, name, vArg, condition, not, resVarStates)
         }
 
-        return null
+        val vArgN = vArg.asNullable().unwrap()
+        if (vArgN.type is R_NullableType) {
+            return V_UnaryExpr(ctx, vArg.pos, V_UnaryOp_IsNull(!not), vArg, resVarStates)
+        }
+
+        C_LibFuncCaseUtils.errNoMatch(ctx.msgCtx, name.pos, name.str, listOf(null to vArg.type))
+        return C_ExprUtils.errorVExpr(ctx, name.pos, R_BooleanType)
     }
 }
 

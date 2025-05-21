@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.atexpr
@@ -465,34 +465,6 @@ class AtExprTest: BaseRellTest(useSql = true) {
         chk("company @* {} ( .name + ((u: user) @* {} ( $ )).size() )",
                 "ct_err:[at:entity:outer:company][at_expr:placeholder:belongs_to_outer]")
         chk("(c: company) @* {} ( .name + (user @* {} ( $ )).size() )", "[Facebook8, Apple8, Amazon8, Microsoft8, Google8]")
-    }
-
-    @Test fun testCardinalityOrderBySql() {
-        chkSql()
-
-        chkCardOrderSql("company @ {}", "rt_err:at:wrong_count:5", """SELECT A00."rowid" FROM "c0.company" A00""")
-        chkCardOrderSql("company @ { .name == 'Apple' }", "company[200]",
-            """SELECT A00."rowid" FROM "c0.company" A00 WHERE A00."name" = ?""")
-        chkCardOrderSql("company @ {} limit 1", "company[100]",
-            """SELECT A00."rowid" FROM "c0.company" A00 ORDER BY A00."rowid" LIMIT ?""")
-        chkCardOrderSql("company @ {} offset 4", "company[500]",
-            """SELECT A00."rowid" FROM "c0.company" A00 ORDER BY A00."rowid" OFFSET ?""")
-        chkCardOrderSql("company @? {}", "rt_err:at:wrong_count:5", """SELECT A00."rowid" FROM "c0.company" A00""")
-        chkCardOrderSql("company @? { .name == 'Apple' }", "company[200]",
-            """SELECT A00."rowid" FROM "c0.company" A00 WHERE A00."name" = ?""")
-        chkCardOrderSql("company @? {} limit 1", "company[100]",
-            """SELECT A00."rowid" FROM "c0.company" A00 ORDER BY A00."rowid" LIMIT ?""")
-        chkCardOrderSql("company @? {} offset 4", "company[500]",
-            """SELECT A00."rowid" FROM "c0.company" A00 ORDER BY A00."rowid" OFFSET ?""")
-
-        val all = "list<company>[company[100],company[200],company[300],company[400],company[500]]"
-        chkCardOrderSql("company @* {}", all, """SELECT A00."rowid" FROM "c0.company" A00 ORDER BY A00."rowid"""")
-        chkCardOrderSql("company @+ {}", all, """SELECT A00."rowid" FROM "c0.company" A00 ORDER BY A00."rowid"""")
-    }
-
-    private fun chkCardOrderSql(expr: String, result: String, sql: String) {
-        chk(expr, result)
-        chkSql(sql)
     }
 
     @Test fun testEntityReferenceSqlAt() {

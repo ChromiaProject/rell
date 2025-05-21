@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.base.lang.expr.atexpr
@@ -484,6 +484,59 @@ class AtExprJoinTest: BaseRellTest(useSql = true) {
         chk("(p: person, @outer c: company @* {true}) @* {} ( _=p.name, _=c?.name )", all)
         chk("(p: person, @outer c: company @* {false}) @* {} ( _=p.name, _=c?.name )",
             "[(Bob,null), (Alice,null), (Trudy,null)]")
+    }
+
+    @Test fun testBugOuterJoinExists() {
+        initData()
+        chk("(p: person, @outer j: job @* { j.person == p }) @* { exists(j) }", "[(p=person[101],j=job[400])]")
+        chk("(p: person, @outer j: job @* { j.person == p }) @* { not exists(j) }",
+            "[(p=person[100],j=null), (p=person[102],j=null)]")
+    }
+
+    @Test fun testBugOuterJoinFilterReference() {
+        initData()
+
+        chk("(p: person, c: company, j: job @* { j.person == p }) @* {} (_=p.rowid, _=c.rowid, _=j.rowid)",
+            "[(101,300,400), (101,301,400)]")
+
+        chk("(p: person, c: company, @outer j: job @* { j.person == p }) @* {} (_=p.rowid, _=c.rowid, _=j?.rowid)",
+            "[(100,300,null), (100,301,null), (101,300,400), (101,301,400), (102,300,null), (102,301,null)]")
+    }
+
+    @Test fun testOuterJoinBug() {
+        tstCtx.sqlLogging = true
+        initData()
+
+        //TODO bug: exists(b)
+
+        def("""
+            entity a {
+                key some: text;
+            }
+
+            entity b {
+                key a, type: text;
+            }
+
+            function f(a_that_has_b_should_included: boolean? = null) {
+                return (a, @outer b @* { .a == a }) @* {
+                    if(a_that_has_b_should_included?? and a_that_has_b_should_included == true) exists(b)
+                    else if(a_that_has_b_should_included?? and a_that_has_b_should_included == false) not exists(b)
+                    else true
+                };
+            }
+        """)
+
+        val code = """{
+            val my_jobs = job @* {};
+            return (p: person, @outer j: job @* {j.person==p}) @* {
+                if (exists(my_jobs)) j?? and j in my_jobs else true
+            };
+        }"""
+        chkEx(code, "[(p=person[101],j=job[400])]")
+        chk("f(null)", "[]")
+        chk("f(false)", "[]")
+        chk("f(true)", "[]")
     }
 
     @Test fun testVersionControlJoin() {

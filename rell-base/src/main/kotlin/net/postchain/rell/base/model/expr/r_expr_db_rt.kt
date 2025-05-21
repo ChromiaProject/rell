@@ -177,8 +177,8 @@ class SqlBuilder {
     fun build(): ParameterizedSql = ParameterizedSql(sqlBuf.toString(), paramsBuf.toImmList())
 }
 
-class ParameterizedSql(val sql: String, val params: ImmList<Rt_Value>) {
-    constructor(): this("", immListOf())
+data class ParameterizedSql(val sql: String, val params: ImmList<Rt_Value>) {
+    override fun toString() = sql
 
     fun isEmpty() = sql.isEmpty() && params.isEmpty()
 

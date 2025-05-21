@@ -334,10 +334,11 @@ class RedDb_AtExprBase(
             val fromInfo = ctx.getFromInfo()
 
             val b = SqlBuilder()
+            val crossJoin = if (fromWheres.isEmpty()) ", " else " CROSS JOIN "
 
             for ((entityId, sqlEntity) in fromInfo.entities) {
                 val joinWhere = fromWheres[entityId]
-                translateFromItem(ctx.sqlCtx, sqlEntity, joinWhere, b)
+                translateFromItem(ctx.sqlCtx, sqlEntity, joinWhere, crossJoin, b)
             }
 
             return b.build()
@@ -347,13 +348,14 @@ class RedDb_AtExprBase(
             sqlCtx: Rt_SqlContext,
             sqlEntity: SqlFromEntity,
             joinWhere: ParameterizedSql?,
+            crossJoin: String,
             b: SqlBuilder,
         ): ParameterizedSql {
             val actualJoinWhere = if (joinWhere != null || !sqlEntity.isOuter) joinWhere else ParameterizedSql.TRUE
 
             if (!b.isEmpty()) {
                 val sep = when {
-                    actualJoinWhere == null -> ", "
+                    actualJoinWhere == null -> crossJoin
                     sqlEntity.isOuter -> " LEFT OUTER JOIN "
                     else -> " JOIN "
                 }
@@ -400,7 +402,7 @@ class RedDb_AtExprBase(
 
         private fun translateWhat(ctx: SqlGenContext, redWhat: List<RedDb_AtWhatField>): List<ParameterizedSql> {
             val res = redWhat.filter { !it.flags.omit }.map { translateExpr(ctx, it.expr) }
-            return if (res.isNotEmpty()) res else listOf(ParameterizedSql("0", immListOf()))
+            return res.ifEmpty { listOf(ParameterizedSql("0", immListOf())) }
         }
 
         private fun translateGroupBy(ctx: SqlGenContext, redWhat: List<RedDb_AtWhatField>): List<ParameterizedSql> {
@@ -408,22 +410,25 @@ class RedDb_AtExprBase(
         }
 
         private fun translateOrderBy(ctx: SqlGenContext, redWhat: List<RedDb_AtWhatField>): List<ParameterizedSql> {
-            val elements = getOrderByElements(redWhat)
-            return elements.map { element ->
-                ParameterizedSql.generate { element.toSql(ctx, it) }
-            }
+            val elements = getOrderByElements(ctx, redWhat)
+            return elements
+                .distinctBy { it.sql }
+                .map { element ->
+                    ParameterizedSql.generate { element.append(it) }
+                }
         }
 
         private fun translateExpr(ctx: SqlGenContext, redExpr: RedDb_Expr): ParameterizedSql {
             return ParameterizedSql.generate { redExpr.toSql(ctx, it, false) }
         }
 
-        private fun getOrderByElements(redWhat: List<RedDb_AtWhatField>): List<OrderByElement> {
+        private fun getOrderByElements(ctx: SqlGenContext, redWhat: List<RedDb_AtWhatField>): List<OrderByElement> {
             val elements = mutableListOf<OrderByElement>()
 
             for (field in redWhat) {
                 if (field.flags.sort != null) {
-                    elements.add(OrderByElement_Expr(field.expr, field.flags.sort))
+                    val sql = orderByToSqlExpr(ctx, field.expr)
+                    elements.add(OrderByElement(sql, field.flags.sort))
                 }
             }
 
@@ -431,12 +436,14 @@ class RedDb_AtExprBase(
             if (redGroup.isNotEmpty() || redWhat.any { it.flags.aggregate }) {
                 for (field in redGroup) {
                     if (field.flags.sort == null) {
-                        elements.add(OrderByElement_Expr(field.expr, R_AtWhatSort.ASC))
+                        val sql = orderByToSqlExpr(ctx, field.expr)
+                        elements.add(OrderByElement(sql, R_AtWhatSort.ASC))
                     }
                 }
             } else if (isMany || extras.limit != null || extras.offset != null) {
                 for (entity in fromEntities) {
-                    elements.add(OrderByElement_Entity(entity))
+                    val sql = orderByToSqlEntity(ctx, entity)
+                    elements.add(OrderByElement(sql, R_AtWhatSort.ASC))
                 }
             }
 
@@ -444,23 +451,25 @@ class RedDb_AtExprBase(
         }
     }
 
-    private abstract class OrderByElement {
-        abstract fun toSql(ctx: SqlGenContext, b: SqlBuilder)
-    }
-
-    private class OrderByElement_Expr(val redExpr: RedDb_Expr, val sort: R_AtWhatSort): OrderByElement() {
-        override fun toSql(ctx: SqlGenContext, b: SqlBuilder) {
-            redExpr.toSql(ctx, b, false)
-            if (!sort.asc) {
-                b.append(" DESC")
-            }
+    private fun orderByToSqlExpr(ctx: SqlGenContext, redExpr: RedDb_Expr): ParameterizedSql {
+        return ParameterizedSql.generate {
+            redExpr.toSql(ctx, it, false)
         }
     }
 
-    private class OrderByElement_Entity(val entity: R_DbAtEntity): OrderByElement() {
-        override fun toSql(ctx: SqlGenContext, b: SqlBuilder) {
-            val alias = ctx.getEntityAlias(entity)
-            b.appendColumn(alias, entity.rEntity.sqlMapping.rowidColumn())
+    private fun orderByToSqlEntity(ctx: SqlGenContext, entity: R_DbAtEntity): ParameterizedSql {
+        val alias = ctx.getEntityAlias(entity)
+        return ParameterizedSql.generate {
+            it.appendColumn(alias, entity.rEntity.sqlMapping.rowidColumn())
+        }
+    }
+
+    private data class OrderByElement(val sql: ParameterizedSql, val sort: R_AtWhatSort) {
+        fun append(b: SqlBuilder) {
+            b.append(sql)
+            if (!sort.asc) {
+                b.append(" DESC")
+            }
         }
     }
 }
