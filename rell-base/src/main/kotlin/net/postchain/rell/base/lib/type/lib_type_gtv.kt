@@ -28,13 +28,77 @@ object Lib_Type_Gtv {
 
         type("gtv", rType = R_GtvType, since = "0.9.0") {
             comment("""
-                Generic Transfer Value (GTV) is a general-purpose type for sending and decoding any data structure.
+                Generic Transfer Value (GTV) is a data type for the serialization and transfer of structured data, much
+                like JSON.
+
+                GTV is used in Rell to encode operation and query arguments and results that are exchanged with clients.
+                Unlike JSON, GTV has a stable byte serialization format and well-defined cryptographic hash, making it
+                well-suited to this purpose. In addition, GTV supports byte arrays.
+
+                GTV supports the following types:
+
+                | GTV Type     | Closest Rell Equivalent |
+                | ------------ | ----------------------- |
+                | `NULL`       | `null`                  |
+                | `BYTEARRAY`  | `byte_array`            |
+                | `STRING`     | `text`                  |
+                | `INTEGER`    | `integer`               |
+                | `DICT`       | `map<text, gtv>`        |
+                | `ARRAY`      | `list<gtv>`             |
+                | `BIGINTEGER` | `big_integer`           |
+
+                GTV does not support all Rell types, so not every value in Rell can be converted to GTV. For example,
+                GTV has no support for non-integer numbers, and therefore the `decimal` type is encoded in GTV as
+                text.
+
+                Rell types can be encoded as GTV in two modes: *compact* and *pretty*, and the distinction between the
+                two is a real semantic difference, and is not merely a difference in whitespace when converted to text.
+                The two modes differ in the following ways:
+
+                - Compact GTV encode struct values as a lists of attributes, while pretty GTV encode them as a
+                  dictionaries (thus struct member names are preserved).
+                - Compact GTV encode named-field tuples as a lists of attributes, while pretty GTV encode them as a
+                  dictionaries (thus tuple field names are preserved). There is no difference between the two in
+                  encoding of unnamed-field tuples.
+
+                Examples of GTV:
+
+                ```rell
+                >>> (x = 1, y = 'a', z = true).to_gtv()
+                [1,"a",1]
+                >>> (x = 1, y = 'a', z = false).to_gtv_pretty()
+                {"x":1,"y":"a","z":0}
+                >>> [1: 'a', 2: 'b', 3: 'c'].to_gtv()
+                [[1,"a"],[2,"b"],[3,"c"]]
+                >>> [1: 'a', 2: 'b', 3: 'c'].to_gtv_pretty()
+                [[1,"a"],[2,"b"],[3,"c"]]
+                >>> set([1, 2, 3, 4]).to_gtv()
+                [1,2,3,4]
+                >>> set([1, 2, 3, 4]).to_gtv_pretty()
+                [1,2,3,4]
+                >>> struct a { x: integer; y: decimal; };
+                >>> a(10, 10.1).to_gtv()
+                [10,"10.1"]
+                >>> a(10, 10.1).to_gtv_pretty()
+                {"x":10,"y":"10.1"}
+                ```
+
+                Rell operations expect their arguments as compact-encoded GTV, whereas queries expect pretty-encoded GTV
+                arguments, hence client applications are required to use those respective formats when making operation
+                and query calls to Rell applications.
             """)
 
             staticFunction("from_bytes", "gtv", pure = true, since = "0.9.0") {
-                comment("Decodes a `gtv` from a `byte_array`. Fails if it cannod be decoded.")
+                comment("""
+                    Decode a GTV from a byte array.
+
+                    Inverse of `gtv.to_bytes()`.
+                    @return the decoded GTV
+                    @throws exception if the byte array does not encode a well-formed GTV; i.e. if a GTV cannot be
+                    decoded
+                """)
                 alias("fromBytes", C_MessageType.ERROR, since = "0.6.1")
-                param("bytes", "byte_array", comment = "Bytes to decode.")
+                param("bytes", "byte_array", comment = "the byte array to decode")
                 body { a ->
                     val bytes = a.asByteArray()
                     Rt_Utils.wrapErr("fn:gtv.from_bytes") {
@@ -45,8 +109,12 @@ object Lib_Type_Gtv {
             }
 
             staticFunction("from_bytes_or_null", "gtv?", pure = true, since = "0.13.0") {
-                comment("Tries to decode a gtv from a `byte_array` and returns `null` if it fails.")
-                param("bytes", "byte_array", comment = "Bytes to decode.")
+                comment("""
+                    Decode a GTV from a byte array.
+                    @return the decoded GTV, or `null` if the byte array does not encode a well-formed GTV; i.e. if a
+                    GTV cannot be decoded
+                """)
+                param("bytes", "byte_array", comment = "the byte array to decode")
                 body { a ->
                     val bytes = a.asByteArray()
                     val gtv = try {
@@ -59,9 +127,18 @@ object Lib_Type_Gtv {
             }
 
             staticFunction("from_json", "gtv", pure = true, since = "0.9.0") {
-                comment("Decodes a `gtv` from a JSON string representation.")
+                comment("""
+                    Obtain a GTV from JSON text.
+
+                    First parses a JSON value from text, and then converts the JSON value to a GTV.
+
+                    Equivalent to `gtv.from_json(json(text))`.
+                    @throws exception when:
+                    - the JSON text is ill-formed
+                    - the JSON value cannot be converted to a GTV
+                """)
                 alias("fromJSON", C_MessageType.ERROR, since = "0.6.1")
-                param("json", "text", comment = "JSON string to decode")
+                param("json", "text", comment = "the JSON text to decode")
                 body { a ->
                     val str = a.asString()
                     Rt_Utils.wrapErr("fn:gtv.from_json(text)") {
@@ -72,9 +149,14 @@ object Lib_Type_Gtv {
             }
 
             staticFunction("from_json", "gtv", pure = true, since = "0.9.0") {
-                comment("Decodes a `gtv` from a `json` representation.")
+                comment("""
+                    Convert a JSON value to a GTV.
+
+                    Inverse of `gtv.to_json()`.
+                    @throws exception if the JSON value cannot be converted to a GTV
+                """)
                 alias("fromJSON", C_MessageType.ERROR, since = "0.6.1")
-                param("json", "json", comment = "json to decode")
+                param("json", "json", comment = "the JSON to convert")
                 body { a ->
                     val str = a.asJsonString()
                     Rt_Utils.wrapErr("fn:gtv.from_json(json)") {
@@ -85,7 +167,7 @@ object Lib_Type_Gtv {
             }
 
             staticFunction("legacy_hash", result = "byte_array", pure = true, since = "0.14.5") {
-                comment("@see T.hash()")
+                comment("**Deprecated**; use instead `x.hash()` for a value `x` of any type.")
                 generic("T", subOf = "any")
                 param("value", "T")
                 param("version", "integer")
@@ -105,7 +187,12 @@ object Lib_Type_Gtv {
             }
 
             function("to_bytes", "byte_array", pure = true, since = "0.9.0") {
-                comment("Encodes this `gtv` to a `byte_array`.")
+                comment("""
+                    Encode this GTV as byte array.
+
+                    Inverse of `gtv.from_bytes(byte_array)`.
+                    @return a byte array containing an encoding of this GTV
+                """)
                 alias("toBytes", C_MessageType.ERROR, since = "0.6.1")
                 body { a ->
                     val gtv = a.asGtv()
@@ -115,7 +202,13 @@ object Lib_Type_Gtv {
             }
 
             function("to_json", "json", pure = true, since = "0.9.0") {
-                comment("Encodes this `gtv` to a `json` representation.")
+                comment("""
+                    Convert this GTV to a JSON value.
+
+                    Inverse of `gtv.from_json(json)`.
+                    @return a JSON value equivalent to this GTV
+                    @throws exception if this GTV cannot be converted to a JSON value
+                """)
                 alias("toJSON", C_MessageType.ERROR, since = "0.6.1")
                 body { a ->
                     val gtv = a.asGtv()
@@ -132,19 +225,69 @@ object Lib_Type_Gtv {
                 generic("T", subOf = "any")
 
                 staticFunction("from_gtv", result = "T", pure = true, since = "0.9.0") {
-                    comment("Constructs this type from a `gtv`.")
-                    param("gtv", type = "gtv", comment = "gtv to decode.")
+                    comment("""
+                        Decode a value of this type from a compact-encoded GTV.
+
+                        Inverse of `any.to_gtv()`.
+
+                        Note that the encoding (compact or pretty) of the given GTV will affect the types to which that
+                        GTV can be decoded. For instance, given the struct:
+
+                        ```rell
+                        struct c { x: text; y: text; };
+                        ```
+
+                        An instance of `c` cannot be decoded with `c.from_gtv(my_gtv)` if `my_gtv` was pretty-encoded
+                        from another `c` (i.e. with `c.to_gtv_pretty()`). In other words, the following throws an
+                        exception:
+
+                        ```rell
+                        c.from_gtv(c(x = 'lol', y = 'haha').to_gtv_pretty()) // Run-time error
+                        ```
+
+                        However, such a GTV *could* be decoded to a `map<text, text>`:
+
+                        ```rell
+                        map<text, text>.from_gtv(c(x = 'lol', y = 'haha').to_gtv_pretty()) // returns ['x': 'lol', 'y': 'haha']
+                        ```
+
+                        @throws exception if the structure of the given GTV is incompatible with this type
+                    """)
+                    param("gtv", type = "gtv", comment = "the compact-encoded GTV to decode")
                     makeFromGtvBody(this, pretty = false)
                 }
 
                 staticFunction("from_gtv_pretty", result = "T", pure = true, since = "0.9.0") {
-                    comment("Constructs this type from a pretty formatted `gtv`.")
-                    param("gtv", type = "gtv", comment = "gtv to decode.")
+                    comment("""
+                        Decode a value of this type from a pretty-encoded GTV.
+
+                        Note that the encoding (compact or pretty) of the given GTV will affect the types to which that
+                        GTV can be decoded.
+
+                        Tolerates compact-encoded GTV where possible. For instance, given the struct:
+
+                        ```rell
+                        struct c { x: text; y: text; };
+                        ```
+
+                        A GTV created with `c(...).to_gtv()` can be decoded back to a `c` with `c.from_gtv_pretty(...)`.
+                        In other words, the following is legal:
+
+                        ```rell
+                        c.from_gtv_pretty(c(x = 'lol', y = 'haha').to_gtv()) // returns c{x=lol,y=haha}
+                        ```
+
+                        @throws exception if the structure of the given GTV is incompatible with this type
+                    """)
+                    param("gtv", type = "gtv", comment = "the pretty-encoded GTV to decode")
                     makeFromGtvBody(this, pretty = true, allowVirtual = false)
                 }
 
                 function("hash", result = "byte_array", pure = true, since = "0.9.0") {
-                    comment("Computes the hash of this value.")
+                    comment("""
+                        Compute the Merkle Hash of this value.
+                        @return the Merkle Hash of this value as a byte array of length 32
+                    """)
                     bodyMeta {
                         val selfType = this.fnBodyMeta.rSelfType
                         if (selfType is R_VirtualType) {
@@ -161,12 +304,12 @@ object Lib_Type_Gtv {
                 }
 
                 function("to_gtv", result = "gtv", pure = true, since = "0.9.0") {
-                    comment("Encodes this value to a `gtv` representation.")
+                    comment("Encode this value as a compact GTV.")
                     makeToGtvBody(this, pretty = false)
                 }
 
                 function("to_gtv_pretty", result = "gtv", pure = true, since = "0.9.0") {
-                    comment("Encodes this value to a pretty formatted `gtv` representation.")
+                    comment("Encode this value as pretty GTV.")
                     makeToGtvBody(this, pretty = true)
                 }
             }
