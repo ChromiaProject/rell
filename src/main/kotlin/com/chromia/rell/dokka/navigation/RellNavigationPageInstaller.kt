@@ -1,6 +1,6 @@
 package com.chromia.rell.dokka.navigation
 
-import com.chromia.rell.dokka.config.HiddenPackagesRegistry
+import com.chromia.rell.dokka.config.RellDokkaGlobalState
 import org.jetbrains.dokka.base.renderers.html.NavigationNode
 import org.jetbrains.dokka.base.renderers.html.NavigationNodeIcon
 import org.jetbrains.dokka.base.renderers.html.NavigationPage
@@ -73,7 +73,7 @@ public abstract class NavigationDataProvider(private val filterModules: List<Str
                     icon = chooseNavigationIcon(page),
                     styles = chooseStyles(page),
                     children = page.navigableChildren().filter {
-                        HiddenPackagesRegistry.packages.none { filtered -> it.name == filtered }
+                        RellDokkaGlobalState.getHiddenPackages().none { filtered -> it.name == filtered }
                     }
             )
 

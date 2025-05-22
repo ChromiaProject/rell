@@ -6,6 +6,7 @@ import com.chromia.rell.dokka.reflection.getFunctionExtensionsByReflection
 import com.chromia.rell.dokka.reflection.getNameByReflection
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellApiCompile.Config
+import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_Definition
 import net.postchain.rell.base.model.R_FunctionDefinition
@@ -16,7 +17,8 @@ import java.io.File
 class RellAnalysis(
         sourceRoot: File,
         val entryPointModules: List<String>?,
-        val additionalModules: List<String>? = null
+        val additionalModules: List<String>? = null,
+        customCliEnv: RellCliEnv? = null
 ) {
 
     private val allFunctions: List<R_FunctionDefinition>
@@ -34,6 +36,11 @@ class RellAnalysis(
                 .moduleArgsMissingError(false)
                 .docSymbolsEnabled(true)
                 .appModuleInTestsError(false)
+                .apply {
+                    customCliEnv?.let {
+                        cliEnv(customCliEnv)
+                    }
+                }
                 .build()
 
         val modulesToCompile = (entryPointModules.orEmpty() + additionalModules.orEmpty()).distinct()
