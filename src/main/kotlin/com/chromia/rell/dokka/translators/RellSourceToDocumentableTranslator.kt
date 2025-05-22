@@ -4,7 +4,7 @@ package com.chromia.rell.dokka.translators
 
 import com.chromia.rell.dokka.RellDokkaPlugin
 import com.chromia.rell.dokka.analysis.RellAnalysis
-import com.chromia.rell.dokka.config.HiddenPackagesRegistry
+import com.chromia.rell.dokka.config.RellDokkaGlobalState
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import net.postchain.rell.base.model.R_Module
 import org.jetbrains.dokka.DokkaConfiguration
@@ -19,7 +19,12 @@ class RellSourceToDocumentableTranslator(context: DokkaContext) : SourceToDocume
     private val rellConfig = configuration<RellDokkaPlugin, RellDokkaPluginConfiguration>(context)
 
     override fun invoke(sourceSet: DokkaConfiguration.DokkaSourceSet, context: DokkaContext): DModule {
-        val rellAnalysis = RellAnalysis(sourceSet.sourceRoots.first(), rellConfig?.modules, rellConfig?.additionalModules)
+        val rellAnalysis = RellAnalysis(
+                sourceSet.sourceRoots.first(),
+                rellConfig?.modules,
+                rellConfig?.additionalModules,
+                customCliEnv = RellDokkaGlobalState.getCliEnv()
+        )
 
         val scopeId = sourceSet.sourceSetID.scopeId
         val isTestSource = scopeId == "test"
@@ -31,7 +36,7 @@ class RellSourceToDocumentableTranslator(context: DokkaContext) : SourceToDocume
             else -> emptyList()
         }
 
-        HiddenPackagesRegistry.hide(rellAnalysis.hiddenPackages())
+        RellDokkaGlobalState.hidePackages(rellAnalysis.hiddenPackages())
 
         val moduleName = rellConfig?.name ?: "root"
 

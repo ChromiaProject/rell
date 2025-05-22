@@ -1,7 +1,7 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 package com.chromia.rell.dokka.page
 
-import com.chromia.rell.dokka.config.HiddenPackagesRegistry
+import com.chromia.rell.dokka.config.RellDokkaGlobalState
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.model.isFunction
 import com.chromia.rell.dokka.model.isNamespace
@@ -96,7 +96,7 @@ class RellPageCreator(
 
                 if (
                         rellDokkaPluginConfiguration != null &&
-                        (HiddenPackagesRegistry.packages.none { dPackage.packageName == it })
+                        (RellDokkaGlobalState.getHiddenPackages().none { dPackage.packageName == it })
                 ) {
 
                     val documentations = dPackage.sourceSets.map { platform ->

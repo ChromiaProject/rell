@@ -6,6 +6,7 @@ import org.jetbrains.dokka.DokkaConfigurationImpl
 import org.jetbrains.dokka.PluginConfigurationImpl
 import org.jetbrains.dokka.SourceLinkDefinitionImpl
 import org.jetbrains.dokka.base.DokkaBase
+import net.postchain.rell.api.base.RellCliEnv
 import java.io.File
 import java.net.URI
 import java.net.URL
@@ -24,6 +25,7 @@ class RellDokkaPluginConfigurationBuilder private constructor(
     private val sourceLinks: MutableSet<SourceLinkDefinitionImpl> = mutableSetOf()
     private var filteredModules: List<String> = listOf()
     private var additionalModules: List<String> = listOf()
+    private var cliEnv: RellCliEnv? = null
 
     constructor(title: String, modules: List<String>?, projectRoot: File): this(false, title, modules, projectRoot)
 
@@ -61,11 +63,22 @@ class RellDokkaPluginConfigurationBuilder private constructor(
         this.sourceLinks.add(SourceLinkDefinitionImpl(localDirectory, remoteUrl, remoteLineSuffix))
     }
 
+    fun cliEnv(cliEnv: RellCliEnv) = apply { 
+        this.cliEnv = cliEnv 
+        // store it in the singleton holder to bypass serialization
+        RellDokkaGlobalState.setCliEnv(cliEnv)
+    }
+
     private fun configureRellDokkaPlugin(): RellDokkaPluginConfiguration {
         if (system) {
             return RellDokkaPluginConfiguration.SYSTEM_CONFIG
         }
-        return RellDokkaPluginConfiguration(title, modules = modules, filteredModules = filteredModules, additionalModules = additionalModules)
+        return RellDokkaPluginConfiguration(
+            name = title, 
+            modules = modules, 
+            filteredModules = filteredModules, 
+            additionalModules = additionalModules
+        )
     }
 
     private fun configureDokkaBasePlugin() =

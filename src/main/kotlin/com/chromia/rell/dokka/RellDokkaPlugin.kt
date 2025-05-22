@@ -1,6 +1,6 @@
 package com.chromia.rell.dokka
 
-import com.chromia.rell.dokka.config.HiddenPackagesRegistry
+import com.chromia.rell.dokka.config.RellDokkaGlobalState
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.doc.AliasDocTagProvider
 import com.chromia.rell.dokka.moduledocs.rellModuleAndPackageDocumentationTransformer
@@ -36,7 +36,7 @@ class RellDokkaPlugin : DokkaPlugin() {
         with(config) {
             val modulesToHide = filteredModules.filterNot { it in additionalModules }
             if (filteredModules.isNotEmpty()) {
-                HiddenPackagesRegistry.hide(modulesToHide)
+                RellDokkaGlobalState.hidePackages(modulesToHide)
             }
         }
     }
@@ -98,7 +98,7 @@ class RellDokkaPlugin : DokkaPlugin() {
     val rellNavigationPageInstaller by extending {
         with (plugin<DokkaBase>()) {
             htmlPreprocessors providing {context ->
-                RellNavigationPageInstaller(context, HiddenPackagesRegistry.packages) } override navigationPageInstaller
+                RellNavigationPageInstaller(context, RellDokkaGlobalState.getHiddenPackages()) } override navigationPageInstaller
         }
     }
 

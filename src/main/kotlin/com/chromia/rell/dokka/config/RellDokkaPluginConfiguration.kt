@@ -8,28 +8,6 @@ import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.PluginConfigurationImpl
 import org.jetbrains.dokka.plugability.ConfigurableBlock
 
-/**
- * Global registry for modules that should be excluded from UI natigation.
- *
- * The configuration is created early and serialized, while module discovery happens
- * during processing, so we need this shared state to accumulate all modules that
- * should be hidden.
- *
- * We can't simply use the filteredModules parameter in RellDokkaPluginConfiguration 
- * because that configuration is created and serialized before the RellAnalysis runs.
- * Dokka creates new RellDokkaPluginConfiguration instances for each pipeline stage,
- * which means after initialization any changes made to the configuration in one stage 
- * would be lost in later stages.
- * This registry provides a singleton that persists across the entire documentation 
- * generation process, ensuring consistent hiding of modules regardless of pipeline stage.
- */
-object HiddenPackagesRegistry {
-    val packages = mutableListOf<String>()
-    fun hide(moduleNames: Collection<String>) {
-        packages.addAll(moduleNames)
-    }
-}
-
 @Serializable
 data class RellDokkaPluginConfiguration(
         val name: String,

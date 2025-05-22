@@ -46,7 +46,7 @@ Each stage in the pipeline can be extended or overridden by plugins.
 
 - **RellDokkaPluginConfiguration**: Configures the plugin with settings such as module names, filtering options, and system library documentation mode. The configuration is serialized and passed between pipeline stages.
 
-- **HiddenPackagesRegistry**: A global registry for packages that should be excluded from UI navigation. This singleton persists across the entire documentation generation process, ensuring consistent hiding of modules regardless of pipeline stage.
+- **RellDokkaGlobalState**: A global registry that bypasses Dokka's serialization process. It maintains state that needs to persist across the entire documentation generation process, including hidden packages (modules excluded from UI navigation) and logging/error handling through RellCliEnv.
 
 ### Core Plugin Components
 
