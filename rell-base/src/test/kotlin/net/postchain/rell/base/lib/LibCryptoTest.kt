@@ -385,10 +385,11 @@ class LibCryptoTest: BaseRellTest() {
         chk("crypto.pubkey_encode(x'33'.repeat(66))", "rt_err:crypto:bad_pubkey:66")
 
         chk("crypto.pubkey_encode(x'00'.repeat(33))", "rt_err:crypto:bad_pubkey:33")
-        chk("crypto.pubkey_encode(x'00'.repeat(64))", "rt_err:crypto:bad_pubkey:65")
+        chk("crypto.pubkey_encode(x'00'.repeat(64))", "rt_err:crypto:bad_pubkey:64")
         chk("crypto.pubkey_encode(x'00'.repeat(65))", "rt_err:crypto:bad_pubkey:65")
+        chk("crypto.pubkey_encode(x'11'.repeat(64))", "rt_err:crypto:bad_pubkey:64")
         chk("crypto.pubkey_encode(x'33'.repeat(33))", "rt_err:crypto:bad_pubkey:33")
-        chk("crypto.pubkey_encode(x'33'.repeat(64))", "rt_err:crypto:bad_pubkey:65")
+        chk("crypto.pubkey_encode(x'33'.repeat(64))", "rt_err:crypto:bad_pubkey:64")
         chk("crypto.pubkey_encode(x'33'.repeat(65))", "rt_err:crypto:bad_pubkey:65")
 
         chk("crypto.pubkey_encode(x'02' + x'00'.repeat(32))", "rt_err:crypto:bad_pubkey:33")
@@ -400,8 +401,6 @@ class LibCryptoTest: BaseRellTest() {
         chk("crypto.pubkey_encode(x'04' + x'00'.repeat(64))", "rt_err:crypto:bad_pubkey:65")
         chk("crypto.pubkey_encode(x'04' + x'11'.repeat(64))", "rt_err:crypto:bad_pubkey:65")
         chk("crypto.pubkey_encode(x'04' + x'11'.repeat(32))", "rt_err:crypto:bad_pubkey:33")
-        chk("crypto.pubkey_encode(x'00'.repeat(64))", "rt_err:crypto:bad_pubkey:65")
-        chk("crypto.pubkey_encode(x'11'.repeat(64))", "rt_err:crypto:bad_pubkey:65")
     }
 
     @Test fun testPubkeyToXy() {
