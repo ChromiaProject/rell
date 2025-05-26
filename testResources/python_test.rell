@@ -1,0 +1,17 @@
+module;
+
+struct my_struct {
+    name;
+    data: gtv;
+    b: byte_array;
+}
+
+operation gtv_bytearray(input: gtv) { }
+
+query gtv_query(arg: gtv): gtv {
+    return gtv.from_json("gtv");
+}
+
+query struct_query(arg: my_struct): my_struct {
+    return my_struct(name = "GtvBob", data = gtv.from_json("gtv"), b = byte_array.from_hex("aa"));
+} 
