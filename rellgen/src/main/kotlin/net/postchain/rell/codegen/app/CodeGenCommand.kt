@@ -19,6 +19,8 @@ import net.postchain.rell.codegen.javascript.JavascriptCodeGeneratorConfig
 import net.postchain.rell.codegen.javascript.JavascriptDocumentFactory
 import net.postchain.rell.codegen.kotlin.KotlinCodeGeneratorConfig
 import net.postchain.rell.codegen.kotlin.KotlinDocumentFactory
+import net.postchain.rell.codegen.python.PythonCodeGeneratorConfig
+import net.postchain.rell.codegen.python.PythonDocumentFactory
 import net.postchain.rell.codegen.typescript.TypescriptCodeGeneratorConfig
 import net.postchain.rell.codegen.typescript.TypescriptDocumentFactory
 
@@ -38,6 +40,7 @@ class MermaidOption: MermaidCodeGeneratorConfig, LanguageOption("Mermaid") {
 }
 
 class TypescriptOption: TypescriptCodeGeneratorConfig, LanguageOption("Typescript")
+class PythonOption: PythonCodeGeneratorConfig, LanguageOption("Python")
 class JavscriptOption: JavascriptCodeGeneratorConfig, LanguageOption("Typescript")
 
 class CodeGenCommand : CliktCommand("Generates files based on rell sources") {
@@ -52,6 +55,7 @@ class CodeGenCommand : CliktCommand("Generates files based on rell sources") {
             "--mermaid" to MermaidOption(),
             "--typescript" to TypescriptOption(),
             "--javascript" to JavscriptOption(),
+            "--python" to PythonOption(),
     ).required()
 
     override fun run() {
@@ -60,6 +64,7 @@ class CodeGenCommand : CliktCommand("Generates files based on rell sources") {
             is JavscriptOption -> JavascriptDocumentFactory()
             is TypescriptOption -> TypescriptDocumentFactory()
             is MermaidOption -> MermaidDocumentFactory(language as MermaidCodeGeneratorConfig)
+            is PythonOption -> PythonDocumentFactory()
         }
         val generator = CodeGenerator(factory, language)
         val sections = generator.createSections(source, moduleName)
