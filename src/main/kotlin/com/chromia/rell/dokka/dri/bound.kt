@@ -57,7 +57,7 @@ fun M_Type.toBound(presentableName: String? = null): Bound {
         is M_Type_Tuple -> {
             GenericTypeConstructor(
                     dri = toDRI(),
-                    projections = fieldTypes.mapIndexed { index, type -> type.toBound(fieldNames[index].value) },
+                    projections = fieldTypes.mapIndexed { index, type -> type.toBound(fieldNames[index]) },
                     extra = PropertyContainer.withAll(IsTuple)
             )
         }
