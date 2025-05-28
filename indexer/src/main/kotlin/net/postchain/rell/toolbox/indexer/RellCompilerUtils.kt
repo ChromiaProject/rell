@@ -8,6 +8,8 @@ import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
 import net.postchain.rell.base.utils.ide.IdeCompilationResult
 import net.postchain.rell.base.utils.ide.IdeDirApi
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.immMapOf
 import net.postchain.rell.toolbox.compiler.RellCompilerFilePath
 import java.io.File
 import java.net.URI
@@ -33,7 +35,7 @@ class RellCompilerUtils {
     fun createInvalidFileCompilationResult(compilerSrcPath: C_SourcePath): IdeCompilationResult {
         val idePath = IdeSourcePathFilePath(compilerSrcPath)
         return IdeCompilationResult(
-            listOf(
+            immListOf(
                 C_Message(
                     type = C_MessageType.ERROR,
                     pos = S_BasicPos(C_ParserFilePath(compilerSrcPath, idePath), 0, 0, 0),
@@ -41,7 +43,7 @@ class RellCompilerUtils {
                     text = "Relative workspace path contains '-', cannot compile."
                 )
             ),
-            mapOf()
+            immMapOf()
         )
     }
 }
