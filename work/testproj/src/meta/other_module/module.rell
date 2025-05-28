@@ -1,0 +1,25 @@
+module;
+
+// External definitions to demonstrate rell.meta from meta.my_module.
+
+import meta.my_module;
+
+entity other_entity {}
+
+object other_object {}
+
+operation other_operation() {}
+
+query other_query() {
+    return 0;
+}
+
+function other_main() {
+    print("=== RUNNING other_main() ===");
+
+    my_module.print_details(rell.meta.current_module());
+    my_module.print_details(rell.meta(other_entity));
+    my_module.print_details(rell.meta(other_object));
+    my_module.print_details(rell.meta(other_operation));
+    my_module.print_details(rell.meta(other_query));
+}

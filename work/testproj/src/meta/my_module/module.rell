@@ -1,0 +1,48 @@
+module;
+
+// Example code showing the usage of rell.meta, and how the properties of
+// rell.meta objects vary depending on the kind of definition and the location
+// from which they are imported.
+
+import meta.other_module;
+
+entity my_entity {}
+
+object my_object {}
+
+operation my_operation() {}
+
+query my_query() {
+    return 0;
+}
+
+@mount('a.b.alternate_module')
+entity alternate_entity {}
+
+function main() {
+    print("=== RUNNING main() ===");
+
+    print_details(rell.meta.current_module());
+    print_details(rell.meta(my_entity));
+    print_details(rell.meta(my_object));
+    print_details(rell.meta(my_operation));
+    print_details(rell.meta(my_query));
+    print_details(rell.meta(alternate_entity));
+    print_details(rell.meta(other_module));
+    print_details(rell.meta(other_module.other_entity));
+    print_details(rell.meta(other_module.other_object));
+    print_details(rell.meta(other_module.other_operation));
+    print_details(rell.meta(other_module.other_query));
+
+    print("=== CALLING other_main() ===");
+    other_module.other_main();
+}
+
+function print_details(definition: rell.meta) {
+    print("=== " + definition + " ===");
+    print("Simple name: " + definition.simple_name);
+    print("Full name: " + definition.full_name);
+    print("Module name: " + definition.module_name);
+    print("Mount name: " + definition.mount_name);
+    print("Kind text: " + definition.kind_text);
+}
