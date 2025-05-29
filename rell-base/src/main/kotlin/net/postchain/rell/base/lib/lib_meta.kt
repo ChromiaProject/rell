@@ -30,16 +30,57 @@ object Lib_Meta {
 
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell") {
+            comment("""
+                An API facilitating access to Rell definition metadata.
+
+                A `rell.meta` value can be constructed with a reference to a Rell definition - modules, entities,
+                objects, operations and queries are supported. The resulting value provides access to various metadata
+                about the given definition, such as its name (in short and long formats) and the module in which it is
+                declared.
+
+                This API also provides a factory method `rell.meta.current_module()` for creating a `rell.meta` value
+                about the current module.
+            """)
             type("meta", rType = R_RellMetaType, since = SINCE0) {
                 constructor(C_SysFn_Meta, since = SINCE0) {
                     comment("""
-                       Returns a value of type `rell.meta` describing the given definition (specified by name).
-                       The definition can be: module, entity, object, operation, query."
+                        Construct a value of type `rell.meta`, which describes a definition.
+
+                        `rell.meta` values describe the definition referenced in the argument to their constructor. The
+                        referenced definition can be a module, entity, object, operation or query.
+
+                        Given the following definitions:
+
+                        ```rell
+                        operation my_op(...) { ... }
+                        entity my_entity { ... }
+                        object my_object { ... }
+                        query my_query(...) { ... }
+                        ```
+
+                        one can construct values of type `rell.meta` by writing `rell.meta(my_op)`,
+                        `rell.meta(my_entity)`, `rell.meta(my_object)` or `rell.meta(my_query)`.
+
+                        Where an external module is imported:
+
+                        ```rell
+                        import other_module;
+                        ```
+
+                        one can also construct a value of type `rell.meta` by writing `rell.meta(other_module)`.
                     """)
                 }
 
                 property("simple_name", type = "text", pure = true, since = SINCE0) {
-                    comment("Gets the simple name of the meta-information.")
+                    comment("""
+                        The simple name of the definition represented by this meta value.
+
+                        For example, an operation `my_op` defined in a module `a.b.c`, and nested inside namespaces `n`
+                        and `m` (where `n` is the outermost), would have the simple name `my_op`.
+
+                        Where the kind of definition described by this meta value is a module, `simple_name` is the
+                        last part of the module's path; e.g. for a module `a.b.c`, the `simple_name` is `c`.
+                    """)
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
                         v.simpleName
@@ -47,7 +88,16 @@ object Lib_Meta {
                 }
 
                 property("full_name", type = "text", pure = true, since = SINCE0) {
-                    comment("Gets the full name, including the module name.")
+                    comment("""
+                        The full name of the definition represented by this meta value, including the names of the
+                        module and namespace in which the definition occurs.
+
+                        For example, an operation `my_op` defined in a module `a.b.c`, and nested inside namespaces `n`
+                        and `m` (where `n` is the outermost), would have the full name `a.b.c:n.m.my_op`.
+
+                        Where the kind of definition described by this meta value is a module, `full_name` is equal to
+                        `module_name`.
+                    """)
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
                         v.fullName
@@ -55,7 +105,15 @@ object Lib_Meta {
                 }
 
                 property("module_name", type = "text", pure = true, since = SINCE0) {
-                    comment("Gets the module name.")
+                    comment("""
+                        The name of the module to which the definition represented by this meta value belongs.
+
+                        For example, an operation `my_op` defined in a module `a.b.c`, would have the module name
+                        `a.b.c`.
+
+                        Where the kind of definition described by this meta value is a module, `module_name` is equal
+                        to `full_name`.
+                    """)
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
                         v.moduleName
@@ -63,7 +121,15 @@ object Lib_Meta {
                 }
 
                 property("mount_name", type = "text", pure = true, since = SINCE0) {
-                    comment("Gets the mount name.")
+                    comment("""
+                        The effective mount name of the definition represented by this meta value, determined by:
+                        - the name of the definition
+                        - the names of any namespaces in which the definition occurs
+                        - any `@mount` annotations on the definition
+                        - any `@mount` annotations on any namespaces in which the definition occurs
+                        - any `@mount` annotations defined on the module in which the definition occurs, and any of its
+                        parent modules
+                    """)
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
                         v.mountName
@@ -72,8 +138,12 @@ object Lib_Meta {
 
                 property("kind_text", type = "text", pure = true, since = "0.13.10") {
                     comment("""
-                        Kind of the definition described by this meta value.
-                        Possible values are: `module`, `entity`, `object`, `operation`, `query`.
+                        Text representing the kind of the definition described by this meta value.
+
+                        Possible values are `module`, `entity`, `object`, `operation` and `query`.
+
+                        For example, an operation `my_op` defined in a module `a.b.c`, would have the kind text
+                        `operation`.
                     """)
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
@@ -83,11 +153,9 @@ object Lib_Meta {
 
                 staticFunction("current_module", C_SysFn_Meta_CurrentModule, since = "0.13.10") {
                     comment("""
-                        Returns meta information about the current module.
+                        Get a meta information value for the current module.
 
-                        Property `full_name` is the same as `module_name`, `simple_name` is the last part of the module
-                        name, and `mount_name` is the effective mount name of the module (which is defined by `@mount`s
-                        of this module and its parent modules).
+                        @return a value of type `rell.meta` representing the current module
                     """)
                 }
             }
