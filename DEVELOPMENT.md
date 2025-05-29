@@ -126,6 +126,25 @@ chr query -brid <BRID> <QUERY_NAME> <ARGS_AS_GTV_DICT_STR>
 chr tx -brid <BRID> <OP_NAME> ARG_AS_GTV_STR*
 ```
 
+## Binary Compatibility Checker
+
+In case if your build fails with an error like this:
+
+```
+org.apache.maven.lifecycle.LifecycleExecutionException: Failed to execute goal com.chromaway:kotlin-bcv-maven-plugin:0.1.0:check (check) on project rell-api-base: API check failed:
+...
+```
+
+Please run the following command to dump the API:
+
+```shell
+mvn compile kotlin-bcv:dump -DskipTests
+```
+
+Or just run configuration `Kotlin_ABI_Dump` in IntelliJ IDEA that does the same.
+
+Afterward, review the *.api files that were changed by this dump and ensure the changes are intended.
+
 ## Coding Conventions
 
 ### Naming Prefixes
