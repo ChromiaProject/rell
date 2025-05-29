@@ -20,10 +20,26 @@ object Lib_TryCall: KLogging() {
     val NAMESPACE = Ld_NamespaceDsl.make {
         function("try_call", "boolean", since = "0.13.0") {
             comment("""
-                Calls a function that doesn't return a value and handles exceptions gracefully.
-                @return `true` if call succeeds, `false` otherwise.
+                Safely call a function that may fail (i.e. that may throw an exception).
+
+                Accepts nullary unit-typed function references, i.e. references to functions of type `() -> unit`.
+
+                Exceptions thrown during the call are caught and logged with a stack trace.
+
+                Changes to the database that occur during the call are rolled back when an exception is thrown.
+
+                Examples:
+                ```rell
+                function fails(): unit {
+                    list<integer>()[1]; // out of bounds
+                }
+                function succeeds(): unit {}
+                try_call(fails(*)) // logs an out of bounds exception message and returns false
+                try_call(succeeds(*)) // logs nothing, returns true
+                ```
+                @return `true` if call returns without throwing any exceptions, `false` otherwise
             """)
-            param("fn", type = "() -> unit", exact = true, comment = "The function to be called.")
+            param("fn", type = "() -> unit", exact = true, comment = "the function to call")
             bodyContext { ctx, f ->
                 tryCall(ctx, f, Rt_BooleanValue.TRUE) { Rt_BooleanValue.FALSE }
             }
@@ -31,11 +47,28 @@ object Lib_TryCall: KLogging() {
 
         function("try_call", result = "T?", since = "0.13.0") {
             comment("""
-                Calls a function and handles exceptions gracefully, returning null if an exception occurs.
-                @return `T` if call succeeds, `null` otherwise.
+                Safely call a function that may fail (i.e. that may throw an exception).
+
+                Accepts nullary function references, i.e. references to functions of type `() -> T`, and returns `T?`,
+                i.e. the return value of the reference function, or `null`.
+
+                Exceptions thrown during the call are caught and logged with a stack trace.
+
+                Changes to the database that occur during the call are rolled back when an exception is thrown.
+
+                Examples:
+                ```rell
+                function fails(): integer {
+                    return list<integer>()[1]; // out of bounds
+                }
+                function succeeds(): unit { return 0; }
+                try_call(fails(*)) // logs an out of bounds exception message and returns null
+                try_call(succeeds(*)) // logs nothing, returns 0
+                ```
+                @return the return value of `fn` if the call returns without throwing any exceptions, `null` otherwise
             """)
             generic("T")
-            param("fn", type = "() -> T", comment = "The function to be called.")
+            param("fn", type = "() -> T", comment = "the function to be call")
             bodyContext { ctx, f ->
                 tryCall(ctx, f, null) { Rt_NullValue }
             }
@@ -43,12 +76,30 @@ object Lib_TryCall: KLogging() {
 
         function("try_call", result = "T", since = "0.13.0") {
             comment("""
-                Calls a function and handles exceptions gracefully, providing a fallback value if an exception occurs.
-                @return `T` if call succeeds and the supplied default value otherwise.
+                Safely call a function that may fail (i.e. that may throw an exception).
+
+                Accepts nullary function references, i.e. references to functions of type `() -> T`, and a default
+                value to return if the call fails.
+
+                Exceptions thrown during the call are caught and logged with a stack trace.
+
+                Changes to the database that occur during the call are rolled back when an exception is thrown.
+
+                Examples:
+                ```rell
+                function fails(): integer {
+                    return list<integer>()[1]; // out of bounds
+                }
+                function succeeds(): unit { return 0; }
+                try_call(fails(*), 17) // logs an out of bounds exception message and returns 17
+                try_call(succeeds(*), 17) // logs nothing, returns 0
+                ```
+                @return the return value of `fn` if the call returns without throwing any exceptions, `default`
+                otherwise
             """)
             generic("T")
-            param("fn", type = "() -> T", comment = "The function to be called.")
-            param("default", type = "T", lazy = true, comment = "The fallback value to be returned if an exception occurs.")
+            param("fn", type = "() -> T", comment = "the function to be call")
+            param("default", type = "T", lazy = true, comment = "the default value")
             bodyContext { ctx, f, v ->
                 tryCall(ctx, f, null) { v.asLazyValue() }
             }
