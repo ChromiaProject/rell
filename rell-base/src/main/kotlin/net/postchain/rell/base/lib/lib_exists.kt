@@ -35,26 +35,53 @@ object Lib_Exists {
     val NAMESPACE = Ld_NamespaceDsl.make {
         function("exists", C_SysFn_Exists(false), since = "0.6.0") {
             comment("""
-                Checks if a value is not `null` or empty.
+                Checks if a value is present, i.e. not `null` and not empty.
 
-                An argument can be:
+                The negation of `empty()`.
 
-                1. Nullable type (`T?`) - checked for `null`.
-                2. Collection (`list`, `set`, `map`) - checked for being empty (a nullable collection is also checked
-                for `null`).
+                Accepts arguments of nullable type (`T?`), checking that they are not null, and of collection type
+                (`collection<T>`), checking that they contain at least one element. Where an argument is a nullable
+                collection (`collection<T>?`), it is checked both for non-nullity and non-emptiness.
 
-                Special case: when used within a database at-expression, and the argument is also a database
-                at-expression, it becomes a nested at-expression, which can use entities of the outer one. The call is
-                translated into the SQL `EXISTS` clause with a nested `SELECT`.
+                Examples:
+                - `val x: integer? = null; exists(x)` returns `false`
+                - `val y: integer? = 1; exists(y)` returns `true`
+                - `val l1: list<integer>? = null; exists(l1)` returns `false`
+                - `val l2: list<integer>? = []; exists(l2)` returns `false`
+                - `val l3: list<integer>? = [1]; exists(l3)` returns `true`
 
-                @return `true` if the value is not `null` and not an empty collection
-                @see empty(...)
+                Note that when `exists()` is used within a database at-expression, and its argument is also a database
+                at-expression, the inner at-expression can refer to entities of the outer one, as long as the inner uses
+                `@*` (as opposed to `@`, `@+` or `@?`). Such expressions are efficient as they can be translated into a
+                single nested SQL query.
+
+                Inner at-expressions can use `@`, `@+` or `@?`, but in those cases, the inner expression cannot refer to
+                entities of the outer one, and such cases are typically slow as they cannot be translated into a single
+                nested query. They must instead be translated into multiple SQL queries, with the existence check
+                occurring in the Rell runtime rather than in the database, where it could be done more efficiently.
+                The translation into multiple queries also prevents the inner expression from referencing the outer
+                expression, as this is only possible through a translation into SQL that leverages the scoping rules of
+                nested SQL queries.
+
+                Examples:
+
+                - `user @* { exists( company @* { .city == user.city } ) }` returns all `user`s who share a `city` with
+                a `company`.
+                - `user @* { exists( company @* { user.city } ) }` is equivalent to the above, but uses the more concise
+                attribute matching syntax.
+
+                @return `true` if `value` is not `null` and not an empty collection, `false` otherwise
+                @see empty <a href="empty.html">empty - Rell System Library</a>
             """)
         }
         function("empty", C_SysFn_Exists(true), since = "0.8.0") {
             comment("""
-                Checks if a value is `null` or empty. Equivalent to `not exists(...)`.
-                @see exists(...)
+                Checks if a value is absent, i.e. `null` or empty.
+
+                Equivalent to `not exists(...)`.
+
+                @return `true` if `value` is `null` or an empty collection, `false` otherwise
+                @see exists <a href="exists.html">exists - Rell System Library</a>
             """)
         }
     }

@@ -25,15 +25,24 @@ import net.postchain.rell.base.utils.checkEquals
 object Lib_ChainContext {
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("chain_context", since = "0.7.0") {
+            comment("""
+                Access information and configuration relating to the blockchain of this Rell DApp.
+            """)
             property("raw_config", type = "gtv", pure = false, since = "0.7.0") {
-                comment("Blockchain configuration object for this blockchain in Gtv format.")
+                comment("""
+                    The configuration object for the blockchain of this Rell DApp.
+                """)
                 value { ctx ->
                     Rt_GtvValue.get(ctx.chainCtx.rawConfig)
                 }
             }
 
             property("blockchain_rid", type = "byte_array", pure = false, since = "0.9.0") {
-                comment("Blockchain RID of this blockchain.")
+                comment("""
+                    The RID of the blockchain of this Rell DApp.
+
+                    A byte array of size `32`.
+                """)
                 value { ctx ->
                     val bcRid = ctx.chainCtx.blockchainRid
                     Rt_ByteArrayValue.get(bcRid.toByteArray())
@@ -41,7 +50,13 @@ object Lib_ChainContext {
             }
 
             property("args", C_NsProperty_ChainContext_Args, since = "0.7.0") {
-                comment("Module arguments for this module.")
+                comment("""
+                    The module argument values for the current module.
+
+                    Arguments are defined for a module by a struct in that module with name `module_args`.
+
+                    The values of those arguments are set in the Rell DApp's `chromia.yml` configuration.
+                """)
             }
         }
     }
