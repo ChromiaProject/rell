@@ -94,7 +94,7 @@ class R_TupleType(val fields: ImmList<R_TupleField>): R_Type(calcName(fields)) {
             comparator ?: return null
             fieldComparators.add(comparator)
         }
-        return Rt_TupleComparator(fieldComparators)
+        return Rt_TupleComparator(fieldComparators.toImmList())
     }
 
     override fun toMetaGtv() = mapOf(

@@ -159,7 +159,7 @@ sealed class M_Type_Generic(
         checkEquals(typeArgs.size, genericType.params.size)
     }
 
-    val typeArgs: List<M_TypeSet> = typeArgs.mapIndexedToImmList { i, arg ->
+    val typeArgs: ImmList<M_TypeSet> = typeArgs.mapIndexedToImmList { i, arg ->
         val variance = getTypeArgVariance(i)
         when (variance) {
             M_TypeVariance.NONE -> arg
@@ -173,7 +173,7 @@ private class M_Type_Generic_Internal(
     private val genericType0: M_InternalGenericType,
     typeArgs: List<M_TypeSet>,
 ): M_Type_Generic(genericType0, typeArgs) {
-    override val canonicalArgs: List<M_TypeSet> get() = typeArgs
+    override val canonicalArgs: ImmList<M_TypeSet> get() = typeArgs
 
     private val parentType: M_Type_Generic_Internal? = genericType0.parent?.let { genParentType ->
         val argsMap = this.typeArgs.mapIndexed { i, arg -> genericType0.params[i] to arg }.toMap()
@@ -181,10 +181,10 @@ private class M_Type_Generic_Internal(
         M_GenericTypeInternals.newType(genParentType.genericType as M_InternalGenericType, parentArgs)
     }
 
-    private val parentList: List<M_Type_Generic_Internal> = CommonUtils.chainToList(this) { it.parentType }
+    private val parentList: ImmList<M_Type_Generic_Internal> = CommonUtils.chainToList(this) { it.parentType }
 
-    private val parentListReversed: List<M_Type_Generic_Internal> by lazy {
-        parentList.asReversed()
+    private val parentListReversed: ImmList<M_Type_Generic_Internal> by lazy {
+        parentList.asReversed().toImmList()
     }
 
     override fun strCode(): String {

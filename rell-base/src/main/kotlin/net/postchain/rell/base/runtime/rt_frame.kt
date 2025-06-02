@@ -103,7 +103,7 @@ class Rt_CallFrame(
         return Rt_CallContext(defCtx, subStack, dbUpdateAllowed())
     }
 
-    fun stackTrace(lastPos: R_FilePos): List<R_StackPos> {
+    fun stackTrace(lastPos: R_FilePos): ImmList<R_StackPos> {
         val res = mutableListOf<R_StackPos>()
 
         res.add(R_StackPos(defCtx.defId, lastPos))

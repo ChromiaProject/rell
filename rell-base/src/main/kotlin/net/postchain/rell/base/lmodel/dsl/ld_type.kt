@@ -7,6 +7,7 @@ package net.postchain.rell.base.lmodel.dsl
 import net.postchain.rell.base.lmodel.L_TypeParams
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.mtype.*
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
@@ -111,7 +112,7 @@ class Ld_Type_Name(val typeName: Ld_FullName, private val pos: Exception): Ld_Ty
 
 class Ld_Type_Generic(
     val typeName: Ld_FullName,
-    val args: List<Ld_TypeSet>,
+    val args: ImmList<Ld_TypeSet>,
     private val pos: Exception,
 ): Ld_Type() {
     override fun finish(ctx: Ld_TypeFinishContext): M_Type {
@@ -130,7 +131,7 @@ class Ld_Type_Nullable(private val valueType: Ld_Type): Ld_Type() {
     }
 }
 
-class Ld_Type_Tuple(private val fields: List<Pair<String?, Ld_Type>>): Ld_Type() {
+class Ld_Type_Tuple(private val fields: ImmList<Pair<String?, Ld_Type>>): Ld_Type() {
     override fun finish(ctx: Ld_TypeFinishContext): M_Type {
         val mFieldNames = fields.map { it.first }
         val mFieldTypes = fields.map { it.second.finish(ctx) }
@@ -138,7 +139,7 @@ class Ld_Type_Tuple(private val fields: List<Pair<String?, Ld_Type>>): Ld_Type()
     }
 }
 
-class Ld_Type_Function(private val result: Ld_Type, private val params: List<Ld_Type>): Ld_Type() {
+class Ld_Type_Function(private val result: Ld_Type, private val params: ImmList<Ld_Type>): Ld_Type() {
     override fun finish(ctx: Ld_TypeFinishContext): M_Type {
         val mResult = result.finish(ctx)
         val mParams = params.map { it.finish(ctx) }

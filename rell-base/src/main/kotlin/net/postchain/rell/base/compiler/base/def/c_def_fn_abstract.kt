@@ -20,10 +20,7 @@ import net.postchain.rell.base.model.R_FunctionBase
 import net.postchain.rell.base.model.R_FunctionDefinition
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmSet
+import net.postchain.rell.base.utils.*
 
 class C_AbstractUserGlobalFunction(
     fnPos: S_Pos,
@@ -100,7 +97,7 @@ class C_OverrideFunctionDescriptor(val fnPos: S_Pos, private val rFnBase: R_Func
 }
 
 object C_AbstractCompiler {
-    fun compile(msgCtx: C_MessageContext, modules: List<C_ModuleDescriptor>) {
+    fun compile(msgCtx: C_MessageContext, modules: ImmList<C_ModuleDescriptor>) {
         val conflictsProcessor = C_OverrideConflictsProcessor(msgCtx)
         val actualOverrides = conflictsProcessor.processApp(modules)
         processMissingOverrides(msgCtx, modules, actualOverrides)
@@ -108,8 +105,8 @@ object C_AbstractCompiler {
 
     private fun processMissingOverrides(
             msgCtx: C_MessageContext,
-            modules: List<C_ModuleDescriptor>,
-            actualOverrides: Set<C_AbstractFunctionDescriptor>
+            modules: ImmList<C_ModuleDescriptor>,
+            actualOverrides: ImmSet<C_AbstractFunctionDescriptor>
     ) {
         val missingOverridesProcessor = C_MissingOverridesProcessor(msgCtx, actualOverrides)
 
@@ -129,7 +126,7 @@ private class C_OverrideConflictsProcessor(private val msgCtx: C_MessageContext)
     private val errorLocations = mutableSetOf<C_OverrideLocation>()
     private val errorOverrides = mutableSetOf<C_OverrideFunctionDescriptor>()
 
-    fun processApp(modules: List<C_ModuleDescriptor>): Set<C_AbstractFunctionDescriptor> {
+    fun processApp(modules: List<C_ModuleDescriptor>): ImmSet<C_AbstractFunctionDescriptor> {
         val entries = mutableListOf<C_OverrideEntry>()
         for (module in modules) {
             val importsDescriptor = module.importsDescriptor()
@@ -139,12 +136,13 @@ private class C_OverrideConflictsProcessor(private val msgCtx: C_MessageContext)
         val goodEntries = processConflicts(entries, true)
 
         val res = mutableSetOf<C_AbstractFunctionDescriptor>()
+
         for (entry in goodEntries) {
             val abstract = entry.override.bind()
             if (abstract != null) res.add(abstract)
         }
 
-        return res
+        return res.toImmSet()
     }
 
     private fun processModule(module: C_ModuleImportsDescriptor): List<C_OverrideEntry> {
@@ -160,7 +158,10 @@ private class C_OverrideConflictsProcessor(private val msgCtx: C_MessageContext)
         return processConflicts(entries, false)
     }
 
-    private fun collectOverrides(module: C_ModuleImportsDescriptor, file: C_FileImportsDescriptor): List<C_OverrideEntry> {
+    private fun collectOverrides(
+        module: C_ModuleImportsDescriptor,
+        file: C_FileImportsDescriptor
+    ): ImmList<C_OverrideEntry> {
         val res = mutableListOf<C_OverrideEntry>()
 
         val visitedModules = mutableSetOf<C_ContainerKey>()
@@ -202,14 +203,14 @@ private class C_OverrideConflictsProcessor(private val msgCtx: C_MessageContext)
             val abstract = override.abstract()
             if (abstract != null) {
                 val location = C_OverrideLocation(import, module.name, override.fnPos)
-                res.add(C_OverrideEntry(abstract, override, listOf(location)))
+                res.add(C_OverrideEntry(abstract, override, immListOf(location)))
             }
         }
     }
 
     private fun processConflicts(entries: List<C_OverrideEntry>, appLevel: Boolean): List<C_OverrideEntry> {
         val grouped = entries.groupBy { Pair(it.abstract, it.override) }
-                .map { (k, v) -> C_OverrideEntry(k.first, k.second, v.flatMap { it.locations }) }
+                .map { (k, v) -> C_OverrideEntry(k.first, k.second, v.flatMapToImmList { it.locations }) }
                 .groupBy { it.abstract }
 
         val res = mutableListOf<C_OverrideEntry>()
@@ -276,13 +277,13 @@ private class C_OverrideConflictsProcessor(private val msgCtx: C_MessageContext)
     private class C_OverrideEntry(
             val abstract: C_AbstractFunctionDescriptor,
             val override: C_OverrideFunctionDescriptor,
-            val locations: List<C_OverrideLocation>
+            val locations: ImmList<C_OverrideLocation>
     )
 }
 
 private class C_MissingOverridesProcessor(
         private val msgCtx: C_MessageContext,
-        private val actualOverrides: Set<C_AbstractFunctionDescriptor>
+        private val actualOverrides: ImmSet<C_AbstractFunctionDescriptor>
 ) {
     private val globalCtx = msgCtx.globalCtx
     private val errorAbstracts = mutableSetOf<C_AbstractFunctionDescriptor>()
@@ -310,7 +311,7 @@ private class C_MissingOverridesProcessor(
         }
     }
 
-    private fun collectAllOverrides(module: C_ModuleDescriptor): Set<C_AbstractFunctionDescriptor> {
+    private fun collectAllOverrides(module: C_ModuleDescriptor): ImmSet<C_AbstractFunctionDescriptor> {
         val res = mutableSetOf<C_AbstractFunctionDescriptor>()
 
         for (file in module.importsDescriptor().files) {
@@ -377,7 +378,7 @@ private object C_AbstractUtils {
             import: C_ImportDescriptor,
             visitedModules: MutableSet<C_ContainerKey>,
             abstractOnly: Boolean
-    ): List<C_ModuleImportsDescriptor> {
+    ): ImmList<C_ModuleImportsDescriptor> {
         val res = mutableListOf<C_ModuleImportsDescriptor>()
         collectImportedModules0(import, visitedModules, abstractOnly, res)
         return res.toImmList()

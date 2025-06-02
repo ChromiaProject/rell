@@ -389,7 +389,7 @@ class R_ColAtExpr(
         return resList
     }
 
-    private class RowComparator(private val sorting: List<IndexedValue<Comparator<Rt_Value>>>): Comparator<List<Rt_Value>> {
+    private class RowComparator(private val sorting: ImmList<IndexedValue<Comparator<Rt_Value>>>): Comparator<List<Rt_Value>> {
         override fun compare(p0: List<Rt_Value>, p1: List<Rt_Value>): Int {
             for ((i, c) in sorting) {
                 val v1 = p0[i]
@@ -401,7 +401,7 @@ class R_ColAtExpr(
         }
 
         companion object {
-            fun create(sorting: List<IndexedValue<Comparator<Rt_Value>>>): Comparator<List<Rt_Value>>? {
+            fun create(sorting: ImmList<IndexedValue<Comparator<Rt_Value>>>): Comparator<List<Rt_Value>>? {
                 return if (sorting.isEmpty()) null else RowComparator(sorting)
             }
         }

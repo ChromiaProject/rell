@@ -21,12 +21,9 @@ import net.postchain.rell.base.mtype.M_GenericType
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_TypeParamsResolver
 import net.postchain.rell.base.mtype.M_TypeSets
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.LazyPosString
-import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocCode
 import net.postchain.rell.base.utils.doc.DocSymbol
-import net.postchain.rell.base.utils.immListOf
 
 class C_LibTypeExtension(
     private val lTypeExt: L_TypeExtension,
@@ -48,7 +45,7 @@ class C_LibTypeExtension(
         val map = M_TypeParamsResolver.resolveTypeParams(lTypeExt.typeParams, lTypeExt.selfType, mType)
         map ?: return null
 
-        val typeArgs = map.mapValues { M_TypeSets.one(it.value) }
+        val typeArgs = map.mapValuesToImmMap { M_TypeSets.one(it.value) }
         val rep = C_TypeMemberReplacement(mType, typeArgs)
         return C_LibTypeMembers.replace(members, rep, replacer)
     }

@@ -126,13 +126,13 @@ object L_TypeUtils {
         return if (mArgs == null) null else addon.getRType(mArgs)
     }
 
-    fun getExpectedType(typeParams: List<M_TypeParam>, mPatternType: M_Type, hint: C_TypeHint): M_Type? {
+    fun getExpectedType(typeParams: ImmList<M_TypeParam>, mPatternType: M_Type, hint: C_TypeHint): M_Type? {
         val resTypes = hint.mTypes.mapNotNull { matchExpectedType(typeParams, mPatternType, it) }
         val resType = resTypes.singleOrNull()
         return resType
     }
 
-    private fun matchExpectedType(typeParams: List<M_TypeParam>, mPatternType: M_Type, mHintType: M_Type): M_Type? {
+    private fun matchExpectedType(typeParams: ImmList<M_TypeParam>, mPatternType: M_Type, mHintType: M_Type): M_Type? {
         val resolver = M_TypeParamsResolver(typeParams)
         val match = resolver.matchTypeParamsOut(mPatternType, mHintType)
         if (!match) {
@@ -214,7 +214,7 @@ object L_TypeUtils {
         return DocFunctionHeader(docTypeParams, docResultType, docParams)
     }
 
-    fun docTypeParams(mTypeParams: List<M_TypeParam>): List<DocTypeParam> {
+    fun docTypeParams(mTypeParams: List<M_TypeParam>): ImmList<DocTypeParam> {
         return mTypeParams.mapToImmList {
             val docBounds = docTypeSet(it.bounds)
             DocTypeParam(it.name, it.variance, docBounds)

@@ -4,7 +4,9 @@
 
 package net.postchain.rell.base.utils.grammar
 
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.RellVersions
+import net.postchain.rell.base.utils.mapToImmList
 
 fun main() {
     XtextGenUtils.printHeader()
@@ -91,8 +93,8 @@ class XtextAction_Token(private val name: String?): XtextAction() {
 
 class XtextAttr(val name: String, val many: Boolean)
 
-class XtextAction_General(private val attrs: List<XtextAttr>): XtextAction() {
-    override fun generate(type: String): List<String> {
+class XtextAction_General(private val attrs: ImmList<XtextAttr>): XtextAction() {
+    override fun generate(type: String): ImmList<String> {
         val fullType = "net.postchain.rellide.xtext.rell.$type"
         println("                $fullType node = ($fullType) obj;")
 
@@ -106,7 +108,7 @@ class XtextAction_General(private val attrs: List<XtextAttr>): XtextAction() {
             println("                Object ${attr.name} = $expr;")
         }
 
-        return attrs.map { it.name }
+        return attrs.mapToImmList { it.name }
     }
 }
 

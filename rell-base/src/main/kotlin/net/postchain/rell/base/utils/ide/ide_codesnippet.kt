@@ -127,10 +127,10 @@ class IdeCodeSnippet(
             val parsingRaw = obj["parsing"] as Map<Any, Any>?
             val parsing = parsingRaw?.map { (k, v) ->
                 k as String to (v as List<Any>).map { IdeSnippetMessage.deserialize(it) }
-            }?.toImmMap() ?: immMapOf()
+            }?.toImmMap().orEmpty()
 
             val commentsRaw = obj["comments"] as Map<Any, Any>?
-            val comments = commentsRaw?.map { (k, v) -> k as String to v as String }?.toImmMap() ?: immMapOf()
+            val comments = commentsRaw?.map { (k, v) -> k as String to v as String }?.toImmMap().orEmpty()
 
             return IdeCodeSnippet(files, modules, options, messages, parsing, comments)
         }

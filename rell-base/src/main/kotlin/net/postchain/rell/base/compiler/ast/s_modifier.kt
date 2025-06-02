@@ -10,9 +10,11 @@ import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.compiler.base.core.C_NamespaceContext
 import net.postchain.rell.base.compiler.base.modifier.*
 import net.postchain.rell.base.compiler.parser.S_Keywords
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.doc.DocModifier
 import net.postchain.rell.base.utils.doc.DocModifiers
 import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapNotNullToImmList
 
 sealed class S_Modifier(val pos: S_Pos) {
     abstract fun compile(ctx: C_ModifierContext, modValues: C_FixedModifierValues): DocModifier?
@@ -51,7 +53,7 @@ class S_AnnotationArg_Name(val name: S_QualifiedName): S_AnnotationArg() {
     }
 }
 
-class S_Annotation(val name: S_Name, val args: List<S_AnnotationArg>): S_Modifier(name.pos) {
+class S_Annotation(val name: S_Name, val args: ImmList<S_AnnotationArg>): S_Modifier(name.pos) {
     override fun compile(ctx: C_ModifierContext, modValues: C_FixedModifierValues): DocModifier? {
         val cArgs = args.map { it.compile(ctx) }
         return modValues.compileAnnotation(ctx, name, cArgs)
@@ -63,13 +65,13 @@ class S_Annotation(val name: S_Name, val args: List<S_AnnotationArg>): S_Modifie
     }
 }
 
-class S_Modifiers(val modifiers: List<S_Modifier> = immListOf()) {
+class S_Modifiers(val modifiers: ImmList<S_Modifier> = immListOf()) {
     val pos = modifiers.firstOrNull()?.pos
 
     fun compile(modifierCtx: C_ModifierContext, modValues: C_ModifierValues): DocModifiers {
         val fixModValues = modValues.fix()
 
-        val docMods = modifiers.mapNotNull {
+        val docMods = modifiers.mapNotNullToImmList {
             it.compile(modifierCtx, fixModValues)
         }
 

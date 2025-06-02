@@ -330,8 +330,8 @@ class C_MountContext(
             return mountAnn.calculateMountName(msgCtx, mountName)
         }
 
-        val namePath = qualifiedName?.parts?.map { it.rName } ?: immListOf()
-        val path = (mountName.parts + namePath).toImmList()
+        val namePath = qualifiedName?.parts?.map { it.rName }.orEmpty()
+        val path = mountName.parts + namePath
 
         return R_MountName(path)
     }
@@ -429,7 +429,7 @@ class C_DefinitionContext(
     val initFrameGetter = initFrameLate.getter
 
     val initExprCtx: C_ExprContext = let {
-        val fnCtx = C_FunctionContext(this, "${defName.appLevelName}.<init>", null, TypedKeyMap())
+        val fnCtx = C_FunctionContext(this, "${defName.appLevelName}.<init>", null, ImmTypedKeyMap())
         val initFrameCtx = C_FrameContext.create(fnCtx)
 
         executor.onPass(C_CompilerPass.FRAMES) {
@@ -468,7 +468,7 @@ class C_FunctionContext(
     val defCtx: C_DefinitionContext,
     name: String,
     val explicitReturnType: R_Type?,
-    val statementVars: TypedKeyMap,
+    val statementVars: ImmTypedKeyMap,
 ) {
     val nsCtx = defCtx.nsCtx
     val modCtx = nsCtx.modCtx

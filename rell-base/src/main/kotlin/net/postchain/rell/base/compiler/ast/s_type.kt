@@ -15,16 +15,13 @@ import net.postchain.rell.base.lib.type.R_SetType
 import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDeclaration_TupleAttribute
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.mapIndexedToImmList
-import net.postchain.rell.base.utils.mapNotNullAllOrNull
-import net.postchain.rell.base.utils.mapToImmList
 
 sealed class S_Type(val pos: S_Pos) {
     protected abstract fun compile0(ctx: C_DefinitionContext): R_Type
@@ -96,7 +93,7 @@ class S_NameType(private val name: S_QualifiedName): S_Type(name.pos) {
     }
 }
 
-class S_GenericType(private val name: S_QualifiedName, private val args: List<S_Type>): S_Type(name.pos) {
+class S_GenericType(private val name: S_QualifiedName, private val args: ImmList<S_Type>): S_Type(name.pos) {
     override fun compile0(ctx: C_DefinitionContext): R_Type {
         val ref = compileGenericType(ctx)
         ref ?: return R_CtErrorType
@@ -150,7 +147,7 @@ class S_NullableType(pos: S_Pos, val valueType: S_Type): S_Type(pos) {
 
 data class S_GenericTupleAttr<T>(val name: S_Name?, val value: T, val comment: S_Comment?)
 
-class S_TupleType(pos: S_Pos, private val fields: List<S_GenericTupleAttr<S_Type>>): S_Type(pos) {
+class S_TupleType(pos: S_Pos, private val fields: ImmList<S_GenericTupleAttr<S_Type>>): S_Type(pos) {
     override fun compile0(ctx: C_DefinitionContext): R_Type {
         val names = mutableSetOf<String>()
 
@@ -267,7 +264,7 @@ class S_MirrorStructType(pos: S_Pos, val mutable: Boolean, val paramType: S_Type
     }
 }
 
-class S_FunctionType(pos: S_Pos, val params: List<S_Type>, val result: S_Type): S_Type(pos) {
+class S_FunctionType(pos: S_Pos, val params: ImmList<S_Type>, val result: S_Type): S_Type(pos) {
     override fun compile0(ctx: C_DefinitionContext): R_Type {
         val rParams = params.mapToImmList {
             C_Types.checkNotUnit(ctx.msgCtx, it.pos, it.compile(ctx), null) { "fntype_param" toCodeMsg "parameter" }

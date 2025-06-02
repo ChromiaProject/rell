@@ -7,6 +7,9 @@ package net.postchain.rell.base.compiler.base.modifier
 import net.postchain.rell.base.compiler.base.core.C_MessageContext
 import net.postchain.rell.base.model.R_MountName
 import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.plus
 import net.postchain.rell.base.utils.toImmList
 import org.apache.commons.lang3.StringUtils
 
@@ -71,17 +74,17 @@ class C_MountAnnotationValue(
 }
 
 class C_MountPath private constructor(
-        private val str: String,
-        private val up: Int?,
-        private val path: List<R_Name>,
-        private val tail: Boolean
+    private val str: String,
+    private val up: Int?,
+    private val path: ImmList<R_Name>,
+    private val tail: Boolean
 ) {
     fun apply(
             msgCtx: C_MessageContext,
             target: C_MountAnnotationTarget,
             parentMountName: R_MountName
     ): R_MountName? {
-        var base = listOf<R_Name>()
+        var base = immListOf<R_Name>()
         if (up != null) {
             if (up > parentMountName.parts.size) {
                 msgCtx.error(target.pos, "ann:mount:up:${parentMountName.parts.size}:$up",
@@ -97,7 +100,7 @@ class C_MountPath private constructor(
             return null
         }
 
-        val combined = (base + path).toImmList()
+        val combined = base + path
         if (!tail) {
             return R_MountName(combined)
         }
@@ -108,7 +111,7 @@ class C_MountPath private constructor(
             return null
         }
 
-        val full = (combined + target.name).toImmList()
+        val full = combined + target.name
         return R_MountName(full)
     }
 
@@ -117,7 +120,7 @@ class C_MountPath private constructor(
     companion object {
         fun parse(s: String): C_MountPath? {
             var parts = StringUtils.splitPreserveAllTokens(s, '.').toList()
-            if (parts.isEmpty()) return C_MountPath(s, null, listOf(), false)
+            if (parts.isEmpty()) return C_MountPath(s, null, immListOf(), false)
 
             var up: Int? = null
             if (parts[0] == "") {
@@ -145,7 +148,7 @@ class C_MountPath private constructor(
                 return null
             }
 
-            return C_MountPath(s, up, path, tail)
+            return C_MountPath(s, up, path.toImmList(), tail)
         }
     }
 }

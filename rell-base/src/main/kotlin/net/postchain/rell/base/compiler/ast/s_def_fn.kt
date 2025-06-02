@@ -19,7 +19,7 @@ import net.postchain.rell.base.model.stmt.R_ExprStatement
 import net.postchain.rell.base.model.stmt.R_ReturnStatement
 import net.postchain.rell.base.mtype.M_ParamArity
 import net.postchain.rell.base.utils.MutableTypedKeyMap
-import net.postchain.rell.base.utils.TypedKeyMap
+import net.postchain.rell.base.utils.ImmTypedKeyMap
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
@@ -152,7 +152,7 @@ class S_FormalParameter(
 }
 
 abstract class S_FunctionBody {
-    protected abstract fun processStatementVars(): TypedKeyMap
+    protected abstract fun processStatementVars(): ImmTypedKeyMap
     protected abstract fun compileQuery0(bodyCtx: C_FunctionBodyContext, stmtCtx: C_StmtContext): C_Statement
     protected abstract fun compileFunction0(bodyCtx: C_FunctionBodyContext, stmtCtx: C_StmtContext): C_Statement
 
@@ -197,7 +197,7 @@ class S_FunctionBodyShort(
     private val posRange: S_PosRange,
     private val expr: S_Expr,
 ): S_FunctionBody() {
-    override fun processStatementVars() = TypedKeyMap()
+    override fun processStatementVars() = ImmTypedKeyMap()
 
     override fun returnsValue() = true
 
@@ -238,10 +238,10 @@ class S_FunctionBodyShort(
 }
 
 class S_FunctionBodyFull(private val body: S_Statement): S_FunctionBody() {
-    override fun processStatementVars(): TypedKeyMap {
+    override fun processStatementVars(): ImmTypedKeyMap {
         val map = MutableTypedKeyMap()
         body.discoverVars(map)
-        return map.immutableCopy()
+        return map.toImmTypedKeyMap()
     }
 
     override fun returnsValue(): Boolean {

@@ -39,7 +39,7 @@ class V_ExprInfo(
             hasDbModifications: Boolean = false,
             canBeDbExpr: Boolean = true,
             dependsOnDbAtEntity: Boolean = false,
-            dependsOnAtExprs: Set<R_AtExprId> = immSetOf(),
+            dependsOnAtExprs: ImmSet<R_AtExprId> = immSetOf(),
         ): V_ExprInfo {
             return simple(
                 type,
@@ -57,7 +57,7 @@ class V_ExprInfo(
             hasDbModifications: Boolean = false,
             canBeDbExpr: Boolean = true,
             dependsOnDbAtEntity: Boolean = false,
-            dependsOnAtExprs: Set<R_AtExprId> = immSetOf(),
+            dependsOnAtExprs: ImmSet<R_AtExprId> = immSetOf(),
         ): V_ExprInfo {
             val depsOnDbAtEnt = dependsOnDbAtEntity || subExprs.any { it.info.dependsOnDbAtEntity }
             val canBeDb = !depsOnDbAtEnt || (canBeDbExpr && subExprs.all { it.info.canBeDbExpr })
@@ -67,7 +67,7 @@ class V_ExprInfo(
                     hasDbModifications = hasDbModifications || subExprs.any { it.info.hasDbModifications },
                     canBeDbExpr = canBeDb,
                     dependsOnDbAtEntity = depsOnDbAtEnt,
-                    dependsOnAtExprs = (dependsOnAtExprs + subExprs.flatMap { it.info.dependsOnAtExprs }).toImmSet(),
+                    dependsOnAtExprs = dependsOnAtExprs + subExprs.flatMap { it.info.dependsOnAtExprs },
             )
         }
     }
@@ -276,7 +276,7 @@ abstract class V_Expr(
         }
     }
 
-    fun <T: Any> traverseToSet(code: (V_Expr) -> Collection<T>): Set<T> {
+    fun <T: Any> traverseToSet(code: (V_Expr) -> Collection<T>): ImmSet<T> {
         val res = mutableListOf<T>()
         traverseToCollection(res, code)
         return res.toImmSet()

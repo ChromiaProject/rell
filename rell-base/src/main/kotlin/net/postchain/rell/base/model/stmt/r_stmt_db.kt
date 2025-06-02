@@ -10,10 +10,7 @@ import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_SqlContext
 import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.utils.CommonUtils
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.*
 
 sealed class R_UpdateTarget {
     abstract fun entity(): R_DbAtEntity
@@ -25,7 +22,7 @@ sealed class R_UpdateTarget {
 
 class R_UpdateTarget_Simple(
     val entity: R_DbAtEntity,
-    val extraEntities: List<R_DbAtEntity>,
+    val extraEntities: ImmList<R_DbAtEntity>,
     val cardinality: R_AtCardinality,
     val where: Db_Expr?,
 ): R_UpdateTarget() {
@@ -45,7 +42,7 @@ class R_UpdateTarget_Simple(
     }
 
     companion object {
-        fun getFromItems(entity: R_DbAtEntity, extraEntities: List<R_DbAtEntity>): List<RedDb_AtFromItem> {
+        fun getFromItems(entity: R_DbAtEntity, extraEntities: List<R_DbAtEntity>): ImmList<RedDb_AtFromItem> {
             val allEntities = listOf(entity) + extraEntities
             return allEntities.mapToImmList { RedDb_AtFromItem(it, null, false) }
         }
@@ -69,7 +66,7 @@ sealed class R_UpdateTarget_Expr(
     private val expr: R_Expr,
     private val lambda: R_LambdaBlock,
 ): R_UpdateTarget() {
-    private val extraEntities: List<R_DbAtEntity> = extraEntities.toImmList()
+    private val extraEntities: ImmList<R_DbAtEntity> = extraEntities.toImmList()
     private val fromItems = R_UpdateTarget_Simple.getFromItems(entity, this.extraEntities)
 
     final override fun entity() = entity
@@ -252,7 +249,7 @@ sealed class R_BaseUpdateStatement(val target: R_UpdateTarget, val fromBlock: R_
 class R_UpdateStatement(
         target: R_UpdateTarget,
         fromBlock: R_FrameBlock,
-        private val what: List<R_UpdateStatementWhat>
+        private val what: ImmList<R_UpdateStatementWhat>
 ): R_BaseUpdateStatement(target, fromBlock) {
     override fun buildSql(frame: Rt_CallFrame, ctx: SqlGenContext, returning: Boolean): ParameterizedSql {
         val redWhere = target.where()?.toRedExpr(frame)

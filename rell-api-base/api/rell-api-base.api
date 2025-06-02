@@ -44,14 +44,14 @@ public final class net/postchain/rell/api/base/RellApiCompile {
 
 public final class net/postchain/rell/api/base/RellApiCompile$Config {
 	public static final field Companion Lnet/postchain/rell/api/base/RellApiCompile$Config$Companion;
-	public fun <init> (Lnet/postchain/rell/api/base/RellCliEnv;Lnet/postchain/rell/base/model/R_LangVersion;Ljava/util/Map;ZZZZZLjava/util/List;ZZ)V
-	public final fun getAdditionalGtxModules ()Ljava/util/List;
+	public fun <init> (Lnet/postchain/rell/api/base/RellCliEnv;Lnet/postchain/rell/base/model/R_LangVersion;Lkotlinx/collections/immutable/ImmutableMap;ZZZZZLkotlinx/collections/immutable/ImmutableList;ZZ)V
+	public final fun getAdditionalGtxModules ()Lkotlinx/collections/immutable/ImmutableList;
 	public final fun getAppModuleInTestsError ()Z
 	public final fun getCliEnv ()Lnet/postchain/rell/api/base/RellCliEnv;
 	public final fun getDocSymbolsEnabled ()Z
 	public final fun getIncludeAppSubModules ()Z
 	public final fun getIncludeTestSubModules ()Z
-	public final fun getModuleArgs ()Ljava/util/Map;
+	public final fun getModuleArgs ()Lkotlinx/collections/immutable/ImmutableMap;
 	public final fun getModuleArgsMissingError ()Z
 	public final fun getMountConflictError ()Z
 	public final fun getQuiet ()Z

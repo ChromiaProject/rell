@@ -8,9 +8,7 @@ import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.ParserReference
 import net.postchain.rell.base.compiler.parser.RellToken
 import net.postchain.rell.base.compiler.parser.RellTokens
-import net.postchain.rell.base.utils.LateInit
-import net.postchain.rell.base.utils.capitalizeEx
-import net.postchain.rell.base.utils.toLowerCaseEx
+import net.postchain.rell.base.utils.*
 import org.apache.commons.collections4.MapUtils
 
 fun main() {
@@ -156,8 +154,8 @@ private object XtextNontermGen {
             exprs.add(expr)
         }
 
-        val expr = if (exprs.size == 1) exprs[0] else XtextExpr_And(exprs)
-        createAction(type, XtextAction_General(attrs), transform)
+        val expr = if (exprs.size == 1) exprs[0] else XtextExpr_And(exprs.toImmList())
+        createAction(type, XtextAction_General(attrs.toImmList()), transform)
 
         return XtextProd(type, expr)
     }
@@ -172,9 +170,9 @@ private object XtextNontermGen {
                     val values = gram.subs.filter { it.hasValue() }
                     check(values.size <= 1) { "More than one element has value" }
                 }
-                XtextExpr_And(gram.subs.map { convertExpr(it, if (it.hasValue()) attr else null) })
+                XtextExpr_And(gram.subs.mapToImmList { convertExpr(it, if (it.hasValue()) attr else null) })
             }
-            is GramExpr_Or -> XtextExpr_Or(gram.subs.map { convertExpr(it, attr) })
+            is GramExpr_Or -> XtextExpr_Or(gram.subs.mapToImmList { convertExpr(it, attr) })
             is GramExpr_Opt -> XtextExpr_Opt(convertExpr(gram.sub, attr))
             is GramExpr_Rep -> {
                 val term = convertExpr(gram.term, attr)
@@ -182,8 +180,8 @@ private object XtextNontermGen {
                     XtextExpr_Rep(term, gram.zero)
                 } else {
                     val sep = convertExpr(gram.sep, null)
-                    val rep = XtextExpr_Rep(XtextExpr_And(listOf(sep, term)), true)
-                    val one = XtextExpr_And(listOf(term, rep))
+                    val rep = XtextExpr_Rep(XtextExpr_And(immListOf(sep, term)), true)
+                    val one = XtextExpr_And(immListOf(term, rep))
                     if (gram.zero) XtextExpr_Opt(one) else one
                 }
             }
@@ -259,8 +257,8 @@ private object GramExprGen {
             is ParserReference<*> -> createGramExprSub(parser.parser)
             is RellToken -> GramExpr_Token(parser.name)
             is SkipParser -> GramExpr_Skip(createGramExprSub(parser.innerParser))
-            is AndCombinator<*> -> GramExpr_And(GrammarUtils.andParsers(parser).map { createGramExprSub(it) })
-            is OrCombinator<*> -> GramExpr_Or(GrammarUtils.orParsers(parser).map { createGramExprSub(it) })
+            is AndCombinator<*> -> GramExpr_And(GrammarUtils.andParsers(parser).mapToImmList { createGramExprSub(it) })
+            is OrCombinator<*> -> GramExpr_Or(GrammarUtils.orParsers(parser).mapToImmList { createGramExprSub(it) })
             is OptionalCombinator<*> -> GramExpr_Opt(createGramExprSub(parser.parser))
             is SeparatedCombinator<*, *> -> {
                 val term = createGramExprSub(parser.termParser)
@@ -321,11 +319,11 @@ private class XtextExpr_Token(private val text: String): XtextExpr() {
     override fun generate() = "'$text'"
 }
 
-private class XtextExpr_Or(private val subs: List<XtextExpr>): XtextExpr() {
+private class XtextExpr_Or(private val subs: ImmList<XtextExpr>): XtextExpr() {
     override fun generate() = "(" + subs.joinToString(" | ") { it.generate() } + ")"
 }
 
-private class XtextExpr_And(private val subs: List<XtextExpr>): XtextExpr() {
+private class XtextExpr_And(private val subs: ImmList<XtextExpr>): XtextExpr() {
     override fun generate() = subs.joinToString(" ") { it.generate() }
 }
 
@@ -369,12 +367,12 @@ private class GramExpr_Map(val sub: GramExpr, val transform: (Any) -> Any): Gram
     override fun many() = false
 }
 
-private class GramExpr_And(val subs: List<GramExpr>): GramExpr() {
+private class GramExpr_And(val subs: ImmList<GramExpr>): GramExpr() {
     override fun hasValue() = subs.any { it.hasValue() }
     override fun many() = subs.any { it.many() }
 }
 
-private class GramExpr_Or(val subs: List<GramExpr>): GramExpr() {
+private class GramExpr_Or(val subs: ImmList<GramExpr>): GramExpr() {
     override fun hasValue() = subs.any { it.hasValue() }
     override fun many() = subs.any { it.many() }
 }

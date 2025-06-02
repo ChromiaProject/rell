@@ -165,6 +165,9 @@ The project uses various prefixes for different types of classes:
 2. The project has .editorconfig, but auto-formatting is not used strictly. Don't commit changes that only consist of applying formatting
 3. All calculations in the implementation of Rell must be deterministic and reproducible (for blockchain). Expressions must produce the same results in both interpreted and database contexts
 
+### Miscellaneous Kotlin conventions
+1. Write statements (`if`, `for`...) with braces if they require a line break.
+
 ## Git Workflow
 
 1. Create a branch for your changes

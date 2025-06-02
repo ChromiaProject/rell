@@ -14,6 +14,7 @@ import net.postchain.rell.base.lmodel.*
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immMapOf
@@ -56,8 +57,8 @@ private class C_LibNamespaceConverter {
         return b.build()
     }
 
-    fun getTypeDefs(): List<C_LibTypeDef> = typeDefMap.values.toImmList()
-    fun getTypeExtensions(): List<C_LibTypeExtension> = typeExtensions.toImmList()
+    fun getTypeDefs(): ImmList<C_LibTypeDef> = typeDefMap.values.toImmList()
+    fun getTypeExtensions(): ImmList<C_LibTypeExtension> = typeExtensions.toImmList()
 
     private fun convertMembers(b: C_LibNamespace.Maker, lNs: L_Namespace) {
         for (lMember in lNs.members) {

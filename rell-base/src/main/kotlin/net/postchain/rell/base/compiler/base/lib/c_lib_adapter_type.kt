@@ -168,13 +168,13 @@ private object C_LibTypeAdapterInternal {
         val naming = C_MemberNaming.makeConstructor(mSpecificType)
         val lTypeDef = lType.getTypeDefOrNull()
         return if (lTypeDef == null) null else {
-            constructorsToFunction(lTypeDef, listOf(), mSpecificType, constructors, naming)
+            constructorsToFunction(lTypeDef, immListOf(), mSpecificType, constructors, naming)
         }
     }
 
     private fun constructorsToFunction(
         lTypeDef: L_TypeDef,
-        typeParams: List<M_TypeParam>,
+        typeParams: ImmList<M_TypeParam>,
         mSpecificType: M_Type?,
         constructors: C_LibTypeConstructors,
         naming: C_MemberNaming,
@@ -195,7 +195,7 @@ private object C_LibTypeAdapterInternal {
     private fun constructorsToCases(
         lTypeDef: L_TypeDef,
         constructors: C_LibTypeConstructors,
-        typeParams: List<M_TypeParam>,
+        typeParams: ImmList<M_TypeParam>,
         mSpecificType: M_Type?,
         naming: C_MemberNaming,
     ): ImmList<C_LibFuncCase<V_GlobalFunctionCall>> {
@@ -225,7 +225,7 @@ private object C_LibTypeAdapterInternal {
     private fun constructorToCase(
         typeName: R_FullName,
         mem: C_LibTypeItem<L_Constructor>,
-        outerTypeParams: List<M_TypeParam>,
+        outerTypeParams: ImmList<M_TypeParam>,
         selfType: M_Type,
         specificSelfType: M_Type?,
         naming: C_MemberNaming,
@@ -234,7 +234,7 @@ private object C_LibTypeAdapterInternal {
         val con = mem.member
 
         val mHeader = M_FunctionHeader(
-            typeParams = (outerTypeParams + con.header.typeParams).toImmList(),
+            typeParams = outerTypeParams + con.header.typeParams,
             resultType = selfType,
             params = con.header.params.mapToImmList { it.mParam },
         )
@@ -376,7 +376,7 @@ private class C_LibTypeBodyBuilder(
                 C_TypeValueMember_Function(name, fn, naming)
             }
 
-        val all = (valueMembers + cFunctions).toImmList()
+        val all = valueMembers.toImmList() + cFunctions
         return C_LibTypeMembers.simple(all)
     }
 
@@ -392,7 +392,7 @@ private class C_LibTypeBodyBuilder(
             C_TypeStaticMember.makeFunction(defName, simpleName, naming, cFn, ideInfo)
         }
 
-        val all = (staticMembers + cFunctions).toImmList()
+        val all = staticMembers.toImmList() + cFunctions
         return C_LibTypeMembers.simple(all)
     }
 }

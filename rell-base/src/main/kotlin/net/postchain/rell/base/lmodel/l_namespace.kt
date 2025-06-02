@@ -42,9 +42,9 @@ sealed class L_NamespaceMember(
 }
 
 class L_Namespace(members: List<L_NamespaceMember>) {
-    val members: List<L_NamespaceMember> = members.toImmList()
+    val members: ImmList<L_NamespaceMember> = members.toImmList()
 
-    private val namespaces: Map<R_Name, L_Namespace> = let {
+    private val namespaces: ImmMap<R_Name, L_Namespace> = let {
         val map = mutableMapOf<R_Name, L_Namespace>()
         for (member in this.members) {
             if (member is L_NamespaceMember_Namespace) {
@@ -56,7 +56,7 @@ class L_Namespace(members: List<L_NamespaceMember>) {
     }
 
     // Ignoring name conflicts, assuming clients ask for unique entries (e.g. a type, not a function).
-    private val membersMap: Map<R_Name, L_NamespaceMember> = let {
+    private val membersMap: ImmMap<R_Name, L_NamespaceMember> = let {
         val map = mutableMapOf<R_Name, L_NamespaceMember>()
         for (member in this.members) {
             map.putIfAbsent(member.simpleName, member)
@@ -67,7 +67,7 @@ class L_Namespace(members: List<L_NamespaceMember>) {
     private val typeExtensions = this.members
         .mapNotNullToImmList { (it as? L_NamespaceMember_TypeExtension)?.typeExt }
 
-    val docMembers: Map<String, DocDefinition> by lazy {
+    val docMembers: ImmMap<String, DocDefinition> by lazy {
         membersMap.entries.associateToImmMap { it.key.str to it.value }
     }
 

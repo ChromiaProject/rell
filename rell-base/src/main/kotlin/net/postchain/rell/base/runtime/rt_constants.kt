@@ -35,7 +35,7 @@ private object Rt_NullModuleArgsSource: Rt_ModuleArgsSource() {
 }
 
 class Rt_GtvModuleArgsSource(
-    private val gtvs: Map<R_ModuleName, Gtv>,
+    private val gtvs: ImmMap<R_ModuleName, Gtv>,
     private val compilerOptions: C_CompilerOptions,
 ): Rt_ModuleArgsSource() {
     private val defaultValuesSupported = DEFAULT_VALUES_SWITCH.isActive(compilerOptions)
@@ -220,7 +220,7 @@ class Rt_GlobalConstants(
     }
 
     class State(
-        val constants: List<Rt_GlobalConstantState> = immListOf(),
-        val moduleArgs: Map<R_ModuleName, Rt_Value> = immMapOf(),
+        val constants: ImmList<Rt_GlobalConstantState> = immListOf(),
+        val moduleArgs: ImmMap<R_ModuleName, Rt_Value> = immMapOf(),
     )
 }

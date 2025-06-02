@@ -26,7 +26,7 @@ public final class net/postchain/rell/api/gtx/RellApiRunTests {
 
 public final class net/postchain/rell/api/gtx/RellApiRunTests$Config {
 	public static final field Companion Lnet/postchain/rell/api/gtx/RellApiRunTests$Config$Companion;
-	public fun <init> (Lnet/postchain/rell/api/base/RellApiCompile$Config;Lnet/postchain/rell/api/base/RellCliEnv;ZLjava/lang/String;ZZLjava/util/List;Lnet/postchain/rell/base/runtime/Rt_Printer;Lnet/postchain/rell/base/runtime/Rt_Printer;ZZZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
+	public fun <init> (Lnet/postchain/rell/api/base/RellApiCompile$Config;Lnet/postchain/rell/api/base/RellCliEnv;ZLjava/lang/String;ZZLkotlinx/collections/immutable/ImmutableList;Lnet/postchain/rell/base/runtime/Rt_Printer;Lnet/postchain/rell/base/runtime/Rt_Printer;ZZZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
 	public final fun getActivateTestDependencies ()Z
 	public final fun getCliEnv ()Lnet/postchain/rell/api/base/RellCliEnv;
 	public final fun getCompileConfig ()Lnet/postchain/rell/api/base/RellApiCompile$Config;
@@ -41,7 +41,7 @@ public final class net/postchain/rell/api/gtx/RellApiRunTests$Config {
 	public final fun getSqlErrorLog ()Z
 	public final fun getSqlLog ()Z
 	public final fun getStopOnError ()Z
-	public final fun getTestPatterns ()Ljava/util/List;
+	public final fun getTestPatterns ()Lkotlinx/collections/immutable/ImmutableList;
 	public final fun toBuilder ()Lnet/postchain/rell/api/gtx/RellApiRunTests$Config$Builder;
 }
 

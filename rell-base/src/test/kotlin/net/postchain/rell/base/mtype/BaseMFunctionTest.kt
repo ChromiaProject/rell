@@ -122,7 +122,7 @@ abstract class BaseMFunctionTest: BaseMTypeTest() {
                 check(subTypeParam in allTypeParams) { "$subTypeParam $header $allTypeParams" }
             }
         }
-        for (type in header.params.map { it.type } + listOf(header.resultType)) {
+        for (type in header.params.map { it.type } + header.resultType) {
             for (subTypeParam in type.getTypeParams()) {
                 check(subTypeParam in allTypeParams) { "$subTypeParam $header $allTypeParams" }
             }

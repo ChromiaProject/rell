@@ -11,6 +11,7 @@ import net.postchain.rell.base.model.R_VarPtr
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.ImmList
 
 sealed class R_StatementResult
 class R_StatementResult_Return(val value: Rt_Value?): R_StatementResult()
@@ -38,7 +39,7 @@ class R_SimpleVarDeclarator(val ptr: R_VarPtr, val type: R_Type, val adapter: R_
     }
 }
 
-class R_TupleVarDeclarator(val subDeclarators: List<R_VarDeclarator>): R_VarDeclarator() {
+class R_TupleVarDeclarator(val subDeclarators: ImmList<R_VarDeclarator>): R_VarDeclarator() {
     override fun initialize(frame: Rt_CallFrame, value: Rt_Value, overwrite: Boolean) {
         val tuple = value.asTuple()
         for ((i, declarator) in subDeclarators.withIndex()) {
@@ -71,7 +72,7 @@ class R_ReturnStatement(val expr: R_Expr?): R_Statement() {
     }
 }
 
-class R_BlockStatement(val stmts: List<R_Statement>, val frameBlock: R_FrameBlock): R_Statement() {
+class R_BlockStatement(val stmts: ImmList<R_Statement>, val frameBlock: R_FrameBlock): R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         val res = frame.block(frameBlock) {
             executeStatements(frame, stmts)
@@ -136,7 +137,7 @@ class R_IfStatement(val expr: R_Expr, val trueStmt: R_Statement, val falseStmt: 
     }
 }
 
-class R_WhenStatement(val chooser: R_WhenChooser, val stmts: List<R_Statement>): R_Statement() {
+class R_WhenStatement(val chooser: R_WhenChooser, val stmts: ImmList<R_Statement>): R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         val choice = chooser.choose(frame)
         val res = if (choice == null) null else stmts[choice].execute(frame)
@@ -257,9 +258,9 @@ class R_GuardStatement(private val subStmt: R_Statement): R_Statement() {
 }
 
 class R_LambdaStatement(
-        private val args: List<Pair<R_Expr, R_VarPtr>>,
-        private val block: R_FrameBlock,
-        private val stmt: R_Statement
+    private val args: ImmList<Pair<R_Expr, R_VarPtr>>,
+    private val block: R_FrameBlock,
+    private val stmt: R_Statement
 ): R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         val values = args.map { it to it.first.evaluate(frame) }

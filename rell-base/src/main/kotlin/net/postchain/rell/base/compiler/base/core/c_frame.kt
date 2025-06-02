@@ -194,7 +194,7 @@ class C_BlockScopeBuilder(
         return explicitEntries[name]
     }
 
-    fun lookupImplicit(name: R_Name): List<C_BlockEntry> {
+    fun lookupImplicit(name: R_Name): ImmList<C_BlockEntry> {
         return implicitEntries.get(name).toImmList()
     }
 
@@ -439,12 +439,12 @@ class C_OwnerBlockContext(
 
     override fun lookupAtImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): ImmList<C_AtFromImplicitAttr> {
         // Not looking in outer contexts, because for implicit matching only the direct at-expr is considered.
-        return atFromBlock?.from?.findImplicitAttributesByName(ctx, name) ?: immListOf()
+        return atFromBlock?.from?.findImplicitAttributesByName(ctx, name).orEmpty()
     }
 
     override fun lookupAtImplicitAttributesByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): ImmList<C_AtFromImplicitAttr> {
         // Not looking in outer contexts, because for implicit matching only the direct at-expr is considered.
-        return atFromBlock?.from?.findImplicitAttributesByType(ctx, pos, type) ?: immListOf()
+        return atFromBlock?.from?.findImplicitAttributesByType(ctx, pos, type).orEmpty()
     }
 
     override fun addEntry(

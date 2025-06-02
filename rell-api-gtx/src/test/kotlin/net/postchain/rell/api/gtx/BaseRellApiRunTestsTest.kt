@@ -10,6 +10,7 @@ import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.testutils.SqlTestUtils
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 import kotlin.test.assertEquals
 
@@ -44,7 +45,7 @@ abstract class BaseRellApiRunTestsTest: BaseRellApiTest() {
         appModules: List<String>?,
         testModules: List<String>,
     ): List<String> {
-        val appMods = appModules?.map { R_ModuleName.of(it) }
+        val appMods = appModules?.mapToImmList { R_ModuleName.of(it) }
         val testMods = testModules.map { R_ModuleName.of(it) }
 
         val options = RellApiGtxInternal.makeRunTestsCompilerOptions(config)

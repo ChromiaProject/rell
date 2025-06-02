@@ -176,7 +176,7 @@ object C_ModuleCompiler {
             selected = modCtx.selected,
             entities = defs.entities,
             objects = defs.objects,
-            structs = defs.structs.mapValues { (_, v) -> v.structDef },
+            structs = defs.structs.mapValuesToImmMap { (_, v) -> v.structDef },
             enums = defs.enums,
             operations = defs.operations,
             queries = defs.queries,
@@ -244,14 +244,14 @@ class C_ModuleDefsBuilder {
 }
 
 class C_ModuleDefs(
-        val entities: Map<String, R_EntityDefinition>,
-        val objects: Map<String, R_ObjectDefinition>,
-        val structs: Map<String, C_Struct>,
-        val enums: Map<String, R_EnumDefinition>,
-        val functions: Map<String, R_FunctionDefinition>,
-        val operations: Map<String, R_OperationDefinition>,
-        val queries: Map<String, R_QueryDefinition>,
-        val constants: Map<String, R_GlobalConstantDefinition>
+        val entities: ImmMap<String, R_EntityDefinition>,
+        val objects: ImmMap<String, R_ObjectDefinition>,
+        val structs: ImmMap<String, C_Struct>,
+        val enums: ImmMap<String, R_EnumDefinition>,
+        val functions: ImmMap<String, R_FunctionDefinition>,
+        val operations: ImmMap<String, R_OperationDefinition>,
+        val queries: ImmMap<String, R_QueryDefinition>,
+        val constants: ImmMap<String, R_GlobalConstantDefinition>
 ) {
     companion object {
         val EMPTY = C_ModuleDefs(

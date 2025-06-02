@@ -5,13 +5,12 @@
 package net.postchain.rell.base.mtype.utils
 
 import net.postchain.rell.base.mtype.*
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmSet
+import net.postchain.rell.base.utils.*
 
 class MTestScope private constructor(
-    private val genTypes: Map<String, M_GenericType>,
-    val typeParams: Map<String, M_TypeParam>,
-    val types: Map<String, MTestTypeDef>,
+    private val genTypes: ImmMap<String, M_GenericType>,
+    val typeParams: ImmMap<String, M_TypeParam>,
+    val types: ImmMap<String, MTestTypeDef>,
 ) {
     fun toBuilder(): Builder {
         return Builder(genTypes, typeParams, types)
@@ -27,7 +26,7 @@ class MTestScope private constructor(
         private val types = types.toMutableMap()
 
         fun build(): MTestScope {
-            return MTestScope(genTypes.toMap(), typeParams.toMap(), types.toMap())
+            return MTestScope(genTypes.toImmMap(), typeParams.toImmMap(), types.toImmMap())
         }
 
         fun copy(): Builder {
@@ -107,7 +106,7 @@ class MTestScope private constructor(
         }
     }
 
-    private class M_GenericTypeAddon_Convertible(val sourceTypes: Set<M_Type>): M_GenericTypeAddon() {
+    private class M_GenericTypeAddon_Convertible(val sourceTypes: ImmSet<M_Type>): M_GenericTypeAddon() {
         override fun getConversion(sourceType: M_Type): M_Conversion_Generic? {
             return if (sourceType in sourceTypes) M_Conversion_Test else null
         }

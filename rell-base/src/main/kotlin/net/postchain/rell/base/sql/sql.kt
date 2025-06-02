@@ -9,7 +9,7 @@ import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.utils.One
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immSetOf
-import net.postchain.rell.base.utils.toImmSet
+import net.postchain.rell.base.utils.plus
 import org.apache.commons.lang3.mutable.MutableBoolean
 import org.apache.commons.lang3.mutable.MutableInt
 import org.apache.commons.lang3.mutable.MutableObject
@@ -43,31 +43,31 @@ object SqlConstants {
 
     // Reserved chain-specific (starting with prefix cN.) tables used by Postchain.
     val SYSTEM_CHAIN_TABLES = immSetOf(
-            "events",
-            "states",
-            "event_pages",
-            "snapshot_pages",
-            "configurations",
-            "gtx_module_version"
+        "events",
+        "states",
+        "event_pages",
+        "snapshot_pages",
+        "configurations",
+        "gtx_module_version"
     )
 
     private val SYSTEM_OBJECTS_0 = immSetOf(
-            ROWID_GEN,
-            MAKE_ROWID,
-            BLOCKCHAINS_TABLE,
-            BLOCKS_TABLE,
-            TRANSACTIONS_TABLE,
-            "meta",
-            "peerinfos"
+        ROWID_GEN,
+        MAKE_ROWID,
+        BLOCKCHAINS_TABLE,
+        BLOCKS_TABLE,
+        TRANSACTIONS_TABLE,
+        "meta",
+        "peerinfos"
     )
 
-    val SYSTEM_OBJECTS = (SYSTEM_OBJECTS_0 + SYSTEM_CHAIN_TABLES).toImmSet()
+    val SYSTEM_OBJECTS = SYSTEM_OBJECTS_0 + SYSTEM_CHAIN_TABLES
 
     val SYSTEM_APP_TABLES = immSetOf(
-            BLOCKCHAINS_TABLE,
-            "meta",
-            "peerinfos",
-            "containers"
+        BLOCKCHAINS_TABLE,
+        "meta",
+        "peerinfos",
+        "containers"
     )
 }
 

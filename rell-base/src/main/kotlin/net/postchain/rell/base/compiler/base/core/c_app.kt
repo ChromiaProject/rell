@@ -38,7 +38,7 @@ class C_AppContext(
     val executor: C_CompilerExecutor,
     val repl: Boolean,
     private val oldReplState: C_ReplAppState,
-    private val newModuleHeaders: Map<R_ModuleName, C_ModuleHeader>,
+    private val newModuleHeaders: ImmMap<R_ModuleName, C_ModuleHeader>,
     private val extraLibMod: C_LibModule?,
 ) {
     val globalCtx = msgCtx.globalCtx
@@ -81,7 +81,7 @@ class C_AppContext(
         }
 
         executor.onPass(C_CompilerPass.ABSTRACT) {
-            val mods = modulesBuilder.commit().map { it.descriptor }
+            val mods = modulesBuilder.commit().mapToImmList { it.descriptor }
             C_AbstractCompiler.compile(msgCtx, mods)
         }
 
@@ -189,9 +189,9 @@ class C_AppContext(
 
         val oldSqlDefs = oldReplState.sqlDefs
         val sqlDefs = R_AppSqlDefs(
-                entities = (oldSqlDefs.entities + appDefs.entities.map { it.entity }).toImmList(),
-                objects = (oldSqlDefs.objects + appDefs.objects).toImmList(),
-                topologicalEntities = (oldSqlDefs.topologicalEntities + topologicalEntities).toImmList()
+                entities = oldSqlDefs.entities + appDefs.entities.map { it.entity },
+                objects = oldSqlDefs.objects + appDefs.objects,
+                topologicalEntities = oldSqlDefs.topologicalEntities + topologicalEntities,
         )
 
         val rFnExtTable = functionExtTableLazy.toR()
@@ -203,7 +203,7 @@ class C_AppContext(
             operations = appOperationsMap,
             queries = appQueriesMap,
             constants = allConstants.commit(),
-            moduleArgs = (oldReplState.moduleArgs + newModuleArgs).toImmMap(),
+            moduleArgs = oldReplState.moduleArgs + newModuleArgs,
             functionExtensions = rFnExtTable,
             externalChainsRoot = externalChainsRoot,
             externalChains = externalChains.values.mapToImmList { it.ref },

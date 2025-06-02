@@ -6,11 +6,8 @@ package net.postchain.rell.base.utils.ide
 
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.model.R_Name
-import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocSymbol
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
 import java.util.*
 
 enum class IdeSymbolKind {
@@ -82,7 +79,7 @@ class IdeSymbolId(
     }
 
     fun appendMember(memberCategory: IdeSymbolCategory, memberName: R_Name): IdeSymbolId {
-        val members2 = (members + listOf(memberCategory to memberName)).toImmList()
+        val members2 = members + (memberCategory to memberName)
         return IdeSymbolId(category, name, members2)
     }
 
@@ -140,7 +137,7 @@ class IdeSymbolInfo private constructor(
     }
 
     companion object {
-        private val byKind: Map<IdeSymbolKind, IdeSymbolInfo> = IdeSymbolKind.values()
+        private val byKind: ImmMap<IdeSymbolKind, IdeSymbolInfo> = IdeSymbolKind.entries
             .map { it to IdeSymbolInfo(it, defId = null, link = null, doc = null) }
             .toImmMap()
 

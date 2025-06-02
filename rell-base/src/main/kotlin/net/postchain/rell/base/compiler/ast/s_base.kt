@@ -18,6 +18,7 @@ import net.postchain.rell.base.compiler.base.utils.C_RNamePath
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_MountName
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.ide.IdeModuleInfo
 import net.postchain.rell.base.utils.ide.IdeOutlineTreeBuilder
 import net.postchain.rell.base.utils.mapNotNullToImmList
@@ -54,7 +55,7 @@ class S_ModuleHeader(
 
 class S_RellFile(
     val header: S_ModuleHeader?,
-    private val definitions: List<S_Definition>,
+    private val definitions: ImmList<S_Definition>,
 ): S_Node() {
     val startPos = header?.pos ?: definitions.firstOrNull()?.startPos
 

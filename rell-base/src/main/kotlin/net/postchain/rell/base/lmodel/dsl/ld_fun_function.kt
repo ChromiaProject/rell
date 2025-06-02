@@ -13,6 +13,8 @@ import net.postchain.rell.base.lmodel.L_MemberHeader
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.mtype.M_FunctionHeader
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.mapToImmList
 
@@ -44,7 +46,7 @@ class Ld_FunctionDslImpl(
 class Ld_FunctionBuilder(
     hdr: Ld_MemberHeader,
     simpleName: R_Name,
-    outerTypeParams: Set<R_Name>,
+    outerTypeParams: ImmSet<R_Name>,
     bodyBuilder: Ld_FunctionBodyBuilder,
 ): Ld_CommonFunctionBuilder(hdr, outerTypeParams, bodyBuilder), Ld_FunctionMaker {
     private val aliasesBuilder = Ld_AliasesBuilder(simpleName)
@@ -89,7 +91,7 @@ class Ld_FunctionBuilder(
             simpleName: R_Name,
             result: String?,
             pure: Boolean?,
-            outerTypeParams: Set<R_Name>,
+            outerTypeParams: ImmSet<R_Name>,
             block: Ld_FunctionDsl.() -> Ld_BodyResult,
         ): Ld_MemberDef<Ld_Function> {
             val bodyBuilder = Ld_FunctionBodyBuilder(simpleName, pure)
@@ -108,9 +110,9 @@ class Ld_FunctionBuilder(
 }
 
 class Ld_FunctionHeader(
-    private val typeParams: List<Ld_TypeParam>,
+    private val typeParams: ImmList<Ld_TypeParam>,
     private val resultType: Ld_Type,
-    private val params: List<Ld_FunctionParam>,
+    private val params: ImmList<Ld_FunctionParam>,
 ) {
     class Finish(val lHeader: L_FunctionHeader, val comment: DocComment?)
 
@@ -130,7 +132,7 @@ class Ld_FunctionHeader(
 }
 
 class Ld_Function(
-    val aliases: List<Ld_Alias>,
+    val aliases: ImmList<Ld_Alias>,
     val deprecated: C_Deprecated?,
     private val header: Ld_FunctionHeader,
     private val body: Ld_FunctionBody,

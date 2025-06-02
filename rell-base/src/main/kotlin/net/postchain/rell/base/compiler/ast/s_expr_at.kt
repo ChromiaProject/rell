@@ -57,7 +57,7 @@ class S_AtExprFrom_Simple(val expr: S_Expr): S_AtExprFrom(expr.startPos) {
 
 class S_AtExprFrom_Complex(
     startPos: S_Pos,
-    private val items: List<S_AtExprFromItem>,
+    private val items: ImmList<S_AtExprFromItem>,
 ): S_AtExprFrom(startPos) {
     init {
         require(items.isNotEmpty())
@@ -193,7 +193,7 @@ class S_AtExprWhat_Default: S_AtExprWhat() {
     }
 }
 
-class S_AtExprWhat_Simple(val startPos: S_Pos, val path: List<S_Name>): S_AtExprWhat() {
+class S_AtExprWhat_Simple(val startPos: S_Pos, val path: ImmList<S_Name>): S_AtExprWhat() {
     override fun compile(ctx: C_ExprContext, from: C_AtFrom, subValues: MutableList<V_Expr>): C_AtWhat {
         var expr = S_AttrExpr.compileAttr(ctx, C_ExprHint.DEFAULT, path[0])
 
@@ -219,7 +219,7 @@ class S_AtExprWhatComplexField(
 
 class S_AtExprWhat_Complex(
     private val posRange: S_PosRange,
-    private val fields: List<S_AtExprWhatComplexField>,
+    private val fields: ImmList<S_AtExprWhatComplexField>,
 ): S_AtExprWhat() {
     override fun compile(ctx: C_ExprContext, from: C_AtFrom, subValues: MutableList<V_Expr>): C_AtWhat {
         ctx.blkCtx.frameCtx.ideCompCtx.trackScope(posRange, ctx)
@@ -236,7 +236,7 @@ class S_AtExprWhat_Complex(
 
         val hasGroup = procFields.any { it.summarization?.isGroup() ?: false }
 
-        val vFields = procFields.map { field ->
+        val vFields = procFields.mapToImmList { field ->
             val resultType = field.summarization?.getResultType(hasGroup) ?: field.vExpr.type
             val rIdeName = compileFieldName(ctx, lazyTupleIdeId, field, resultType, selFields.size > 1)
             V_DbAtWhatField(ctx.appCtx, rIdeName, resultType, field.vExpr, field.flags, field.summarization)
@@ -478,7 +478,7 @@ class S_AtExprWhat_Complex(
 }
 
 class S_AtExprWhere(
-    private val exprs: List<S_Expr>,
+    private val exprs: ImmList<S_Expr>,
     private val posRange: S_PosRange,
 ) {
     fun compile(ctx: C_ExprContext, atExprId: R_AtExprId, subValues: MutableList<V_Expr>): V_Expr? {

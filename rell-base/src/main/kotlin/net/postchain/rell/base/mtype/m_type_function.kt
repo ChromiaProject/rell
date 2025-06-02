@@ -22,7 +22,7 @@ private class M_Type_Function_Internal(
     resultType: M_Type,
     paramTypes: ImmList<M_Type>,
 ): M_Type_Function(resultType, paramTypes) {
-    override val canonicalArgs: List<M_TypeSet> = (listOf(resultType) + paramTypes).mapToImmList { M_TypeSets.one(it) }
+    override val canonicalArgs: ImmList<M_TypeSet> = (listOf(resultType) + paramTypes).mapToImmList { M_TypeSets.one(it) }
 
     override fun strCode(): String {
         val paramsStr = paramTypes.joinToString(",", "(", ")") { it.strCode() }

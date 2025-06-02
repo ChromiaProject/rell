@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.mtype
 
+import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.toImmSet
 import java.util.*
 
@@ -100,7 +101,7 @@ sealed class M_TypeSet {
 
     abstract fun getTypeParams0(res: MutableSet<M_TypeParam>)
 
-    fun getTypeParams(): Set<M_TypeParam> {
+    fun getTypeParams(): ImmSet<M_TypeParam> {
         val set = mutableSetOf<M_TypeParam>()
         getTypeParams0(set)
         return set.toImmSet()

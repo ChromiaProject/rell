@@ -497,7 +497,7 @@ class Ld_NamespaceBuilder(
             simpleName = simpleName,
             result = result,
             pure = pure,
-            outerTypeParams = setOf(),
+            outerTypeParams = immSetOf(),
             block = block,
         )
 
@@ -548,9 +548,9 @@ class Ld_NamespaceBuilder(
 
 class Ld_Namespace(
     val memberHeader: Ld_MemberHeader,
-    val namespaces: Map<R_Name, Ld_Namespace>,
-    val members: List<Ld_NamespaceMember>,
-    val nameKinds: Map<R_Name, Ld_ConflictMemberKind>,
+    val namespaces: ImmMap<R_Name, Ld_Namespace>,
+    val members: ImmList<Ld_NamespaceMember>,
+    val nameKinds: ImmMap<R_Name, Ld_ConflictMemberKind>,
 ) {
     class Result(val ns: L_Namespace, val memberHeader: Ld_MemberHeader)
 
@@ -568,14 +568,14 @@ class Ld_Namespace(
             .after(namespaceFutures)
             .after(membersFutures)
             .compute { (lNamespaces, lOtherMembers) ->
-                val lNsMembers = lNamespaces.map { (simpleName, nsResult) ->
+                val lNsMembers = lNamespaces.mapToImmList { (simpleName, nsResult) ->
                     val fullName = ctx.getFullName(simpleName)
                     val hdr = nsResult.memberHeader.finish(ctx.modCfg, fullName, DocSymbolKind.NAMESPACE)
                     val doc = hdr.docSymbol(DocDeclaration_Namespace(DocModifiers.NONE, hdr.simpleName))
                     L_NamespaceMember_Namespace(fullName, hdr.lHeader, doc, nsResult.ns)
                 }
 
-                val lAllMembers = (lNsMembers + lOtherMembers.flatten()).toImmList()
+                val lAllMembers = lNsMembers + lOtherMembers.flatten()
                 val ns = L_Namespace(lAllMembers)
                 Result(ns, memberHeader)
             }

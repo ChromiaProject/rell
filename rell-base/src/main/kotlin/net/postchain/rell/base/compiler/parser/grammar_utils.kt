@@ -10,7 +10,8 @@ import com.github.h0tk3y.betterParse.utils.Tuple2
 import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.expr.R_AtCardinality
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.ImmSet
+import net.postchain.rell.base.utils.plus
 
 class G_Node<out T>(val value: T, val firstToken: RellTokenMatch)
 
@@ -32,7 +33,7 @@ sealed class G_BaseExprTail {
             if (head !is S_NameExpr) return Pair(head, tails)
             val members = tails.map { (it as? G_BaseExprTail_Member)?.name }.takeWhile { it != null }.map { it!! }
             if (members.isEmpty()) return Pair(head, tails)
-            val qName = S_QualifiedName((head.qName.parts + members).toImmList())
+            val qName = S_QualifiedName(head.qName.parts + members)
             val head2 = S_NameExpr(qName)
             val tails2 = tails.drop(members.size)
             return Pair(head2, tails2)
@@ -123,7 +124,7 @@ class RellTokenInput(
     private val text: String,
     val token: RellToken,
     val match: RellTokenMatch,
-    private val validTokens: Set<Token>,
+    private val validTokens: ImmSet<Token>,
 ): CharSequence {
     override val length get() = text.length
     override fun get(index: Int) = text[index]

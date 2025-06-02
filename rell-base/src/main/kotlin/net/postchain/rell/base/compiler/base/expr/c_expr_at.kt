@@ -22,11 +22,8 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_IterableAdapter
 import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.mapNotNullToImmList
-import net.postchain.rell.base.utils.mapToImmList
 
 class C_AtContext(
     val parent: C_AtContext?,
@@ -221,10 +218,10 @@ class C_AtFromItem_Iterable(
 }
 
 class C_AtWhat(
-    val allFields: List<V_DbAtWhatField>,
+    val allFields: ImmList<V_DbAtWhatField>,
     private val explicitPos: S_Pos?,
 ) {
-    fun getMaterialFields() = allFields.filter { !it.isIgnored() }
+    fun getMaterialFields() = allFields.filterToImmList { !it.isIgnored() }
 
     fun compileJoin(msgCtx: C_MessageContext) {
         if (explicitPos != null) {
@@ -337,7 +334,7 @@ sealed class C_AtSummarization_Aggregate(
     final override fun compileDb(appCtx: C_AppContext, dbExpr: Db_Expr): Db_Expr {
         val dbFn = compileDb0(appCtx.msgCtx)
         dbFn ?: return dbExpr
-        return Db_CallExpr(dbExpr.type, dbFn, listOf(dbExpr))
+        return Db_CallExpr(dbExpr.type, dbFn, immListOf(dbExpr))
     }
 }
 

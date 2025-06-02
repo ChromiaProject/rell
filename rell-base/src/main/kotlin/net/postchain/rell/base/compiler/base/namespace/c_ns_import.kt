@@ -36,11 +36,11 @@ class C_NsImp_Def_Namespace(
 object C_NsImp_ImportsProcessor {
     fun process(
         msgCtx: C_MessageContext,
-        modules: Map<C_ModuleKey, C_NsAsm_Namespace>,
-        preModules: Map<C_ModuleKey, C_NsImp_Namespace>,
-    ): Map<C_ModuleKey, C_NsImp_Namespace> {
+        modules: ImmMap<C_ModuleKey, C_NsAsm_Namespace>,
+        preModules: ImmMap<C_ModuleKey, C_NsImp_Namespace>,
+    ): ImmMap<C_ModuleKey, C_NsImp_Namespace> {
         val converter = C_NsImp_NamespaceConverter()
-        val asmPreModules = preModules.mapValues { (_, v) -> converter.convert(v) }
+        val asmPreModules = preModules.mapValuesToImmMap { (_, v) -> converter.convert(v) }
         val processor = C_NsImp_InternalImportsProcessor(msgCtx, modules, asmPreModules)
 
         val (asmList, listVsMap) = ListVsMap.mapToList(modules)
@@ -53,21 +53,21 @@ object C_NsImp_ImportsProcessor {
     fun process(
             msgCtx: C_MessageContext,
             ns: C_NsAsm_Namespace,
-            preModules: Map<C_ModuleKey, C_NsImp_Namespace>
+            preModules: ImmMap<C_ModuleKey, C_NsImp_Namespace>
     ): C_NsImp_Namespace {
-        val impList = process0(msgCtx, mapOf(), preModules, listOf(ns))
+        val impList = process0(msgCtx, immMapOf(), preModules, listOf(ns))
         checkEquals(impList.size, 1)
         return impList[0]
     }
 
     private fun process0(
             msgCtx: C_MessageContext,
-            modules: Map<C_ModuleKey, C_NsAsm_Namespace>,
-            preModules: Map<C_ModuleKey, C_NsImp_Namespace>,
+            modules: ImmMap<C_ModuleKey, C_NsAsm_Namespace>,
+            preModules: ImmMap<C_ModuleKey, C_NsImp_Namespace>,
             asmList: List<C_NsAsm_Namespace>
     ): List<C_NsImp_Namespace> {
         val converter = C_NsImp_NamespaceConverter()
-        val asmPreModules = preModules.mapValues { (_, v) -> converter.convert(v) }
+        val asmPreModules = preModules.mapValuesToImmMap { (_, v) -> converter.convert(v) }
         val processor = C_NsImp_InternalImportsProcessor(msgCtx, modules, asmPreModules)
         return processor.process(asmList)
     }
@@ -75,8 +75,8 @@ object C_NsImp_ImportsProcessor {
 
 private class C_NsImp_InternalImportsProcessor(
     private val msgCtx: C_MessageContext,
-    modules: Map<C_ModuleKey, C_NsAsm_Namespace>,
-    preModules: Map<C_ModuleKey, C_NsAsm_Namespace>,
+    modules: ImmMap<C_ModuleKey, C_NsAsm_Namespace>,
+    preModules: ImmMap<C_ModuleKey, C_NsAsm_Namespace>,
 ) {
     private val importResolver = C_NsImp_ImportResolver(modules, preModules)
     private val nsStates = mutableMapOf<C_NsAsm_Namespace, C_NsImp_NamespaceState>()
@@ -299,8 +299,8 @@ private class C_NsImp_NamespaceConverter {
 }
 
 private class C_NsImp_ImportResolver(
-        private val modules: Map<C_ModuleKey, C_NsAsm_Namespace>,
-        private val preModules: Map<C_ModuleKey, C_NsAsm_Namespace>
+        private val modules: ImmMap<C_ModuleKey, C_NsAsm_Namespace>,
+        private val preModules: ImmMap<C_ModuleKey, C_NsAsm_Namespace>
 ) {
     private data class NsNameKey(val ns: C_NsAsm_Namespace, val name: R_Name)
 
@@ -447,11 +447,11 @@ private class C_NsImp_ImportResolver(
 
     private fun <T> convertResult(
             name: C_Name,
-            nsIdeInfos: List<C_IdeSymbolInfo>,
+            nsIdeInfos: ImmList<C_IdeSymbolInfo>,
             heteroRes: C_RecursionSafeResult<C_Name, C_NsImp_NameRes<T>>
     ): C_NsImp_Result<T> {
         return if (heteroRes.value != null) {
-            val ideInfos = (nsIdeInfos + immListOf(heteroRes.value.ideInfo)).toImmList()
+            val ideInfos = nsIdeInfos + heteroRes.value.ideInfo
             C_NsImp_Result(heteroRes.value.value, ideInfos)
         } else {
             C_NsImp_Result.error(nsIdeInfos) {

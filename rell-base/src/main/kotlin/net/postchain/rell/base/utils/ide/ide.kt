@@ -35,7 +35,7 @@ class IdeModuleInfo(
     @JvmField val directory: Boolean,
     @JvmField val app: Boolean,
     @JvmField val test: Boolean,
-    @JvmField val imports: Set<R_ModuleName>,
+    @JvmField val imports: ImmSet<R_ModuleName>,
 )
 
 class IdeCompilationResult(
@@ -51,7 +51,7 @@ data class IdeCompletionParam(
 data class IdeCompletion(
     val kind: DocSymbolKind,
     val symbolName: DocSymbolName,
-    val params: List<IdeCompletionParam>?,
+    val params: ImmList<IdeCompletionParam>?,
     val result: String?,
     val location: String?,
     val docSymbol: DocSymbol?,
@@ -132,19 +132,19 @@ object IdeApi {
 
     @JvmStatic fun compile(
         sourceDir: C_SourceDir,
-        modules: List<R_ModuleName>,
+        modules: ImmList<R_ModuleName>,
         options: C_CompilerOptions,
     ): IdeCompilationResult {
-        val res = C_Compiler.compile(sourceDir, modules.toImmList(), options)
+        val res = C_Compiler.compile(sourceDir, modules, options)
         return IdeCompilationResult(res.messages, res.ideSymbolInfos)
     }
 
     @JvmStatic fun getAllComments(
         sourceDir: C_SourceDir,
-        modules: List<R_ModuleName>,
+        modules: ImmList<R_ModuleName>,
         options: C_CompilerOptions,
     ): Map<String, String> {
-        val res = C_Compiler.compile(sourceDir, modules.toImmList(), options)
+        val res = C_Compiler.compile(sourceDir, modules, options)
         res.app ?: return immMapOf()
         return C_DocUtils.getAllComments(res.app)
     }

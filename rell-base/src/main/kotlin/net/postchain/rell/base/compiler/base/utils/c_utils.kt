@@ -93,13 +93,13 @@ object C_Constants {
 
 // Operations and queries defined in Postchain (StandardOpsGTXModule). Shall be reserved (not allowed) in Rell.
 object C_ReservedMountNames {
-    val OPERATIONS: Set<R_MountName> = listOf(
+    val OPERATIONS: ImmSet<R_MountName> = listOf(
         "__nop",
         "nop",
         "timeb",
     ).map { R_MountName.of(it) }.toImmSet()
 
-    val QUERIES: Set<R_MountName> = listOf(
+    val QUERIES: ImmSet<R_MountName> = listOf(
         "last_block_info",
         "tx_confirmation_time",
     ).map { R_MountName.of(it) }.toImmSet()
@@ -307,7 +307,7 @@ object C_Utils {
     private fun setEntityMirrorStructAttrs(body: R_EntityBody, entity: R_EntityDefinition, mutable: Boolean) {
         val struct = entity.mirrorStructs.getStruct(mutable)
 
-        val structAttrs = body.attributes.mapValues { (_, attr) ->
+        val structAttrs = body.attributes.mapValuesToImmMap { (_, attr) ->
             val ideKind = C_AttrUtils.getIdeSymbolKind(false, mutable, attr.keyIndexKind)
             val ideInfo = attr.ideInfo.update(kind = ideKind, defId = null)
             attr.copy(mutable = mutable, ideInfo = ideInfo)
@@ -337,7 +337,7 @@ object C_Utils {
         val moduleName = RELL_MODULE_NAME
         val moduleKey = R_ModuleKey(moduleName, null)
         val qName = C_StringQualifiedName.of(simpleName)
-        val mountName = R_MountName((moduleName.parts + R_Name.of(simpleName)).toImmList())
+        val mountName = R_MountName(moduleName.parts + R_Name.of(simpleName))
 
         val cDefBase = createDefBase(
             C_DefinitionType.QUERY,
@@ -725,13 +725,11 @@ sealed class C_LateGetter<out T> {
             }
         }
 
-        fun <T: Any> list(getters: List<C_LateGetter<T>>): C_LateGetter<List<T>> {
-            return C_ListLateGetter(getters)
-        }
+        fun <T> list(getters: ImmList<C_LateGetter<T>>): C_LateGetter<ImmList<T>> = C_ListLateGetter(getters)
     }
 }
 
-fun <T: Any, R> List<C_LateGetter<T>>.transform(transformer: (List<T>) -> R): C_LateGetter<R> {
+fun <T, R> ImmList<C_LateGetter<T>>.transform(transformer: (ImmList<T>) -> R): C_LateGetter<R> {
     val listGetter = C_LateGetter.list(this)
     return listGetter.transform(transformer)
 }
@@ -744,12 +742,12 @@ private class C_DirectLateGetter<T>(private val init: C_LateInit<T>): C_LateGett
     override fun get() = init.get()
 }
 
-private class C_ListLateGetter<T: Any>(private val getters: List<C_LateGetter<T>>): C_LateGetter<List<T>>() {
-    private val lazyValue: List<T> by lazy {
+private class C_ListLateGetter<T>(private val getters: ImmList<C_LateGetter<T>>): C_LateGetter<ImmList<T>>() {
+    private val lazyValue: ImmList<T> by lazy {
         getters.mapToImmList { it.get() }
     }
 
-    override fun get(): List<T> = lazyValue
+    override fun get() = lazyValue
 }
 
 private class C_TransformingLateGetter<T, R>(

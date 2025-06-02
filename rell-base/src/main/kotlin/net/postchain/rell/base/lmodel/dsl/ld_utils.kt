@@ -9,6 +9,8 @@ import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 
@@ -75,7 +77,7 @@ class Ld_AliasesBuilder(private val primaryName: R_Name) {
         aliases[rName] = Ld_Alias.make(memberHeader, rName, primaryName, deprecated)
     }
 
-    fun build(): List<Ld_Alias> {
+    fun build(): ImmList<Ld_Alias> {
         return aliases.values.toImmList()
     }
 }
@@ -100,7 +102,7 @@ class Ld_MemberConflictChecker(initialNames: Map<R_Name, Ld_ConflictMemberKind>)
         }
     }
 
-    fun finish(): Map<R_Name, Ld_ConflictMemberKind> {
+    fun finish(): ImmMap<R_Name, Ld_ConflictMemberKind> {
         return names.toImmMap()
     }
 }

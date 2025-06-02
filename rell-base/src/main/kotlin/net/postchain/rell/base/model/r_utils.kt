@@ -32,7 +32,7 @@ sealed class R_GenericQualifiedName<T: R_GenericQualifiedName<T>>(parts: List<R_
     private val str = parts.joinToString(".")
 
     fun str() = str
-    fun displayStr() = if (str.isEmpty()) "''" else str
+    fun displayStr() = str.ifEmpty { "''" }
     fun isEmpty() = parts.isEmpty()
     fun size() = parts.size
 
@@ -92,7 +92,7 @@ class R_QualifiedName(parts: List<R_Name>): R_GenericQualifiedName<R_QualifiedNa
 
     fun replaceLast(name: R_Name): R_QualifiedName {
         if (name == last) return this
-        val resParts = (parts.subList(0, parts.size - 1) + listOf(name)).toImmList()
+        val resParts = parts.subList(0, parts.size - 1) + name
         return R_QualifiedName(resParts)
     }
 

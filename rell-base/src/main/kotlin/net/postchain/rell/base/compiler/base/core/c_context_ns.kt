@@ -279,7 +279,7 @@ class C_UserDefinitionBase(
     }
 }
 
-private class C_NamePath(private val nodes: List<C_NameNode>) {
+private class C_NamePath(private val nodes: ImmList<C_NameNode>) {
     init {
         check(nodes.isNotEmpty())
     }

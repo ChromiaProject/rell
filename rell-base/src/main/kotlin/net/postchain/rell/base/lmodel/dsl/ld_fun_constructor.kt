@@ -10,13 +10,15 @@ import net.postchain.rell.base.lmodel.L_ConstructorHeader
 import net.postchain.rell.base.lmodel.L_MemberHeader
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.doc.DocComment
 
 interface Ld_ConstructorMaker: Ld_CommonFunctionMaker
 
 class Ld_ConstructorBuilder(
     hdr: Ld_MemberHeader,
-    outerTypeParams: Set<R_Name>,
+    outerTypeParams: ImmSet<R_Name>,
     bodyBuilder: Ld_FunctionBodyBuilder,
 ): Ld_CommonFunctionBuilder(hdr, outerTypeParams, bodyBuilder), Ld_ConstructorMaker {
     fun build(bodyRes: Ld_BodyResult): Ld_MemberDef<Ld_Constructor> {
@@ -40,8 +42,8 @@ class Ld_ConstructorDslImpl(
 ): Ld_CommonFunctionDslImpl(conMaker, bodyMaker), Ld_ConstructorDsl
 
 class Ld_ConstructorHeader(
-    private val typeParams: List<Ld_TypeParam>,
-    private val params: List<Ld_FunctionParam>,
+    private val typeParams: ImmList<Ld_TypeParam>,
+    private val params: ImmList<Ld_FunctionParam>,
 ) {
     class Finish(val lHeader: L_ConstructorHeader, val comment: DocComment?)
 

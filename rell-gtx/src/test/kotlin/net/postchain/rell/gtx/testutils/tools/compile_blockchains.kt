@@ -129,7 +129,7 @@ private class App(private val dataDir: File) {
         val subDefs = def.docMembers
         for (name in subDefs.keys.sorted()) {
             val subDef = subDefs.getValue(name)
-            saveDocSymbols0(moduleName, path + listOf(name), subDef, lines, set)
+            saveDocSymbols0(moduleName, path + name, subDef, lines, set)
         }
     }
 

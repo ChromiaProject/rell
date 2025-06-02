@@ -15,6 +15,7 @@ import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.model.R_Attribute
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.toImmList
 
 interface C_CallTypeHints {
@@ -42,7 +43,7 @@ class C_CallArgument(val index: Int, val name: C_Name?, val value: C_CallArgumen
         fun compileAttributes(
             ctx: C_ExprContext,
             args: List<S_CallArgument>,
-            attrs: Map<R_Name, R_Attribute>,
+            attrs: ImmMap<R_Name, R_Attribute>,
         ): List<C_CallArgument> {
             val typeHints = C_AttrsTypeHints(attrs)
 
@@ -99,7 +100,7 @@ class C_CallArgument(val index: Int, val name: C_Name?, val value: C_CallArgumen
         }
     }
 
-    private class C_AttrsTypeHints(private val attrs: Map<R_Name, R_Attribute>): C_CallTypeHints {
+    private class C_AttrsTypeHints(private val attrs: ImmMap<R_Name, R_Attribute>): C_CallTypeHints {
         override fun getTypeHint(index: Int?, name: R_Name?): C_TypeHint {
             val attr = if (name != null) {
                 attrs[name]
@@ -114,9 +115,9 @@ class C_CallArgument(val index: Int, val name: C_Name?, val value: C_CallArgumen
 }
 
 class C_CallArguments(
-    val all: List<C_CallArgument>,
-    val positional: List<C_CallArgument>,
-    val named: List<C_NameValue<C_CallArgument>>,
+    val all: ImmList<C_CallArgument>,
+    val positional: ImmList<C_CallArgument>,
+    val named: ImmList<C_NameValue<C_CallArgument>>,
 ) {
     fun validate(msgMgr: C_MessageManager): Boolean {
         var res = true

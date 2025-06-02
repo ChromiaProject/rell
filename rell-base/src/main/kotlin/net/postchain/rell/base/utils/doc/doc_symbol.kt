@@ -6,6 +6,7 @@ package net.postchain.rell.base.utils.doc
 
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.immMapOf
 
 enum class DocSymbolKind constructor(
@@ -150,11 +151,11 @@ abstract class DocDefinition {
     abstract val docSymbol: DocSymbol
     abstract val docSourcePos: DocSourcePos?
 
-    val docMembers: Map<String, DocDefinition> by lazy {
+    val docMembers: ImmMap<String, DocDefinition> by lazy {
         getDocMembers0()
     }
 
-    protected open fun getDocMembers0(): Map<String, DocDefinition> = immMapOf()
+    protected open fun getDocMembers0(): ImmMap<String, DocDefinition> = immMapOf()
 
     fun getDocMember(name: String): DocDefinition? {
         return docMembers[name]

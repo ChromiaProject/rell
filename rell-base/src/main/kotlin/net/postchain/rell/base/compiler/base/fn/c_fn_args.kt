@@ -41,7 +41,7 @@ class C_EffectivePartialArguments(
     }
 }
 
-sealed class C_AbstractCallArguments(private val argHands: List<C_CallArgumentHandle>) {
+sealed class C_AbstractCallArguments(private val argHands: ImmList<C_CallArgumentHandle>) {
     fun setArgIdeInfos(ideInfos: Map<R_Name, C_IdeSymbolInfo>) {
         for (arg in argHands) {
             arg.nameHand?.setIdeInfo(ideInfos[arg.nameHand.rName] ?: C_IdeSymbolInfo.UNKNOWN)
@@ -65,7 +65,7 @@ sealed class C_FullCallArguments(
 sealed class C_PartialCallArguments(
     protected val ctx: C_ExprContext,
     val wildcardPos: S_Pos,
-    rawArgs: List<C_CallArgumentHandle>,
+    rawArgs: ImmList<C_CallArgumentHandle>,
     val firstNamedArg: C_Name?,
 ): C_AbstractCallArguments(rawArgs) {
     abstract fun compileEffectiveArgs(
@@ -78,7 +78,7 @@ sealed class C_PartialCallArguments(
 }
 
 object C_FunctionCallArgsUtils {
-    fun makeCallArguments(msgCtx: C_MessageContext, args: List<C_CallArgument>): C_CallArguments? {
+    fun makeCallArguments(msgCtx: C_MessageContext, args: ImmList<C_CallArgument>): C_CallArguments? {
         val positional = mutableListOf<C_CallArgument>()
         val namedNames = mutableSetOf<R_Name>()
         val named = mutableListOf<C_NameValue<C_CallArgument>>()
@@ -192,7 +192,7 @@ private class C_FullCallArguments_Impl(
 
 private class C_PartialCallArguments_Impl(
     ctx: C_ExprContext,
-    rawArgs: List<C_CallArgumentHandle>,
+    rawArgs: ImmList<C_CallArgumentHandle>,
     private val args: C_CallArguments,
     private val firstWildcardPos: S_Pos,
 ): C_PartialCallArguments(ctx, firstWildcardPos, rawArgs, args.named.firstOrNull()?.name) {
@@ -230,7 +230,7 @@ private class C_PartialCallArguments_Impl(
 
 private object C_ArgsListProcessor {
     fun processArgs(ctx: C_ExprContext, rawArgs: ImmList<C_CallArgumentHandle>): C_AbstractCallArguments? {
-        val args = rawArgs.map { it.toCallArgument() }
+        val args = rawArgs.mapToImmList { it.toCallArgument() }
 
         val wildArgs = args.filter {
             when (it.value) {
@@ -251,8 +251,8 @@ private object C_ArgsListProcessor {
 
     private fun compilePartialArgs(
         ctx: C_ExprContext,
-        rawArgs: List<C_CallArgumentHandle>,
-        args: List<C_CallArgument>,
+        rawArgs: ImmList<C_CallArgumentHandle>,
+        args: ImmList<C_CallArgument>,
         wildArgs: List<C_CallArgument>,
     ): C_AbstractCallArguments? {
         val lastArg = args.last()
@@ -284,7 +284,7 @@ private object C_InternalFnArgsUtils {
     ): V_Expr {
         val argType = arg.type
         val m = matchArgType(ctx, callInfo, param, argType)
-        return if (m == null) arg else m.adaptExpr(ctx, arg)
+        return m?.adaptExpr(ctx, arg) ?: arg
     }
 
     fun validateArgTypes(

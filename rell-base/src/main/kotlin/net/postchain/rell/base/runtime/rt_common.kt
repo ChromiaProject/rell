@@ -8,6 +8,7 @@ import mu.KLogging
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.rell.base.model.R_MountName
 import net.postchain.rell.base.sql.SqlConstants
+import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.toImmSet
 
 class Rt_ChainDependency(val rid: ByteArray)
@@ -60,7 +61,7 @@ class Rt_ChainSqlMapping(val chainId: Long) {
 
     val tableSqlFilter = "$prefix%"
 
-    private val baseSystemTables: Set<String> = let {
+    private val baseSystemTables: ImmSet<String> = let {
         val sysTables = setOf(blocksTable, transactionsTable) + SqlConstants.SYSTEM_CHAIN_TABLES.map { fullName(it) }
         sysTables.toImmSet()
     }

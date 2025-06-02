@@ -35,7 +35,7 @@ class C_FunctionCallTargetBase(
     val ctx: C_ExprContext,
     val callInfo: C_FunctionCallInfo,
     val callParams: C_FunctionCallParameters,
-    val argIdeInfos: Map<R_Name, C_IdeSymbolInfo>,
+    val argIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo>,
 ) {
     companion object {
         fun forDirectFunction(
@@ -124,7 +124,7 @@ class C_FunctionCallParameters(val list: ImmList<C_FunctionCallParameter>) {
     val typeHints: C_CallTypeHints = C_FunctionCallParametersTypeHints(this.list)
 
     val bindParams: C_ArgMatchParams = let {
-        val params = list.map { C_ArgMatchParam(it.index, it.name, M_ParamArity.ONE, it.defaultValue) }
+        val params = list.mapToImmList { C_ArgMatchParam(it.index, it.name, M_ParamArity.ONE, it.defaultValue) }
         C_ArgMatchParams(params)
     }
 

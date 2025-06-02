@@ -41,7 +41,7 @@ class DiskGeneralDir(private val dir: File): GeneralDir() {
     }
 }
 
-class MapGeneralDir(private val files: Map<String, String>): GeneralDir() {
+class MapGeneralDir(private val files: ImmMap<String, String>): GeneralDir() {
     override fun absolutePath(path: String) = normalPath(path)
 
     override fun parentPath(path: String): String {

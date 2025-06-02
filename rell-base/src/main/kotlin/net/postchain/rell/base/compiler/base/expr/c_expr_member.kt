@@ -29,7 +29,7 @@ import net.postchain.rell.base.utils.doc.DocSymbolName
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.plus
 
 class C_MemberLink(
     val base: V_Expr,
@@ -359,7 +359,7 @@ sealed class C_EntityAttrRef(
             val rowid = C_EntityAttrRef_Rowid(rEntity, ideInfo)
 
             val attrs = rEntity.attributes.values.map { C_EntityAttrRef_Regular(rEntity, it) }
-            return (immListOf(rowid) + attrs).toImmList()
+            return immListOf(rowid) + attrs
         }
 
         private fun makeRowidDocSymbol(rEntity: R_EntityDefinition): DocSymbol {

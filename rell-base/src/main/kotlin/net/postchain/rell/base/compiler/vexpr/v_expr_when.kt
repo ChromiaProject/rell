@@ -14,6 +14,8 @@ import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.ImmMap
+import net.postchain.rell.base.utils.mapToImmList
+import net.postchain.rell.base.utils.toImmList
 
 class V_WhenChooserDetails(
     val keyExpr: V_Expr?,
@@ -27,16 +29,16 @@ class V_WhenChooserDetails(
     fun makeChooser(): R_WhenChooser {
         if (keyExpr == null) {
             val keyExpr = R_ConstantValueExpr.makeBool(true)
-            val caseExprs = variableCases.map { IndexedValue(it.index, it.value.toRExpr()) }
+            val caseExprs = variableCases.mapToImmList { IndexedValue(it.index, it.value.toRExpr()) }
             return R_IterativeWhenChooser(keyExpr, caseExprs, elseCase?.index)
         }
 
         val rKeyExpr = keyExpr.toRExpr()
 
         val chooser = if (constantCases.size == variableCases.size) {
-            R_LookupWhenChooser(rKeyExpr, constantCases.toMap(), elseCase?.index)
+            R_LookupWhenChooser(rKeyExpr, constantCases, elseCase?.index)
         } else {
-            val caseExprs = variableCases.map { IndexedValue(it.index, it.value.toRExpr()) }
+            val caseExprs = variableCases.mapToImmList { IndexedValue(it.index, it.value.toRExpr()) }
             R_IterativeWhenChooser(rKeyExpr, caseExprs, elseCase?.index)
         }
 
@@ -48,7 +50,7 @@ class V_WhenExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     private val chooserDetails: V_WhenChooserDetails,
-    private val valueExprs: List<V_Expr>,
+    private val valueExprs: ImmList<V_Expr>,
     private val resType: R_Type,
     private val resVarStates: C_ExprVarStatesDelta,
 ): V_Expr(exprCtx, pos) {
@@ -61,19 +63,21 @@ class V_WhenExpr(
 
     override fun toRExpr0(): R_Expr {
         val rChooser = chooserDetails.makeChooser()
-        val rExprs = valueExprs.map { it.toRExpr() }
+        val rExprs = valueExprs.mapToImmList { it.toRExpr() }
         return R_WhenExpr(resType, rChooser, rExprs)
     }
 
     override fun toDbExpr0(): Db_Expr {
         val caseCondMap = mutableMapOf<Int, MutableList<Db_Expr>>()
-        for (case in chooserDetails.variableCases) caseCondMap[case.index] = mutableListOf()
-        for (case in chooserDetails.variableCases) caseCondMap.getValue(case.index).add(case.value.toDbExpr())
+
+        for (case in chooserDetails.variableCases) {
+            caseCondMap.getOrPut(case.index) { mutableListOf() }.add(case.value.toDbExpr())
+        }
 
         val keyExpr = chooserDetails.keyExpr?.toDbExpr()
 
-        val caseExprs = caseCondMap.keys.sorted().map { idx ->
-            val conds = caseCondMap.getValue(idx)
+        val caseExprs = caseCondMap.keys.sorted().mapToImmList { idx ->
+            val conds = caseCondMap.getValue(idx).toImmList()
             val vExpr = valueExprs[idx]
             Db_WhenCase(conds, vExpr.toDbExpr())
         }

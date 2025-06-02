@@ -112,14 +112,14 @@ private class C_ModuleDirTree(
         return dirNode != null
     }
 
-    fun fileSubModules(moduleName: R_ModuleName): List<C_ModuleSource> {
+    fun fileSubModules(moduleName: R_ModuleName): ImmList<C_ModuleSource> {
         val dirNode = getDirNode(moduleName.parts)
-        return dirNode?.fileSubModules() ?: immListOf()
+        return dirNode?.fileSubModules().orEmpty()
     }
 
-    fun dirSubModules(moduleName: R_ModuleName): List<R_ModuleName> {
+    fun dirSubModules(moduleName: R_ModuleName): ImmList<R_ModuleName> {
         val dirNode = getDirNode(moduleName.parts)
-        return dirNode?.dirSubModules() ?: immListOf()
+        return dirNode?.dirSubModules().orEmpty()
     }
 
     fun readModuleSource(name: R_ModuleName): C_ModuleSource? {
@@ -198,11 +198,11 @@ private class C_ModuleDirTree(
             calcModuleSource()
         }
 
-        private val dirSubModulesLazy: List<R_ModuleName> by lazy {
+        private val dirSubModulesLazy: ImmList<R_ModuleName> by lazy {
             calcDirSubModules()
         }
 
-        private val fileSubModulesLazy: List<C_ModuleSource> by lazy {
+        private val fileSubModulesLazy: ImmList<C_ModuleSource> by lazy {
             calcFileSubModules()
         }
 
@@ -281,7 +281,7 @@ private class C_ModuleDirTree(
             }
         }
 
-        private fun calcDirSubModules(): List<R_ModuleName> {
+        private fun calcDirSubModules(): ImmList<R_ModuleName> {
             val dirs = sourceDir.dirs(path).sorted()
 
             for (dir in dirs) {
@@ -296,7 +296,7 @@ private class C_ModuleDirTree(
             return subDirs.values.map { it.moduleName }.sorted().toImmList()
         }
 
-        private fun calcFileSubModules(): List<C_ModuleSource> {
+        private fun calcFileSubModules(): ImmList<C_ModuleSource> {
             loadAllFileNodesLazy
             return subFiles.values
                     .mapNotNull { it.getModuleSource() }

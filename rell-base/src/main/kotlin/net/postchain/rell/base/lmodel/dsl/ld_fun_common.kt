@@ -15,10 +15,8 @@ import net.postchain.rell.base.mtype.M_FunctionParam
 import net.postchain.rell.base.mtype.M_ParamArity
 import net.postchain.rell.base.mtype.M_Type_Nullable
 import net.postchain.rell.base.mtype.M_Types
-import net.postchain.rell.base.utils.associateNotNullValues
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
-import net.postchain.rell.base.utils.mapIndexedToImmList
-import net.postchain.rell.base.utils.toImmList
 
 abstract class Ld_CommonFunctionDslImpl(
     private val commonMaker: Ld_CommonFunctionMaker,
@@ -88,7 +86,7 @@ interface Ld_CommonFunctionMaker: Ld_MemberHeaderMaker {
 
 abstract class Ld_CommonFunctionBuilder(
     hdr: Ld_MemberHeader,
-    private val outerTypeParams: Set<R_Name>,
+    private val outerTypeParams: ImmSet<R_Name>,
     private val bodyBuilder: Ld_FunctionBodyBuilder,
 ): Ld_MemberHeaderBuilder(hdr), Ld_CommonFunctionMaker {
     private var deprecated: C_Deprecated? = null
@@ -189,8 +187,8 @@ abstract class Ld_CommonFunctionBuilder(
 }
 
 class Ld_CommonFunctionHeader(
-    val typeParams: List<Ld_TypeParam>,
-    val params: List<Ld_FunctionParam>,
+    val typeParams: ImmList<Ld_TypeParam>,
+    val params: ImmList<Ld_FunctionParam>,
 )
 
 class Ld_CommonFunction(
@@ -258,7 +256,7 @@ class Ld_FunctionParam(
             fullName: R_FullName,
             params: List<Ld_FunctionParam>,
             funMemberHeader: L_MemberHeader,
-        ): Pair<List<L_FunctionParam>, DocComment?> {
+        ): Pair<ImmList<L_FunctionParam>, DocComment?> {
             val paramNames = params.map { it.name }
 
             val paramHeaders = params.map { param ->

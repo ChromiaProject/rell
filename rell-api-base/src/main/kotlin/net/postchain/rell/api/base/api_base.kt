@@ -76,7 +76,7 @@ object RellApiCompile {
         /** Language version for backward compatibility (may affect some aspects of compilation). */
         val version: R_LangVersion,
         /** Module arguments. */
-        val moduleArgs: Map<R_ModuleName, Gtv>,
+        val moduleArgs: ImmMap<R_ModuleName, Gtv>,
         /** Submodules of all test modules are compiled in addition to the explicitly specified test modules, when `true`. */
         val includeTestSubModules: Boolean,
         /** Automatically includes all submodules in the compilation scope **/
@@ -88,7 +88,7 @@ object RellApiCompile {
         /** Specifying a non-test module in the list of test modules causes an error, when `true`. */
         val appModuleInTestsError: Boolean,
         /** Additional GTX-modules to include */
-        val additionalGtxModules: List<String>,
+        val additionalGtxModules: ImmList<String>,
         /** Enable adding documentation symbol to return objects */
         val docSymbolsEnabled: Boolean,
         /** Do not print non-error compilation messages (warnings) if compilation succeeds, when `true`. */

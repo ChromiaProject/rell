@@ -50,7 +50,7 @@ class V_FunctionCallExpr(
     private val safe: Boolean,
     varId: C_VarId? = null,
 ): V_Expr(exprCtx, pos) {
-    private val allExprs = (listOfNotNull(base) + call.args).toImmList()
+    private val allExprs = immListOfNotNull(base) + call.args
     private val actualType = C_Utils.effectiveMemberType(call.returnType, safe)
     private val varKey = if (varId == null) null else C_VarStateKey(varId)
 
@@ -132,7 +132,7 @@ sealed class V_CommonFunctionCall(
             }
         }
 
-        val allExprs = (listOfNotNull(base) + args).toImmList()
+        val allExprs = immListOfNotNull(base) + args
         return C_DbAtWhatValue_Complex(allExprs, evaluator)
     }
 }
@@ -166,7 +166,7 @@ class V_CommonFunctionCall_Full(
     }
 
     override fun dbExpr(dbBase: Db_Expr?): Db_Expr {
-        val dbArgs = callArgs.exprs.map { it.toDbExpr() }
+        val dbArgs = callArgs.exprs.mapToImmList { it.toDbExpr() }
         return target.toDbExpr(pos, dbBase, dbArgs)
     }
 }
@@ -198,7 +198,7 @@ class V_CommonFunctionCall_Partial(
 sealed class V_FunctionCallTarget {
     abstract fun toRTarget(): R_FunctionCallTarget
     open fun canBeDb() = false
-    open fun toDbExpr(pos: S_Pos, dbBase: Db_Expr?, dbArgs: List<Db_Expr>): Db_Expr = throw C_Errors.errExprDbNotAllowed(pos)
+    open fun toDbExpr(pos: S_Pos, dbBase: Db_Expr?, dbArgs: ImmList<Db_Expr>): Db_Expr = throw C_Errors.errExprDbNotAllowed(pos)
     open fun globalConstantRestriction(): V_GlobalConstantRestriction? = null
 }
 
@@ -277,7 +277,7 @@ class V_FunctionCallTarget_SysGlobalFunction(
 ): V_FunctionCallTarget_SysFunction(desc) {
     override fun toRTarget(): R_FunctionCallTarget = R_FunctionCallTarget_SysGlobalFunction(desc.rFn, desc.fullName)
 
-    override fun toDbExpr(pos: S_Pos, dbBase: Db_Expr?, dbArgs: List<Db_Expr>): Db_Expr {
+    override fun toDbExpr(pos: S_Pos, dbBase: Db_Expr?, dbArgs: ImmList<Db_Expr>): Db_Expr {
         checkEquals(dbBase, null)
         if (desc.dbFn == null) {
             throw C_Errors.errFunctionNoSql(pos, desc.fullName.value)
@@ -287,13 +287,13 @@ class V_FunctionCallTarget_SysGlobalFunction(
 }
 
 abstract class V_FunctionCall(
-    val argIdeInfos: Map<R_Name, C_IdeSymbolInfo>,
+    val argIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo>,
 )
 
 class V_GlobalFunctionCall(
     private val expr: V_Expr,
     val ideInfo: C_IdeSymbolInfo? = null,
-    argIdeInfos: Map<R_Name, C_IdeSymbolInfo>,
+    argIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo>,
 ): V_FunctionCall(argIdeInfos) {
     fun vExpr() = expr
 }
@@ -301,7 +301,7 @@ class V_GlobalFunctionCall(
 abstract class V_MemberFunctionCall(
     protected val exprCtx: C_ExprContext,
     val ideInfo: C_IdeSymbolInfo,
-    paramIdeInfos: Map<R_Name, C_IdeSymbolInfo>,
+    paramIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo>,
 ): V_FunctionCall(paramIdeInfos) {
     abstract fun vExprs(): List<V_Expr>
     open fun varStatesDelta(): C_VarStatesDelta = C_VarStatesDelta.forExpressions(vExprs())
@@ -318,7 +318,7 @@ abstract class V_MemberFunctionCall(
 class V_MemberFunctionCall_CommonCall(
     exprCtx: C_ExprContext,
     ideInfo: C_IdeSymbolInfo,
-    argIdeInfos: Map<R_Name, C_IdeSymbolInfo>,
+    argIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo>,
     private val call: V_CommonFunctionCall,
     private val returnType: R_Type,
 ): V_MemberFunctionCall(exprCtx, ideInfo, argIdeInfos) {

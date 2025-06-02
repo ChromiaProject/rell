@@ -146,7 +146,7 @@ class S_Name(val pos: S_Pos, private val rName: R_Name): S_Node() {
     override fun toString() = str
 
     companion object {
-        private val OLD_KEYWORDS: Map<R_Name, C_ReservedName> =
+        private val OLD_KEYWORDS: ImmMap<R_Name, C_ReservedName> =
             mapOf(
                 "list" to "0.11.0",
                 "set" to "0.11.0",
@@ -161,7 +161,7 @@ class S_Name(val pos: S_Pos, private val rName: R_Name): S_Node() {
 
         private const val NEW_KWS_SINCE = "0.13.12"
 
-        private val NEW_KEYWORDS: Map<R_Name, C_ReservedName> =
+        private val NEW_KEYWORDS: ImmMap<R_Name, C_ReservedName> =
             mapOf(
                 "alias" to NEW_KWS_SINCE,
                 "as" to NEW_KWS_SINCE,
@@ -216,7 +216,7 @@ class S_QualifiedName(val parts: ImmList<S_Name>): S_Node() {
 
     constructor(name: S_Name): this(immListOf(name))
 
-    fun add(name: S_Name) = S_QualifiedName((parts + name).toImmList())
+    fun add(name: S_Name) = S_QualifiedName(parts + name)
 
     fun str() = parts.joinToString(".")
     override fun toString() = str()

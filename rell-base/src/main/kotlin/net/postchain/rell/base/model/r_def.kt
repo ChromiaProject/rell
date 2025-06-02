@@ -71,9 +71,9 @@ class R_EntityDefinition(
 
     private val bodyLate = C_LateInit(C_CompilerPass.MEMBERS, ERROR_BODY)
 
-    val keys: List<R_Key> get() = bodyLate.get().keys
-    val indexes: List<R_Index> get() = bodyLate.get().indexes
-    val attributes: Map<R_Name, R_Attribute> get() = bodyLate.get().attributes
+    val keys: ImmList<R_Key> get() = bodyLate.get().keys
+    val indexes: ImmList<R_Index> get() = bodyLate.get().indexes
+    val attributes: ImmMap<R_Name, R_Attribute> get() = bodyLate.get().attributes
 
     val strAttributes: ImmMap<String, R_Attribute> by lazy {
         attributes.mapKeysToImmMap { it.key.str }
@@ -124,8 +124,8 @@ class R_ObjectDefinition(
             R_CreateExprAttr(it, expr)
         }
 
-        val insertAttrs = createExprAttrs.map { it.attr }
-        val insertValues = createExprAttrs.map { it.evaluate(frame) }
+        val insertAttrs = createExprAttrs.mapToImmList { it.attr }
+        val insertValues = createExprAttrs.mapToImmList { it.evaluate(frame) }
         val insertRowid = ParameterizedSql.generate { it.append(0L) }
         val insertRow = R_CreateExpr.InsertRow(insertRowid, insertValues)
         val insertData = R_CreateExpr.InsertData(insertAttrs, immListOf(insertRow))
@@ -153,19 +153,19 @@ class R_Struct(
     private val bodyLate = LateInit(ERROR_BODY)
     private val flagsLate = LateInit(ERROR_STRUCT_FLAGS)
 
-    val attributes: Map<R_Name, R_Attribute> get() = bodyLate.get().attrMap
-    val attributesList: List<R_Attribute> get() = bodyLate.get().attrList
+    val attributes: ImmMap<R_Name, R_Attribute> get() = bodyLate.get().attrMap
+    val attributesList: ImmList<R_Attribute> get() = bodyLate.get().attrList
     val flags: R_StructFlags get() = flagsLate.get()
 
-    val strAttributes: Map<String, R_Attribute> by lazy {
+    val strAttributes: ImmMap<String, R_Attribute> by lazy {
         attributes.mapKeysToImmMap { it.key.str }
     }
 
     val type = R_StructType(this)
     val virtualType = R_VirtualStructType(type)
 
-    fun setAttributes(attrs: Map<R_Name, R_Attribute>) {
-        val attrsList = attrs.values.toList()
+    fun setAttributes(attrs: ImmMap<R_Name, R_Attribute>) {
+        val attrsList = attrs.values.toImmList()
         attrsList.withIndex().forEach { (idx, attr) -> checkEquals(attr.index, idx) }
         val attrMutable = attrs.values.any { it.mutable }
         bodyLate.set(R_StructBody(attrs, attrsList, attrMutable))
@@ -186,13 +186,13 @@ class R_Struct(
     override fun toString() = name
 
     private class R_StructBody(
-            val attrMap: Map<R_Name, R_Attribute>,
-            val attrList: List<R_Attribute>,
+            val attrMap: ImmMap<R_Name, R_Attribute>,
+            val attrList: ImmList<R_Attribute>,
             val attrMutable: Boolean
     )
 
     companion object {
-        private val ERROR_BODY = R_StructBody(attrMap = mapOf(), attrList = listOf(), attrMutable = false)
+        private val ERROR_BODY = R_StructBody(attrMap = immMapOf(), attrList = immListOf(), attrMutable = false)
 
         private val ERROR_TYPE_FLAGS = R_TypeFlags(
             pure = true,
@@ -268,7 +268,7 @@ class R_EnumAttr(
 
 class R_EnumDefinition(
     base: R_DefinitionBase,
-    val attrs: List<R_EnumAttr>,
+    val attrs: ImmList<R_EnumAttr>,
 ): R_Definition(base) {
     val type = R_EnumType(this)
 

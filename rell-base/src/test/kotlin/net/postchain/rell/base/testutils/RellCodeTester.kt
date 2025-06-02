@@ -376,17 +376,16 @@ class RellCodeTester(
     private fun runTests(): String {
         val res = processWithTestRunnerCtx { testCtx ->
             val testFns = UnitTestRunner.getTestFunctions(testCtx.app, UnitTestMatcher.ANY)
-                    .mapToImmList { UnitTestCase(UnitTestRunnerChain("foo", 123), it) }
+                .mapToImmList { UnitTestCase(UnitTestRunnerChain("foo", 123), it) }
 
             val testRes = UnitTestRunnerResults(testCtx.printPrettyLargeValues)
             UnitTestRunner.runTests(testCtx, testFns, testRes)
 
             val resList = testRes.getResults()
-            val resMap = resList
-                    .map {
-                        val err = it.res.error
-                        it.case.fn.moduleLevelName to (if(err == null) "OK" else RellTestUtils.rtErrToResult(err).res)
-                    }.toMap().toImmMap()
+            val resMap = resList.associateToImmMap {
+                val err = it.res.error
+                it.case.fn.moduleLevelName to (if (err == null) "OK" else RellTestUtils.rtErrToResult(err).res)
+            }
 
             resMap.entries.joinToString(",")
         }
@@ -500,7 +499,9 @@ class RellCodeTester(
         val sqlMapping = createChainSqlMapping()
         val rtDeps = chainDependencies.mapValues { (_, v) -> Rt_ChainDependency(v.rid.data) }
 
-        val heightMap = chainDependencies.mapKeys { (_, v) -> WrappedByteArray(v.rid.data) }.mapValues { (_, v) -> v.height }
+        val heightMap = chainDependencies
+            .mapKeys { (_, v) -> WrappedByteArray(v.rid.data) }
+            .mapValuesToImmMap { (_, v) -> v.height }
         val heightProvider = TestChainHeightProvider(heightMap)
 
         return eval.wrapRt {
@@ -510,7 +511,7 @@ class RellCodeTester(
 
     private class TestChainDependency(val rid: BlockchainRid, val height: Long)
 
-    private class TestChainHeightProvider(private val map: Map<WrappedByteArray, Long>): Rt_ChainHeightProvider {
+    private class TestChainHeightProvider(private val map: ImmMap<WrappedByteArray, Long>): Rt_ChainHeightProvider {
         override fun getChainHeight(rid: WrappedByteArray, id: Long): Long? {
             val height = map[rid]
             return height

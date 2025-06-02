@@ -21,13 +21,13 @@ class IdeSourcePathFilePath(val path: C_SourcePath): IdeFilePath() {
 class C_SourcePath private constructor(val parts: ImmList<String>): Comparable<C_SourcePath> {
     private val str = parts.joinToString("/")
 
-    fun add(path: C_SourcePath) = C_SourcePath((parts + path.parts).toImmList())
+    fun add(path: C_SourcePath) = C_SourcePath(parts + path.parts)
 
     fun add(part: String): C_SourcePath {
         if (!validate(part)) {
             throw errBadPath(part)
         }
-        return C_SourcePath((parts + part).toImmList())
+        return C_SourcePath(parts + part)
     }
 
     fun parent() = C_SourcePath(parts.subList(0, parts.size - 1))
@@ -202,7 +202,7 @@ private class C_MapSourceDir(files: Map<C_SourcePath, C_SourceFile>): C_SourceDi
         return dir
     }
 
-    private class DirNode(val dirs: Map<String, DirNode>, val files: Map<String, C_SourceFile>)
+    private class DirNode(val dirs: ImmMap<String, DirNode>, val files: ImmMap<String, C_SourceFile>)
 
     companion object {
         private fun buildTree(map: Map<C_SourcePath, C_SourceFile>): DirNode {

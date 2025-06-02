@@ -8,11 +8,12 @@ import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_TypeParam
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.doc.DocSymbol
 
 class L_TypeExtension(
     val qualifiedName: R_QualifiedName,
-    val typeParams: List<M_TypeParam>,
+    val typeParams: ImmList<M_TypeParam>,
     val selfType: M_Type,
     val members: L_TypeDefMembers,
     val docSymbol: DocSymbol,

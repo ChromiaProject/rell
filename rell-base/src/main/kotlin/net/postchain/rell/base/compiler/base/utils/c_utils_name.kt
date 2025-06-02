@@ -10,10 +10,7 @@ import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.*
 import java.util.*
 
 abstract class C_GenericQualifiedName<NameT: Any, FullNameT: C_GenericQualifiedName<NameT, FullNameT>>
@@ -29,7 +26,7 @@ protected constructor(parts: List<NameT>) {
 
     fun add(name: NameT): FullNameT {
         checkName(name)
-        return create(parts + immListOf(name))
+        return create(parts + name)
     }
 
     fun str() = parts.joinToString(".")
@@ -84,7 +81,7 @@ class C_StringQualifiedName private constructor(
         fun of(parts: List<String>): C_StringQualifiedName = ofNames0(parts) { C_StringQualifiedName(it) }
         fun of(name: String): C_StringQualifiedName = ofName0(name) { C_StringQualifiedName(it) }
         fun of(cName: C_QualifiedName): C_StringQualifiedName = of(cName.parts.map { it.str })
-        fun of(parent: List<R_Name>, name: String): C_StringQualifiedName = of(parent.map { it.str } + listOf(name))
+        fun of(parent: List<R_Name>, name: String): C_StringQualifiedName = of(parent.map { it.str } + name)
         fun of(parent: R_QualifiedName, name: R_Name): C_StringQualifiedName = of(parent.parts, name.str)
         fun of(name: R_QualifiedName): C_StringQualifiedName = ofRNames(name.parts)
 
@@ -93,10 +90,10 @@ class C_StringQualifiedName private constructor(
 }
 
 class C_RNamePath private constructor(val parts: ImmList<R_Name>) {
-    fun append(name: R_Name) = C_RNamePath((parts + name).toImmList())
-    fun append(names: List<R_Name>) = of((parts + names).toImmList())
+    fun append(name: R_Name) = C_RNamePath(parts + name)
+    fun append(names: List<R_Name>) = of(parts + names)
 
-    fun qualifiedName(name: R_Name): R_QualifiedName = R_QualifiedName((parts + name).toImmList())
+    fun qualifiedName(name: R_Name): R_QualifiedName = R_QualifiedName(parts + name)
     fun fullName(moduleName: R_ModuleName, name: R_Name): R_FullName = R_FullName(moduleName, qualifiedName(name))
 
     override fun equals(other: Any?) = other is C_RNamePath && parts == other.parts
@@ -115,10 +112,10 @@ class C_RFullNamePath private constructor(
     val moduleName: R_ModuleName,
     val parts: ImmList<R_Name>,
 ) {
-    fun append(name: R_Name) = C_RFullNamePath(moduleName, (parts + name).toImmList())
-    fun append(names: List<R_Name>) = C_RFullNamePath(moduleName, (parts + names).toImmList())
+    fun append(name: R_Name) = C_RFullNamePath(moduleName, parts + name)
+    fun append(names: List<R_Name>) = C_RFullNamePath(moduleName, parts + names)
 
-    fun qualifiedName(name: R_Name): R_QualifiedName = R_QualifiedName((parts + name).toImmList())
+    fun qualifiedName(name: R_Name): R_QualifiedName = R_QualifiedName(parts + name)
     fun fullName(name: R_Name): R_FullName = R_FullName(moduleName, qualifiedName(name))
 
     fun toDefPath(): C_DefinitionPath = C_DefinitionPath(moduleName.str(), parts.mapToImmList { it.str })

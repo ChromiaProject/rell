@@ -124,7 +124,7 @@ class C_MidModuleMember_Import(
 
 class C_MidModuleMember_Namespace(
     private val modifiers: S_Modifiers,
-    private val qualifiedName: List<NamePart>,
+    private val qualifiedName: ImmList<NamePart>,
     private val comment: S_Comment?,
     private val posRange: S_PosRange,
     private val members: ImmList<C_MidModuleMember>,
@@ -206,7 +206,7 @@ class C_MidModuleCompiler(
         processQueue()
     }
 
-    fun compileReplMembers(moduleName: R_ModuleName, members: List<C_MidModuleMember>): List<C_ExtModuleMember> {
+    fun compileReplMembers(moduleName: R_ModuleName, members: List<C_MidModuleMember>): ImmList<C_ExtModuleMember> {
         check(!done)
 
         val moduleCtx = C_MidModuleContext(msgCtx, modImporter, moduleName, null)
@@ -259,7 +259,7 @@ class C_MidModuleCompiler(
         extModules.add(extModule)
     }
 
-    fun getExtModules(): List<C_ExtModule> {
+    fun getExtModules(): ImmList<C_ExtModule> {
         done = true
         return extModules.toImmList()
     }

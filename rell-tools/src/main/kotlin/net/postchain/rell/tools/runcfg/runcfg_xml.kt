@@ -45,7 +45,7 @@ class RellXmlParser(private val preserveWhitespace: Boolean = false) {
     private fun convertElement(file: String, parentTreePath: List<String>, elem: Element): RellXmlElement {
         val node = makeDomNode(elem)
 
-        val treePath = parentTreePath + listOf(elem.tagName)
+        val treePath = parentTreePath + elem.tagName
 
         val elems = mutableListOf<RellXmlElement>()
         for (subNodeElem in node.elems) {

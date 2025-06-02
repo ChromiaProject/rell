@@ -15,8 +15,10 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.foldSimple
 import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapToImmList
 
 sealed class Db_BinaryOp(val code: String) {
     open fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value? = null
@@ -345,12 +347,12 @@ class Db_CollectionInterpretedExpr(val expr: R_Expr): Db_Expr(expr.type) {
     }
 }
 
-class Db_InExpr(val keyExpr: Db_Expr, val exprs: List<Db_Expr>, val not: Boolean): Db_Expr(R_BooleanType) {
+class Db_InExpr(val keyExpr: Db_Expr, val exprs: ImmList<Db_Expr>, val not: Boolean): Db_Expr(R_BooleanType) {
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
         val redKeyExpr = keyExpr.toRedExpr(frame)
         val redExprTypes = toRedExprs(frame, redKeyExpr, exprs)
         return if (redExprTypes != null) {
-            val redExprs = redExprTypes.map { it.first }
+            val redExprs = redExprTypes.mapToImmList { it.first }
             RedDb_Utils.makeRedDbInExpr(redKeyExpr, redExprs, not)
         } else {
             RedDb_ConstantExpr(Rt_BooleanValue.get(!not))
@@ -383,7 +385,7 @@ class Db_InExpr(val keyExpr: Db_Expr, val exprs: List<Db_Expr>, val not: Boolean
     }
 }
 
-private class RedDb_InExpr(val keyExpr: RedDb_Expr, val exprs: List<RedDb_Expr>, val not: Boolean): RedDb_Expr() {
+private class RedDb_InExpr(val keyExpr: RedDb_Expr, val exprs: ImmList<RedDb_Expr>, val not: Boolean): RedDb_Expr() {
     override fun toSql0(ctx: SqlGenContext, bld: SqlBuilder) {
         keyExpr.toSql(ctx, bld, true)
         if (not) bld.append(" NOT")
@@ -411,15 +413,15 @@ class Db_ElvisExpr(type: R_Type, private val left: Db_Expr, private val right: D
     }
 }
 
-class Db_CallExpr(type: R_Type, val fn: Db_SysFunction, val args: List<Db_Expr>): Db_Expr(type) {
+class Db_CallExpr(type: R_Type, val fn: Db_SysFunction, val args: ImmList<Db_Expr>): Db_Expr(type) {
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
-        val redArgs = args.map { it.toRedExpr(frame) }
+        val redArgs = args.mapToImmList { it.toRedExpr(frame) }
         val redExpr = RedDb_CallExpr(fn, redArgs)
         return RedDb_Utils.wrapDecimalExpr(type, redExpr)
     }
 }
 
-private class RedDb_CallExpr(val fn: Db_SysFunction, val args: List<RedDb_Expr>): RedDb_Expr() {
+private class RedDb_CallExpr(val fn: Db_SysFunction, val args: ImmList<RedDb_Expr>): RedDb_Expr() {
     override fun needsEnclosing() = false
     override fun toSql0(ctx: SqlGenContext, bld: SqlBuilder) = fn.toSql(ctx, bld, args)
 }
@@ -486,7 +488,7 @@ object RedDb_Utils {
         return RedDb_BinaryExpr(op, left, right)
     }
 
-    fun makeRedDbInExpr(left: RedDb_Expr, right: List<RedDb_Expr>, not: Boolean): RedDb_Expr {
+    fun makeRedDbInExpr(left: RedDb_Expr, right: ImmList<RedDb_Expr>, not: Boolean): RedDb_Expr {
         return if (right.isEmpty()) {
             RedDb_ConstantExpr(Rt_BooleanValue.get(not))
         } else if (right.size == 1) {

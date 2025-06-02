@@ -6,11 +6,13 @@ package net.postchain.rell.base.utils
 
 import com.google.common.collect.*
 import kotlinx.collections.immutable.*
+import kotlinx.collections.immutable.plus as kplus
+import kotlinx.collections.immutable.minus as kminus
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
 
-class ListVsMap<K> private constructor(private val entries: List<Map.Entry<K, *>>) {
+class ListVsMap<K> private constructor(private val entries: ImmList<Map.Entry<K, *>>) {
     fun <W> listToMap(list: List<W>): ImmMap<K, W> {
         val copy = list.toImmList()
         checkEquals(copy.size, entries.size)
@@ -179,7 +181,7 @@ fun <T> List<T>.countLastWhile(predicate: (T) -> Boolean): Int {
 
 fun <T> List<T>.dropView(n: Int): List<T> = subList(n, size)
 
-fun <T, R> Iterable<T>.partitionMap(f: (T) -> Pair<R, Boolean>): Pair<List<R>, List<R>> {
+fun <T, R> Iterable<T>.partitionMap(f: (T) -> Pair<R, Boolean>): Pair<ImmList<R>, ImmList<R>> {
     val first = mutableListOf<R>()
     val second = mutableListOf<R>()
     for (element in this) {
@@ -242,9 +244,11 @@ fun <T> immListOfNotNull(value: T?): ImmList<T> = if (value == null) immListOf()
 fun <T> Iterable<T>.toImmList(): ImmList<T> = toPersistentList()
 fun <T> Array<T>.toImmList(): ImmList<T> = toPersistentList()
 
+fun <T> ImmList<T>?.orEmpty(): ImmList<T> = this ?: immListOf()
+
 fun <T> ImmList(size: Int, init: (Int) -> T): ImmList<T> = List(size, init).toPersistentList()
 
-@Deprecated("redundant toImmList()")
+@Deprecated("redundant toImmList()", ReplaceWith("this"))
 fun <T> ImmList<T>.toImmList(): ImmList<T> = this
 
 inline fun <T, R> Iterable<T>.mapToImmList(transform: (T) -> R): ImmList<R> = persistentListOf<R>().mutate {
@@ -305,13 +309,18 @@ fun <T> immSetOf(vararg values: T): ImmSet<T> = persistentSetOf(*values)
 fun <T> Iterable<T>.toImmSet(): ImmSet<T> = toPersistentSet()
 fun <T> Array<T>.toImmSet(): ImmSet<T> = toPersistentSet()
 
-@Deprecated("redundant toImmSet()")
+fun <T: Any> immSetOfNotNull(element: T?): ImmSet<T> = if (element != null) immSetOf(element) else immSetOf()
+
+
+@Deprecated("redundant toImmSet()", ReplaceWith("this"))
 fun <T> ImmSet<T>.toImmSet(): ImmSet<T> = this
 
 
 typealias ImmMap<K, V> = ImmutableMap<K, V>
 
 fun <K, V> immMapOf(vararg entries: Pair<K, V>): ImmMap<K, V> = mapOf(*entries).toImmMap()
+
+fun <K, V> ImmMap<K, V>?.orEmpty(): ImmMap<K, V> = this ?: immMapOf()
 
 fun <K, V> immMapOfNotNullValues(vararg entries: Pair<K, V?>): ImmMap<K, V> {
     return persistentMapOf<K, V>().mutate {
@@ -325,7 +334,7 @@ fun <K, V> Map<K, V>.toImmMap(): ImmMap<K, V> = toPersistentMap()
 fun <K, V> Iterable<Pair<K, V>>.toImmMap(): ImmMap<K, V> = toMap().toImmMap()
 fun <K, V> Array<out Pair<K, V>>.toImmMap(): ImmMap<K, V> = toMap().toImmMap()
 
-@Deprecated("redundant toImmMap()")
+@Deprecated("redundant toImmMap()", ReplaceWith("this"))
 fun <K, V> ImmMap<K, V>.toImmMap(): ImmMap<K, V> = this
 
 inline fun <T, K, V> Iterable<T>.associateToImmMap(transform: (T) -> Pair<K, V>): ImmMap<K, V> =
@@ -432,3 +441,22 @@ fun <T> Iterable<T>.toPair(): Pair<T, T> {
         }
     }
 }
+
+
+operator fun <E> ImmList<E>.plus(element: E): ImmList<E> = toPersistentList().add(element)
+operator fun <E> ImmList<E>.plus(elements: Iterable<E>): ImmList<E> = toPersistentList().kplus(elements)
+operator fun <E> ImmList<E>.plus(elements: Array<out E>): ImmList<E> = toPersistentList().kplus(elements)
+operator fun <E> ImmList<E>.plus(elements: Sequence<E>): ImmList<E> = toPersistentList().kplus(elements)
+
+operator fun <E> ImmSet<E>.plus(element: E): ImmSet<E> = toPersistentSet().kplus(element)
+operator fun <E> ImmSet<E>.minus(element: E): ImmSet<E> = toPersistentSet().kminus(element)
+operator fun <E> ImmSet<E>.plus(elements: Iterable<E>): ImmSet<E> = toPersistentSet().kplus(elements)
+operator fun <E> ImmSet<E>.plus(elements: Array<out E>): ImmSet<E> = toPersistentSet().kplus(elements)
+operator fun <E> ImmSet<E>.plus(elements: Sequence<E>): ImmSet<E> = toPersistentSet().kplus(elements)
+operator fun <E> ImmSet<E>.minus(elements: Iterable<E>): ImmSet<E> = toPersistentSet().kminus(elements)
+
+operator fun <K, V> ImmMap<out K, V>.plus(pair: Pair<K, V>): ImmMap<K, V> = toPersistentMap().kplus(pair)
+operator fun <K, V> ImmMap<out K, V>.plus(pairs: Iterable<Pair<K, V>>): ImmMap<K, V> = toPersistentMap().kplus(pairs)
+operator fun <K, V> ImmMap<out K, V>.plus(pairs: Array<out Pair<K, V>>): ImmMap<K, V> = toPersistentMap().kplus(pairs)
+operator fun <K, V> ImmMap<out K, V>.plus(pairs: Sequence<Pair<K, V>>): ImmMap<K, V> = toPersistentMap().putAll(pairs)
+operator fun <K, V> ImmMap<out K, V>.plus(map: Map<out K, V>): ImmMap<K, V> = toPersistentMap().kplus(map)

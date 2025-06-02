@@ -91,7 +91,7 @@ class S_SimpleVarDeclarator(
 
 class S_TupleVarDeclarator(
     val pos: S_Pos,
-    val subDeclarators: List<S_VarDeclarator>,
+    val subDeclarators: ImmList<S_VarDeclarator>,
 ): S_VarDeclarator() {
     override fun compile(ctx: C_StmtContext, mutable: Boolean, hasExpr: Boolean, comment: S_Comment?): C_VarDeclarator {
         val cSubDeclarators = subDeclarators.mapToImmList {
@@ -203,7 +203,7 @@ class S_ReturnStatement(
 
 class S_BlockStatement(
     private val posRange: S_PosRange,
-    private val stmts: List<S_Statement>,
+    private val stmts: ImmList<S_Statement>,
 ): S_Statement(posRange.start, posRange.end) {
     override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val (subCtx, subBlkCtx) = ctx.subBlock(ctx.loop)
@@ -347,8 +347,8 @@ class S_IfStatement(
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
         val trueVars = trueStmt.discoverVars(map)
-        val falseVars = if (falseStmt != null) falseStmt.discoverVars(map) else C_StatementVars.EMPTY
-        return C_StatementVars(immSetOf(), (trueVars.modified + falseVars.modified).toImmSet())
+        val falseVars = falseStmt?.discoverVars(map) ?: C_StatementVars.EMPTY
+        return C_StatementVars(immSetOf(), trueVars.modified + falseVars.modified)
     }
 
     override fun returnsValue(): Boolean? {
@@ -363,7 +363,7 @@ class S_WhenStatement(
     startPos: S_Pos,
     endPos: S_Pos,
     private val expr: S_Expr?,
-    private val cases: List<S_WhenStatementCase>,
+    private val cases: ImmList<S_WhenStatementCase>,
 ): S_Statement(startPos, endPos) {
     override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val conds = cases.map { it.cond }
@@ -383,10 +383,10 @@ class S_WhenStatement(
         }
         val returns = chooser.full && cStmts.all { it.alwaysReturns }
 
-        val rStmts = cStmts.map { it.rStmt }
+        val rStmts = cStmts.mapToImmList { it.rStmt }
         val rStmt = R_WhenStatement(chooser.rChooser, rStmts)
 
-        val fullStmts = if (chooser.full) cStmts else cStmts + listOf(C_Statement.empty(chooser.elseVarStatesDelta))
+        val fullStmts = if (chooser.full) cStmts else cStmts + C_Statement.empty(chooser.elseVarStatesDelta)
         val stmtState = C_Statement.varStatesDeltaForBranches(fullStmts)
         val resState = chooser.keyVarStatesDelta.and(stmtState)
 
@@ -415,7 +415,7 @@ class C_LoopStatement(
     val condCtx: C_StmtContext,
     val condExpr: R_Expr,
     val condVarStatesDelta: C_ExprVarStatesDelta,
-    val modifiedVars: List<C_LocalVar>,
+    val modifiedVars: ImmList<C_LocalVar>,
 )
 
 class S_WhileStatement(
@@ -481,7 +481,7 @@ class S_WhileStatement(
             return C_LoopStatement(condCtx, rExpr, vCondExpr.varStatesDelta, modifiedVars)
         }
 
-        private fun getModifiedVars(stmt: S_Statement, ctx: C_StmtContext): List<C_LocalVar> {
+        private fun getModifiedVars(stmt: S_Statement, ctx: C_StmtContext): ImmList<C_LocalVar> {
             val modVars = stmt.getModifiedVars(ctx.fnCtx)
             val res = ArrayList<C_LocalVar>(modVars.size)
 
@@ -492,7 +492,7 @@ class S_WhileStatement(
                 }
             }
 
-            return res
+            return res.toImmList()
         }
 
         private fun calcUpdatedVarStatesDelta(modifiedVars: List<C_LocalVar>): C_VarStatesDelta {

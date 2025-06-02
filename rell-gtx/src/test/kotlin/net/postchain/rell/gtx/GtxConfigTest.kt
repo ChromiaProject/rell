@@ -8,6 +8,7 @@ import net.postchain.common.exception.UserMistake
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.RellVersions
+import net.postchain.rell.base.utils.plus
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.gtx.testutils.BaseGtxTest
 import org.apache.commons.lang3.StringUtils
@@ -188,7 +189,7 @@ class GtxConfigTest: BaseGtxTest() {
         val parts = ver.parts()
         val v = parts[i] + d
         return if (v < 0) null else {
-            val parts2 = (parts.take(i) + listOf(v) + parts.drop(i + 1).map { 0 }).toImmList()
+            val parts2 = parts.take(i).toImmList() + v + parts.drop(i + 1).map { 0 }
             R_LangVersion.of(parts2)
         }
     }

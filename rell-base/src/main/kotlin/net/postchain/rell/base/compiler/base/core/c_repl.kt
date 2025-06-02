@@ -91,12 +91,12 @@ class C_ExtReplCommand(
         return C_ReplCommandContext(frameCtx, codeState)
     }
 
-    private fun discoverStatementVars(): TypedKeyMap {
+    private fun discoverStatementVars(): ImmTypedKeyMap {
         val map = MutableTypedKeyMap()
         for (stmt in statements) {
             stmt.discoverVars(map)
         }
-        return map.immutableCopy()
+        return map.toImmTypedKeyMap()
     }
 
     private fun compileStatements(ctx: C_ReplCommandContext) {

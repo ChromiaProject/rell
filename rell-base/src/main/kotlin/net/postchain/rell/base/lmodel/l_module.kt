@@ -6,13 +6,14 @@ package net.postchain.rell.base.lmodel
 
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_QualifiedName
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSymbol
 
 class L_Module(
     val moduleName: R_ModuleName,
     val namespace: L_Namespace,
-    val allImports: List<L_Module>,
+    val allImports: ImmList<L_Module>,
     override val docSymbol: DocSymbol,
 ): DocDefinition() {
     override val docSourcePos = null

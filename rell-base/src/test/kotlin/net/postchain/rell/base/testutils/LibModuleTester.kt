@@ -13,6 +13,7 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.GtvRtConversion
 import net.postchain.rell.base.runtime.GtvRtConversion_None
 import net.postchain.rell.base.runtime.utils.toGtv
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.toImmList
 import java.util.*
@@ -66,7 +67,7 @@ class LibModuleTester(
         private val typeName: String,
         private val typeTag: Any,
         private val modGetter: () -> C_LibModule,
-        private val typeArgs: List<R_Type>,
+        private val typeArgs: ImmList<R_Type>,
     ): R_Type(typeName, C_DefinitionName("", typeName)) {
         override fun equals0(other: R_Type): Boolean {
             return other is R_TestType && typeTag === other.typeTag && typeArgs == other.typeArgs

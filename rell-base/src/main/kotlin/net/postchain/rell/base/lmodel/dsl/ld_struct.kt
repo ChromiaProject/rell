@@ -16,14 +16,11 @@ import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.mtype.M_Type
-import net.postchain.rell.base.utils.associateByToImmMap
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDeclaration_StructAttribute
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.futures.FcFuture
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
 
 class Ld_StructDslImpl(
     hdr: Ld_MemberHeader,
@@ -75,7 +72,7 @@ class Ld_StructAttribute(
 }
 
 class Ld_Struct(
-    private val attributes: List<Ld_StructAttribute>,
+    private val attributes: ImmList<Ld_StructAttribute>,
 ) {
     fun process(ctx: Ld_NamespaceContext, fullName: R_FullName): FcFuture<L_Struct> {
         val rStruct = C_Utils.createSysStruct(fullName.qualifiedName.str())

@@ -65,7 +65,7 @@ interface C_NsAsm_AppAssembler {
                 executor: C_CompilerExecutor,
                 msgCtx: C_MessageContext,
                 appUid: R_AppUid,
-                preModules: Map<C_ModuleKey, C_PrecompiledModule>
+                preModules: ImmMap<C_ModuleKey, C_PrecompiledModule>
         ): C_NsAsm_AppAssembler {
             return C_NsAsm_InternalAppAssembler(executor, msgCtx, appUid, preModules)
         }
@@ -510,13 +510,13 @@ class C_NsAsm_RawNamespace(
         val list = mutableListOf<C_NsAsm_RawWildcardImport>()
         val set = mutableSetOf<ImportKey>()
         for (imp in imports) {
-            val key = ImportKey(imp.module, imp.path.map { it.rName })
+            val key = ImportKey(imp.module, imp.path.mapToImmList { it.rName })
             if (set.add(key)) list.add(imp)
         }
         return list
     }
 
-    private data class ImportKey(val module: C_ModuleKey, val path: List<R_Name>)
+    private data class ImportKey(val module: C_ModuleKey, val path: ImmList<R_Name>)
 
     companion object { val EMPTY = C_NsAsm_RawNamespace(immListOf(), immListOf()) }
 }
@@ -676,7 +676,7 @@ private class C_NsAsm_InternalAppAssembler(
     private val executor: C_CompilerExecutor,
     private val msgCtx: C_MessageContext,
     private val stamp: R_AppUid,
-    private val preModules: Map<C_ModuleKey, C_PrecompiledModule>,
+    private val preModules: ImmMap<C_ModuleKey, C_PrecompiledModule>,
 ): C_NsAsm_InternalAssembler(), C_NsAsm_AppAssembler {
     private val nsLinker = C_NsAsm_InternalNamespaceLinker(msgCtx.globalCtx.compilerOptions)
 
@@ -738,7 +738,7 @@ private class C_NsAsm_InternalAppAssembler(
         finish()
 
         val modules = moduleAsms.mapValues { (_, v) -> v.assemble() }
-        val nsModules = modules.mapValues { (_, v) -> v.ns }
+        val nsModules = modules.mapValuesToImmMap { (_, v) -> v.ns }
         val preImpModules = preModules.mapValuesToImmMap { (_, v) -> v.asmModule.impNs }
         val impModules = C_NsImp_ImportsProcessor.process(msgCtx, nsModules, preImpModules)
 
@@ -763,9 +763,9 @@ private class C_NsAsm_InternalAppAssembler(
         checkEquals(resModules.keys, rawModules.keys)
         checkEquals(Sets.intersection(rawModules.keys, preModules.keys), setOf<C_ModuleKey>())
 
-        val oldModules = preModules.mapValues { (_, v) -> v.asmModule }
+        val oldModules = preModules.mapValuesToImmMap { (_, v) -> v.asmModule }
         val newModules = rawModules.mapValues { (k, v) -> C_NsAsm_Module(v.rawNs, impModules.getValue(k), resModules.getValue(k)) }
-        return (oldModules + newModules).toImmMap()
+        return oldModules + newModules
     }
 }
 
@@ -784,7 +784,7 @@ private class C_NsAsm_ConflictsProcessor(
     sysNsProto: C_SysNsProto,
     private val stamp: R_AppUid,
 ) {
-    private val sysDefs: Map<R_Name, C_DeclarationType> = let {
+    private val sysDefs: ImmMap<R_Name, C_DeclarationType> = let {
         val mutSysDefs = mutableMapOf<R_Name, C_DeclarationType>()
 
         for (entry in sysNsProto.entries) {

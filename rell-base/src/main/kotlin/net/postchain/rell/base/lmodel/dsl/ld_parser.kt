@@ -25,12 +25,12 @@ object Ld_Parser {
             }
             is M_AstType_Function -> {
                 val ldResult = convertType(type.result, pos)
-                val ldParams = type.params.map { convertType(it, pos) }
+                val ldParams = type.params.mapToImmList { convertType(it, pos) }
                 Ld_Type_Function(ldResult, ldParams)
             }
             is M_AstType_Nullable -> Ld_Type_Nullable(convertType(type.valueType, pos))
             is M_AstType_Tuple -> {
-                val ldFields = type.fields.map { it.first to convertType(it.second, pos) }
+                val ldFields = type.fields.mapToImmList { it.first to convertType(it.second, pos) }
                 Ld_Type_Tuple(ldFields)
             }
         }

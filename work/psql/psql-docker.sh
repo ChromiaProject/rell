@@ -18,7 +18,7 @@ log() { echo "$(date -u +'%F %T.%3N') $1"; }
 
 init() {
     SLEEP=5
-    log "Speeping for ${SLEEP}s before init"
+    log "Sleeping for ${SLEEP}s before init"
     sleep $SLEEP
     log "Init start"
     PGPASSWORD=$PASSWORD "$MYDIR/psql-init.sh"

@@ -19,11 +19,12 @@ import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_Type_Function
 import net.postchain.rell.base.mtype.M_Type_Tuple
 import net.postchain.rell.base.mtype.M_Types
+import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.immSetOf
 import net.postchain.rell.base.utils.toImmSet
 
-class C_TypeHint private constructor(val mTypes: Set<M_Type>) {
+class C_TypeHint private constructor(val mTypes: ImmSet<M_Type>) {
     fun getFunctionType(): R_FunctionType? {
         return mTypes
             .mapNotNull { it as? M_Type_Function }
@@ -87,7 +88,7 @@ object C_TypeAdapter_IntegerToBigInteger: C_TypeAdapter() {
     }
 
     override fun adaptExprDb(expr: Db_Expr): Db_Expr {
-        return Db_CallExpr(R_BigIntegerType, Lib_Type_BigInteger.FromInteger_Db, listOf(expr))
+        return Db_CallExpr(R_BigIntegerType, Lib_Type_BigInteger.FromInteger_Db, immListOf(expr))
     }
 
     override fun toRAdapter(): R_TypeAdapter = R_TypeAdapter_IntegerToBigInteger
@@ -103,7 +104,7 @@ object C_TypeAdapter_IntegerToDecimal: C_TypeAdapter() {
     }
 
     override fun adaptExprDb(expr: Db_Expr): Db_Expr {
-        return Db_CallExpr(R_DecimalType, Lib_Type_Decimal.FromInteger_Db, listOf(expr))
+        return Db_CallExpr(R_DecimalType, Lib_Type_Decimal.FromInteger_Db, immListOf(expr))
     }
 
     override fun toRAdapter(): R_TypeAdapter = R_TypeAdapter_IntegerToDecimal
@@ -119,7 +120,7 @@ object C_TypeAdapter_BigIntegerToDecimal: C_TypeAdapter() {
     }
 
     override fun adaptExprDb(expr: Db_Expr): Db_Expr {
-        return Db_CallExpr(R_DecimalType, Lib_Type_Decimal.FromBigInteger_Db, listOf(expr))
+        return Db_CallExpr(R_DecimalType, Lib_Type_Decimal.FromBigInteger_Db, immListOf(expr))
     }
 
     override fun toRAdapter(): R_TypeAdapter = R_TypeAdapter_BigIntegerToDecimal

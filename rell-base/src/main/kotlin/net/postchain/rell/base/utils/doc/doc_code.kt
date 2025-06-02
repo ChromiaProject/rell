@@ -4,11 +4,12 @@
 
 package net.postchain.rell.base.utils.doc
 
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 import java.util.regex.Pattern
 
-class DocCode private constructor(private val tokens: List<DocCodeToken>) {
+class DocCode private constructor(private val tokens: ImmList<DocCodeToken>) {
     fun strCode(): String = tokens.joinToString("") { it.strCode() }
     fun strRaw(): String = tokens.joinToString("") { it.strRaw() }
 

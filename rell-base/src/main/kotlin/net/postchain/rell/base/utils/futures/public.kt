@@ -4,6 +4,8 @@
 
 package net.postchain.rell.base.utils.futures
 
+import net.postchain.rell.base.utils.ImmList
+
 interface FcPromise<T> {
     fun future(): FcFuture<T>
     fun setResult(value: T)
@@ -51,7 +53,7 @@ abstract class FcException(val code: String, msg: String): RuntimeException(msg)
 class FcBasicException(code: String, msg: String): FcException(code, msg)
 
 class FcCycleNode(val name: String, val attachment: Any?)
-class FcCycleException(code: String, msg: String, val nodes: List<FcCycleNode>): FcException(code, msg)
+class FcCycleException(code: String, msg: String, val nodes: ImmList<FcCycleNode>): FcException(code, msg)
 
 interface FcExecutor {
     fun <T> promise(): FcPromise<T>

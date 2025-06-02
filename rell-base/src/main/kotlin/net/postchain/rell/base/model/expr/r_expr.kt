@@ -117,14 +117,14 @@ class R_ConstantValueExpr(type: R_Type, private val value: Rt_Value): R_Expr(typ
     }
 }
 
-class R_TupleExpr(private val tupleType: R_TupleType, private val exprs: List<R_Expr>): R_Expr(tupleType) {
+class R_TupleExpr(private val tupleType: R_TupleType, private val exprs: ImmList<R_Expr>): R_Expr(tupleType) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val values = exprs.map { it.evaluate(frame) }
         return Rt_TupleValue(tupleType, values)
     }
 }
 
-class R_ListLiteralExpr(type: R_ListType, val exprs: List<R_Expr>): R_Expr(type) {
+class R_ListLiteralExpr(type: R_ListType, val exprs: ImmList<R_Expr>): R_Expr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val list = MutableList(exprs.size) { exprs[it].evaluate(frame) }
         return Rt_ListValue(type, list)
@@ -133,7 +133,7 @@ class R_ListLiteralExpr(type: R_ListType, val exprs: List<R_Expr>): R_Expr(type)
 
 class R_MapLiteralExpr(
     private val mapType: R_MapType,
-    private val entries: List<Pair<R_Expr, R_Expr>>,
+    private val entries: ImmList<Pair<R_Expr, R_Expr>>,
 ): R_Expr(mapType) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val map = mutableMapOf<Rt_Value, Rt_Value>()
@@ -291,7 +291,7 @@ sealed class R_WhenChooser {
     abstract fun choose(frame: Rt_CallFrame): Int?
 }
 
-class R_IterativeWhenChooser(val keyExpr: R_Expr, val exprs: List<IndexedValue<R_Expr>>, val elseIdx: Int?): R_WhenChooser() {
+class R_IterativeWhenChooser(val keyExpr: R_Expr, val exprs: ImmList<IndexedValue<R_Expr>>, val elseIdx: Int?): R_WhenChooser() {
     override fun choose(frame: Rt_CallFrame): Int? {
         val keyValue = keyExpr.evaluate(frame)
         for ((i, expr) in exprs) {
@@ -304,7 +304,7 @@ class R_IterativeWhenChooser(val keyExpr: R_Expr, val exprs: List<IndexedValue<R
     }
 }
 
-class R_LookupWhenChooser(val keyExpr: R_Expr, val map: Map<Rt_Value, Int>, val elseIdx: Int?): R_WhenChooser() {
+class R_LookupWhenChooser(val keyExpr: R_Expr, val map: ImmMap<Rt_Value, Int>, val elseIdx: Int?): R_WhenChooser() {
     override fun choose(frame: Rt_CallFrame): Int? {
         val keyValue = keyExpr.evaluate(frame)
         val idx = map[keyValue]
@@ -312,7 +312,7 @@ class R_LookupWhenChooser(val keyExpr: R_Expr, val map: Map<Rt_Value, Int>, val 
     }
 }
 
-class R_WhenExpr(type: R_Type, val chooser: R_WhenChooser, val exprs: List<R_Expr>): R_Expr(type) {
+class R_WhenExpr(type: R_Type, val chooser: R_WhenChooser, val exprs: ImmList<R_Expr>): R_Expr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val choice = chooser.choose(frame)
         check(choice != null)
@@ -360,7 +360,7 @@ sealed class R_CreateExpr(type: R_Type, private val rEntity: R_EntityDefinition)
 
         val recordsPerPage = max(globalCtx.sqlUpdatePortionSize / values.attrs.size, 1)
         val pages = ListUtils.partition(values.rows, recordsPerPage)
-        return pages.mapToImmList { InsertData(values.attrs, it) }
+        return pages.mapToImmList { InsertData(values.attrs, it.toImmList()) }
     }
 
     companion object {
@@ -458,9 +458,9 @@ sealed class R_CreateExpr(type: R_Type, private val rEntity: R_EntityDefinition)
         }
     }
 
-    class InsertRow(val rowidSql: ParameterizedSql, val values: List<Rt_Value>)
+    class InsertRow(val rowidSql: ParameterizedSql, val values: ImmList<Rt_Value>)
 
-    class InsertData(val attrs: List<R_Attribute>, val rows: List<InsertRow>) {
+    class InsertData(val attrs: ImmList<R_Attribute>, val rows: ImmList<InsertRow>) {
         init {
             for (row in rows) {
                 checkEquals(row.values.size, attrs.size)
@@ -471,12 +471,12 @@ sealed class R_CreateExpr(type: R_Type, private val rEntity: R_EntityDefinition)
 
 class R_RegularCreateExpr(
     rEntity: R_EntityDefinition,
-    val attrs: List<R_CreateExprAttr>,
+    val attrs: ImmList<R_CreateExprAttr>,
 ): R_CreateExpr(rEntity.type, rEntity) {
     override fun evaluateData(frame: Rt_CallFrame): InsertData {
-        val resAttrs = attrs.map { it.attr }
+        val resAttrs = attrs.mapToImmList { it.attr }
         val rowidSql = buildDefaultRowidSql(frame.sqlCtx)
-        val values = attrs.map { it.evaluate(frame) }
+        val values = attrs.mapToImmList { it.evaluate(frame) }
         val row = InsertRow(rowidSql, values)
         return InsertData(resAttrs, immListOf(row))
     }
@@ -496,7 +496,7 @@ class R_StructCreateExpr(
         val structValue = structExpr.evaluate(frame).asStruct()
         val attrs = structType.struct.attributesList
         val rowidSql = buildDefaultRowidSql(frame.sqlCtx)
-        val values = attrs.indices.map { structValue.get(it) }
+        val values = attrs.indices.mapToImmList { structValue.get(it) }
         val row = InsertRow(rowidSql, values)
         return InsertData(attrs, immListOf(row))
     }
@@ -517,10 +517,10 @@ class R_StructListCreateExpr(
         val listValue = listExpr.evaluate(frame).asList()
         val attrs = structType.struct.attributesList
         val rowidGen = getRowidGenerator(frame, listValue.size)
-        val rows = listValue.mapIndexed { index, value ->
+        val rows = listValue.mapIndexedToImmList { index, value ->
             val structValue = value.asStruct()
             val rowidSql = rowidGen(index)
-            val values = attrs.indices.map { i -> structValue.get(i) }
+            val values = attrs.indices.mapToImmList { i -> structValue.get(i) }
             InsertRow(rowidSql, values)
         }
         return InsertData(attrs, rows)
@@ -559,7 +559,7 @@ class R_StructListCreateExpr(
     }
 }
 
-class R_StructExpr(private val struct: R_Struct, private val attrs: List<R_CreateExprAttr>): R_Expr(struct.type) {
+class R_StructExpr(private val struct: R_Struct, private val attrs: ImmList<R_CreateExprAttr>): R_Expr(struct.type) {
     init {
         checkEquals(attrs.map { it.attr.index }.sorted(), struct.attributesList.indices.toList())
     }

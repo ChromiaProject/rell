@@ -18,6 +18,7 @@ import net.postchain.rell.base.lib.type.R_IntegerType
 import net.postchain.rell.base.lib.type.R_TextType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
+import net.postchain.rell.base.utils.immListOf
 
 sealed class V_CommonSubscriptKind(val resType: R_Type) {
     abstract fun compileR(pos: S_Pos, rBase: R_Expr, rKey: R_Expr): R_Expr
@@ -34,7 +35,7 @@ object V_CommonSubscriptKind_Text: V_CommonSubscriptKind(R_TextType) {
     override fun canBeDbExpr() = true
 
     override fun compileDb(pos: S_Pos, dbBase: Db_Expr, dbKey: Db_Expr): Db_Expr {
-        return Db_CallExpr(R_TextType, Lib_Type_Text.DB_SUBSCRIPT, listOf(dbBase, dbKey))
+        return Db_CallExpr(R_TextType, Lib_Type_Text.DB_SUBSCRIPT, immListOf(dbBase, dbKey))
     }
 }
 
@@ -44,7 +45,7 @@ object V_CommonSubscriptKind_ByteArray: V_CommonSubscriptKind(R_IntegerType) {
     override fun canBeDbExpr() = true
 
     override fun compileDb(pos: S_Pos, dbBase: Db_Expr, dbKey: Db_Expr): Db_Expr {
-        return Db_CallExpr(R_IntegerType, Lib_Type_ByteArray.DB_SUBSCRIPT, listOf(dbBase, dbKey))
+        return Db_CallExpr(R_IntegerType, Lib_Type_ByteArray.DB_SUBSCRIPT, immListOf(dbBase, dbKey))
     }
 }
 

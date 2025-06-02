@@ -91,7 +91,7 @@ class S_AttributeClause(
 class S_KeyIndexClause(
     private val pos: S_Pos,
     private val kind: R_KeyIndexKind,
-    private val attrs: List<S_AttributeDefinition>,
+    private val attrs: ImmList<S_AttributeDefinition>,
     private val comment: S_Comment?,
 ): S_RelClause() {
     override fun compile(ctx: C_EntityContext) {
@@ -202,12 +202,12 @@ abstract class S_BasicDefinition(base: S_DefinitionBase): S_Definition(base) {
     abstract fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>>
 }
 
-class S_EntityDefinition(
+class   S_EntityDefinition(
     base: S_DefinitionBase,
     private val deprecatedKwPos: S_Pos?,
     private val name: S_Name,
-    private val annotations: List<S_Name>,
-    private val body: List<S_RelClause>?,
+    private val annotations: ImmList<S_Name>,
+    private val body: ImmList<S_RelClause>?,
 ): S_BasicDefinition(base) {
     override fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
         ctx.checkNotReplOrTest(name.pos, C_DeclarationType.ENTITY)
@@ -433,15 +433,15 @@ class S_EntityDefinition(
 
     override fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder) {
         val sub = b.node(this, name, IdeOutlineNodeType.ENTITY)
-        for (clause in body ?: listOf()) {
+        for (clause in body.orEmpty()) {
             clause.ideBuildOutlineTree(sub)
         }
     }
 
     companion object {
-        private val HEADER_ENTITIES: Map<String, (C_SystemDefsCommon) -> R_EntityDefinition> = immMapOf(
-                C_Constants.BLOCK_ENTITY to { sysDefs: C_SystemDefsCommon -> sysDefs.blockEntity },
-                C_Constants.TRANSACTION_ENTITY to { sysDefs: C_SystemDefsCommon -> sysDefs.transactionEntity }
+        private val HEADER_ENTITIES: ImmMap<String, (C_SystemDefsCommon) -> R_EntityDefinition> = immMapOf(
+                C_Constants.BLOCK_ENTITY to { sysDefs -> sysDefs.blockEntity },
+                C_Constants.TRANSACTION_ENTITY to { sysDefs -> sysDefs.transactionEntity }
         )
 
         private val NAME_LEN_SWITCH = C_FeatureSwitch("0.12.0")
@@ -476,7 +476,7 @@ class S_EntityDefinition(
 class S_ObjectDefinition(
     base: S_DefinitionBase,
     private val name: S_Name,
-    private val attrs: List<S_AttributeClause>,
+    private val attrs: ImmList<S_AttributeClause>,
 ): S_BasicDefinition(base) {
     override fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
         ctx.checkNotExternal(name.pos, C_DeclarationType.OBJECT)
@@ -561,7 +561,7 @@ class S_StructDefinition(
     base: S_DefinitionBase,
     private val deprecatedKwPos: S_Pos?,
     private val name: S_Name,
-    private val attrs: List<S_AttributeClause>,
+    private val attrs: ImmList<S_AttributeClause>,
 ): S_BasicDefinition(base) {
     override fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
         if (deprecatedKwPos != null) {
@@ -644,7 +644,7 @@ class S_EnumValue(val name: S_Name, val comment: S_Comment?)
 class S_EnumDefinition(
     base: S_DefinitionBase,
     private val name: S_Name,
-    private val attrs: List<S_EnumValue>,
+    private val attrs: ImmList<S_EnumValue>,
 ): S_Definition(base) {
     override fun compile(ctx: S_DefinitionContext): C_MidModuleMember {
         val nameHand = name.compile(ctx.symCtx, def = true)
@@ -750,13 +750,13 @@ class S_NamespaceDefinition(
     base: S_DefinitionBase,
     private val bodyPosRange: S_PosRange,
     private val qualifiedName: S_QualifiedName?,
-    private val definitions: List<S_Definition>,
+    private val definitions: ImmList<S_Definition>,
 ): S_Definition(base) {
     override fun compile(ctx: S_DefinitionContext): C_MidModuleMember {
         val nameParts = mutableListOf<C_MidModuleMember_Namespace.NamePart>()
         var nsPath = ctx.namespacePath
 
-        for (name in qualifiedName?.parts ?: immListOf()) {
+        for (name in qualifiedName?.parts.orEmpty()) {
             val nameHand = name.compile(ctx.symCtx, def = true)
 
             val fullName = nsPath.qualifiedName(nameHand.rName)
@@ -794,7 +794,7 @@ class S_NamespaceDefinition(
 
     override fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder) {
         var sub = b
-        for (name in qualifiedName?.parts ?: immListOf()) {
+        for (name in qualifiedName?.parts.orEmpty()) {
             sub = sub.node(this, name, IdeOutlineNodeType.NAMESPACE)
         }
         for (def in definitions) {

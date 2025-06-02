@@ -14,6 +14,7 @@ import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.utils.ImmList
 import kotlin.math.min
 
 fun Boolean.toGtv(): Gtv = GtvFactory.gtv(this)
@@ -69,7 +70,7 @@ class Rt_ListComparator(private val elemComparator: Comparator<Rt_Value>): Compa
     }
 }
 
-class Rt_TupleComparator(private val elemComparators: List<Comparator<Rt_Value>>): Comparator<Rt_Value> {
+class Rt_TupleComparator(private val elemComparators: ImmList<Comparator<Rt_Value>>): Comparator<Rt_Value> {
     override fun compare(a: Rt_Value, b: Rt_Value): Int {
         val t1 = a.asTuple()
         val t2 = b.asTuple()

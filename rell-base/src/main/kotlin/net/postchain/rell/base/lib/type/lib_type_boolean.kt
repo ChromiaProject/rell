@@ -16,6 +16,7 @@ import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
+import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.immSetOf
 import org.jooq.impl.SQLDataType
 
@@ -75,7 +76,7 @@ class Rt_BooleanValue private constructor(val value: Boolean): Rt_Value() {
         val TRUE: Rt_Value = Rt_BooleanValue(true)
         val FALSE: Rt_Value = Rt_BooleanValue(false)
 
-        val ALL_VALUES: Set<Rt_Value> = immSetOf(FALSE, TRUE)
+        val ALL_VALUES: ImmSet<Rt_Value> = immSetOf(FALSE, TRUE)
 
         fun get(value: Boolean): Rt_Value {
             return if (value) TRUE else FALSE

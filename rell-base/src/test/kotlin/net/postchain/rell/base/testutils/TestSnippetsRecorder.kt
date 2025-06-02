@@ -98,7 +98,7 @@ object TestSnippetsRecorder {
     }
 
     private fun makeComments(cRes: C_CompilationResult): ImmMap<String, String> {
-        return cRes.app?.let { C_DocUtils.getAllComments(it) } ?: immMapOf()
+        return cRes.app?.let { C_DocUtils.getAllComments(it) }.orEmpty()
     }
 
     private fun addSnippet(snippetFilePath: String, snippet: IdeCodeSnippet) {

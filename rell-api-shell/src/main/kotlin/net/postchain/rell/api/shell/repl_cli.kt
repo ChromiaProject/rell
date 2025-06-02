@@ -14,6 +14,7 @@ import net.postchain.rell.base.runtime.Rt_GtvModuleArgsSource
 import net.postchain.rell.base.runtime.Rt_RellVersion
 import net.postchain.rell.base.runtime.Rt_RellVersionProperty
 import net.postchain.rell.base.sql.SqlManager
+import net.postchain.rell.base.utils.toImmMap
 import org.apache.commons.lang3.StringUtils
 import java.io.File
 
@@ -45,7 +46,7 @@ object ReplShell {
             sqlMgr,
             projExt,
             outChannel,
-            Rt_GtvModuleArgsSource(options.moduleArgs, options.compilerOptions),
+            Rt_GtvModuleArgsSource(options.moduleArgs.toImmMap(), options.compilerOptions),
         )
 
         val repl = ReplInterpreter.create(config)

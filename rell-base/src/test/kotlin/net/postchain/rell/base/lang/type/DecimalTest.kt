@@ -8,6 +8,7 @@ import net.postchain.rell.base.lib.type.Lib_DecimalMath
 import net.postchain.rell.base.lib.type.Rt_DecimalValue
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.toImmList
 import org.junit.Test
 import java.math.BigInteger
@@ -509,7 +510,7 @@ class DecimalTest: BaseRellTest() {
         val ADD_TEST_CASES = makeAddCases()
         val SUB_TEST_CASES = makeSubCases()
 
-        private fun makeAddCases(): List<DecAddCase> {
+        private fun makeAddCases(): ImmList<DecAddCase> {
             val list = BigIntegerTest.makeAddCases().toMutableList()
             val d = DecVals()
             addCase(list, "+", "12.34", "56.78", "69.12")
@@ -521,7 +522,7 @@ class DecimalTest: BaseRellTest() {
             return list.toImmList()
         }
 
-        private fun makeSubCases(): List<DecAddCase> {
+        private fun makeSubCases(): ImmList<DecAddCase> {
             val list = BigIntegerTest.makeSubCases().toMutableList()
             val d = DecVals()
             addCase(list, "-", "12.34", "56.78", "-44.44")

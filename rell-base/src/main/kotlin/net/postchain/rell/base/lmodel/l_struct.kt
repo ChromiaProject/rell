@@ -8,6 +8,7 @@ import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_Struct
 import net.postchain.rell.base.mtype.M_Type
+import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.futures.FcFuture
@@ -23,9 +24,9 @@ class L_StructAttribute(
 class L_Struct(
     val simpleName: R_Name,
     val rStruct: R_Struct,
-    private val attributesFuture: FcFuture<Map<String, L_StructAttribute>>,
+    private val attributesFuture: FcFuture<ImmMap<String, L_StructAttribute>>,
 ) {
-    val docMembers: Map<String, DocDefinition> get() = attributesFuture.getResult()
+    val docMembers: ImmMap<String, DocDefinition> get() = attributesFuture.getResult()
 }
 
 class L_NamespaceMember_Struct(

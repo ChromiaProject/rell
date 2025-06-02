@@ -350,7 +350,7 @@ private fun printValueDiff(printer: Rt_Printer, diff: Map<List<String>, Pair<Rt_
             }
         } else {
             val (key, pair) = subMap.entries.first()
-            val pathStr = (basePath + immListOf(key)).joinToString("")
+            val pathStr = (basePath + key).joinToString("")
             printer.print("    $pathStr")
             val (v1, v2) = pair
             if (v1 != null) printer.print("        expected: ${valueToStr(v1, valueTrunc)}")
@@ -493,7 +493,7 @@ private fun getValueDiffMap(
 
 private fun valueToStr(v: Rt_Value, truncate: Int): String = Rt_AssertEqualsError.valueToStr(v, truncate)
 
-class UnitTestMatcher private constructor(private val patterns: List<Pattern>) {
+class UnitTestMatcher private constructor(private val patterns: ImmList<Pattern>) {
     fun matchFunction(defName: R_DefinitionName): Boolean {
         if (match(defName.simpleName) || match(defName.qualifiedName) || match(defName.module)) {
             return true

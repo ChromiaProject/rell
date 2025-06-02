@@ -51,7 +51,7 @@ private class M_Type_Tuple_Internal(
     fieldTypes: ImmList<M_Type>,
     fieldNames: ImmList<String?>,
 ): M_Type_Tuple(fieldTypes, fieldNames) {
-    override val canonicalArgs: List<M_TypeSet> = fieldTypes.mapToImmList { M_TypeSets.one(it) }
+    override val canonicalArgs: ImmList<M_TypeSet> = fieldTypes.mapToImmList { M_TypeSets.one(it) }
 
     override fun strCode(): String {
         return fieldNames.indices.joinToString(",", "(", ")") { i ->

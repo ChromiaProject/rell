@@ -31,7 +31,7 @@ inline fun <reified T> Boolean.iffArray(vararg whenTrue: T): Array<out T> = if (
 
 class T_App(
     val rApp: R_App,
-    val messages: List<C_Message>,
+    val messages: ImmList<C_Message>,
     val sourceDir: C_SourceDir,
 )
 
@@ -142,7 +142,7 @@ class RellTestEval {
     fun <T> wrapRt(code: () -> T): T {
         return if (wrapping) {
             val p = RellTestUtils.catchRtErr0(code)
-            lastErrorStack = p.first?.stack ?: listOf()
+            lastErrorStack = p.first?.stack.orEmpty()
             result(Pair(p.first?.res, p.second))
         } else {
             code()

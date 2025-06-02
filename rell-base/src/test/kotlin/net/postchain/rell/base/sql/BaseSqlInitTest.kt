@@ -8,8 +8,7 @@ import net.postchain.rell.base.testutils.BaseContextTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.SqlTestUtils
-import net.postchain.rell.base.utils.CommonUtils
-import net.postchain.rell.base.utils.immSetOf
+import net.postchain.rell.base.utils.*
 import kotlin.test.assertEquals
 
 abstract class BaseSqlInitTest: BaseContextTest(useSql = true) {
@@ -183,9 +182,9 @@ abstract class BaseSqlInitTest: BaseContextTest(useSql = true) {
             sqlExec.connection { con ->
                 val map = SqlTestUtils.dumpTablesStructure(con)
                 map.mapValues { (table, cols) ->
-                    val idxList = if (!indexes) listOf() else {
+                    val idxList = if (!indexes) immListOf() else {
                         val idxs = SqlUtils.getTableIndexes(con, con.schema, table)
-                        idxs.sortedWith(::compareIndexes).map(::indexToStr)
+                        idxs.sortedWith(::compareIndexes).mapToImmList(::indexToStr)
                     }
                     TableDump(cols, idxList)
                 }
@@ -207,5 +206,5 @@ abstract class BaseSqlInitTest: BaseContextTest(useSql = true) {
         return d
     }
 
-    private class TableDump(val cols: Map<String, String>, val indexes: List<String>)
+    private class TableDump(val cols: ImmMap<String, String>, val indexes: ImmList<String>)
 }

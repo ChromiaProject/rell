@@ -38,7 +38,7 @@ object MTestParser {
         return parse0(scope, code, MTestGrammar.typeParam) { ctx, s -> s.compile(ctx) }
     }
 
-    fun parseTypeParams(code: String, scope: MTestScope): List<M_TypeParam> {
+    fun parseTypeParams(code: String, scope: MTestScope): ImmList<M_TypeParam> {
         return parse0(scope, code, MTestGrammar.typeParams) { ctx, s -> MsTypeParam.compileAll(ctx, s) }
     }
 
@@ -48,9 +48,9 @@ object MTestParser {
         }
     }
 
-    fun parseFunctionCall(code: String, scope: MTestScope): Pair<List<M_Type>, M_Type?> {
+    fun parseFunctionCall(code: String, scope: MTestScope): Pair<ImmList<M_Type>, M_Type?> {
         return parse0(scope, code, MTestGrammar.funCall) { ctx, s ->
-            val args = s.first.map { it.compile(ctx).type }
+            val args = s.first.mapToImmList { it.compile(ctx).type }
             val res = s.second?.compile(ctx)?.type
             args to res
         }
@@ -68,8 +68,8 @@ object MTestParser {
     }
 }
 
-data class MTestParsedType(val type: M_Type, val params: Set<M_TypeParam>)
-data class MTestParsedSet(val set: M_TypeSet, val params: Set<M_TypeParam>)
+data class MTestParsedType(val type: M_Type, val params: ImmSet<M_TypeParam>)
+data class MTestParsedSet(val set: M_TypeSet, val params: ImmSet<M_TypeParam>)
 
 private object MTestGrammar: M_TypeGrammar<MsType>() {
     private val AT by literalToken("@")
@@ -112,21 +112,21 @@ private object MTestGrammar: M_TypeGrammar<MsType>() {
     private val typeDefParams by -LT * typeParams * -GT
 
     private val parentType by name * optional(-LT * separatedTerms(type, COMMA) * -GT) map { (name, args) ->
-        MsParentType(name, args ?: listOf())
+        MsParentType(name, args.orEmpty().toImmList())
     }
 
     val typeDef by name * optional(typeDefParams) * optional(-COLON * parentType) map { (name, params, parent) ->
-        MsTypeDef(name, params ?: listOf(), parent)
+        MsTypeDef(name, params.orEmpty().toImmList(), parent)
     }
 
     private val annotation by -AT * name
 
-    private val funParam by zeroOrMore(annotation) * type map { (anns, type) -> MsFunParam(anns, type) }
+    private val funParam by zeroOrMore(annotation) * type map { (anns, type) -> MsFunParam(anns.toImmList(), type) }
     private val funParams by -LPAREN * separatedTerms(funParam, COMMA, true) * -RPAREN
 
     val funHeader by optional(-LT * typeParams * -GT) * funParams * -COLON * type map {
         (typeParams, params, result) ->
-        MsFunHeader(typeParams ?: listOf(), params, result)
+        MsFunHeader(typeParams.orEmpty().toImmList(), params.toImmList(), result)
     }
 
     val funCall by separatedTerms(type, COMMA, true) * optional(-COLON * type) map { (args, res) -> args to res }
@@ -138,10 +138,12 @@ private object MTestGrammarUtils {
     fun convertType(type: M_AstType): MsType {
         return when (type) {
             is M_AstType_Name -> MsType_Name(type.name)
-            is M_AstType_Function -> MsType_Function(convertType(type.result), type.params.map { convertType(it) })
-            is M_AstType_Generic -> MsType_Generic(type.name, type.args.map { convertTypeSet(it) })
+            is M_AstType_Function -> MsType_Function(
+                convertType(type.result),
+                type.params.mapToImmList { convertType(it) })
+            is M_AstType_Generic -> MsType_Generic(type.name, type.args.mapToImmList { convertTypeSet(it) })
             is M_AstType_Nullable -> MsType_Nullable(convertType(type.valueType))
-            is M_AstType_Tuple -> MsType_Tuple(type.fields.map { it.first to convertType(it.second) })
+            is M_AstType_Tuple -> MsType_Tuple(type.fields.mapToImmList { it.first to convertType(it.second) })
         }
     }
 
@@ -155,7 +157,7 @@ private object MTestGrammarUtils {
     }
 }
 
-private class MsTypeCtx(val types: Map<String, MTestTypeDef>) {
+private class MsTypeCtx(val types: ImmMap<String, MTestTypeDef>) {
     fun nested(types: Map<String, MTestTypeDef>): MsTypeCtx {
         return MsTypeCtx(types = this.types + types)
     }
@@ -186,7 +188,7 @@ private class MsTypeSet_Range(private val lower: MsType?, private val upper: MsT
         val pLower = lower?.compile(ctx)
         val pUpper = upper?.compile(ctx)
         return when {
-            pLower == null && pUpper == null -> MTestParsedSet(M_TypeSets.ALL, setOf())
+            pLower == null && pUpper == null -> MTestParsedSet(M_TypeSets.ALL, immSetOf())
             pLower != null -> MTestParsedSet(M_TypeSets.superOf(pLower.type), pLower.params)
             pUpper != null -> MTestParsedSet(M_TypeSets.subOf(pUpper.type), pUpper.params)
             else -> throw IllegalStateException("$pLower, $pUpper")
@@ -203,11 +205,11 @@ private class MsType_Name(private val name: String): MsType() {
         val typeDef = ctx.types[name]
         return if (typeDef != null) {
             val mType = typeDef.mType(listOf())
-            MTestParsedType(mType, setOfNotNull(typeDef.typeParam()))
+            MTestParsedType(mType, immSetOfNotNull(typeDef.typeParam()))
         } else if (name.matches(Regex("[A-Z][0-9]?"))) {
             val param = M_TypeParam(name)
             val mType = M_Types.param(param)
-            MTestParsedType(mType, setOf(param))
+            MTestParsedType(mType, immSetOf(param))
         } else {
             throw IllegalStateException("Unknown type: $name")
         }
@@ -222,7 +224,7 @@ private class MsType_Nullable(private val valueType: MsType): MsType() {
     }
 }
 
-private class MsType_Tuple(private val fields: List<Pair<String?, MsType>>): MsType() {
+private class MsType_Tuple(private val fields: ImmList<Pair<String?, MsType>>): MsType() {
     override fun compile(ctx: MsTypeCtx): MTestParsedType {
         val fieldNames = M_TupleTypeUtils.makeNames(fields) { it.first }
         val pFieldTypes = fields.map { it.second.compile(ctx) }
@@ -233,22 +235,22 @@ private class MsType_Tuple(private val fields: List<Pair<String?, MsType>>): MsT
     }
 }
 
-private class MsType_Generic(private val name: String, private val args: List<MsTypeSet>): MsType() {
+private class MsType_Generic(private val name: String, private val args: ImmList<MsTypeSet>): MsType() {
     override fun compile(ctx: MsTypeCtx): MTestParsedType {
         val typeDef = ctx.types.getValue(name)
         val pTypeArgs = args.map { it.compile(ctx) }
         val typeArgs = pTypeArgs.map { it.set }
-        val params = pTypeArgs.flatMap { it.params }.toSet()
+        val params = pTypeArgs.flatMap { it.params }.toImmSet()
         return MTestParsedType(typeDef.mType(typeArgs), params)
     }
 }
 
-private class MsType_Function(private val result: MsType, private val params: List<MsType>): MsType() {
+private class MsType_Function(private val result: MsType, private val params: ImmList<MsType>): MsType() {
     override fun compile(ctx: MsTypeCtx): MTestParsedType {
         val pParams = params.map { it.compile(ctx) }
         val pResult = result.compile(ctx)
         val mType = M_Types.function(pResult.type, pParams.map { it.type })
-        val typeParams = (listOf(pResult) + pParams).flatMap { it.params }.toSet()
+        val typeParams = (listOf(pResult) + pParams).flatMap { it.params }.toImmSet()
         return MTestParsedType(mType, typeParams)
     }
 }
@@ -278,7 +280,7 @@ private class MsTypeParam(
     }
 }
 
-private class MsParentType(private val name: String, private val args: List<MsType>) {
+private class MsParentType(private val name: String, private val args: ImmList<MsType>) {
     fun compile(ctx: MsTypeCtx): M_GenericTypeParent {
         val typeDef = ctx.types.getValue(name)
         val genType = checkNotNull(typeDef.genericType()) { name }
@@ -289,7 +291,7 @@ private class MsParentType(private val name: String, private val args: List<MsTy
 
 private class MsTypeDef(
     private val name: String,
-    private val params: List<MsTypeParam>,
+    private val params: ImmList<MsTypeParam>,
     private val parent: MsParentType?,
 ) {
     fun compile(ctx: MsTypeCtx): M_GenericType {
@@ -300,7 +302,7 @@ private class MsTypeDef(
     }
 }
 
-private class MsFunParam(private val annotations: List<String>, private val type: MsType) {
+private class MsFunParam(private val annotations: ImmList<String>, private val type: MsType) {
     fun compile(ctx: MsTypeCtx, name: String): M_FunctionParam {
         val annMap = MsParamAnn.entries.map { it.name.lowercase() to it }.toImmMap()
         val anns = annotations.map { annMap.getValue(it) }.toImmSet()
@@ -320,7 +322,7 @@ private class MsFunParam(private val annotations: List<String>, private val type
     }
 }
 
-private class MsFunHeader(val typeParams: List<MsTypeParam>, val params: List<MsFunParam>, val result: MsType) {
+private class MsFunHeader(val typeParams: ImmList<MsTypeParam>, val params: ImmList<MsFunParam>, val result: MsType) {
     fun compile(ctx: MsTypeCtx): M_FunctionHeader {
         val mTypeParams = MsTypeParam.compileAll(ctx, typeParams)
         val subCtx = ctx.nestedTypeParams(mTypeParams)

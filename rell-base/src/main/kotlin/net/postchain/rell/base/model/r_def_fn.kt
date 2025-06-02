@@ -17,13 +17,10 @@ import net.postchain.rell.base.model.stmt.R_Statement
 import net.postchain.rell.base.model.stmt.R_StatementResult_Return
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.toGtv
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.associateByToImmMap
-import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
-import net.postchain.rell.base.utils.immListOf
 
 class R_FunctionParam(
     val name: R_Name,
@@ -49,7 +46,7 @@ sealed class R_RoutineDefinition(
     abstract fun params(): List<R_FunctionParam>
     abstract fun call(callCtx: Rt_CallContext, args: List<Rt_Value>): Rt_Value
 
-    override fun getDocMembers0(): Map<String, DocDefinition> {
+    override fun getDocMembers0(): ImmMap<String, DocDefinition> {
         val params = params()
         return params.associateByToImmMap { it.name.str }
     }
@@ -69,7 +66,7 @@ class R_OperationDefinition(
 
     private val internals = C_LateInit(C_CompilerPass.EXPRESSIONS, ERROR_INTERNALS)
 
-    fun setInternals(params: List<R_FunctionParam>, paramVars: List<R_ParamVar>, body: R_Statement, frame: R_CallFrame) {
+    fun setInternals(params: ImmList<R_FunctionParam>, paramVars: ImmList<R_ParamVar>, body: R_Statement, frame: R_CallFrame) {
         checkEquals(paramVars.size, params.size)
         internals.set(Internals(params, paramVars, body, frame))
     }
@@ -114,8 +111,8 @@ class R_OperationDefinition(
     }
 
     private class Internals(
-        val params: List<R_FunctionParam>,
-        val paramVars: List<R_ParamVar>,
+        val params: ImmList<R_FunctionParam>,
+        val paramVars: ImmList<R_ParamVar>,
         val body: R_Statement,
         val frame: R_CallFrame,
     )
@@ -220,7 +217,7 @@ class R_QueryDefinition(
     }
 }
 
-class R_FunctionHeader(val type: R_Type, val params: List<R_FunctionParam>) {
+class R_FunctionHeader(val type: R_Type, val params: ImmList<R_FunctionParam>) {
     companion object {
         val ERROR = R_FunctionHeader(R_CtErrorType, immListOf())
     }
@@ -228,8 +225,8 @@ class R_FunctionHeader(val type: R_Type, val params: List<R_FunctionParam>) {
 
 class R_FunctionBody(
     val type: R_Type,
-    val params: List<R_FunctionParam>,
-    val paramVars: List<R_ParamVar>,
+    val params: ImmList<R_FunctionParam>,
+    val paramVars: ImmList<R_ParamVar>,
     val body: R_Statement,
     val frame: R_CallFrame,
 ) {

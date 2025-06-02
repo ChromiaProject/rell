@@ -4,9 +4,7 @@
 
 package net.postchain.rell.base.mtype
 
-import net.postchain.rell.base.utils.One
-import net.postchain.rell.base.utils.associateWithToImmMap
-import net.postchain.rell.base.utils.toImmMap
+import net.postchain.rell.base.utils.*
 
 fun interface M_TypeParamMatchHandler {
     fun accept(param: M_TypeParam, type: M_Type, rel: M_TypeMatchRelation)
@@ -16,8 +14,8 @@ data class M_TypeParamMatch(val type: M_Type, val rel: M_TypeMatchRelation) {
     override fun toString() = "${type.strCode()}:$rel"
 }
 
-class M_TypeParamsResolver(private val params: List<M_TypeParam>) {
-    private val refMap: Map<M_TypeParam, MutableSet<M_TypeParamMatch>> = params
+class M_TypeParamsResolver(private val params: ImmList<M_TypeParam>) {
+    private val refMap: ImmMap<M_TypeParam, MutableSet<M_TypeParamMatch>> = params
         .associateWithToImmMap { mutableSetOf() }
 
     fun allParamsMatched(): Boolean {
@@ -76,7 +74,7 @@ class M_TypeParamsResolver(private val params: List<M_TypeParam>) {
 
     companion object {
         fun resolveTypeParams(
-            typeParams: List<M_TypeParam>,
+            typeParams: ImmList<M_TypeParam>,
             patternType: M_Type,
             actualType: M_Type,
         ): Map<M_TypeParam, M_Type>? {

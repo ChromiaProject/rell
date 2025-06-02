@@ -49,7 +49,7 @@ enum class S_BinaryOp(val code: String, val op: C_BinOp) {
                 listOf(MUL, DIV, MOD)
         )
 
-        private val PRECEDENCE_MAP: Map<S_BinaryOp, Int> = let {
+        private val PRECEDENCE_MAP: ImmMap<S_BinaryOp, Int> = let {
             val m = mutableMapOf<S_BinaryOp, Int>()
 
             for ((level, ops) in PRECEDENCE_LEVELS.withIndex()) {
@@ -692,7 +692,7 @@ object C_BinOp_Elvis: C_BinOp() {
 
 class S_BinaryExprTail(val op: S_PosValue<S_BinaryOp>, val expr: S_Expr)
 
-class S_BinaryExpr(val head: S_Expr, val tail: List<S_BinaryExprTail>): S_Expr(head.startPos) {
+class S_BinaryExpr(val head: S_Expr, val tail: ImmList<S_BinaryExprTail>): S_Expr(head.startPos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val queue = LinkedList(tail)
         val tree = buildTree(head, queue, 0)

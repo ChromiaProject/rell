@@ -14,6 +14,7 @@ import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.expr.R_RegularCreateExpr
 import net.postchain.rell.base.model.expr.R_StructCreateExpr
 import net.postchain.rell.base.model.expr.R_StructListCreateExpr
+import net.postchain.rell.base.utils.mapToImmList
 
 sealed class V_CreateExpr(
         exprCtx: C_ExprContext,
@@ -37,7 +38,7 @@ class V_RegularCreateExpr(
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("create", null)
 
     override fun toRExpr0(): R_Expr {
-        val rAttrs = (attrs.explicitAttrs + attrs.implicitAttrs).map { it.toRAttr() }
+        val rAttrs = (attrs.explicitAttrs + attrs.implicitAttrs).mapToImmList { it.toRAttr() }
         return R_RegularCreateExpr(entity, rAttrs)
     }
 }

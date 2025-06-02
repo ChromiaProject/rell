@@ -20,10 +20,7 @@ import net.postchain.rell.base.lib.type.R_MapType
 import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.checkEquals
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.*
 
 class C_ExtendableFunctionDescriptor(
     val uid: R_ExtendableFunctionUid,
@@ -40,7 +37,7 @@ class C_FunctionExtensions(
     val extensions: ImmList<R_FunctionExtension>,
 ) {
     fun toR(): R_FunctionExtensions {
-        val allExts = if (base == null) extensions else (extensions + listOf(base)).toImmList()
+        val allExts = if (base == null) extensions else extensions + base
         return R_FunctionExtensions(uid, allExts)
     }
 }
@@ -98,8 +95,10 @@ class C_ExtendableUserGlobalFunction(
             is R_MapType -> R_ExtendableFunctionCombiner_Map(resType)
             R_CtErrorType -> R_ExtendableFunctionCombiner_Unit
             else -> {
-                msgCtx.error(typePos, "fn:extendable:type:${resType.strCode()}",
-                        "Invalid type for extendable function: ${resType.str()}")
+                msgCtx.error(
+                    typePos, "fn:extendable:type:${resType.strCode()}",
+                    "Invalid type for extendable function: ${resType.str()}"
+                )
                 R_ExtendableFunctionCombiner_Unit
             }
         }
@@ -111,7 +110,7 @@ class C_ExtendableFunctionCompiler(oldState: C_FunctionExtensionsTable?) {
     private var done = false
 
     init {
-        for (fn in oldState?.list ?: listOf()) {
+        for (fn in oldState?.list.orEmpty()) {
             fns.add(C_ExtFnEntry(fn.uid, fn.base, fn.extensions))
         }
     }

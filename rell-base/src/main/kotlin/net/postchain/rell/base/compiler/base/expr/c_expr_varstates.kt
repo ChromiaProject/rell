@@ -166,7 +166,7 @@ sealed class C_VarStatesDelta {
 }
 
 private class C_VarStatesDelta_Impl(
-    private val map: Map<C_VarId, C_VarStateDelta>,
+    private val map: ImmMap<C_VarId, C_VarStateDelta>,
 ): C_VarStatesDelta() {
     override fun isEmpty() = map.isEmpty()
 

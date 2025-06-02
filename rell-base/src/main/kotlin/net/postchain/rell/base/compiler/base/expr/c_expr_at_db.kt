@@ -206,7 +206,7 @@ class C_AtFrom_Entities(
     }
 
     private fun compileTopColAggr(details: C_AtDetails, cBase: C_AtExprBase): V_Expr {
-        val dbWhat = cBase.what.map { field ->
+        val dbWhat = cBase.what.mapToImmList { field ->
             val flags = field.flags.update(omit = false, sort = null, group = null, aggregate = null)
             field.update(resultType = field.expr.type, flags = flags, summarization = null)
         }
@@ -222,7 +222,7 @@ class C_AtFrom_Entities(
     private fun createTopColAggrInner(
         details: C_AtDetails,
         cBase: C_AtExprBase,
-        what: List<V_DbAtWhatField>,
+        what: ImmList<V_DbAtWhatField>,
         itemType: R_TupleType,
     ): V_Expr {
         val cBlock = innerBlkCtx.buildBlock()
@@ -299,7 +299,7 @@ class C_AtFrom_Entities(
     }
 
     private fun compileBase(details: C_AtDetails): C_AtExprBase {
-        val vFromItems = items.map { it.compile() }
+        val vFromItems = items.mapToImmList { it.compile() }
         val vFrom = V_DbAtExprFrom(vFromItems, fromBlock)
         val whatFields = details.base.what.getMaterialFields()
         return C_AtExprBase(
@@ -330,18 +330,18 @@ class C_AtFrom_Entities(
 
     private class C_AtExprBase(
         private val from: V_DbAtExprFrom,
-        val what: List<V_DbAtWhatField>,
+        val what: ImmList<V_DbAtWhatField>,
         private val where: V_Expr?,
         private val isMany: Boolean,
     ) {
-        private val innerExprs = (what.map { it.expr } + listOfNotNull(where)).toImmList()
+        private val innerExprs = what.mapToImmList { it.expr } + listOfNotNull(where)
 
-        private val refAtExprIds: Set<R_AtExprId> by lazy {
+        private val refAtExprIds: ImmSet<R_AtExprId> by lazy {
             innerExprs.flatMap { it.info.dependsOnAtExprs }.toImmSet()
         }
 
         fun update(
-            what: List<V_DbAtWhatField> = this.what,
+            what: ImmList<V_DbAtWhatField> = this.what,
             where: V_Expr? = this.where,
             isMany: Boolean = this.isMany,
         ) = C_AtExprBase(

@@ -18,6 +18,7 @@ import net.postchain.rell.base.lib.type.R_SetType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.*
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.mapNotNullToImmList
@@ -42,7 +43,7 @@ class S_UpdateFromItem(
 
 class S_UpdateTarget_Simple(
     private val cardinality: R_AtCardinality,
-    private val from: List<S_UpdateFromItem>,
+    private val from: ImmList<S_UpdateFromItem>,
     private val where: S_AtExprWhere,
 ): S_UpdateTarget() {
     override fun compile(
@@ -54,7 +55,7 @@ class S_UpdateTarget_Simple(
         val cAtEntities = compileFromEntities(ctx, atExprId, from)
         cAtEntities ?: return null
 
-        val rAtEntities = cAtEntities.map { it.toRAtEntity() }
+        val rAtEntities = cAtEntities.mapToImmList { it.toRAtEntity() }
         val entity = rAtEntities[0]
         val extraEntities = rAtEntities.subList(1, rAtEntities.size)
 
@@ -213,7 +214,7 @@ class S_UpdateStatement(
     startPos: S_Pos,
     endPos: S_Pos,
     val target: S_UpdateTarget,
-    val what: List<S_UpdateWhat>,
+    val what: ImmList<S_UpdateWhat>,
 ): S_Statement(startPos, endPos) {
     override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
         ctx.checkDbUpdateAllowed(startPos)
@@ -246,7 +247,7 @@ class S_UpdateStatement(
             target: R_UpdateTarget,
             entity: R_EntityDefinition,
             subValues: MutableList<V_Expr>
-    ): List<R_UpdateStatementWhat> {
+    ): ImmList<R_UpdateStatementWhat> {
         val args = what.mapIndexed { i, w ->
             val nameHand = w.name?.compile(ctx, def = true)
             if (nameHand != null) {

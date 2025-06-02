@@ -32,7 +32,7 @@ class L_TypeDefFlags(
 )
 
 class L_TypeDefMembers(val all: ImmList<L_TypeDefMember>) {
-    val docMembers: Map<String, DocDefinition> by lazy {
+    val docMembers: ImmMap<String, DocDefinition> by lazy {
         all
             .groupBy { it.symName }
             .flatMap { (name, defs) ->
@@ -41,7 +41,7 @@ class L_TypeDefMembers(val all: ImmList<L_TypeDefMember>) {
             .toImmMap()
     }
 
-    fun replaceTypeParams(map: Map<M_TypeParam, M_TypeSet>): L_TypeDefMembers {
+    fun replaceTypeParams(map: ImmMap<M_TypeParam, M_TypeSet>): L_TypeDefMembers {
         val replace = ReplaceState(map)
         val resAll = all.mapNotNullToImmList { member ->
             replaceTypeParamsCache(replace, member)
@@ -49,7 +49,7 @@ class L_TypeDefMembers(val all: ImmList<L_TypeDefMember>) {
         return L_TypeDefMembers(resAll)
     }
 
-    private class ReplaceState(val map: Map<M_TypeParam, M_TypeSet>) {
+    private class ReplaceState(val map: ImmMap<M_TypeParam, M_TypeSet>) {
         val cache = mutableMapOf<L_TypeDefMember, L_TypeDefMember?>()
     }
 
@@ -156,7 +156,7 @@ class L_TypeDef(
                 parent.typeDef.allMembers.replaceTypeParams(typeArgs)
             }
 
-            val allMems = (members.all + parentMembers.all).toImmList()
+            val allMems = members.all + parentMembers.all
             L_TypeDefMembers(allMems)
         }
     }

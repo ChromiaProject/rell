@@ -229,7 +229,7 @@ class SqlArgs(private val values: ImmList<Rt_Value>) {
     }
 }
 
-class SqlSelect(val pSql: ParameterizedSql, val resultTypes: List<R_Type>) {
+class SqlSelect(val pSql: ParameterizedSql, val resultTypes: ImmList<R_Type>) {
     fun execute(sqlExec: SqlExecutor): List<List<Rt_Value>> {
         return execute(sqlExec) { it }
     }

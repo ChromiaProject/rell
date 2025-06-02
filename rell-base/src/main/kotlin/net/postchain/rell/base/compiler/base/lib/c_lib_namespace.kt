@@ -18,8 +18,8 @@ import net.postchain.rell.base.utils.ide.IdeCompletion
 
 class C_LibNamespace private constructor(
     private val namePath: C_RFullNamePath,
-    private val namespaces: Map<R_Name, C_LibNestedNamespace>,
-    private val members: Map<R_Name, C_NamespaceMember>,
+    private val namespaces: ImmMap<R_Name, C_LibNestedNamespace>,
+    private val members: ImmMap<R_Name, C_NamespaceMember>,
 ) {
     fun toSysNsProto(): C_SysNsProto {
         val b = C_SysNsProtoBuilder()
@@ -147,7 +147,7 @@ class C_LibNamespace private constructor(
             val fn = C_LibFunctionUtils.makeGlobalFunction(naming, libCases)
 
             val ideInfo = libCases.first().ideInfo
-            val ideComps = cases.map { it.ideCompletion }
+            val ideComps = cases.mapToImmList { it.ideCompletion }
             return memberFactory.function(fullName.last, fn, ideInfo, C_MemberRestrictions.NULL, ideComps)
         }
 
@@ -185,13 +185,13 @@ class C_LibNamespace private constructor(
             val resPath = namespaces.first().namePath
 
             val namespaceNames = namespaces.flatMap { it.namespaces.keys }.toImmSet()
-            val resNamespaces = namespaceNames.associateWith { name ->
+            val resNamespaces = namespaceNames.associateWithToImmMap { name ->
                 val mems = namespaces.mapNotNull { it.namespaces[name] }
                 mergeNamespaces(mems)
             }
 
             val memberNames = namespaces.flatMap { it.members.keys }.toImmSet()
-            val resMembers = memberNames.associateWith { name ->
+            val resMembers = memberNames.associateWithToImmMap { name ->
                 val mems = namespaces.mapNotNull { it.members[name] }
                 val resMem = mems.singleOrNull()
                 checkNotNull(resMem) { "Namespace member conflict: $resPath $name (${mems.size})" }

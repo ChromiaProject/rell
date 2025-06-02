@@ -537,7 +537,9 @@ class ExternalModuleTest: BaseRellTest(useSql = true) {
         fun initExternalChain(tst: RellCodeTester, chainId: Long, inserts: List<String>, dropTables: Boolean = false) {
             val t = RellCodeTester(tst.tstCtx)
             for ((path, code) in tst.files()) t.file(path, code)
-            for ((alias, chain) in tst.chainDependencies()) t.chainDependency(alias, chain.first.toHex(), chain.second)
+            for ((alias, chain) in tst.chainDependencies()) {
+                t.chainDependency(alias, chain.first.toHex(), chain.second)
+            }
             t.chainId = chainId
             t.dropTables = dropTables
             t.insert(inserts)

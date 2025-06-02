@@ -17,7 +17,7 @@ import net.postchain.rell.base.utils.*
 
 class C_TypeMemberReplacement(
     val selfType: M_Type?,
-    val map: Map<M_TypeParam, M_TypeSet>,
+    val map: ImmMap<M_TypeParam, M_TypeSet>,
 ) {
     fun isEmpty(): Boolean = selfType == null && map.isEmpty()
 }
@@ -106,14 +106,14 @@ sealed class C_LibTypeMembers<MemberT: C_TypeMember> {
 private class C_LibTypeMembers_Simple<MemberT: C_TypeMember>(
     private val allMembers: ImmList<MemberT>,
 ): C_LibTypeMembers<MemberT>() {
-    private val byNameMembers: Map<R_Name, List<MemberT>> by lazy {
+    private val byNameMembers: ImmMap<R_Name, ImmList<MemberT>> by lazy {
         this.allMembers
             .mapNotNull { if (it.optionalName == null) null else (it.optionalName to it) }
             .groupBy({ it.first }, { it.second })
             .mapValuesToImmMap { it.value.toImmList() }
     }
 
-    private val memberValues: List<MemberT> by lazy {
+    private val memberValues: ImmList<MemberT> by lazy {
         this.allMembers
             .filterToImmList { it.isValue() }
     }
@@ -121,11 +121,11 @@ private class C_LibTypeMembers_Simple<MemberT: C_TypeMember>(
     override fun isEmpty() = allMembers.isEmpty()
     override fun getAll() = allMembers
     override fun getValues() = memberValues
-    override fun getByName(name: R_Name) = byNameMembers[name] ?: immListOf()
+    override fun getByName(name: R_Name) = byNameMembers[name].orEmpty()
 }
 
 private class C_LibTypeMembers_Combined<MemberT: C_TypeMember>(
-    private val parts: List<C_LibTypeMembers<MemberT>>,
+    private val parts: ImmList<C_LibTypeMembers<MemberT>>,
 ): C_LibTypeMembers<MemberT>() {
     init {
         for (part in parts) {
@@ -133,11 +133,11 @@ private class C_LibTypeMembers_Combined<MemberT: C_TypeMember>(
         }
     }
 
-    private val allMembersLazy: List<MemberT> by lazy {
+    private val allMembersLazy: ImmList<MemberT> by lazy {
         parts.flatMapToImmList { it.getAll() }
     }
 
-    private val memberValuesLazy: List<MemberT> by lazy {
+    private val memberValuesLazy: ImmList<MemberT> by lazy {
         parts.flatMapToImmList { it.getValues() }
     }
 

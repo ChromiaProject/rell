@@ -40,7 +40,7 @@ class C_QualifiedName(val parts: ImmList<C_Name>) {
 
     constructor(name: C_Name): this(immListOf(name))
 
-    fun add(name: C_Name) = C_QualifiedName((parts + name).toImmList())
+    fun add(name: C_Name) = C_QualifiedName(parts + name)
     fun parentPath() = parts.dropLast(1).toImmList()
     fun toRName() = R_QualifiedName(parts.mapToImmList { it.rName })
     fun toPath() = C_RNamePath.of(parts.mapToImmList { it.rName })

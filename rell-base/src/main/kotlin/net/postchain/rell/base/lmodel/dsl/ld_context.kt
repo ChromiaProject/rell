@@ -32,7 +32,7 @@ class Ld_ModuleContext(
         members.put(qualifiedName, future)
     }
 
-    fun finish(imports: Map<R_ModuleName, L_Module>): Ld_NamespaceFinishContext {
+    fun finish(imports: ImmMap<R_ModuleName, L_Module>): Ld_NamespaceFinishContext {
         check(!finished)
         finished = true
 
@@ -54,7 +54,7 @@ class Ld_ModuleContext(
     }
 
     companion object {
-        private val PREDEF_TYPES: Map<String, L_AbstractTypeDef> =
+        private val PREDEF_TYPES: ImmMap<String, L_AbstractTypeDef> =
                 immMapOf(
                     "anything" to M_Types.ANYTHING,
                     "nothing" to M_Types.NOTHING,
@@ -86,7 +86,7 @@ class Ld_NamespaceContext(
         moduleCtx.declareMember(qualifiedName, future)
     }
 
-    fun finish(imports: Map<R_ModuleName, L_Module>): Ld_NamespaceFinishContext {
+    fun finish(imports: ImmMap<R_ModuleName, L_Module>): Ld_NamespaceFinishContext {
         check(namePath.parts.isEmpty()) // Allowed only on root context.
         return moduleCtx.finish(imports)
     }
@@ -95,9 +95,9 @@ class Ld_NamespaceContext(
 class Ld_ModuleFinishContext(
     val moduleName: R_ModuleName,
     val modCfg: Ld_ModuleConfig,
-    val predefTypes: Map<String, L_AbstractTypeDef>,
-    val imports: Map<R_ModuleName, L_Module>,
-    val members: Map<R_QualifiedName, FcFuture<List<L_NamespaceMember>>>,
+    val predefTypes: ImmMap<String, L_AbstractTypeDef>,
+    val imports: ImmMap<R_ModuleName, L_Module>,
+    val members: ImmMap<R_QualifiedName, FcFuture<List<L_NamespaceMember>>>,
 )
 
 class Ld_NamespaceFinishContext(
@@ -176,7 +176,7 @@ class Ld_NamespaceFinishContext(
             val fullName = R_FullName(modCtx.moduleName, qualifiedName)
             cycle = listOf(fullName, fullName)
         } else if (cycle.last() != cycle.first()) {
-            cycle = cycle + listOf(cycle.first())
+            cycle = cycle + cycle.first()
         }
 
         val names = cycle.map { it.str() }
@@ -195,20 +195,20 @@ class Ld_NamespaceFinishContext(
 
     fun getNamespaceMembers(qualifiedName: R_QualifiedName): List<L_NamespaceMember> {
         val future = modCtx.members[qualifiedName]
-        return future?.getResult() ?: immListOf()
+        return future?.getResult().orEmpty()
     }
 }
 
 class Ld_TypeFinishContext(
     val defCtx: Ld_NamespaceFinishContext,
-    private val typeParams: Map<R_Name, M_Type>,
+    private val typeParams: ImmMap<R_Name, M_Type>,
 ) {
     val modCfg = defCtx.modCfg
 
     fun subCtx(typeParams: Map<R_Name, M_Type>): Ld_TypeFinishContext {
         return if (typeParams.isEmpty()) this else {
             val resTypeParams = this.typeParams.unionNoConflicts(typeParams)
-            Ld_TypeFinishContext(defCtx, typeParams = resTypeParams)
+            Ld_TypeFinishContext(defCtx, typeParams = resTypeParams.toImmMap())
         }
     }
 

@@ -7,6 +7,7 @@ package net.postchain.rell.base.runtime
 import com.google.common.io.Resources
 import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.runtime.utils.Rt_Utils
+import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.immMapOf
 import net.postchain.rell.base.utils.toImmMap
@@ -27,9 +28,9 @@ enum class Rt_RellVersionProperty(val key: String) {
 }
 
 class Rt_RellVersion private constructor(
-        val properties: Map<Rt_RellVersionProperty, String>,
-        val rtProperties: Map<Rt_Value, Rt_Value>,
-        val buildDescriptor: String
+    val properties: ImmMap<Rt_RellVersionProperty, String>,
+    val rtProperties: ImmMap<Rt_Value, Rt_Value>,
+    val buildDescriptor: String
 ) {
     companion object {
         private val PROPS = immMapOf(
@@ -59,7 +60,7 @@ class Rt_RellVersion private constructor(
             return Rt_RellVersion(properties, rtProperties, buildDescriptor)
         }
 
-        private fun getRtProperties(raw: Map<String, String>): Map<Rt_RellVersionProperty, String> {
+        private fun getRtProperties(raw: Map<String, String>): ImmMap<Rt_RellVersionProperty, String> {
             val ps = mutableMapOf<Rt_RellVersionProperty, String>()
 
             for ((rawKey, prop) in PROPS) {

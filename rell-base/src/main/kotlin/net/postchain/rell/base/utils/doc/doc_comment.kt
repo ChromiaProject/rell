@@ -11,7 +11,7 @@ class DocComment(
     val description: String,
     val tags: ImmMap<DocCommentTag, ImmList<DocCommentItem>>,
 ) {
-    private val itemMap: ImmMap<ItemKey, List<DocCommentItem>> by lazy {
+    private val itemMap: ImmMap<ItemKey, ImmList<DocCommentItem>> by lazy {
         tags
             .flatMap { tag ->
                 tag.value.mapToImmList { item -> ItemKey(tag.key, item.key) to item }
@@ -43,9 +43,9 @@ class DocComment(
         return parts.joinToString("|")
     }
 
-    fun getItems(tag: DocCommentTag, key: String?): List<DocCommentItem> {
+    fun getItems(tag: DocCommentTag, key: String?): ImmList<DocCommentItem> {
         val itemKey = ItemKey(tag, key)
-        return itemMap[itemKey] ?: immListOf()
+        return itemMap[itemKey].orEmpty()
     }
 
     override fun toString() = strCode()
@@ -77,7 +77,7 @@ sealed class DocCommentTag(
         val SEE = predef("see", "See Also", multi = true)
         val SINCE = predef("since", "Since")
 
-        val ALL: List<DocCommentTag> = immListOf(AUTHOR, PARAM, RETURN, THROWS, SEE, SINCE)
+        val ALL: ImmList<DocCommentTag> = immListOf(AUTHOR, PARAM, RETURN, THROWS, SEE, SINCE)
 
         private fun predef(
             code: String,
@@ -154,7 +154,7 @@ object DocCommentParser {
     private val TAG_PATTERN = Pattern.compile("^\\s*(?:[*] )?@([A-Za-z0-9_]+)(?=\\s|$)", Pattern.MULTILINE)
     private val KEY_PATTERN = Pattern.compile("^\\s*(\\S+)(\\s|$)")
 
-    private val BUILTIN_TAGS: Map<String, DocCommentTag> = DocCommentTag.ALL.associateByToImmMap { it.code }
+    private val BUILTIN_TAGS: ImmMap<String, DocCommentTag> = DocCommentTag.ALL.associateByToImmMap { it.code }
 
     fun parse(
         text: String,

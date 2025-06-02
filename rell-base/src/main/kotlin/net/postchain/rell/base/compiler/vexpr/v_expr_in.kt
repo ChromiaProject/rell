@@ -12,6 +12,7 @@ import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
+import net.postchain.rell.base.utils.mapToImmList
 
 class V_InCollectionExpr(
     exprCtx: C_ExprContext,
@@ -51,7 +52,7 @@ class V_InCollectionExpr(
 
         return if (right.info.dependsOnDbAtEntity) {
             if (right is V_ListLiteralExpr) {
-                val dbRights = right.elems.map { it.toDbExpr() }
+                val dbRights = right.elems.mapToImmList { it.toDbExpr() }
                 Db_InExpr(dbLeft, dbRights, not)
             } else {
                 val dbRight = right.toDbExpr()

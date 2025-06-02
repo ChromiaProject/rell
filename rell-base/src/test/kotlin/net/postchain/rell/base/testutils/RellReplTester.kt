@@ -10,6 +10,8 @@ import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.repl.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.SqlManager
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.toImmList
 import java.io.File
 import java.util.*
 import kotlin.test.assertEquals
@@ -65,8 +67,8 @@ class RellReplTester(
         outChannelFactory.chk(*expected)
     }
 
-    class TestReplInputChannelFactory(private val input: List<String>): ReplInputChannelFactory {
-        constructor(vararg input: String): this(input.toList())
+    class TestReplInputChannelFactory(private val input: ImmList<String>): ReplInputChannelFactory {
+        constructor(vararg input: String): this(input.toImmList())
 
         override fun createInputChannel(historyFile: File?): ReplInputChannel {
             return TestReplInputChannel()

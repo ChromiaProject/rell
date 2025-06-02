@@ -7,14 +7,17 @@ package net.postchain.rell.base.model.expr
 import net.postchain.rell.base.compiler.base.core.C_Types
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.Rt_CallFrame
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.partitionMap
+import net.postchain.rell.base.utils.toImmList
 
-class Db_WhenCase(val conds: List<Db_Expr>, val expr: Db_Expr)
+class Db_WhenCase(val conds: ImmList<Db_Expr>, val expr: Db_Expr)
 
 class Db_WhenExpr(
     type: R_Type,
     private val keyExpr: Db_Expr?,
-    private val cases: List<Db_WhenCase>,
+    private val cases: ImmList<Db_WhenCase>,
     private val elseExpr: Db_Expr,
 ): Db_Expr(type) {
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
@@ -32,7 +35,7 @@ class Db_WhenExpr(
             return redExpr
         }
 
-        val redCases = internalCases.map { (redCond, expr) ->
+        val redCases = internalCases.mapToImmList { (redCond, expr) ->
             val redExpr = expr.toRedExpr(frame)
             RedDb_WhenCase(redCond, redExpr)
         }
@@ -129,7 +132,7 @@ class Db_WhenExpr(
 
 private class RedDb_WhenCase(val cond: RedDb_Expr, val expr: RedDb_Expr)
 
-private class RedDb_WhenExpr(val cases: List<RedDb_WhenCase>, val elseExpr: RedDb_Expr): RedDb_Expr() {
+private class RedDb_WhenExpr(val cases: ImmList<RedDb_WhenCase>, val elseExpr: RedDb_Expr): RedDb_Expr() {
     override fun needsEnclosing() = false
 
     override fun toSql0(ctx: SqlGenContext, bld: SqlBuilder) {

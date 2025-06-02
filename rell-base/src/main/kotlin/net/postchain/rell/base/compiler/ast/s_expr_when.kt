@@ -82,7 +82,7 @@ sealed class S_WhenCondition {
     )
 }
 
-class S_WhenConditionExpr(val exprs: List<S_Expr>): S_WhenCondition() {
+class S_WhenConditionExpr(val exprs: ImmList<S_Expr>): S_WhenCondition() {
     override fun compileBad(ctx: C_ExprContext) {
         for (expr in exprs) {
             expr.compileOpt(ctx)
@@ -193,7 +193,7 @@ class S_WhenExprCase(val cond: S_WhenCondition, val expr: S_Expr)
 class S_WhenExpr(
     pos: S_Pos,
     val expr: S_Expr?,
-    val cases: List<S_WhenExprCase>,
+    val cases: ImmList<S_WhenExprCase>,
 ): S_Expr(pos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val conds = cases.map { it.cond }
@@ -215,7 +215,7 @@ class S_WhenExpr(
         return C_ValueExpr(vResExpr)
     }
 
-    private fun compileExprs(ctx: C_ExprContext, caseStates: List<C_VarStatesDelta>): Pair<R_Type, List<V_Expr>> {
+    private fun compileExprs(ctx: C_ExprContext, caseStates: List<C_VarStatesDelta>): Pair<R_Type, ImmList<V_Expr>> {
         val vRawExprs = cases.mapIndexedToImmList { i, case ->
             case.expr.compileWithVarStates(ctx, caseStates[i]).vExpr()
         }

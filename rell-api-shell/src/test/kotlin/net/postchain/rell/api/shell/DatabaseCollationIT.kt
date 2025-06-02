@@ -4,6 +4,7 @@ import net.postchain.common.exception.UserMistake
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.gtx.RellApiRunTests
 import net.postchain.rell.base.testutils.RellReplTester
+import net.postchain.rell.base.utils.immListOf
 import org.junit.Test
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
@@ -74,7 +75,7 @@ class DatabaseCollationIT {
         val shellConfig = RellApiRunShell.Config.Builder()
             .compileConfig(compileConfig)
             .databaseUrl(databaseUrl)
-            .inputChannelFactory(RellReplTester.TestReplInputChannelFactory(listOf()))
+            .inputChannelFactory(RellReplTester.TestReplInputChannelFactory(immListOf()))
             .build()
         RellApiRunShell.runShell(shellConfig, File("../work/testproj/src"), "repl.company")
     }

@@ -15,6 +15,8 @@ import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.*
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.immListOf
 
 class C_AssignOp(val pos: S_Pos, val code: String, val rOp: R_BinaryOp, val dbOp: Db_BinaryOp?)
 
@@ -57,7 +59,7 @@ class C_Destination_Simple(private val rDstExpr: R_DestinationExpr): C_Destinati
 class C_Destination_EntityAttr(
         private val base: V_Expr,
         private val rEntity: R_EntityDefinition,
-        private val path: List<C_EntityAttrRef>,
+        private val path: ImmList<C_EntityAttrRef>,
         private val attr: R_Attribute,
 ): C_Destination() {
     override fun type() = attr.type
@@ -90,10 +92,10 @@ class C_Destination_EntityAttr(
         val rTarget = R_UpdateTarget_Expr_One(atEntity, extraAtEntities, where, rBaseVarExpr, cLambda.rLambda)
         val dbSrcVarExpr = srcVar.toRef(rFromBlock.uid).toDbExpr()
         val rWhat = S_UpdateWhat.makeRWhat(atEntity, attr, dbSrcVarExpr, op?.dbOp)
-        val rUpdateStmt = R_UpdateStatement(rTarget, rFromBlock, listOf(rWhat))
+        val rUpdateStmt = R_UpdateStatement(rTarget, rFromBlock, immListOf(rWhat))
 
         val rBaseExpr = base.toRExpr()
-        val lambdaArgs = listOf(
+        val lambdaArgs = immListOf(
                 rBaseExpr to baseVar.toRef(lambdaBlkCtx.blockUid).ptr,
                 srcExpr to srcVar.toRef(lambdaBlkCtx.blockUid).ptr
         )
@@ -170,9 +172,9 @@ class C_Destination_ObjectAttr(
         val rTarget = R_UpdateTarget_Object(rAtEntity)
         val dbSrcVarExpr = srcVar.toRef(rFromBlock.uid).toDbExpr()
         val rWhat = S_UpdateWhat.makeRWhat(rAtEntity, attr, dbSrcVarExpr, op?.dbOp)
-        val rUpdateStmt = R_UpdateStatement(rTarget, rFromBlock, listOf(rWhat))
+        val rUpdateStmt = R_UpdateStatement(rTarget, rFromBlock, immListOf(rWhat))
 
-        val lambdaArgs = listOf(
+        val lambdaArgs = immListOf(
                 srcExpr to srcVar.toRef(rLambdaBlock.uid).ptr
         )
 

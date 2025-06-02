@@ -12,11 +12,8 @@ import net.postchain.rell.base.lmodel.L_TypeDefParent
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.mtype.M_ParamArity
-import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletionParam
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
 
 abstract class DocDeclaration {
     val code: DocCode by lazy { getCode0() }
@@ -29,7 +26,7 @@ abstract class DocDeclaration {
     final override fun toString() = code.strCode()
 
     class Completion(
-        val params: List<IdeCompletionParam>?,
+        val params: ImmList<IdeCompletionParam>?,
         val result: String?,
     )
 
@@ -440,7 +437,7 @@ class DocDeclaration_Function(
     docModifiers: DocModifiers,
     private val simpleName: R_Name,
     private val header: DocFunctionHeader,
-    private val params: List<DocDeclaration>,
+    private val params: ImmList<DocDeclaration>,
     private val hasBody: Boolean? = null,
 ): DocDeclaration_Annotated(docModifiers) {
     init {
@@ -499,8 +496,8 @@ class DocDeclaration_SpecialFunction(
 class DocDeclaration_Operation(
     modifiers: DocModifiers,
     private val simpleName: R_Name,
-    private val paramNames: List<String>,
-    private val params: List<DocDeclaration>,
+    private val paramNames: ImmList<String>,
+    private val params: ImmList<DocDeclaration>,
 ): DocDeclaration_Annotated(modifiers) {
     override fun getCompletion0(): Completion {
         val paramsMap = params.mapIndexed { i, param -> paramNames[i] to param }.toImmMap()
@@ -519,8 +516,8 @@ class DocDeclaration_Query(
     modifiers: DocModifiers,
     private val simpleName: R_Name,
     private val resultType: DocType,
-    private val paramNames: List<String>,
-    private val params: List<DocDeclaration>,
+    private val paramNames: ImmList<String>,
+    private val params: ImmList<DocDeclaration>,
 ): DocDeclaration_Annotated(modifiers) {
     override fun getCompletion0(): Completion {
         val paramsMap = params.mapIndexed { i, param -> paramNames[i] to param }.toImmMap()
@@ -539,7 +536,7 @@ class DocDeclaration_Query(
 
 class DocDeclaration_Type(
     private val simpleName: R_Name,
-    private val typeParams: List<DocTypeParam>,
+    private val typeParams: ImmList<DocTypeParam>,
     private val lParent: L_TypeDefParent?,
     private val flags: L_TypeDefFlags,
 ): DocDeclaration() {
@@ -582,9 +579,9 @@ class DocDeclaration_Type(
 
 class DocDeclaration_TypeConstructor(
     private val simpleName: R_Name,
-    private val typeParams: List<DocTypeParam>,
-    private val paramNames: List<String>,
-    private val params: List<DocDeclaration>,
+    private val typeParams: ImmList<DocTypeParam>,
+    private val paramNames: ImmList<String>,
+    private val params: ImmList<DocDeclaration>,
     private val deprecated: C_Deprecated?,
     private val pure: Boolean,
 ): DocDeclaration() {
@@ -622,7 +619,7 @@ class DocDeclaration_TypeSpecialConstructor: DocDeclaration() {
 
 class DocDeclaration_TypeExtension(
     private val simpleName: R_Name,
-    private val typeParams: List<DocTypeParam>,
+    private val typeParams: ImmList<DocTypeParam>,
     private val selfType: DocType,
 ): DocDeclaration() {
     override fun getCode0(): DocCode {
@@ -774,7 +771,7 @@ private class DocAnnotationArg_Value(private val value: DocValue?): DocAnnotatio
 
 class DocModifier_Annotation(
     private val simpleName: R_Name,
-    private val args: List<DocAnnotationArg>,
+    private val args: ImmList<DocAnnotationArg>,
 ): DocModifier() {
     override fun genCode(b: DocCode.Builder) {
         b.raw("@")
@@ -794,7 +791,7 @@ class DocModifier_Annotation(
 }
 
 class DocModifiers private constructor(
-    private val modifiers: List<DocModifier>,
+    private val modifiers: ImmList<DocModifier>,
 ) {
     fun isDeprecated(): Boolean = DocModifier.DEPRECATED in modifiers
 
@@ -812,7 +809,7 @@ class DocModifiers private constructor(
             return make(list)
         }
 
-        fun make(modifiers: List<DocModifier>): DocModifiers {
+        fun make(modifiers: ImmList<DocModifier>): DocModifiers {
             return if (modifiers.isEmpty()) NONE else DocModifiers(modifiers)
         }
     }
@@ -876,7 +873,7 @@ private object DocDecUtils {
         type: DocType? = null,
         params: Map<String, DocDeclaration>? = null,
     ): DocDeclaration.Completion {
-        val ideParams = params?.map { (name, param) ->
+        val ideParams = params?.mapToImmList { (name, param) ->
             val code = C_IdeCompletionsUtils.docCodeToStr(param.code)
             IdeCompletionParam(name, code)
         }

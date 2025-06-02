@@ -83,9 +83,9 @@ class L_FunctionParam(
 }
 
 abstract class L_CommonFunctionHeader(
-    val params: List<L_FunctionParam>,
+    val params: ImmList<L_FunctionParam>,
 ) {
-    private val paramsMap: Map<R_Name, L_FunctionParam> by lazy {
+    private val paramsMap: ImmMap<R_Name, L_FunctionParam> by lazy {
         params.associateByToImmMap { it.name }
     }
 
@@ -96,7 +96,7 @@ abstract class L_CommonFunctionHeader(
 
 class L_FunctionHeader(
     val mHeader: M_FunctionHeader,
-    params: List<L_FunctionParam>,
+    params: ImmList<L_FunctionParam>,
 ): L_CommonFunctionHeader(params) {
     val typeParams = mHeader.typeParams
     val resultType = mHeader.resultType
@@ -134,7 +134,7 @@ class L_FunctionHeader(
 
         val params2 = params.mapIndexedOrSame { i, param ->
             param.replaceMParam(mHeader2.params[i])
-        }
+        }.toImmList()
 
         return if (mHeader2 === mHeader && params2 === params) this else L_FunctionHeader(mHeader2, params2)
     }
@@ -142,7 +142,7 @@ class L_FunctionHeader(
 
 class L_FunctionParamsMatch(
     private val mMatch: M_FunctionParamsMatch,
-    val actualParams: List<L_FunctionParam>,
+    val actualParams: ImmList<L_FunctionParam>,
     val argMatching: C_ArgMatching,
 ) {
     fun matchArgs(argTypes: List<M_Type>, expectedResultType: M_Type?): L_FunctionHeaderMatch? {
@@ -170,8 +170,8 @@ class L_FunctionParamsMatch(
 
 class L_FunctionHeaderMatch(
     val actualHeader: L_FunctionHeader,
-    val adapters: List<C_TypeAdapter>,
-    val typeArgs: Map<R_Name, M_Type>,
+    val adapters: ImmList<C_TypeAdapter>,
+    val typeArgs: ImmMap<R_Name, M_Type>,
 )
 
 class L_FunctionFlags(
@@ -185,7 +185,7 @@ class L_Function(
     val flags: L_FunctionFlags,
     val body: L_FunctionBody,
 ) {
-    val docMembers: Map<String, DocDefinition> by lazy {
+    val docMembers: ImmMap<String, DocDefinition> by lazy {
         header.params.associateByToImmMap { it.name.str }
     }
 
@@ -218,7 +218,7 @@ class L_FunctionBodyMeta(
     val callPos: S_Pos,
     val rSelfType: R_Type,
     val rResultType: R_Type,
-    val rTypeArgs: Map<String, R_Type>,
+    val rTypeArgs: ImmMap<String, R_Type>,
 ) {
     fun typeArg(name: String): R_Type {
         return rTypeArgs.getValue(name)

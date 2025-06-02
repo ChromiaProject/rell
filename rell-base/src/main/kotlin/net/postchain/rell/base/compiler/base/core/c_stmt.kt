@@ -24,14 +24,11 @@ import net.postchain.rell.base.model.stmt.*
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_TypeParamsResolver
 import net.postchain.rell.base.mtype.M_Types
-import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDeclaration_Variable
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
-import net.postchain.rell.base.utils.foldSimple
-import net.postchain.rell.base.utils.mapView
-import net.postchain.rell.base.utils.toImmList
 
 class C_Statement(
     val rStmt: R_Statement,
@@ -246,7 +243,7 @@ class C_TupleVarDeclarator(
 
     override fun compile(rExprType: R_Type?): Result {
         val subResults = compileSub(rExprType)
-        val rSubDeclarators = subResults.map { it.rDeclarator }
+        val rSubDeclarators = subResults.mapToImmList { it.rDeclarator }
         val varStatesDelta = subResults.fold(C_VarStatesDelta.EMPTY) { d, res -> d.and(res.varStatesDelta) }
         return Result(R_TupleVarDeclarator(rSubDeclarators), varStatesDelta)
     }

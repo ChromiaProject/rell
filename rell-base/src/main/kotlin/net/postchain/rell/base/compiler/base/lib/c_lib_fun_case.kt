@@ -27,7 +27,7 @@ object C_LibFuncCaseUtils {
     fun makeGlobalCase(
         naming: C_MemberNaming,
         lFunction: L_Function,
-        outerTypeArgs: Map<R_Name, M_Type>,
+        outerTypeArgs: ImmMap<R_Name, M_Type>,
         restrictions: C_MemberRestrictions,
         ideInfo: C_IdeSymbolInfo,
     ): C_LibFuncCase<V_GlobalFunctionCall> {
@@ -68,7 +68,7 @@ class C_LibFuncCaseCtx(val linkPos: S_Pos, val fullNameLazy: LazyString) {
 abstract class C_LibFuncCase<CallT: V_FunctionCall>(
     val ideInfo: C_IdeSymbolInfo,
 ) {
-    abstract val argIdeInfos: Map<R_Name, C_IdeSymbolInfo>
+    abstract val argIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo>
 
     abstract fun getSpecificName(selfType: R_Type): String
     abstract fun getCallTypeHints(selfType: R_Type): C_CallTypeHints
@@ -147,7 +147,7 @@ abstract class C_LibFuncCase<CallT: V_FunctionCall>(
                 res.putAll(case.ideGetParameterCompletions())
             }
             return res.asMap()
-                .mapValues { it.value.toSet().toList() }
+                .mapValues { it.value.distinct() }
                 .toImmMultimap()
         }
     }
@@ -172,7 +172,7 @@ abstract class C_LibPartialCallTargetMatch<CallT: V_FunctionCall>(val exact: Boo
 }
 
 private class C_GenericFuncCaseCtx(
-    val outerTypeArgs: Map<R_Name, M_Type>,
+    val outerTypeArgs: ImmMap<R_Name, M_Type>,
     val header: C_LibFunctionHeader,
 )
 
@@ -180,7 +180,7 @@ private class C_LibFunctionHeader(val lHeader: L_FunctionHeader) {
     val mHeader: M_FunctionHeader = lHeader.mHeader
 
     val bindParams: C_ArgMatchParams by lazy {
-        val paramList = lHeader.params.mapIndexed { i, param -> C_ArgMatchParam(i, param.name, param.arity, null) }
+        val paramList = lHeader.params.mapIndexedToImmList { i, param -> C_ArgMatchParam(i, param.name, param.arity, null) }
         C_ArgMatchParams(paramList)
     }
 
@@ -218,10 +218,10 @@ private class C_CaseMatchBase(
 }
 
 private class C_LibMatchParams(
-    val actualParams: List<L_FunctionParam>,
+    val actualParams: ImmList<L_FunctionParam>,
     private val cHeader: C_LibFunctionHeader,
-    private val args: List<V_ExprWrapper>,
-    private val adapters: List<C_TypeAdapter>,
+    private val args: ImmList<V_ExprWrapper>,
+    private val adapters: ImmList<C_TypeAdapter>,
     private val argMatching: C_ArgMatching,
     private val namedArg: C_Name?,
 ) {
@@ -262,7 +262,7 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
     ideInfo: C_IdeSymbolInfo,
     protected val restrictions: C_MemberRestrictions,
 ): C_LibFuncCase<CallT>(ideInfo) {
-    override val argIdeInfos: Map<R_Name, C_IdeSymbolInfo> by lazy {
+    override val argIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo> by lazy {
         lFunction.header.params.associateToImmMap {
             it.name to C_IdeSymbolInfo.direct(IdeSymbolKind.EXPR_CALL_ARG, null, null, it.docSymbol)
         }
@@ -285,7 +285,7 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
 
     protected abstract fun makePartTarget(
         matchBase: C_CaseMatchBase,
-        params: List<L_FunctionParam>,
+        params: ImmList<L_FunctionParam>,
         minParams: Int,
         cFn: C_SysFunction,
     ): C_LibPartialCallTarget_Common<CallT>
@@ -319,7 +319,7 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
         vArgExprs ?: return null
         checkEquals(vArgExprs.size, paramsMatch.argMatching.mapping.size)
 
-        val vArgExprWrappers = vArgExprs.mapIndexed { i, arg ->
+        val vArgExprWrappers = vArgExprs.mapIndexedToImmList { i, arg ->
             val paramIndex = paramsMatch.argMatching.exprsToParams[i]
             val param = paramsMatch.actualParams[paramIndex]
             if (param.nullable) arg.asNullable() else arg.asWrapper()
@@ -586,7 +586,7 @@ private class C_GlobalLibFuncCase(
     ideInfo: C_IdeSymbolInfo,
     restrictions: C_MemberRestrictions,
     private val naming: C_MemberNaming,
-    private val outerTypeArgs: Map<R_Name, M_Type>,
+    private val outerTypeArgs: ImmMap<R_Name, M_Type>,
 ): C_CommonLibFuncCase<V_GlobalFunctionCall>(lFunction, ideInfo, restrictions) {
     private val cHeader = C_LibFunctionHeader(lFunction.header)
 
@@ -625,7 +625,7 @@ private class C_GlobalLibFuncCase(
 
     override fun makePartTarget(
         matchBase: C_CaseMatchBase,
-        params: List<L_FunctionParam>,
+        params: ImmList<L_FunctionParam>,
         minParams: Int,
         cFn: C_SysFunction,
     ): C_LibPartialCallTarget_Common<V_GlobalFunctionCall> {
@@ -688,7 +688,7 @@ private class C_MemberLibFuncCase(
 
     override fun makePartTarget(
         matchBase: C_CaseMatchBase,
-        params: List<L_FunctionParam>,
+        params: ImmList<L_FunctionParam>,
         minParams: Int,
         cFn: C_SysFunction,
     ): C_LibPartialCallTarget_Common<V_MemberFunctionCall> {
@@ -777,7 +777,7 @@ private class C_GlobalLibFuncCaseMatch(
     matchParams: C_LibMatchParams,
     private val cFn: C_SysFunction,
     private val ideInfo: C_IdeSymbolInfo,
-    private val argIdeInfos: Map<R_Name, C_IdeSymbolInfo>,
+    private val argIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo>,
 ): C_NormalLibFuncCaseMatch<V_GlobalFunctionCall>(matchBase, matchParams) {
     override fun compileCall(ctx: C_ExprContext, linkPos: S_Pos, args: V_FunctionCallArgs): V_GlobalFunctionCall {
         val callTarget = matchBase.makeCallTargetGlobal(ctx, linkPos, cFn)
@@ -793,7 +793,7 @@ private class C_MemberLibFuncCaseMatch(
     matchParams: C_LibMatchParams,
     private val cFn: C_SysFunction,
     private val ideInfo: C_IdeSymbolInfo,
-    private val argIdeInfos: Map<R_Name, C_IdeSymbolInfo>,
+    private val argIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo>,
 ): C_NormalLibFuncCaseMatch<V_MemberFunctionCall>(matchBase, matchParams) {
     override fun compileCall(ctx: C_ExprContext, linkPos: S_Pos, args: V_FunctionCallArgs): V_MemberFunctionCall {
         val callTarget = matchBase.makeCallTargetMember(ctx, linkPos, cFn)
@@ -822,7 +822,7 @@ private class C_GlobalErrorLibFuncCaseMatch(
     matchParams: C_LibMatchParams,
     errCodeMsg: C_CodeMsg,
     private val ideInfo: C_IdeSymbolInfo,
-    private val argIdeInfos: Map<R_Name, C_IdeSymbolInfo>,
+    private val argIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo>,
 ): C_ErrorLibFuncCaseMatch<V_GlobalFunctionCall>(matchBase, matchParams, errCodeMsg) {
     override fun compileCall0(ctx: C_ExprContext, linkPos: S_Pos): V_GlobalFunctionCall {
         val expr = C_ExprUtils.errorVExpr(ctx, linkPos, resType)
@@ -842,7 +842,7 @@ private class C_MemberErrorLibFuncCaseMatch(
 }
 
 private abstract class C_LibPartialCallTarget_Common<CallT: V_FunctionCall>(
-    private val params: List<L_FunctionParam>,
+    private val params: ImmList<L_FunctionParam>,
     private val minParams: Int,
     protected val matchBase: C_CaseMatchBase,
 ): C_LibPartialCallTarget<CallT>(matchBase.linkPos, matchBase.fullNameLazy) {
@@ -882,7 +882,7 @@ private abstract class C_LibPartialCallTarget_Common<CallT: V_FunctionCall>(
             return null
         }
 
-        val matchParams = mFnParams.mapIndexed { i, type ->
+        val matchParams = mFnParams.mapIndexedToImmList { i, type ->
             val lParam = params[i]
             val mParam = lParam.mParam.replaceType(type)
             lParam.replaceMParam(mParam)
@@ -894,7 +894,7 @@ private abstract class C_LibPartialCallTarget_Common<CallT: V_FunctionCall>(
 
     private inner class C_LibPartialCallTargetMatch_Common(
         exact: Boolean,
-        private val params: List<L_FunctionParam>,
+        private val params: ImmList<L_FunctionParam>,
     ): C_LibPartialCallTargetMatch<CallT>(exact) {
         override fun parameters(): ImmList<C_FunctionCallParameter>? {
             return params.withIndex().mapNotNullAllOrNull { (i, param) ->
@@ -916,12 +916,12 @@ private abstract class C_LibPartialCallTarget_Common<CallT: V_FunctionCall>(
 }
 
 private class C_LibPartialCallTarget_Global(
-    params: List<L_FunctionParam>,
+    params: ImmList<L_FunctionParam>,
     minParams: Int,
     matchBase: C_CaseMatchBase,
     private val cFn: C_SysFunction,
     private val ideInfo: C_IdeSymbolInfo,
-    private val argIdeInfos: Map<R_Name, C_IdeSymbolInfo>,
+    private val argIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo>,
 ): C_LibPartialCallTarget_Common<V_GlobalFunctionCall>(params, minParams, matchBase) {
     override fun compileCall0(
         ctx: C_ExprContext,
@@ -938,12 +938,12 @@ private class C_LibPartialCallTarget_Global(
 }
 
 private class C_LibPartialCallTarget_Member(
-    params: List<L_FunctionParam>,
+    params: ImmList<L_FunctionParam>,
     minParams: Int,
     matchBase: C_CaseMatchBase,
     private val cFn: C_SysFunction,
     private val ideInfo: C_IdeSymbolInfo,
-    private val argIdeInfos: Map<R_Name, C_IdeSymbolInfo>,
+    private val argIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo>,
 ): C_LibPartialCallTarget_Common<V_MemberFunctionCall>(params, minParams, matchBase) {
     override fun compileCall0(
         ctx: C_ExprContext,
@@ -965,14 +965,14 @@ private class V_FunctionCallTarget_SysMemberFunction(
         return R_FunctionCallTarget_SysMemberFunction(desc.rFn, desc.fullName)
     }
 
-    override fun toDbExpr(pos: S_Pos, dbBase: Db_Expr?, dbArgs: List<Db_Expr>): Db_Expr {
+    override fun toDbExpr(pos: S_Pos, dbBase: Db_Expr?, dbArgs: ImmList<Db_Expr>): Db_Expr {
         checkNotNull(dbBase)
 
         if (desc.dbFn == null) {
             throw C_Errors.errFunctionNoSql(pos, desc.fullName.value)
         }
 
-        val dbFullArgs = listOf(dbBase) + dbArgs
+        val dbFullArgs = immListOf(dbBase) + dbArgs
         return Db_CallExpr(desc.resType, desc.dbFn, dbFullArgs)
     }
 }

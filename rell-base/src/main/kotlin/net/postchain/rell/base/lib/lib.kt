@@ -12,6 +12,7 @@ import net.postchain.rell.base.lib.type.Lib_Types
 import net.postchain.rell.base.lib.type.R_ListType
 import net.postchain.rell.base.model.R_StructType
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.toImmList
 
 object Lib_Rell {
@@ -71,7 +72,7 @@ object Lib_Rell {
 
 class C_SysLibScope(
     val nsProto: C_SysNsProto,
-    val modules: List<C_LibModule>,
+    val modules: ImmList<C_LibModule>,
 )
 
 object C_SystemLibrary {

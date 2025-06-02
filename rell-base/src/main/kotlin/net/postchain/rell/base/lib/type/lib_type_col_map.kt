@@ -389,7 +389,7 @@ class Rt_MapValue(val type: R_MapType, map: MutableMap<Rt_Value, Rt_Value>): Rt_
 }
 
 private class GtvRtConversion_Map(val type: R_MapType): GtvRtConversion() {
-    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = true)
 
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean): Gtv {
         val keyType = type.keyType
@@ -408,7 +408,7 @@ private class GtvRtConversion_Map(val type: R_MapType): GtvRtConversion() {
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
         val map = if (type.keyType == R_TextType && gtv.type == GtvType.DICT) {
             GtvRtUtils.gtvToMap(ctx, gtv, type)
-                    .mapKeys { (k, _) -> Rt_TextValue.get(k) as Rt_Value }
+                    .mapKeys { (k, _) -> Rt_TextValue.get(k) }
                     .mapValues { (_, v) -> type.valueType.gtvToRt(ctx, v) }
                     .toMutableMap()
         } else {

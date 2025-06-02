@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.model.expr
 
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.toImmList
 import java.util.regex.Pattern
@@ -40,7 +41,7 @@ private class Db_SysFn_Simple(name: String, val sql: String): Db_SysFunction(nam
 }
 
 private class Db_SysFn_Template(name: String, private val arity: Int, template: String): Db_SysFunction(name) {
-    private val fragments: List<Pair<String?, Int?>> = let {
+    private val fragments: ImmList<Pair<String?, Int?>> = let {
         val pat = Pattern.compile("#\\d")
         val m = pat.matcher(template)
 

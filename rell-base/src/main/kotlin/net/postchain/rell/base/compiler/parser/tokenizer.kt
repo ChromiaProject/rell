@@ -38,9 +38,9 @@ class RellTokenizerScanException(pos: S_Pos, code: String, msg: String, eof: Boo
 class RellTokenizerDecodingException(pos: S_Pos, code: String, msg: String): RellTokenizerException(pos, code, msg, false)
 
 class RellTokens private constructor(version: R_LangVersion) {
-    val all: List<RellToken> = S_Grammar.rellTokens.toImmList()
-    val keywords: List<RellToken>
-    val delims: List<RellToken>
+    val all: ImmList<RellToken> = S_Grammar.rellTokens
+    val keywords: ImmList<RellToken>
+    val delims: ImmList<RellToken>
 
     val identifier: RellToken
     val integer: RellToken
@@ -705,7 +705,7 @@ private class TokenRec(
     val col: Int,
     val comment: S_Comment?,
 ) {
-    fun tokenMatch(index: Int, validTokens: Set<Token>): TokenMatch {
+    fun tokenMatch(index: Int, validTokens: ImmSet<Token>): TokenMatch {
         val rellMatch = RellTokenMatch(pos, text, comment)
         val rellInput = RellTokenInput(input, token, rellMatch, validTokens)
         return TokenMatch(token.token, index, rellInput, offset, length, row, col)

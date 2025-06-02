@@ -10,6 +10,9 @@ import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.testutils.RellReplTester
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.plus
 import org.junit.Test
 
 class RellApiRunShellTest: BaseRellApiTest() {
@@ -19,7 +22,7 @@ class RellApiRunShellTest: BaseRellApiTest() {
             "lib.rell" to "module; function g() = 456;",
         )
 
-        val input = listOf(
+        val input = immListOf(
             "2+2",
             "f()",
             "g()",
@@ -35,7 +38,7 @@ class RellApiRunShellTest: BaseRellApiTest() {
 
     @Test fun testRunShellBugEnum() {
         val sourceDir = C_SourceDir.mapDirOf("lib.rell" to "module; enum color { red }")
-        chkShell(sourceDir, listOf("color.red"), "RES:lib:color[red]", module = "lib")
+        chkShell(sourceDir, immListOf("color.red"), "RES:lib:color[red]", module = "lib")
     }
 
     @Test fun testModuleArgs() {
@@ -43,7 +46,7 @@ class RellApiRunShellTest: BaseRellApiTest() {
             "lib.rell" to "module; struct module_args { x: integer; } function f() = chain_context.args;",
         )
 
-        val input = listOf("import lib;", "lib.f()")
+        val input = immListOf("import lib;", "lib.f()")
         chkShell(sourceDir, input, "rt_err:chain_context.args:no_module_args:lib")
 
         val compileConfig = configBuilder().moduleArgs("lib" to mapOf("x" to GtvFactory.gtv(123))).build()
@@ -56,30 +59,30 @@ class RellApiRunShellTest: BaseRellApiTest() {
             "bar.rell" to "module; struct module_args { p: text = 'Hello'; q: integer = 456; } function g() = chain_context.args;",
         )
 
-        chkShell(sourceDir, listOf("import foo; foo.f()"), "rt_err:chain_context.args:no_module_args:foo")
-        chkShell(sourceDir, listOf("import bar; bar.g()"), "RES:bar:module_args[p=text[Hello],q=int[456]]")
+        chkShell(sourceDir, immListOf("import foo; foo.f()"), "rt_err:chain_context.args:no_module_args:foo")
+        chkShell(sourceDir, immListOf("import bar; bar.g()"), "RES:bar:module_args[p=text[Hello],q=int[456]]")
 
         var compileConfig = configBuilder().moduleArgs("foo" to mapOf("x" to GtvFactory.gtv("ABC"))).build()
-        chkShell(sourceDir, listOf("import foo; foo.f()"),
+        chkShell(sourceDir, immListOf("import foo; foo.f()"),
             "RES:foo:module_args[x=text[ABC],y=int[123]]",
             compileConfig = compileConfig,
         )
 
         compileConfig = configBuilder().moduleArgs("bar" to mapOf()).build()
-        chkShell(sourceDir, listOf("import bar; bar.g()"),
+        chkShell(sourceDir, immListOf("import bar; bar.g()"),
             "RES:bar:module_args[p=text[Hello],q=int[456]]",
             compileConfig = compileConfig,
         )
 
         compileConfig = configBuilder().moduleArgs("bar" to mapOf("q" to GtvFactory.gtv(789))).build()
-        chkShell(sourceDir, listOf("import bar; bar.g()"),
+        chkShell(sourceDir, immListOf("import bar; bar.g()"),
             "RES:bar:module_args[p=text[Hello],q=int[789]]",
             compileConfig = compileConfig,
         )
     }
 
     @Test fun testMerkleHash() {
-        val input = listOf(
+        val input = immListOf(
             "gtv.from_json('[[]]').hash()",
             "gtv.from_json('[{}]').hash()",
         )
@@ -92,12 +95,12 @@ class RellApiRunShellTest: BaseRellApiTest() {
 
     private fun chkShell(
         sourceDir: C_SourceDir,
-        input: List<String>,
+        input: ImmList<String>,
         vararg expected: String,
         module: String? = null,
         compileConfig: RellApiCompile.Config = defaultConfig,
     ) {
-        val inChannelFactory = RellReplTester.TestReplInputChannelFactory(input + listOf("\\q"))
+        val inChannelFactory = RellReplTester.TestReplInputChannelFactory(input + "\\q")
         val outChannelFactory = RellReplTester.TestReplOutputChannelFactory()
 
         val runConfig = RellApiRunShell.Config.Builder()

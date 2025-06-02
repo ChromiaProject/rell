@@ -8,13 +8,15 @@ import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.mtype.M_TypeParam
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.associateByToImmMap
 import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSymbol
 
 class L_ConstructorHeader(
-    val typeParams: List<M_TypeParam>,
-    params: List<L_FunctionParam>,
+    val typeParams: ImmList<M_TypeParam>,
+    params: ImmList<L_FunctionParam>,
 ): L_CommonFunctionHeader(params) {
     fun strCode(): String {
         val parts = mutableListOf<String>()
@@ -30,7 +32,7 @@ class L_Constructor(
     val body: L_FunctionBody,
     val pure: Boolean,
 ) {
-    val docMembers: Map<String, DocDefinition> by lazy {
+    val docMembers: ImmMap<String, DocDefinition> by lazy {
         header.params.associateByToImmMap { it.name.str }
     }
 

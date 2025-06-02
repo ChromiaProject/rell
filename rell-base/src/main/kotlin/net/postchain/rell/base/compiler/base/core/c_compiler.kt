@@ -83,7 +83,7 @@ class C_StatementVarsBlock {
 class C_SystemDefsScope(
     val ns: C_Namespace,
     val nsProto: C_SysNsProto,
-    val modules: List<C_LibModule>,
+    val modules: ImmList<C_LibModule>,
 )
 
 class C_SystemDefsCommon(
@@ -219,11 +219,11 @@ object C_Compiler {
             val midModules = loadMidModules(msgCtx, controller.executor, sourceDir, moduleSelection, symCtxProvider)
             checkMainModules(msgCtx, moduleSelection, midModules)
             midModules
-        } ?: immListOf()
+        }.orEmpty()
 
         val extModules = msgCtx.consumeError {
             compileMidModules(msgCtx, symCtxProvider, midModules)
-        } ?: immListOf()
+        }.orEmpty()
 
         val moduleHeaders = midModules.associateToImmMap { it.moduleName to it.compiledHeader }
 
@@ -252,7 +252,7 @@ object C_Compiler {
         val messages = CommonUtils.sortedByCopy(msgCtx.messages()) { C_ComparablePos(it.pos) }
         val errors = messages.filter { it.type == C_MessageType.ERROR }
 
-        val ideCompletions = modIdeCompletions.get().asMap().mapValues { it.value.toSet().toList() }.toImmMultimap()
+        val ideCompletions = modIdeCompletions.get().asMap().mapValues { it.value.distinct() }.toImmMultimap()
 
         val rApp = if (errors.isEmpty()) appFinish?.rApp else null
         return C_CompilationResult(rApp, messages, files, symFinish.symbolInfos, ideCompletions)
@@ -262,7 +262,7 @@ object C_Compiler {
         msgCtx: C_MessageContext,
         symCtxProvider: C_SymbolContextProvider,
         midModules: List<C_MidModule>,
-    ): List<C_ExtModule> {
+    ): ImmList<C_ExtModule> {
         val selModules = midModules.filter { it.isSelected }
 
         val midCompiler = C_MidModuleCompiler(msgCtx, symCtxProvider, midModules)
@@ -279,7 +279,7 @@ object C_Compiler {
         sourceDir: C_SourceDir,
         modSel: C_CompilerModuleSelection,
         symCtxProvider: C_SymbolContextProvider,
-    ): List<C_MidModule> {
+    ): ImmList<C_MidModule> {
         val modLdr = C_ModuleLoader(msgCtx, symCtxProvider, executor, sourceDir, immMapOf())
 
         if (modSel.appModules == null) {
@@ -306,7 +306,7 @@ object C_Compiler {
 
         val midModulesMap = midModules.associateBy { it.moduleName }
 
-        for (moduleName in modSel.appModules ?: listOf()) {
+        for (moduleName in modSel.appModules.orEmpty()) {
             val midModule = midModulesMap[moduleName]
             midModule ?: throw C_CommonError(C_Errors.msgModuleNotFound(moduleName))
 

@@ -33,26 +33,23 @@ data class One<T>(val value: T)
 abstract class ProjExt
 
 class MutableTypedKeyMap {
-    private val map = mutableMapOf<TypedKey<Any>, Any>()
+    private val map = mutableMapOf<TypedKey<Any>, Any?>()
 
     fun <V> put(key: TypedKey<V>, value: V) {
         @Suppress("UNCHECKED_CAST")
         key as TypedKey<Any>
-        check(key !in map)
-        map[key] = value as Any
+        check(key !in map) { "Key $key is already present" }
+        map[key] = value
     }
 
-    fun immutableCopy(): TypedKeyMap {
-        return TypedKeyMap(map.toMap())
-    }
+    fun toImmTypedKeyMap(): ImmTypedKeyMap = ImmTypedKeyMap(map.toImmMap())
 }
 
-class TypedKeyMap(private val map: Map<TypedKey<Any>, Any> = mapOf()) {
+class ImmTypedKeyMap(private val map: ImmMap<TypedKey<Any>, Any?> = immMapOf()) {
     @Suppress("UNCHECKED_CAST")
     fun <V> get(key: TypedKey<V>): V {
         key as TypedKey<Any>
-        val value = map.getValue(key)
-        return value as V
+        return map.getValue(key) as V
     }
 }
 
@@ -83,7 +80,7 @@ class ThreadLocalContext<T>(private val defaultValue: T? = null) {
 
 class VersionNumber(val items: ImmList<Int>): Comparable<VersionNumber> {
     init {
-        require(items.isNotEmpty())
+        require(items.isNotEmpty()) { "items is empty" }
         for (v in this.items) require(v >= 0) { "wrong version: ${this.items}" }
     }
 

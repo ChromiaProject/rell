@@ -77,7 +77,7 @@ sealed class C_NamespaceMember(base: C_NamespaceMemberBase) {
     }
 
     /** Multiple values in case of an overloaded function. */
-    val ideCompletions: List<IdeCompletion> by lazy {
+    val ideCompletions: ImmList<IdeCompletion> by lazy {
         getIdeCompletions0().toImmList()
     }
 
@@ -152,11 +152,11 @@ class C_NamespaceMember_Alias(
 
     override fun getDocDefinition0(): DocDefinition = DocDefinitionImpl()
 
-    override fun getIdeCompletions0(): List<IdeCompletion> {
+    override fun getIdeCompletions0(): ImmList<IdeCompletion> {
         val doc = docDefinition.docSymbol
         val targetComps = finalTarget.ideCompletions
         val location = C_IdeCompletionsUtils.getIdeCompletionLocation(defName)
-        return targetComps.map {
+        return targetComps.mapToImmList {
             IdeCompletion(it.kind, doc.symbolName, it.params, it.result, location, doc, it.deprecated)
         }
     }
@@ -363,7 +363,7 @@ private sealed class C_NamespaceMember_Struct(
 
         val (mandatory, optional) = rStruct.attributesList.partition { !it.hasExpr }
         val attrs = mandatory + optional
-        val params = attrs.map {
+        val params = attrs.mapToImmList {
             val docType = L_TypeUtils.docType(it.type.mType)
             val typeCode = docType.toCode()
             val typeStr = C_IdeCompletionsUtils.docCodeToStr(typeCode)
@@ -373,7 +373,7 @@ private sealed class C_NamespaceMember_Struct(
 
         val deprecated = doc.declaration.isDeprecated()
         val ideComp = IdeCompletion(DocSymbolKind.CONSTRUCTOR, doc.symbolName, params, null, location, doc, deprecated)
-        return super.getIdeCompletions0() + listOf(ideComp)
+        return super.getIdeCompletions0() + ideComp
     }
 
     final override fun toExpr(
@@ -480,7 +480,7 @@ private sealed class C_NamespaceMember_Function(
 private class C_NamespaceMember_SysFunction(
     base: C_NamespaceMemberBase,
     fn: C_GlobalFunction,
-    ideCompletions: List<IdeCompletion>?,
+    ideCompletions: ImmList<IdeCompletion>?,
 ): C_NamespaceMember_Function(base, fn) {
     private val ideCompletions0 = ideCompletions
 
@@ -608,7 +608,7 @@ class C_LibNsMemberFactory(private val basePath: C_RFullNamePath) {
         fn: C_GlobalFunction,
         ideInfo: C_IdeSymbolInfo,
         restrictions: C_MemberRestrictions,
-        ideCompletions: List<IdeCompletion>?,
+        ideCompletions: ImmList<IdeCompletion>?,
     ): C_NamespaceMember {
         val base = makeBase(name, ideInfo, restrictions)
         return C_NamespaceMember_SysFunction(base, fn, ideCompletions)

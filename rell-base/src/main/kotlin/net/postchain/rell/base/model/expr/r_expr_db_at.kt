@@ -34,17 +34,17 @@ class Db_AtFromItem(
 class RedDb_AtFromItem(val atEntity: R_DbAtEntity, val where: RedDb_Expr?, val isOuter: Boolean)
 
 class RedDb_AtExprFrom(
-    private val items: List<RedDb_AtFromItem>,
-    private val what: List<Db_AtWhatField>,
+    private val items: ImmList<RedDb_AtFromItem>,
+    private val what: ImmList<Db_AtWhatField>,
     private val where: Db_Expr?,
     private val isMany: Boolean,
-    private val selWhat: List<Db_AtWhatValue>,
-    private val resultTypes: List<R_Type>,
+    private val selWhat: ImmList<Db_AtWhatValue>,
+    private val resultTypes: ImmList<R_Type>,
 ) {
     fun toRedBase(frame: Rt_CallFrame): RedDb_AtExprBase {
         val redWhere = makeFullWhere(frame)
 
-        val redWhat = what.flatMap { whatField ->
+        val redWhat = what.flatMapToImmList { whatField ->
             val redExprs = whatField.value.toRedExprs(frame)
             redExprs.map { RedDb_AtWhatField(it, whatField.flags) }
         }
@@ -195,7 +195,7 @@ class Db_AtWhatValue_Complex(
 
     private inner class Rt_AtWhatCombiner_Complex(
             private val frame: Rt_CallFrame,
-            private val subCombiners: List<Rt_AtWhatCombiner>,
+            private val subCombiners: ImmList<Rt_AtWhatCombiner>,
             dbValueCount: Int
     ): Rt_AtWhatCombiner(dbValueCount) {
         private var rValues: List<Rt_AtWhatItem>? = null
@@ -251,12 +251,12 @@ class Db_AtWhatField(
 class RedDb_AtWhatField(val expr: RedDb_Expr, val flags: R_AtWhatFieldFlags)
 
 class RedDb_AtExprBase(
-    private val from: List<RedDb_AtFromItem>,
+    private val from: ImmList<RedDb_AtFromItem>,
     private val where: RedDb_Expr?,
-    private val what: List<RedDb_AtWhatField>,
+    private val what: ImmList<RedDb_AtWhatField>,
     private val isMany: Boolean,
-    private val selWhat: List<Db_AtWhatValue>,
-    private val resultTypes: List<R_Type>,
+    private val selWhat: ImmList<Db_AtWhatValue>,
+    private val resultTypes: ImmList<R_Type>,
 ) {
     private val fromEntities = from.mapToImmList { it.atEntity }
 
@@ -483,9 +483,9 @@ class Db_AtExprFrom(
         R_DbAtEntity.checkList(fromEntities)
     }
 
-    fun toRedItems(frame: Rt_CallFrame): List<RedDb_AtFromItem> {
+    fun toRedItems(frame: Rt_CallFrame): ImmList<RedDb_AtFromItem> {
         return frame.blockOpt(block) {
-            from.map { it.toRed(frame) }
+            from.mapToImmList { it.toRed(frame) }
         }
     }
 }

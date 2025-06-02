@@ -76,7 +76,7 @@ class BetterParseExperimentalTest {
             if (tail == null && field.first == null) {
                 field.second
             } else {
-                val fields = (listOf(field) + (tail ?: listOf())).joinToString(",") { (a, b) -> "($a,$b)" }
+                val fields = (listOf(field) + tail.orEmpty()).joinToString(",") { (a, b) -> "($a,$b)" }
                 "tuple[$fields]"
             }
         }

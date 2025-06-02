@@ -9,6 +9,7 @@ import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
 import net.postchain.rell.base.runtime.Rt_SqlContext
 import net.postchain.rell.base.runtime.utils.Rt_Messages
+import net.postchain.rell.base.utils.*
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 
@@ -32,7 +33,11 @@ object SqlMeta {
     );
     """.trimIndent()
 
-    fun checkMetaTablesExisting(mapping: Rt_ChainSqlMapping, tables: Map<String, SqlTable>, msgs: Rt_Messages): Boolean {
+    fun checkMetaTablesExisting(
+        mapping: Rt_ChainSqlMapping,
+        tables: ImmMap<String, SqlTable>,
+        msgs: Rt_Messages,
+    ): Boolean {
         val metaTables = metaTables(mapping)
         val metaExists = metaTables.any { it in tables }
         if (metaExists) {
@@ -60,12 +65,12 @@ object SqlMeta {
         return listOf(mapping.metaEntitiesTable, mapping.metaAttributesTable)
     }
 
-    fun loadMetaData(sqlExec: SqlExecutor, mapping: Rt_ChainSqlMapping, msgs: Rt_Messages): Map<String, MetaEntity> {
+    fun loadMetaData(sqlExec: SqlExecutor, mapping: Rt_ChainSqlMapping, msgs: Rt_Messages): ImmMap<String, MetaEntity> {
         val metaEntities = selectMetaEntities(mapping, sqlExec, msgs)
         val metaAttrs = selectMetaAttrs(mapping, sqlExec, msgs)
         msgs.checkErrors()
 
-        val entityMap = metaEntities.map { Pair(it.id, it) }.toMap()
+        val entityMap = metaEntities.associateBy { it.id }
         val attrMap = metaAttrs.groupBy { it.classId }
 
         for (classId in attrMap.keys.sorted()) {
@@ -79,16 +84,16 @@ object SqlMeta {
         for (entityRec in metaEntities) {
             val type = decodeEntityType(entityRec, msgs)
             if (type == null) continue
-            val attrs = attrMap[entityRec.id] ?: listOf()
-            val resAttrMap = attrs.map { Pair(it.name, MetaAttr(it.name, it.type)) }.toMap()
+            val attrs = attrMap[entityRec.id].orEmpty()
+            val resAttrMap = attrs.associateToImmMap { it.name to MetaAttr(it.name, it.type) }
             res[entityRec.name] = MetaEntity(entityRec.id, entityRec.name, type, entityRec.log, resAttrMap)
         }
 
-        return res
+        return res.toImmMap()
     }
 
     private fun decodeEntityType(rec: RecMetaEntity, msgs: Rt_Messages): MetaEntityType? {
-        for (type in MetaEntityType.values()) {
+        for (type in MetaEntityType.entries) {
             if (rec.type == type.code) {
                 return type
             }
@@ -169,8 +174,8 @@ object SqlMeta {
     }
 
     private fun checkDataTable(table: String, sqlTable: SqlTable, metaEntity: MetaEntity, msgs: Rt_Messages) {
-        val missingCols = (metaEntity.attrs.keys + listOf(SqlConstants.ROWID_COLUMN)).filter { it !in sqlTable.cols }
-        val missingAttrs = (sqlTable.cols.keys - listOf(SqlConstants.ROWID_COLUMN)).filter { it !in metaEntity.attrs }
+        val missingCols = (metaEntity.attrs.keys + SqlConstants.ROWID_COLUMN).filter { it !in sqlTable.cols }
+        val missingAttrs = (sqlTable.cols.keys - SqlConstants.ROWID_COLUMN).filter { it !in metaEntity.attrs }
 
         msgs.errorIfNotEmpty(missingCols, "meta:no_data_columns:$table",
                 "Missing columns for existing meta attributes in table $table")
@@ -191,12 +196,12 @@ object SqlMeta {
         return SqlGen.joinSqls(sqls)
     }
 
-    fun genMetaTablesCreate(sqlCtx: Rt_SqlContext): List<String> {
+    fun genMetaTablesCreate(sqlCtx: Rt_SqlContext): ImmList<String> {
         val sqls = mutableListOf<String>()
         val mainChainMapping = sqlCtx.mainChainMapping()
         sqls += String.format(CREATE_TABLE_META_ENTITIES, mainChainMapping.metaEntitiesTable)
         sqls += String.format(CREATE_TABLE_META_ATTRIBUTES, mainChainMapping.metaAttributesTable)
-        return sqls
+        return sqls.toImmList()
     }
 
     fun genMetaEntityInserts(sqlCtx: Rt_SqlContext, classId: Int, entity: R_EntityDefinition, entityType: MetaEntityType): List<String> {
@@ -221,7 +226,7 @@ object SqlMeta {
         return sqls
     }
 
-    fun genMetaAttrsInserts(sqlCtx: Rt_SqlContext, classId: Int, attrs: Collection<R_Attribute>): List<String> {
+    fun genMetaAttrsInserts(sqlCtx: Rt_SqlContext, classId: Int, attrs: Collection<R_Attribute>): ImmList<String> {
         val sqls = mutableListOf<String>()
 
         val attrTable = DSL.table(DSL.name(sqlCtx.mainChainMapping().metaAttributesTable))
@@ -238,11 +243,11 @@ object SqlMeta {
             ).getSQL(ParamType.INLINED) + ";"
         }
 
-        return sqls
+        return sqls.toImmList()
     }
 }
 
-private class SqlTableChecker(private val tables: Map<String, SqlTable>, private val table: String) {
+private class SqlTableChecker(private val tables: ImmMap<String, SqlTable>, private val table: String) {
     private val missingCols = mutableListOf<String>()
     private val checkedCols = mutableListOf<String>()
     private val diffCols = mutableMapOf<String, Pair<String, String>>()
@@ -292,7 +297,7 @@ class MetaEntity(
         val name: String,
         val type: MetaEntityType,
         val log: Boolean,
-        val attrs: Map<String, MetaAttr>
+        val attrs: ImmMap<String, MetaAttr>
 )
 
 class MetaAttr(val name: String, val type: String)

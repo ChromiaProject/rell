@@ -18,7 +18,7 @@ import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.futures.FcFuture
 
-class Ld_TypeDefParent(private val typeName: Ld_FullName, private val args: List<Ld_Type>) {
+class Ld_TypeDefParent(private val typeName: Ld_FullName, private val args: ImmList<Ld_Type>) {
     fun finish(ctx: Ld_TypeFinishContext): L_TypeDefParent {
         val typeDef = ctx.getTypeDef(typeName)
         Ld_Exception.check(typeDef.abstract) {
@@ -189,12 +189,12 @@ private class Ld_TypeDefMember_StaticSpecialFunction(
 class Ld_TypeDef(
     val simpleName: R_Name,
     private val flags: L_TypeDefFlags,
-    private val typeParams: List<Ld_TypeParam>,
+    private val typeParams: ImmList<Ld_TypeParam>,
     private val parent: Ld_TypeDefParent?,
     private val rTypeFactory: L_TypeDefRTypeFactory?,
     private val docCodeStrategy: L_TypeDefDocCodeStrategy?,
     private val supertypeStrategy: L_TypeDefSupertypeStrategy,
-    private val members: List<Ld_TypeDefMember>,
+    private val members: ImmList<Ld_TypeDefMember>,
 ) {
     class Result(
         val typeDef: L_TypeDef,

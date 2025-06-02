@@ -10,6 +10,7 @@ import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeCompilationResult
+import net.postchain.rell.base.utils.immListOf
 import java.io.File
 import java.time.Duration
 
@@ -68,7 +69,7 @@ private fun compileFile(sourceDir: C_SourceDir, path: C_SourcePath): IdeCompilat
         .symbolInfoFile(path)
         .build()
 
-    val ideRes = IdeApi.compile(sourceDir, listOf(modInfo.name), options)
+    val ideRes = IdeApi.compile(sourceDir, immListOf(modInfo.name), options)
     val errors = ideRes.messages.filter { !it.type.ignorable }
     checkEquals(errors, listOf()) { path }
     return ideRes

@@ -83,7 +83,7 @@ class S_OperationDefinition(
             }
 
             ctx.executor.onPass(C_CompilerPass.DOCS) {
-                val paramNames = header.params.list.map { it.name.str }
+                val paramNames = header.params.list.mapToImmList { it.name.str }
                 val doc = DocDeclaration_Operation(docModifiers, cName.rName, paramNames, header.params.docParamDeclarations)
                 cDefBase.setDocDeclaration(doc)
             }
@@ -157,10 +157,10 @@ class S_OperationDefinition(
         }
     }
 
-    private fun processStatementVars(): TypedKeyMap {
+    private fun processStatementVars(): ImmTypedKeyMap {
         val map = MutableTypedKeyMap()
         body.discoverVars(map)
-        return map.immutableCopy()
+        return map.toImmTypedKeyMap()
     }
 
     override fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder) {
@@ -171,7 +171,7 @@ class S_OperationDefinition(
 class S_QueryDefinition(
     base: S_DefinitionBase,
     val name: S_Name,
-    val params: List<S_FormalParameter>,
+    val params: ImmList<S_FormalParameter>,
     val retType: S_Type?,
     val body: S_FunctionBody,
 ): S_BasicDefinition(base) {
@@ -255,7 +255,7 @@ class S_QueryDefinition(
 
         ctx.executor.onPass(C_CompilerPass.DOCS) {
             val docType = L_TypeUtils.docType(rBody.retType.mType)
-            val paramNames = header.params.list.map { it.name.str }
+            val paramNames = header.params.list.mapToImmList { it.name.str }
             val doc = DocDeclaration_Query(docModifiers, cName.rName, docType, paramNames, header.params.docParamDeclarations)
             defBase.setDocDeclaration(doc)
         }

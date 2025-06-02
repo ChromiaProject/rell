@@ -9,8 +9,8 @@ import net.postchain.rell.base.model.R_DefinitionName
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.ImmMap
-import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.immMapOf
+import net.postchain.rell.base.utils.orEmpty
 import net.postchain.rell.base.utils.toImmMap
 
 class DocException(val code: String, msg: String): RuntimeException(msg) {
@@ -56,7 +56,8 @@ class DocFunctionParamComments(
             paramComments: Map<R_Name, DocComment>,
             errorTracker: DocCommentErrorTracker,
         ): DocFunctionParamComments {
-            val resParamComments = getCombinedParamComments(funName, funComment, paramComments, paramNames, errorTracker)
+            val resParamComments =
+                getCombinedParamComments(funName, funComment, paramComments, paramNames, errorTracker)
             val resFunComment = getCombinedFunctionComment(funComment, resParamComments, errorTracker)
             return DocFunctionParamComments(resFunComment, resParamComments)
         }
@@ -75,11 +76,11 @@ class DocFunctionParamComments(
                 val comment2 = rawParamComments[param]
                 val description = if (comment1.orEmpty().isNotBlank()) comment1 else (comment2?.description ?: comment1)
                 if (description != null || comment2?.tags.orEmpty().isNotEmpty()) {
-                    resComments[param] = DocComment(description ?: "", comment2?.tags ?: immMapOf())
+                    resComments[param] = DocComment(description ?: "", comment2?.tags.orEmpty())
                 }
             }
 
-            for (item in rawFunComment?.tags?.get(DocCommentTag.PARAM) ?: immListOf()) {
+            for (item in rawFunComment?.tags?.get(DocCommentTag.PARAM).orEmpty()) {
                 val errPos = item.keyPos ?: item.codePos
                 val rName = if (item.key == null) null else R_Name.ofOpt(item.key)
                 if (rName == null) {

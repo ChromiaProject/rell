@@ -24,7 +24,7 @@ import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.plus
 
 abstract class V_TypeValueMember(val type: R_Type, val ideInfo: C_IdeSymbolInfo) {
     abstract fun implicitAttrName(): C_Name?
@@ -197,7 +197,7 @@ class V_ValueMemberExpr private constructor(
                 baseKey == null -> null
                 !baseKey.isFull -> baseKey
                 item == null -> C_VarStateKey(baseKey.varId, baseKey.path, isFull = false)
-                else -> C_VarStateKey(baseKey.varId, (baseKey.path + item).toImmList())
+                else -> C_VarStateKey(baseKey.varId, baseKey.path + item)
             }
         }
     }

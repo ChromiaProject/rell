@@ -35,8 +35,8 @@ class C_ArgMatchParam(
     }
 }
 
-class C_ArgMatchParams(val all: List<C_ArgMatchParam>) {
-    val mandatoryAndOptional: List<C_ArgMatchParam>
+class C_ArgMatchParams(val all: ImmList<C_ArgMatchParam>) {
+    val mandatoryAndOptional: ImmList<C_ArgMatchParam>
     val vararg: C_ArgMatchParam? // If the vararg is ONE_MANY, it's also added as the last item of the mandatory.
 
     init {
@@ -72,7 +72,7 @@ class C_ArgMatchParamArg(val param: C_ArgMatchParam, val wild: Boolean, val inde
 
 class C_ArgMatcherResult(
     val matching: C_ArgMatching?,
-    val paramValues: List<Pair<C_ArgMatchParam, V_Expr>>,
+    val paramValues: ImmList<Pair<C_ArgMatchParam, V_Expr>>,
 )
 
 class C_ArgMatching(
@@ -103,10 +103,10 @@ class C_ArgMatching(
         }
     }
 
-    fun <T> paramsToValues(params: List<T>): List<T> {
+    fun <T> paramsToValues(params: List<T>): ImmList<T> {
         checkEquals(params.size, mapping.size)
         checkEquals(wildArgs.size, 0)
-        return exprsToParams.map { params[it] }
+        return exprsToParams.mapToImmList { params[it] }
     }
 }
 
@@ -194,7 +194,7 @@ object C_ArgMatcher {
         callInfo: C_FunctionCallInfo,
         params: C_ArgMatchParams,
         args: C_CallArguments,
-    ): List<C_ArgMatchParam> {
+    ): ImmList<C_ArgMatchParam> {
         return if (args.positional.size <= params.mandatoryAndOptional.size) {
             params.mandatoryAndOptional.subList(0, args.positional.size)
         } else if (params.vararg != null) {
@@ -218,7 +218,7 @@ object C_ArgMatcher {
     private class MatchBuilder(
         private val msgMgr: C_MessageManager,
         private val callInfo: C_FunctionCallInfo,
-        private val actualParams: List<C_ArgMatchParam>,
+        private val actualParams: ImmList<C_ArgMatchParam>,
     ) {
         private val exprArgs = mutableListOf<C_ArgMatchArg>()
         private val wildArgs = mutableListOf<C_ArgMatchParam>()

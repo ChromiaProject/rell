@@ -4,14 +4,15 @@
 
 package net.postchain.rell.base.mtype
 
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.mapIndexedToImmList
 import net.postchain.rell.base.utils.mapNotNullAllOrNull
 import java.util.*
 
 sealed class M_Type_Composite(private val componentCount: Int): M_Type() {
-    protected abstract val canonicalArgs: List<M_TypeSet>
+    protected abstract val canonicalArgs: ImmList<M_TypeSet>
 
-    private val varianceArgs: List<M_TypeSet> by lazy {
+    private val varianceArgs: ImmList<M_TypeSet> by lazy {
         canonicalArgs.mapIndexedToImmList { i, arg ->
             val variance = getTypeArgVariance(i)
             when (variance) {

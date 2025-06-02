@@ -18,9 +18,7 @@ import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_ExecutionContext
 import net.postchain.rell.base.runtime.utils.Rt_Messages
 import net.postchain.rell.base.runtime.utils.Rt_Utils
-import net.postchain.rell.base.utils.CommonUtils
-import net.postchain.rell.base.utils.ProjExt
-import net.postchain.rell.base.utils.toImmSet
+import net.postchain.rell.base.utils.*
 
 private val ORD_TABLES = SqlInitStepOrder.TABLES
 private val ORD_RECORDS = SqlInitStepOrder.RECORDS
@@ -161,13 +159,13 @@ private class SqlInitPlanner private constructor(
         return !metaExists
     }
 
-    private fun processMeta(metaExists: Boolean, tables: Map<String, SqlTable>): Map<String, MetaEntity> {
+    private fun processMeta(metaExists: Boolean, tables: Map<String, SqlTable>): ImmMap<String, MetaEntity> {
         if (!metaExists) {
             initCtx.step(ORD_TABLES, "Create ROWID table and function", SqlStepAction_ExecSql(SqlGen.genRowidSql(mapping)))
             initCtx.step(ORD_TABLES, "Create meta tables", SqlStepAction_ExecSql(SqlMeta.genMetaTablesCreate(sqlCtx)))
         }
 
-        val metaData = if (!metaExists) mapOf() else SqlMeta.loadMetaData(exeCtx.sysSqlExec, mapping, initCtx.msgs)
+        val metaData = if (!metaExists) immMapOf() else SqlMeta.loadMetaData(exeCtx.sysSqlExec, mapping, initCtx.msgs)
         initCtx.checkErrors()
 
         SqlMeta.checkDataTables(sqlCtx, tables, metaData, initCtx.msgs)
@@ -193,8 +191,8 @@ private class SqlInitPlanner private constructor(
 private class SqlEntityIniter private constructor(
     private val exeCtx: Rt_ExecutionContext,
     private val initCtx: SqlInitCtx,
-    private val metaData: Map<String, MetaEntity>,
-    private val sqlTables: Map<String, SqlTable>,
+    private val metaData: ImmMap<String, MetaEntity>,
+    private val sqlTables: ImmMap<String, SqlTable>,
 ) {
     private val sqlCtx = exeCtx.sqlCtx
 
@@ -251,7 +249,7 @@ private class SqlEntityIniter private constructor(
         sqls += SqlMeta.genMetaEntityInserts(sqlCtx, id, entity, type)
 
         val entityName = msgEntityName(entity)
-        initCtx.step(ORD_TABLES, "Create table and meta for $entityName", SqlStepAction_ExecSql(sqls))
+        initCtx.step(ORD_TABLES, "Create table and meta for $entityName", SqlStepAction_ExecSql(sqls.toImmList()))
     }
 
     private fun processExistingEntity(entity: R_EntityDefinition, type: MetaEntityType, metaCls: MetaEntity) {
@@ -331,7 +329,7 @@ private class SqlEntityIniter private constructor(
         entity: R_EntityDefinition,
         newAttrs: List<String>,
         existingRecs: Boolean,
-    ): List<R_CreateExprAttr> {
+    ): ImmList<R_CreateExprAttr> {
         val entityName = msgEntityName(entity)
         val res = mutableListOf<R_CreateExprAttr>()
 
@@ -360,7 +358,7 @@ private class SqlEntityIniter private constructor(
             }
         }
 
-        return res
+        return res.toImmList()
     }
 
     private fun processIndexes(entity: R_EntityDefinition) {
@@ -458,9 +456,9 @@ private class SqlEntityIniter private constructor(
         return d
     }
 
-    private data class SqlIndexId(val unique: Boolean, val cols: List<String>) {
+    private data class SqlIndexId(val unique: Boolean, val cols: ImmList<String>) {
         constructor(sqlIndex: SqlIndex): this(sqlIndex.unique, sqlIndex.cols)
-        constructor(rKeyIndex: R_KeyIndex, unique: Boolean): this(unique, rKeyIndex.attribs.map { it.str })
+        constructor(rKeyIndex: R_KeyIndex, unique: Boolean): this(unique, rKeyIndex.attribs.mapToImmList { it.str })
     }
 
     companion object {
@@ -469,8 +467,8 @@ private class SqlEntityIniter private constructor(
         fun processEntities(
             exeCtx: Rt_ExecutionContext,
             initCtx: SqlInitCtx,
-            metaData: Map<String, MetaEntity>,
-            sqlTables: Map<String, SqlTable>,
+            metaData: ImmMap<String, MetaEntity>,
+            sqlTables: ImmMap<String, SqlTable>,
         ) {
             val obj = SqlEntityIniter(exeCtx, initCtx, metaData, sqlTables)
             obj.processEntities()
@@ -519,10 +517,8 @@ private sealed class SqlStepAction {
     abstract fun run(ctx: SqlStepCtx)
 }
 
-private class SqlStepAction_ExecSql(sqls: List<String>): SqlStepAction() {
-    private val sqls: List<String> = sqls.toList()
-
-    constructor(sql: String): this(listOf(sql))
+private class SqlStepAction_ExecSql(private val sqls: ImmList<String>): SqlStepAction() {
+    constructor(sql: String): this(immListOf(sql))
 
     override fun run(ctx: SqlStepCtx) {
         val sql = SqlGen.joinSqls(sqls)
@@ -546,7 +542,7 @@ private class SqlStepAction_InsertObject(private val rObject: R_ObjectDefinition
 
 private class SqlStepAction_AddColumns_AlterTable(
         private val entity: R_EntityDefinition,
-        private val attrs: List<R_CreateExprAttr>,
+        private val attrs: ImmList<R_CreateExprAttr>,
         private val existingRecs: Boolean
 ): SqlStepAction() {
     override fun run(ctx: SqlStepCtx) {

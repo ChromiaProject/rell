@@ -19,6 +19,7 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.SqlManager
 import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.immListOf
 
@@ -221,5 +222,5 @@ object RellTestUtils {
     fun strToRidBytes(s: String) = CommonUtils.hexToBytes(strToRidHex(s))
     fun strToBlockchainRid(s: String) = BlockchainRid(strToRidBytes(s))
 
-    class TestCallResult(val res: String, val stack: List<R_StackPos>)
+    class TestCallResult(val res: String, val stack: ImmList<R_StackPos>)
 }

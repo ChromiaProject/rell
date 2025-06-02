@@ -10,6 +10,8 @@ import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
 import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.ImmMap
+import net.postchain.rell.base.utils.toImmMap
 import org.postgresql.util.PGobject
 import java.math.BigDecimal
 import java.sql.Connection
@@ -27,7 +29,7 @@ object SqlTestUtils {
         jdbcProperties.setProperty("binaryTransfer", "false")
 
         val con = DriverManager.getConnection(url, jdbcProperties)
-        var resource: AutoCloseable? = con
+        var resource = con
         try {
             freeDiskSpace(con)
             resource = null
@@ -247,7 +249,7 @@ object SqlTestUtils {
         return res
     }
 
-    fun dumpTablesStructure(con: Connection, all: Boolean = false): Map<String, Map<String, String>> {
+    fun dumpTablesStructure(con: Connection, all: Boolean = false): ImmMap<String, ImmMap<String, String>> {
         val map = HashMultimap.create<String, Pair<String, String>>()
         val namePattern = if (all) null else "c%.%"
         con.metaData.getColumns(null, con.schema, namePattern, null).use { rs ->
@@ -261,11 +263,11 @@ object SqlTestUtils {
             }
         }
 
-        val res = mutableMapOf<String, Map<String, String>>()
+        val res = mutableMapOf<String, ImmMap<String, String>>()
         for (table in map.keySet().sorted()) {
-            res[table] = map[table].sortedBy { it.first }.toMap()
+            res[table] = map[table].sortedBy { it.first }.toImmMap()
         }
 
-        return res
+        return res.toImmMap()
     }
 }

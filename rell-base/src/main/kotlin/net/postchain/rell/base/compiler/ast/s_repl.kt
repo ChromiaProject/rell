@@ -13,13 +13,13 @@ import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.utils.associateToImmMap
 import net.postchain.rell.base.utils.mapNotNullToImmList
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.plus
 
 class S_ReplCommand(steps: List<S_ReplStep>, expr: S_Expr?) {
     private val defs = steps.mapNotNullToImmList { it.definition() }
 
     private val stmts = let {
-        (steps.mapNotNull { it.statement() } + listOfNotNull(expr).map { S_ExprStatement(it, it.startPos) }).toImmList()
+        (steps.mapNotNullToImmList { it.statement() } + listOfNotNull(expr).map { S_ExprStatement(it, it.startPos) })
     }
 
     fun compile(
@@ -52,8 +52,8 @@ class S_ReplCommand(steps: List<S_ReplStep>, expr: S_Expr?) {
             midCompiler.compileModule(currentModuleName, null)
         }
 
-        val extMembers = midCompiler.compileReplMembers(moduleName, midMembers).toImmList()
-        val extModules = midCompiler.getExtModules().toImmList()
+        val extMembers = midCompiler.compileReplMembers(moduleName, midMembers)
+        val extModules = midCompiler.getExtModules()
 
         val newModuleHeaders = midModules.associateToImmMap { it.moduleName to it.compiledHeader }
 

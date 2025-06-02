@@ -7,12 +7,12 @@ package net.postchain.rell.base.sql
 import com.google.common.collect.HashMultimap
 import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.runtime.*
-import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.*
 import java.sql.Connection
 
 class SqlCol(val type: String)
-class SqlIndex(val name: String, val unique: Boolean, val cols: List<String>)
-class SqlTable(val cols: Map<String, SqlCol>, val indexes: List<SqlIndex>)
+class SqlIndex(val name: String, val unique: Boolean, val cols: ImmList<String>)
+class SqlTable(val cols: ImmMap<String, SqlCol>, val indexes: ImmList<SqlIndex>)
 
 object SqlUtils {
     fun dropAll(sqlExec: SqlExecutor, sysTables: Boolean) {
@@ -51,7 +51,7 @@ object SqlUtils {
         return list.toList()
     }
 
-    fun getExistingChainTables(con: Connection, mapping: Rt_ChainSqlMapping): Map<String, SqlTable> {
+    fun getExistingChainTables(con: Connection, mapping: Rt_ChainSqlMapping): ImmMap<String, SqlTable> {
         val tables = mutableMapOf<String, MutableMap<String, SqlCol>>()
 
         val schema = con.schema
@@ -72,15 +72,15 @@ object SqlUtils {
         val res = mutableMapOf<String, SqlTable>()
         for (table in tables.keys.sorted()) {
             val colsMap = tables.getValue(table)
-            val cols = colsMap.keys.sorted().map { Pair(it, colsMap.getValue(it) ) }.toMap()
+            val cols = colsMap.keys.sorted().associateWithToImmMap { colsMap.getValue(it) }
             val indexes = getTableIndexes(con, schema, table)
             res[table] = SqlTable(cols, indexes)
         }
 
-        return res
+        return res.toImmMap()
     }
 
-    fun getTableIndexes(con: Connection, schema: String, table: String): List<SqlIndex> {
+    fun getTableIndexes(con: Connection, schema: String, table: String): ImmList<SqlIndex> {
         class IndexRec(val unique: Boolean, val ordinal: Int, val column: String)
         val map = HashMultimap.create<String, IndexRec>()
 
@@ -107,7 +107,7 @@ object SqlUtils {
             val expOrdinals = (1 .. n).toList()
             check(ordinals == expOrdinals) { "Table $table, index $name: ordinals = $ordinals" }
 
-            val cols = sortedRecs.map { it.column }
+            val cols = sortedRecs.mapToImmList { it.column }
             check(cols.toSet().size == cols.size) { "Table $table, index $name: duplicate column(s): $cols" }
 
             val uniques = sortedRecs.map { it.unique }.toSet()
@@ -117,7 +117,7 @@ object SqlUtils {
             res.add(SqlIndex(name, unique, cols))
         }
 
-        return res
+        return res.toImmList()
     }
 
     fun recordsExist(sqlExec: SqlExecutor, sqlCtx: Rt_SqlContext, entity: R_EntityDefinition): Boolean {

@@ -11,7 +11,7 @@ import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_GraphUtils
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.toImmSet
+import net.postchain.rell.base.utils.*
 
 class C_Struct(
     val name: C_Name,
@@ -98,12 +98,12 @@ object C_StructUtils {
 }
 
 class C_StructsInfo(
-        val mutable: Set<R_Struct>,
-        val nonVirtualable: Set<R_Struct>,
-        val nonPure: Set<R_Struct>,
-        val nonGtvFrom: Set<R_Struct>,
-        val nonGtvTo: Set<R_Struct>,
-        val graph: Map<R_Struct, List<R_Struct>>
+    val mutable: ImmSet<R_Struct>,
+    val nonVirtualable: ImmSet<R_Struct>,
+    val nonPure: ImmSet<R_Struct>,
+    val nonGtvFrom: ImmSet<R_Struct>,
+    val nonGtvTo: ImmSet<R_Struct>,
+    val graph: ImmMap<R_Struct, List<R_Struct>>
 )
 
 object C_StructGraphUtils {
@@ -146,13 +146,13 @@ object C_StructGraphUtils {
     private fun buildStructsInfo(structs: Collection<R_Struct>): C_StructsInfo {
         val declaredStructs = structs.toImmSet()
         val infoMap = structs.associateWith { calcStructInfo(declaredStructs, it.type) }
-        val graph = infoMap.mapValues { (_, v) -> v.dependencies.toList() }
+        val graph = infoMap.mapValuesToImmMap { (_, v) -> v.dependencies.toList() }
 
-        val mutable = infoMap.filter { (_, v) -> v.directFlags.mutable }.keys
-        val nonVirtual = infoMap.filter { (_, v) -> !v.directFlags.virtualable }.keys
-        val nonPure = infoMap.filter { (_, v) -> !v.directFlags.pure }.keys
-        val nonGtvFrom = infoMap.filter { (_, v) -> !v.directFlags.gtv.fromGtv }.keys
-        val nonGtvTo = infoMap.filter { (_, v) -> !v.directFlags.gtv.toGtv }.keys
+        val mutable = infoMap.filter { (_, v) -> v.directFlags.mutable }.keys.toImmSet()
+        val nonVirtual = infoMap.filter { (_, v) -> !v.directFlags.virtualable }.keys.toImmSet()
+        val nonPure = infoMap.filter { (_, v) -> !v.directFlags.pure }.keys.toImmSet()
+        val nonGtvFrom = infoMap.filter { (_, v) -> !v.directFlags.gtv.fromGtv }.keys.toImmSet()
+        val nonGtvTo = infoMap.filter { (_, v) -> !v.directFlags.gtv.toGtv }.keys.toImmSet()
 
         return C_StructsInfo(
                 mutable = mutable,
@@ -181,10 +181,10 @@ object C_StructGraphUtils {
     private fun discoverStructInfo(declaredStructs: Set<R_Struct>, type: R_Type): StructInfo {
         // Taking into account only structs declared in this app (not those compiled elsewhere).
         if (type is R_StructType && type.struct in declaredStructs) {
-            return StructInfo(type.directFlags(), setOf(type.struct))
+            return StructInfo(type.directFlags(), immSetOf(type.struct))
         }
         return calcStructInfo(declaredStructs, type)
     }
 
-    private class StructInfo(val directFlags: R_TypeFlags, val dependencies: Set<R_Struct>)
+    private class StructInfo(val directFlags: R_TypeFlags, val dependencies: ImmSet<R_Struct>)
 }

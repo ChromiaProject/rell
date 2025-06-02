@@ -53,7 +53,7 @@ object RunConfigParser {
         root.check(nodeConfig != null || testNodeConfig != null) { "node configuration not defined" }
         root.check(chains != null && !chains.isEmpty()) { "no chains defined" }
 
-        return Rcfg_Run(nodeConfig, testNodeConfig, chains ?: listOf(), tests ?: listOf(), wipeDb = wipeDb)
+        return Rcfg_Run(nodeConfig, testNodeConfig, chains.orEmpty(), tests.orEmpty(), wipeDb = wipeDb)
     }
 
     private fun parseNodes(opts: RunConfigParserOptions, nodes: RellXmlElement): Pair<Rcfg_NodeConfig?, Rcfg_NodeConfig?> {
@@ -301,7 +301,7 @@ object RunConfigParser {
         gtvElem.check(src != null || gtv != null) { "neither 'src' nor nested element specified" }
         gtvElem.check(src == null || gtv == null) { "both 'src' and nested element specified" }
 
-        return Rcfg_ChainConfigGtv(path ?: listOf(), src, gtv)
+        return Rcfg_ChainConfigGtv(path.orEmpty(), src, gtv)
     }
 
     private fun parseChainDependencies(ctx: ParseChainCtx, deps: RellXmlElement): Map<String, Rcfg_Dependency> {

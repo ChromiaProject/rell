@@ -10,7 +10,7 @@ object RellVersions {
     const val VERSION_STR = "0.15.0"
     val VERSION = R_LangVersion.of(VERSION_STR)
 
-    val SUPPORTED_VERSIONS: Set<R_LangVersion> =
+    val SUPPORTED_VERSIONS: ImmSet<R_LangVersion> =
             listOf(
                 "0.6.0", "0.6.1",
                 "0.7.0",

@@ -7,10 +7,7 @@ package net.postchain.rell.base.utils.futures
 import com.google.common.collect.Iterables
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
-import net.postchain.rell.base.utils.LazyString
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.utils.toImmMap
+import net.postchain.rell.base.utils.*
 
 internal object FcInternals {
     fun <T> valueFuture(value: T): FcFuture<T> {
@@ -35,7 +32,7 @@ private class FcBefore_Value<R>(private val future: FcFuture<R>): FcBefore<R>() 
     }
 }
 
-private class FcBefore_List<R>(private val futures: List<FcFuture<R>>): FcBefore<List<R>>() {
+private class FcBefore_List<R>(private val futures: ImmList<FcFuture<R>>): FcBefore<List<R>>() {
     override fun futures() = futures
 
     override fun result(): List<R> {
@@ -43,7 +40,7 @@ private class FcBefore_List<R>(private val futures: List<FcFuture<R>>): FcBefore
     }
 }
 
-private class FcBefore_Map<K, R>(private val futures: Map<K, FcFuture<R>>): FcBefore<Map<K, R>>() {
+private class FcBefore_Map<K, R>(private val futures: ImmMap<K, FcFuture<R>>): FcBefore<Map<K, R>>() {
     override fun futures() = futures.values
 
     override fun result(): Map<K, R> {
@@ -458,7 +455,7 @@ private class FcFuture_Promise<T>(
         }
 
         fun completed() {
-            for (future in outputs ?: immListOf()) {
+            for (future in outputs.orEmpty()) {
                 future.inputCompleted(thisFuture)
             }
         }
@@ -546,8 +543,7 @@ private class FcFuture_Computable<T>(
 
         fun completeFuture(value: T) {
             thisFuture.setResult(value)
-            val outs = outputs ?: immListOf()
-            for (outputFuture in outs) {
+            for (outputFuture in outputs.orEmpty()) {
                 outputFuture.inputCompleted(thisFuture)
             }
         }
@@ -714,10 +710,10 @@ private object FcPrivate {
         var futures = stack.toList()
         val i = futures.indexOf(add)
         check(i >= 0)
-        futures = futures.subList(i, futures.size) + listOf(add)
+        futures = futures.subList(i, futures.size) + add
 
         val codeMsg = futuresCodeMsg(futures)
-        val nodes = futures.map { it.getCycleNode() }
+        val nodes = futures.mapToImmList { it.getCycleNode() }
 
         throw FcCycleException("cycle:${codeMsg.code}", "Cyclic future dependency: ${codeMsg.msg}", nodes)
     }

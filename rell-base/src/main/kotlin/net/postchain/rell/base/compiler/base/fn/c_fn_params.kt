@@ -77,7 +77,7 @@ class C_FormalParameters(val list: ImmList<C_FormalParameter>) {
         C_FunctionCallParameters(params)
     }
 
-    val argIdeInfos: Map<R_Name, C_IdeSymbolInfo> by lazy {
+    val argIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo> by lazy {
         this.list
             .map {
                 val ideInfo = it.ideInfo.update(kind = IdeSymbolKind.EXPR_CALL_ARG)
@@ -86,11 +86,11 @@ class C_FormalParameters(val list: ImmList<C_FormalParameter>) {
             .toImmMap()
     }
 
-    val docParams: List<DocFunctionParam> by lazy {
+    val docParams: ImmList<DocFunctionParam> by lazy {
         this.list.mapToImmList { it.docParam }
     }
 
-    val docParamDeclarations: List<DocDeclaration> by lazy {
+    val docParamDeclarations: ImmList<DocDeclaration> by lazy {
         this.list.mapToImmList { it.docDeclaration }
     }
 

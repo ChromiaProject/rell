@@ -10,6 +10,7 @@ import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.Parser
+import net.postchain.rell.base.utils.toImmList
 
 @Suppress("PropertyName", "MemberVisibilityCanBePrivate")
 abstract class M_TypeGrammar<T>: Grammar<T>() {
@@ -51,17 +52,17 @@ abstract class M_TypeGrammar<T>: Grammar<T>() {
     protected val typeSet0: Parser<M_AstTypeSet> by wildcardTypeSet or superTypeSet or subTypeSet or simpleTypeSet
 
     private val genericType by nameRef * -LT * separatedTerms(typeSet0, COMMA) * -GT map {
-        (name, args) -> M_AstType_Generic(name, args)
+        (name, args) -> M_AstType_Generic(name, args.toImmList())
     }
 
     private val functionType by -LPAREN * separatedTerms(typeRef, COMMA, true) * -RPAREN * -ARROW * typeRef map {
-        (params, result) -> M_AstType_Function(result, params)
+        (params, result) -> M_AstType_Function(result, params.toImmList())
     }
 
     private val tupleTypeField by optional(nameRef * -COLON) * typeRef map { (name, type) -> name to type }
 
     private val tupleType by -LPAREN * separatedTerms(tupleTypeField, COMMA) * -RPAREN map {
-        fields -> M_AstType_Tuple(fields)
+        fields -> M_AstType_Tuple(fields.toImmList())
     }
 
     private val baseType by genericType or nameType or tupleType

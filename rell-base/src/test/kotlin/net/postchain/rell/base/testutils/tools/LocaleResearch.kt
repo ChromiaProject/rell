@@ -40,9 +40,9 @@ fun main() {
 
 private class SqlCheckerCtx(
     val sqlExec: SqlExecutor,
-    val cs: List<CharInfo>,
+    val cs: ImmList<CharInfo>,
 ) {
-    val sorted: List<CharInfo> by lazy {
+    val sorted by lazy {
         cs.sortedBy { it.plainString }
     }
 
@@ -69,10 +69,10 @@ private abstract class SqlChecker {
     abstract fun check(ctx: SqlCheckerCtx): Int
 }
 
-private fun sqlCheck(sqlMgr: SqlManager, cs: List<CharInfo>) {
+private fun sqlCheck(sqlMgr: SqlManager, cs: ImmList<CharInfo>) {
     sqlInit(sqlMgr, cs)
 
-    val checks: Map<String, SqlChecker> = immMapOf(
+    val checks: ImmMap<String, SqlChecker> = immMapOf(
         "to_bytes" to SqlChecker_ToBytes,
         "from_bytes" to SqlChecker_FromBytes,
         "sort_ranges" to SqlChecker_SortRanges,
@@ -268,7 +268,7 @@ private fun printStats(cs: List<CharInfo>) {
     println(lens)
 }
 
-private fun getCharInfos(): List<CharInfo> {
+private fun getCharInfos(): ImmList<CharInfo> {
     val cs = mutableListOf<CharInfo>()
 
     for (c in (1).toChar() .. Character.MAX_VALUE) {

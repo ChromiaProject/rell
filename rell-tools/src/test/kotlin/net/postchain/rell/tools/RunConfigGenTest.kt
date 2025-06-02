@@ -1006,7 +1006,7 @@ class RunConfigGenTest {
             confText: String
     ): MutableMap<String, DirFile> {
         val sourceDir = C_SourceDir.mapDirOf(sourceFiles)
-        val configDir = MapGeneralDir(configFiles)
+        val configDir = MapGeneralDir(configFiles.toImmMap())
         val params = RellRunConfigParams(sourceDir, configDir, RellVersions.VERSION, unitTest = false)
         val conf = RellRunConfigGenerator.generate(TestRellCliEnv(), params, "run.xml", confText.trimIndent())
         val files = RellRunConfigGenerator.buildFiles(conf).toMutableMap()

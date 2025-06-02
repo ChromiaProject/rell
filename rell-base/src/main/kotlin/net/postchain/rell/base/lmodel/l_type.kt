@@ -47,7 +47,7 @@ private class L_Type_Simple(private val typeDef: L_TypeDef): L_Type() {
     override fun getTypeDefOrNull() = typeDef
 }
 
-private class L_Type_Generic(private val typeDef: L_TypeDef, val args: List<M_Type>): L_Type() {
+private class L_Type_Generic(private val typeDef: L_TypeDef, val args: ImmList<M_Type>): L_Type() {
     init {
         checkEquals(args.size, typeDef.mGenericType.params.size)
         check(args.isNotEmpty())

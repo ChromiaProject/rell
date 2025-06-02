@@ -55,7 +55,7 @@ class Rt_NullSqlContext private constructor(app: R_App): Rt_SqlContext(app) {
 class Rt_RegularSqlContext private constructor(
         app: R_App,
         private val mainChainMapping: Rt_ChainSqlMapping,
-        private val linkedExternalChains: List<Rt_ExternalChain>
+        private val linkedExternalChains: ImmList<Rt_ExternalChain>
 ): Rt_SqlContext(app) {
     private val externalChainsRoot = app.externalChainsRoot
 
@@ -74,7 +74,7 @@ class Rt_RegularSqlContext private constructor(
         fun createNoExternalChains(app: R_App, mainChainMapping: Rt_ChainSqlMapping): Rt_SqlContext {
             require(app.valid)
             require(app.externalChains.isEmpty()) { "App uses external chains" }
-            return Rt_RegularSqlContext(app, mainChainMapping, listOf())
+            return Rt_RegularSqlContext(app, mainChainMapping, immListOf())
         }
 
         fun create(
@@ -147,7 +147,7 @@ class Rt_RegularSqlContext private constructor(
         private fun calcLinkedExternalChains(
                 app: R_App,
                 externalChains: Map<String, Rt_ExternalChain>
-        ): List<Rt_ExternalChain> {
+        ): ImmList<Rt_ExternalChain> {
             val chainIds = mutableSetOf<Long>()
             val chainRids = mutableSetOf<String>()
             for ((name, c) in externalChains) {
@@ -161,7 +161,7 @@ class Rt_RegularSqlContext private constructor(
                 }
             }
 
-            return app.externalChains.map { rChain ->
+            return app.externalChains.mapToImmList { rChain ->
                 val name = rChain.name
                 val rtChain = externalChains[name]
                 if (rtChain == null) {
@@ -248,7 +248,7 @@ class Rt_RegularSqlContext private constructor(
         }
 
         private fun loadExternalMetaData(name: String, chain: Rt_ExternalChain, sqlExec: SqlExecutor): Map<String, MetaEntity> {
-            val res: Map<String, MetaEntity>
+            val res: ImmMap<String, MetaEntity>
 
             val msgs = Rt_Messages(logger)
             try {
@@ -353,7 +353,7 @@ class Rt_ExecutionContext(
         return r
     }
 
-    var emittedEvents: ImmList<Rt_Value> = state?.emittedEvents ?: immListOf()
+    var emittedEvents: ImmList<Rt_Value> = state?.emittedEvents.orEmpty()
 
     val testBlockClock: Rt_TestBlockClock = Rt_TestBlockClock(state?.testBlockClock ?: Rt_TestBlockClock.DEFAULT_STATE)
 

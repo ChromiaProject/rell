@@ -20,7 +20,7 @@ import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_FunctionExtension
-import net.postchain.rell.base.utils.ImmMultimap
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.doc.DocDeclaration_Function
 import net.postchain.rell.base.utils.doc.DocFunctionHeader
@@ -29,15 +29,12 @@ import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeOutlineNodeType
 import net.postchain.rell.base.utils.ide.IdeOutlineTreeBuilder
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.immMultimapOf
-import net.postchain.rell.base.utils.mapToImmList
 import kotlin.math.min
 
 class S_FunctionDefinition(
     base: S_DefinitionBase,
     private val qualifiedName: S_QualifiedName?,
-    val params: List<S_FormalParameter>,
+    val params: ImmList<S_FormalParameter>,
     val retType: S_Type?,
     val body: S_FunctionBody?,
 ): S_BasicDefinition(base) {

@@ -198,7 +198,7 @@ abstract class BaseIdeSymbolTest: BaseRellTest() {
         return pat.matcher(actual).matches()
     }
 
-    private class ExpectedEntry(val key: String, val symStr: String, val extra: List<Pair<String, String>>)
+    private class ExpectedEntry(val key: String, val symStr: String, val extra: ImmList<Pair<String, String>>)
     private class ActualEntry(val key: String, val ideInfo: IdeSymbolInfo, val symStr: String)
     private class TestEntry(val exp: ExpectedEntry, val act: ActualEntry)
 

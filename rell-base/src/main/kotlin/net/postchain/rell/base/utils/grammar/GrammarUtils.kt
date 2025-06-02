@@ -18,11 +18,11 @@ import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
 object GrammarUtils {
-    private val PARSERS: Map<String, Parser<*>> = makeParsers()
+    private val PARSERS: ImmMap<String, Parser<*>> = makeParsers()
 
-    fun getParsers(): Map<String, Parser<*>> = PARSERS
+    fun getParsers(): ImmMap<String, Parser<*>> = PARSERS
 
-    private fun makeParsers(): Map<String, Parser<*>> {
+    private fun makeParsers(): ImmMap<String, Parser<*>> {
         val parsers = mutableMapOf<String, Parser<*>>()
 
         for (p in S_Grammar::class.memberProperties) {
@@ -70,7 +70,7 @@ object GrammarUtils {
         return FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ssZ", tz).format(timestamp)
     }
 
-    private fun reduceParsers(parsers: Map<String, Parser<*>>): Map<String, Parser<*>> {
+    private fun reduceParsers(parsers: Map<String, Parser<*>>): ImmMap<String, Parser<*>> {
         val replacements = mutableMapOf<Parser<*>, Parser<*>>()
         val newParsers = mutableMapOf<String, Parser<*>>()
 
@@ -85,7 +85,7 @@ object GrammarUtils {
             }
         }
 
-        val resParsers = replaceParsers(newParsers, replacements)
+        val resParsers = replaceParsers(newParsers.toImmMap(), replacements.toImmMap())
         verifyReducedParsers(resParsers)
 
         return resParsers
@@ -121,11 +121,11 @@ object GrammarUtils {
     }
 
     private fun replaceParsers(
-        parsers: Map<String, Parser<*>>,
-        replacements: Map<Parser<*>, Parser<*>>,
-    ): Map<String, Parser<*>> {
+        parsers: ImmMap<String, Parser<*>>,
+        replacements: ImmMap<Parser<*>, Parser<*>>,
+    ): ImmMap<String, Parser<*>> {
         if (replacements.isEmpty()) {
-            return parsers.toImmMap()
+            return parsers
         }
 
         val replacer = Replacer(replacements)
@@ -181,7 +181,7 @@ object GrammarUtils {
         }
     }
 
-    private class Replacer(private val replacements: Map<Parser<*>, Parser<*>>) {
+    private class Replacer(private val replacements: ImmMap<Parser<*>, Parser<*>>) {
         private val started = mutableSetOf<Parser<*>>()
         private val finished = mutableMapOf<Parser<*>, Parser<*>>()
         private val refs = mutableMapOf<Parser<*>, ParserRef>()

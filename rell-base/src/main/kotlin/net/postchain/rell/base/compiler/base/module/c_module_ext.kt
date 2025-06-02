@@ -53,7 +53,7 @@ class C_ExtModuleFile(
 
         val fileFinish = fileCtx.finish()
 
-        val resIdeCompletions = ideCompletions.transform {
+        val resIdeCompletions = ideCompletions.toImmList().transform {
             list -> list.flatMap { map -> map.entries().map { it.key to it.value } }.toImmMultimap()
         }
         return C_CompiledRellFile(path, fileFinish.mountTables, fileFinish.importsDescriptor, resIdeCompletions)
@@ -223,7 +223,7 @@ class C_ExtModuleCompiler(
             ideCompletions.add(base.compile(appCtx, modProvider))
         }
 
-        return ideCompletions.transform {
+        return ideCompletions.toImmList().transform {
             list -> list.flatMap { map -> map.entries().map { it.key to it.value } }.toImmMultimap()
         }
     }
@@ -269,7 +269,7 @@ private class C_ModuleBasis(
         )
 
         val compiledFiles = extModule.compileFiles(modCtx)
-        val ideCompletions = compiledFiles.map { it.ideCompletions }
+        val ideCompletions = compiledFiles.mapToImmList { it.ideCompletions }
 
         appCtx.executor.onPass(C_CompilerPass.MODULES) {
             val docPos = module.header.docPos

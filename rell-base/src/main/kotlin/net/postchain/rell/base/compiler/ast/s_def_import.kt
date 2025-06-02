@@ -100,7 +100,7 @@ class S_ImportModulePath(
             currentModule: R_ModuleName,
             cModuleName: C_QualifiedName?
     ): ModuleNameDetails? {
-        val rPath = cModuleName?.parts?.map { it.rName } ?: immListOf()
+        val rPath = cModuleName?.parts?.map { it.rName }.orEmpty()
 
         if (relative == null) {
             if (rPath.isEmpty()) {
@@ -391,7 +391,7 @@ class S_ExactImportTargetItem(
     }
 }
 
-class S_ExactImportTarget(private val items: List<S_ExactImportTargetItem>): S_ImportTarget() {
+class S_ExactImportTarget(private val items: ImmList<S_ExactImportTargetItem>): S_ImportTarget() {
     override fun compile(
         ctx: S_DefinitionContext,
         moduleName: R_ModuleName,

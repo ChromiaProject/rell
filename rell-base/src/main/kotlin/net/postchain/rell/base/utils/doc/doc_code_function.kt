@@ -5,6 +5,7 @@
 package net.postchain.rell.base.utils.doc
 
 import net.postchain.rell.base.mtype.M_ParamArity
+import net.postchain.rell.base.utils.ImmList
 
 class DocFunctionParam(
     val name: String,
@@ -15,7 +16,7 @@ class DocFunctionParam(
 )
 
 class DocFunctionHeader(
-    val typeParams: List<DocTypeParam>,
+    val typeParams: ImmList<DocTypeParam>,
     val resultType: DocType,
-    val params: List<DocFunctionParam>,
+    val params: ImmList<DocFunctionParam>,
 )

@@ -14,10 +14,7 @@ import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.expr.R_AtCardinality
 import net.postchain.rell.base.model.expr.R_AtWhatSort
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.*
 import kotlin.reflect.KProperty
 
 object S_Keywords {
@@ -130,7 +127,8 @@ object S_Grammar {
 
     private val _commaSeparatedParsers = mutableListOf<Parser<*>>()
 
-    val commaSeparatedParsers: List<Parser<*>> get() = _commaSeparatedParsers.toImmList()
+    val commaSeparatedParsers: ImmList<Parser<*>>
+        get() = _commaSeparatedParsers.toImmList()
 
     private val nameNode by ID map {
         val sName = S_Name(it.pos, RellTokenizer.decodeName(it.pos, it.text))
@@ -159,7 +157,7 @@ object S_Grammar {
 
     private val tupleType by commaSeparatedOneMany(tupleTypeField) map {
         val single = getTupleSingleField(it)
-        if (single != null) single else S_TupleType(it.startPos, it.items)
+        single ?: S_TupleType(it.startPos, it.items)
     }
 
     private val genericType by qualifiedName * commaSeparatedOneMany(typeRef, TokenPair(LT, GT)) map {
@@ -221,9 +219,8 @@ object S_Grammar {
     private val annotationNameSort by legacyRule(SORT map { S_Name(it.pos, R_Name.of(it.text)) })
     private val annotationName by legacyRule(annotationNameName or annotationNameSort, annotationNameName)
 
-    private val annotation by AT * annotationName * optional(annotationArgs) map {
-        (at, name, args) ->
-        G_Node(S_Annotation(name, args ?: immListOf()), at)
+    private val annotation by AT * annotationName * optional(annotationArgs) map { (at, name, args) ->
+        G_Node(S_Annotation(name, args.orEmpty()), at)
     }
 
     private val keywordModifier0 by (
@@ -240,7 +237,7 @@ object S_Grammar {
 
     private val modifiers: Parser<G_Node<S_Modifiers>?> by zeroOrMore(modifier) map { modifierNodes ->
         if (modifierNodes.isEmpty()) null else {
-            val modifiers = modifierNodes.map { it.value }
+            val modifiers = modifierNodes.mapToImmList { it.value }
             val firstToken = modifierNodes.first().firstToken
             G_Node(S_Modifiers(modifiers), firstToken)
         }
@@ -258,8 +255,7 @@ object S_Grammar {
 
     private val attrHeader by nameTypeAttrHeader or anonAttrHeader
 
-    private val baseAttributeDefinition by optional(MUTABLE) * attrHeader * optional(-ASSIGN * expressionRef) map {
-        (mutable, header, expr) ->
+    private val baseAttributeDefinition by optional(MUTABLE) * attrHeader * optional(-ASSIGN * expressionRef) map { (mutable, header, expr) ->
         val firstToken = mutable ?: header.firstToken
         G_Node(S_AttributeDefinition(mutable?.pos, header.value, expr), firstToken)
     }
@@ -278,7 +274,7 @@ object S_Grammar {
     private val keyIndexClause by keyIndexKind * commaSeparatedOneMany0(baseAttributeDefinition) * -SEMI map {
         (kind, attrs) ->
         val kindToken = kind.firstToken
-        val rawAttrs = attrs.items.map { it.value }
+        val rawAttrs = attrs.items.mapToImmList { it.value }
         S_KeyIndexClause(kindToken.pos, kind.value, rawAttrs, kindToken.comment)
     }
 
@@ -298,13 +294,13 @@ object S_Grammar {
         val (kw, deprecated) = kwDeprecated
         val deprecatedKwPos = if (deprecated) kw.pos else null
         AnnotatedDef(kw) {
-            S_EntityDefinition(it, deprecatedKwPos, name, annotations2 ?: listOf(), clauses)
+            S_EntityDefinition(it, deprecatedKwPos, name, annotations2.orEmpty(), clauses?.toImmList())
         }
     }
 
     private val objectDef by OBJECT * name * -LCURL * zeroOrMore(attributeClause) * -RCURL map {
         (kw, name, attrs) ->
-        AnnotatedDef(kw) { S_ObjectDefinition(it, name, attrs) }
+        AnnotatedDef(kw) { S_ObjectDefinition(it, name, attrs.toImmList()) }
     }
 
     private val structKeyword by
@@ -315,7 +311,7 @@ object S_Grammar {
         (posDeprecated, name, attrs) ->
         val (kw, deprecated) = posDeprecated
         val deprecatedKwPos = if (deprecated) kw.pos else null
-        AnnotatedDef(kw) { S_StructDefinition(it, deprecatedKwPos, name, attrs) }
+        AnnotatedDef(kw) { S_StructDefinition(it, deprecatedKwPos, name, attrs.toImmList()) }
     }
 
     private val enumValue by nameNode map {
@@ -389,13 +385,13 @@ object S_Grammar {
     private val nullLiteralExpr by NULL map { S_NullLiteralExpr(it.pos) }
 
     private val literalExpr by
-        intExpr or
-        bigIntExpr or
-        decimalExpr or
-        stringExpr or
-        bytesExpr or
-        booleanLiteralExpr or
-        nullLiteralExpr
+    intExpr or
+            bigIntExpr or
+            decimalExpr or
+            stringExpr or
+            bytesExpr or
+            booleanLiteralExpr or
+            nullLiteralExpr
 
     private val tupleExprField by optional(nameNode * -ASSIGN) * expressionRef map {
         (name, expr) -> S_GenericTupleAttr(name?.value, expr, name?.firstToken?.comment)
@@ -408,7 +404,7 @@ object S_Grammar {
 
     private val atExprFromItem by zeroOrMore(annotation) * optional(nameNode * -COLON) * expressionRef map {
         (annotations, alias, expr) ->
-        val annotations2 = annotations.map { it.value }
+        val annotations2 = annotations.mapToImmList { it.value }
         val firstToken = annotations.firstOrNull()?.firstToken ?: alias?.firstToken
         S_AtExprFromItem(S_Modifiers(annotations2), alias?.value, expr, firstToken?.comment)
     }
@@ -424,14 +420,12 @@ object S_Grammar {
             or ( AT map { S_PosValue(it.pos, R_AtCardinality.ONE) } )
     )
 
-    private val atExprWhatSimple by DOT * separatedTerms(name, DOT) map {
-        (dot, path) ->
-        S_AtExprWhat_Simple(dot.pos, path)
+    private val atExprWhatSimple by DOT * separatedTerms(name, DOT) map { (dot, path) ->
+        S_AtExprWhat_Simple(dot.pos, path.toImmList())
     }
 
     private val atExprWhatSort by legacyRule(
-        optional(MINUS) * SORT map {
-            (minus, kw) ->
+        optional(MINUS) * SORT map { (minus, kw) ->
             val sort = if (minus == null) R_AtWhatSort.ASC else R_AtWhatSort.DESC
             S_PosValue(kw.pos, sort)
         }
@@ -445,7 +439,7 @@ object S_Grammar {
     private val atExprWhatComplexItem by atExprWhatModifiers * optional(nameNode * -ASSIGN) * expressionRef map {
         (modifiers, name, expr) ->
         val (annotations, sort) = modifiers
-        val sModifiers = S_Modifiers(annotations.map { it.value })
+        val sModifiers = S_Modifiers(annotations.mapToImmList { it.value })
         val firstToken = annotations.firstOrNull()?.firstToken ?: name?.firstToken
         S_AtExprWhatComplexField(name?.value, expr, sModifiers, sort, firstToken?.comment)
     }
@@ -473,23 +467,21 @@ object S_Grammar {
     }
 
     private val mapLiteralExprEntry by expressionRef * -COLON * expressionRef map { (key, value) -> Pair(key, value) }
-    private val emptyMapLiteralExpr by LBRACK * -COLON * -RBRACK map { pos -> S_MapLiteralExpr(pos.pos, listOf()) }
+    private val emptyMapLiteralExpr by LBRACK * -COLON * -RBRACK map { pos -> S_MapLiteralExpr(pos.pos, immListOf()) }
     private val nonEmptyMapLiteralExpr by commaSeparatedOneMany(mapLiteralExprEntry, LR_BRACK) map {
         S_MapLiteralExpr(it.startPos, it.items)
     }
     private val mapLiteralExpr by emptyMapLiteralExpr or nonEmptyMapLiteralExpr
 
-    private val mirrorStructExpr by mirrorStructType0 map {
-        (kw, mutable, type) ->
+    private val mirrorStructExpr by mirrorStructType0 map { (kw, mutable, type) ->
         S_MirrorStructExpr(kw.pos, mutable != null, type)
     }
     private val callArgValue by (
-            ( MUL map { S_CallArgumentValue_Wildcard(it.pos) } )
-            or ( expressionRef map { S_CallArgumentValue_Expr(it) } )
-    )
+            (MUL map { S_CallArgumentValue_Wildcard(it.pos) })
+                    or (expressionRef map { S_CallArgumentValue_Expr(it) })
+            )
 
-    private val createExprArg by optional(-optional(DOT) * name * -ASSIGN) * callArgValue map {
-        (name, value) ->
+    private val createExprArg by optional(-optional(DOT) * name * -ASSIGN) * callArgValue map { (name, value) ->
         S_CallArgument(name, value)
     }
 
@@ -575,7 +567,7 @@ object S_Grammar {
     }
 
     private val whenConditionExpr by separatedTerms(expressionRef, COMMA, false) * -optional(COMMA) map {
-        S_WhenConditionExpr(it)
+        S_WhenConditionExpr(it.toImmList())
     }
     private val whenConditionElse by ELSE map { S_WhenCondtiionElse(it.pos) }
     private val whenCondition by whenConditionExpr or whenConditionElse
@@ -589,7 +581,7 @@ object S_Grammar {
 
     private val whenExpr by WHEN * optional(-LPAR * expressionRef * -RPAR) * -LCURL * whenExprCases * -RCURL map {
         (pos, expr, cases) ->
-        S_WhenExpr(pos.pos, expr, cases)
+        S_WhenExpr(pos.pos, expr, cases.toImmList())
     }
 
     private val operandExpr: Parser<S_Expr> by ( baseExpr or ifExpr or whenExpr )
@@ -605,7 +597,7 @@ object S_Grammar {
     private val binaryExprOperand by binaryOperator * unaryExpr map { ( op, expr ) -> S_BinaryExprTail(op, expr) }
 
     private val binaryExpr by unaryExpr * zeroOrMore(binaryExprOperand) map { ( head, tail ) ->
-        if (tail.isEmpty()) head else S_BinaryExpr(head, tail)
+        if (tail.isEmpty()) head else S_BinaryExpr(head, tail.toImmList())
     }
 
     private val expression: Parser<S_Expr> by binaryExpr
@@ -660,7 +652,7 @@ object S_Grammar {
     private val blockStmt by LCURL * zeroOrMore(statementRef) * RCURL map {
         (lcurl, statements, rcurl) ->
         val posRange = S_PosRange(lcurl.pos, rcurl.pos)
-        S_BlockStatement(posRange, statements)
+        S_BlockStatement(posRange, statements.toImmList())
     }
 
     private val ifStmt by IF * -LPAR * expression * -RPAR * statementRef * optional(-ELSE * statementRef) map {
@@ -675,7 +667,7 @@ object S_Grammar {
 
     private val whenStmt by WHEN * optional(-LPAR * expressionRef * -RPAR) * -LCURL * zeroOrMore(whenStmtCase) * RCURL map {
         (pos, expr, cases, end) ->
-        S_WhenStatement(pos.pos, end.pos, expr, cases)
+        S_WhenStatement(pos.pos, end.pos, expr, cases.toImmList())
     }
 
     private val whileStmt by WHILE * -LPAR * expression * -RPAR * statementRef map {
@@ -696,7 +688,7 @@ object S_Grammar {
     private val createStmt by createExpr * SEMI map { (expr, end) -> S_ExprStatement(expr, end.pos) }
 
     private val updateFromSingle by qualifiedName map {
-        S_PosValue(it.pos, listOf(S_UpdateFromItem(null, it, null)))
+        S_PosValue(it.pos, immListOf(S_UpdateFromItem(null, it, null)))
     }
 
     private val updateFromItem by optional(nameNode * -COLON) * qualifiedName map {
@@ -804,7 +796,7 @@ object S_Grammar {
     private val namespaceDef by NAMESPACE * optional(qualifiedName) * LCURL * zeroOrMore(parser(this::annotatedDef)) * RCURL map {
         (kw, name, lcurl, defs, rcurl) ->
         val bodyPosRange = S_PosRange(lcurl.pos, rcurl.pos)
-        AnnotatedDef(kw) { S_NamespaceDefinition(it, bodyPosRange, name, defs) }
+        AnnotatedDef(kw) { S_NamespaceDefinition(it, bodyPosRange, name, defs.toImmList()) }
     }
 
     private val absoluteImportModule by qualifiedName map { S_ImportModulePath(null, it) }
@@ -899,10 +891,10 @@ object S_Grammar {
 
     val rootParser by optional(moduleHeader) * zeroOrMore(annotatedDef) map {
         (header, defs) ->
-        S_RellFile(header, defs)
+        S_RellFile(header, defs.toImmList())
     }
 
-    val rellTokens: List<RellToken> = rellTokens0.toImmList()
+    val rellTokens: ImmList<RellToken> = rellTokens0.toImmList()
 
     private fun <T> getTupleSingleField(list: S_CommaSeparatedList<S_GenericTupleAttr<T>>): T? {
         val first = list.items.first()
@@ -916,7 +908,7 @@ object S_Grammar {
     ): Parser<S_CommaSeparatedList<T>> {
         val parser = brackets.first * optional(commaSeparatedOneMany0(item)) * brackets.second map {
             (lBracket, values, rBracket) ->
-            val items = values?.items ?: immListOf()
+            val items = values?.items.orEmpty()
             S_CommaSeparatedList(lBracket.pos, rBracket.pos, items, values?.trailingComma ?: false)
         }
         _commaSeparatedParsers.add(parser)

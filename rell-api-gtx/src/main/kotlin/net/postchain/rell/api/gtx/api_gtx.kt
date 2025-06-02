@@ -87,7 +87,7 @@ object RellApiRunTests {
         /** Enable SQL error logging. */
         val sqlErrorLog: Boolean,
         /** List of glob patterns to filter test cases: when not `null`, only tests matching one of the patterns will be executed. */
-        val testPatterns: List<String>?,
+        val testPatterns: ImmList<String>?,
         /** Printer used for Rell `print()` calls. */
         val outPrinter: Rt_Printer,
         /** Printer used for Rell `log()` calls. */
@@ -219,7 +219,7 @@ internal object RellApiGtxInternal {
         options: C_CompilerOptions,
         sourceDir: C_SourceDir,
         app: R_App,
-        appModules: List<R_ModuleName>?,
+        appModules: ImmList<R_ModuleName>?,
     ): UnitTestRunnerResults {
         val globalCtx = RellApiBaseUtils.createGlobalContext(
             options,
@@ -271,7 +271,7 @@ internal object RellApiGtxInternal {
         config: RellApiRunTests.Config,
         sourceDir: C_SourceDir,
         app: R_App,
-        appModules: List<R_ModuleName>?,
+        appModules: ImmList<R_ModuleName>?,
         sqlInterceptor: SqlInterceptor?,
     ): Rt_UnitTestBlockRunner {
         val keyPair = Lib_RellTest.BLOCK_RUNNER_KEYPAIR
@@ -286,7 +286,7 @@ internal object RellApiGtxInternal {
         val mainModules = when {
             appModules == null -> null
             config.activateTestDependencies -> (appModules + RellApiBaseUtils.getMainModules(app)).toSet().toImmList()
-            else -> appModules.toImmList()
+            else -> appModules
         }
 
         val gtvCompileConfig = RellApiCompile.Config.Builder(config.compileConfig)

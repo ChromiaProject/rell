@@ -31,7 +31,7 @@ class V_ConstantValueExpr(
     pos: S_Pos,
     private val value: Rt_Value,
     private val valueType: R_Type = value.type(),
-    private val dependsOnAtExprs: Set<R_AtExprId> = immSetOf(),
+    private val dependsOnAtExprs: ImmSet<R_AtExprId> = immSetOf(),
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(valueType, dependsOnAtExprs = dependsOnAtExprs)
     override fun toRExpr0() = R_ConstantValueExpr(type, value)
@@ -61,7 +61,7 @@ class V_IfExpr(
         val dbCond = condExpr.toDbExpr()
         val dbTrue = trueExpr.toDbExpr()
         val dbFalse = falseExpr.toDbExpr()
-        val cases = listOf(Db_WhenCase(listOf(dbCond), dbTrue))
+        val cases = immListOf(Db_WhenCase(immListOf(dbCond), dbTrue))
         return Db_WhenExpr(resType, null, cases, dbFalse)
     }
 }
@@ -75,7 +75,7 @@ class V_TupleExpr(
     override fun exprInfo0() = V_ExprInfo.simple(tupleType, exprs, canBeDbExpr = false)
 
     override fun toRExpr0(): R_Expr {
-        val rExprs = exprs.map { it.toRExpr() }
+        val rExprs = exprs.mapToImmList { it.toRExpr() }
         return R_TupleExpr(tupleType, rExprs)
     }
 
@@ -133,8 +133,8 @@ class V_StructExpr(
         exprCtx: C_ExprContext,
         pos: S_Pos,
         private val struct: R_Struct,
-        explicitAttrs: List<V_CreateExprAttr>,
-        implicitAttrs: List<V_CreateExprAttr>
+        explicitAttrs: ImmList<V_CreateExprAttr>,
+        implicitAttrs: ImmList<V_CreateExprAttr>
 ): V_Expr(exprCtx, pos) {
     private val allAttrs = let {
         val impIdxs = implicitAttrs.map { it.attr.index }.toSet()
@@ -151,7 +151,7 @@ class V_StructExpr(
             require(it.attr.hasExpr) { it.attr }
         }
 
-        (explicitAttrs + implicitAttrs).toImmList()
+        explicitAttrs + implicitAttrs
     }
 
     override fun exprInfo0() = V_ExprInfo.simple(
@@ -161,7 +161,7 @@ class V_StructExpr(
     )
 
     override fun toRExpr0(): R_Expr {
-        val rAttrs = allAttrs.map { it.toRAttr() }
+        val rAttrs = allAttrs.mapToImmList { it.toRAttr() }
         return R_StructExpr(struct, rAttrs)
     }
 

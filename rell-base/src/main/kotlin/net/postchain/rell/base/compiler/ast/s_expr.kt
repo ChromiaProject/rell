@@ -244,7 +244,7 @@ class S_SubscriptExpr(val opPos: S_Pos, val base: S_Expr, val expr: S_Expr): S_E
 class S_CreateExpr(
     pos: S_Pos,
     private val entityName: S_QualifiedName,
-    private val args: List<S_CallArgument>,
+    private val args: ImmList<S_CallArgument>,
     private val argsPosRange: S_PosRange,
 ): S_Expr(pos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
@@ -373,7 +373,7 @@ class S_ParenthesesExpr(startPos: S_Pos, val expr: S_Expr): S_Expr(startPos) {
 
 class S_TupleExpr(
     startPos: S_Pos,
-    private val fields: List<S_GenericTupleAttr<S_Expr>>,
+    private val fields: ImmList<S_GenericTupleAttr<S_Expr>>,
 ): S_Expr(startPos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         // ID needs to be allocaed in advance, before processing sub-expressions (for correct numbering).
@@ -396,7 +396,7 @@ class S_TupleExpr(
         return C_ValueExpr(vExpr)
     }
 
-    private fun checkNameConflicts(ctx: C_ExprContext, fields: List<C_TupleField>): Set<String> {
+    private fun checkNameConflicts(ctx: C_ExprContext, fields: List<C_TupleField>): ImmSet<String> {
         val names = mutableSetOf<String>()
         val dups = mutableSetOf<String>()
 
@@ -506,7 +506,7 @@ class S_IfExpr(
     }
 }
 
-class S_ListLiteralExpr(pos: S_Pos, val exprs: List<S_Expr>): S_Expr(pos) {
+class S_ListLiteralExpr(pos: S_Pos, val exprs: ImmList<S_Expr>): S_Expr(pos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val rHintElemType = getHintElemType(hint.typeHint)
         val elemHint = C_ExprHint(C_TypeHint.ofType(rHintElemType))
@@ -563,7 +563,7 @@ class S_ListLiteralExpr(pos: S_Pos, val exprs: List<S_Expr>): S_Expr(pos) {
     }
 }
 
-class S_MapLiteralExpr(startPos: S_Pos, val entries: List<Pair<S_Expr, S_Expr>>): S_Expr(startPos) {
+class S_MapLiteralExpr(startPos: S_Pos, val entries: ImmList<Pair<S_Expr, S_Expr>>): S_Expr(startPos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val rHintKeyValueTypes = getHintKeyValueType(hint.typeHint)
         val keyHint = C_ExprHint(C_TypeHint.ofType(rHintKeyValueTypes?.key))

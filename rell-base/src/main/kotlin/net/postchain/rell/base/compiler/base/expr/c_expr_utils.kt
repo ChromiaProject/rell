@@ -127,7 +127,7 @@ object C_ExprUtils {
         type: R_Type = R_CtErrorType,
         msg: String = "Compilation error",
         ideInfo: C_IdeSymbolInfo? = null,
-        argIdeInfos: Map<R_Name, C_IdeSymbolInfo> = immMapOf(),
+        argIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo> = immMapOf(),
     ): V_GlobalFunctionCall {
         val vExpr = errorVExpr(ctx, pos, type, msg)
         return V_GlobalFunctionCall(vExpr, ideInfo, argIdeInfos)

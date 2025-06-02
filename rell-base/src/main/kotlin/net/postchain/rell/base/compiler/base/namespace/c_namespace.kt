@@ -146,9 +146,9 @@ class C_NamespaceEntry(
 }
 
 sealed class C_Namespace {
-    abstract fun getEntries(): Map<R_Name, C_NamespaceEntry>
+    abstract fun getEntries(): ImmMap<R_Name, C_NamespaceEntry>
     abstract fun getEntry(name: R_Name): C_NamespaceEntry?
-    abstract fun getDocMembers(): Map<String, DocDefinition>
+    abstract fun getDocMembers(): ImmMap<String, DocDefinition>
 
     fun getElement(
         name: R_Name,
@@ -169,14 +169,14 @@ sealed class C_Namespace {
 }
 
 private class C_BasicNamespace(private val entries: ImmMap<R_Name, C_NamespaceEntry>): C_Namespace() {
-    private val docMembersLazy: Map<String, DocDefinition> by lazy {
+    private val docMembersLazy: ImmMap<String, DocDefinition> by lazy {
         entries.entries.associateNotNullValues {
             val members = it.value.directMembers.ifEmpty { it.value.importMembers }
             it.key.str to members.singleOrNull()?.docDefinition
         }
     }
 
-    override fun getEntries(): Map<R_Name, C_NamespaceEntry> {
+    override fun getEntries(): ImmMap<R_Name, C_NamespaceEntry> {
         return entries
     }
 
@@ -184,7 +184,7 @@ private class C_BasicNamespace(private val entries: ImmMap<R_Name, C_NamespaceEn
         return entries[name]
     }
 
-    override fun getDocMembers(): Map<String, DocDefinition> = docMembersLazy
+    override fun getDocMembers(): ImmMap<String, DocDefinition> = docMembersLazy
 }
 
 private class C_LateNamespace(private val getter: LateGetter<C_Namespace>): C_Namespace() {
