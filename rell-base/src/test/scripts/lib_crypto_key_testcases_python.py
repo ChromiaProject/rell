@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#  Copyright (C) 2023 ChromaWay AB. See LICENSE for license information.
+#  Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
 
 import hashlib
 import json

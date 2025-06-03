@@ -1,3 +1,5 @@
+#  Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+
 import xml.dom.minidom
 import pytest
 

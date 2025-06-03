@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+# Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+#
+
 set -eu
 CONFIG_FILE=$1
 

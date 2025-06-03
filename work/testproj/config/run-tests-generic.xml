@@ -1,3 +1,7 @@
+<!--
+  ~ Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+  -->
+
 <run>
     <nodes>
         <config src="node-config.properties" add-signers="true" />
