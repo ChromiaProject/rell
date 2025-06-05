@@ -16,6 +16,7 @@ class PythonQuery(queryDef: R_QueryDefinition) : PythonFunction(
     override val imports: List<String> = super.imports(PyFunctionImplementations.QUERY)
 
     override fun formatReturnObject(): String = /*TODO: */ "// <Query 'return'>"
+    override fun formatReturnObjectArgs(): String = /*TODO */ "<Query return 'args'>"
 
     override fun formatReturnType(): String = /*TODO: */ "// <Query return 'type'>"
 }

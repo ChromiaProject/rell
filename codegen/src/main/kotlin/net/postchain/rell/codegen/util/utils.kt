@@ -73,7 +73,7 @@ fun rTypeToJsTypeString(type: R_Type, allowSet: Boolean = false, queryReturn: Bo
 }
 
 
-fun rTypeToPythonType(type: R_Type, allowSet: Boolean = false, queryReturn: Boolean = false): String {
+fun rTypeToPythonType(type: R_Type): String {
     return when (type) {
         is R_NullableType -> "Optional[${rTypeToPythonType(type.valueType)}]"
         is R_BooleanType -> "bool"
@@ -85,11 +85,11 @@ fun rTypeToPythonType(type: R_Type, allowSet: Boolean = false, queryReturn: Bool
         is R_RowidType -> "int"
         is R_EntityType -> "int"
         is R_JsonType -> "str"
-        is R_SetType -> if (allowSet) "set[${rTypeToPythonType(type.elementType)}]" else "list[${rTypeToPythonType(type.elementType)}]"
+        is R_SetType -> "Set[${rTypeToPythonType(type.elementType)}]"
         is R_ListType -> "List[${rTypeToPythonType(type.elementType)}]"
         is R_MapType -> "Dict[${rTypeToPythonType(type.keyType)}, ${rTypeToPythonType(type.valueType)}]"
         is R_StructType -> CamelCaseClassName.fromRellType(type).className
-        is R_EnumType -> if (queryReturn) rTypeToPythonType(R_TextType) else CamelCaseClassName.fromRellType(type).className
+        is R_EnumType -> CamelCaseClassName.fromRellType(type).className
         is R_TupleType -> "tuple[${type.fields.joinToString(", ") { rTypeToPythonType(it.type) } }]"
         is R_GtvType -> "RawGtv"
         else -> "Any"

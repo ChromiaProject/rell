@@ -16,5 +16,13 @@ class PythonEnumeration(
     override val moduleName get() = className.module
     override val imports = emptyList<String>()
 
-    override fun format(): String = /*TODO: */ "// <Enum>"
+    override fun format(): String {
+        val enumValues = enum.values().joinToString("\n") { value ->
+            "\t${value.str().uppercase()} = \"${value.str()}\""
+        }
+        return """
+            |class ${className.className}(Enum):
+            |$enumValues
+            """.trimMargin()
+    }
 }

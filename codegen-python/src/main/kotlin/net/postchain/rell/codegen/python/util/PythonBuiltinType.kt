@@ -38,10 +38,10 @@ object TransactionEntity : Builtin {
     override fun format() = """
         |@dataclass
         |class Transaction:
-        |   tx_rid: bytes
-        |   tx_hash: bytes
-        |   tx_data: bytes
-        |   block: int
+        |    tx_rid: bytes
+        |    tx_hash: bytes
+        |    tx_data: bytes
+        |    block: int
     """.trimMargin()
 }
 
