@@ -7,6 +7,8 @@ import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.section.DocumentSection
+import net.postchain.rell.codegen.util.camelToSnakeCase
+import net.postchain.rell.codegen.util.rTypeToPythonType
 
 abstract class PythonFunction(
         protected val className: ClassName,
@@ -26,11 +28,44 @@ abstract class PythonFunction(
         deps = paramDeps + returnDeps
     }
 
-    final override fun format(): String = /*TODO: */ "// <Function>"
+    final override fun format(): String {
+        val functionString = """
+        |${PythonDocGenerator.formatDoc(docSymbol, wrapInDocComments = true, params, formatReturnType())}
+        |def ${sanitizedFunName()}$querySuffix(${formatInputParameters()}) -> ${formatReturnType()}:
+        |${"\t"}${formatReturnObject()}
+        """.trimMargin()
+        return StringBuilder()
+                .append(functionString)
+                .toString()
+    }
 
-    fun imports(impl: PyFunctionImplementations): List<String> = /*TODO: */ emptyList()
+    fun sanitizedFunName(): String = className.className
+            .camelToSnakeCase()
+            .replace('.', '_')
+
+    fun imports(impl: PyFunctionImplementations): List<String> = buildList {
+        add("from dataclasses import dataclass")
+        add("from typing import Dict, Any, List, Set, Optional")
+        add("from enum import Enum")
+        add("from postchain_client_py.utils.gtv import RawGtv")
+        add("from postchain_client_py.utils.types import BigInt")
+        when(impl) {
+            PyFunctionImplementations.QUERY -> add(
+                "from postchain_client_py.blockchain_client.types import QueryObject"
+            )
+            PyFunctionImplementations.OPERATION -> add(
+                "from postchain_client_py.blockchain_client.types import Operation"
+            )
+        }
+    }
+
+    private fun formatInputParameters(): String {
+        if (params.isEmpty()) return ""
+        return params.joinToString(", ") { "${it.name.str.camelToSnakeCase()}: ${rTypeToPythonType(it.type)}" }
+    }
 
     abstract fun formatReturnObject(): String
+    abstract fun formatReturnObjectArgs(): String
     abstract fun formatReturnType(): String
 }
 
