@@ -71,11 +71,35 @@ object Lib_OpContext {
         }
 
         namespace("op_context", since = "0.7.0") {
+            comment("""
+                Access metadata relating to current and previous operations in a Rell DApp.
+
+                Most properties and functions in the `op_context` namespace are only available in an operation context
+                (during the execution of an operation, i.e. when there is an operation call in the current call stack).
+                When there is no operation context, accessing properties or calling functions in this namespace will
+                result in an exception being thrown. To check if there is an operation context, use the `exists`
+                property, which indicates whether there is an operation context, in which case other properties and
+                functions can be safely used.
+            """)
             extension("struct_op_ext", type = "mirror_struct<-operation>", since = "0.10.4") {
                 function("to_gtx_operation", "gtx_operation", since = "0.13.4") {
                     comment("""
-                        Converts a mirror struct representing an operation to a `gtx_operation`.
-                        The mirror struct should contain the mount name and arguments of the operation.
+                        Convert this `struct<operation>` to a `gtx_operation`.
+
+                        For the operation:
+                        ```rell
+                        operation my_op(foo: integer, bar: list<text>) { ... }
+                        ```
+
+                        a corresponding `struct<my_op>` can be instantiated and converted:
+                        ```
+                        val x: struct<my_op> = struct<my_op>(foo = 1, bar = ["a", "b"]);
+                        print(x.to_gtx_operation()); // prints gtx_operation{name=my_op,args=[1, ["a","b"]]}
+                        ```
+
+                        @return a `gtx_operation`, i.e. a struct with two members:
+                        - `name`, the mount name of the current operation as `text`; and
+                        - `args`, the list of arguments provided to the operation (a list of GTV-formatted text values).
                     """)
                     body { a ->
                         val (mountName, gtvArgs) = Lib_Type_Struct.decodeOperation(a)
@@ -89,7 +113,28 @@ object Lib_OpContext {
             }
 
             property("exists", type = "boolean", pure = false, since = "0.11.0") {
-                comment("Indicates whether the code is being called from an operation.")
+                comment("""
+                    Indicates whether there is currently an operation context, i.e. if the currently executing code has
+                    been called from an operation.
+
+                    When `false`, accessing other properties and calling functions in this namespace will result in an
+                    exception being thrown. When `true`, other properties and functions in this namespace can be used
+                    safely.
+
+                    Examples:
+
+                    ```rell
+                    function main() {
+                        print(op_context.exists); // prints false
+                    }
+                    ```
+
+                    ```rell
+                    operation main() {
+                        print(op_context.exists); // prints true
+                    }
+                    ```
+                """)
                 value { ctx ->
                     val v = ctx.exeCtx.opCtx.exists()
                     Rt_BooleanValue.get(v)
@@ -97,7 +142,18 @@ object Lib_OpContext {
             }
 
             property("last_block_time", type = "integer", pure = false, since = "0.6.1") {
-                comment("Returns the timestamp of the last block in milliseconds.")
+                comment("""
+                    The timestamp of the most recent completed block in the blockchain, in milliseconds.
+
+                    The most recent completed block is the parent block of the block currently being built.
+
+                    If there is no most recent completed block (i.e. if the first block in the blockchain is still being
+                    built), this will have the value `-1`.
+
+                    In either case, this is a [Unix epoch timestamp](https://en.wikipedia.org/wiki/Unix_time), i.e. the
+                    number of milliseconds that have elapsed since midnight on 1st January 1970.
+                    @throws exception if there is no operation context
+                """)
                 validate(::checkCtx)
                 value { ctx ->
                     Rt_IntValue.get(ctx.exeCtx.opCtx.lastBlockTime())
@@ -105,7 +161,13 @@ object Lib_OpContext {
             }
 
             property("block_height", type = "integer", pure = false, since = "0.9.0") {
-                comment("Provides the height of the block currently being built.")
+                comment("""
+                    The height of the block being built, i.e. the number of completed blocks in the blockchain.
+
+                    For each block, the height is the number of blocks before it, therefore the first block in the chain
+                    has height `0`, the second has height `1`, etc.
+                    @throws exception if there is no operation context
+                """)
                 validate(::checkCtx)
                 value { ctx ->
                     Rt_IntValue.get(ctx.exeCtx.opCtx.blockHeight())
@@ -113,7 +175,12 @@ object Lib_OpContext {
             }
 
             property("op_index", type = "integer", pure = false, since = "0.10.4") {
-                comment("Indicates the index of the operation being executed within the transaction.")
+                comment("""
+                    The index of the current operation within the transaction.
+
+                    The first operation in the transaction has index `0`.
+                    @throws exception if there is no operation context
+                """)
                 validate(::checkCtx)
                 value { ctx ->
                     Rt_IntValue.get(ctx.exeCtx.opCtx.opIndex().toLong())
@@ -123,7 +190,12 @@ object Lib_OpContext {
             property("transaction", PropTransaction, since = "0.7.0")
 
             function("get_signers", result = "list<byte_array>", since = "0.10.4") {
-                comment("Returns a list of pubkeys representing the signers of the current transaction.")
+                comment("""
+                    Get the signers of the current transaction.
+                    @return a `list<byte_array>` containing the public keys of all the signers of the current
+                    transaction.
+                    @throws exception if there is no operation context
+                """)
                 validate(::checkCtx)
                 bodyContext { ctx ->
                     val opCtx = ctx.exeCtx.opCtx
@@ -136,7 +208,8 @@ object Lib_OpContext {
                 comment("""
                     Check if a given public key is a signer of the current transaction; i.e. if it's in the list of
                     signers returned by `op_context.get_signers()`.
-                    @return `true` if the given public key is found, `false` otherwise
+                    @return `true` if the given public key is found, or `false` if the public key is not found or there
+                    is no operation context
                 """)
                 param("pubkey", type = "byte_array", comment = "the public key to check")
                 validate(::checkCtx)
@@ -149,8 +222,12 @@ object Lib_OpContext {
 
             function("get_all_operations", result = "list<gtx_operation>", since = "0.10.4") {
                 comment("""
-                    Gets all operations in this transaction.
-                    @return a list of all operations within the current transaction.
+                    Gets all operations in the current transaction.
+
+                    @return a `list<gtx_operation>`, i.e. list of struct values, each with two members:
+                    - `name`, the mount name of the operation as `text`; and
+                    - `args`, the list of arguments provided to the operation (a list of GTV-formatted text values).
+                    @throws exception if there is no operation context
                 """)
                 validate(::checkCtx)
                 bodyContext { ctx ->
@@ -160,7 +237,14 @@ object Lib_OpContext {
             }
 
             function("get_current_operation", result = "gtx_operation", since = "0.13.3") {
-                comment("Retrieves the current operation.")
+                comment("""
+                    Get a struct representing the current operation.
+
+                    @return a `gtx_operation`, i.e. a struct with two members:
+                    - `name`, the mount name of the current operation as `text`; and
+                    - `args`, the list of arguments provided to the operation (a list of GTV-formatted text values).
+                    @throws exception if there is no operation context
+                """)
                 validate(::checkCtx)
                 bodyContext { ctx ->
                     ctx.exeCtx.opCtx.currentOperation()
@@ -168,9 +252,24 @@ object Lib_OpContext {
             }
 
             function("emit_event", result = "unit", since = "0.10.4") {
-                comment("Emits an event with the provided type and data.")
-                param("type", type = "text", comment = "Name of the event to emit.")
-                param("data", type = "gtv", comment = "Data to emit")
+                comment("""
+                    Register an event for handling by the blockchain at the end of the current transaction.
+
+                    Postchain allows a set of events to be triggered at the end of every transaction, after all
+                    operations have been executed. This function is used to trigger such an event.
+                    Handlers for these events, sometimes called *event sinks*, are registered with the *block builder*
+                    in Postchain extensions.
+
+                    `emit_event` is used internally in several Chromia platform extensions such as
+                    [ICMF](https://docs.chromia.com/intro/cross-chain/icmf) and
+                    [EIF](https://blog.chromia.com/chromia-explained-eif/).
+
+                    @throws exception if there is no operation context
+                    @see EIF <a href="https://gitlab.com/chromaway/core/postchain-eif/blob/c5eea67d38d1bba29f49ffa4430b9e40a60bc622/postchain-eif-rell/rell/src/hbridge/eif_events.rell#L25">Usage of <code>op_context.emit_event()</code> in EIF</a>
+                    @see ICMF <a href="https://gitlab.com/chromaway/core/directory-chain/blob/abd4f0d73092020f5160d27057e4dedd8721bad5/src/lib/icmf/module.rell#L10">Usage of <code>op_context.emit_event()</code> in ICMF</a>
+                """)
+                param("type", type = "text", comment = "the event processor to trigger")
+                param("data", type = "gtv", comment = "arguments to the event processor")
                 validate(::checkCtx)
                 bodyContext { ctx, arg1, arg2 ->
                     val type = arg1.asString()
