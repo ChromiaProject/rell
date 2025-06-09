@@ -242,7 +242,28 @@ object Lib_Type_Block {
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell.test") {
             type("block", rType = R_TestBlockType, since = SINCE0) {
-                comment("Represents a block builder which can build a block on the blockchain.")
+                comment("""
+                    A builder for test blockchain blocks.
+
+                    #### Test block timestamps
+
+                    The timestamps of Rell test blocks are deterministic, and determined by the following rules:
+
+                    1. If the next block's timestamp was set explicitly via `rell.test.set_next_block_time()` or
+                       `rell.test.set_next_block_time_delta()`, that timestamp is used for the next block, and is then
+                       discarded (and will not be used by subsequent blocks).
+                    2. If the next block's timestamp was not set explicitly, and there is a previous block, the next
+                       block's timestamp is the timestamp of the previous block plus the block interval
+                       (`rell.test.block_interval`, which can be set with `rell.test.set_block_interval()`).
+                    3. If the next block's timestamp was not set explicitly, and there is no previous block, the
+                       timestamp of the next (and first) block will be `2020-01-01 00:00:00 UTC`.
+
+                    @see rell.test.set_next_block_time <a href="../set_next_block_time.html"><code>rell.test.set_next_block_time()</code></a>
+                    @see rell.test.set_next_block_time_delta <a href="../set_next_block_time_delta.html"><code>rell.test.set_next_block_time_delta()</code></a>
+                    @see rell.test.block_interval <a href="../block_interval.html"><code>rell.test.block_interval</code></a>
+                    @see rell.test.set_block_interval <a href="../set_block_interval.html"><code>rell.test.set_block_interval()</code></a>
+                    @see rell.test.block <a href="https://docs.chromia.com/rell/tests/namespace/block"><code>rell.test.block</code> - Chromia Documentation</a>
+                """)
 
                 constructor(since = SINCE0) {
                     comment("Creates a new block builder with specified transactions.")
