@@ -21,6 +21,7 @@ class PythonEnumeration(
             "\t${value.str().uppercase()} = \"${value.str()}\""
         }
         return """
+            |${PythonDocGenerator.formatDoc(docSymbol, wrapInDocComments = true)}
             |class ${className.className}(Enum):
             |$enumValues
             """.trimMargin()
