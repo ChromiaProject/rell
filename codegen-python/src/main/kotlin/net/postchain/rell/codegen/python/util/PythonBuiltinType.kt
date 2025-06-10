@@ -22,7 +22,7 @@ object BlockEntity : Builtin {
         get() = listOf("")
 
     override fun format() = """
-        |@dataclass
+        |@dataclass(frozen=True)
         |class Block:
         |    block_height: int
         |    block_rid: bytes
@@ -36,7 +36,7 @@ object TransactionEntity : Builtin {
         get() = listOf("")
 
     override fun format() = """
-        |@dataclass
+        |@dataclass(frozen=True)
         |class Transaction:
         |    tx_rid: bytes
         |    tx_hash: bytes
@@ -51,7 +51,7 @@ object GtxOperationStruct : Builtin {
         get() = listOf("")
 
     override fun format() = """
-        |@dataclass
+        |@dataclass(frozen=True)
         |class GtxOperation:
         |    name: str
         |    args: List[Any]
@@ -64,7 +64,7 @@ object GtxTransactionBodyStruct : Builtin {
         get() = listOf("")
 
     override fun format() = """
-        |@dataclass
+        |@dataclass(frozen=True)
         |class GtxTransactionBody:
         |    blockchain_rid: bytes
         |    operations: List['GtxOperation']
@@ -78,7 +78,7 @@ object GtxTransactionStruct : Builtin {
         get() = listOf("")
 
     override fun format() = """
-        |@dataclass
+        |@dataclass(frozen=True)
         |class GtxTransaction:
         |    body: 'GtxTransactionBody' 
         |    signatures: List[Any]

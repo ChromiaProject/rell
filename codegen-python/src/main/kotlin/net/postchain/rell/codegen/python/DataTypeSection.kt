@@ -28,7 +28,7 @@ open class DataTypeSection(private val className: ClassName,
 
     override fun format() = """
         |${PythonDocGenerator.formatDoc(docSymbol, wrapInDocComments = true)}
-        |@dataclass
+        |@dataclass(frozen=True)
         |class ${className.className}:
         |${initAssignments.lines().joinToString("\n") { "\t$it" }}
         |
@@ -46,7 +46,7 @@ open class DataTypeSection(private val className: ClassName,
 
     private fun fromDict() = """
         |@classmethod
-        |def from_dict(cls, data: Dict[str, Any]) -> "${className.className}":
+        |def from_dict(cls, data: Dict[str, Any]) -> '${className.className}':
         |   ${"\"\"\"Create an object from a dictionary\"\"\""}
         |   return cls(${typeFields.joinToString(", ") { "data[\"${it.substringBefore(":").lowercase()}\"]" }})
     """.trimMargin()

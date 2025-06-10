@@ -39,8 +39,7 @@ abstract class PythonFunction(
                 .toString()
     }
 
-    fun sanitizedFunName(): String = className.className
-            .camelToSnakeCase()
+    fun sanitizedFunName(): String = mountName.str()
             .replace('.', '_')
 
     fun imports(impl: PyFunctionImplementations): List<String> = buildList {

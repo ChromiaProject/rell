@@ -10,13 +10,13 @@ class PythonOperation(opDef: R_OperationDefinition) : PythonFunction(
         opDef.params(),
         opDef.docSymbol,
         opDef.type,
-       ""
+       "_operation"
 ), Operation {
     override val imports: List<String> = super.imports(PyFunctionImplementations.OPERATION)
 
     override fun formatReturnObject(): String = buildString {
         append("return Operation(")
-        append("""op_name="${mountName.str().replace('.', '_')}", """)
+        append("""op_name="${sanitizedFunName()}", """)
         append("""args=""")
         append(if (params.isNotEmpty()) formatReturnObjectArgs() else "[]")
         append(")")
