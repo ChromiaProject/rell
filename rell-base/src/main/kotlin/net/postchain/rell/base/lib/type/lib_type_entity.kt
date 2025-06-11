@@ -31,7 +31,12 @@ object Lib_Type_Entity {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("entity", abstract = true, hidden = true, since = "0.6.0") {
             comment("""
-                Common parent type of all entity types. An entity is a data structure that reside in the SQL database.
+                Parent of all entity types. An entity is a data structure that resides in the SQL database.
+
+                Entity values are created with a `create` statement and are persisted in the database, and are accessed
+                with an `@`-expression.
+
+                @see at-operator <a href="https://docs.chromia.com/rell/language-features/database/overview#-operator"><code>@</code> operator - Chromia Documentation</a>
             """)
             supertypeStrategySpecial { mType ->
                 val rType = L_TypeUtils.getRType(mType)
@@ -43,14 +48,56 @@ object Lib_Type_Entity {
             extension("entity_ext", type = "entity", since = "0.10.4") {
                 function("to_struct", C_Fn_ToStruct(false), since = "0.10.4") {
                     comment("""
-                        Convert this instance to a `struct<T>`.
-                        Note that this will read all values from the database.
+                        Convert this entity value to a `struct<T>`.
+
+                        Examples:
+                        ```rell
+                        entity animal {
+                            legs: integer;
+                            name: text;
+                        }
+
+                        operation main() {
+                            create animal(legs = 8, name = 'spider');
+                            create animal(legs = 4, name = 'dog');
+                            create animal(legs = 2, name = 'human');
+
+                            val spider = animal @ { .legs == 8 };
+
+                            // prints: struct<animal>{legs=8,name=spider}
+                            print(spider.to_struct());
+
+                            // prints: [struct<animal>{legs=8,name=spider}, struct<animal>{legs=4,name=dog}, struct<animal>{legs=2,name=human}]
+                            print((a: animal) @* {} (a.to_struct()));
+                        }
+                        ```
                     """)
                 }
                 function("to_mutable_struct", C_Fn_ToStruct(true), since = "0.10.4") {
                     comment("""
-                        Convert this instance to a `mutable struct<T>`.
-                        Note that this will read all values from the database.
+                        Convert this entity value to a `struct<mutable T>`.
+
+                        Examples:
+                        ```rell
+                        entity animal {
+                            legs: integer;
+                            name: text;
+                        }
+
+                        operation main() {
+                            create animal(legs = 8, name = 'spider');
+                            create animal(legs = 4, name = 'dog');
+                            create animal(legs = 2, name = 'human');
+
+                            val spider = animal @ { .legs == 8 };
+
+                            // prints: struct<mutable animal>{legs=8,name=spider}
+                            print(spider.to_mutable_struct());
+
+                            // prints: [struct<mutable animal>{legs=8,name=spider}, struct<mutable animal>{legs=4,name=dog}, struct<mutable animal>{legs=2,name=human}]
+                            print((a: animal) @* {} (a.to_mutable_struct()));
+                        }
+                        ```
                     """)
                 }
             }

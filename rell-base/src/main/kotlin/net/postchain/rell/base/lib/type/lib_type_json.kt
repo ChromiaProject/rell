@@ -27,11 +27,25 @@ object Lib_Type_Json {
 
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("json", rType = R_JsonType, since = SINCE0) {
-            comment("Wrapper object for a JSON-string.")
+            comment("""
+                A JSON (JavaScript Object Notation) datatype.
+
+                JSON values are created from text and support conversion to GTV via `gtv.from_json()`. They can be
+                stored in the database as an entity attribute.
+
+                JSON values in Rell are represented internally with text, which has been validated as legal JSON.
+
+                @see GTV <a href="../gtv/index.html">gtv</a>
+                @see gtv.from_json <a href="../gtv/from_json.html"><code>gtv.from_json()</code></a>
+            """)
 
             constructor(pure = true, since = SINCE0) {
-                comment("Constructs a JSON value from a string. Fails if the string is not valid json.")
-                param("value", type = "text", comment = "The JSON string.")
+                comment("""
+                    Construct a JSON value from text.
+
+                    @throws exception if `text` is not valid JSON
+                """)
+                param("value", type = "text", comment = "the JSON text to decode")
                 dbFunctionCast("json", "JSONB")
                 body { value ->
                     val jsonString = value.asString()
@@ -45,7 +59,7 @@ object Lib_Type_Json {
             }
 
             function("to_text", result = "text", pure = true, since = "0.9.0") {
-                comment("Converts the JSON value to a string.")
+                comment("Convert this JSON value to text.")
                 alias("str", since = SINCE0)
                 dbFunctionCast("json.to_text", "TEXT")
                 body { json ->
