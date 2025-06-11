@@ -38,11 +38,6 @@ import net.postchain.rell.gtx.Rt_PostchainOpContext
 import net.postchain.rell.gtx.Rt_PostchainTxContextFactory
 import org.apache.commons.lang3.time.FastDateFormat
 
-private fun convertArg(ctx: GtvToRtContext, param: R_FunctionParam, arg: Gtv): Rt_Value {
-    val subCtx = ctx.updateSymbol(GtvToRtSymbol_Param(param), true)
-    return param.type.gtvToRt(subCtx, arg)
-}
-
 private class ErrorHandler(
     val printer: Rt_Printer,
     private val wrapCtErrors: Boolean,
@@ -132,11 +127,10 @@ private class RellGTXOperation(
 ): GTXOperation(opData) {
     private val gtvArgs = data.args.toImmList()
 
-    private var mOpArgs: Rt_OperationArgs? = null
-
     override fun checkCorrectness() {
         handleError {
-            getOpArgs()
+            val gtvCtx = makeGtvToRtContext(GtvToRtDefaultValueEvaluator.getError(), validateOnly = true)
+            getOpArgs(gtvCtx)
         }
     }
 
@@ -158,38 +152,27 @@ private class RellGTXOperation(
             val heightProvider = Rt_TxChainHeightProvider(ctx)
             val exeCtx = module.createExecutionContext(ctx, opCtx, heightProvider, dbReadOnly = false)
 
-            val opArgs = getOpArgs()
-            mOpArgs = null
+            val gtvCtx = makeGtvToRtContext(GtvToRtDefaultValueEvaluator.getNormal(exeCtx))
+            val opArgs = getOpArgs(gtvCtx)
 
             val defCtx = Rt_DefinitionContext(exeCtx, true, rOperation.defId)
             val rtArgs = rOperation.params().mapIndexed { i, param ->
-                val rtArg = opArgs.args.getOrNull(i)
+                val rtArg = opArgs.getOrNull(i)
                 if (rtArg != null) rtArg else {
                     val expr = param.exprGetter!!.get()
                     Rt_Utils.evaluateInNewFrame(defCtx, null, expr, null, param.initFrameGetter)
                 }
             }
 
-            opArgs.gtvCtx.finish(exeCtx)
+            gtvCtx.finish(exeCtx)
             rOperation.call(exeCtx, rtArgs)
         }
 
         return true
     }
 
-    private fun getOpArgs(): Rt_OperationArgs {
-        var opArgs = mOpArgs
-        if (opArgs != null) {
-            return opArgs
-        }
-
+    private fun getOpArgs(gtvCtx: GtvToRtContext): List<Rt_Value> {
         val params = rOperation.params()
-
-        val gtvCtx = GtvToRtContext.make(
-            pretty = GTV_OPERATION_PRETTY,
-            strictGtvConversion = module.config.strictGtvConversion,
-            compilerOptions = module.config.compilerOptions,
-        )
 
         val minParams = params.dropLastWhile { it.exprGetter != null }.size
         if (gtvArgs.size < minParams || gtvArgs.size > params.size) {
@@ -201,12 +184,23 @@ private class RellGTXOperation(
 
         val rtArgs = gtvArgs.mapIndexed { i, arg ->
             val param = params[i]
-            convertArg(gtvCtx, param, arg)
+            RellPcUtils.convertArg(gtvCtx, param, arg)
         }
 
-        opArgs = Rt_OperationArgs(gtvCtx, rtArgs)
-        mOpArgs = opArgs
-        return opArgs
+        return rtArgs
+    }
+
+    private fun makeGtvToRtContext(
+        defaultValueEvaluator: GtvToRtDefaultValueEvaluator,
+        validateOnly: Boolean = false,
+    ): GtvToRtContext {
+        return GtvToRtContext.make(
+            pretty = GTV_OPERATION_PRETTY,
+            strictGtvConversion = module.config.strictGtvConversion,
+            compilerOptions = module.config.compilerOptions,
+            defaultValueEvaluator = defaultValueEvaluator,
+            validateOnly = validateOnly,
+        )
     }
 
     private fun <T> handleError(code: () -> T): T {
@@ -214,8 +208,6 @@ private class RellGTXOperation(
             code()
         }
     }
-
-    private class Rt_OperationArgs(val gtvCtx: GtvToRtContext, val args: List<Rt_Value>)
 
     private class Rt_TxChainHeightProvider(private val ctx: TxEContext): Rt_ChainHeightProvider {
         override fun getChainHeight(rid: WrappedByteArray, id: Long): Long? {
@@ -381,6 +373,7 @@ private class RellPostchainModule(
         val gtvToRtCtx = GtvToRtContext.make(
             pretty = GTV_QUERY_PRETTY,
             compilerOptions = defCtx.globalCtx.compilerOptions,
+            defaultValueEvaluator = GtvToRtDefaultValueEvaluator.getNormal(defCtx.exeCtx),
         )
 
         val missingArgs = mutableListOf<String>()
@@ -388,7 +381,7 @@ private class RellPostchainModule(
         for (param in params) {
             val arg = argMap[param.name.str]
             if (arg != null) {
-                val rtArg = convertArg(gtvToRtCtx, param, arg)
+                val rtArg = RellPcUtils.convertArg(gtvToRtCtx, param, arg)
                 rtArgsList.add(rtArg)
             } else if (param.exprGetter != null) {
                 val expr = param.exprGetter!!.get()
@@ -780,4 +773,11 @@ private class SourceCodeConfig(rellNode: Map<String, Gtv>) {
     }
 
     private class SourceCode(val key: String, val version: R_LangVersion, val files: Boolean, val legacy: Boolean)
+}
+
+private object RellPcUtils {
+    fun convertArg(ctx: GtvToRtContext, param: R_FunctionParam, arg: Gtv): Rt_Value {
+        val subCtx = ctx.updateSymbol(GtvToRtSymbol_Param(param), true)
+        return param.type.gtvToRt(subCtx, arg)
+    }
 }

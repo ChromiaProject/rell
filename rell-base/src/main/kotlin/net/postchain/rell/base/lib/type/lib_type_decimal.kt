@@ -676,17 +676,13 @@ private object GtvRtConversion_Decimal: GtvRtConversion() {
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
         return when {
             !ctx.strictGtvConversion && gtv.type == GtvType.INTEGER -> {
-                ctx.rtValue {
-                    val v = GtvRtUtils.gtvToInteger(ctx, gtv, R_DecimalType)
-                    Rt_DecimalValue.get(v)
-                }
+                val v = GtvRtUtils.gtvToInteger(ctx, gtv, R_DecimalType)
+                Rt_DecimalValue.get(v)
             }
             !ctx.strictGtvConversion && ctx.bigIntegerSupport && gtv.type == GtvType.BIGINTEGER -> {
-                ctx.rtValue {
-                    val v = gtv.asBigInteger()
-                    val bd = BigDecimal(v)
-                    Rt_DecimalValue.get(bd)
-                }
+                val v = gtv.asBigInteger()
+                val bd = BigDecimal(v)
+                Rt_DecimalValue.get(bd)
             }
             else -> {
                 val s = GtvRtUtils.gtvToString(ctx, gtv, R_DecimalType)

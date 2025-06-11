@@ -171,7 +171,7 @@ class RellApiCompileTest: BaseRellApiTest() {
         config = configBuilder().moduleArgs("foo" to barArgs).build()
         chkCompileAppMods(config, sourceDir, listOf(), listOf())
         chkCompileAppMods(config, sourceDir, listOf("foo"), listOf(),
-            "CME:module_args_bad:foo:gtv_err:struct_nokey:foo:module_args:x")
+            "CME:module_args_bad:foo:gtv_err:struct_noattr:foo:module_args:x")
         chkCompileAppMods(config, sourceDir, listOf("bar"), listOf(), "CME:module_args_missing:bar")
         chkCompileAppMods(config, sourceDir, null, listOf(), "CME:module_args_missing:bar")
     }

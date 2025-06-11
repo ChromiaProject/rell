@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.runtime
 
+import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.utils.*
@@ -147,9 +148,22 @@ class Rt_CallFrame(
     }
 
     companion object {
-        fun createInitFrame(exeCtx: Rt_ExecutionContext, rDef: R_Definition, modsAllowed: Boolean): Rt_CallFrame {
-            val defCtx = Rt_DefinitionContext(exeCtx, modsAllowed, rDef.defId)
-            val rInitFrame = rDef.initFrameGetter.get()
+        fun createInitFrame(
+            exeCtx: Rt_ExecutionContext,
+            rDef: R_Definition,
+            modsAllowed: Boolean,
+        ): Rt_CallFrame {
+            return createInitFrame(exeCtx, rDef.defId, rDef.initFrameGetter, modsAllowed)
+        }
+
+        fun createInitFrame(
+            exeCtx: Rt_ExecutionContext,
+            defId: R_DefinitionId,
+            initFrameGetter: C_LateGetter<R_CallFrame>,
+            modsAllowed: Boolean,
+        ): Rt_CallFrame {
+            val defCtx = Rt_DefinitionContext(exeCtx, modsAllowed, defId)
+            val rInitFrame = initFrameGetter.get()
             return rInitFrame.createRtFrame(defCtx, null, null)
         }
     }

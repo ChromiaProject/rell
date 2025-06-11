@@ -84,8 +84,8 @@ private class GtvRtConversion_Entity(val type: R_EntityType): GtvRtConversion() 
 
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
         val rowid = GtvRtUtils.gtvToInteger(ctx, gtv, type)
-        ctx.trackRecord(type.rEntity, rowid)
         return ctx.rtValue {
+            ctx.trackRecord(type.rEntity, rowid)
             Rt_EntityValue(type, rowid)
         }
     }

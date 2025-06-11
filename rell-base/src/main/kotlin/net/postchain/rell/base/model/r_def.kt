@@ -147,7 +147,7 @@ class R_StructFlags(
 class R_Struct(
     val name: String,
     val typeMetaGtv: Gtv,
-    val initFrameGetter: C_LateGetter<R_CallFrame>,
+    val rDefBase: R_DefinitionBase?,
     val mirrorStructs: R_MirrorStructs?,
 ) {
     private val bodyLate = LateInit(ERROR_BODY)
@@ -233,7 +233,7 @@ class R_MirrorStructs(
             "mutable" to mutable.toGtv(),
         ).toGtv()
 
-        return R_Struct(structName, structMetaGtv, defBase.initFrameGetter, mirrorStructs = this)
+        return R_Struct(structName, structMetaGtv, defBase, mirrorStructs = this)
     }
 }
 

@@ -119,7 +119,7 @@ class TestModuleTxTest: BaseRellTest() {
         file("test.rell", "@test module; import app; function test() { print(app.f()); }")
 
         tst.moduleArgs("app" to "{}")
-        chkTests("test", "RTE:gtv_err:struct_nokey:app:module_args:x")
+        chkTests("test", "RTE:gtv_err:struct_noattr:app:module_args:x")
         chkOut()
 
         tst.moduleArgs("app" to "{'x':'Hello'}")

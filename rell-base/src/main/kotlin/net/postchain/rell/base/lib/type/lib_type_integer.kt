@@ -380,8 +380,6 @@ private object GtvRtConversion_Integer: GtvRtConversion() {
 
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
         val v = GtvRtUtils.gtvToInteger(ctx, gtv, R_IntegerType)
-        return ctx.rtValue {
-            Rt_IntValue.get(v)
-        }
+        return Rt_IntValue.get(v)
     }
 }

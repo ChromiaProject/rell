@@ -337,7 +337,7 @@ class Rt_ExecutionContext(
     val opCtx: Rt_OpContext,
     val sqlCtx: Rt_SqlContext,
     sqlExec: SqlExecutor,
-    var dbReadOnly: Boolean = true,
+    val dbReadOnly: Boolean = true,
     state: State? = null,
 ) {
     val globalCtx = appCtx.globalCtx

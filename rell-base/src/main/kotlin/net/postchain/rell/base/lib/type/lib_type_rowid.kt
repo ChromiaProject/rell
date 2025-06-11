@@ -110,8 +110,6 @@ private object GtvRtConversion_Rowid: GtvRtConversion() {
         if (v < 0) {
             throw GtvRtUtils.errGtv(ctx, "rowid:negative:$v", "Negative value of $R_RowidType type: $v")
         }
-        return ctx.rtValue {
-            Rt_RowidValue.get(v)
-        }
+        return Rt_RowidValue.get(v)
     }
 }

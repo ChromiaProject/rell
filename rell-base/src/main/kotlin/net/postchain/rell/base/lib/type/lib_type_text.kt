@@ -661,8 +661,6 @@ private object GtvRtConversion_Text: GtvRtConversion() {
 
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
         val s = GtvRtUtils.gtvToString(ctx, gtv, R_TextType)
-        return ctx.rtValue {
-            Rt_TextValue.get(s)
-        }
+        return Rt_TextValue.get(s)
     }
 }

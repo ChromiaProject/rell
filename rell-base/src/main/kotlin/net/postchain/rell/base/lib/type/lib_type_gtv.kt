@@ -348,13 +348,22 @@ object Lib_Type_Gtv {
             bodyContext { ctx, a ->
                 val gtv = a.asGtv()
                 Rt_Utils.wrapErr({ "fn:[${resType.strCode()}]:from_gtv:$pretty" }) {
-                    val convCtx = GtvToRtContext.make(pretty = pretty, compilerOptions = ctx.globalCtx.compilerOptions)
-                    val res = resType.gtvToRt(convCtx, gtv)
-                    convCtx.finish(ctx.exeCtx)
-                    res
+                    gtvToRt(ctx, resType, gtv, pretty)
                 }
             }
         }
+    }
+
+    fun gtvToRt(ctx: Rt_CallContext, type: R_Type, gtv: Gtv, pretty: Boolean): Rt_Value {
+        val convCtx = GtvToRtContext.make(
+            pretty = pretty,
+            defaultValueEvaluator = GtvToRtDefaultValueEvaluator.getStructDefault(ctx.exeCtx),
+            compilerOptions = ctx.globalCtx.compilerOptions,
+        )
+
+        val res = type.gtvToRt(convCtx, gtv)
+        convCtx.finish(ctx.exeCtx)
+        return res
     }
 
     fun validateFromGtvBody(m: Ld_FunctionMetaBodyDsl, type: R_Type, allowVirtual: Boolean = true) {
@@ -491,8 +500,6 @@ private object GtvRtConversion_Gtv: GtvRtConversion() {
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = rt.asGtv()
 
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
-        return ctx.rtValue {
-            Rt_GtvValue.get(gtv)
-        }
+        return Rt_GtvValue.get(gtv)
     }
 }

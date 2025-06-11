@@ -15,6 +15,7 @@ import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_IdeCompletionsUtils
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.compiler.vexpr.V_StructExpr
+import net.postchain.rell.base.model.R_CallFrame
 import net.postchain.rell.base.model.R_Struct
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
@@ -27,7 +28,9 @@ class C_StructGlobalFunction(private val struct: R_Struct): C_GlobalFunction() {
         resTypeHint: C_TypeHint,
     ): V_GlobalFunctionCall {
         val fnPos = name.pos
-        val createCtx = C_CreateContext(ctx, struct.initFrameGetter, fnPos.toFilePos())
+
+        val initFrameGetter = struct.rDefBase?.initFrameGetter ?: R_CallFrame.NONE_INIT_FRAME_GETTER
+        val createCtx = C_CreateContext(ctx, initFrameGetter, fnPos.toFilePos())
 
         val callArgs = C_CallArgument.compileAttributes(ctx, args, struct.attributes)
         val attrArgs = C_CallArgument.toAttrArguments(ctx, callArgs, C_CodeMsg("struct", "struct expression"))

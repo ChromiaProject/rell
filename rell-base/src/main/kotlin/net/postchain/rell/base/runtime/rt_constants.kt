@@ -51,10 +51,7 @@ class Rt_GtvModuleArgsSource(
         val gtv = getArgsGtv(moduleName, argsStruct)
         gtv ?: return null
 
-        val frame = Rt_CallFrame.createInitFrame(exeCtx, argsStruct, modsAllowed = false)
-        val defaultValueEvaluator = if (!defaultValuesSupported) null else GtvToRtDefaultValueEvaluator { expr ->
-            expr.evaluate(frame)
-        }
+        val defaultValueEvaluator = if (!defaultValuesSupported) null else GtvToRtDefaultValueEvaluator.getNormal(exeCtx)
 
         return PostchainGtvUtils.moduleArgsGtvToRt(
             argsStruct,

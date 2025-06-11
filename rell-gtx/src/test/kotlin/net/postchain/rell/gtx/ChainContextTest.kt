@@ -76,7 +76,7 @@ class ChainContextTest: BaseGtxTest() {
         chkUserMistake("", "$err: Decoding type 'module_args': expected ARRAY, actual INTEGER")
 
         tst.moduleArgs("" to "{'p':'Hello','q':123}")
-        chkUserMistake("", "$err: Key missing in Gtv dictionary: ")
+        chkUserMistake("", "$err: Missing struct attribute value: 'module_args.s'")
 
         tst.moduleArgs("" to "{'n':'Hello','s':123}")
         chkUserMistake("", "$err: Decoding type 'text': expected STRING, actual INTEGER")
@@ -85,10 +85,10 @@ class ChainContextTest: BaseGtxTest() {
         chkUserMistake("", "$err: Wrong key in Gtv dictionary for type 'module_args': 'p'")
 
         tst.moduleArgs("" to "{'s':'Hello'}")
-        chkUserMistake("", "$err: Key missing in Gtv dictionary: field 'module_args.n'")
+        chkUserMistake("", "$err: Missing struct attribute value: 'module_args.n'")
 
         tst.moduleArgs("" to "{'n':123}")
-        chkUserMistake("", "$err: Key missing in Gtv dictionary: field 'module_args.s'")
+        chkUserMistake("", "$err: Missing struct attribute value: 'module_args.s'")
 
         tst.moduleArgs("" to "['Hello']")
         chkUserMistake("", "$err: Wrong Gtv array size for struct 'module_args': 1 instead of 2")
@@ -102,19 +102,19 @@ class ChainContextTest: BaseGtxTest() {
 
         val err = "Module initialization failed"
         tst.moduleArgs("" to "{'n':456}")
-        chkUserMistake("", "$err: Key missing in Gtv dictionary: field 'module_args.s'")
+        chkUserMistake("", "$err: Missing struct attribute value: 'module_args.s'")
 
         tst.moduleArgs("" to "{'s':'Hello','n':456}")
         chk("chain_context.args", "{'n':456,'s':'Hello'}")
 
         tst.moduleArgs("" to "{'p':'Hello','n':456}")
-        chkUserMistake("", "$err: Key missing in Gtv dictionary: field 'module_args.s'")
+        chkUserMistake("", "$err: Missing struct attribute value: 'module_args.s'")
 
         tst.moduleArgs("" to "{'s':'Hello','x':456}")
         chkUserMistake("", "$err: Wrong key in Gtv dictionary for type 'module_args': 'x'")
 
         tst.moduleArgs("" to "['Hello']")
-        chkUserMistake("", "$err: Wrong Gtv array size for struct 'module_args': 1 instead of 2")
+        chk("chain_context.args", "{'n':123,'s':'Hello'}")
     }
 
     @Test fun testModuleArgsDefaultValueAllAttrs() {
@@ -206,7 +206,7 @@ class ChainContextTest: BaseGtxTest() {
         chk("chain_context.args", "{'n':123,'s':'Hello'}")
 
         tst.compatibilityVer("0.13.4")
-        chkUserMistake("", "Module initialization failed: Key missing in Gtv dictionary: field 'module_args.n'")
+        chkUserMistake("", "Module initialization failed: Missing struct attribute value: 'module_args.n'")
     }
 
     @Test fun testModuleArgsDefaultValueVersionControlAllAttrs() {
@@ -242,7 +242,7 @@ class ChainContextTest: BaseGtxTest() {
         chk("a.chain_context.args", "ct_err:unknown_name:[a]:chain_context")
 
         tst.moduleArgs("lib.a" to "{x:'Hello'}", "lib.b" to "{'y':123}", "lib.c" to "{'q':'456.789'}")
-        chkUserMistake("", "Module initialization failed: Key missing in Gtv dictionary")
+        chkUserMistake("", "Module initialization failed: Missing struct attribute value: 'lib.c:module_args.z'")
 
         tst.moduleArgs()
         chkUserMistake("", "Module initialization failed: No moduleArgs for module 'lib.a' in blockchain configuration")

@@ -78,10 +78,11 @@ class GtvRtConversion_VirtualStruct(private val type: R_VirtualStructType): GtvR
         }
 
         private fun decodeAttrs(ctx: GtvToRtContext, type: R_VirtualStructType, v: Gtv): List<Gtv?> {
+            val struct = type.innerType.struct
             return if (v !is GtvVirtual) {
-                GtvRtConversion_Struct.gtvToAttrValues(ctx, type, type.innerType.struct, v)
+                GtvRtConversion_Struct.gtvToAttrValues(ctx, v, type, struct, struct.attributes.size)
             } else {
-                decodeVirtualArray(ctx, type, v, type.innerType.struct.attributes.size)
+                decodeVirtualArray(ctx, type, v, struct.attributes.size)
             }
         }
 
@@ -93,7 +94,7 @@ class GtvRtConversion_VirtualStruct(private val type: R_VirtualStructType): GtvR
 
             val actualCount = v.array.size
             if (actualCount > maxSize) {
-                throw GtvRtConversion_Struct.errWrongArraySize(ctx, type, maxSize, actualCount)
+                throw GtvRtConversion_Struct.errWrongArraySize(ctx, type, maxSize, maxSize, actualCount)
             }
 
             return v.array.toList()

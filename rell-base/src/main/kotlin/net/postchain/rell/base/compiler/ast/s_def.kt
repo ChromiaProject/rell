@@ -593,7 +593,7 @@ class S_StructDefinition(
         val rStruct = R_Struct(
             cDefBase.appLevelName,
             cDefBase.appLevelName.toGtv(),
-            defBase.initFrameGetter,
+            defBase,
             mirrorStructs = null,
         )
 

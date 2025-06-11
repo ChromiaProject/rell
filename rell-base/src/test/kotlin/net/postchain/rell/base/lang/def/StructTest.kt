@@ -5,6 +5,7 @@
 package net.postchain.rell.base.lang.def
 
 import net.postchain.rell.base.testutils.BaseRellTest
+import net.postchain.rell.base.utils.RellVersions
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -501,5 +502,60 @@ class StructTest: BaseRellTest() {
         def("struct s { interface: name; name; }")
         chkEx("{ val interface = 'foo'; return s(interface, name = 'bar'); }", "s[interface=text[foo],name=text[bar]]")
         chkFull("val interface = 'foo'; query q() = s(interface, name = 'bar');", "s[interface=text[foo],name=text[bar]]")
+    }
+
+    @Test fun testFromGtvDefaultValuesArray() {
+        def("struct s { x: integer; y: text = 'hi'; z: boolean = true; }")
+        def("struct s2 { a: text; b: integer = 123; c: decimal; }")
+
+        chkFromGtv("s.from_gtv", """[123,"hello",false]""", "s[x=int[123],y=text[hello],z=boolean[false]]")
+        chkFromGtv("s.from_gtv", """[123,"hello"]""", "s[x=int[123],y=text[hello],z=boolean[true]]")
+        chkFromGtv("s.from_gtv", """[123]""", "s[x=int[123],y=text[hi],z=boolean[true]]")
+        chkFromGtv("s.from_gtv", """[]""", "gtv_err:struct_size:s:1:3:0")
+
+        chkFromGtv("s2.from_gtv", """["hello",456,"12.34"]""", "s2[a=text[hello],b=int[456],c=dec[12.34]]")
+        chkFromGtv("s2.from_gtv", """["hello",456]""", "gtv_err:struct_size:s2:3:3:2")
+        chkFromGtv("s2.from_gtv", """["hello"]""", "gtv_err:struct_size:s2:3:3:1")
+        chkFromGtv("s2.from_gtv", """[]""", "gtv_err:struct_size:s2:3:3:0")
+    }
+
+    @Test fun testFromGtvDefaultValuesDict() {
+        def("struct s { x: integer; y: text = 'hi'; z: boolean = true; }")
+        def("struct s2 { a: text; b: integer = 123; c: decimal; }")
+
+        val f = "from_gtv_pretty"
+        chkFromGtv("s.$f", """{"x":123,"y":"hello","z":false}""", "s[x=int[123],y=text[hello],z=boolean[false]]")
+        chkFromGtv("s.$f", """{"x":123,"y":"hello"}""", "s[x=int[123],y=text[hello],z=boolean[true]]")
+        chkFromGtv("s.$f", """{"x":123,"z":false}""", "s[x=int[123],y=text[hi],z=boolean[false]]")
+        chkFromGtv("s.$f", """{"x":123}""", "s[x=int[123],y=text[hi],z=boolean[true]]")
+        chkFromGtv("s.$f", """{"y":"hello","z":false}""", "gtv_err:struct_noattr:s:x")
+        chkFromGtv("s.$f", """{"z":false}""", "gtv_err:struct_noattr:s:x")
+        chkFromGtv("s.$f", """{"y":"hello"}""", "gtv_err:struct_noattr:s:x")
+        chkFromGtv("s.$f", """{}""", "gtv_err:struct_noattr:s:x")
+
+        chkFromGtv("s2.$f", """{"a":"hello","b":456,"c":"12.34"}""", "s2[a=text[hello],b=int[456],c=dec[12.34]]")
+        chkFromGtv("s2.$f", """{"a":"hello","c":"12.34"}""", "s2[a=text[hello],b=int[123],c=dec[12.34]]")
+        chkFromGtv("s2.$f", """{"a":"hello","b":456}""", "gtv_err:struct_noattr:s2:c")
+        chkFromGtv("s2.$f", """{"b":456,"c":"12.34"}""", "gtv_err:struct_noattr:s2:a")
+        chkFromGtv("s2.$f", """{"b":456}""", "gtv_err:struct_noattr:s2:a")
+        chkFromGtv("s2.$f", """{}""", "gtv_err:struct_noattr:s2:a")
+    }
+
+    @Test fun testFromGtvDefaultValuesVersionControl() {
+        def("struct s { x: integer; y: text = 'hi'; z: boolean = true; }")
+        chkFromGtv("s.from_gtv", """[123]""", "s[x=int[123],y=text[hi],z=boolean[true]]")
+        chkFromGtv("s.from_gtv_pretty", """{"x":123}""", "s[x=int[123],y=text[hi],z=boolean[true]]")
+
+        tst.compatibilityVer(RellVersions.SINCE_NOW)
+        chkFromGtv("s.from_gtv", """[123]""", "s[x=int[123],y=text[hi],z=boolean[true]]")
+        chkFromGtv("s.from_gtv_pretty", """{"x":123}""", "s[x=int[123],y=text[hi],z=boolean[true]]")
+
+        tst.compatibilityVer("0.14.11")
+        chkFromGtv("s.from_gtv", """[123]""", "gtv_err:struct_noattr:s:y")
+        chkFromGtv("s.from_gtv_pretty", """{"x":123}""", "gtv_err:struct_noattr:s:y")
+    }
+
+    private fun chkFromGtv(f: String, json: String, exp: String) {
+        chk("""$f(gtv.from_json('$json'))""", exp)
     }
 }

@@ -628,8 +628,6 @@ private object GtvRtConversion_BigInteger: GtvRtConversion() {
 
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
         val v = GtvRtUtils.gtvToBigInteger(ctx, gtv, R_BigIntegerType)
-        return ctx.rtValue {
-            Rt_BigIntegerValue.get(v)
-        }
+        return Rt_BigIntegerValue.get(v)
     }
 }

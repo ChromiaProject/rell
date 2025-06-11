@@ -183,14 +183,14 @@ class GtvRtConversionTest: BaseRellTest(gtv = true) {
         chkQueryArg("foo", """{"x":123,"b":{"p":1,"q":"Hello"}}""", "foo[x=int[123],b=bar[p=boolean[true],q=text[Hello]]]")
         chkQueryArg("foo", """{"x":123,"b":{"p":2,"q":"Hello"}}""", "gtv_err:type:[boolean]:bad_value:2:attr:[bar]:p")
         chkQueryArg("foo", """{"x":123,"b":{"p":1,"q":456}}""", "gtv_err:type:[text]:STRING:INTEGER:attr:[bar]:q")
-        chkQueryArg("foo", """{"b":{"p":1,"q":"Hello"}}""", "gtv_err:struct_nokey:foo:x")
+        chkQueryArg("foo", """{"b":{"p":1,"q":"Hello"}}""", "gtv_err:struct_noattr:foo:x")
         chkQueryArg("foo", """{"x":123,"b":null}""", "gtv_err:type:[bar]:ARRAY:NULL:attr:[foo]:b")
-        chkQueryArg("foo", """{"x":123}""", "gtv_err:struct_nokey:foo:b")
+        chkQueryArg("foo", """{"x":123}""", "gtv_err:struct_noattr:foo:b")
         chkQueryArg("foo", """{"x":123,"b":{"p":1,"q":"Hello","r":456}}""", "gtv_err:struct_badkey:bar:r:attr:[foo]:b")
 
         chkQueryArg("qaz", """{"b":{"p":2,"q":"Hello","r":456}}""", "gtv_err:type:[boolean]:bad_value:2:attr:[bar]:p")
         chkQueryArg("qaz", """{"b":null}""", "qaz[b=null]")
-        chkQueryArg("qaz", """{}""", "gtv_err:struct_nokey:qaz:b")
+        chkQueryArg("qaz", """{}""", "gtv_err:struct_noattr:qaz:b")
     }
 
     @Test fun testArgStructQueryCyclic() {
@@ -210,14 +210,14 @@ class GtvRtConversionTest: BaseRellTest(gtv = true) {
         chkOpArg("foo", """{"x":123,"b":{"p":1,"q":"Hello"}}""", "gtv_err:type:[foo]:ARRAY:DICT")
         chkOpArg("foo", """[123,[2,"Hello"]]""", "gtv_err:type:[boolean]:bad_value:2:attr:[bar]:p")
         chkOpArg("foo", """[123,[1,456]]""", "gtv_err:type:[text]:STRING:INTEGER:attr:[bar]:q")
-        chkOpArg("foo", """[[1,"Hello"]]""", "gtv_err:struct_size:foo:2:1")
+        chkOpArg("foo", """[[1,"Hello"]]""", "gtv_err:struct_size:foo:2:2:1")
         chkOpArg("foo", """[123,null]""", "gtv_err:type:[bar]:ARRAY:NULL:attr:[foo]:b")
-        chkOpArg("foo", """[123]""", "gtv_err:struct_size:foo:2:1")
-        chkOpArg("foo", """[123,[1,"Hello",456]]""", "gtv_err:struct_size:bar:2:3:attr:[foo]:b")
+        chkOpArg("foo", """[123]""", "gtv_err:struct_size:foo:2:2:1")
+        chkOpArg("foo", """[123,[1,"Hello",456]]""", "gtv_err:struct_size:bar:2:2:3:attr:[foo]:b")
 
-        chkOpArg("qaz", """[[2,"Hello",456]]""", "gtv_err:struct_size:bar:2:3:attr:[qaz]:b")
+        chkOpArg("qaz", """[[2,"Hello",456]]""", "gtv_err:struct_size:bar:2:2:3:attr:[qaz]:b")
         chkOpArg("qaz", """[null]""", "qaz[b=null]")
-        chkOpArg("qaz", """[]""", "gtv_err:struct_size:qaz:1:0")
+        chkOpArg("qaz", """[]""", "gtv_err:struct_size:qaz:1:1:0")
     }
 
     @Test fun testArgStructOpCyclic() {

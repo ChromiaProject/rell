@@ -16,6 +16,7 @@ import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.sql.SqlExecutor
+import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.immListOf
 import org.apache.commons.collections4.MultiValuedMap
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap
@@ -24,8 +25,23 @@ import java.math.BigInteger
 const val GTV_QUERY_PRETTY = true
 const val GTV_OPERATION_PRETTY = false
 
-fun interface GtvToRtDefaultValueEvaluator {
-    fun evaluate(expr: R_Expr): Rt_Value
+interface GtvToRtDefaultValueEvaluator {
+    fun evaluate(rDefBase: R_DefinitionBase, expr: R_Expr): Rt_Value
+
+    companion object {
+        private val STRUCT_DEFAULT_SWITCH = C_FeatureSwitch(RellVersions.SINCE_NOW)
+
+        fun getError(): GtvToRtDefaultValueEvaluator = GtvToRtDefaultValueEvaluator_Error
+
+        fun getNormal(exeCtx: Rt_ExecutionContext): GtvToRtDefaultValueEvaluator {
+            return GtvToRtDefaultValueEvaluator_Default(exeCtx)
+        }
+
+        fun getStructDefault(exeCtx: Rt_ExecutionContext): GtvToRtDefaultValueEvaluator? {
+            val isActive = STRUCT_DEFAULT_SWITCH.isActive(exeCtx.globalCtx.compilerOptions)
+            return if (isActive) getNormal(exeCtx) else null
+        }
+    }
 }
 
 private class GtvToRtState(
@@ -140,6 +156,26 @@ object GtvRtConversion_None: GtvRtConversion() {
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv) = throw UnsupportedOperationException()
 }
 
+private class GtvToRtDefaultValueEvaluator_Default(
+    private val exeCtx: Rt_ExecutionContext,
+): GtvToRtDefaultValueEvaluator {
+    override fun evaluate(rDefBase: R_DefinitionBase, expr: R_Expr): Rt_Value {
+        val frame = Rt_CallFrame.createInitFrame(
+            exeCtx,
+            rDefBase.defId,
+            rDefBase.initFrameGetter,
+            modsAllowed = !exeCtx.dbReadOnly,
+        )
+        return expr.evaluate(frame)
+    }
+}
+
+private object GtvToRtDefaultValueEvaluator_Error: GtvToRtDefaultValueEvaluator {
+    override fun evaluate(rDefBase: R_DefinitionBase, expr: R_Expr): Rt_Value {
+        throw UnsupportedOperationException("Default values evaluation not supported")
+    }
+}
+
 object GtvRtUtils {
     fun gtvToInteger(ctx: GtvToRtContext, gtv: Gtv, rellType: R_Type): Long {
         return when (gtv.type) {
@@ -252,11 +288,23 @@ object GtvRtUtils {
         }
     }
 
-    private fun errGtvType(ctx: GtvToRtContext, rellType: R_Type, actualGtv: Gtv, expectedGtvType: GtvType, e: UserMistake): Rt_Exception {
+    private fun errGtvType(
+        ctx: GtvToRtContext,
+        rellType: R_Type,
+        actualGtv: Gtv,
+        expectedGtvType: GtvType,
+        e: UserMistake,
+    ): Rt_Exception {
         return errGtvType(ctx, rellType, actualGtv, expectedGtvType, e.message)
     }
 
-    private fun errGtvType(ctx: GtvToRtContext, rellType: R_Type, actualGtv: Gtv, expectedGtvType: GtvType, errMsg: String?): Rt_Exception {
+    private fun errGtvType(
+        ctx: GtvToRtContext,
+        rellType: R_Type,
+        actualGtv: Gtv,
+        expectedGtvType: GtvType,
+        errMsg: String?,
+    ): Rt_Exception {
         val code = "$expectedGtvType:${actualGtv.type}"
         val msg = when {
             actualGtv.type != expectedGtvType -> "expected $expectedGtvType, actual ${actualGtv.type}"

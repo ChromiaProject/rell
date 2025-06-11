@@ -113,10 +113,10 @@ class RellApiRunTestsTest: BaseRellApiRunTestsTest() {
         chkRunTests(runConfig, sourceDir, listOf(), listOf(""), "CME:module_args_missing:foo")
         runConfig = runTestsConfig(configBuilder().moduleArgs("foo" to barArgs, "bar" to barArgs))
         chkRunTests(runConfig, sourceDir, listOf(), listOf(""),
-            "CME:module_args_bad:foo:gtv_err:struct_nokey:foo:module_args:x")
+            "CME:module_args_bad:foo:gtv_err:struct_noattr:foo:module_args:x")
         runConfig = runTestsConfig(configBuilder().moduleArgs("foo" to fooArgs, "bar" to fooArgs))
         chkRunTests(runConfig, sourceDir, listOf(), listOf(""),
-            "CME:module_args_bad:bar:gtv_err:struct_nokey:bar:module_args:y")
+            "CME:module_args_bad:bar:gtv_err:struct_noattr:bar:module_args:y")
         runConfig = runTestsConfig(configBuilder().moduleArgs("foo" to fooArgs, "bar" to barArgs))
         chkRunTests(runConfig, sourceDir, listOf(), listOf(""), "bar:test_2:OK", "foo:test_1:OK")
 

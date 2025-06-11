@@ -199,7 +199,10 @@ class RellGtxTester(
             createGtxModule(moduleCode)
             fail("Did not throw UserMistake")
         } catch (e: UserMistake) {
-            assertTrue(e.message!!.startsWith(msg), "" + e)
+            val actMsg = e.message!!
+            if (!actMsg.startsWith(msg)) {
+                assertEquals(msg, actMsg)
+            }
         }
     }
 

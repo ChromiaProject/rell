@@ -237,7 +237,7 @@ private class App(private val dataDir: File) {
         }
 
         if (cRes.errors.isNotEmpty()) {
-            println("$file ERROR MODULE")
+            println("$file ERROR")
             for (e in cRes.errors) {
                 println("    $e")
                 val (lines, index) = getErrorLines(sourceDir, e.pos)

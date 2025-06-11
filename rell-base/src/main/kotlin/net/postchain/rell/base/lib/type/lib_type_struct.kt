@@ -10,6 +10,7 @@ import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
+import net.postchain.rell.base.lib.type.Lib_Type_Gtv.gtvToRt
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.*
@@ -150,13 +151,7 @@ object Lib_Type_Struct {
                             val bytes = a.asByteArray()
                             Rt_Utils.wrapErr("fn:struct:from_bytes") {
                                 val gtv = PostchainGtvUtils.bytesToGtv(bytes)
-                                val convCtx = GtvToRtContext.make(
-                                    pretty = false,
-                                    compilerOptions = ctx.globalCtx.compilerOptions,
-                                )
-                                val res = resType.gtvToRt(convCtx, gtv)
-                                convCtx.finish(ctx.exeCtx)
-                                res
+                                gtvToRt(ctx, resType, gtv, pretty = false)
                             }
                         }
                     }

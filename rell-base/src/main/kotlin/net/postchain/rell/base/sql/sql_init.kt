@@ -541,9 +541,9 @@ private class SqlStepAction_InsertObject(private val rObject: R_ObjectDefinition
 }
 
 private class SqlStepAction_AddColumns_AlterTable(
-        private val entity: R_EntityDefinition,
-        private val attrs: ImmList<R_CreateExprAttr>,
-        private val existingRecs: Boolean
+    private val entity: R_EntityDefinition,
+    private val attrs: ImmList<R_CreateExprAttr>,
+    private val existingRecs: Boolean,
 ): SqlStepAction() {
     override fun run(ctx: SqlStepCtx) {
         val frame = Rt_CallFrame.createInitFrame(ctx.exeCtx, entity, true)

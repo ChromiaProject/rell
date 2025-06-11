@@ -344,8 +344,6 @@ private object GtvRtConversion_ByteArray: GtvRtConversion() {
 
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
         val v = GtvRtUtils.gtvToByteArray(ctx, gtv, R_ByteArrayType)
-        return ctx.rtValue {
-            Rt_ByteArrayValue.get(v)
-        }
+        return Rt_ByteArrayValue.get(v)
     }
 }

@@ -318,10 +318,10 @@ object C_Utils {
 
     fun createSysStruct(name: String): R_Struct {
         return R_Struct(
-                name,
-                name.toGtv(),
-                mirrorStructs = null,
-                initFrameGetter = R_CallFrame.NONE_INIT_FRAME_GETTER,
+            name,
+            name.toGtv(),
+            rDefBase = null,
+            mirrorStructs = null,
         )
     }
 

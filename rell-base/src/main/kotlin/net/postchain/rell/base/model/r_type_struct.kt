@@ -135,6 +135,8 @@ class Rt_StructValue(private val type: R_StructType, private val attributes: Mut
 }
 
 class GtvRtConversion_Struct(private val struct: R_Struct): GtvRtConversion() {
+    private val arrayConv = ArrayConv()
+
     override fun directCompatibility() = R_GtvCompatibility(true, true)
 
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean): Gtv {
@@ -155,7 +157,10 @@ class GtvRtConversion_Struct(private val struct: R_Struct): GtvRtConversion() {
     }
 
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
-        return if (ctx.pretty && gtv.type == GtvType.DICT) gtvToRtDict(ctx, gtv) else gtvToRtArray(ctx, gtv)
+        return when {
+            ctx.pretty && gtv.type == GtvType.DICT -> gtvToRtDict(ctx, gtv)
+            else -> arrayConv.convert(ctx, gtv)
+        }
     }
 
     private fun gtvToRtDict(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
@@ -163,9 +168,10 @@ class GtvRtConversion_Struct(private val struct: R_Struct): GtvRtConversion() {
         val gtvFields = GtvRtUtils.gtvToMap(ctx, gtv, type)
 
         val attrs = struct.attributesList
-        val rtFields = attrs
+        val rtAttrs = attrs
             .map { attr ->
-                gtvToRtDictAttr(ctx, gtvFields, attr)
+                val gtvAttr = gtvFields[attr.name]
+                gtvToRtAttr(ctx, attr, gtvAttr, struct.rDefBase)
             }
 
         for (key in gtvFields.keys) {
@@ -177,72 +183,87 @@ class GtvRtConversion_Struct(private val struct: R_Struct): GtvRtConversion() {
         }
 
         return ctx.rtValue {
-            Rt_StructValue(type, rtFields.toMutableList())
+            Rt_StructValue(type, rtAttrs.toMutableList())
         }
     }
 
-    private fun gtvToRtDictAttr(
+    private fun gtvToRtAttr(
         ctx: GtvToRtContext,
-        gtvFields: Map<String, Gtv>,
         attr: R_Attribute,
+        gtvAttr: Gtv?,
+        rDefBase: R_DefinitionBase?,
     ): Rt_Value {
-        val key = attr.name
-
-        val gtvField = gtvFields[key]
-        if (gtvField != null) {
+        if (gtvAttr != null) {
             val attrCtx = ctx.updateSymbol(GtvToRtSymbol_Attr(struct.name, attr))
-            return attr.type.gtvToRt(attrCtx, gtvField)
+            return attr.type.gtvToRt(attrCtx, gtvAttr)
         }
 
         val expr = attr.expr
-        if (ctx.defaultValueEvaluator != null && expr != null) {
+        if (ctx.defaultValueEvaluator != null && rDefBase != null && expr != null) {
             return ctx.rtValue {
-                ctx.defaultValueEvaluator.evaluate(expr)
+                ctx.defaultValueEvaluator.evaluate(rDefBase, expr)
             }
         }
 
         val typeName = struct.name
-        throw GtvRtUtils.errGtv(
-            ctx, "struct_nokey:$typeName:$key",
-            "Key missing in Gtv dictionary: field '$typeName.$key'"
+        throw GtvRtUtils.errGtv(ctx,
+            "struct_noattr:$typeName:${attr.name}",
+            "Missing struct attribute value: '$typeName.${attr.name}'",
         )
     }
 
-    private fun gtvToRtArray(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
-        val type = struct.type
-        val gtvAttrValues = gtvToAttrValues(ctx, type, struct, gtv)
-        val attrs = struct.attributesList
+    private inner class ArrayConv {
+        private val attrs = struct.attributesList
+        private val minAttrCount = attrs.indexOfLast { !it.hasExpr } + 1
 
-        val rtAttrValues = gtvAttrValues
-            .mapIndexed { i, gtvField ->
-                val attr = attrs[i]
-                val attrCtx = ctx.updateSymbol(GtvToRtSymbol_Attr(struct.name, attr))
-                attr.type.gtvToRt(attrCtx, gtvField)
+        fun convert(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
+            val type = struct.type
+            val gtvAttrValues = gtvToAttrValues(ctx, gtv, type, struct, minAttrCount)
+
+            val rtAttrs = attrs
+                .mapIndexed { i, attr ->
+                    val gtvAttr = gtvAttrValues.getOrNull(i)
+                    gtvToRtAttr(ctx, attr, gtvAttr, struct.rDefBase)
+                }
+
+            return ctx.rtValue {
+                Rt_StructValue(type, rtAttrs.toMutableList())
             }
-
-        return ctx.rtValue {
-            Rt_StructValue(type, rtAttrValues.toMutableList())
         }
     }
 
     companion object {
-        fun gtvToAttrValues(ctx: GtvToRtContext, type: R_Type, struct: R_Struct, gtv: Gtv): List<Gtv> {
+        fun gtvToAttrValues(
+            ctx: GtvToRtContext,
+            gtv: Gtv,
+            type: R_Type,
+            struct: R_Struct,
+            minCount: Int,
+        ): List<Gtv> {
+            val maxCount = struct.attributesList.size
+            check(minCount <= maxCount)
+
             val gtvFields = GtvRtUtils.gtvToArray(ctx, gtv, type)
-            checkFieldCount(ctx, type, struct, gtvFields.size)
+            val actualCount = gtvFields.size
+
+            if (actualCount < minCount || actualCount > maxCount) {
+                throw errWrongArraySize(ctx, type, minCount, maxCount, actualCount)
+            }
+
             return gtvFields.toList()
         }
 
-        private fun checkFieldCount(ctx: GtvToRtContext, type: R_Type, struct: R_Struct, actualCount: Int) {
-            val expectedCount = struct.attributesList.size
-            if (actualCount != expectedCount) {
-                throw errWrongArraySize(ctx, type, expectedCount, actualCount)
-            }
-        }
-
-        fun errWrongArraySize(ctx: GtvToRtContext, type: R_Type, expectedCount: Int, actualCount: Int): Rt_Exception {
+        fun errWrongArraySize(
+            ctx: GtvToRtContext,
+            type: R_Type,
+            minCount: Int,
+            maxCount: Int,
+            actualCount: Int,
+        ): Rt_Exception {
             val typeName = type.name
-            return GtvRtUtils.errGtv(ctx, "struct_size:$typeName:$expectedCount:$actualCount",
-                    "Wrong Gtv array size for struct '$typeName': $actualCount instead of $expectedCount")
+            val expCountStr = if (minCount == maxCount) "$minCount" else "$minCount..$maxCount"
+            return GtvRtUtils.errGtv(ctx, "struct_size:$typeName:$minCount:$maxCount:$actualCount",
+                    "Wrong Gtv array size for struct '$typeName': $actualCount instead of $expCountStr")
         }
     }
 }
