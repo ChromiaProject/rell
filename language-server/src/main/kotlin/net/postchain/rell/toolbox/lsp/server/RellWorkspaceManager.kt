@@ -1,5 +1,6 @@
 package net.postchain.rell.toolbox.lsp.server
 
+import com.google.gson.JsonObject
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
@@ -14,6 +15,7 @@ import net.postchain.rell.toolbox.lsp.references.RellReferenceService
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import net.postchain.rell.toolbox.parser.RellBaseVisitor
 import net.postchain.rell.toolbox.parser.RellParser
+import org.antlr.v4.runtime.misc.Interval
 import org.eclipse.lsp4j.CodeAction
 import org.eclipse.lsp4j.Command
 import org.eclipse.lsp4j.CompletionItem
@@ -35,6 +37,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.jsonrpc.messages.Either3
 import java.io.File
 import java.net.URI
+import java.util.concurrent.CompletableFuture
 
 val TYPE_DEFINITIONS =
     setOf(IdeSymbolKind.DEF_ENTITY, IdeSymbolKind.DEF_STRUCT, IdeSymbolKind.DEF_ENUM, IdeSymbolKind.DEF_TYPE)
@@ -350,6 +353,27 @@ class RellWorkspaceManager(
         val offset = document.getOffSet(position)
 
         return completionService.getCompletions(fileUri, offset, indexer, document)
+    }
+
+    fun resolveCompletionItem(unresolved: CompletionItem): CompletionItem {
+        val data = unresolved.data as? JsonObject ?: return unresolved
+        val fileUri = parseFileUri(data.get("fileUri").asString) ?: return unresolved
+        val offset = data.get("offset").asInt
+
+        return try {
+            val document = documentManager.getDocument(fileUri)
+            val position = document.getPosition(offset)
+            val replacementText = completionService.getReplacementText(document, offset, unresolved.insertText)
+
+            unresolved.apply {
+                this.textEdit = Either.forLeft(
+                    TextEdit(Range(position, position), replacementText)
+                )
+            }
+        } catch (e: Exception) {
+            logger.error(e) { "Error resolving completion item for $fileUri at offset $offset" }
+            unresolved
+        }
     }
 
     companion object {

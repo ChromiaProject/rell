@@ -234,4 +234,9 @@ class RellTextDocumentService(
             CompletableFuture.completedFuture(Either.forLeft(listOf()))
         }
     }
+
+    override fun resolveCompletionItem(unresolved: CompletionItem): CompletableFuture<CompletionItem?> {
+        val resolved = workspaceManager.resolveCompletionItem(unresolved)
+        return CompletableFuture.completedFuture(resolved)
+    }
 }
