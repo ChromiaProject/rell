@@ -1,8 +1,10 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
+import assertk.assertions.contains
 import assertk.assertions.containsAll
 import assertk.assertions.extracting
+import assertk.assertions.isEqualTo
 import net.postchain.rell.toolbox.lsp.TestClient
 import net.postchain.rell.toolbox.lsp.TestClientServerLauncher
 import net.postchain.rell.toolbox.lsp.TestServerModule
@@ -93,5 +95,35 @@ class RellLanguageServerCompletionTest {
         )
 
         assertThat(completions.left).extracting { it.label }.containsAll(*expectedCompletions)
+    }
+
+    @Test
+    fun `completions resolved correctly`() {
+        val testDataBuilder = testData(tempDir) {
+            addMainFile(
+                """
+                module;
+                query p() { kecc return 222; }
+                """.trimIndent()
+            )
+        }
+        clientServerLauncher.initializeServer(testDataBuilder.workspaceFolderUri)
+
+        val textDocumentItem = createTextDocumentItem(testDataBuilder.mainFile)
+        val didOpenParam = DidOpenTextDocumentParams(textDocumentItem)
+        server.textDocumentService.didOpen(didOpenParam)
+        await().until { testClient.diagnostics.isNotEmpty() }
+
+        val position = org.eclipse.lsp4j.Position(1, 16)
+        val documentId = TextDocumentIdentifier(testDataBuilder.mainFileUri.toString())
+
+        val params = CompletionParams(documentId, position)
+        val completions = server.textDocumentService.completion(params).join()
+        val completion = "keccak256"
+        val completionItem = completions.left.first { it.label == completion }
+
+        val resolved = server.textDocumentService.resolveCompletionItem(completionItem).join()
+        val expected = "ak256(\${1:input})"
+        assertThat(resolved?.textEdit?.left?.newText).isEqualTo(expected)
     }
 }

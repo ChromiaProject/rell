@@ -1,6 +1,7 @@
 package net.postchain.rell.toolbox.lsp.completion
 
 import com.google.common.collect.Multimap
+import com.google.gson.JsonObject
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.utils.doc.DocSymbolKind
@@ -18,6 +19,7 @@ import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.lsp.hover.formatDocSymbol
 import net.postchain.rell.toolbox.lsp.symbols.RellCompletionSymbolService
 import net.postchain.rell.toolbox.lsp.symbols.RellRelevantImportSymbol
+import org.antlr.v4.runtime.misc.Interval
 import org.eclipse.lsp4j.CompletionItem
 import org.eclipse.lsp4j.CompletionItemKind
 import org.eclipse.lsp4j.CompletionItemLabelDetails
@@ -45,7 +47,18 @@ class RellCompletionService(private val rellSymbolService: RellCompletionSymbolS
         } else {
             getRootCompletions(fileUri, offset, document, indexer)
         }
-        return completions
+        return addExtraProperties(completions, fileUri, offset)
+    }
+
+    private fun addExtraProperties(completions: List<CompletionItem>, fileUri: URI, offset: Int): List<CompletionItem> {
+        val extraProperties = JsonObject().apply {
+            addProperty("offset", offset)
+            addProperty("fileUri", fileUri.toString())
+        }
+        return completions.map { completion ->
+            completion.data = extraProperties
+            completion
+        }
     }
 
     private fun shouldTrimPrefixDot(doc: Document, offset: Int): Boolean {
@@ -243,6 +256,41 @@ class RellCompletionService(private val rellSymbolService: RellCompletionSymbolS
         val params = completion.params?.joinToString(", ", "(", ")", -1, "") { it.code }
         val result = completion.result ?: ""
         return "$params: $result"
+    }
+
+    fun getReplacementText(document: Document, offset: Int, completion: String): String {
+        if (completion.isEmpty()) return ""
+        val safeOffset = offset.coerceIn(0, document.content.length)
+
+        val lookBackStart = (safeOffset - 50).coerceAtLeast(0)
+        val textBefore = document.getTextIn(Interval.of(lookBackStart, safeOffset - 1))
+
+        var maxMatchLength = 0
+
+        for (i in textBefore.indices) {
+            val candidate = textBefore.substring(i)
+            val matchLength = findCommonPrefix(candidate, completion)
+            if (matchLength > 0 && i + matchLength == textBefore.length) {
+                maxMatchLength = maxOf(maxMatchLength, matchLength)
+            }
+        }
+
+        return completion.substring(maxMatchLength)
+    }
+
+    private fun findCommonPrefix(str1: String, str2: String): Int {
+        val minLength = minOf(str1.length, str2.length)
+        var commonLength = 0
+
+        for (i in 0 until minLength) {
+            if (str1[i] == str2[i]) {
+                commonLength++
+            } else {
+                break
+            }
+        }
+
+        return commonLength
     }
 
     private val docSymbolKindToCompletionKind = mapOf(

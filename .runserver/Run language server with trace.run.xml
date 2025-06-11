@@ -4,6 +4,7 @@
     <module name="rell-toolbox.language-server.main" />
     <option name="PROGRAM_PARAMETERS" value="-trace -devMode" />
     <shortenClasspath name="NONE" />
+    <option name="VM_PARAMETERS" value="-DLspResolveCompletion=false" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

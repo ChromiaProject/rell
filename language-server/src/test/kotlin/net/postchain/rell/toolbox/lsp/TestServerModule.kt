@@ -1,6 +1,5 @@
 package net.postchain.rell.toolbox.lsp
 
-import net.postchain.rell.toolbox.indexer.RellIssue
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
@@ -41,10 +40,10 @@ import org.koin.dsl.module
 
 class TestServerModule {
 
-    fun startKoin(includeDefinition: Boolean = true, issueCaching: Boolean = false): KoinApplication {
+    fun startKoin(includeDefinition: Boolean = true, issueCaching: Boolean = false, resolveCompletion: Boolean = false): KoinApplication {
         return startKoin {
             modules(
-                serverModule(includeDefinition, issueCaching)
+                serverModule(includeDefinition, issueCaching, resolveCompletion)
             )
         }
     }
@@ -53,7 +52,7 @@ class TestServerModule {
         GlobalContext.stopKoin()
     }
 
-    private fun serverModule(includeDefinition: Boolean, issueCaching: Boolean) = module {
+    private fun serverModule(includeDefinition: Boolean, issueCaching: Boolean, resolveCompletion: Boolean) = module {
         singleOf(::RellSymbolService)
         singleOf(::RellCompletionSymbolService)
         singleOf(::NewProjectTemplateService)
@@ -70,7 +69,7 @@ class TestServerModule {
         singleOf(::CapabilitiesProvider)
         singleOf(::RellSemanticTokensManager)
         single<LspSystemPropertiesProvider> {
-            TestLspSystemPropertiesProvider(includeDefinition, issueCaching)
+            TestLspSystemPropertiesProvider(includeDefinition, issueCaching, resolveCompletion)
         }
         singleOf(::RellTestRunner)
         singleOf(::RellLanguageServer)

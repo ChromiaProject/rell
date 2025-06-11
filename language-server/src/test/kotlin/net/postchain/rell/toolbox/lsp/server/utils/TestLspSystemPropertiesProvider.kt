@@ -5,8 +5,10 @@ import net.postchain.rell.toolbox.lsp.includeDefinition.LspSystemPropertiesProvi
 class TestLspSystemPropertiesProvider(
     private val includeDefinition: Boolean,
     private val issueCaching: Boolean,
+    private val resolveCompletion: Boolean,
 ) : LspSystemPropertiesProvider {
 
     override fun getIncludeDefinition() = includeDefinition
     override fun getIssueCaching() = issueCaching
+    override fun getResolveCompletion() = resolveCompletion
 }
