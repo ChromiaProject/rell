@@ -143,6 +143,12 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>local-chromia-cli</id>
+            <modules>
+                <module>chromia-cli-local</module>
+            </modules>
+        </profile>
     </profiles>
 
     <dependencyManagement>

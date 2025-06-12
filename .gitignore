@@ -11,3 +11,5 @@ META-INF
 /out
 /postchain.pid
 /.test
+/chromia-cli-local/
+/libdoc/

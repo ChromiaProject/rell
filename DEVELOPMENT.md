@@ -126,6 +126,41 @@ chr query -brid <BRID> <QUERY_NAME> <ARGS_AS_GTV_DICT_STR>
 chr tx -brid <BRID> <OP_NAME> ARG_AS_GTV_STR*
 ```
 
+### Using local-chr.sh
+
+The `local-chr.sh` script in the `work` directory is a wrapper for the Chromia CLI (`chr`) that simplifies development workflow by using your local Rell build instead of the officially published release of Rell.
+
+To use it:
+
+```shell
+./work/local-chr.sh [arguments]
+```
+
+This script allows you to test your local Rell changes directly with the Chromia CLI. Examples:
+
+```shell
+# Print the software versions, for example
+./work/local-chr.sh --version
+```
+
+The script automatically patches CLI's POM to your local Rell version, making it ideal for testing language changes or new features before they're deployed.
+
+If you need to clone the local Chromia CLI repository and patch it again, then add the `--rebuild` flag:
+
+```shell
+./work/local-chr.sh --rebuild --version
+```
+
+### Generating Documentation Preview
+
+The project includes a script for generating Rell documentation locally. This is useful for previewing changes to the Rell system libraries documentation:
+
+```shell
+./work/build-local-docs.sh
+```
+
+This script will generate documentation in the `libdoc` directory, which you can then browse locally to see how the documentation will look.
+
 ## Binary Compatibility Checker
 
 In case if your build fails with an error like this:
