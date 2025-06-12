@@ -25,9 +25,82 @@ object Lib_Test_Events {
 
         namespace("rell.test") {
             function("assert_events", "unit", since = "0.13.0") {
-                comment("Asserts that the expected events has been emitted during last block")
+                comment("""
+                    Assert that the given events were emitted during the construction of the last block, in the
+                    specified order.
+
+                    Events are emitted in application code using `op_context.emit_event()`.
+
+                    #### Example - single event:
+                    ##### Application code
+                    ```rell
+                    operation main() {
+                        op_context.emit_event("my_message_type", "my_data".to_gtv());
+                    }
+                    ```
+                    ##### Test code
+                    ```rell
+                    function test_main() {
+                        main().run();
+
+                        // Assertion passes
+                        rell.test.assert_events(("my_message_type", "my_data".to_gtv()));
+                    }
+
+                    function test_main_bad_1() {
+                        main().run();
+
+                        // Assertion fails - wrong message type
+                        rell.test.assert_events(("other_message_type", "my_data".to_gtv()));
+                    }
+
+                    function test_main_bad_2() {
+                        main().run();
+
+                        // Assertion fails - wrong message content
+                        rell.test.assert_events(("my_message_type", "other_data".to_gtv()));
+                    }
+                    ```
+
+                    #### Example - multiple events:
+                    ##### Application code
+                    ```rell
+                    operation main() {
+                        op_context.emit_event("my_message_type", "my_data".to_gtv());
+                        op_context.emit_event("other_message_type", "other_data".to_gtv());
+                    }
+                    ```
+                    ##### Test code
+                    ```rell
+                    function test_main() {
+                        main().run();
+
+                        // Assertion passes
+                        rell.test.assert_events(
+                            ("my_message_type", "my_data".to_gtv()),
+                            ("other_message_type", "other_data".to_gtv())
+                        );
+                    }
+
+                    function test_main_bad() {
+                        main().run();
+
+                        // Assertion fails - event order incorrect
+                        rell.test.assert_events(
+                            ("other_message_type", "other_data".to_gtv()),
+                            ("my_message_type", "my_data".to_gtv())
+                        );
+                    }
+                    ```
+
+                    To assert a subset of events, or to assert independently of event order, use
+                    `rell.test.get_events()` and make assertions over elements of the returned list.
+
+                    @see op_context.emit_event <a href="../op_context/emit_event.html"><code>op_context.emit_event()</code></a>
+                    @see rell.test.get_events <a href="get_events.html"><code>rell.test.get_events()</code></a>
+                """)
                 param("expected", "(text,gtv)", arity = L_ParamArity.ZERO_MANY) {
-                    comment("Events that are expected to be emitted")
+                    comment("expected event sequence")
                 }
                 bodyContextN { ctx, args ->
                     val events = ctx.exeCtx.emittedEvents
@@ -38,7 +111,26 @@ object Lib_Test_Events {
             }
 
             function("get_events", "list<(text,gtv)>", since = "0.13.0") {
-                comment("Get all events that have been emitted from the last block.")
+                comment("""
+                    Get all events that were emitted during the construction of the last block.
+
+                    Events are emitted in application code using `op_context.emit_event()`.
+
+                    #### Example:
+                    ##### Application code
+                    ```rell
+                    op_context.emit_event("my_message_type", "my_gtv_data".to_gtv());
+                    op_context.emit_event("my_other_message_type", "my_gtv_data".to_gtv());
+                    op_context.emit_event("my_another_message_type", "my_gtv_data".to_gtv());
+                    ```
+                    ##### Test code
+                    ```rell
+                    // returns: [(my_message_type,"my_gtv_data"), (my_other_message_type,"my_gtv_data"), (my_another_message_type,"my_gtv_data")]
+                    return rell.test.get_events();
+                    ```
+
+                    @see op_context.emit_event <a href="../op_context/emit_event.html"><code>op_context.emit_event()</code></a>
+                """)
                 bodyContext { ctx ->
                     val events = ctx.exeCtx.emittedEvents
                     Rt_ListValue(EVENT_LIST_TYPE, events.toMutableList())
