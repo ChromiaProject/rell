@@ -25,12 +25,57 @@ import org.jooq.impl.SQLDataType
 object Lib_Type_Rowid {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("rowid", rType = R_RowidType, since = "0.9.0") {
-            comment("The primary key of a database record, a 64-bit integer.")
+            comment("""
+                The primary key of a database record.
+
+                Implemented as a 64-bit integer, but requires explicit conversion to and from integer with the
+                constructor `rowid(integer)` and the method `rowid.to_integer()`. ROWID values cannot be negative.
+
+                ROWID supports the standard complement of comparison operators (`==`, `!=`, `<`, `>`, `<=` and `>=`),
+                and conversion to and from GTV.
+
+                Examples:
+
+                ```rell
+                function get_rowid(username: text) {
+                    val u = user @ { .name == username };
+                    return u.rowid;
+                }
+
+                val freds_rowid: rowid = user @ { .name == "Fred" } ( .rowid );
+
+                val valid_rowids: list<rowid> = user @* { .rowid >= min_rowid };
+                ```
+
+                Note that the recommended way to manipulate entity values is via typed references (e.g. `u: user` in
+                the above example), as this is type-safe. Reliance on `rowid` is only recommended in rare cases where
+                the standard pattern is not possible, as the compiler does not know what type of entity a given `rowid`
+                value is intended to reference. Consider the example below:
+
+                ```rell
+                entity user {}
+                entity company {}
+
+                val u: user = user @ {};
+                val c: company = company @ {};
+
+                val u2: user = c; // Bad, and the compiler tells us so.
+
+                val u_rowid: rowid = c.rowid; // Likely to lead to errors, but the compiler can't help us.
+                ```
+
+                @see integer <a href="../integer/index.html"><code>integer</code></a>
+                @see GTV <a href="../gtv/index.html"><code>gtv</code></a>
+            """)
 
             // Constructor to create a ROWID from an integer value
             constructor(pure = true, since = "0.11.0") {
-                comment("Constructs a ROWID from an integer value.")
-                param("value", "integer", comment = "The integer value to be converted to ROWID.")
+                comment("""
+                    Construct a ROWID from an integer value.
+
+                    @throws exception if `value` is negative
+                """)
+                param("value", "integer", comment = "the row ID integer value")
                 body { value ->
                     val intValue = value.asInteger()
                     Rt_Utils.check(intValue >= 0) { "rowid(integer):negative:$intValue" toCodeMsg "Negative value: $intValue" }
@@ -40,7 +85,7 @@ object Lib_Type_Rowid {
 
             // Method to get the integer value of the ROWID
             function("to_integer", result = "integer", pure = true, since = "0.11.0") {
-                comment("Returns the integer value of the ROWID.")
+                comment("Get the integer value of this ROWID.")
                 dbFunctionTemplate("rowid.to_integer", 1, "#0")
                 body { rowid ->
                     val v = rowid.asRowid()

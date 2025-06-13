@@ -31,6 +31,44 @@ import net.postchain.rell.base.utils.mapToImmList
 object Lib_Type_Object {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("object", abstract = true, hidden = true, since = "0.7.0") {
+            comment("""
+                Parent of all object types. An object is a singleton data structure that resides in the SQL database.
+
+                Objects are much like entities, with the following restrictions:
+                - only a single instance is allowed for each definition
+                - all object attributes must have default values
+                - object values cannot be created or deleted from code (they are automatically created during blockchain
+                  initialization)
+
+                Example definition:
+
+                ```rell
+                object state {
+                    mutable x: integer = 0;
+                    mutable s: text = 'n/a';
+                }
+                ```
+
+                Object attributes are accessed directly:
+
+                ```rell
+                print(state.x);
+                print(state.s);
+                ```
+
+                Object values can be modified directly, or with an `update` statement:
+
+                ```rell
+                // Direct modification
+                state.x += 10;
+                state.s = 'Updated';
+
+                // Modification via update statement
+                update state ( x += 5, s = 'Updated' );
+                ```
+
+                @see at-operator <a href="https://docs.chromia.com/rell/language-features/database/overview#-operator"><code>@</code> operator - Chromia Documentation</a>
+            """)
             supertypeStrategySpecial { mType ->
                 val rType = L_TypeUtils.getRType(mType)
                 rType is R_ObjectType
@@ -41,14 +79,36 @@ object Lib_Type_Object {
             extension("object_ext", type = "object", since = "0.7.0") {
                 function("to_struct", C_Fn_ToStruct(false), since = "0.10.4") {
                     comment("""
-                        Convert this instance to a `struct<T>`.
-                        Note that this will read all values from the database.
+                        Convert this object value to a `struct<T>`.
+
+                        Example:
+                        ```rell
+                        object state {
+                            x: integer = 0;
+                            s: text = 'n/a';
+                        }
+
+                        operation main() {
+                            print(state.to_struct()); // prints: struct<state>{x=0,s=n/a}
+                        }
+                        ```
                     """)
                 }
                 function("to_mutable_struct", C_Fn_ToStruct(true), since = "0.10.4") {
                     comment("""
-                        Convert this instance to a `mutable struct<T>`.
-                        Note that this will read all values from the database.
+                        Convert this object value to a `struct<mutable T>`.
+
+                        Example:
+                        ```rell
+                        object state {
+                            x: integer = 0;
+                            s: text = 'n/a';
+                        }
+
+                        operation main() {
+                            print(state.to_mutable_struct()); // prints: struct<mutable state>{x=0,s=n/a}
+                        }
+                        ```
                     """)
                 }
             }

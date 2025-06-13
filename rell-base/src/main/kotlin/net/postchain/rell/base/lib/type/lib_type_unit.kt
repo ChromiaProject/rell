@@ -15,7 +15,25 @@ import net.postchain.rell.base.runtime.Rt_Value
 object Lib_Type_Unit {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("unit", rType = R_UnitType, since = "0.6.0") {
+            comment("""
+                A type with no member values, much like `void` in other languages.
+
+                Typically used as a return type for functions where no return value is required. Indeed, when a function
+                is declared without a specified return type, the return type is implicitly `unit`. In other words, the
+                function definition:
+
+                ```rell
+                function f(...) { ... }
+                ```
+
+                is equivalent to:
+
+                ```rell
+                function f(...): unit { ... }
+                ```
+            """)
             constructor(pure = true, since = "0.6.0") {
+                comment("Does nothing, and returns nothing.")
                 body { ->
                     Rt_UnitValue
                 }
