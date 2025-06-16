@@ -11,7 +11,7 @@ import net.postchain.rell.base.runtime.Rt_ExecutionContext
 import net.postchain.rell.base.sql.SqlInitProjExt
 import net.postchain.rell.gtx.PostchainBaseUtils
 
-object PostchainSqlInitProjExt: SqlInitProjExt() {
+public object PostchainSqlInitProjExt: SqlInitProjExt() {
     override fun initExtra(exeCtx: Rt_ExecutionContext) {
         val chainId = exeCtx.sqlCtx.mainChainMapping().chainId
         val bcRid = BlockchainRid(exeCtx.appCtx.chainCtx.blockchainRid.toByteArray())

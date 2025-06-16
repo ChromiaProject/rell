@@ -1,8 +1,3 @@
-public final class net/postchain/rell/api/shell/CliReplOutputChannelFactory : net/postchain/rell/base/repl/ReplOutputChannelFactory {
-	public static final field INSTANCE Lnet/postchain/rell/api/shell/CliReplOutputChannelFactory;
-	public fun createOutputChannel ()Lnet/postchain/rell/base/repl/ReplOutputChannel;
-}
-
 public final class net/postchain/rell/api/shell/RellApiRunShell {
 	public static final field INSTANCE Lnet/postchain/rell/api/shell/RellApiRunShell;
 	public final fun runShell (Lnet/postchain/rell/api/shell/RellApiRunShell$Config;Ljava/io/File;Ljava/lang/String;)V

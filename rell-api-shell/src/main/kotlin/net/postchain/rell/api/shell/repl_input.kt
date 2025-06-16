@@ -14,9 +14,9 @@ import org.jline.reader.*
 import org.jline.terminal.TerminalBuilder
 import java.io.File
 
-object ReplIo {
-    val DEFAULT_INPUT_FACTORY: ReplInputChannelFactory = JlineReplInputChannelFactory
-    val DEFAULT_OUTPUT_FACTORY: ReplOutputChannelFactory = CliReplOutputChannelFactory
+public object ReplIo {
+    public val DEFAULT_INPUT_FACTORY: ReplInputChannelFactory = JlineReplInputChannelFactory
+    public val DEFAULT_OUTPUT_FACTORY: ReplOutputChannelFactory = CliReplOutputChannelFactory
 }
 
 private object JlineReplInputChannelFactory: ReplInputChannelFactory {

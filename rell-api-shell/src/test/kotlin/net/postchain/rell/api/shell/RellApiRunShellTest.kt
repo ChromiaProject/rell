@@ -15,7 +15,7 @@ import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.plus
 import org.junit.Test
 
-class RellApiRunShellTest: BaseRellApiTest() {
+internal class RellApiRunShellTest: BaseRellApiTest() {
     @Test fun testRunShell() {
         val sourceDir = C_SourceDir.mapDirOf(
             "start.rell" to "module; function f() = 123;",

@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-class RellApiRunTestsOnSqlTest: BaseRellApiRunTestsTest() {
+internal class RellApiRunTestsOnSqlTest: BaseRellApiRunTestsTest() {
     private val commit = "sys|-|COMMIT TRANSACTION|[]"
 
     @Test fun testBasic() {

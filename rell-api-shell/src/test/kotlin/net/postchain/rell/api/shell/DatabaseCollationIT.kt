@@ -16,7 +16,7 @@ import java.io.File
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-class DatabaseCollationIT {
+internal class DatabaseCollationIT {
     @Test
     fun testCollationTestPass() {
         PostgreSQLContainer(

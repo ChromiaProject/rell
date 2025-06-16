@@ -127,6 +127,16 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>properties-maven-plugin</artifactId>
             </plugin>
+
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <configuration>
+                    <args>
+                        <arg>-opt-in=net.postchain.rell.api.base.InternalRellApi</arg>
+                    </args>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

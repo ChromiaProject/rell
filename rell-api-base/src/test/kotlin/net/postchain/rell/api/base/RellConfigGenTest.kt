@@ -15,7 +15,7 @@ import net.postchain.rell.base.utils.RellVersions
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class RellConfigGenTest {
+internal class RellConfigGenTest {
     private val ver = RellTestUtils.RELL_VER
 
     @Test fun testNoTemplateSingleFile() {

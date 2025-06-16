@@ -22,14 +22,14 @@ import net.postchain.rell.base.sql.SqlInterceptor
 import net.postchain.rell.base.utils.*
 import java.io.File
 
-class SqlExecutionEvent(
-    val startTimeMs: Long,
-    val durationMs: Long,
-    val sql: String,
-    val isSystem: Boolean,
-    val parameters: List<Any?>,
-    val rowCount: Int?,
-    val error: Exception?,
+public class SqlExecutionEvent(
+    public val startTimeMs: Long,
+    public val durationMs: Long,
+    public val sql: String,
+    public val isSystem: Boolean,
+    public val parameters: List<Any?>,
+    public val rowCount: Int?,
+    public val error: Exception?,
 ) {
     init {
         require(startTimeMs > 0) { startTimeMs }
@@ -38,7 +38,7 @@ class SqlExecutionEvent(
     }
 }
 
-object RellApiRunTests {
+public object RellApiRunTests {
     /**
      * Run tests.
      *
@@ -56,7 +56,7 @@ object RellApiRunTests {
      * @param testModules List of test modules to run. Empty means none. Can contain also app modules, if
      * [compileConfig.includeTestSubModules][RellApiCompile.Config.includeTestSubModules] is `true`.
      */
-    fun runTests(
+    public fun runTests(
         config: Config,
         sourceDir: File,
         appModules: List<String>?,
@@ -73,43 +73,43 @@ object RellApiRunTests {
         return RellApiGtxInternal.runTests(config, options, cSourceDir, app, rAppModules)
     }
 
-    class Config(
+    public class Config(
         /** Compilation config. */
-        val compileConfig: RellApiCompile.Config,
+        public val compileConfig: RellApiCompile.Config,
         /** CLI environment used to print tests execution progress (test cases) and results. */
-        val cliEnv: RellCliEnv,
+        public val cliEnv: RellCliEnv,
         /** Stop tests after the first error. */
-        val stopOnError: Boolean,
+        public val stopOnError: Boolean,
         /** Database URL. */
-        val databaseUrl: String?,
+        public val databaseUrl: String?,
         /** Enable SQL logging. */
-        val sqlLog: Boolean,
+        public val sqlLog: Boolean,
         /** Enable SQL error logging. */
-        val sqlErrorLog: Boolean,
+        public val sqlErrorLog: Boolean,
         /** List of glob patterns to filter test cases: when not `null`, only tests matching one of the patterns will be executed. */
-        val testPatterns: ImmList<String>?,
+        public val testPatterns: ImmList<String>?,
         /** Printer used for Rell `print()` calls. */
-        val outPrinter: Rt_Printer,
+        public val outPrinter: Rt_Printer,
         /** Printer used for Rell `log()` calls. */
-        val logPrinter: Rt_Printer,
+        public val logPrinter: Rt_Printer,
         /** Print test case names and results during the execution. */
-        val printTestCases: Boolean,
+        public val printTestCases: Boolean,
         /** Print large values pretty-formatted (e.g. when a test fails because of assert_equals). */
-        val printPrettyLargeValues: Boolean,
+        public val printPrettyLargeValues: Boolean,
         /** Add dependencies of test modules to the set of active modules of the app (default: `true`).
          * Affects available operations and function extensions. */
-        val activateTestDependencies: Boolean,
+        public val activateTestDependencies: Boolean,
         /** Test case start callback. */
-        val onTestCaseStart: (UnitTestCase) -> Unit,
+        public val onTestCaseStart: (UnitTestCase) -> Unit,
         /** Test case finished callback. */
-        val onTestCaseFinished: (UnitTestCaseResult) -> Unit,
+        public val onTestCaseFinished: (UnitTestCaseResult) -> Unit,
         /** SQL execution finished callback. */
-        val onSqlExecutionFinished: ((SqlExecutionEvent) -> Unit)?,
+        public val onSqlExecutionFinished: ((SqlExecutionEvent) -> Unit)?,
     ) {
-        fun toBuilder() = Builder(this)
+        public fun toBuilder(): Builder = Builder(this)
 
-        companion object {
-            val DEFAULT = Config(
+        public companion object {
+            public val DEFAULT: Config = Config(
                 compileConfig = RellApiCompile.Config.DEFAULT,
                 cliEnv = RellCliEnv.DEFAULT,
                 stopOnError = false,
@@ -128,7 +128,7 @@ object RellApiRunTests {
             )
         }
 
-        class Builder(proto: Config = DEFAULT) {
+        public class Builder(proto: Config = DEFAULT) {
             private var compileConfig = proto.compileConfig
             private var cliEnv = proto.cliEnv
             private var stopOnError = proto.stopOnError
@@ -146,51 +146,51 @@ object RellApiRunTests {
             private var onSqlExecutionFinished = proto.onSqlExecutionFinished
 
             /** @see [Config.compileConfig] */
-            fun compileConfig(v: RellApiCompile.Config) = apply { compileConfig = v }
+            public fun compileConfig(v: RellApiCompile.Config): Builder = apply { compileConfig = v }
 
             /** @see [Config.cliEnv] */
-            fun cliEnv(v: RellCliEnv) = apply { cliEnv = v }
+            public fun cliEnv(v: RellCliEnv): Builder = apply { cliEnv = v }
 
             /** @see [Config.stopOnError] */
-            fun stopOnError(v: Boolean) = apply { stopOnError = v }
+            public fun stopOnError(v: Boolean): Builder = apply { stopOnError = v }
 
             /** @see [Config.databaseUrl] */
-            fun databaseUrl(v: String?) = apply { databaseUrl = v }
+            public fun databaseUrl(v: String?): Builder = apply { databaseUrl = v }
 
             /** @see [Config.sqlLog] */
-            fun sqlLog(v: Boolean) = apply { sqlLog = v }
+            public fun sqlLog(v: Boolean): Builder = apply { sqlLog = v }
 
             /** @see [Config.sqlErrorLog] */
-            fun sqlErrorLog(v: Boolean) = apply { sqlErrorLog = v }
+            public fun sqlErrorLog(v: Boolean): Builder = apply { sqlErrorLog = v }
 
             /** @see [Config.testPatterns] */
-            fun testPatterns(v: List<String>?) = apply { testPatterns = v?.toImmList() }
+            public fun testPatterns(v: List<String>?): Builder = apply { testPatterns = v?.toImmList() }
 
             /** @see [Config.outPrinter] */
-            fun outPrinter(v: Rt_Printer) = apply { outPrinter = v }
+            public fun outPrinter(v: Rt_Printer): Builder = apply { outPrinter = v }
 
             /** @see [Config.logPrinter] */
-            fun logPrinter(v: Rt_Printer) = apply { logPrinter = v }
+            public fun logPrinter(v: Rt_Printer): Builder = apply { logPrinter = v }
 
             /** @see [Config.printTestCases] */
-            fun printTestCases(v: Boolean) = apply { printTestCases = v }
+            public fun printTestCases(v: Boolean): Builder = apply { printTestCases = v }
 
             /**  @see [Config.printPrettyLargeValues]] */
-            fun printPrettyLargeValues(v: Boolean) = apply { printPrettyLargeValues = v }
+            public fun printPrettyLargeValues(v: Boolean): Builder = apply { printPrettyLargeValues = v }
 
             /** @see [Config.activateTestDependencies]  */
-            fun activateTestDependencies(v: Boolean) = apply { activateTestDependencies = v }
+            public fun activateTestDependencies(v: Boolean): Builder = apply { activateTestDependencies = v }
 
             /** @see [Config.onTestCaseStart] */
-            fun onTestCaseStart(v: (UnitTestCase) -> Unit) = apply { onTestCaseStart = v }
+            public fun onTestCaseStart(v: (UnitTestCase) -> Unit): Builder = apply { onTestCaseStart = v }
 
             /** @see [Config.onTestCaseFinished] */
-            fun onTestCaseFinished(v: (UnitTestCaseResult) -> Unit) = apply { onTestCaseFinished = v }
+            public fun onTestCaseFinished(v: (UnitTestCaseResult) -> Unit): Builder = apply { onTestCaseFinished = v }
 
             /** @see [Config.onSqlExecutionFinished] */
-            fun onSqlExecutionFinished(v: (SqlExecutionEvent) -> Unit) = apply { onSqlExecutionFinished = v }
+            public fun onSqlExecutionFinished(v: (SqlExecutionEvent) -> Unit): Builder = apply { onSqlExecutionFinished = v }
 
-            fun build(): Config {
+            public fun build(): Config {
                 return Config(
                     compileConfig = compileConfig,
                     cliEnv = cliEnv,
@@ -198,7 +198,7 @@ object RellApiRunTests {
                     databaseUrl = databaseUrl,
                     sqlLog = sqlLog,
                     sqlErrorLog = sqlErrorLog,
-                    testPatterns = testPatterns?.toImmList(),
+                    testPatterns = testPatterns,
                     outPrinter = outPrinter,
                     logPrinter = logPrinter,
                     printTestCases = printTestCases,

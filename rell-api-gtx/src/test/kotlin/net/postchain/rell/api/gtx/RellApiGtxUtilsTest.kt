@@ -7,7 +7,7 @@ package net.postchain.rell.api.gtx
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class RellApiGtxUtilsTest {
+internal class RellApiGtxUtilsTest {
     @Test fun testExtractDatabaseSchema() {
         chkExtractDatabaseSchema("jdbc:postgresql://localhost/postchain", null)
         chkExtractDatabaseSchema("jdbc:postgresql://localhost/postchain?currentSchema=foobar", "foobar")

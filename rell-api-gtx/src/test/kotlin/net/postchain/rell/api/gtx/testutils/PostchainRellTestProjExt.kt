@@ -19,10 +19,10 @@ import net.postchain.rell.base.utils.Rt_UnitTestBlockRunner
 import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.gtx.PostchainBaseUtils
 
-object PostchainRellTestProjExt: RellTestProjExt() {
+internal object PostchainRellTestProjExt: RellTestProjExt() {
     private val sqlInitProjExt: SqlInitProjExt = PostchainSqlInitProjExt
 
-    override fun getSqlInitProjExt() = sqlInitProjExt
+    override fun getSqlInitProjExt(): SqlInitProjExt = sqlInitProjExt
 
     override fun getReplInterpreterProjExt(): ReplInterpreterProjExt {
         val runnerConfig = createBlockRunnerConfig()

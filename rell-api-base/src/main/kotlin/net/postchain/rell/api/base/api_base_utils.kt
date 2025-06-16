@@ -15,13 +15,14 @@ import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.mapToImmList
 import java.io.File
 
-object RellApiBaseUtils {
-    fun createSourceDir(sourceDirPath: String?): C_SourceDir {
+@InternalRellApi
+public object RellApiBaseUtils {
+    public fun createSourceDir(sourceDirPath: String?): C_SourceDir {
         val file = if (sourceDirPath == null) File(".") else File(sourceDirPath)
         return C_SourceDir.diskDir(file.absoluteFile)
     }
 
-    fun handleCompilationResult(cliEnv: RellCliEnv, res: C_CompilationResult, quiet: Boolean): R_App {
+    public fun handleCompilationResult(cliEnv: RellCliEnv, res: C_CompilationResult, quiet: Boolean): R_App {
         val warnCnt = res.warnings.size
         val errCnt = res.errors.size
 
@@ -51,9 +52,9 @@ object RellApiBaseUtils {
         return app
     }
 
-    fun errMsg(msg: String) = "${C_MessageType.ERROR.text}: $msg"
+    public fun errMsg(msg: String): String = "${C_MessageType.ERROR.text}: $msg"
 
-    fun createGlobalContext(
+    public fun createGlobalContext(
         compilerOptions: C_CompilerOptions,
         typeCheck: Boolean,
         outPrinter: Rt_Printer = Rt_OutPrinter,
@@ -67,41 +68,45 @@ object RellApiBaseUtils {
         )
     }
 
-    fun createChainContext(): Rt_ChainContext {
+    public fun createChainContext(): Rt_ChainContext {
         return Rt_ChainContext(GtvNull, Rt_ChainContext.ZERO_BLOCKCHAIN_RID)
     }
 
-    fun createSqlContext(app: R_App): Rt_SqlContext {
+    public fun createSqlContext(app: R_App): Rt_SqlContext {
         val mapping = Rt_ChainSqlMapping(0)
         return Rt_RegularSqlContext.createNoExternalChains(app, mapping)
     }
 
-    fun getMainModules(app: R_App): List<R_ModuleName> {
+    public fun getMainModules(app: R_App): List<R_ModuleName> {
         return app.modules.filter { !it.test && !it.abstract && !it.external }.mapToImmList { it.name }
     }
 }
 
-abstract class RellCliException(msg: String): RuntimeException(msg)
-class RellCliBasicException(msg: String): RellCliException(msg)
-class RellCliExitException(val code: Int, msg: String = "exit $code"): RellCliException(msg)
+public abstract class RellCliException(msg: String): RuntimeException(msg)
+public class RellCliBasicException(msg: String): RellCliException(msg)
+public class RellCliExitException(public val code: Int, msg: String = "exit $code"): RellCliException(msg)
 
-class RellCliTarget(val sourcePath: File, val sourceDir: C_SourceDir, val modules: List<R_ModuleName>)
+public class RellCliTarget(public val sourcePath: File, public val sourceDir: C_SourceDir, public val modules: List<R_ModuleName>)
 
-interface RellCliEnv {
-    fun print(msg: String)
-    fun error(msg: String)
-    companion object {
+public interface RellCliEnv {
+    public fun print(msg: String)
+    public fun error(msg: String)
+    public companion object {
         @JvmStatic
-        val NULL: RellCliEnv = NullRellCliEnv
+        public val NULL: RellCliEnv = NullRellCliEnv
         @JvmStatic
-        val DEFAULT: RellCliEnv = MainRellCliEnv
+        public val DEFAULT: RellCliEnv = MainRellCliEnv
     }
 }
 
 internal object NullRellCliEnv: RellCliEnv by PrinterRellCliEnv({}, {})
 internal object MainRellCliEnv: RellCliEnv by PrinterRellCliEnv(::println, System.err::println)
 
-class PrinterRellCliEnv(private val printer: Rt_Printer, private val errorPrinter: Rt_Printer = printer): RellCliEnv {
-    override fun print(msg: String) = printer.print(msg)
-    override fun error(msg: String) = errorPrinter.print(msg)
+public class PrinterRellCliEnv(private val printer: Rt_Printer, private val errorPrinter: Rt_Printer = printer): RellCliEnv {
+    override fun print(msg: String) {
+        printer.print(msg)
+    }
+    override fun error(msg: String) {
+        errorPrinter.print(msg)
+    }
 }

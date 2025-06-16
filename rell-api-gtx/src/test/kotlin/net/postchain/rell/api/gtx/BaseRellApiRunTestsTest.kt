@@ -14,7 +14,7 @@ import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 import kotlin.test.assertEquals
 
-abstract class BaseRellApiRunTestsTest: BaseRellApiTest() {
+internal abstract class BaseRellApiRunTestsTest: BaseRellApiTest() {
     protected fun runTestsConfig(
         compileConfig: RellApiCompile.Config.Builder,
         proto: RellApiRunTests.Config = RellApiRunTests.Config.DEFAULT,

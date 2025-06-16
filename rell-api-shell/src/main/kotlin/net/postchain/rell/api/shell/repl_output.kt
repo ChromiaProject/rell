@@ -14,7 +14,7 @@ import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 
-object CliReplOutputChannelFactory: ReplOutputChannelFactory {
+internal object CliReplOutputChannelFactory: ReplOutputChannelFactory {
     override fun createOutputChannel(): ReplOutputChannel {
         return CliReplOutputChannel
     }

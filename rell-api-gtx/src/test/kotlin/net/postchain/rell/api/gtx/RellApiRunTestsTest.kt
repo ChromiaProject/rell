@@ -9,7 +9,7 @@ import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.testutils.Rt_TestPrinter
 import org.junit.Test
 
-class RellApiRunTestsTest: BaseRellApiRunTestsTest() {
+internal class RellApiRunTestsTest: BaseRellApiRunTestsTest() {
     @Test fun testRunTestsBasic() {
         val runConfig = RellApiRunTests.Config.Builder().build()
         val sourceDir = C_SourceDir.mapDirOf(

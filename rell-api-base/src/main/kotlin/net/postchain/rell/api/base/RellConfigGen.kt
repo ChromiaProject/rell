@@ -17,19 +17,19 @@ import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.utils.*
 
-class RellConfigGen(
+public class RellConfigGen(
     private val sourceDir: C_SourceDir,
     private val sourceVersion: R_LangVersion,
     private val modules: List<R_ModuleName>,
     private val moduleFiles: List<C_SourcePath>,
-    val app: R_App,
+    private val app: R_App,
 ) {
-    fun makeConfig(templateXml: String?): Gtv {
+    public fun makeConfig(templateXml: String?): Gtv {
         val template = getConfigTemplate(templateXml)
         return makeConfig(template)
     }
 
-    fun makeConfig(template: Gtv): Gtv {
+    public fun makeConfig(template: Gtv): Gtv {
         val sources = getModuleSources()
 
         val mutableConfig = GtvNode.create(null, template)
@@ -82,12 +82,12 @@ class RellConfigGen(
         }
     }
 
-    companion object {
-        fun create(cliEnv: RellCliEnv, target: RellCliTarget): RellConfigGen {
+    public companion object {
+        public fun create(cliEnv: RellCliEnv, target: RellCliTarget): RellConfigGen {
             return create(cliEnv, target.sourceDir, target.modules)
         }
 
-        fun create(
+        public fun create(
             cliEnv: RellCliEnv,
             sourceDir: C_SourceDir,
             modules: List<R_ModuleName>,
@@ -104,12 +104,12 @@ class RellConfigGen(
             return RellConfigGen(sourceDir, sourceVersion, modules, apiRes.cRes.files, rApp)
         }
 
-        fun configToText(gtvConfig: Gtv): String {
+        public fun configToText(gtvConfig: Gtv): String {
             val xml = PostchainGtvUtils.gtvToXml(gtvConfig)
             return xml
         }
 
-        fun getModuleFiles(
+        public fun getModuleFiles(
             sourceDir: C_SourceDir,
             files: List<C_SourcePath>,
         ): Map<String, String> {
@@ -131,7 +131,7 @@ class RellConfigGen(
             return fileMap.toImmMap()
         }
 
-        fun makeConfig(template: Gtv, rell: Gtv): Gtv {
+        public fun makeConfig(template: Gtv, rell: Gtv): Gtv {
             val rootNode = GtvNode.create(null, template)
             val rootDict = asDictNode(rootNode)
             val gtxDict = getDictByKey(rootDict, "gtx")

@@ -14,11 +14,11 @@ import net.postchain.rell.base.sql.SqlInitProjExt
 import net.postchain.rell.base.utils.Rt_UnitTestBlockRunner
 import net.postchain.rell.base.utils.toImmList
 
-class PostchainReplInterpreterProjExt(
+public class PostchainReplInterpreterProjExt(
     private val sqlInitProjExt: SqlInitProjExt,
     private val runnerConfig: Rt_BlockRunnerConfig,
 ): ReplInterpreterProjExt() {
-    override fun getSqlInitProjExt() = sqlInitProjExt
+    override fun getSqlInitProjExt(): SqlInitProjExt = sqlInitProjExt
 
     override fun createBlockRunner(sourceDir: C_SourceDir, modules: List<R_ModuleName>): Rt_UnitTestBlockRunner {
         val keyPair = Lib_RellTest.BLOCK_RUNNER_KEYPAIR

@@ -12,8 +12,8 @@ import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.TestSnippetsRecorder
 import net.postchain.rell.base.utils.immListOf
 
-abstract class BaseRellApiTest {
-    protected val generalSourceDir = C_SourceDir.mapDirOf(
+public abstract class BaseRellApiTest {
+    protected val generalSourceDir: C_SourceDir = C_SourceDir.mapDirOf(
         "a.rell" to "module;",
         "b1/module.rell" to "module;",
         "b1/b2.rell" to "module;",
@@ -24,9 +24,9 @@ abstract class BaseRellApiTest {
         "e1/e2/e3.rell" to "@test module;",
     )
 
-    protected val defaultConfig = configBuilder().build()
+    protected val defaultConfig: RellApiCompile.Config = configBuilder().build()
 
-    protected fun configBuilder() = RellApiCompile.Config.Builder()
+    protected fun configBuilder(): RellApiCompile.Config.Builder = RellApiCompile.Config.Builder()
 
     // Important to call this function instead of calling the API directly - to record test snippets.
     protected fun compileApp0(

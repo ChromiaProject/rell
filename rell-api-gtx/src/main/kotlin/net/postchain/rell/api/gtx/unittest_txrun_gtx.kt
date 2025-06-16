@@ -42,7 +42,7 @@ import net.postchain.rell.gtx.Rt_PostchainTxContextFactory
 import net.postchain.rell.module.RellPostchainModuleEnvironment
 import java.sql.Connection
 
-class Rt_PostchainUnitTestBlockRunner(
+public class Rt_PostchainUnitTestBlockRunner(
     private val keyPair: BytesKeyPair,
     private val runnerConfig: Rt_BlockRunnerConfig,
     private val runnerStrategy: Rt_BlockRunnerStrategy,
@@ -154,17 +154,17 @@ class Rt_PostchainUnitTestBlockRunner(
     }
 }
 
-abstract class Rt_BlockRunnerStrategy {
-    abstract fun getGtvConfig(): Gtv
-    abstract fun getPrecompiledApp(): RellGtxModuleApp?
+public abstract class Rt_BlockRunnerStrategy {
+    public abstract fun getGtvConfig(): Gtv
+    public abstract fun getPrecompiledApp(): RellGtxModuleApp?
 }
 
-class Rt_StaticBlockRunnerStrategy(private val gtvConfig: Gtv): Rt_BlockRunnerStrategy() {
-    override fun getGtvConfig() = gtvConfig
-    override fun getPrecompiledApp() = null
+public class Rt_StaticBlockRunnerStrategy(private val gtvConfig: Gtv): Rt_BlockRunnerStrategy() {
+    override fun getGtvConfig(): Gtv = gtvConfig
+    override fun getPrecompiledApp(): RellGtxModuleApp? = null
 }
 
-class Rt_DynamicBlockRunnerStrategy(
+public class Rt_DynamicBlockRunnerStrategy(
     private val sourceDir: C_SourceDir,
     private val keyPair: BytesKeyPair,
     private val modules: ImmList<R_ModuleName>?,
@@ -197,7 +197,7 @@ class Rt_DynamicBlockRunnerStrategy(
     }
 }
 
-class Rt_BlockRunnerConfig(
+public class Rt_BlockRunnerConfig(
     private val wrapCtErrors: Boolean = DEFENV.wrapCtErrors,
     private val wrapRtErrors: Boolean = DEFENV.wrapRtErrors,
     private val forceTypeCheck: Boolean = DEFENV.forceTypeCheck,
@@ -205,7 +205,7 @@ class Rt_BlockRunnerConfig(
     private val dbInitLogLevel: Int = DEFENV.dbInitLogLevel,
     private val sqlInterceptor: SqlInterceptor? = DEFENV.sqlInterceptor,
 ) {
-    fun makePostchainModuleEnvironment(
+    public fun makePostchainModuleEnvironment(
         globalCtx: Rt_GlobalContext,
         txContextFactory: Rt_PostchainTxContextFactory,
         precompiledApp: RellGtxModuleApp?,
@@ -228,7 +228,7 @@ class Rt_BlockRunnerConfig(
         )
     }
 
-    companion object {
+    private companion object {
         private val DEFENV = RellPostchainModuleEnvironment.DEFAULT
     }
 }

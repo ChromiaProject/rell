@@ -17,7 +17,7 @@ import net.postchain.rell.base.utils.immListOf
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class RellApiCompileTest: BaseRellApiTest() {
+internal class RellApiCompileTest: BaseRellApiTest() {
     @Test fun testCompileAppBasic() {
         val sourceDir = C_SourceDir.mapDirOf("main.rell" to "module; function main() {}")
         chkCompileAppMods(defaultConfig, sourceDir, listOf("main"), listOf(), "main")

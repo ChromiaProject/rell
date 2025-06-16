@@ -17,8 +17,8 @@ import java.sql.Connection
 import java.sql.DriverManager
 import java.util.*
 
-object RellApiGtxUtils {
-    fun extractDatabaseSchema(url: String): String? {
+public object RellApiGtxUtils {
+    public fun extractDatabaseSchema(url: String): String? {
         val uri = URI(url)
         check(uri.scheme == "jdbc") { "Invalid scheme: '${uri.scheme}'" }
 
@@ -35,17 +35,17 @@ object RellApiGtxUtils {
         return null
     }
 
-    fun prepareSchema(con: Connection, schema: String) {
+    public fun prepareSchema(con: Connection, schema: String) {
         con.createStatement().use { stmt ->
             stmt.execute("""CREATE SCHEMA IF NOT EXISTS "$schema";""")
         }
     }
 
-    fun createDatabaseAccess(): DatabaseAccess {
+    public fun createDatabaseAccess(): DatabaseAccess {
         return DatabaseAccessFactory.createDatabaseAccessWithDefaultDriver()
     }
 
-    fun <T> runWithSqlManager(
+    public fun <T> runWithSqlManager(
         dbUrl: String?,
         sqlLog: Boolean,
         sqlErrorLog: Boolean,
@@ -86,7 +86,7 @@ object RellApiGtxUtils {
         return code(sqlMgr)
     }
 
-    fun genBlockchainConfigTemplateNoRell(pubKey: ByteArray, compileConfig: RellApiCompile.Config): Gtv {
+    public fun genBlockchainConfigTemplateNoRell(pubKey: ByteArray, compileConfig: RellApiCompile.Config): Gtv {
         return gtv(
             "blockstrategy" to gtv("name" to gtv("net.postchain.base.BaseBlockBuildingStrategy")),
             "configurationfactory" to gtv("net.postchain.gtx.GTXBlockchainConfigurationFactory"),

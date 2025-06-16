@@ -8,7 +8,7 @@ import net.postchain.rell.api.gtx.testutils.PostchainRellTestProjExt
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class ReplTxTest: BaseRellTest(useSql = true) {
+internal class ReplTxTest: BaseRellTest(useSql = true) {
     override fun getProjExt() = PostchainRellTestProjExt
 
     private fun initStuff() {

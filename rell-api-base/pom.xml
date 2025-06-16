@@ -59,6 +59,19 @@
                     <skip>false</skip>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <configuration>
+                    <args>
+                        <!-- https://youtrack.jetbrains.com/issue/KTIJ-22326 -->
+                        <arg>-Xsuppress-warning=OPTIONAL_DECLARATION_USAGE_IN_NON_COMMON_SOURCE</arg>
+
+                        <arg>-Xexplicit-api=strict</arg>
+                        <arg>-opt-in=net.postchain.rell.api.base.InternalRellApi</arg>
+                    </args>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

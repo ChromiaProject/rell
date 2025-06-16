@@ -8,7 +8,7 @@ import net.postchain.rell.api.gtx.testutils.PostchainRellTestProjExt
 import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.Test
 
-class LibRellTestBlockClockTest: BaseRellTest() {
+internal class LibRellTestBlockClockTest: BaseRellTest() {
     override fun getProjExt() = PostchainRellTestProjExt
 
     init {

@@ -18,17 +18,17 @@ import net.postchain.rell.base.utils.toImmMap
 import org.apache.commons.lang3.StringUtils
 import java.io.File
 
-class ReplShellOptions(
-    val compilerOptions: C_CompilerOptions,
-    val inputChannelFactory: ReplInputChannelFactory,
-    val outputChannelFactory: ReplOutputChannelFactory,
-    val historyFile: File?,
-    val printIntroMessage: Boolean,
-    val moduleArgs: Map<R_ModuleName, Gtv>,
+public class ReplShellOptions(
+    public val compilerOptions: C_CompilerOptions,
+    public val inputChannelFactory: ReplInputChannelFactory,
+    public val outputChannelFactory: ReplOutputChannelFactory,
+    public val historyFile: File?,
+    public val printIntroMessage: Boolean,
+    public val moduleArgs: Map<R_ModuleName, Gtv>,
 )
 
-object ReplShell {
-    fun start(
+public object ReplShell {
+    public fun start(
         sourceDir: C_SourceDir,
         module: R_ModuleName?,
         globalCtx: Rt_GlobalContext,

@@ -4,6 +4,7 @@
 
 package net.postchain.rell.api.shell
 
+import net.postchain.rell.api.base.InternalRellApi
 import net.postchain.rell.api.base.RellApiBaseInternal
 import net.postchain.rell.api.base.RellApiBaseUtils
 import net.postchain.rell.api.base.RellApiCompile
@@ -22,7 +23,7 @@ import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.module.RellPostchainModuleEnvironment
 import java.io.File
 
-object RellApiRunShell {
+public object RellApiRunShell {
     /**
      * Start a REPL shell.
      *
@@ -30,7 +31,7 @@ object RellApiRunShell {
      * @param sourceDir Source directory.
      * @param module Current module: REPL commands will be executed in scope of that module; `null` means none.
      */
-    fun runShell(
+    public fun runShell(
         config: Config,
         sourceDir: File,
         module: String?,
@@ -40,32 +41,32 @@ object RellApiRunShell {
         RellApiShellInternal.runShell(config, cSourceDir, rModule)
     }
 
-    class Config(
+    public class Config(
         /** Compilation config. */
-        val compileConfig: RellApiCompile.Config,
+        public val compileConfig: RellApiCompile.Config,
         /** Database URL. */
-        val databaseUrl: String?,
+        public val databaseUrl: String?,
         /** Enable SQL logging. */
-        val sqlLog: Boolean,
+        public val sqlLog: Boolean,
         /** Enable SQL error logging. */
-        val sqlErrorLog: Boolean,
+        public val sqlErrorLog: Boolean,
         /** Printer used for Rell `print()` calls. */
-        val outPrinter: Rt_Printer,
+        public val outPrinter: Rt_Printer,
         /** Printer used for Rell `log()` calls. */
-        val logPrinter: Rt_Printer,
+        public val logPrinter: Rt_Printer,
         /** Shell commands history file, `null` means no history; default: `.rell_history` in the user's home directory. */
-        val historyFile: File?,
+        public val historyFile: File?,
         /** Input channel factory (used to read commands). */
-        val inputChannelFactory: ReplInputChannelFactory,
+        public val inputChannelFactory: ReplInputChannelFactory,
         /** Output channel factory (used to print command execution results). */
-        val outputChannelFactory: ReplOutputChannelFactory,
+        public val outputChannelFactory: ReplOutputChannelFactory,
         /** Print Rell version, help shortcut and current module (if any) on shell start. */
-        val printIntroMessage: Boolean,
+        public val printIntroMessage: Boolean,
     ) {
-        fun toBuilder() = Builder(this)
+        public fun toBuilder(): Builder = Builder(this)
 
-        companion object {
-            val DEFAULT = Config(
+        public companion object {
+            public val DEFAULT: Config = Config(
                 compileConfig = RellApiCompile.Config.DEFAULT,
                 databaseUrl = null,
                 sqlLog = false,
@@ -79,7 +80,7 @@ object RellApiRunShell {
             )
         }
 
-        class Builder(proto: Config = DEFAULT) {
+        public class Builder(proto: Config = DEFAULT) {
             private var compileConfig = proto.compileConfig
             private var databaseUrl = proto.databaseUrl
             private var sqlLog = proto.sqlLog
@@ -92,36 +93,36 @@ object RellApiRunShell {
             private var printIntroMessage = proto.printIntroMessage
 
             /** @see [Config.compileConfig] */
-            fun compileConfig(v: RellApiCompile.Config) = apply { compileConfig = v }
+            public fun compileConfig(v: RellApiCompile.Config): Builder = apply { compileConfig = v }
 
             /** @see [Config.databaseUrl] */
-            fun databaseUrl(v: String?) = apply { databaseUrl = v }
+            public fun databaseUrl(v: String?): Builder = apply { databaseUrl = v }
 
             /** @see [Config.sqlLog] */
-            fun sqlLog(v: Boolean) = apply { sqlLog = v }
+            public fun sqlLog(v: Boolean): Builder = apply { sqlLog = v }
 
             /** @see [Config.sqlErrorLog] */
-            fun sqlErrorLog(v: Boolean) = apply { sqlErrorLog = v }
+            public fun sqlErrorLog(v: Boolean): Builder = apply { sqlErrorLog = v }
 
             /** @see [Config.outPrinter] */
-            fun outPrinter(v: Rt_Printer) = apply { outPrinter = v }
+            public fun outPrinter(v: Rt_Printer): Builder = apply { outPrinter = v }
 
             /** @see [Config.logPrinter] */
-            fun logPrinter(v: Rt_Printer) = apply { logPrinter = v }
+            public fun logPrinter(v: Rt_Printer): Builder = apply { logPrinter = v }
 
             /** @see [Config.historyFile] */
-            fun historyFile(v: File?) = apply { historyFile = v }
+            public fun historyFile(v: File?): Builder = apply { historyFile = v }
 
             /** @see [Config.inputChannelFactory] */
-            fun inputChannelFactory(v: ReplInputChannelFactory) = apply { inputChannelFactory = v }
+            public fun inputChannelFactory(v: ReplInputChannelFactory): Builder = apply { inputChannelFactory = v }
 
             /** @see [Config.outputChannelFactory] */
-            fun outputChannelFactory(v: ReplOutputChannelFactory) = apply { outputChannelFactory = v }
+            public fun outputChannelFactory(v: ReplOutputChannelFactory): Builder = apply { outputChannelFactory = v }
 
             /** @see [Config.printIntroMessage] */
-            fun printIntroMessage(v: Boolean) = apply { printIntroMessage = v }
+            public fun printIntroMessage(v: Boolean): Builder = apply { printIntroMessage = v }
 
-            fun build(): Config {
+            public fun build(): Config {
                 return Config(
                     compileConfig = compileConfig,
                     databaseUrl = databaseUrl,
@@ -139,8 +140,9 @@ object RellApiRunShell {
     }
 }
 
-object RellApiShellInternal {
-    fun runShell(
+@InternalRellApi
+public object RellApiShellInternal {
+    public fun runShell(
         config: RellApiRunShell.Config,
         sourceDir: C_SourceDir,
         module: R_ModuleName?,
@@ -186,7 +188,7 @@ object RellApiShellInternal {
         }
     }
 
-    fun getDefaultReplHistoryFile(): File? {
+    public fun getDefaultReplHistoryFile(): File? {
         val homeDir = CommonUtils.getHomeDir()
         return if (homeDir == null) null else File(homeDir, ".rell_history")
     }

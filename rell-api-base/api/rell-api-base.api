@@ -1,3 +1,6 @@
+public abstract interface annotation class net/postchain/rell/api/base/InternalRellApi : java/lang/annotation/Annotation {
+}
+
 public final class net/postchain/rell/api/base/PrinterRellCliEnv : net/postchain/rell/api/base/RellCliEnv {
 	public fun <init> (Lnet/postchain/rell/base/runtime/Rt_Printer;Lnet/postchain/rell/base/runtime/Rt_Printer;)V
 	public synthetic fun <init> (Lnet/postchain/rell/base/runtime/Rt_Printer;Lnet/postchain/rell/base/runtime/Rt_Printer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -11,11 +14,9 @@ public final class net/postchain/rell/api/base/RellApiBaseInternal {
 	public final fun compileApp (Lnet/postchain/rell/api/base/RellApiCompile$Config;Lnet/postchain/rell/base/compiler/base/core/C_CompilerOptions;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;Ljava/util/List;)Lkotlin/Pair;
 	public final fun compileApp0 (Lnet/postchain/rell/api/base/RellApiCompile$Config;Lnet/postchain/rell/base/compiler/base/core/C_CompilerOptions;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;Ljava/util/List;)Lnet/postchain/rell/api/base/RellApiCompilationResult;
 	public final fun compileGtv (Lnet/postchain/rell/api/base/RellApiCompile$Config;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;)Lnet/postchain/gtv/Gtv;
-	public final fun compileGtv0 (Lnet/postchain/rell/api/base/RellApiCompile$Config;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;Ljava/util/List;)Lnet/postchain/gtv/Gtv;
 	public final fun compileGtvEx (Lnet/postchain/rell/api/base/RellApiCompile$Config;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;)Lkotlin/Pair;
 	public final fun makeCompilerModuleSelection (Lnet/postchain/rell/api/base/RellApiCompile$Config;Ljava/util/List;Ljava/util/List;)Lnet/postchain/rell/base/compiler/base/core/C_CompilerModuleSelection;
 	public final fun makeCompilerOptions (Lnet/postchain/rell/api/base/RellApiCompile$Config;)Lnet/postchain/rell/base/compiler/base/core/C_CompilerOptions;
-	public final fun wrapCompilation (Lnet/postchain/rell/api/base/RellApiCompile$Config;Lkotlin/jvm/functions/Function0;)Lkotlin/Pair;
 }
 
 public final class net/postchain/rell/api/base/RellApiBaseUtils {
@@ -121,7 +122,6 @@ public final class net/postchain/rell/api/base/RellCliTarget {
 public final class net/postchain/rell/api/base/RellConfigGen {
 	public static final field Companion Lnet/postchain/rell/api/base/RellConfigGen$Companion;
 	public fun <init> (Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Lnet/postchain/rell/base/model/R_LangVersion;Ljava/util/List;Ljava/util/List;Lnet/postchain/rell/base/model/R_App;)V
-	public final fun getApp ()Lnet/postchain/rell/base/model/R_App;
 	public final fun makeConfig (Ljava/lang/String;)Lnet/postchain/gtv/Gtv;
 	public final fun makeConfig (Lnet/postchain/gtv/Gtv;)Lnet/postchain/gtv/Gtv;
 }

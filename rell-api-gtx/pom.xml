@@ -80,6 +80,16 @@
                     <skip>false</skip>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <configuration>
+                    <args>
+                        <arg>-Xexplicit-api=strict</arg>
+                        <arg>-opt-in=net.postchain.rell.api.base.InternalRellApi</arg>
+                    </args>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
