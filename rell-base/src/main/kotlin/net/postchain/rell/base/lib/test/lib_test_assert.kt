@@ -47,22 +47,22 @@ object Lib_Test_Assert {
 
         namespace("rell.test", since = "0.10.4") {
             function("assert_equals", pure = true, since = "0.10.4") {
-                comment("Asserts that two values are equal.")
+                comment("Assert two values are equal.")
                 generic("T")
                 result("unit")
-                param("actual", type = "T", comment = "Actual value to compare")
-                param("expected", type = "T", comment = "The expected value")
+                param("actual", type = "T", comment = "the actual value")
+                param("expected", type = "T", comment = "the expected value")
                 body { actualValue, expectedValue ->
                     calcAssertEquals("assert_equals", expectedValue, actualValue, R_BinaryOp_Eq)
                 }
             }
 
             function("assert_not_equals", pure = true, since = "0.10.4") {
-                comment("Asserts that two values are not equal.")
+                comment("Assert two values are unequal.")
                 generic("T")
                 result("unit")
-                param("actual", type = "T", comment = "Actual value to compare")
-                param("illegal", type = "T", comment = "Unexpected value")
+                param("actual", type = "T", comment = "the actual value")
+                param("illegal", type = "T", comment = "the unexpected value")
                 body { actualValue, expectedValue ->
                     val equalsValue = R_BinaryOp_Eq.evaluate(actualValue, expectedValue)
                     if (equalsValue.asBoolean()) {
@@ -74,24 +74,32 @@ object Lib_Test_Assert {
             }
 
             function("assert_true", "unit", pure = true, since = "0.10.4") {
-                comment("Asserts that the value is `true`.")
-                param("actual", "boolean", comment = "Actual value")
+                comment("""
+                    Assert a value is `true`.
+
+                    Prefer other assertion functions where possible, as they provide better error messages.
+                """)
+                param("actual", "boolean", comment = "the value")
                 body { arg ->
                     calcAssertBoolean(true, arg)
                 }
             }
 
             function("assert_false", "unit", pure = true, since = "0.10.4") {
-                comment("Asserts that the value is `false`.")
-                param("actual", "boolean", comment = "Actual value")
+                comment("""
+                    Assert a value is `false`.
+
+                    Prefer other assertion functions where possible, as they provide better error messages.
+                """)
+                param("actual", "boolean", comment = "the value")
                 body { arg ->
                     calcAssertBoolean(false, arg)
                 }
             }
 
             function("assert_null", "unit", pure = true, since = "0.10.4") {
-                comment("Asserts that the value is `null`.")
-                param("actual", type = "anything", nullable = true, comment = "Actual value")
+                comment("Assert a value is `null`.")
+                param("actual", type = "anything", nullable = true, comment = "the value")
                 body { arg ->
                     if (arg != Rt_NullValue) {
                         throw Rt_AssertError.exception("assert_null:${arg.strCode()}", "expected null but was <${arg.str()}>")
@@ -101,10 +109,10 @@ object Lib_Test_Assert {
             }
 
             function("assert_not_null", "unit", pure = true, since = "0.10.4") {
-                comment("Asserts that the value is not `null`.")
+                comment("Assert a value is not `null`.")
                 generic("T", subOf = "any")
                 param("actual", type = "T?", nullable = true, implies = L_ParamImplication.NOT_NULL) {
-                    comment("Actual value")
+                    comment("the value")
                 }
                 body { arg ->
                     if (arg == Rt_NullValue) {
@@ -115,9 +123,27 @@ object Lib_Test_Assert {
             }
 
             function("assert_fails", "rell.test.failure", since = "0.11.0") {
-                comment("Asserts that a function fails to evaluate")
+                comment("""
+                    Asserts a function fails; i.e. throws an exception.
+
+                    #### Example
+                    ##### Application code
+                    ```rell
+                    // This will throw a exception.
+                    function bad(): integer {
+                        return [0][1];
+                    }
+                    ```
+                    ##### Test code
+                    ```rell
+                    // This test will pass.
+                    function test_bad() {
+                        rell.test.assert_fails(bad(*));
+                    }
+                    ```
+                """)
                 generic("T")
-                param("fn", type = "() -> T", comment = "Function to evaluate")
+                param("fn", type = "() -> T", comment = "the function value to invoke")
                 bodyContext { ctx, arg ->
                     val fn = arg.asFunction()
                     calcAssertFails(ctx, fn, null)
@@ -125,12 +151,33 @@ object Lib_Test_Assert {
             }
 
             function("assert_fails", "rell.test.failure", since = "0.11.0") {
-                comment("Asserts that a function fails with an expected message")
+                comment("""
+                    Asserts a function fails; i.e. throws an exception; with a given exception message.
+
+                    Verifies that the given exception message is a substring of the exception thrown by the given
+                    function (if thrown).
+
+                    #### Example
+                    ##### Application code
+                    ```rell
+                    // This will throw a exception.
+                    function bad(): integer {
+                        return [0][1];
+                    }
+                    ```
+                    ##### Test code
+                    ```rell
+                    // This test will pass.
+                    function test_bad() {
+                        rell.test.assert_fails("out of bounds", bad(*));
+                    }
+                    ```
+                """)
                 generic("T")
                 param("expected_message", type = "text") {
-                    comment("String that should be contained in the error message")
+                    comment("the expected substring of the error message")
                 }
-                param("fn", type = "() -> T", comment = "Function to evaluate")
+                param("fn", type = "() -> T", comment = "the function value to invoke")
                 bodyContext { ctx, arg1, arg2 ->
                     val expected = arg1.asString()
                     val fn = arg2.asFunction()
@@ -138,24 +185,31 @@ object Lib_Test_Assert {
                 }
             }
 
-            defAssertCompare(this, "assert_lt", R_CmpOp_Lt)
-            defAssertCompare(this, "assert_gt", R_CmpOp_Gt)
-            defAssertCompare(this, "assert_le", R_CmpOp_Le)
-            defAssertCompare(this, "assert_ge", R_CmpOp_Ge)
+            defAssertCompare(this, "assert_lt", R_CmpOp_Lt, "exclusive", "upper", "greatest")
+            defAssertCompare(this, "assert_gt", R_CmpOp_Gt, "exclusive", "lower", "least")
+            defAssertCompare(this, "assert_le", R_CmpOp_Le, "inclusive", "upper", "greatest")
+            defAssertCompare(this, "assert_ge", R_CmpOp_Ge, "inclusive", "lower", "least")
 
-            defAssertRange(this, "assert_gt_lt", R_CmpOp_Gt, R_CmpOp_Lt)
-            defAssertRange(this, "assert_gt_le", R_CmpOp_Gt, R_CmpOp_Le)
-            defAssertRange(this, "assert_ge_lt", R_CmpOp_Ge, R_CmpOp_Lt)
-            defAssertRange(this, "assert_ge_le", R_CmpOp_Ge, R_CmpOp_Le)
+            defAssertRange(this, "assert_gt_lt", R_CmpOp_Gt, R_CmpOp_Lt, "exclusive", "exclusive")
+            defAssertRange(this, "assert_gt_le", R_CmpOp_Gt, R_CmpOp_Le, "exclusive", "inclusive")
+            defAssertRange(this, "assert_ge_lt", R_CmpOp_Ge, R_CmpOp_Lt, "inclusive", "exclusive")
+            defAssertRange(this, "assert_ge_le", R_CmpOp_Ge, R_CmpOp_Le, "inclusive", "inclusive")
         }
     }
 
-    private fun defAssertCompare(mk: Ld_NamespaceDsl, name: String, op: R_CmpOp) = with(mk) {
+    private fun defAssertCompare(
+        mk: Ld_NamespaceDsl,
+        name: String,
+        op: R_CmpOp,
+        clusivity: String,
+        bound: String,
+        superlative: String
+    ) = with(mk) {
         function(name, "unit", pure = true, since = "0.10.4") {
-            comment("Asserts that the value is ${op.str} the expected value")
+            comment("Assert that a value is ${op.str} a given $bound bound.")
             generic("T", subOf = "comparable")
-            param("actual", type = "T", comment = "Actual value to compare")
-            param("expected", type = "T", comment = "The expected value")
+            param("actual", type = "T", comment = "the actual value")
+            param("${superlative}_expected", type = "T", comment = "the $bound bound ($clusivity)")
             bodyMeta {
                 val comparator = getAssertComparator(this)
                 body { left, right ->
@@ -166,18 +220,29 @@ object Lib_Test_Assert {
         }
     }
 
-    private fun defAssertRange(m: Ld_NamespaceDsl, name: String, op1: R_CmpOp, op2: R_CmpOp) = with(m) {
+    private fun defAssertRange(
+        m: Ld_NamespaceDsl,
+        name: String,
+        greaterOp: R_CmpOp,
+        lessOp: R_CmpOp,
+        greaterClusivity: String,
+        lessClusivity: String
+    ) = with(m) {
         function(name, "unit", pure = true, since = "0.10.4") {
-            comment("Asserts that the value is ${op1.str} the first value and ${op2.str} the second value.")
+            comment("""
+                Assert that a value falls within given bounds.
+
+                Specifically, assert that the value is ${greaterOp.str} a lower bound, and ${lessOp.str} an upper bound.
+            """)
             generic("T", subOf = "comparable")
-            param("actual", type = "T", comment = "The actual value to compare")
-            param("expected1", type = "T", comment = "The first value in the range")
-            param("expected2", type = "T", comment = "The second value in the range")
+            param("actual", type = "T", comment = "the actual value")
+            param("least_expected", type = "T", comment = "the lower bound ($greaterClusivity)")
+            param("greatest_expected", type = "T", comment = "the upper bound ($lessClusivity)")
             bodyMeta {
                 val comparator = getAssertComparator(this)
-                body { actual, expected1, expected2 ->
-                    calcAssertCompare(comparator, op1, actual, expected1)
-                    calcAssertCompare(comparator, op2, actual, expected2)
+                body { actual, leastExpected, greatestExpected ->
+                    calcAssertCompare(comparator, greaterOp, actual, leastExpected)
+                    calcAssertCompare(comparator, lessOp, actual, greatestExpected)
                     Rt_UnitValue
                 }
             }
@@ -264,7 +329,9 @@ private object Lib_Test_Type_Failure {
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell.test") {
             type("failure", rType = R_TestFailureType, since = "0.11.0") {
+                comment("A test failure, with a message that gives the reason for the failure.")
                 property("message", type = "text", pure = true, since = "0.11.0") {
+                    comment("The reason for this failure (typically the message of a thrown exception).")
                     value { a ->
                         val v = a as Rt_TestFailureValue
                         v.messageValue
