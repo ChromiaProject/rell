@@ -38,7 +38,9 @@ public object RellApiRunShell {
     ) {
         val cSourceDir = C_SourceDir.diskDir(sourceDir)
         val rModule = module?.let { R_ModuleName.of(it) }
-        RellApiShellInternal.runShell(config, cSourceDir, rModule)
+        RellApiBaseInternal.catchCommonError {
+            RellApiShellInternal.runShell(config, cSourceDir, rModule)
+        }
     }
 
     public class Config(
@@ -147,7 +149,7 @@ public object RellApiShellInternal {
         sourceDir: C_SourceDir,
         module: R_ModuleName?,
     ) {
-        val compilerOptions = RellApiBaseInternal.makeCompilerOptions(config.compileConfig)
+        val compilerOptions = RellApiBaseInternal.makeCompilerOptions0(config.compileConfig)
 
         val globalCtx = RellApiBaseUtils.createGlobalContext(
             compilerOptions,

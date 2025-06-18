@@ -209,7 +209,7 @@ class R_LangVersion(private val ver: VersionNumber): Comparable<R_LangVersion> {
         require(ver.items.size == 3) { "invalid version: $ver" }
     }
 
-    fun parts(): List<Int> = ver.items
+    fun parts(): ImmList<Int> = ver.items
     fun str(): String = ver.str()
 
     override fun compareTo(other: R_LangVersion) = ver.compareTo(other.ver)

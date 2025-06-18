@@ -55,7 +55,7 @@ object RellVersions {
     fun checkCompatibilityVersion(version: R_LangVersion?, exception: (String) -> RuntimeException) {
         val minVer = MIN_COMPATIBILITY_VERSION
         if (version != null && version < minVer) {
-            throw exception("Unsupported language version: $version (minimum supported version: $minVer)")
+            throw exception("Unsupported Rell version: $version (minimum supported version: $minVer)")
         }
     }
 

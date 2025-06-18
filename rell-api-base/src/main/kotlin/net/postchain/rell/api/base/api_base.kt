@@ -292,6 +292,13 @@ public object RellApiBaseInternal {
     }
 
     public fun makeCompilerOptions(config: RellApiCompile.Config): C_CompilerOptions {
+        return catchCommonError {
+            makeCompilerOptions0(config)
+        }
+    }
+
+    public fun makeCompilerOptions0(config: RellApiCompile.Config): C_CompilerOptions {
+        checkVersion(config)
         return C_CompilerOptions.DEFAULT.toBuilder()
             .compatibility(config.version)
             .mountConflictError(config.mountConflictError)
@@ -367,17 +374,26 @@ public object RellApiBaseInternal {
         }
     }
 
-
     private fun wrapCompilation(
         config: RellApiCompile.Config,
         code: () -> RellApiCompilationResult,
     ): Pair<RellApiCompilationResult, R_App> {
-        val cliEnv = config.cliEnv
         val res = catchCommonError {
             code()
         }
-        val rApp = RellApiBaseUtils.handleCompilationResult(cliEnv, res.cRes, config.quiet)
+        val rApp = RellApiBaseUtils.handleCompilationResult(config.cliEnv, res.cRes, config.quiet)
         return res to rApp
+    }
+
+    private fun checkVersion(config: RellApiCompile.Config) {
+        val v = config.version
+        if (v !in RellVersions.SUPPORTED_VERSIONS) {
+            throw C_CommonError("config:version:unknown:$v", "Unknown Rell version: $v")
+        }
+
+        RellVersions.checkCompatibilityVersion(v) { msg ->
+            C_CommonError("config:version:unsupported:$v", msg)
+        }
     }
 
     public fun <T> catchCommonError(code: () -> T): T {

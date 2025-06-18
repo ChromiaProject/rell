@@ -7,13 +7,17 @@ package net.postchain.rell.api.shell
 import net.postchain.gtv.GtvFactory
 import net.postchain.rell.api.base.BaseRellApiTest
 import net.postchain.rell.api.base.RellApiCompile
+import net.postchain.rell.api.gtx.RellApiRunTests
+import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.testutils.RellReplTester
+import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.plus
 import org.junit.Test
+import kotlin.test.assertEquals
 
 internal class RellApiRunShellTest: BaseRellApiTest() {
     @Test fun testRunShell() {
@@ -110,7 +114,28 @@ internal class RellApiRunShellTest: BaseRellApiTest() {
             .build()
 
         val moduleName = if (module == null) null else R_ModuleName.of(module)
-        RellApiShellInternal.runShell(runConfig, sourceDir, moduleName)
+
+        try {
+            RellApiShellInternal.runShell(runConfig, sourceDir, moduleName)
+        } catch (e: C_CommonError) {
+            val actual = listOf("CME:${e.code}")
+            assertEquals(expected.toList(), actual)
+            return
+        }
+
         outChannelFactory.chk(*expected)
+    }
+
+    @Test fun testRellVersion() {
+        chkRellVersion("0.0.1", "CME:config:version:unknown")
+        chkRellVersion("100.100.100", "CME:config:version:unknown")
+        chkRellVersion("0.10.8", "CME:config:version:unsupported")
+        chkRellVersion(RellTestUtils.NEXT_VER, "CME:config:version:unknown")
+    }
+
+    private fun chkRellVersion(version: String, err: String) {
+        val config = configBuilder().version(version).build()
+        val sourceDir = C_SourceDir.mapDirOf("lib.rell" to "module; enum color { red }")
+        chkShell(sourceDir, immListOf(), "$err:$version", compileConfig = config)
     }
 }

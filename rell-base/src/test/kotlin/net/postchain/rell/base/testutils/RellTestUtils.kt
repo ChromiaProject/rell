@@ -18,15 +18,15 @@ import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.SqlManager
-import net.postchain.rell.base.utils.CommonUtils
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.RellVersions
-import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.*
 
 object RellTestUtils {
     const val RELL_VER = RellVersions.VERSION_STR
 
+    val NEXT_VER: String = getNextVersion().str()
+
     const val MAIN_FILE = "main.rell"
+
     val MAIN_FILE_PATH = C_SourcePath.parse(MAIN_FILE)
 
     val DEFAULT_COMPILER_OPTIONS = C_CompilerOptions.builder().hiddenLib(true).build()
@@ -144,7 +144,12 @@ object RellTestUtils {
         throw IllegalStateException("Function not found: '$name'")
     }
 
-    fun callQuery(exeCtx: Rt_ExecutionContext, name: String, args: List<Rt_Value>, encoder: (R_Type, Rt_Value) -> String): String {
+    fun callQuery(
+        exeCtx: Rt_ExecutionContext,
+        name: String,
+        args: List<Rt_Value>,
+        encoder: (R_Type, Rt_Value) -> String,
+    ): String {
         val decoder = { _: List<R_FunctionParam>, args2: List<Rt_Value> -> args2 }
         val eval = RellTestEval()
         return eval.eval {
@@ -221,6 +226,13 @@ object RellTestUtils {
     fun strToRidHex(s: String) = (s + "00".repeat(32)).substring(0, 64)
     fun strToRidBytes(s: String) = CommonUtils.hexToBytes(strToRidHex(s))
     fun strToBlockchainRid(s: String) = BlockchainRid(strToRidBytes(s))
+
+    private fun getNextVersion(): R_LangVersion {
+        val parts = RellVersions.VERSION.parts()
+        val delta = listOf(0, 0, 1)
+        val nextParts = delta.indices.mapToImmList { parts[it] + delta[it] }
+        return R_LangVersion.of(nextParts)
+    }
 
     class TestCallResult(val res: String, val stack: ImmList<R_StackPos>)
 }

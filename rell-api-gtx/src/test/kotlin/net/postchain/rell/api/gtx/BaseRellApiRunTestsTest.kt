@@ -6,6 +6,7 @@ package net.postchain.rell.api.gtx
 
 import net.postchain.rell.api.base.BaseRellApiTest
 import net.postchain.rell.api.base.RellApiCompile
+import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.R_ModuleName
@@ -48,9 +49,10 @@ internal abstract class BaseRellApiRunTestsTest: BaseRellApiTest() {
         val appMods = appModules?.mapToImmList { R_ModuleName.of(it) }
         val testMods = testModules.map { R_ModuleName.of(it) }
 
-        val options = RellApiGtxInternal.makeRunTestsCompilerOptions(config)
+        val options: C_CompilerOptions
 
         val apiRes = try {
+            options = RellApiGtxInternal.makeRunTestsCompilerOptions0(config)
             compileApp0(config.compileConfig, options, sourceDir, appMods, testMods)
         } catch (e: C_CommonError) {
             return listOf("CME:${e.code}")

@@ -298,8 +298,13 @@ internal object RellApiGtxInternal {
     }
 
     fun makeRunTestsCompilerOptions(config: RellApiRunTests.Config): C_CompilerOptions {
-        return RellApiBaseInternal.makeCompilerOptions(config.compileConfig)
-            .toBuilder()
+        return RellApiBaseInternal.catchCommonError {
+            makeRunTestsCompilerOptions0(config)
+        }
+    }
+
+    internal fun makeRunTestsCompilerOptions0(config: RellApiRunTests.Config): C_CompilerOptions {
+        return RellApiBaseInternal.makeCompilerOptions0(config.compileConfig).toBuilder()
             .useTestDependencyExtensions(config.activateTestDependencies)
             .build()
     }

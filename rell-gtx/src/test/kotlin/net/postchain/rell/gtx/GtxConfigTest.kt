@@ -17,7 +17,7 @@ import kotlin.test.assertEquals
 
 class GtxConfigTest: BaseGtxTest() {
     @Test fun testLegacyUnsupportedVersion() {
-        chkLegacy("v0.10", "ERR:Unsupported language version: 0.10.4 (minimum supported version: 0.10.9)")
+        chkLegacy("v0.10", "ERR:Unsupported Rell version: 0.10.4 (minimum supported version: 0.10.9)")
     }
 
     @Test fun testLegacyWrongVersionFormat() {
@@ -118,7 +118,7 @@ class GtxConfigTest: BaseGtxTest() {
     }
 
     @Test fun testSourcesVersionUnsupported() {
-        val err = "ERR:Unsupported language version: %s (minimum supported version: 0.10.9)"
+        val err = "ERR:Unsupported Rell version: %s (minimum supported version: 0.10.9)"
         chkVersion("0.6.0", err)
         chkVersion("0.6.1", err)
         chkVersion("0.7.0", err)

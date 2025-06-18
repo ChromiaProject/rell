@@ -235,9 +235,8 @@ internal class RellApiCompileTest: BaseRellApiTest() {
         appModules: List<R_ModuleName>?,
         testModules: List<R_ModuleName> = immListOf(),
     ): List<String> {
-        val options = RellApiBaseInternal.makeCompilerOptions(config)
-
         val apiRes = try {
+            val options = RellApiBaseInternal.makeCompilerOptions0(config)
             compileApp0(config, options, sourceDir, appModules, testModules)
         } catch (e: C_CommonError) {
             return listOf("CME:${e.code}")
@@ -369,6 +368,31 @@ internal class RellApiCompileTest: BaseRellApiTest() {
         chkCompileGtv(config, sourceDir, "foo", """{$compVerEntry,"modules":["foo"],"sources":{$fooEntry},$verEntry}""")
     }
 
+    @Test fun testCompileAppRellVersion() {
+        chkCompileAppRellVersion("0.0.1", "CME:config:version:unknown")
+        chkCompileAppRellVersion("100.100.100", "CME:config:version:unknown")
+        chkCompileAppRellVersion("0.10.8", "CME:config:version:unsupported")
+        chkCompileAppRellVersion(RellTestUtils.NEXT_VER, "CME:config:version:unknown")
+    }
+
+    private fun chkCompileAppRellVersion(version: String, err: String) {
+        val config = configBuilder().version(version).build()
+        chkCompileAppMods(config, generalSourceDir, listOf(), listOf("a"), "$err:$version")
+    }
+
+    @Test fun testCompileGtvRellVersion() {
+        chkCompileGtvRellVersion("0.0.1", "CME:config:version:unknown")
+        chkCompileGtvRellVersion("100.100.100", "CME:config:version:unknown")
+        chkCompileGtvRellVersion("0.10.8", "CME:config:version:unsupported")
+        chkCompileGtvRellVersion(RellTestUtils.NEXT_VER, "CME:config:version:unknown")
+    }
+
+    private fun chkCompileGtvRellVersion(version: String, err: String) {
+        val sourceDir = C_SourceDir.mapDirOf("foo/module.rell" to "module;")
+        val config = configBuilder().version(version).build()
+        chkCompileGtv(config, sourceDir, "foo", "$err:$version")
+    }
+
     private fun file(sourceDir: C_SourceDir, path: String): String {
         val f = sourceDir.file(C_SourcePath.parse(path))
         checkNotNull(f)
@@ -403,7 +427,7 @@ internal class RellApiCompileTest: BaseRellApiTest() {
         sourceDir: C_SourceDir,
         mainModule: String?,
     ): String {
-        val options = RellApiBaseInternal.makeCompilerOptions(config)
+        val options = RellApiBaseInternal.makeCompilerOptions0(config)
         val rModules = mainModule?.let { listOf(R_ModuleName.of(it)) }
         val apiRes = compileApp0(config, options, sourceDir, rModules)
 

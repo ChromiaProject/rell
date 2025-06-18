@@ -6,6 +6,7 @@ package net.postchain.rell.api.gtx
 
 import net.postchain.gtv.GtvFactory
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
+import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.Rt_TestPrinter
 import org.junit.Test
 
@@ -264,6 +265,20 @@ internal class RellApiRunTestsTest: BaseRellApiRunTestsTest() {
         val expRes = if (err) "test:test:FAILED" else "test:test:OK"
         chkRunTests(runConfig, sourceDir, appModules, testModules, expRes)
         printer.chk(*expectedOut)
+    }
+
+    @Test fun testRellVersion() {
+        chkRellVersion("0.0.1", "CME:config:version:unknown")
+        chkRellVersion("100.100.100", "CME:config:version:unknown")
+        chkRellVersion("0.10.8", "CME:config:version:unsupported")
+        chkRellVersion(RellTestUtils.NEXT_VER, "CME:config:version:unknown")
+    }
+
+    private fun chkRellVersion(version: String, err: String) {
+        val config = configBuilder().version(version).build()
+        val runConfig = RellApiRunTests.Config.Builder().compileConfig(config).build()
+        val sourceDir = C_SourceDir.mapDirOf("test.rell" to "@test module; function test_1(){}")
+        chkRunTests(runConfig, sourceDir, listOf(), listOf("test"), "$err:$version")
     }
 
     @Test fun testMerkleHashOperation() {
