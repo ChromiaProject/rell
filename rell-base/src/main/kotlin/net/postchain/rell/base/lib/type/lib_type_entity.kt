@@ -36,7 +36,7 @@ object Lib_Type_Entity {
                 Entity values are created with a `create` statement and are persisted in the database, and are accessed
                 with an `@`-expression.
 
-                @see at-operator <a href="https://docs.chromia.com/rell/language-features/database/overview#-operator"><code>@</code> operator - Chromia Documentation</a>
+                @see 1. <a href="https://docs.chromia.com/rell/language-features/database/overview#-operator"><code>@</code> operator - Chromia Documentation</a>
             """)
             supertypeStrategySpecial { mType ->
                 val rType = L_TypeUtils.getRType(mType)

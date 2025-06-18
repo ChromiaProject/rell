@@ -71,7 +71,7 @@ object Lib_Exists {
                 attribute matching syntax.
 
                 @return `true` if `value` is not `null` and not an empty collection, `false` otherwise
-                @see empty <a href="empty.html">empty - Rell System Library</a>
+                @see 1. <a href="empty.html"><code>empty</code> - Rell Standard Library</a>
             """)
         }
         function("empty", C_SysFn_Exists(true), since = "0.8.0") {
@@ -81,7 +81,7 @@ object Lib_Exists {
                 Equivalent to `not exists(...)`.
 
                 @return `true` if `value` is `null` or an empty collection, `false` otherwise
-                @see exists <a href="exists.html">exists - Rell System Library</a>
+                @see 1. <a href="exists.html"><code>exists</code> - Rell Standard Library</a>
             """)
         }
     }

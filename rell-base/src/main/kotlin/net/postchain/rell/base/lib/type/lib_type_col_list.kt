@@ -23,7 +23,7 @@ object Lib_Type_List {
             comment("""
                 Represents a mutable array list. Subtype of `collection<T>`.
 
-                @see collection for inherited values and methods
+                @see 1. <a href="../collection/index.html"><code>collection</code> - Rell Standard Library</a>
             """)
             generic("T")
             parent("collection<T>")

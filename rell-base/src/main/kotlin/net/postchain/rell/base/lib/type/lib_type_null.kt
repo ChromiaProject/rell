@@ -14,7 +14,7 @@ object Lib_Type_Null {
                 comment("""
                     Convert this `null` to a `gtv null`.
 
-                    @see gtv <a href="../gtv/index.html"><code>gtv</code></a>
+                    @see 1. <a href="../gtv/index.html"><code>gtv</code> - Rell Standard Library</a>
                 """)
                 Lib_Type_Gtv.makeToGtvBody(this, pretty = false)
             }

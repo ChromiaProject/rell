@@ -45,7 +45,7 @@ object Lib_Type_Map {
                 A mutable map from keys of type `K` to values of type `V`, where `K` is immutable, and `V` may be either
                 mutable or immutable. `map<K,V> is a subtype of `iterable<(K,V)>`. It is implemented as a hash-map, with
                 iteration order determined by the order in which the entries were added.
-                @see iterable for inherited values and methods
+                @see 1. <a href="../iterable/index.html"><code>iterable</code> - Rell Standard Library</a>
             """)
             generic("K", subOf = "immutable")
             generic("V")

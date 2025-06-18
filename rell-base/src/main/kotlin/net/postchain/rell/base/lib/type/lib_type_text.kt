@@ -312,7 +312,7 @@ object Lib_Type_Text {
                     print(names @* { .like("V\\\\c%") }); // prints [V\ctor]
                     ```
 
-                    @see PostgreSQL [Pattern Matching: LIKE](https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE)
+                    @see 1. <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-LIKE">Pattern Matching: LIKE - PostgreSQL Documentation</a>
                 """)
                 param("pattern", type = "text", comment = "the pattern to match against")
                 dbFunctionTemplate("text.like", 2, "((#0) LIKE (#1))")
@@ -339,7 +339,7 @@ object Lib_Type_Text {
                     print(names @* { .matches("V\\\\c.*") }); // prints [V\ctor]
                     ```
 
-                    @see Pattern [`java.util.regex.Pattern`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/regex/Pattern.html)
+                    @see 1. <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/regex/Pattern.html"><code>java.util.regex.Pattern</code> - Java SE 21 & JDK 21</a>
                 """)
                 param("regex", type = "text", comment = "The regular expression to match against.")
                 body { a, b ->

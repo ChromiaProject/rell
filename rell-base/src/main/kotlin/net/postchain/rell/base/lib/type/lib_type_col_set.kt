@@ -20,7 +20,7 @@ object Lib_Type_Set {
             comment("""
                 A mutable set of elements of type `T`, where `T` is immutable. Subtype of `collection<T>`. Implemented
                 as a hash-set, with iteration order determined by the order in which the elements were added.
-                @see collection for inherited values and methods
+                @see 1. <a href="../collection/index.html"><code>collection</code> - Rell Standard Library</a>
             """)
             generic("T", subOf = "immutable")
             parent("collection<T>")

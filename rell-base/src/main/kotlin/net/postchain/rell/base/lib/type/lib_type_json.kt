@@ -35,8 +35,8 @@ object Lib_Type_Json {
 
                 JSON values in Rell are represented internally with text, which has been validated as legal JSON.
 
-                @see GTV <a href="../gtv/index.html">gtv</a>
-                @see gtv.from_json <a href="../gtv/from_json.html"><code>gtv.from_json()</code></a>
+                @see 1. <a href="../gtv/index.html"><code>gtv</code> - Rell Standard Library</a>
+                @see 2. <a href="../gtv/from_json.html"><code>gtv.from_json()</code> - Rell Standard Library</a>
             """)
 
             constructor(pure = true, since = SINCE0) {

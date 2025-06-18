@@ -27,7 +27,7 @@ object Lib_Test_BlockClock {
                     This is a [Unix epoch timestamp](https://en.wikipedia.org/wiki/Unix_time), i.e. the number of
                     milliseconds that have elapsed since midnight on 1st January 1970.
 
-                    @see rell.test.block <a href="block/index.html">Test block timestamps</a>
+                    @see 1. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
                 """)
             }
             constant("DEFAULT_BLOCK_INTERVAL", DEFAULT_BLOCK_INTERVAL, since = "0.13.3") {
@@ -35,7 +35,7 @@ object Lib_Test_BlockClock {
                     The default value for the time interval between each block in the blockchain, in milliseconds.
                     Equal to `10000` (`10` seconds).
 
-                    @see rell.test.block <a href="block/index.html">Test block timestamps</a>
+                    @see 1. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
                 """)
             }
 
@@ -48,7 +48,7 @@ object Lib_Test_BlockClock {
                     @throws exception if there are no blocks in the blockchain (i.e. if the first block in the
                     blockchain has yet to be built)
 
-                    @see rell.test.block <a href="block/index.html">Test block timestamps</a>
+                    @see 1. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
                 """)
                 value { ctx ->
                     val t0 = ctx.exeCtx.testBlockClock.getLastBlockTime()
@@ -69,7 +69,7 @@ object Lib_Test_BlockClock {
                     If a value is present, it is a [Unix epoch timestamp](https://en.wikipedia.org/wiki/Unix_time), i.e.
                     the number of milliseconds that have elapsed since midnight on 1st January 1970.
 
-                    @see rell.test.block <a href="block/index.html">Test block timestamps</a>
+                    @see 1. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
                 """)
                 value { ctx ->
                     val t = ctx.exeCtx.testBlockClock.getLastBlockTime()
@@ -87,7 +87,7 @@ object Lib_Test_BlockClock {
                     This is a [Unix epoch timestamp](https://en.wikipedia.org/wiki/Unix_time), i.e. the number of
                     milliseconds that will have elapsed since midnight on 1st January 1970.
 
-                    @see rell.test.block <a href="block/index.html">Test block timestamps</a>
+                    @see 1. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
                 """)
                 value { ctx ->
                     val t = ctx.exeCtx.testBlockClock.getNextBlockTime()
@@ -107,10 +107,10 @@ object Lib_Test_BlockClock {
 
                     Can be modified with `rell.test.set_block_interval()`.
 
-                    @see rell.test.set_block_interval <a href="set_block_interval.html"><code>rell.test.set_block_interval()</code></a>
-                    @see rell.test.set_next_block_time <a href="set_next_block_time.html"><code>rell.test.set_next_block_time()</code></a>
-                    @see rell.test.set_next_block_time_delta <a href="set_next_block_time_delta.html"><code>rell.test.set_next_block_time_delta()</code></a>
-                    @see rell.test.block <a href="block/index.html">Test block timestamps</a>
+                    @see 1. <a href="set_block_interval.html"><code>rell.test.set_block_interval()</code> - Rell Standard Library</a>
+                    @see 2. <a href="set_next_block_time.html"><code>rell.test.set_next_block_time()</code> - Rell Standard Library</a>
+                    @see 3. <a href="set_next_block_time_delta.html"><code>rell.test.set_next_block_time_delta()</code> - Rell Standard Library</a>
+                    @see 4. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
                 """)
                 value { ctx ->
                     val t = ctx.exeCtx.testBlockClock.getBlockInterval()
@@ -128,9 +128,9 @@ object Lib_Test_BlockClock {
 
                     @return the previous interval value, in milliseconds
 
-                    @see rell.test.set_next_block_time <a href="set_next_block_time.html"><code>rell.test.set_next_block_time()</code></a>
-                    @see rell.test.set_next_block_time_delta <a href="set_next_block_time_delta.html"><code>rell.test.set_next_block_time_delta()</code></a>
-                    @see rell.test.block <a href="block/index.html">Test block timestamps</a>
+                    @see 1. <a href="set_next_block_time.html"><code>rell.test.set_next_block_time()</code> - Rell Standard Library</a>
+                    @see 2. <a href="set_next_block_time_delta.html"><code>rell.test.set_next_block_time_delta()</code> - Rell Standard Library</a>
+                    @see 3. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
                 """)
                 param(name = "interval", type = "integer", comment = "the time interval between blocks")
                 bodyContext { ctx, a ->
@@ -150,8 +150,8 @@ object Lib_Test_BlockClock {
 
                     @throws exception if `time` is in older than `rell.test.last_block_time`, or negative
 
-                    @see rell.test.set_next_block_time_delta <a href="set_next_block_time_delta.html"><code>rell.test.set_next_block_time_delta()</code></a>
-                    @see rell.test.block <a href="block/index.html">Test block timestamps</a>
+                    @see 1. <a href="set_next_block_time_delta.html"><code>rell.test.set_next_block_time_delta()</code> - Rell Standard Library</a>
+                    @see 2. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
                 """)
                 param(name = "time", type = "timestamp", comment = "timestamp to use on next block")
                 bodyContext { ctx, a ->
@@ -174,8 +174,8 @@ object Lib_Test_BlockClock {
 
                     @throws exception if `delta` is less than `1`
 
-                    @see rell.test.set_next_block_time <a href="set_next_block_time.html"><code>rell.test.set_next_block_time()</code></a>
-                    @see rell.test.block <a href="block/index.html">Test block timestamps</a>
+                    @see 1. <a href="set_next_block_time.html"><code>rell.test.set_next_block_time()</code> - Rell Standard Library</a>
+                    @see 2. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
                 """)
                 param(name = "delta", type = "integer", comment = "the time delta between the previous and next block")
                 bodyContext { ctx, a ->

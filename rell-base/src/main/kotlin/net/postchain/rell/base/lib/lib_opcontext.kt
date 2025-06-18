@@ -265,8 +265,8 @@ object Lib_OpContext {
                     [EIF](https://blog.chromia.com/chromia-explained-eif/).
 
                     @throws exception if there is no operation context
-                    @see EIF <a href="https://gitlab.com/chromaway/core/postchain-eif/blob/c5eea67d38d1bba29f49ffa4430b9e40a60bc622/postchain-eif-rell/rell/src/hbridge/eif_events.rell#L25">Usage of <code>op_context.emit_event()</code> in EIF</a>
-                    @see ICMF <a href="https://gitlab.com/chromaway/core/directory-chain/blob/abd4f0d73092020f5160d27057e4dedd8721bad5/src/lib/icmf/module.rell#L10">Usage of <code>op_context.emit_event()</code> in ICMF</a>
+                    @see 1. <a href="https://gitlab.com/chromaway/core/postchain-eif/blob/c5eea67d38d1bba29f49ffa4430b9e40a60bc622/postchain-eif-rell/rell/src/hbridge/eif_events.rell#L25">Usage of <code>op_context.emit_event()</code> in EIF</a>
+                    @see 2. <a href="https://gitlab.com/chromaway/core/directory-chain/blob/abd4f0d73092020f5160d27057e4dedd8721bad5/src/lib/icmf/module.rell#L10">Usage of <code>op_context.emit_event()</code> in ICMF</a>
                 """)
                 param("type", type = "text", comment = "the event processor to trigger")
                 param("data", type = "gtv", comment = "arguments to the event processor")

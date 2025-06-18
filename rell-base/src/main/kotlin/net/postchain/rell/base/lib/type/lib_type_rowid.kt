@@ -64,8 +64,8 @@ object Lib_Type_Rowid {
                 val u_rowid: rowid = c.rowid; // Likely to lead to errors, but the compiler can't help us.
                 ```
 
-                @see integer <a href="../integer/index.html"><code>integer</code></a>
-                @see GTV <a href="../gtv/index.html"><code>gtv</code></a>
+                @see 1. <a href="../integer/index.html"><code>integer</code> - Rell Standard Library</a>
+                @see 2. <a href="../gtv/index.html"><code>gtv</code> - Rell Standard Library</a>
             """)
 
             // Constructor to create a ROWID from an integer value

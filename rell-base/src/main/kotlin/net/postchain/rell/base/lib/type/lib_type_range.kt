@@ -22,7 +22,7 @@ object Lib_Type_Range {
                 elements.
 
                 Range is a subtype of `iterable<integer>`.
-                @see iterable for inherited values and methods
+                @see 1. <a href="../iterable/index.html"><code>iterable</code> - Rell Standard Library</a>
             """)
             parent(type = "iterable<integer>")
 

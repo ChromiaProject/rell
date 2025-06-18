@@ -67,7 +67,7 @@ object Lib_Type_Object {
                 update state ( x += 5, s = 'Updated' );
                 ```
 
-                @see at-operator <a href="https://docs.chromia.com/rell/language-features/database/overview#-operator"><code>@</code> operator - Chromia Documentation</a>
+                @see 1. <a href="https://docs.chromia.com/rell/language-features/database/overview#-operator"><code>@</code> operator - Chromia Documentation</a>
             """)
             supertypeStrategySpecial { mType ->
                 val rType = L_TypeUtils.getRType(mType)

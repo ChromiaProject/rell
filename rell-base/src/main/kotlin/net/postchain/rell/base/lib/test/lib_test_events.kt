@@ -96,8 +96,8 @@ object Lib_Test_Events {
                     To assert a subset of events, or to assert independently of event order, use
                     `rell.test.get_events()` and make assertions over elements of the returned list.
 
-                    @see op_context.emit_event <a href="../op_context/emit_event.html"><code>op_context.emit_event()</code></a>
-                    @see rell.test.get_events <a href="get_events.html"><code>rell.test.get_events()</code></a>
+                    @see 1. <a href="../op_context/emit_event.html"><code>op_context.emit_event()</code> - Rell Standard Library</a>
+                    @see 2. <a href="get_events.html"><code>rell.test.get_events()</code> - Rell Standard Library</a>
                 """)
                 param("expected", "(text,gtv)", arity = L_ParamArity.ZERO_MANY) {
                     comment("expected event sequence")
@@ -129,7 +129,7 @@ object Lib_Test_Events {
                     return rell.test.get_events();
                     ```
 
-                    @see op_context.emit_event <a href="../op_context/emit_event.html"><code>op_context.emit_event()</code></a>
+                    @see 1. <a href="../op_context/emit_event.html"><code>op_context.emit_event()</code> - Rell Standard Library</a>
                 """)
                 bodyContext { ctx ->
                     val events = ctx.exeCtx.emittedEvents
