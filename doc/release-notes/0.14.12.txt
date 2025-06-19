@@ -1,0 +1,25 @@
+RELEASE NOTES 0.14.12 (2025-06-19)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Runtime: Support of optional struct attributes in operation and query parameters
+
+Now it's not required to always have all struct attributes specified when calling an operation or a query. Attributes
+that have default values (i.e. optional attributes) can be omitted.
+
+- For operations, structs must be array-encoded, so only tail optional attributes can be omitted.
+- For queries, structs can be either array- or dict-encoded; in a dict, any optional attributes can be omitted.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Library: Function struct.from_gtv() and related functions support optional attributes
+
+Functions:
+
+- struct.from_gtv()
+- struct.from_gtv_pretty()
+- struct.from_bytes()
+
+now allow to not specify values of optional attributes (i.e. attributes with default values).
+
+- For array-encoded structs, only tail optional attributes can be omitted. Supported by all three functions.
+- For dict-encoded structs, any optional attributes can be omitted. This format is supported only by
+  struct.from_gtv_pretty().
