@@ -29,7 +29,7 @@ interface GtvToRtDefaultValueEvaluator {
     fun evaluate(rDefBase: R_DefinitionBase, expr: R_Expr): Rt_Value
 
     companion object {
-        private val STRUCT_DEFAULT_SWITCH = C_FeatureSwitch(RellVersions.SINCE_NOW)
+        private val STRUCT_DEFAULT_SWITCH = C_FeatureSwitch("0.14.12")
 
         fun getError(): GtvToRtDefaultValueEvaluator = GtvToRtDefaultValueEvaluator_Error
 
