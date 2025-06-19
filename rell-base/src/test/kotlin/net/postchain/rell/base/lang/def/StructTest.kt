@@ -546,7 +546,7 @@ class StructTest: BaseRellTest() {
         chkFromGtv("s.from_gtv", """[123]""", "s[x=int[123],y=text[hi],z=boolean[true]]")
         chkFromGtv("s.from_gtv_pretty", """{"x":123}""", "s[x=int[123],y=text[hi],z=boolean[true]]")
 
-        tst.compatibilityVer(RellVersions.SINCE_NOW)
+        tst.compatibilityVer("0.14.12")
         chkFromGtv("s.from_gtv", """[123]""", "s[x=int[123],y=text[hi],z=boolean[true]]")
         chkFromGtv("s.from_gtv_pretty", """{"x":123}""", "s[x=int[123],y=text[hi],z=boolean[true]]")
 
