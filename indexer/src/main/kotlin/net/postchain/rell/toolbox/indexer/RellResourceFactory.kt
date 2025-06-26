@@ -11,6 +11,7 @@ import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeCompilationResult
 import net.postchain.rell.base.utils.ide.IdeDirApi
+import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.compiler.AstSourceFile
 import net.postchain.rell.toolbox.compiler.RellCompilerApi
@@ -132,7 +133,7 @@ class RellResourceFactory(
         return try {
             IdeApi.compile(
                 selfDir,
-                listOf(moduleName),
+                immListOf(moduleName),
                 options
             )
         } catch (e: Exception) {
