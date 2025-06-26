@@ -16,6 +16,7 @@ import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeCodeSnippet
 import net.postchain.rell.base.utils.ide.IdeDirApi
+import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.toolbox.compiler.AstSourceFile
 import net.postchain.rell.toolbox.compiler.RellCompilerApi.validateSimple
 import net.postchain.rell.toolbox.parser.testing.TestSourceDir
@@ -124,7 +125,7 @@ class RellParserTest {
             modules.add(IdeApi.getModuleName(it.sourcePath, it.transformedAst)!!)
         }
         val selfDir = IdeDirApi.mapDir(fileMap)
-        return IdeApi.getAllComments(selfDir, modules, options)
+        return IdeApi.getAllComments(selfDir, modules.toImmList(), options)
     }
 
     private fun validateTestCase(testCaseSnippet: IdeCodeSnippet) {
