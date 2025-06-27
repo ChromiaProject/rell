@@ -5,6 +5,7 @@
 package net.postchain.rell.base.lang.module
 
 import net.postchain.rell.base.testutils.BaseRellTest
+import net.postchain.rell.base.testutils.expCtError
 import org.junit.Test
 
 class TestModuleTest: BaseRellTest() {
@@ -17,6 +18,30 @@ class TestModuleTest: BaseRellTest() {
         """)
         chkTests("some_tests", "test_foo=OK,test_bar=req_err:null")
         chkOut("foo", "bar")
+    }
+
+    @Test fun testSimpleFunctionAnnotation() {
+        file("some_tests.rell", """
+            @test module;
+            @test function foo() { print("foo"); require(true); }
+            @test function bar() { print("bar"); require(false); }
+            function not_a_test() { print("not_a_test"); }
+        """)
+        chkTests("some_tests", "foo=OK,bar=req_err:null")
+        chkOut("foo", "bar")
+    }
+
+    @Test fun testMixedTestFunctionNameAndFunctionAnnotation() {
+        file("some_tests.rell", """
+            @test module;
+            @test function foo() { print("foo"); require(true); }
+            @test function bar() { print("bar"); require(false); }
+            function test_foo() { print("foo"); require(true); }
+            function test_bar() { print("bar"); require(false); }
+            function not_a_test() { print("not_a_test"); }
+        """)
+        chkTests("some_tests", "foo=OK,bar=req_err:null,test_foo=OK,test_bar=req_err:null")
+        chkOut("foo", "bar", "foo", "bar")
     }
 
     @Test fun testImportTestFromRegular() {
@@ -68,6 +93,14 @@ class TestModuleTest: BaseRellTest() {
         chkCompile("module; operation op() {}", "OK")
     }
 
+    @Test fun testFunctionAnnotationUnsupportedDefinitions() {
+        tst.mainModule("main")
+        chkCompile("module; @test operation op() {}", "ct_err:modifier:invalid:ann:test")
+        chkCompile("module; @test query q() = 123;", "ct_err:modifier:invalid:ann:test")
+        chkCompile("module; @test entity user { name; }", "ct_err:modifier:invalid:ann:test")
+        chkCompile("module; @test object state { mutable v: integer = 0; }", "ct_err:modifier:invalid:ann:test")
+    }
+
     @Test fun testNamespacedTestFunctions() {
         file("some_tests.rell", """
             @test module;
@@ -109,5 +142,27 @@ class TestModuleTest: BaseRellTest() {
         chkCompile("module; function abs() {}", "ct_err:name_conflict:sys:abs:FUNCTION")
         chkCompile("@test module; function abs() {}", "ct_err:name_conflict:sys:abs:FUNCTION")
         chkCompile("@test module; function assert_equals() {}", "ct_err:name_conflict:sys:assert_equals:FUNCTION")
+    }
+
+    @Test fun testFunctionAnnotationOnIneligibleFunctions() {
+        tst.mainModule("main")
+        chkCompile("@test module; @test function foo(x: integer) {}", "ct_err:fn:test_function_with_parameters:main:foo")
+        chkCompile("module; @test function foo() {}", "ct_err:fn:test_function_outside_test_module:main:foo")
+    }
+
+    @Test fun testFunctionAnnotationIncompatibleWithOtherModifiers() {
+        tst.mainModule("main")
+        file("a.rell", "abstract module; abstract function abst() {} @extendable function extd() {}")
+        chkFunAnnIncompatible("@extendable", "foo", "ann:extendable", "def_test:fn_extendable:main:foo")
+        chkFunAnnIncompatible("@extend(a.extd)", "foo", "ann:extend", "def_test:fn_extend:main:foo")
+        chkFunAnnIncompatible("abstract", "foo", "kw:abstract", "fn:abstract:non_abstract_module:main:main:foo")
+        chkFunAnnIncompatible("override", "a.abst", "kw:override")
+    }
+
+    private fun chkFunAnnIncompatible(modName: String, funName: String, errName: String, vararg extraErrs: String) {
+        chkCompile("@test module; import a; @test $modName function $funName() {}",
+            expCtError("modifier:bad_combination:ann:test,$errName", *extraErrs))
+        chkCompile("@test module; import a; $modName @test function $funName() {}",
+            expCtError("modifier:bad_combination:$errName,ann:test", *extraErrs))
     }
 }

@@ -53,17 +53,19 @@ class S_FunctionDefinition(
         val modExtendable = mods.field(C_ModifierFields.EXTENDABLE)
         val modExtend = mods.field(C_ModifierFields.EXTEND)
         val modDeprecated = mods.field(C_ModifierFields.DEPRECATED)
+        val modTest = mods.field(C_ModifierFields.TEST)
 
         val docModifiers = modifiers.compile(ctx, mods)
-        C_AnnUtils.checkModsZeroOne(ctx.msgCtx, modAbstract, modOverride, modExtendable, modExtend)
+        C_AnnUtils.checkModsZeroOne(ctx.msgCtx, modAbstract, modOverride, modExtendable, modExtend, modTest)
 
         val abstract = modAbstract.hasValue()
         val override = modOverride.hasValue()
         val extendable = modExtendable.hasValue()
         val extend = modExtend.value()
         val deprecated = modDeprecated.value()
+        val test = modTest.hasValue()
 
-        val base = C_FunctionCompilerBase(ctx, this, cQualifiedNameHand, deprecated, docModifiers)
+        val base = C_FunctionCompilerBase(ctx, this, cQualifiedNameHand, deprecated, docModifiers, test)
 
         val compiler = when {
             abstract -> C_FunctionCompiler_Abstract(base)
@@ -95,6 +97,7 @@ private class C_FunctionCompilerBase(
     val qualifiedNameHand: C_QualifiedNameHandle?,
     val deprecated: C_Deprecated?,
     val docModifiers: DocModifiers,
+    val isTest: Boolean,
 ) {
     val qualifiedName = qualifiedNameHand?.cName
 
@@ -244,9 +247,14 @@ private class C_FunctionCompiler_Regular(
     override fun compile(defCtx: C_DefinitionContext, ideCompsLate: C_LateInit<ImmMultimap<String, IdeCompletion>>) {
         checkHasBody(defCtx.msgCtx)
 
+        if (base.isTest) {
+            checkTestModule(defCtx)
+            checkNoArgs(defCtx)
+        }
+
         val rDefBase = cDefBase.rBase(defCtx.initFrameGetter)
         val rFnBase = R_FunctionBase(rDefBase.defName)
-        val rFn = R_FunctionDefinition(rDefBase, rFnBase)
+        val rFn = R_FunctionDefinition(rDefBase, rFnBase, base.isTest)
         val cFn = C_RegularUserGlobalFunction(rFn, null)
 
         val simpleName = compileSimpleName(defCtx)
@@ -257,6 +265,22 @@ private class C_FunctionCompiler_Regular(
             defCtx.executor.onPass(C_CompilerPass.EXPRESSIONS) {
                 compileBodyCommon(header, rFnBase, simpleName?.rName)
             }
+        }
+    }
+
+    private fun checkTestModule(defCtx: C_DefinitionContext) {
+        if (!defCtx.modCtx.test) {
+            val nameCode = nameErrCode()
+            val msg = "Tests must be defined in test modules."
+            defCtx.msgCtx.error(fnPos, "fn:test_function_outside_test_module:$nameCode", msg)
+        }
+    }
+
+    private fun checkNoArgs(defCtx: C_DefinitionContext) {
+        if (sFn.params.size != 0) {
+            val nameCode = nameErrCode()
+            val msg = "Test functions may not have parameters."
+            defCtx.msgCtx.error(fnPos, "fn:test_function_with_parameters:$nameCode", msg)
         }
     }
 }

@@ -29,6 +29,12 @@ fun String.unwrap(sep: String = ""): String = this.trim().replace(Regex("\\n\\s*
 fun <T> Boolean.iff(whenFalse: T, whenTrue: T): T = if (this) whenTrue else whenFalse
 inline fun <reified T> Boolean.iffArray(vararg whenTrue: T): Array<out T> = if (this) whenTrue else arrayOf()
 
+fun expCtError(vararg errors: String): String {
+    require(errors.isNotEmpty())
+    val suffix = if (errors.size == 1) errors[0] else errors.joinToString("") { "[$it]" }
+    return "ct_err:$suffix"
+}
+
 class T_App(
     val rApp: R_App,
     val messages: ImmList<C_Message>,

@@ -174,7 +174,7 @@ object UnitTestRunner {
 
     fun getTestFunctions(module: R_Module, matcher: UnitTestMatcher): List<R_FunctionDefinition> {
         return module.functions.values
-            .filter { it.moduleLevelName == "test" || it.moduleLevelName.startsWith("test_") }
+            .filter { it.isTest || it.moduleLevelName == "test" || it.moduleLevelName.startsWith("test_") }
             .filter { it.params().isEmpty() }
             .filter { matcher.matchFunction(it.defName) }
     }

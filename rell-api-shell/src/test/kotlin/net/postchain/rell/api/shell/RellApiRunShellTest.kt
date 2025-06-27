@@ -7,7 +7,6 @@ package net.postchain.rell.api.shell
 import net.postchain.gtv.GtvFactory
 import net.postchain.rell.api.base.BaseRellApiTest
 import net.postchain.rell.api.base.RellApiCompile
-import net.postchain.rell.api.gtx.RellApiRunTests
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.R_ModuleName

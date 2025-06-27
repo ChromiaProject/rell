@@ -297,6 +297,7 @@ class R_FunctionBase(private val defName: R_DefinitionName) {
 class R_FunctionDefinition(
     base: R_DefinitionBase,
     private val fnBase: R_FunctionBase,
+    val isTest: Boolean = false,
 ): R_RoutineDefinition(base) {
     override fun params() = fnBase.getBody().params
 

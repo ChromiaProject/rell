@@ -361,4 +361,24 @@ internal class RellApiRunTestsTest: BaseRellApiRunTestsTest() {
         chkRunTests(runConfig, sourceDir, listOf(), listOf("test"), *expStatus.toTypedArray())
         printer.chk(*expOut)
     }
+
+    @Test fun testFunctionTestAnnotation() {
+        val runConfig = RellApiRunTests.Config.Builder().build()
+        val sourceDir = C_SourceDir.mapDirOf(
+            "test.rell" to """
+                @test module;
+                function successor(x: integer) { return x + 1; }
+                @test function case1() { assert_equals(successor(-1), 0); }
+                function test_case2() { assert_equals(successor(0), 1); }
+                function test() { assert_false(true); }
+                @test function thisTestFails() { assert_true(false); }
+            """,
+        )
+        chkRunTests(runConfig, sourceDir, listOf(), listOf("test"),
+            "test:case1:OK",
+            "test:test_case2:OK",
+            "test:test:FAILED",
+            "test:thisTestFails:FAILED"
+        )
+    }
 }

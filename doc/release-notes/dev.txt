@@ -1,3 +1,20 @@
 UNRELEASED NOTES
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Tests: Function-level @test annotation
+
+Where one would previously write:
+
+    function test_foo(...) { ... }
+
+One can now instead write:
+
+    @test function foo(...) { ... }
+
+Functions with the @test annotation must be defined in test modules, and may not take any parameters. If these
+restrictions are violated, the result is a compiler error. If such conditions are violated with tests defined by their
+name, they are silently ignored. It is therefore strongly recommended to use the @test annotation instead of defining
+tests by their name.
+
+The @test annotation may only be used on functions that are not otherwise annotated with @extendable or @extend, or have
+no abstract or override modifiers.
