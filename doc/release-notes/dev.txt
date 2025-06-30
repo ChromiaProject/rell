@@ -18,3 +18,39 @@ tests by their name.
 
 The @test annotation may only be used on functions that are not otherwise annotated with @extendable or @extend, or have
 no abstract or override modifiers.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Library: Function text.match_groups()
+
+A new function to retrieve capturing groups from a regular expression match:
+
+    text.match_groups(regex: text): list<text>?
+
+Match this text against the specified regular expression, returning all match groups in a list.
+
+Attempts to match this entire text, as opposed to searching for a match.
+
+Match groups in a regular expression are defined by any parentheses that the regular expression contains, and the groups
+are ordered by the position of their opening parentheses. For example, the regular expression (X(Y))(Z) contains 3
+matching groups, which are:
+
+- (X(Y))
+- (Y)
+- (Z)
+
+The zeroth element in the returned list is the entire match, i.e. this exact text value, assuming the regular expression
+matches this text. The subsequent list elements are the match subgroups.
+
+Examples:
+
+- 'johnsmith@chromaway.com'.match_groups('([a-z]+)@([a-z]+[.][a-z]+)') returns
+    ['johnsmith@chromaway.com', 'johnsmith', 'chromaway.com'].
+- 'XYZ'.match_groups('(X(Y))(Z)') returns ['XYZ', 'XY', 'Y', 'Z'].
+- 'XYZ'.match_groups('((X(Y))(Z))') returns ['XYZ', 'XYZ' ,'XY', 'Y', 'Z'].
+- 'X'.match_groups('(X)|(Y)') returns ['X', 'X', ''] (the third group (Y) matches nothing, hence the empty string).
+
+Matched non-capturing groups (notated `(?:X)`, where `X` is a regular expression) are supported, and are not included in
+the returned list.
+
+Named capturing groups (notated `(?<name>X)`, where `X` is a regular expression) can be used, but the returned value
+provides no way to access named groups by their name (though they are present in the returned list).

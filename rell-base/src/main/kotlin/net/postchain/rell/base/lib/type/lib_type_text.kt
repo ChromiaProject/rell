@@ -12,9 +12,11 @@ import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_GtvCompatibility
+import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_PrimitiveType
 import net.postchain.rell.base.model.R_TypeSqlAdapter
 import net.postchain.rell.base.model.R_TypeSqlAdapter_Primitive
+import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.model.expr.Db_SysFunction
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Comparator
@@ -22,6 +24,7 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
+import net.postchain.rell.base.utils.RellVersions
 import org.jooq.util.postgres.PostgresDataType
 import java.nio.ByteBuffer
 import java.util.*
@@ -33,7 +36,7 @@ object Lib_Type_Text {
         Db_SysFunction.template("text.[]", 2, "${SqlConstants.FN_TEXT_GETCHAR}(#0, (#1)::INT)")
 
     private val CHARSET = Charsets.UTF_8
-    private val SPLIT_TYPE = R_ListType(R_TextType)
+    private val LIST_OF_TEXT = R_ListType(R_TextType)
 
     private const val SINCE0 = "0.6.0"
 
@@ -281,7 +284,7 @@ object Lib_Type_Text {
                     val s2 = delimiter.asString()
                     val arr = s1.split(s2)
                     val list = MutableList(arr.size) { Rt_TextValue.get(arr[it]) }
-                    Rt_ListValue(SPLIT_TYPE, list)
+                    Rt_ListValue(LIST_OF_TEXT, list)
                 }
             }
 
@@ -351,6 +354,64 @@ object Lib_Type_Text {
                         throw Rt_Exception.common("fn:text.matches:bad_regex", "Invalid regular expression: $pattern")
                     }
                     Rt_BooleanValue.get(res)
+                }
+            }
+
+            function("match_groups", result = "list<text>?", pure = true, since = RellVersions.SINCE_NOW) {
+                comment("""
+                    Match this text against the specified regular expression, returning all match groups in a list.
+
+                    Attempts to match this entire text, as opposed to searching for a match.
+
+                    Match groups in a regular expression are defined by any parentheses that the regular expression
+                    contains, and the groups are ordered by the position of their opening parentheses. For example, the
+                    regular expression `(X(Y))(Z)` contains 3 matching groups, which are:
+
+                    - `(X(Y))`
+                    - `(Y)`
+                    - `(Z)`
+
+                    The zeroth element in the returned list is the entire match, i.e. this exact text value, assuming
+                    the regular expression matches this text. The subsequent list elements are the match subgroups.
+
+                    Examples:
+
+                    - `'johnsmith@chromaway.com'.match_groups('([a-z]+)@([a-z]+[.][a-z]+)')` returns
+                        `['johnsmith@chromaway.com', 'johnsmith', 'chromaway.com']`.
+                    - `'XYZ'.match_groups('(X(Y))(Z)')` returns `['XYZ', 'XY', 'Y', 'Z']`.
+                    - `'XYZ'.match_groups('((X(Y))(Z))')` returns `['XYZ', 'XYZ' ,'XY', 'Y', 'Z']`.
+                    - `'X'.match_groups('(X)|(Y)')` returns `['X', 'X', '']` (the third group (`(Y)`) matches nothing,
+                        hence the empty string).
+
+                    Matched non-capturing groups (notated `(?:X)`, where `X` is a regular expression) are supported, and
+                    are not included in the returned list.
+
+                    Named capturing groups (notated `(?<name>X)`, where `X` is a regular expression) can be used, but
+                    the returned value provides no way to access named groups by their name (though they are present in
+                    the returned list).
+
+                    @return a `list<text>` containing all match groups, the first of which is the entire matched text,
+                    or `null` if this text does not match the given regular expression
+                    @see 1. <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/regex/Pattern.html#cg"><code>java.util.regex.Pattern</code> - Groups and capturing (Java SE 21 & JDK 21)</a>
+                """)
+                param("regex", type = "text", comment = "The regular expression to match against.")
+                body { a, b ->
+                    val s = a.asString()
+                    val pattern = b.asString()
+                    val matcher = try {
+                        Pattern.compile(pattern).matcher(s)
+                    } catch (e: PatternSyntaxException) {
+                        throw Rt_Exception.common("fn:text.match_groups:bad_regex", "Invalid regular expression: $pattern")
+                    }
+                    if (matcher.matches()) {
+                        val matches = mutableListOf<Rt_Value>()
+                        for (i in 0 .. matcher.groupCount()) {
+                            matches.add(Rt_TextValue.get(matcher.group(i) ?: ""))
+                        }
+                        Rt_ListValue(LIST_OF_TEXT, matches)
+                    } else {
+                        Rt_NullValue
+                    }
                 }
             }
 

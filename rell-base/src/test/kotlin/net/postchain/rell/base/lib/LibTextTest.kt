@@ -207,6 +207,34 @@ class LibTextTest: BaseRellTest() {
         chk("'Hello'.matches(')')", "rt_err:fn:text.matches:bad_regex")
     }
 
+    @Test fun testMatchGroups() {
+        chk("''.match_groups('')", texts(""))
+        chk("''.match_groups('Hello')", "null")
+        chk("'Hello'.match_groups('Hello')", texts("Hello"))
+        chk("'aHelloha'.match_groups('Hello')", "null")
+        chk("'X'.match_groups('(X)|(Y)')", texts("X", "X", ""))
+        chk("'Hello'.match_groups('Bye')", "null")
+        chk("'Hello'.match_groups('((He)(.*))(o)')", texts("Hello", "Hell", "He", "ll", "o"))
+        chk("'XYZ'.match_groups('(X(Y))(Z)')", texts("XYZ", "XY", "Y", "Z"))
+        chk("'XYZ'.match_groups('((X(Y))(Z))')", texts("XYZ", "XYZ", "XY", "Y", "Z"))
+        chk("'XYZ'.match_groups('((X((Y)|(W)))(Z))')", texts("XYZ", "XYZ", "XY", "Y", "Y", "", "Z"))
+        chk("'XWZ'.match_groups('((X((Y)|(W)))(Z))')", texts("XWZ", "XWZ", "XW", "W", "", "W", "Z"))
+        chk("'abc'.match_groups('ab(z?)c')", texts("abc", ""))
+        chk("'Hello'.match_groups('[0-9]+')", "null")
+        chk("'Hello'.match_groups(')')", "rt_err:fn:text.match_groups:bad_regex")
+        chk("'pope.leo@chromaway.com'.match_groups('((.*)\\\\.(.*))@((.*)\\\\.(.*))')",
+            texts("pope.leo@chromaway.com", "pope.leo", "pope", "leo", "chromaway.com", "chromaway", "com"))
+        chk("'johnsmith@chromaway.com'.match_groups('([a-z]+)@([a-z]+[.][a-z]+)')",
+            texts("johnsmith@chromaway.com", "johnsmith", "chromaway.com"))
+        chk("'johnsmith@chromaway.com'.match_groups('(?<user>[a-z]+)@(?<domain>[a-z]+[.][a-z]+)')",
+            texts("johnsmith@chromaway.com", "johnsmith", "chromaway.com"))
+        chk("'abc'.match_groups('a(?:b)c')", texts("abc"))
+    }
+
+    private fun texts(vararg strings: String?): String {
+        return strings.joinToString(",", "list<text>[", "]") { "text[$it]" }
+    }
+
     @Test fun testCharAt() {
         chk("'Hello'.char_at(0)", "int[72]")
         chk("'Hello'.char_at(1)", "int[101]")
