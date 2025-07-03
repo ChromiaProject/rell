@@ -27,7 +27,7 @@ import net.postchain.rell.toolbox.lsp.server.RellWorkspaceService
 import net.postchain.rell.toolbox.lsp.server.utils.TestLspSystemPropertiesProvider
 import net.postchain.rell.toolbox.lsp.symbols.RellCompletionSymbolService
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
-import net.postchain.rell.toolbox.lsp.template.NewProjectTemplateService
+import net.postchain.rell.toolbox.lsp.template.ProjectTemplateService
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestRunner
 import net.postchain.rell.toolbox.lsp.tokens.RellSemanticTokensManager
 import org.koin.core.KoinApplication
@@ -55,7 +55,7 @@ class TestServerModule {
     private fun serverModule(includeDefinition: Boolean, issueCaching: Boolean, resolveCompletion: Boolean) = module {
         singleOf(::RellSymbolService)
         singleOf(::RellCompletionSymbolService)
-        singleOf(::NewProjectTemplateService)
+        singleOf(::ProjectTemplateService)
         singleOf(::RellLinter)
         singleOf(::FormattingStyleLinter)
         singleOf(::RellIndexCachingService)

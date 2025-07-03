@@ -7,9 +7,10 @@ import net.postchain.rell.toolbox.common.RellVersionInfo
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsPublisher
 import net.postchain.rell.toolbox.lsp.includeDefinition.LspSystemPropertiesProvider
+import net.postchain.rell.toolbox.lsp.template.AddToProjectParams
 import net.postchain.rell.toolbox.lsp.template.CreateNewProjectParams
 import net.postchain.rell.toolbox.lsp.template.NewProjectTemplate
-import net.postchain.rell.toolbox.lsp.template.NewProjectTemplateService
+import net.postchain.rell.toolbox.lsp.template.ProjectTemplateService
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestCase
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestFile
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestRunner
@@ -43,7 +44,7 @@ class RellLanguageServer(
     private val capabilitiesProvider: CapabilitiesProvider,
     private val indexCachingService: RellIndexCachingService,
     private val testRunner: RellTestRunner,
-    private val newProjectTemplateService: NewProjectTemplateService,
+    private val projectTemplateService: ProjectTemplateService,
     private val textDocumentService: RellTextDocumentService,
     private val workspaceService: RellWorkspaceService,
     private val indexingManager: RellIndexingManager,
@@ -148,15 +149,27 @@ class RellLanguageServer(
 
     @JsonRequest(useSegment = false, value = "rell/newProjectTemplates")
     fun listNewProjectTemplates(): CompletableFuture<List<NewProjectTemplate>> {
-        return CompletableFuture.completedFuture(newProjectTemplateService.getAvailableTemplates())
+        return CompletableFuture.completedFuture(projectTemplateService.getAvailableTemplates())
     }
 
     @JsonRequest(useSegment = false, value = "rell/createNewProject")
     fun createNewProject(params: CreateNewProjectParams): CompletableFuture<String> {
         val targetDir = File(parseFileUri(params.targetDirUri) ?: return CompletableFuture.completedFuture(null))
         val projectDir =
-            newProjectTemplateService.createNewProjectTemplate(params.template, params.projectName, targetDir)
+            projectTemplateService.createNewProjectTemplate(
+                params.template,
+                params.projectName,
+                targetDir,
+                params.options
+            )
         return CompletableFuture.completedFuture(projectDir.absolutePath)
+    }
+
+    @JsonRequest(useSegment = false, value = "rell/addToProject")
+    fun addToProject(params: AddToProjectParams): CompletableFuture<Void> {
+        val targetDir = File(parseFileUri(params.targetDirUri) ?: return CompletableFuture.completedFuture(null))
+        projectTemplateService.addToProject(targetDir, params.options)
+        return CompletableFuture.completedFuture(null)
     }
 
     override fun shutdown(): CompletableFuture<Any> {
