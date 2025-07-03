@@ -20,15 +20,22 @@ The @test annotation may only be used on functions that are not otherwise annota
 no abstract or override modifiers.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-2. Library: Function text.match_groups()
+2. Library: Functions text.match_groups() and text.match_named_groups()
 
-A new function to retrieve capturing groups from a regular expression match:
+New functions to retrieve capturing groups from a regular expression match:
 
-    text.match_groups(regex: text): list<text>?
+- text.match_groups(regex: text): list<text>?
+- text.match_named_groups(regex: text): map<text, text>?
 
-Match this text against the specified regular expression, returning all match groups in a list.
+Both functions match the entire text value against the specified regular expression (as opposed to searching for a
+match), returning null if the match fails.
 
-Attempts to match this entire text, as opposed to searching for a match.
+text.match_groups() returns a list<text> (if the match succeeds) containing the text matched to each match group, the
+zeroth of which is the entire matched text.
+
+text.match_named_groups() returns a map<text, text> (if the match succeeds) containing match group names as keys, and
+their matching text as values. Text matched to unnamed groups is not returned (use text.match_groups() instead for
+these).
 
 Match groups in a regular expression are defined by any parentheses that the regular expression contains, and the groups
 are ordered by the position of their opening parentheses. For example, the regular expression (X(Y))(Z) contains 3
@@ -38,19 +45,34 @@ matching groups, which are:
 - (Y)
 - (Z)
 
-The zeroth element in the returned list is the entire match, i.e. this exact text value, assuming the regular expression
-matches this text. The subsequent list elements are the match subgroups.
+Named groups are match groups in a regular expression for which a name is specified. The match groups in the above
+example (X(Y))(Z) could be assigned names in the following manner:
 
-Examples:
+    (?<x>X(?<y>Y))(?<z>Z)
+
+This is an equivalent regular expression, but the text matched by each group can be referenced by the group's name.
+
+Both functions support non-capturing groups (notated (?:X), where X is a regular expression), but do not include
+such groups in the returned list or map.
+
+Named groups that match the empty string with the `?` and `*` quantifiers are included in the map returned by
+text.match_named_groups(), but named groups within unmatched alternatives are not.
+
+Examples for text.match_groups():
 
 - 'johnsmith@chromaway.com'.match_groups('([a-z]+)@([a-z]+[.][a-z]+)') returns
     ['johnsmith@chromaway.com', 'johnsmith', 'chromaway.com'].
 - 'XYZ'.match_groups('(X(Y))(Z)') returns ['XYZ', 'XY', 'Y', 'Z'].
 - 'XYZ'.match_groups('((X(Y))(Z))') returns ['XYZ', 'XYZ' ,'XY', 'Y', 'Z'].
 - 'X'.match_groups('(X)|(Y)') returns ['X', 'X', ''] (the third group (Y) matches nothing, hence the empty string).
+- 'XYZ'.match_groups('(?<x>X(?<y>Y))(?<z>Z)') returns ['XYZ', 'XY', 'Y', 'Z'].
 
-Matched non-capturing groups (notated `(?:X)`, where `X` is a regular expression) are supported, and are not included in
-the returned list.
+Examples for text.match_named_groups():
 
-Named capturing groups (notated `(?<name>X)`, where `X` is a regular expression) can be used, but the returned value
-provides no way to access named groups by their name (though they are present in the returned list).
+- 'XYZ'.match_named_groups('(?<x>X(?<y>Y))(?<z>Z)') returns ['x': 'XY', 'y': 'Y', 'z': 'Z'].
+- 'XYZ'.match_named_groups('(?<x>X(Y))(Z)') returns ['x': 'XY'].
+- 'johnsmith@chromaway.com'.match_groups('(?<user>[a-z]+)@(?<domain>[a-z]+[.][a-z]+)') returns
+    ['user': 'johnsmith', 'domain': 'chromaway.com'].
+- 'XYZ'.match_named_groups('(X(Y))(Z)') returns map<text, text>().
+- 'X'.match_named_groups('(?<x>X)|(?<y>Y)') returns ['x': 'X'].
+- 'X'.match_named_groups('(?<x>X)(?<y>Y?)') returns ['x': 'X', 'y': ''].

@@ -10,9 +10,10 @@ import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.L_ParamArity
+import net.postchain.rell.base.lmodel.dsl.Ld_BodyResult
+import net.postchain.rell.base.lmodel.dsl.Ld_FunctionDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_GtvCompatibility
-import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_PrimitiveType
 import net.postchain.rell.base.model.R_TypeSqlAdapter
 import net.postchain.rell.base.model.R_TypeSqlAdapter_Primitive
@@ -28,6 +29,7 @@ import net.postchain.rell.base.utils.RellVersions
 import org.jooq.util.postgres.PostgresDataType
 import java.nio.ByteBuffer
 import java.util.*
+import java.util.regex.Matcher
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
 
@@ -37,6 +39,7 @@ object Lib_Type_Text {
 
     private val CHARSET = Charsets.UTF_8
     private val LIST_OF_TEXT = R_ListType(R_TextType)
+    private val MAP_OF_TEXT_TO_TEXT = R_MapType(R_MapKeyValueTypes(R_TextType, R_TextType))
 
     private const val SINCE0 = "0.6.0"
 
@@ -342,19 +345,11 @@ object Lib_Type_Text {
                     print(names @* { .matches("V\\\\c.*") }); // prints [V\ctor]
                     ```
 
+                    @throws exception if `regex` is not a valid regular expression
                     @see 1. <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/regex/Pattern.html"><code>java.util.regex.Pattern</code> - Java SE 21 & JDK 21</a>
                 """)
                 param("regex", type = "text", comment = "The regular expression to match against.")
-                body { a, b ->
-                    val s = a.asString()
-                    val pattern = b.asString()
-                    val res = try {
-                        Pattern.matches(pattern, s)
-                    } catch (e: PatternSyntaxException) {
-                        throw Rt_Exception.common("fn:text.matches:bad_regex", "Invalid regular expression: $pattern")
-                    }
-                    Rt_BooleanValue.get(res)
-                }
+                matcherBody { Rt_BooleanValue.get(it.matches()) }
             }
 
             function("match_groups", result = "list<text>?", pure = true, since = RellVersions.SINCE_NOW) {
@@ -388,30 +383,85 @@ object Lib_Type_Text {
 
                     Named capturing groups (notated `(?<name>X)`, where `X` is a regular expression) can be used, but
                     the returned value provides no way to access named groups by their name (though they are present in
-                    the returned list).
+                    the returned list). To extract groups by name, use instead `text.match_named_groups()`.
 
-                    @return a `list<text>` containing all match groups, the first of which is the entire matched text,
+                    @return a `list<text>` containing all match groups (the zeroth of which is the entire matched text),
                     or `null` if this text does not match the given regular expression
+                    @throws exception if `regex` is not a valid regular expression
                     @see 1. <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/regex/Pattern.html#cg"><code>java.util.regex.Pattern</code> - Groups and capturing (Java SE 21 & JDK 21)</a>
+                    @see 2. <a href="match_named_groups.html"><code>text.match_named_groups</code> - Rell Standard Library</a>
                 """)
                 param("regex", type = "text", comment = "The regular expression to match against.")
-                body { a, b ->
-                    val s = a.asString()
-                    val pattern = b.asString()
-                    val matcher = try {
-                        Pattern.compile(pattern).matcher(s)
-                    } catch (e: PatternSyntaxException) {
-                        throw Rt_Exception.common("fn:text.match_groups:bad_regex", "Invalid regular expression: $pattern")
+                matchedMatcherOrNullBody { m ->
+                    val matches = mutableListOf<Rt_Value>()
+                    for (i in 0 .. m.groupCount()) {
+                        matches.add(Rt_TextValue.get(m.group(i) ?: ""))
                     }
-                    if (matcher.matches()) {
-                        val matches = mutableListOf<Rt_Value>()
-                        for (i in 0 .. matcher.groupCount()) {
-                            matches.add(Rt_TextValue.get(matcher.group(i) ?: ""))
+                    Rt_ListValue(LIST_OF_TEXT, matches)
+                }
+            }
+
+            function("match_named_groups", result = "map<text, text>?", pure = true, since = RellVersions.SINCE_NOW) {
+                comment("""
+                    Match this text against the specified regular expression, returning a map whose keys are the names
+                    of each named group in the regular expression, and values are the text that was matched to the
+                    corresponding group.
+
+                    Attempts to match this entire text, as opposed to searching for a match.
+
+                    Unnamed groups and their matching text are not included in the returned map (use instead
+                    `text.match_groups()` to extract these).
+
+                    Match groups in a regular expression are defined by any parentheses that the regular expression
+                    contains, and the groups are ordered by the position of their opening parentheses. For example, the
+                    regular expression `(X(Y))(Z)` contains 3 matching groups, which are:
+
+                    - `(X(Y))`
+                    - `(Y)`
+                    - `(Z)`
+
+                    Named groups are match groups in a regular expression for which a name is specified. The match
+                    groups in the above example (`(X(Y))(Z)`) could be assigned names in the following manner:
+
+                    ```
+                    (?<x>X(?<y>Y))(?<z>Z)
+                    ```
+
+                    This is an equivalent regular expression, but the text matched by each group can be referenced by
+                    the group's name.
+
+                    Examples:
+
+                    - `'XYZ'.match_named_groups('(?<x>X(?<y>Y))(?<z>Z)')` returns `['x': 'XY', 'y': 'Y', 'z': 'Z']`.
+                    - `'XYZ'.match_named_groups('(?<x>X(Y))(Z)')` returns `['x': 'XY']`.
+                    - `'johnsmith@chromaway.com'.match_groups('(?<user>[a-z]+)@(?<domain>[a-z]+[.][a-z]+)')` returns
+                        `['user': 'johnsmith', 'domain': 'chromaway.com']`.
+                    - `'X'.match_named_groups('(?<x>X)|(?<y>Y)')` returns `['x': 'X']`.
+                    - `'X'.match_named_groups('(?<x>X)(?<y>Y?)')` returns `['x': 'X', 'y': '']`.
+
+                    Matched non-capturing groups (notated `(?:X)`, where `X` is a regular expression) are supported, and
+                    are not included in the returned map. Named groups that match the empty string with the `?` and `*`
+                    quantifiers are included in the returned map, but named groups within unmatched alternatives are
+                    not.
+
+                    @return a `map<text, text>` containing the match groups and their matching text obtained by matching
+                    this text to the given regular expression; or `null` if this text does not match the given regular
+                    expression
+                    @throws exception if `regex` is not a valid regular expression
+                    @see 1. <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/regex/Pattern.html#cg"><code>java.util.regex.Pattern</code> - Groups and capturing (Java SE 21 & JDK 21)</a>
+                    @see 2. <a href="match_groups.html"><code>text.match_groups</code> - Rell Standard Library</a>
+                """)
+                param("regex", type = "text", comment = "The regular expression to match against.")
+                matchedMatcherOrNullBody { m ->
+                    val matches = mutableMapOf<Rt_Value, Rt_Value>()
+                    val namedGroups = m.namedGroups().entries.sortedBy { it.value }
+                    for ((name, index) in namedGroups) {
+                        val groupText = m.group(index)
+                        if (groupText != null) {
+                            matches.put(Rt_TextValue.get(name), Rt_TextValue.get(groupText))
                         }
-                        Rt_ListValue(LIST_OF_TEXT, matches)
-                    } else {
-                        Rt_NullValue
                     }
+                    Rt_MapValue(MAP_OF_TEXT_TO_TEXT, matches)
                 }
             }
 
@@ -609,6 +659,20 @@ object Lib_Type_Text {
         }
         return Rt_TextValue.get(s.substring(start.toInt(), end.toInt()))
     }
+
+    private fun Ld_FunctionDsl.matcherBody(rCode: (Matcher) -> Rt_Value): Ld_BodyResult = body { a, b ->
+        val string = a.asString()
+        val pattern = b.asString()
+        val matcher = try {
+            Pattern.compile(pattern).matcher(string)
+        } catch (e: PatternSyntaxException) {
+            throw Rt_Exception.common("fn:text.$fnSimpleName:bad_regex", "Invalid regular expression: $pattern")
+        }
+        rCode(matcher)
+    }
+
+    private fun Ld_FunctionDsl.matchedMatcherOrNullBody(rCode: (Matcher) -> Rt_Value): Ld_BodyResult =
+        matcherBody { if (!it.matches()) Rt_NullValue else rCode(it) }
 }
 
 object R_TextType: R_PrimitiveType("text") {

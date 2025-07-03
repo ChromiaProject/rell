@@ -235,6 +235,37 @@ class LibTextTest: BaseRellTest() {
         return strings.joinToString(",", "list<text>[", "]") { "text[$it]" }
     }
 
+    @Test fun testNamedMatchGroups() {
+        chk("'Hello'.match_named_groups(')')", "rt_err:fn:text.match_named_groups:bad_regex")
+        chk("''.match_named_groups('')", textMap())
+        chk("'abcd'.match_named_groups('ab(?<num>[0-9]*)cd')", textMap("num" to ""))
+        chk("'abcd'.match_named_groups('ab(?<x>X?)cd')", textMap("x" to ""))
+        chk("'ab2025cd'.match_named_groups('ab(?<num>[0-9]*)cd')", textMap("num" to "2025"))
+        chk("'XYZ'.match_named_groups('(?<x>X(?<y>Y))(?<z>Z)')", textMap("x" to "XY", "y" to "Y", "z" to "Z"))
+        chk("'X'.match_named_groups('(?<x>X)')", textMap("x" to "X"))
+        chk("'X'.match_named_groups('(?<x>X)|(?<y>Y)')", textMap("x" to "X"))
+        chk("'X'.match_named_groups('(?<x>X)(?<y>Y?)')", textMap("x" to "X", "y" to ""))
+        chk("'XY'.match_named_groups('(?<x>X)(?<y>Y)')", textMap("x" to "X", "y" to "Y"))
+        chk("'ignoredXY'.match_named_groups('ignored(?<x>X)(?<y>Y)')", textMap("x" to "X", "y" to "Y"))
+        chk("'johnsmith@chromaway.com'.match_named_groups('(?<user>[a-z]+)@(?<domain>[a-z]+[.][a-z]+)')",
+            textMap("user" to "johnsmith", "domain" to "chromaway.com"))
+        chk("""
+            'pope.leo@chromaway.com'.match_named_groups(
+                '(?<user>(?<firstname>[a-z]+)[.](?<surname>[a-z]+))@(?<domain>(?<company>[a-z]+)[.](?<tld>[a-z]+))'
+            )""", textMap(
+            "user" to "pope.leo",
+            "firstname" to "pope",
+            "surname" to "leo",
+            "domain" to "chromaway.com",
+            "company" to "chromaway",
+            "tld" to "com"
+        ))
+    }
+
+    private fun textMap(vararg expected: Pair<String, String>): String {
+        return expected.joinToString(",", "map<text,text>[", "]") { (k, v) -> "text[$k]=text[$v]" }
+    }
+
     @Test fun testCharAt() {
         chk("'Hello'.char_at(0)", "int[72]")
         chk("'Hello'.char_at(1)", "int[101]")
