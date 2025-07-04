@@ -9,6 +9,8 @@ import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsPublisher
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
+import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsManager
+import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsProvider
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
 import net.postchain.rell.toolbox.lsp.server.NotificationType
 import net.postchain.rell.toolbox.lsp.server.RellDiagnosticsManager
@@ -41,6 +43,7 @@ open class WorkspaceManagerTestBase {
             diagnostics[uri] = issues
         }
     }
+    protected lateinit var inlayHintManager: RellInlayHintsManager
 
     protected val rellLinter = RellLinter()
     protected val formattingStyleLinter = FormattingStyleLinter()
@@ -78,6 +81,10 @@ open class WorkspaceManagerTestBase {
                 indexingManager,
                 diagnosticsManager,
             )
+        inlayHintManager = RellInlayHintsManager(
+            indexingManager,
+            RellInlayHintsProvider()
+        )
     }
 
     @AfterEach

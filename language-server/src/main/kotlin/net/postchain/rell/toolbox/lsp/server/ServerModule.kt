@@ -9,6 +9,8 @@ import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.includeDefinition.DefaultLspSystemPropertiesProvider
 import net.postchain.rell.toolbox.lsp.includeDefinition.LspSystemPropertiesProvider
+import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsManager
+import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsProvider
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
@@ -49,7 +51,9 @@ val serverModule = module {
     singleOf(::RellDocumentManager)
     singleOf(::RellDiagnosticsManager)
     singleOf(::RellIndexingManager)
-
+    singleOf(::RellSemanticTokensManager)
+    singleOf(::RellInlayHintsManager)
+    singleOf(::RellInlayHintsProvider)
     single(named(LauncherType.STDIO)) {
         StdioServerLauncher(
             System.`in`,

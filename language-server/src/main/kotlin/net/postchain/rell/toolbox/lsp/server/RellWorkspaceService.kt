@@ -1,7 +1,12 @@
 package net.postchain.rell.toolbox.lsp.server
 
+import com.google.gson.JsonObject
 import net.postchain.rell.toolbox.indexer.IndexingState
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsConfig
+import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsManager
+import net.postchain.rell.toolbox.lsp.server.events.FileEventsBatcher
+import net.postchain.rell.toolbox.lsp.server.events.FileEventsProcessor
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import org.eclipse.lsp4j.DidChangeConfigurationParams
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams
@@ -20,8 +25,6 @@ import org.eclipse.lsp4j.services.WorkspaceService
 import java.io.File
 import java.net.URI
 import java.util.concurrent.CompletableFuture
-import net.postchain.rell.toolbox.lsp.server.events.FileEventsBatcher
-import net.postchain.rell.toolbox.lsp.server.events.FileEventsProcessor
 
 class RellWorkspaceService(
     private val workspaceManager: RellWorkspaceManager,
@@ -29,6 +32,7 @@ class RellWorkspaceService(
     private val indexingManager: RellIndexingManager,
     private val diagnosticsManager: RellDiagnosticsManager,
     private val symbolService: RellSymbolService,
+    private val inlayHintsManager: RellInlayHintsManager
 ) : WorkspaceService, LanguageClientAware {
     private lateinit var languageClient: LanguageClient
     private lateinit var fileEventsBatcher: FileEventsBatcher
@@ -43,8 +47,34 @@ class RellWorkspaceService(
 
     override fun didChangeConfiguration(params: DidChangeConfigurationParams) {
         requestManager.runWrite {
+            processConfigurationChanges(params)
+        }
+    }
+
+    private fun processConfigurationChanges(params: DidChangeConfigurationParams) {
+        val rellSettings = (params.settings as? JsonObject) ?: return
+
+        rellSettings["indexCaching"]?.asBoolean?.let { enabled ->
+            indexingManager.indexCachingEnabled = enabled
             indexingManager.runIndexers()
         }
+
+        rellSettings.get("inlayHints")?.asJsonObject?.let { hints ->
+            updateInlayHintsConfig(hints)
+        }
+    }
+
+    private fun updateInlayHintsConfig(changes: JsonObject) {
+        val current = inlayHintsManager.inlayHintsConfig
+
+        val newConfig = RellInlayHintsConfig(
+            isParameterNamesEnabled = changes["parameterHints"]?.asBoolean ?: current.isParameterNamesEnabled,
+            isReturnTypesEnabled = changes["returnTypeHints"]?.asBoolean ?: current.isReturnTypesEnabled,
+            isVariableTypesEnabled = changes["variableTypeHints"]?.asBoolean ?: current.isVariableTypesEnabled
+        )
+
+        inlayHintsManager.updateConfig(newConfig)
+        languageClient.refreshInlayHints()
     }
 
     override fun didChangeWatchedFiles(params: DidChangeWatchedFilesParams) {

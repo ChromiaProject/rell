@@ -9,6 +9,8 @@ import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.includeDefinition.LspSystemPropertiesProvider
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
+import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsManager
+import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsProvider
 import net.postchain.rell.toolbox.lsp.launcher.SocketServerLauncher
 import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
@@ -80,6 +82,8 @@ class TestServerModule {
         singleOf(::RellDocumentManager)
         singleOf(::RellDiagnosticsManager)
         singleOf(::RellIndexingManager)
+        singleOf(::RellInlayHintsManager)
+        singleOf(::RellInlayHintsProvider)
 
         single { params ->
             StdioServerLauncher(
