@@ -8,6 +8,8 @@ import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsPublisher
 import net.postchain.rell.toolbox.lsp.includeDefinition.LspSystemPropertiesProvider
 import net.postchain.rell.toolbox.lsp.template.AddToProjectParams
+import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsConfig
+import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsManager
 import net.postchain.rell.toolbox.lsp.template.CreateNewProjectParams
 import net.postchain.rell.toolbox.lsp.template.NewProjectTemplate
 import net.postchain.rell.toolbox.lsp.template.ProjectTemplateService
@@ -15,6 +17,7 @@ import net.postchain.rell.toolbox.lsp.testrunner.RellTestCase
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestFile
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestRunner
 import net.postchain.rell.toolbox.util.getCurrentLogFileName
+import org.eclipse.lsp4j.DidChangeConfigurationCapabilities
 import org.eclipse.lsp4j.DidChangeWatchedFilesRegistrationOptions
 import org.eclipse.lsp4j.FileSystemWatcher
 import org.eclipse.lsp4j.InitializeParams
@@ -49,6 +52,7 @@ class RellLanguageServer(
     private val workspaceService: RellWorkspaceService,
     private val indexingManager: RellIndexingManager,
     private val lspSystemPropertiesProvider: LspSystemPropertiesProvider,
+    private val inlayHintManager: RellInlayHintsManager,
 ) : LanguageServer, LanguageClientAware {
 
     private val logger = KotlinLogging.logger {}
@@ -107,6 +111,13 @@ class RellLanguageServer(
     private fun processInitializationOptions(initializationOptions: Any?) {
         if (initializationOptions != null && initializationOptions is JsonObject) {
             indexingManager.indexCachingEnabled = initializationOptions.get("indexCaching")?.asBoolean == true
+            val inlayHintsJson = initializationOptions.get("inlayHints")?.asJsonObject
+            val inlayHintsConfig = RellInlayHintsConfig(
+                isVariableTypesEnabled = inlayHintsJson?.get("variableTypeHints")?.asBoolean ?: false,
+                isReturnTypesEnabled = inlayHintsJson?.get("returnTypeHints")?.asBoolean ?: false,
+                isParameterNamesEnabled = inlayHintsJson?.get("parameterHints")?.asBoolean ?: false
+            )
+            inlayHintManager.updateConfig(inlayHintsConfig)
         }
     }
 

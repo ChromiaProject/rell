@@ -9,6 +9,7 @@ build/
 
 # Compiled Java and Kotlin classes
 out/
+bin/
 
 # Eclipse project files
 .classpath

@@ -50,6 +50,7 @@ class CapabilitiesProvider(private val lspSystemPropertiesProvider: LspSystemPro
                     )
                 ).apply { this.resolveProvider = true }
             )
+            setInlayHintProvider(true)
         }
 
         val clientCapabilities = params.capabilities

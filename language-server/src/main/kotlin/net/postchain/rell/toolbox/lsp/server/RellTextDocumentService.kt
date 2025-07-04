@@ -4,6 +4,7 @@ import com.google.gson.JsonObject
 import io.sentry.Sentry
 import net.postchain.rell.toolbox.lsp.editing.CodeActionTitles
 import net.postchain.rell.toolbox.lsp.includeDefinition.LspSystemPropertiesProvider
+import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsManager
 import net.postchain.rell.toolbox.lsp.tokens.RellSemanticTokensManager
 import org.eclipse.lsp4j.CodeAction
 import org.eclipse.lsp4j.CodeActionParams
@@ -22,6 +23,8 @@ import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.DocumentSymbolParams
 import org.eclipse.lsp4j.Hover
 import org.eclipse.lsp4j.HoverParams
+import org.eclipse.lsp4j.InlayHint
+import org.eclipse.lsp4j.InlayHintParams
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.LocationLink
 import org.eclipse.lsp4j.PrepareRenameDefaultBehavior
@@ -47,7 +50,8 @@ class RellTextDocumentService(
     private val semanticTokensManager: RellSemanticTokensManager,
     private val formattingManager: RellFormattingManager,
     private val indexingManager: RellIndexingManager,
-    private val lspSystemPropertiesProvider: LspSystemPropertiesProvider
+    private val lspSystemPropertiesProvider: LspSystemPropertiesProvider,
+    private val inlayHintsManager: RellInlayHintsManager
 ) : TextDocumentService {
     override fun didOpen(params: DidOpenTextDocumentParams) {
         val textDocument = params.textDocument
@@ -238,5 +242,22 @@ class RellTextDocumentService(
     override fun resolveCompletionItem(unresolved: CompletionItem): CompletableFuture<CompletionItem?> {
         val resolved = workspaceManager.resolveCompletionItem(unresolved)
         return CompletableFuture.completedFuture(resolved)
+    }
+
+    override fun inlayHint(params: InlayHintParams): CompletableFuture<List<InlayHint>> {
+        val fileUri = parseFileUri(params.textDocument.uri)
+        fileUri ?: return CompletableFuture.completedFuture(listOf())
+
+        return requestManager.runRead {
+            if (fileUri.isRellFile()) {
+                inlayHintsManager.getInlayHints(fileUri, params.range)
+            } else {
+                emptyList()
+            }
+        }
+    }
+
+    override fun resolveInlayHint(unresolved: InlayHint): CompletableFuture<InlayHint> {
+        return CompletableFuture.completedFuture(inlayHintsManager.resolveInlayHint(unresolved))
     }
 }
