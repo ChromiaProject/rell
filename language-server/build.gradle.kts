@@ -72,6 +72,9 @@ application {
 
 tasks.jar {
     manifest.attributes["Multi-Release"] = true
+    manifest.attributes["Implementation-Title"] = project.name
+    manifest.attributes["Implementation-Version"] = project.version
+    manifest.attributes["Implementation-Vendor"] = "Chromaway AB"
 }
 
 tasks.shadowJar{

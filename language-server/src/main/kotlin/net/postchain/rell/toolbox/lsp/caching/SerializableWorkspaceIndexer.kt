@@ -9,5 +9,10 @@ class SerializableWorkspaceIndexer(
     val serializableResources: List<SerializableResource>,
     val linterOptions: LinterOptions,
     val formatterOptions: FormatterOptions,
-    val projectRootUri: URI? = null
+    val projectRootUri: URI? = null,
+    val metaData: SerializableMetaData? = null,
+)
+
+class SerializableMetaData(
+    val languageServerVersion: String,
 )
