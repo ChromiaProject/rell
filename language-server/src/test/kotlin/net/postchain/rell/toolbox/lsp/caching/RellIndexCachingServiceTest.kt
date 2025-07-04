@@ -7,8 +7,10 @@ import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
@@ -22,6 +24,7 @@ import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
+import net.postchain.rell.toolbox.lsp.server.VersionInfo
 import net.postchain.rell.toolbox.parser.AntlrRellParser
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -94,6 +97,23 @@ class RellIndexCachingServiceTest {
         assertThat(cacheFile.exists()).isFalse()
 
         assertThat(result).isNull()
+    }
+
+    @Test
+    fun `Should delete cache file when deserialization fails because of cache version mismatch`() {
+        mockkObject(VersionInfo)
+        every { VersionInfo.getImplementationVersion() } returns "1.0.0"
+        cachingService.saveWorkspaceIndexers(listOf(dummyWorkspaceIndexer))
+
+        assertThat(cacheFile.exists()).isTrue()
+
+        every { VersionInfo.getImplementationVersion() } returns "2.0.0"
+        val result = cachingService.getWorkspaceIndexer(workspaceFolderUri)
+
+        assertThat(cacheFile.exists()).isFalse()
+
+        assertThat(result).isNull()
+        unmockkObject(VersionInfo)
     }
 
     @Test

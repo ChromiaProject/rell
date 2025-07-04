@@ -13,6 +13,7 @@ import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
+import net.postchain.rell.toolbox.lsp.server.VersionInfo
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
@@ -37,12 +38,16 @@ class RellIndexSerializer(
     private fun toSerializableWorkspaceIndexer(indexer: WorkspaceIndexer): SerializableWorkspaceIndexer {
         val linterOptions = linterOptionsResolver.getLinterConfig(indexer.workspaceUri)
         val formatterOptions = formatterOptionsResolver.getWorkspaceFormattingOptions(indexer.workspaceUri)
+        val metaData = SerializableMetaData(
+            languageServerVersion = VersionInfo.getImplementationVersion(),
+        )
         return SerializableWorkspaceIndexer(
             indexer.workspaceUri,
             toSerializableResources(indexer),
             linterOptions,
             formatterOptions,
-            indexer.projectRootUri
+            indexer.projectRootUri,
+            metaData
         )
     }
 
@@ -93,6 +98,14 @@ class RellIndexSerializer(
                 serializableWorkspaceIndexer.formatterOptions,
                 serializableWorkspaceIndexer.projectRootUri
             )
+        val metaData = serializableWorkspaceIndexer.metaData
+        val currentVersion = VersionInfo.getImplementationVersion()
+        if (metaData?.languageServerVersion != currentVersion) {
+            throw IllegalStateException(
+                "The serialized indexer was created with a different version of the language server. " +
+                    "Expected: $currentVersion, Found: ${metaData?.languageServerVersion}"
+            )
+        }
         indexer.fileUriResourceMap = ConcurrentHashMap(
             fromSerializableResources(serializableWorkspaceIndexer.serializableResources)
         )
