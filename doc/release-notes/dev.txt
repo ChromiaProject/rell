@@ -76,3 +76,43 @@ Examples for text.match_named_groups():
 - 'XYZ'.match_named_groups('(X(Y))(Z)') returns map<text, text>().
 - 'X'.match_named_groups('(?<x>X)|(?<y>Y)') returns ['x': 'X'].
 - 'X'.match_named_groups('(?<x>X)(?<y>Y?)') returns ['x': 'X', 'y': ''].
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. API: Functions to check the validity of Rell tokens
+
+New API object RellApiTokenizer, with functions:
+
+    isIdentifier(s: String): Boolean
+    isInteger(s: String, allowSign: Boolean = true): Boolean
+    isBigInteger(s: String, allowSign: Boolean = true): Boolean
+    isDecimal(s: String, allowSign: Boolean = true): Boolean
+    isText(s: String): Boolean
+    isByteArray(s: String): Boolean
+
+Each function takes a String and checks if it is a valid Rell token of the named type, using the same rules as the Rell
+compiler. The numeric types take an optional parameter that controls whether a sign (+ or -) is allowed to precede the
+number (defaults to true).
+
+In each case, if a String that is a valid Rell token is passed, true is returned, and false otherwise. Neither
+whitespace nor comments are allowed (false will be returned in either case).
+
+Examples:
+
+    RellApiTokenizer.isIdentifier("abc") returns true
+    RellApiTokenizer.isIdentifier("2nd_value") returns false (identifiers cannot start with a numeric digit)
+
+    RellApiTokenizer.isInteger("1234") returns true
+    RellApiTokenizer.isInteger("9223372036854775808") returns false (out of range)
+
+    RellApiTokenizer.isDecimal(".0") returns true
+    RellApiTokenizer.isDecimal("+55.77e-5", allowSign = false) returns false (signed, but sign not allowed)
+
+    RellApiTokenizer.isBigInteger("-1234567L") returns true
+    RellApiTokenizer.isBigInteger("+ 0x1234abcdL", allowSign = true) returns false (illegal space after '+')
+
+    RellApiTokenizer.isText("'Hello world!'") returns true
+    RellApiTokenizer.isText("Hello world!") returns false (no quote marks)
+
+    RellApiTokenizer.isByteArray("x\"\"") returns true
+    RellApiTokenizer.isByteArray("x\'00\'") returns true
+

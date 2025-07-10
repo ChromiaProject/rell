@@ -12,6 +12,8 @@ import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
+import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
 import net.postchain.rell.base.lib.type.Lib_DecimalMath
 import net.postchain.rell.base.lib.type.Rt_BigIntegerValue
 import net.postchain.rell.base.lib.type.Rt_DecimalValue
@@ -133,9 +135,11 @@ class RellTokenizer(version: R_LangVersion = RellVersions.VERSION) {
         return RellTokenProducerImpl(filePath, input)
     }
 
-    private fun scanToken(seq: CharSeq): TokenRec? {
+    private fun scanToken(seq: CharSeq, skipLeadingBlank: Boolean = true): TokenRec? {
         seq.setComment(null)
-        scanBlank(seq)
+        if (skipLeadingBlank) {
+            scanBlank(seq)
+        }
 
         val k = seq.cur()
         if (k == null) {
@@ -477,6 +481,9 @@ class RellTokenizer(version: R_LangVersion = RellVersions.VERSION) {
         private val BIG_MIN_INTEGER = BigInteger.valueOf(Long.MIN_VALUE)
         private val BIG_MAX_INTEGER = BigInteger.valueOf(Long.MAX_VALUE)
 
+        private val DUMMY_FILE_PATH = C_ParserFilePath(C_SourcePath.EMPTY, IdeSourcePathFilePath(C_SourcePath.EMPTY))
+        private val SIGNS = immListOf("+", "-")
+
         fun decodeName(pos: S_Pos, s: String): R_Name {
             val rName = R_Name.ofOpt(s)
             return rName ?: throw RellTokenizerDecodingException(pos, "lex:name:invalid:$s", "Invalid name: '$s'")
@@ -594,6 +601,28 @@ class RellTokenizer(version: R_LangVersion = RellVersions.VERSION) {
             }
 
             return ImmutableSortedMap.copyOf(res)
+        }
+
+        fun matchToken(
+            s: String,
+            expectedPattern: String,
+            allowSign: Boolean,
+        ): Boolean {
+            val tokenizer = RellTokenizer()
+            val charSeq = CharSeq(DUMMY_FILE_PATH, s)
+            return try {
+                var tokenRec = tokenizer.scanToken(charSeq, false)
+                tokenRec ?: return false
+                if (allowSign && tokenRec.token.pattern in SIGNS) {
+                    tokenRec = tokenizer.scanToken(charSeq, false)
+                }
+                val nextTokenRec = tokenizer.scanToken(charSeq, false)
+                tokenRec != null &&                                 // got a valid token
+                    tokenRec.token.pattern == expectedPattern &&    // token is the expected type
+                    nextTokenRec == null                            // all input was consumed
+            } catch (_: RellTokenizerException) {
+                false
+            }
         }
     }
 }

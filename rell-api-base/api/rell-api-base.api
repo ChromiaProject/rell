@@ -86,6 +86,19 @@ public final class net/postchain/rell/api/base/RellApiCompile$Config$Companion {
 	public final fun getDEFAULT ()Lnet/postchain/rell/api/base/RellApiCompile$Config;
 }
 
+public final class net/postchain/rell/api/base/RellApiTokenizer {
+	public static final field INSTANCE Lnet/postchain/rell/api/base/RellApiTokenizer;
+	public final fun isBigInteger (Ljava/lang/String;Z)Z
+	public static synthetic fun isBigInteger$default (Lnet/postchain/rell/api/base/RellApiTokenizer;Ljava/lang/String;ZILjava/lang/Object;)Z
+	public final fun isByteArray (Ljava/lang/String;)Z
+	public final fun isDecimal (Ljava/lang/String;Z)Z
+	public static synthetic fun isDecimal$default (Lnet/postchain/rell/api/base/RellApiTokenizer;Ljava/lang/String;ZILjava/lang/Object;)Z
+	public final fun isIdentifier (Ljava/lang/String;)Z
+	public final fun isInteger (Ljava/lang/String;Z)Z
+	public static synthetic fun isInteger$default (Lnet/postchain/rell/api/base/RellApiTokenizer;Ljava/lang/String;ZILjava/lang/Object;)Z
+	public final fun isText (Ljava/lang/String;)Z
+}
+
 public final class net/postchain/rell/api/base/RellCliBasicException : net/postchain/rell/api/base/RellCliException {
 	public fun <init> (Ljava/lang/String;)V
 }

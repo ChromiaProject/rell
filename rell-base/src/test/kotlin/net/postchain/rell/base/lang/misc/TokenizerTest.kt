@@ -4,8 +4,13 @@
 
 package net.postchain.rell.base.lang.misc
 
+import net.postchain.rell.base.compiler.parser.RellTokenizer
+import net.postchain.rell.base.compiler.parser.RellTokens
 import net.postchain.rell.base.testutils.BaseRellTest
+import net.postchain.rell.base.utils.immListOf
+import kotlin.test.assertFalse
 import org.junit.Test
+import kotlin.test.assertTrue
 
 class TokenizerTest: BaseRellTest() {
     @Test fun testName() {
@@ -37,7 +42,7 @@ class TokenizerTest: BaseRellTest() {
         chk("0xabcd", "int[43981]")
         chk("0x1234ABCD", "int[305441741]")
         chk("0x1234abcd", "int[305441741]")
-        chk("0x1234abcd", "int[305441741]")
+        chk("0x1234AbCd", "int[305441741]")
         chk("0x7FFFFFFFFFFFFFFF", "int[9223372036854775807]")
         chk("0x8000000000000000", "ct_err:main.rell(1:13):lex:int:range:0x8000000000000000")
         chk("0xFED", "int[4077]")
@@ -222,5 +227,28 @@ class TokenizerTest: BaseRellTest() {
         chkFull("val x = 123; '\\x'", "ct_err:lex:string_esc")
         chkFull("val x = ; '\\x'", "ct_err:syntax")
         chkFull("val x = '\\x'; val y = ;", "ct_err:lex:string_esc")
+    }
+
+
+    @Test fun testTypesValidIdentifiers() {
+        val types = immListOf("big_integer", "boolean", "byte_array", "decimal", "gtv", "integer", "json", "list",
+            "map", "set", "text")
+        for (type in types) {
+            chk("($type = true)", "($type=boolean[true])")
+        }
+    }
+
+    @Test fun testKeywordsNotValidIdentifiers() {
+        val keywords = immListOf("abstract", "and", "break", "class", "continue", "create", "delete", "else", "entity",
+            "enum", "false", "for", "function", "if", "import", "in", "index", "key", "limit", "module", "mutable",
+            "namespace", "not", "null", "object", "offset", "operation", "or", "override", "query", "record", "return",
+            "struct", "true", "update", "val", "var", "virtual", "when", "while")
+        for (keyword in keywords) {
+            chk("($keyword = true)", "ct_err:syntax")
+        }
+    }
+
+    @Test fun testDeprecatedKeywordsValidIdentifiers() {
+        chk("(sort = true)", "(sort=boolean[true])")
     }
 }
