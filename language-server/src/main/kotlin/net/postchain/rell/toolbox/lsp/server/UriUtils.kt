@@ -23,6 +23,11 @@ fun URI.isChromiaConfig(): Boolean {
     return this.toString().endsWith(ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME)
 }
 
+const val DEPENDENCY_MARKER_FILE = ".deps"
+
+fun URI.isDependencyMarkerFile(): Boolean {
+    return this.toString().endsWith(DEPENDENCY_MARKER_FILE)
+}
 
 fun URI.startsWith(other: URI?): Boolean {
     return if (other == null) {

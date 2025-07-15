@@ -115,6 +115,11 @@ class RellWorkspaceService(
                     createdChromiaConfig.add(uri)
                 }
 
+                uri.isDependencyMarkerFile() &&
+                    change.type in setOf(FileChangeType.Changed, FileChangeType.Created) -> {
+                    indexingManager.runIndexers(::handleIndexingState, skipCache = true)
+                }
+
                 else -> {
                     val indexer = indexingManager.getIndexerForConfigFile(uri)
                     if (indexer != null && indexer.isConfigFile(uri)) {

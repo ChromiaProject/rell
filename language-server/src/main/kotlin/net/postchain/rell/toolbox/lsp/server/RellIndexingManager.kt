@@ -1,6 +1,7 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.indexer.IndexingState
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.indexer.calculateChecksum
@@ -41,31 +42,38 @@ class RellIndexingManager(
         this.workspaceFolders = workspaceFolders
         runIndexers()
         handleNestedIndexers()
-        diagnosticsManager.reportAllDiagnostics(getAllIndexers())
     }
 
-    fun runIndexers() {
-        val newIndexers = workspaceFolderUris.flatMap { workspaceFolder ->
-            val indexRoots = IndexRoot.findIndexRoots(workspaceFolder)
-            if (indexRoots.isEmpty()) {
-                listOf(doIndex(WorkspaceDirectoryResolver.findSourceDirURI(workspaceFolder), workspaceFolder))
-            } else {
-                indexRoots.map { indexRoot ->
-                    doIndex(indexRoot.sourceRootUri, indexRoot.chromiaConfigDirUri)
+    fun runIndexers(indexingStateHandler: ((IndexingState) -> Unit)? = null, skipCache: Boolean = false) {
+        try {
+            indexingStateHandler?.invoke(IndexingState.BEGIN)
+
+            val newIndexers = workspaceFolderUris.flatMap { workspaceFolder ->
+                val indexRoots = IndexRoot.findIndexRoots(workspaceFolder)
+                if (indexRoots.isEmpty()) {
+                    listOf(doIndex(WorkspaceDirectoryResolver.findSourceDirURI(workspaceFolder), workspaceFolder))
+                } else {
+                    indexRoots.map { indexRoot ->
+                        doIndex(indexRoot.sourceRootUri, indexRoot.chromiaConfigDirUri, skipCache = skipCache)
+                    }
                 }
+            }.associateBy { it.workspaceUri }
+
+            val orphanIndexer = createOrphanIndexers(newIndexers.keys)
+
+            indexers.clear()
+            indexers.putAll(newIndexers)
+            orphanIndexers.putAll(orphanIndexer)
+
+            diagnosticsManager.reportAllDiagnostics(getAllIndexers())
+
+            if (indexCachingEnabled) {
+                indexCachingService.persistOnDiskPeriodically(indexers.values, 1.minutes)
             }
-        }.associateBy { it.workspaceUri }
-
-        val orphanIndexer = createOrphanIndexers(newIndexers.keys)
-
-        indexers.clear()
-        indexers.putAll(newIndexers)
-        orphanIndexers.putAll(orphanIndexer)
-
-        if (indexCachingEnabled) {
-            indexCachingService.persistOnDiskPeriodically(indexers.values, 1.minutes)
+            indexCachingService.cleanupOldCaches()
+        } finally {
+            indexingStateHandler?.invoke(IndexingState.END)
         }
-        indexCachingService.cleanupOldCaches()
     }
 
     fun indexFromRoots(chromiaConfigFiles: List<URI>) {
@@ -97,10 +105,14 @@ class RellIndexingManager(
     private fun doIndex(
         resolvedSourceDirUri: URI,
         workspaceFolderUri: URI,
-        excludeFolders: Set<Path> = emptySet()
+        excludeFolders: Set<Path> = emptySet(),
+        skipCache: Boolean = false
     ): WorkspaceIndexer {
-        val cachedIndexer =
-            if (indexCachingEnabled) indexCachingService.getWorkspaceIndexer(resolvedSourceDirUri) else null
+        val cachedIndexer = if (indexCachingEnabled && !skipCache) {
+            indexCachingService.getWorkspaceIndexer(resolvedSourceDirUri)
+        } else {
+            null
+        }
 
         val (linterOptions, formatterOptions) = getLinterAndFormatterOptions(workspaceFolderUri)
 
@@ -176,7 +188,7 @@ class RellIndexingManager(
         return null
     }
 
-    fun getAllIndexers(): List<WorkspaceIndexer> = indexers.values.toList()
+    fun getAllIndexers(): List<WorkspaceIndexer> = indexers.values.toList() + orphanIndexers.values.toList()
 
     fun getResource(fileUri: URI): Resource? =
         getIndexerFor(fileUri).getResource(fileUri)
