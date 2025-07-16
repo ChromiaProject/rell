@@ -5,6 +5,7 @@
 package net.postchain.rell.gtx.testutils.tools
 
 import net.postchain.rell.base.compiler.ast.S_Pos
+import net.postchain.rell.base.compiler.base.utils.C_IdeCompletionsUtils
 import net.postchain.rell.base.compiler.base.utils.C_Message
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.R_ModuleName
@@ -149,7 +150,7 @@ private class App(private val dataDir: File) {
         lines.add("name:${doc.symbolName.strCode()}")
         if (doc.mountName != null) lines.add("mount:${doc.mountName}")
         lines.add("declaration:")
-        lines.add(doc.declaration.code.strCode())
+        lines.add(C_IdeCompletionsUtils.docCodeToStr(doc.declaration.code))
 
         if (doc.comment != null) {
             lines.add("comment:")

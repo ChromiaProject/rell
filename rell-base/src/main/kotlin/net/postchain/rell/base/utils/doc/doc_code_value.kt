@@ -11,7 +11,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 sealed class DocValue {
-    abstract fun genCode(b: DocCode.Builder)
+    internal abstract fun genCode(b: DocCode.Builder)
 
     companion object {
         val NULL: DocValue = DocValue_Keyword("null")

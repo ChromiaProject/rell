@@ -29,8 +29,8 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.*
-import net.postchain.rell.base.utils.doc.DocDeclaration
-import net.postchain.rell.base.utils.doc.DocDeclaration_Entity
+import net.postchain.rell.base.utils.doc.DocDeclarationProto
+import net.postchain.rell.base.utils.doc.DocDeclarationProto_Entity
 import net.postchain.rell.base.utils.doc.DocModifiers
 import net.postchain.rell.base.utils.ide.IdeFilePath
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
@@ -275,7 +275,7 @@ object C_Utils {
                 commentProvider = C_SymbolContext.CommentProvider.NULL,
             )
 
-            val docDeclaration = DocDeclaration_Entity(DocModifiers.NONE, rQualifiedName.last)
+            val docDeclaration = DocDeclarationProto_Entity(DocModifiers.NONE, rQualifiedName.last)
             val docGetter = cDefBase.docGetter(C_LateGetter.const(docDeclaration))
             cDefBase.rBase(R_CallFrame.NONE_INIT_FRAME_GETTER, null, docGetter)
         }
@@ -349,7 +349,7 @@ object C_Utils {
             commentProvider = C_SymbolContext.CommentProvider.NULL,
         )
 
-        val docGetter = cDefBase.docGetter(C_LateGetter.const(DocDeclaration.NONE))
+        val docGetter = cDefBase.docGetter(C_LateGetter.const(DocDeclarationProto.NONE))
         val defBase = cDefBase.rBase(R_CallFrame.NONE_INIT_FRAME_GETTER, null, docGetter)
 
         val query = R_QueryDefinition(defBase, mountName)
@@ -362,7 +362,7 @@ object C_Utils {
         return query
     }
 
-    fun createDefBase(
+    internal fun createDefBase(
         defType: C_DefinitionType,
         ideKind: IdeSymbolKind,
         moduleKey: R_ModuleKey,

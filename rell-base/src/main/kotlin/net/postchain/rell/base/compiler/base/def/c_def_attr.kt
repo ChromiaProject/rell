@@ -14,7 +14,7 @@ import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
-import net.postchain.rell.base.utils.doc.DocDeclaration_EntityAttribute
+import net.postchain.rell.base.utils.doc.DocDeclarationProto_EntityAttribute
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
@@ -207,12 +207,13 @@ class C_SysAttribute(
         ): C_SysAttribute {
             val rName = R_Name.of(name)
 
-            val docDec = DocDeclaration_EntityAttribute(
-                rName,
-                type = L_TypeUtils.docType(type.mType),
-                isMutable = mutable,
-                keyIndexKind = if (isKey) R_KeyIndexKind.KEY else null,
-            )
+            val docDec = DocDeclarationProto_EntityAttribute(
+                    rName,
+                    type = L_TypeUtils.docType(type.mType),
+                    isMutable = mutable,
+                    keyIndexKind = if (isKey) R_KeyIndexKind.KEY else null,
+                )
+                .toLazyDeclaration()
 
             val doc = docFactory.makeDocSymbol(
                 DocSymbolKind.ENTITY_ATTR,

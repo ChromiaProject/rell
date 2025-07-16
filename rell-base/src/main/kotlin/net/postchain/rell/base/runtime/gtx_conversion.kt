@@ -16,7 +16,6 @@ import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.sql.SqlExecutor
-import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.immListOf
 import org.apache.commons.collections4.MultiValuedMap
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap

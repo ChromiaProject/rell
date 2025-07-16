@@ -57,14 +57,15 @@ private class Ld_TypeDefMember_Constructor(
     }
 
     private fun makeDoc(hdr: Ld_MemberHeader.Finish, lConstructor: L_Constructor, comment: DocComment?): DocSymbol {
-        val docDeclaration = DocDeclaration_TypeConstructor(
-            hdr.simpleName,
-            L_TypeUtils.docTypeParams(lConstructor.header.typeParams),
-            lConstructor.header.params.mapToImmList { it.name.str },
-            lConstructor.header.params.mapToImmList { it.docSymbol.declaration },
-            deprecated = lConstructor.deprecated,
-            pure = lConstructor.pure,
-        )
+        val docDeclaration = DocDeclarationProto_TypeConstructor(
+                hdr.simpleName,
+                L_TypeUtils.docTypeParams(lConstructor.header.typeParams),
+                lConstructor.header.params.mapToImmList { it.name.str },
+                lConstructor.header.params.mapToImmList { it.docSymbol.declaration },
+                deprecated = lConstructor.deprecated,
+                pure = lConstructor.pure,
+            )
+            .toLazyDeclaration()
         return hdr.docSymbol(declaration = docDeclaration, comment = comment)
     }
 }
@@ -74,7 +75,7 @@ private class Ld_TypeDefMember_SpecialConstructor(
     private val fn: C_SpecialLibGlobalFunctionBody,
 ): Ld_TypeDefMember(DocSymbolKind.CONSTRUCTOR, null, memberHeader) {
     override fun finish0(ctx: Ld_TypeFinishContext, hdr: Ld_MemberHeader.Finish): List<L_TypeDefMember> {
-        val doc = hdr.docSymbol(DocDeclaration_TypeSpecialConstructor())
+        val doc = hdr.docSymbol(DocDeclarationProto_TypeSpecialConstructor().toLazyDeclaration())
         return immListOf(L_TypeDefMember_SpecialConstructor(hdr.fullName, hdr.lHeader, doc, fn))
     }
 }
@@ -153,13 +154,14 @@ private class Ld_TypeDefMember_Function(
         alias: Ld_Alias,
         targetDocSymbol: DocSymbol,
     ): DocSymbol {
-        val docDec = DocDeclaration_Alias(
-            C_DocUtils.docModifiers(alias.deprecated),
-            alias.simpleName,
-            targetFullName,
-            targetDocSymbol.declaration,
-            R_QualifiedName.of(targetFullName.last),
-        )
+        val docDec = DocDeclarationProto_Alias(
+                C_DocUtils.docModifiers(alias.deprecated),
+                alias.simpleName,
+                targetFullName,
+                targetDocSymbol.declaration,
+                R_QualifiedName.of(targetFullName.last),
+            )
+            .toLazyDeclaration()
         return hdr.docSymbol(declaration = docDec)
     }
 }
@@ -273,7 +275,8 @@ class Ld_TypeDef(
         lParent: L_TypeDefParent?,
     ): DocSymbol {
         val docTypeParams = L_TypeUtils.docTypeParams(mTypeParams)
-        return hdr.docSymbol(DocDeclaration_Type(hdr.simpleName, docTypeParams, lParent, flags))
+        val docDec = DocDeclarationProto_Type(hdr.simpleName, docTypeParams, lParent, flags).toLazyDeclaration()
+        return hdr.docSymbol(docDec)
     }
 
     companion object {

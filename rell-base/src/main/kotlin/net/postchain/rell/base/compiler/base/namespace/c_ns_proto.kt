@@ -371,7 +371,7 @@ private sealed class C_NamespaceMember_Struct(
             IdeCompletionParam(it.name, "${it.name}: $typeStr$valueStr")
         }
 
-        val deprecated = doc.declaration.isDeprecated()
+        val deprecated = doc.declaration.isDeprecated
         val ideComp = IdeCompletion(DocSymbolKind.CONSTRUCTOR, doc.symbolName, params, null, location, doc, deprecated)
         return super.getIdeCompletions0() + ideComp
     }

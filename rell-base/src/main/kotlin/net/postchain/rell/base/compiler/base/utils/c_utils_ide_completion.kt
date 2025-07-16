@@ -73,8 +73,8 @@ object C_IdeCompletionsUtils {
     }
 
     private fun makeIdeCompletion0(doc: DocSymbol, targetDoc: DocSymbol, location: String?): IdeCompletion {
-        val docComp = targetDoc.declaration.completion
-        val deprecated = doc.declaration.isDeprecated()
+        val docComp = targetDoc.declaration.internalCompletion
+        val deprecated = doc.declaration.isDeprecated
         return IdeCompletion(targetDoc.kind, doc.symbolName, docComp?.params, docComp?.result, location, doc, deprecated)
     }
 

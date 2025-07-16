@@ -127,7 +127,7 @@ class C_DefinitionPath(val module: C_DefinitionModuleName, val path: ImmList<Str
     override fun toString() = str()
 }
 
-class C_CommonDefinitionBase(
+internal class C_CommonDefinitionBase(
     private val defType: C_DefinitionType,
     private val ideKind: IdeSymbolKind,
     val defId: R_DefinitionId,
@@ -167,12 +167,12 @@ class C_CommonDefinitionBase(
         memberDocKind: DocSymbolKind,
         memberName: R_Name,
         memberComment: S_Comment?,
-        docDeclarationGetter: C_LateGetter<DocDeclaration>,
+        docDeclarationGetter: C_LateGetter<DocDeclarationProto>,
     ): C_IdeSymbolDef {
         val memberIdeId = ideId(defType, defName, memberIdeCat to memberName)
         val docMemberComment = memberComment?.compile(docFactory, memberDocKind)
         val docGetter = docDeclarationGetter.transform { docDec ->
-            makeDocSymbol(memberDocKind, memberName, null, docMemberComment, docDec)
+            makeDocSymbol(memberDocKind, memberName, null, docMemberComment, docDec.toLazyDeclaration())
         }
         return ideDef(pos, memberIdeKind, memberIdeId, docGetter)
     }
@@ -182,7 +182,7 @@ class C_CommonDefinitionBase(
         memberName: R_Name?,
         mountName: R_MountName?,
         comment: DocComment?,
-        declaration: DocDeclaration,
+        declaration: Lazy<DocDeclaration>,
     ): DocSymbol {
         val fullDefName = if (memberName == null) cDefName else cDefName.toPath().subName(memberName)
         val docName = DocSymbolName.global(cDefName.module.module, fullDefName.qualifiedName.str())
@@ -199,11 +199,11 @@ class C_CommonDefinitionBase(
         )
     }
 
-    fun docGetter(docDeclarationGetter: C_LateGetter<DocDeclaration>): C_LateGetter<DocSymbol> {
+    fun docGetter(docDeclarationGetter: C_LateGetter<DocDeclarationProto>): C_LateGetter<DocSymbol> {
         val docCommentGetter = commentProvider.getter(defType.docKind)
         return docDeclarationGetter.transform { docDec ->
             val comment = docCommentGetter.get()
-            makeDocSymbol(defType.docKind, null, mountName, comment, docDec)
+            makeDocSymbol(defType.docKind, null, mountName, comment, docDec.toLazyDeclaration())
         }
     }
 
@@ -211,9 +211,9 @@ class C_CommonDefinitionBase(
         return ideDef(pos, ideKind, ideId, docGetter)
     }
 
-    fun userBase(pos: S_Pos): C_UserDefinitionBase {
+    internal fun userBase(pos: S_Pos): C_UserDefinitionBase {
         val docPos = pos.toDocPos()
-        val docDecLate = C_LateInit(C_CompilerPass.DOCS, DocDeclaration.NONE)
+        val docDecLate = C_LateInit(C_CompilerPass.DOCS, DocDeclarationProto.NONE)
         val docSymGetter = docGetter(docDecLate.getter)
         val ideDef = ideDef(pos, docSymGetter)
         return C_UserDefinitionBase(this, ideDef, docPos, docSymGetter, docDecLate)
@@ -243,12 +243,12 @@ class C_CommonDefinitionBase(
     }
 }
 
-class C_UserDefinitionBase(
+internal class C_UserDefinitionBase(
     private val comBase: C_CommonDefinitionBase,
     ideDef: C_IdeSymbolDef,
     private val docPos: DocSourcePos,
     private val docSymbolGetter: C_LateGetter<DocSymbol>,
-    private val docDeclarationLate: C_LateInit<DocDeclaration>,
+    private val docDeclarationLate: C_LateInit<DocDeclarationProto>,
 ) {
     val defName = comBase.defName
     val ideDefInfo = ideDef.defInfo
@@ -274,7 +274,7 @@ class C_UserDefinitionBase(
         return comBase.nsMemBase(defName, deprecated, ideRefInfo)
     }
 
-    fun setDocDeclaration(declaration: DocDeclaration) {
+    internal fun setDocDeclaration(declaration: DocDeclarationProto) {
         docDeclarationLate.set(declaration, allowEarly = true)
     }
 }

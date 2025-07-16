@@ -22,7 +22,7 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_FunctionExtension
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocComment
-import net.postchain.rell.base.utils.doc.DocDeclaration_Function
+import net.postchain.rell.base.utils.doc.DocDeclarationProto_Function
 import net.postchain.rell.base.utils.doc.DocFunctionHeader
 import net.postchain.rell.base.utils.doc.DocModifiers
 import net.postchain.rell.base.utils.ide.IdeCompletion
@@ -185,14 +185,14 @@ private abstract class C_FunctionCompiler(
             base.executor.onPass(C_CompilerPass.DOCS) {
                 val docType = L_TypeUtils.docType(header.deepHeader.returnType().mType)
                 val docHeader = DocFunctionHeader(immListOf(), docType, header.params.docParams)
-                val doc = DocDeclaration_Function(
+                val docDec = DocDeclarationProto_Function(
                     base.docModifiers,
                     simpleName,
                     docHeader,
                     header.params.docParamDeclarations,
                     hasBody = hasBody,
                 )
-                cDefBase.setDocDeclaration(doc)
+                cDefBase.setDocDeclaration(docDec)
             }
         }
 

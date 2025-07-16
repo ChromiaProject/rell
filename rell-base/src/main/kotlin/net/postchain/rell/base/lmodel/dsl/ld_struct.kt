@@ -17,7 +17,7 @@ import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.utils.*
-import net.postchain.rell.base.utils.doc.DocDeclaration_StructAttribute
+import net.postchain.rell.base.utils.doc.DocDeclarationProto_StructAttribute
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.futures.FcFuture
@@ -67,7 +67,8 @@ class Ld_StructAttribute(
 
     private fun finishDoc(hdr: Ld_MemberHeader.Finish, mType: M_Type): DocSymbol {
         val docType = L_TypeUtils.docType(mType)
-        return hdr.docSymbol(DocDeclaration_StructAttribute(hdr.simpleName, docType, mutable))
+        val docDec = DocDeclarationProto_StructAttribute(hdr.simpleName, docType, mutable).toLazyDeclaration()
+        return hdr.docSymbol(docDec)
     }
 }
 

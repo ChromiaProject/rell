@@ -21,8 +21,8 @@ import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocComment
-import net.postchain.rell.base.utils.doc.DocDeclaration_Operation
-import net.postchain.rell.base.utils.doc.DocDeclaration_Query
+import net.postchain.rell.base.utils.doc.DocDeclarationProto_Operation
+import net.postchain.rell.base.utils.doc.DocDeclarationProto_Query
 import net.postchain.rell.base.utils.doc.DocModifiers
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeOutlineNodeType
@@ -84,8 +84,13 @@ class S_OperationDefinition(
 
             ctx.executor.onPass(C_CompilerPass.DOCS) {
                 val paramNames = header.params.list.mapToImmList { it.name.str }
-                val doc = DocDeclaration_Operation(docModifiers, cName.rName, paramNames, header.params.docParamDeclarations)
-                cDefBase.setDocDeclaration(doc)
+                val docDec = DocDeclarationProto_Operation(
+                    docModifiers,
+                    cName.rName,
+                    paramNames,
+                    header.params.docParamDeclarations,
+                )
+                cDefBase.setDocDeclaration(docDec)
             }
         }
 
@@ -256,8 +261,14 @@ class S_QueryDefinition(
         ctx.executor.onPass(C_CompilerPass.DOCS) {
             val docType = L_TypeUtils.docType(rBody.retType.mType)
             val paramNames = header.params.list.mapToImmList { it.name.str }
-            val doc = DocDeclaration_Query(docModifiers, cName.rName, docType, paramNames, header.params.docParamDeclarations)
-            defBase.setDocDeclaration(doc)
+            val docDec = DocDeclarationProto_Query(
+                docModifiers,
+                cName.rName,
+                docType,
+                paramNames,
+                header.params.docParamDeclarations,
+            )
+            defBase.setDocDeclaration(docDec)
         }
 
         rQuery.setBody(rBody)

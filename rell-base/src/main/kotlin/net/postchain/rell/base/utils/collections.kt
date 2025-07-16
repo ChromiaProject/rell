@@ -6,11 +6,11 @@ package net.postchain.rell.base.utils
 
 import com.google.common.collect.*
 import kotlinx.collections.immutable.*
-import kotlinx.collections.immutable.plus as kplus
-import kotlinx.collections.immutable.minus as kminus
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.minus as kminus
+import kotlinx.collections.immutable.plus as kplus
 
 class ListVsMap<K> private constructor(private val entries: ImmList<Map.Entry<K, *>>) {
     fun <W> listToMap(list: List<W>): ImmMap<K, W> {

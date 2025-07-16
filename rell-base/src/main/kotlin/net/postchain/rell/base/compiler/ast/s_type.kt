@@ -16,7 +16,7 @@ import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.*
-import net.postchain.rell.base.utils.doc.DocDeclaration_TupleAttribute
+import net.postchain.rell.base.utils.doc.DocDeclarationProto_TupleAttribute
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
@@ -192,7 +192,7 @@ class S_TupleType(pos: S_Pos, private val fields: ImmList<S_GenericTupleAttr<S_T
             val docSymbol = symCtx.makeDocSymbol(
                 DocSymbolKind.TUPLE_ATTR,
                 DocSymbolName.local(cName.str),
-                DocDeclaration_TupleAttribute(cName.rName, docType),
+                DocDeclarationProto_TupleAttribute(cName.rName, docType).toLazyDeclaration(),
                 comment = comment,
             )
 

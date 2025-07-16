@@ -57,10 +57,7 @@ data class IdeCompletion(
     val docSymbol: DocSymbol?,
     val deprecated: Boolean,
 ) {
-    override fun toString(): String {
-        val paramsStr = params?.joinToString(", ", "(", ")") { it.code }
-        return "$kind|$symbolName|$paramsStr|${result?:"-"}|${location?:"-"}"
-    }
+    override fun toString() = symbolName.strCode()
 }
 
 @Suppress("UNUSED")

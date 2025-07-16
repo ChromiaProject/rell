@@ -30,29 +30,32 @@ object Ld_DocSymbols {
 
         val docHeader = L_TypeUtils.docFunctionHeader(header.mHeader)
         val docParams = header.params.mapToImmList { it.docSymbol.declaration }
-        val dec = DocDeclaration_Function(docModifiers, hdr.simpleName, docHeader, docParams)
+        val dec = DocDeclarationProto_Function(docModifiers, hdr.simpleName, docHeader, docParams).toLazyDeclaration()
         return hdr.docSymbol(declaration = dec, comment = comment)
     }
 
     fun specialFunction(hdr: Ld_MemberHeader.Finish, isStatic: Boolean): DocSymbol {
-        return hdr.docSymbol(DocDeclaration_SpecialFunction(hdr.simpleName, isStatic = isStatic))
+        val docDecProto = DocDeclarationProto_SpecialFunction(hdr.simpleName, isStatic = isStatic)
+        return hdr.docSymbol(docDecProto.toLazyDeclaration())
     }
 
     fun constant(hdr: Ld_MemberHeader.Finish, mType: M_Type, rValue: Rt_Value): DocSymbol {
         val docType = L_TypeUtils.docType(mType)
         val docValue = C_DocUtils.docValue(rValue)
-        return hdr.docSymbol(DocDeclaration_Constant(DocModifiers.NONE, hdr.simpleName, docType, docValue))
+        val docDecProto = DocDeclarationProto_Constant(DocModifiers.NONE, hdr.simpleName, docType, docValue)
+        return hdr.docSymbol(docDecProto.toLazyDeclaration())
     }
 
     fun property(hdr: Ld_MemberHeader.Finish, mType: M_Type, pure: Boolean): DocSymbol {
         val docType = L_TypeUtils.docType(mType)
-        return hdr.docSymbol(DocDeclaration_Property(hdr.simpleName, docType, pure))
+        val docDec = DocDeclarationProto_Property(hdr.simpleName, docType, pure).toLazyDeclaration()
+        return hdr.docSymbol(docDec)
     }
 
     fun docSymbol(
         kind: DocSymbolKind,
         symbolName: DocSymbolName,
-        declaration: DocDeclaration,
+        declaration: Lazy<DocDeclaration>,
         comment: DocComment?,
         mountName: String? = null,
     ): DocSymbol {

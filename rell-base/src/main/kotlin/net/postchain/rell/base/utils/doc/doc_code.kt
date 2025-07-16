@@ -10,8 +10,8 @@ import net.postchain.rell.base.utils.toImmList
 import java.util.regex.Pattern
 
 class DocCode private constructor(private val tokens: ImmList<DocCodeToken>) {
-    fun strCode(): String = tokens.joinToString("") { it.strCode() }
-    fun strRaw(): String = tokens.joinToString("") { it.strRaw() }
+    internal fun strCode(): String = tokens.joinToString("") { it.strCode() }
+    internal fun strRaw(): String = tokens.joinToString("") { it.strRaw() }
 
     fun visit(visitor: DocCodeTokenVisitor) {
         for (token in tokens) {
@@ -19,9 +19,7 @@ class DocCode private constructor(private val tokens: ImmList<DocCodeToken>) {
         }
     }
 
-    override fun toString() = strRaw()
-
-    class Builder {
+    internal class Builder {
         private val tokens = mutableListOf<DocCodeToken>()
 
         fun build(): DocCode {
@@ -56,10 +54,10 @@ class DocCode private constructor(private val tokens: ImmList<DocCodeToken>) {
     companion object {
         val EMPTY = DocCode(immListOf())
 
-        fun builder(): Builder = Builder()
+        internal fun builder(): Builder = Builder()
 
-        fun raw(s: String): DocCode = Builder().raw(s).build()
-        fun link(s: String): DocCode = Builder().link(s).build()
+        internal fun raw(s: String): DocCode = Builder().raw(s).build()
+        internal fun link(s: String): DocCode = Builder().link(s).build()
     }
 }
 
@@ -70,13 +68,13 @@ interface DocCodeTokenVisitor {
     fun link(s: String)
 }
 
-sealed class DocCodeToken {
+internal sealed class DocCodeToken {
     abstract fun strCode(): String
     abstract fun strRaw(): String
     abstract fun visit(visitor: DocCodeTokenVisitor)
 }
 
-private object DocCodeToken_Tab: DocCodeToken() {
+private data object DocCodeToken_Tab: DocCodeToken() {
     override fun strCode() = "\t"
     override fun strRaw() = "\t"
     override fun visit(visitor: DocCodeTokenVisitor) = visitor.tab()

@@ -25,7 +25,7 @@ class C_SymbolContext(
     fun makeDocSymbol(
         kind: DocSymbolKind,
         symbolName: DocSymbolName,
-        declaration: DocDeclaration,
+        declaration: Lazy<DocDeclaration>,
         mountName: String? = null,
         comment: S_Comment?,
     ): DocSymbol {
@@ -64,7 +64,7 @@ sealed class C_DocSymbolFactory(
     abstract fun makeDocSymbol(
         kind: DocSymbolKind,
         symbolName: DocSymbolName,
-        declaration: DocDeclaration,
+        declaration: Lazy<DocDeclaration>,
         mountName: String? = null,
         comment: DocComment?,
     ): DocSymbol
@@ -72,7 +72,7 @@ sealed class C_DocSymbolFactory(
     fun makeDocSymbol(
         kind: DocSymbolKind,
         symbolName: DocSymbolName,
-        declaration: DocDeclaration,
+        declaration: Lazy<DocDeclaration>,
         mountName: String? = null,
         comment: S_Comment?,
     ): DocSymbol {
@@ -105,7 +105,7 @@ private object C_DocSymbolFactory_None: C_DocSymbolFactory(false) {
     override fun makeDocSymbol(
         kind: DocSymbolKind,
         symbolName: DocSymbolName,
-        declaration: DocDeclaration,
+        declaration: Lazy<DocDeclaration>,
         mountName: String?,
         comment: DocComment?,
     ): DocSymbol {
@@ -126,7 +126,7 @@ private class C_DocSymbolFactory_Normal(private val msgMgr: C_MessageManager): C
     override fun makeDocSymbol(
         kind: DocSymbolKind,
         symbolName: DocSymbolName,
-        declaration: DocDeclaration,
+        declaration: Lazy<DocDeclaration>,
         mountName: String?,
         comment: DocComment?,
     ): DocSymbol {

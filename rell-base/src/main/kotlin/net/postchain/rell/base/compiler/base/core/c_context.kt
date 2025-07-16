@@ -341,7 +341,7 @@ class C_MountContext(
         return if (ann == null) extChain else appCtx.addExternalChain(ann.name)
     }
 
-    fun defBaseCommon(
+    internal fun defBaseCommon(
         defType: C_DefinitionType,
         ideKind: IdeSymbolKind,
         qualifiedName: C_StringQualifiedName,
@@ -362,7 +362,7 @@ class C_MountContext(
         )
     }
 
-    fun defBase(
+    internal fun defBase(
         simpleName: C_Name,
         defType: C_DefinitionType,
         ideKind: IdeSymbolKind,
@@ -375,7 +375,7 @@ class C_MountContext(
         return base.userBase(simpleName.pos)
     }
 
-    fun defBase(
+    internal fun defBase(
         nameHand: C_NameHandle,
         defType: C_DefinitionType,
         ideKind: IdeSymbolKind,

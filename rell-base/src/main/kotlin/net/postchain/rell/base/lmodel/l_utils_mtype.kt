@@ -13,7 +13,7 @@ import net.postchain.rell.base.mtype.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
 
-object L_TypeUtils {
+internal object L_TypeUtils {
     fun makeMType(
         rType: R_Type,
         parent: M_GenericTypeParent? = null,

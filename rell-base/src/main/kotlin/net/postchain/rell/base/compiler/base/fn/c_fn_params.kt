@@ -17,13 +17,10 @@ import net.postchain.rell.base.compiler.base.utils.C_ParameterDefaultValue
 import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.*
-import net.postchain.rell.base.utils.doc.DocDeclaration
-import net.postchain.rell.base.utils.doc.DocFunctionParam
-import net.postchain.rell.base.utils.doc.DocFunctionParamComments
-import net.postchain.rell.base.utils.doc.DocSymbol
+import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
-class C_FormalParameter(
+class C_FormalParameter internal constructor(
     val name: C_Name,
     val type: R_Type,
     val ideInfo: C_IdeSymbolInfo,
@@ -33,7 +30,7 @@ class C_FormalParameter(
     private val defaultValue: C_ParameterDefaultValue?,
     initFrameGetter: C_LateGetter<R_CallFrame>,
     docSymbolGetter: C_LateGetter<DocSymbol?>,
-    private val docDeclarationGetter: C_LateGetter<DocDeclaration>,
+    private val docDeclarationGetter: C_LateGetter<DocDeclarationProto>,
 ) {
     val rParam = R_FunctionParam(
         name.rName,
@@ -44,7 +41,9 @@ class C_FormalParameter(
         name.pos.toDocPos(),
     )
 
-    val docDeclaration: DocDeclaration get() = docDeclarationGetter.get()
+    val docDeclaration: DocDeclaration by lazy {
+        docDeclarationGetter.get().makeDeclaration()
+    }
 
     fun toCallParameter(): C_FunctionCallParameter {
         return C_FunctionCallParameter(name.rName, type, index, defaultValue, C_MemberRestrictions.NULL)

@@ -10,11 +10,11 @@ import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
 
 sealed class DocType {
-    abstract fun genCode(b: DocCode.Builder, nullable: Boolean = false)
+    internal abstract fun genCode(b: DocCode.Builder, nullable: Boolean = false)
 
     fun toCode(): DocCode = DocCode.builder().also { genCode(it) }.build()
 
-    companion object {
+    internal companion object {
         val ANYTHING: DocType = DocType_Simple("anything")
         val NOTHING: DocType = DocType_Simple("nothing")
         val ANY: DocType = DocType_Simple("any")
@@ -35,7 +35,7 @@ sealed class DocType {
     }
 }
 
-sealed class DocTypeSet {
+internal sealed class DocTypeSet {
     abstract fun genCode(b: DocCode.Builder)
 
     companion object {
@@ -47,13 +47,13 @@ sealed class DocTypeSet {
     }
 }
 
-class DocTypeParam(
+internal class DocTypeParam(
     val name: String,
     val variance: M_TypeVariance,
     val bounds: DocTypeSet,
 )
 
-private object DocTypeSet_All: DocTypeSet() {
+private data object DocTypeSet_All: DocTypeSet() {
     override fun genCode(b: DocCode.Builder) {
         b.raw("*")
     }

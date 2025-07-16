@@ -18,8 +18,8 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.stmt.R_ExprStatement
 import net.postchain.rell.base.model.stmt.R_ReturnStatement
 import net.postchain.rell.base.mtype.M_ParamArity
-import net.postchain.rell.base.utils.MutableTypedKeyMap
 import net.postchain.rell.base.utils.ImmTypedKeyMap
+import net.postchain.rell.base.utils.MutableTypedKeyMap
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
@@ -50,7 +50,7 @@ class S_FormalParameter(
         val docType = L_TypeUtils.docType(type.mType)
         val docParam = DocFunctionParam(name.str, docType, arity = M_ParamArity.ONE, exact = false, nullable = false)
 
-        val docDecGetter: C_LateGetter<DocDeclaration>
+        val docDecGetter: C_LateGetter<DocDeclarationProto>
         val defaultValue: C_ParameterDefaultValue?
 
         if (expr == null) {
@@ -130,22 +130,22 @@ class S_FormalParameter(
         }
     }
 
-    private fun makeDocDeclaration(docParam: DocFunctionParam, expr: V_Expr?): DocDeclaration {
+    private fun makeDocDeclaration(docParam: DocFunctionParam, expr: V_Expr?): DocDeclarationProto {
         val docExpr = if (expr == null) null else C_DocUtils.docExpr(expr)
-        return DocDeclaration_Parameter(docParam, isLazy = false, implies = null, expr = docExpr)
+        return DocDeclarationProto_Parameter(docParam, isLazy = false, implies = null, expr = docExpr)
     }
 
     private fun makeDocSymbol(
         defCtx: C_DefinitionContext,
         name: C_Name,
-        declaration: DocDeclaration,
+        declaration: DocDeclarationProto,
         docComments: DocFunctionParamComments,
     ): DocSymbol {
         val docComment = docComments.paramComments[name.rName]
         return defCtx.symCtx.docSymbolFactory.makeDocSymbol(
             kind = DocSymbolKind.PARAMETER,
             symbolName = DocSymbolName.local(name.str),
-            declaration = declaration,
+            declaration = declaration.toLazyDeclaration(),
             comment = docComment,
         )
     }

@@ -174,7 +174,7 @@ class C_MidModuleMember_Namespace(
         return ctx.modifierCtx.symCtx.makeDocSymbol(
             kind = DocSymbolKind.NAMESPACE,
             symbolName = DocSymbolName.global(rFullName),
-            declaration = DocDeclaration_Namespace(docModifiers, rFullName.last),
+            declaration = DocDeclarationProto_Namespace(docModifiers, rFullName.last).toLazyDeclaration(),
             comment = actualComment,
         )
     }

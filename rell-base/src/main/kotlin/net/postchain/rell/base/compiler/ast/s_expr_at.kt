@@ -18,7 +18,7 @@ import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.utils.*
-import net.postchain.rell.base.utils.doc.DocDeclaration_AtVariable
+import net.postchain.rell.base.utils.doc.DocDeclarationProto_AtVariable
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
 import net.postchain.rell.base.utils.ide.IdeLocalSymbolLink
@@ -797,7 +797,7 @@ class S_AtExpr(
             val docSymbol = symCtx.makeDocSymbol(
                 DocSymbolKind.AT_VAR_DB,
                 DocSymbolName.local(name),
-                DocDeclaration_AtVariable(name, docType),
+                DocDeclarationProto_AtVariable(name, docType).toLazyDeclaration(),
                 comment = comment,
             )
             return C_IdeSymbolDef.make(IdeSymbolKind.LOC_AT_ALIAS, link = IdeLocalSymbolLink(pos), doc = docSymbol)
@@ -815,7 +815,7 @@ class S_AtExpr(
             val docSymbol = symCtx.makeDocSymbol(
                 DocSymbolKind.AT_VAR_COL,
                 DocSymbolName.local(docName),
-                DocDeclaration_AtVariable(docName, docType),
+                DocDeclarationProto_AtVariable(docName, docType).toLazyDeclaration(),
                 comment = comment,
             )
             return C_IdeSymbolDef.make(IdeSymbolKind.LOC_AT_ALIAS, link = IdeLocalSymbolLink(pos), doc = docSymbol)

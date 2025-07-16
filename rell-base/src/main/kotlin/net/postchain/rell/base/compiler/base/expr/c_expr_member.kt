@@ -22,7 +22,7 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.utils.doc.DocDeclaration_EntityAttribute
+import net.postchain.rell.base.utils.doc.DocDeclarationProto_EntityAttribute
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
@@ -365,14 +365,15 @@ sealed class C_EntityAttrRef(
         private fun makeRowidDocSymbol(rEntity: R_EntityDefinition): DocSymbol {
             val docName = DocSymbolName.global(rEntity.defName.module, "${rEntity.defName.qualifiedName}.${ROWID_NAME}")
 
-            val docDec = DocDeclaration_EntityAttribute(
-                simpleName = ROWID_RNAME,
-                type = L_TypeUtils.docType(R_RowidType.mType),
-                isMutable = false,
-                keyIndexKind = R_KeyIndexKind.KEY,
-            )
+            val docDec = DocDeclarationProto_EntityAttribute(
+                    simpleName = ROWID_RNAME,
+                    type = L_TypeUtils.docType(R_RowidType.mType),
+                    isMutable = false,
+                    keyIndexKind = R_KeyIndexKind.KEY,
+                )
+                .toLazyDeclaration()
 
-            return DocSymbol(DocSymbolKind.ENTITY_ATTR, docName, null, docDec, comment = null)
+            return DocSymbol(DocSymbolKind.ENTITY_ATTR, docName, null, comment = null, declaration = docDec)
         }
     }
 }

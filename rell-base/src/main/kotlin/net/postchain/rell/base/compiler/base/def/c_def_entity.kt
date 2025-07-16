@@ -99,7 +99,7 @@ private class C_EntityAttributeClause(
         vDocExpr: V_Expr?,
         keys: Collection<R_Key>,
         indices: Collection<R_Index>,
-    ): DocDeclaration {
+    ): DocDeclarationProto {
         var keyIndexKind: R_KeyIndexKind? = null
         var docKeys = keys
         var docIndices = indices
@@ -118,10 +118,18 @@ private class C_EntityAttributeClause(
         val docType = L_TypeUtils.docType(type.mType)
         val docExpr = if (vDocExpr == null) null else C_DocUtils.docExpr(vDocExpr)
 
-        return DocDeclaration_EntityAttribute(name.rName, docType, mutable, keyIndexKind, docExpr, docKeys, docIndices)
+        return DocDeclarationProto_EntityAttribute(
+            name.rName,
+            docType,
+            mutable,
+            keyIndexKind,
+            docExpr,
+            docKeys,
+            docIndices,
+        )
     }
 
-    private fun makeDocSymbol(name: C_Name, docDec: DocDeclaration, comment: S_Comment?): DocSymbol {
+    private fun makeDocSymbol(name: C_Name, docDec: DocDeclarationProto, comment: S_Comment?): DocSymbol {
         val docKind = when (defCtx.definitionType) {
             C_DefinitionType.STRUCT -> DocSymbolKind.STRUCT_ATTR
             C_DefinitionType.OBJECT -> DocSymbolKind.OBJECT_ATTR
@@ -133,7 +141,7 @@ private class C_EntityAttributeClause(
         return defCtx.symCtx.makeDocSymbol(
             kind = docKind,
             symbolName = DocSymbolName.global(defName.module.module, defName.qualifiedName.str()),
-            declaration = docDec,
+            declaration = docDec.toLazyDeclaration(),
             comment = comment,
         )
     }

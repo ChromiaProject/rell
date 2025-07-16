@@ -6,7 +6,9 @@ package net.postchain.rell.base.utils.doc
 
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.ImmMap
+import net.postchain.rell.base.utils.ide.IdeCompletionParam
 import net.postchain.rell.base.utils.immMapOf
 
 enum class DocSymbolKind constructor(
@@ -61,22 +63,45 @@ private fun tags(
     throws = throws,
 )
 
+class DocDeclaration(
+    val code: DocCode,
+    internal val internalCompletion: Completion?,
+    internal val isDeprecated: Boolean,
+) {
+    @Suppress("unused")
+    @Deprecated("intended for internal use; but kept public for compatibility with client code")
+    val completion = internalCompletion
+
+    class Completion(
+        val params: ImmList<IdeCompletionParam>?,
+        val result: String?,
+    )
+
+    companion object {
+        val NONE: DocDeclaration = DocDeclaration(DocCode.EMPTY, null, false)
+    }
+}
+
 class DocSymbol(
     val kind: DocSymbolKind,
     val symbolName: DocSymbolName,
     val mountName: String?,
-    val declaration: DocDeclaration,
     val comment: DocComment?,
+    declaration: Lazy<DocDeclaration>,
 ) {
-    override fun toString() = "$symbolName | $declaration"
+    private val lazyDeclaration = declaration
+
+    val declaration: DocDeclaration get() = lazyDeclaration.value
+
+    override fun toString() = "$symbolName|$kind"
 
     companion object {
         val NONE = DocSymbol(
             kind = DocSymbolKind.NONE,
             symbolName = DocSymbolName.module(R_ModuleName.EMPTY),
             mountName = null,
-            declaration = DocDeclaration.NONE,
             comment = null,
+            declaration = lazyOf(DocDeclaration.NONE),
         )
     }
 }

@@ -571,7 +571,8 @@ class Ld_Namespace(
                 val lNsMembers = lNamespaces.mapToImmList { (simpleName, nsResult) ->
                     val fullName = ctx.getFullName(simpleName)
                     val hdr = nsResult.memberHeader.finish(ctx.modCfg, fullName, DocSymbolKind.NAMESPACE)
-                    val doc = hdr.docSymbol(DocDeclaration_Namespace(DocModifiers.NONE, hdr.simpleName))
+                    val docDec = DocDeclarationProto_Namespace(DocModifiers.NONE, hdr.simpleName).toLazyDeclaration()
+                    val doc = hdr.docSymbol(docDec)
                     L_NamespaceMember_Namespace(fullName, hdr.lHeader, doc, nsResult.ns)
                 }
 
@@ -660,12 +661,13 @@ private class Ld_NamespaceMember_Alias(
             targetMember: L_NamespaceMember,
             deprecated: C_Deprecated?,
         ): DocSymbol {
-            val docDec = DocDeclaration_Alias(
-                C_DocUtils.docModifiers(deprecated),
-                hdr.simpleName,
-                targetMember.fullName,
-                targetMember.docSymbol.declaration,
-            )
+            val docDec = DocDeclarationProto_Alias(
+                    C_DocUtils.docModifiers(deprecated),
+                    hdr.simpleName,
+                    targetMember.fullName,
+                    targetMember.docSymbol.declaration,
+                )
+                .toLazyDeclaration()
             return hdr.docSymbol(docDec)
         }
     }
@@ -727,7 +729,7 @@ private class Ld_NamespaceMember_Struct(
         val fullName = hdr.fullName
         val structFuture = struct.process(ctx, fullName)
         return ctx.fcExec.future().after(structFuture).compute { lStruct ->
-            val doc = hdr.docSymbol(DocDeclaration_Struct(DocModifiers.NONE, hdr.simpleName))
+            val doc = hdr.docSymbol(DocDeclarationProto_Struct(DocModifiers.NONE, hdr.simpleName).toLazyDeclaration())
             val member = L_NamespaceMember_Struct(fullName, hdr.lHeader, doc, lStruct)
             immListOf(member)
         }
@@ -770,7 +772,7 @@ private class Ld_NamespaceMember_SpecialProperty(
     private val property: C_NamespaceProperty,
 ): Ld_NamespaceMember(DocSymbolKind.PROPERTY, simpleName, memberHeader) {
     override fun process0(ctx: Ld_NamespaceContext, hdr: Ld_MemberHeader.Finish): FcFuture<List<L_NamespaceMember>> {
-        val doc = hdr.docSymbol(declaration = DocDeclaration_SpecialProperty(hdr.simpleName))
+        val doc = hdr.docSymbol(declaration = DocDeclarationProto_SpecialProperty(hdr.simpleName).toLazyDeclaration())
         return ctx.fcExec.future().compute {
             val member = L_NamespaceMember_SpecialProperty(hdr.fullName, hdr.lHeader, doc, property)
             immListOf(member)

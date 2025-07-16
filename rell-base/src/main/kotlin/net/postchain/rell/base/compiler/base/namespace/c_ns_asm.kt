@@ -972,7 +972,8 @@ private object C_NsAsm_Utils {
         val firstDef = defs.first()
         return firstDef.ideInfo.transformDocSymbol { doc ->
             val comment = ideInfos.firstNotNullOfOrNull { it.getIdeInfo().doc?.comment }
-            DocSymbol(doc.kind, doc.symbolName, doc.mountName, doc.declaration, comment)
+            val docDec = lazy { doc.declaration }
+            DocSymbol(doc.kind, doc.symbolName, doc.mountName, comment, docDec)
         }
     }
 

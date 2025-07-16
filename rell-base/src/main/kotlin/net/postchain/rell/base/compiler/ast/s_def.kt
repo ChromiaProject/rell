@@ -247,7 +247,7 @@ class   S_EntityDefinition(
             commentProvider = ctx.symCtx.commentProvider(comment),
         )
 
-        cDefBase.setDocDeclaration(DocDeclaration_Entity(docModifiers, cName.rName))
+        cDefBase.setDocDeclaration(DocDeclarationProto_Entity(docModifiers, cName.rName))
 
         val isExternalChainOrModule = isExternalChain || ctx.modCtx.external
 
@@ -341,7 +341,7 @@ class   S_EntityDefinition(
             commentProvider = ctx.symCtx.commentProvider(comment),
         )
 
-        cDefBase.setDocDeclaration(DocDeclaration_Entity(docModifiers, cName.rName))
+        cDefBase.setDocDeclaration(DocDeclarationProto_Entity(docModifiers, cName.rName))
 
         if (!err && rEntity != null) {
             val cNsMemBase = cDefBase.nsMemBase(defName = rEntity.cDefName)
@@ -513,7 +513,7 @@ class S_ObjectDefinition(
 
         val defCtx = cDefBase.defCtx(ctx)
         val rDefBase = cDefBase.rBase(defCtx.initFrameGetter)
-        cDefBase.setDocDeclaration(DocDeclaration_Object(docModifiers, cName.rName))
+        cDefBase.setDocDeclaration(DocDeclarationProto_Object(docModifiers, cName.rName))
 
         val rEntity = C_Utils.createEntity(
             ctx.appCtx,
@@ -588,7 +588,7 @@ class S_StructDefinition(
         val defCtx = cDefBase.defCtx(ctx)
         val defBase = cDefBase.rBase(defCtx.initFrameGetter)
 
-        cDefBase.setDocDeclaration(DocDeclaration_Struct(docModifiers, cName.rName))
+        cDefBase.setDocDeclaration(DocDeclarationProto_Struct(docModifiers, cName.rName))
 
         val rStruct = R_Struct(
             cDefBase.appLevelName,
@@ -667,7 +667,7 @@ class S_EnumDefinition(
             commentProvider = ctx.symCtx.commentProvider(comment),
         )
 
-        val docDec = DocDeclaration_Enum(docModifiers, cName.rName)
+        val docDec = DocDeclarationProto_Enum(docModifiers, cName.rName)
         val docGetter = cDefBase.docGetter(C_LateGetter.const(docDec))
         val ideDef = cDefBase.ideDef(startPos, docGetter)
 
@@ -695,7 +695,7 @@ class S_EnumDefinition(
     private class AttrsCompiler(private val ctx: S_DefinitionContext) {
         private val set = mutableSetOf<String>()
         private val rAttrs = mutableListOf<R_EnumAttr>()
-        private val attrDocDecInits = mutableListOf<Pair<R_Name, C_LateInit<DocDeclaration>>>()
+        private val attrDocDecInits = mutableListOf<Pair<R_Name, C_LateInit<DocDeclarationProto>>>()
 
         fun compileAttrs(cDefBase: C_CommonDefinitionBase, attrs: List<S_EnumValue>): ImmList<R_EnumAttr> {
             for (attr in attrs) {
@@ -708,7 +708,7 @@ class S_EnumDefinition(
             val attrNameHand = attr.name.compile(ctx.symCtx)
             val attrName = attrNameHand.name
 
-            val attrDocDecInit = C_LateInit(C_CompilerPass.NAMESPACES, DocDeclaration.NONE)
+            val attrDocDecInit = C_LateInit(C_CompilerPass.NAMESPACES, DocDeclarationProto.NONE)
             attrDocDecInits.add(attrName.rName to attrDocDecInit)
 
             val attrIdeDef = cDefBase.memberIdeDef(
@@ -737,7 +737,7 @@ class S_EnumDefinition(
 
             ctx.appCtx.executor.onPass(C_CompilerPass.NAMESPACES) {
                 for ((rAttrName, docDecInit) in attrDocDecInits) {
-                    docDecInit.set(DocDeclaration_EnumValue(rAttrName, docType))
+                    docDecInit.set(DocDeclarationProto_EnumValue(rAttrName, docType))
                 }
             }
 
@@ -872,8 +872,8 @@ class S_GlobalConstantDefinition(
 
                 val docType = L_TypeUtils.docType(rType.mType)
                 val docValue = if (rtValue == null) null else C_DocUtils.docValue(rtValue)
-                val doc = DocDeclaration_Constant(docModifiers, cName.rName, docType, docValue)
-                cDefBase.setDocDeclaration(doc)
+                val docDec = DocDeclarationProto_Constant(docModifiers, cName.rName, docType, docValue)
+                cDefBase.setDocDeclaration(docDec)
             }
         }
 

@@ -340,12 +340,12 @@ private class C_LoaderModule(
 
     private fun makeDocSymbol(): DocSymbol {
         val docMountName = if (mountName.isEmpty()) null else mountName.str()
-        val docDec = DocDeclaration_Module(header?.docModifiers ?: DocModifiers.NONE)
+        val docDec = DocDeclarationProto_Module(header?.docModifiers ?: DocModifiers.NONE)
         return docSymbolFactory.makeDocSymbol(
             DocSymbolKind.MODULE,
             DocSymbolName.module(moduleName),
             mountName = docMountName,
-            declaration = docDec,
+            declaration = docDec.toLazyDeclaration(),
             comment = header?.comment,
         )
     }

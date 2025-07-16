@@ -10,7 +10,6 @@ import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.partitionMap
-import net.postchain.rell.base.utils.toImmList
 
 class Db_WhenCase(val conds: ImmList<Db_Expr>, val expr: Db_Expr)
 

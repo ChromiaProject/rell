@@ -5,7 +5,7 @@
 package net.postchain.rell.base.utils.doc
 
 sealed class DocExpr {
-    abstract fun genCode(b: DocCode.Builder)
+    internal abstract fun genCode(b: DocCode.Builder)
 
     companion object {
         val UNKNOWN: DocExpr = DocExpr_Unknown
@@ -14,7 +14,7 @@ sealed class DocExpr {
     }
 }
 
-private object DocExpr_Unknown: DocExpr() {
+private data object DocExpr_Unknown: DocExpr() {
     override fun genCode(b: DocCode.Builder) {
         b.raw("<...>")
     }

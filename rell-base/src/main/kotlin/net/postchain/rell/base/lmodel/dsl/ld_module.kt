@@ -7,7 +7,7 @@ package net.postchain.rell.base.lmodel.dsl
 import net.postchain.rell.base.compiler.base.utils.C_RFullNamePath
 import net.postchain.rell.base.lmodel.L_Module
 import net.postchain.rell.base.model.R_ModuleName
-import net.postchain.rell.base.utils.doc.DocDeclaration_Module
+import net.postchain.rell.base.utils.doc.DocDeclarationProto_Module
 import net.postchain.rell.base.utils.doc.DocModifiers
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
@@ -85,7 +85,7 @@ class Ld_ModuleDslImpl private constructor(
         val doc = Ld_DocSymbols.docSymbol(
             kind = DocSymbolKind.MODULE,
             symbolName = DocSymbolName.module(moduleName.str()),
-            declaration = DocDeclaration_Module(DocModifiers.NONE),
+            declaration = DocDeclarationProto_Module(DocModifiers.NONE).toLazyDeclaration(),
             comment = null,
         )
 

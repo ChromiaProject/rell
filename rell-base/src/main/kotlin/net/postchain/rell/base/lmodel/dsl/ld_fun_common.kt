@@ -234,7 +234,7 @@ class Ld_FunctionParam(
 
         val doc = hdr.docSymbol(
             symbolName = DocSymbolName.local(name.str),
-            declaration = DocDeclaration_Parameter(docParam, lazy, implies, null),
+            declaration = DocDeclarationProto_Parameter(docParam, lazy, implies, null).toLazyDeclaration(),
             comment = comment,
         )
 

@@ -10,7 +10,10 @@ import com.github.h0tk3y.betterParse.parser.Parser
 import net.postchain.rell.base.compiler.parser.LegacyCombinator
 import net.postchain.rell.base.compiler.parser.RellToken
 import net.postchain.rell.base.compiler.parser.S_Grammar
-import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.ImmMap
+import net.postchain.rell.base.utils.RellVersions
+import net.postchain.rell.base.utils.mapValuesToImmMap
+import net.postchain.rell.base.utils.toImmMap
 import org.apache.commons.collections4.MapUtils
 import org.apache.commons.lang3.time.FastDateFormat
 import java.util.*

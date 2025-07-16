@@ -63,7 +63,7 @@ class Ld_MemberHeader(
         val simpleName = fullName.last
 
         fun docSymbol(
-            declaration: DocDeclaration,
+            declaration: Lazy<DocDeclaration>,
             symbolName: DocSymbolName = DocSymbolName.global(fullName),
             mountName: String? = null,
             comment: DocComment? = lHeader.docComment,

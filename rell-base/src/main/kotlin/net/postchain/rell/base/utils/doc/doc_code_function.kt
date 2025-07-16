@@ -15,7 +15,7 @@ class DocFunctionParam(
     val nullable: Boolean,
 )
 
-class DocFunctionHeader(
+internal class DocFunctionHeader(
     val typeParams: ImmList<DocTypeParam>,
     val resultType: DocType,
     val params: ImmList<DocFunctionParam>,

@@ -18,7 +18,6 @@ import net.postchain.rell.base.model.expr.R_DestinationExpr
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.expr.R_MemberCalculator
 import net.postchain.rell.base.model.expr.R_StructMemberExpr
-import net.postchain.rell.base.runtime.GtvToRtContext
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils

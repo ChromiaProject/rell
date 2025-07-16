@@ -62,7 +62,7 @@ class C_ModifierTarget(
 sealed class C_AnnotationArg(val pos: S_Pos) {
     abstract fun value(ctx: C_ModifierContext): Rt_Value?
     abstract fun name(ctx: C_ModifierContext): C_QualifiedNameHandle?
-    abstract fun docArg(): DocAnnotationArg
+    internal abstract fun docArg(): DocAnnotationArg
 }
 
 class C_AnnotationArg_Value(pos: S_Pos, private val value: Rt_Value): C_AnnotationArg(pos) {

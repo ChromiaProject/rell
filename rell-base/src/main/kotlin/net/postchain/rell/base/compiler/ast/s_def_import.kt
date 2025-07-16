@@ -168,7 +168,7 @@ sealed class S_ImportTarget {
         ctx: S_DefinitionContext,
         importAlias: C_ImportAlias?,
         comment: S_Comment?,
-        docDecMaker: (C_Name) -> DocDeclaration,
+        docDecMaker: (C_Name) -> Lazy<DocDeclaration>,
     ): C_IdeSymbolDef {
         val anonymous = importAlias?.anonymous
         if (anonymous != null) {
@@ -215,8 +215,8 @@ object S_DefaultImportTarget: S_ImportTarget() {
 
         val actualAlias = importAlias?.explicit ?: importAlias?.implicit
 
-        val docDeclaration = if (actualAlias == null) DocDeclaration.NONE else {
-            DocDeclaration_ImportModule(docModifiers, moduleName, explicitAlias?.rName)
+        val docDeclaration = if (actualAlias == null) DocDeclarationProto.NONE else {
+            DocDeclarationProto_ImportModule(docModifiers, moduleName, explicitAlias?.rName)
         }
         val docComment = if (importAlias?.explicit == null) null else {
             comment?.compile(ctx.symCtx.docSymbolFactory, DocSymbolKind.ALIAS)
@@ -250,7 +250,7 @@ object S_DefaultImportTarget: S_ImportTarget() {
         val implicitAliasIdeDefId: IdeSymbolId?,
         val aliasFullName: R_FullName?,
         val docComment: DocComment?,
-        val docDeclaration: DocDeclaration,
+        val docDeclaration: DocDeclarationProto,
     ): C_ImportTarget() {
         override fun moduleIdeDefId() = implicitAliasIdeDefId
 
@@ -258,7 +258,7 @@ object S_DefaultImportTarget: S_ImportTarget() {
             val docSymbol = if (aliasFullName == null) DocSymbol.NONE else symCtx.docSymbolFactory.makeDocSymbol(
                 kind = C_DefinitionType.IMPORT.docKind,
                 symbolName = DocSymbolName.global(aliasFullName),
-                declaration = docDeclaration,
+                declaration = docDeclaration.toLazyDeclaration(),
                 comment = docComment,
             )
             return C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_IMPORT_ALIAS, defId = explicitAliasIdeDefId, doc = docSymbol)
@@ -318,7 +318,7 @@ class S_ExactImportTargetItem(
             val qualifiedName = nsBuilder.namespacePath().qualifiedName(aliasHand.rName)
             val fullName = R_FullName(details.currentModuleName, qualifiedName)
 
-            val docDeclaration = DocDeclaration_ImportExactAlias_Wildcard(
+            val docDeclaration = DocDeclarationProto_ImportExactAlias_Wildcard(
                 details.docModifiers,
                 details.targetModule.name,
                 nameHand.rName,
@@ -329,7 +329,7 @@ class S_ExactImportTargetItem(
             val doc = ctx.symCtx.makeDocSymbol(
                 DocSymbolKind.IMPORT,
                 DocSymbolName.global(fullName),
-                docDeclaration,
+                docDeclaration.toLazyDeclaration(),
                 comment = comment,
             )
 
@@ -352,7 +352,7 @@ class S_ExactImportTargetItem(
             val fullName = R_FullName(details.currentModuleName, qualifiedName)
 
             val docTrans: DocSymbolTransformer = { doc ->
-                val docDeclaration = DocDeclaration_ImportExactAlias_Single(
+                val docDeclaration = DocDeclarationProto_ImportExactAlias_Single(
                     details.docModifiers,
                     details.targetModule.name,
                     nameHand.rName,
@@ -364,7 +364,7 @@ class S_ExactImportTargetItem(
                 ctx.symCtx.makeDocSymbol(
                     DocSymbolKind.IMPORT,
                     DocSymbolName.global(fullName),
-                    docDeclaration,
+                    docDeclaration.toLazyDeclaration(),
                     comment = comment,
                 )
             }
@@ -400,7 +400,7 @@ class S_ExactImportTarget(private val items: ImmList<S_ExactImportTargetItem>): 
         comment: S_Comment?,
     ): C_ImportTarget {
         val aliasIdeDef = aliasNamespaceIdeDef(ctx, importAlias, comment) { expAlias ->
-            DocDeclaration_ImportExactModule(docModifiers, moduleName, expAlias.rName)
+            DocDeclarationProto_ImportExactModule(docModifiers, moduleName, expAlias.rName).toLazyDeclaration()
         }
         return C_ExactImportTarget(docModifiers, importAlias?.explicit, aliasIdeDef)
     }
@@ -431,7 +431,7 @@ object S_WildcardImportTarget: S_ImportTarget() {
         comment: S_Comment?,
     ): C_ImportTarget {
         val aliasIdeDef = aliasNamespaceIdeDef(ctx, importAlias, comment) { expAlias ->
-            DocDeclaration_ImportWildcard(docModifiers, moduleName, expAlias.rName)
+            DocDeclarationProto_ImportWildcard(docModifiers, moduleName, expAlias.rName).toLazyDeclaration()
         }
         return C_WildcardImportTarget(importAlias?.explicit, aliasIdeDef)
     }

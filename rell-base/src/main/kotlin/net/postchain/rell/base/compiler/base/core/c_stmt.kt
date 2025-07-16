@@ -25,7 +25,7 @@ import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_TypeParamsResolver
 import net.postchain.rell.base.mtype.M_Types
 import net.postchain.rell.base.utils.*
-import net.postchain.rell.base.utils.doc.DocDeclaration_Variable
+import net.postchain.rell.base.utils.doc.DocDeclarationProto_Variable
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
@@ -225,7 +225,7 @@ class C_SimpleVarDeclarator(
         return ctx.symCtx.makeDocSymbol(
             DocSymbolKind.VAR,
             DocSymbolName.local(name.str),
-            DocDeclaration_Variable(name.rName, docType, mutable),
+            DocDeclarationProto_Variable(name.rName, docType, mutable).toLazyDeclaration(),
             comment = comment,
         )
     }

@@ -7,7 +7,7 @@ package net.postchain.rell.base.lmodel.dsl
 import net.postchain.rell.base.lmodel.*
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.mtype.M_Types
-import net.postchain.rell.base.utils.doc.DocDeclaration_TypeExtension
+import net.postchain.rell.base.utils.doc.DocDeclarationProto_TypeExtension
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.futures.FcFuture
 import net.postchain.rell.base.utils.futures.component1
@@ -42,7 +42,8 @@ class Ld_NamespaceMember_TypeExtension(
 
         val docTypeParams = L_TypeUtils.docTypeParams(lTypeDef.mGenericType.params)
         val docSelfType = L_TypeUtils.docType(mSelfType)
-        val docSymbol = hdr.docSymbol(DocDeclaration_TypeExtension(hdr.simpleName, docTypeParams, docSelfType))
+        val docDec = DocDeclarationProto_TypeExtension(hdr.simpleName, docTypeParams, docSelfType).toLazyDeclaration()
+        val docSymbol = hdr.docSymbol(docDec)
 
         return ctx.fcExec.future().after(membersF).compute { members ->
             val lTypeExt = L_TypeExtension(
